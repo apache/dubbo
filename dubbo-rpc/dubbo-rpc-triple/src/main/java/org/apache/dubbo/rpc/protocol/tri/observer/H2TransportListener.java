@@ -31,7 +31,7 @@ import java.util.Base64;
  * Implementations should prefer to extend {@link OutboundTransportObserver} and {@link InboundTransportObserver}
  * instead of this interface.
  */
-public interface H2TransportObserver {
+public interface H2TransportListener {
     Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 

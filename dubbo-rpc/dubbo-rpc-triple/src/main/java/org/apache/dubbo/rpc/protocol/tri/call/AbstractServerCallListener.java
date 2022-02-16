@@ -74,9 +74,9 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
             final long cost = System.nanoTime() - stInNano;
             if (timeoutVal != null && cost > ((Long) timeoutVal)) {
                 LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
-                        invocation.getTargetServiceUniqueName(),
-                        invocation.getMethodName(),
-                        cost, timeoutVal));
+                    invocation.getTargetServiceUniqueName(),
+                    invocation.getMethodName(),
+                    cost, timeoutVal));
                 call.close(RpcStatus.DEADLINE_EXCEEDED, null);
             } else {
                 onServerResponse(response);

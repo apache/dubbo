@@ -34,7 +34,7 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -54,11 +54,10 @@ import java.util.concurrent.Executor;
 /**
  * ClientStream is an abstraction for bi-directional messaging.
  * It maintains a {@link WriteQueue} to write Http2Frame to remote.
- * A {@link H2TransportObserver} receives Http2Frame from remote.
+ * A {@link H2TransportListener} receives Http2Frame from remote.
  */
 public class ClientStream extends AbstractStream implements Stream {
     public final ClientStreamListener listener;
-    public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
     private final URL url;
@@ -101,7 +100,7 @@ public class ClientStream extends AbstractStream implements Stream {
         eventLoop = channel.eventLoop();
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
-            .addLast(new TripleHttp2ClientResponseHandler(this));
+            .addLast(new TripleHttp2ClientResponseHandler(new ClientTransportObserver()));
         DefaultFuture2.addTimeoutListener(requestId, channel::close);
         return new WriteQueue(channel);
     }
@@ -162,7 +161,7 @@ public class ClientStream extends AbstractStream implements Stream {
         return eventLoop;
     }
 
-    class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
+    class ClientTransportObserver extends AbstractTransportObserver implements H2TransportListener {
         private RpcStatus transportError;
         private DeCompressor decompressor;
         private boolean remoteClosed;

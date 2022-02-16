@@ -44,8 +44,8 @@ public class WrapResponseCallListener implements ClientCall.StartListener {
             delegate.onMessage(unpack);
         } catch (Throwable t) {
             final RpcStatus status = RpcStatus.INTERNAL
-                    .withDescription("Failed deserialize response")
-                    .withCause(t);
+                .withDescription("Failed deserialize response")
+                .withCause(t);
             onClose(status, null);
         }
     }

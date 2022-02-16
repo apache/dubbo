@@ -26,12 +26,12 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     private boolean terminated;
     private boolean autoRequestEnabled = true;
 
-    public boolean isAutoRequestEnabled() {
-        return autoRequestEnabled;
-    }
-
     public ClientCallToObserverAdapter(ClientCall call) {
         this.call = call;
+    }
+
+    public boolean isAutoRequestEnabled() {
+        return autoRequestEnabled;
     }
 
     @Override

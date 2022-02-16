@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractTransportObserver implements H2TransportObserver {
+public abstract class AbstractTransportObserver implements H2TransportListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransportObserver.class);
 
     /**
@@ -47,7 +47,7 @@ public abstract class AbstractTransportObserver implements H2TransportObserver {
             if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
                 try {
                     String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
-                    byte[] value = H2TransportObserver.decodeASCIIByte(header.getValue());
+                    byte[] value = H2TransportListener.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);

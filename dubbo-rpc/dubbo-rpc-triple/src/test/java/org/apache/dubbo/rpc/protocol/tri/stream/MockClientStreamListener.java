@@ -17,17 +17,25 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
+import java.util.Map;
 
-/**
- * Stream is a bi-directional intermediate layer for processing streaming data. It serializes business object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote.
- * {@link H2TransportListener} to receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
- */
-public interface Stream {
+public class MockClientStreamListener implements ClientStreamListener{
+    public RpcStatus status;
+    public byte[] message;
+    @Override
+    public void onStart() {
 
-    void writeMessage(byte[] message, int compressed);
+    }
 
-    void requestN(int n);
+    @Override
+    public void complete(RpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
+        this.status = rpcStatus;
+    }
+
+    @Override
+    public void onMessage(byte[] message) {
+        this.message=message;
+    }
 }

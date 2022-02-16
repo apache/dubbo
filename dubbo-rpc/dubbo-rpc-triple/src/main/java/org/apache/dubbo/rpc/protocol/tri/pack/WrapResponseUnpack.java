@@ -34,9 +34,9 @@ public class WrapResponseUnpack {
             return genericUnpack.unpack(wrapper.getData().toByteArray(), wrapper.getSerializeType(), wrapper.getType());
         } catch (ClassNotFoundException | IOException e) {
             throw RpcStatus.INTERNAL
-                    .withDescription("Deserialize response failed")
-                    .withCause(e)
-                    .asException();
+                .withDescription("Deserialize response failed")
+                .withCause(e)
+                .asException();
         }
     }
 }

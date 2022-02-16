@@ -22,9 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -37,6 +35,8 @@ import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 
 import com.google.protobuf.Any;
@@ -148,7 +148,7 @@ public class ServerStream extends AbstractStream {
         if (throwable == null) {
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
+                H2TransportListener.encodeBase64ASCII(status.toByteArray()));
             return headers;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
@@ -159,7 +159,7 @@ public class ServerStream extends AbstractStream {
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
+            H2TransportListener.encodeBase64ASCII(status.toByteArray()));
         return headers;
     }
 
@@ -209,7 +209,7 @@ public class ServerStream extends AbstractStream {
         return eventLoop;
     }
 
-    public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
+    public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportListener {
 
 
         /**
@@ -224,7 +224,7 @@ public class ServerStream extends AbstractStream {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            executor.execute((Runnable) () -> {
+            executor.execute(() -> {
                 if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
                     responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
                         RpcStatus.INTERNAL

@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -81,11 +81,11 @@ public class StreamUtils {
     public static DefaultHttp2Headers metadataToHeaders(RequestMetadata metadata) {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
         header.scheme(metadata.scheme)
-                .authority(metadata.address)
-                .method(HttpMethod.POST.asciiName())
-                .path("/" + metadata.service + "/" + metadata.method.getMethodName())
-                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+            .authority(metadata.address)
+            .method(HttpMethod.POST.asciiName())
+            .path("/" + metadata.service + "/" + metadata.method.getMethodName())
+            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), metadata.timeout);
         if (!"1.0.0".equals(metadata.version)) {
             setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getHeader(), metadata.version);
@@ -150,7 +150,7 @@ public class StreamUtils {
                 String str = (String) v;
                 headers.set(key, str);
             } else if (v instanceof byte[]) {
-                String str = H2TransportObserver.encodeBase64ASCII((byte[]) v);
+                String str = H2TransportListener.encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.GRPC_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {

@@ -70,15 +70,15 @@ public class TriBuiltinService {
             serviceMetadata.setServiceInterfaceName(Health.class.getName());
             serviceMetadata.generateServiceKey();
             ProviderModel providerModel = new ProviderModel(
-                    Health.class.getName(),
-                    healthService,
-                    serviceDescriptor,
-                    null,
-                    serviceMetadata);
+                Health.class.getName(),
+                healthService,
+                serviceDescriptor,
+                null,
+                serviceMetadata);
             repository.registerProvider(providerModel);
             int port = 0;
             URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
-                    null, ANYHOST_VALUE, port, Health.class.getName());
+                null, ANYHOST_VALUE, port, Health.class.getName());
             url.setServiceModel(providerModel);
             url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
             Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);

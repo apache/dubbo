@@ -51,7 +51,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     @Override
     public void onCancel(String errorInfo) {
         responseObserver.cancel(RpcStatus.CANCELLED
-                .withDescription(errorInfo).asException());
+            .withDescription(errorInfo).asException());
     }
 
 

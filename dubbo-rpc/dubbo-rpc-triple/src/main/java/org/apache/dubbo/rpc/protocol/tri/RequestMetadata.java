@@ -7,7 +7,6 @@ import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 
 import io.netty.util.AsciiString;
 
-import java.util.List;
 import java.util.Map;
 
 public class RequestMetadata {

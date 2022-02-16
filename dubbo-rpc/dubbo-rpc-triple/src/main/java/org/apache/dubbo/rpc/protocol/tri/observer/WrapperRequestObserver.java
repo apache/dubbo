@@ -46,7 +46,7 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
     public void onNext(Object data) {
         Object[] arguments = (Object[]) data;
         final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                .setSerializeType(genericPack.serializationName);
+            .setSerializeType(genericPack.serializationName);
         for (String type : argumentsType) {
             builder.addArgTypes(type);
         }
@@ -58,9 +58,9 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
             }
         } catch (IOException e) {
             throw RpcStatus.INTERNAL
-                    .withDescription("Serialize request failed")
-                    .withCause(e)
-                    .asException();
+                .withDescription("Serialize request failed")
+                .withCause(e)
+                .asException();
         }
         delegate.onNext(builder.build());
     }

@@ -58,8 +58,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
     public final long requestId;
     private final Invocation invocation;
-    private final Connection connection;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
-    private final int timeout;
+    private final Connection connection;
+    private final int timeout;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private final long start = System.currentTimeMillis();
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private Timeout timeoutCheckTask;

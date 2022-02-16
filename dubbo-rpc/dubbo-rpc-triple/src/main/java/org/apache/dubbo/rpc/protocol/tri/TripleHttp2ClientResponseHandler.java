@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -30,11 +30,11 @@ import io.netty.handler.codec.http2.Http2StreamFrame;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
-    private final ClientStream stream;
+    private final H2TransportListener transportListener;
 
-    public TripleHttp2ClientResponseHandler(ClientStream stream) {
+    public TripleHttp2ClientResponseHandler(H2TransportListener listener) {
         super(false);
-        this.stream = stream;
+        this.transportListener = listener;
     }
 
     @Override
@@ -44,7 +44,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             Http2GoAwayFrame event = (Http2GoAwayFrame) evt;
             ctx.close();
             LOGGER.debug(
-                    "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
+                "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
         } else if (evt instanceof Http2ResetFrame) {
             onResetRead(ctx, (Http2ResetFrame) evt);
         }
@@ -54,10 +54,10 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     protected void channelRead0(ChannelHandlerContext ctx, Http2StreamFrame msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             final Http2HeadersFrame headers = (Http2HeadersFrame) msg;
-            stream.remoteObserver.onHeader(headers.headers(), headers.isEndStream());
+            transportListener.onHeader(headers.headers(), headers.isEndStream());
         } else if (msg instanceof Http2DataFrame) {
             final Http2DataFrame data = (Http2DataFrame) msg;
-            stream.remoteObserver.onData(data.content(), data.isEndStream());
+            transportListener.onData(data.content(), data.isEndStream());
         } else {
             super.channelRead(ctx, msg);
         }
@@ -65,16 +65,16 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
         LOGGER.warn("Triple Client received remote reset errorCode=" + resetFrame.errorCode());
-        stream.remoteObserver.cancelByRemote(RpcStatus.CANCELLED);
+        transportListener.cancelByRemote(RpcStatus.CANCELLED);
         ctx.close();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         final RpcStatus status = RpcStatus.INTERNAL
-                .withCause(cause);
+            .withCause(cause);
         LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
-        stream.remoteObserver.cancelByRemote(status);
+        transportListener.cancelByRemote(status);
         ctx.close();
     }
 

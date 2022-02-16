@@ -26,8 +26,6 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleClientHandler;
 import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
@@ -37,13 +35,8 @@ import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http2.Http2FrameCodec;
-import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
-import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -63,40 +56,14 @@ class ClientStreamTest {
         final ServiceDescriptor serviceDescriptor = repo.getService(IGreeter.class.getName());
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo", new Class<?>[]{String.class});
 
-        final EmbeddedChannel parentChannel = new EmbeddedChannel();
-        final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient().build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(url.getOrDefaultFrameworkModel()));
-        parentChannel.pipeline().addLast(codec)
-            .addLast(handler);
-        parentChannel.connect(new InetSocketAddress(0));
-        when(connection.getChannel())
-            .thenReturn(parentChannel);
-
         final RpcInvocation invocation = mock(RpcInvocation.class);
         int timeout = 1000;
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         DefaultFuture2 future = DefaultFuture2.newFuture(connection, invocation, timeout, executorService);
-        ClientStreamListener listener = new ClientStreamListener() {
-            public RpcStatus status;
-            byte[] message;
-
-            @Override
-            public void onStart() {
-
-            }
-
-            @Override
-            public void complete(RpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
-                this.status = rpcStatus;
-            }
-
-            @Override
-            public void onMessage(byte[] message) {
-                this.message = message;
-            }
-        };
+        MockClientStreamListener listener = new MockClientStreamListener();
         WriteQueue writeQueue = mock(WriteQueue.class);
-        when(writeQueue.enqueue(any())).thenReturn(parentChannel.newPromise());
+        final EmbeddedChannel channel = new EmbeddedChannel();
+        when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         ClientStream stream = new ClientStream(url, future.requestId, executorService, writeQueue, listener);
 
         final RequestMetadata requestMetadata = StreamUtils.createRequest(url, methodDescriptor,

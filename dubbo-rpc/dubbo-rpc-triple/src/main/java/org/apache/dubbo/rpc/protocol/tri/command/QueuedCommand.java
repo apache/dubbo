@@ -50,7 +50,7 @@ public abstract class QueuedCommand {
         if (ctx.channel().isActive()) {
             doSend(ctx, promise);
 //            if (flush) {
-                ctx.flush();
+            ctx.flush();
 //            }
         }
     }
