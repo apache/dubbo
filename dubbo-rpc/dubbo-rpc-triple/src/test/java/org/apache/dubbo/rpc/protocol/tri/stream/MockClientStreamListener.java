@@ -21,9 +21,10 @@ import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import java.util.Map;
 
-public class MockClientStreamListener implements ClientStreamListener{
+public class MockClientStreamListener implements ClientStreamListener {
     public RpcStatus status;
     public byte[] message;
+
     @Override
     public void onStart() {
 
@@ -36,6 +37,6 @@ public class MockClientStreamListener implements ClientStreamListener{
 
     @Override
     public void onMessage(byte[] message) {
-        this.message=message;
+        this.message = message;
     }
 }

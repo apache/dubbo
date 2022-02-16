@@ -83,7 +83,6 @@ public class ServerCall {
     private PbPack pack;
     private ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
-    private boolean closed;
     private RpcInvocation invocation;
     private Listener listener;
     private boolean headerSent;
@@ -170,6 +169,7 @@ public class ServerCall {
         executor.execute(writeMessage);
     }
 
+
     public void close(RpcStatus status, Map<String, Object> trailers) {
         executor.execute(() -> serverStream.close(status, trailers));
     }
@@ -224,19 +224,6 @@ public class ServerCall {
         }
     }
 
-    /**
-     * Error in create stream, unsupported config or triple protocol error.
-     *
-     * @param status
-     */
-    private void responseErr(RpcStatus status) {
-        Http2Headers trailers = new DefaultHttp2Headers()
-            .status(OK.codeAsText())
-            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
-        serverStream.sendHeaderWithEos(trailers);
-    }
 
     interface Listener {
 
@@ -251,69 +238,19 @@ public class ServerCall {
 
         private MethodDescriptor methodDescriptor;
         private Map<String, Object> headers;
+        private boolean closed;
 
-        void trySetMethodDescriptor(byte[] data) throws InvalidProtocolBufferException {
-            if (methodDescriptor != null) {
-                return;
-            }
-            final TripleWrapper.TripleRequestWrapper request;
-            request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
-
-            final String[] paramTypes = request.getArgTypesList().toArray(new String[request.getArgsCount()]);
-            // wrapper mode the method can overload so maybe list
-            for (MethodDescriptor descriptor : methodDescriptors) {
-                // params type is array
-                if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
-                    methodDescriptor = descriptor;
-                    break;
-                }
-            }
-            if (methodDescriptor == null) {
-                close(RpcStatus.UNIMPLEMENTED
-                    .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
-                        "not found of service:" + serviceDescriptor.getInterfaceName()), null);
-            }
-        }
-
-        void trySetListener() {
-            if (listener != null) {
-                return;
-            }
-            if (methodDescriptor == null) {
-                return;
-            }
-            if (closed) {
-                return;
-            }
-            invocation = buildInvocation(headers);
-            if (closed) {
-                return;
-            }
-            headerFilters.forEach(f -> f.invoke(invoker, invocation));
-            if (closed) {
-                return;
-            }
-
-            if (methodDescriptor instanceof StreamMethodDescriptor) {
-                requestN(1);
-                if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
-                    listener = new ServerStreamServerCallListener(ServerCall.this, invocation, invoker);
-                } else {
-                    listener = new BiStreamServerCallListener(ServerCall.this, invocation, invoker);
-                }
-            } else {
-                requestN(2);
-                listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
-            }
-            if (methodDescriptor.isNeedWrap()) {
-                listener = new WrapRequestServerCallListener(listener, genericUnpack);
-            }
-        }
 
         @Override
         public void onHeaders(Map<String, Object> headers) {
             this.headers = headers;
-            doOnHeaders(headers);
+            try {
+                doOnHeaders(headers);
+            } catch (Throwable t) {
+                responseErr(RpcStatus.UNKNOWN
+                    .withDescription("Server exception")
+                    .withCause(t));
+            }
         }
 
         private void doOnHeaders(Map<String, Object> headers) {
@@ -370,6 +307,81 @@ public class ServerCall {
                 // wrap request , need one message
                 requestN(1);
             }
+        }
+
+        private void trySetMethodDescriptor(byte[] data) throws InvalidProtocolBufferException {
+            if (methodDescriptor != null) {
+                return;
+            }
+            final TripleWrapper.TripleRequestWrapper request;
+            request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
+
+            final String[] paramTypes = request.getArgTypesList().toArray(new String[request.getArgsCount()]);
+            // wrapper mode the method can overload so maybe list
+            for (MethodDescriptor descriptor : methodDescriptors) {
+                // params type is array
+                if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
+                    methodDescriptor = descriptor;
+                    break;
+                }
+            }
+            if (methodDescriptor == null) {
+                close(RpcStatus.UNIMPLEMENTED
+                    .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
+                        "not found of service:" + serviceDescriptor.getInterfaceName()), null);
+            }
+        }
+
+        private void trySetListener() {
+            if (listener != null) {
+                return;
+            }
+            if (methodDescriptor == null) {
+                return;
+            }
+            if (closed) {
+                return;
+            }
+            invocation = buildInvocation(headers);
+            if (closed) {
+                return;
+            }
+            headerFilters.forEach(f -> f.invoke(invoker, invocation));
+            if (closed) {
+                return;
+            }
+
+            if (methodDescriptor instanceof StreamMethodDescriptor) {
+                requestN(1);
+                if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
+                    listener = new ServerStreamServerCallListener(ServerCall.this, invocation, invoker);
+                } else {
+                    listener = new BiStreamServerCallListener(ServerCall.this, invocation, invoker);
+                }
+            } else {
+                requestN(2);
+                listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
+            }
+            if (methodDescriptor.isNeedWrap()) {
+                listener = new WrapRequestServerCallListener(listener, genericUnpack);
+            }
+        }
+        /**
+         * Error in create stream, unsupported config or triple protocol error.
+         *
+         * @param status
+         */
+        private void responseErr(RpcStatus status) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            Http2Headers trailers = new DefaultHttp2Headers()
+                .status(OK.codeAsText())
+                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
+            serverStream.sendHeaderWithEos(trailers);
         }
 
         @Override

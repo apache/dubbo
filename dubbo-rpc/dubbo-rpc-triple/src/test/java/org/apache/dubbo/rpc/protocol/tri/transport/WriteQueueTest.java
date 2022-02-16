@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.FlushQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
@@ -94,8 +94,6 @@ public class WriteQueueTest {
         Assertions.assertTrue(queuedCommands.get(2) instanceof CancelQueueCommand);
         Assertions.assertTrue(queuedCommands.get(3) instanceof TextDataQueueCommand);
         Assertions.assertTrue(queuedCommands.get(4) instanceof FlushQueueCommand);
-
-        Mockito.verify(channel, Mockito.times(1)).flush();
     }
 
     @Test
@@ -111,7 +109,6 @@ public class WriteQueueTest {
             Thread.sleep(50);
         }
         Mockito.verify(channel, Mockito.times(DEQUE_CHUNK_SIZE + 1)).write(Mockito.any(), Mockito.any());
-        Mockito.verify(channel, Mockito.times(2)).flush();
     }
 
 }
