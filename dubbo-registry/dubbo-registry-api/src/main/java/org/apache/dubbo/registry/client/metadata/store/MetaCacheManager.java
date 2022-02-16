@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
     private static final String DEFAULT_FILE_NAME = ".metadata";
-    private static final int DEFAULT_ENTRY_SIZE = 1000;
+    private static final int DEFAULT_ENTRY_SIZE = 100;
 
     public static MetaCacheManager getInstance(ScopeModel scopeModel) {
         return scopeModel.getBeanFactory().getOrRegisterBean(MetaCacheManager.class);
