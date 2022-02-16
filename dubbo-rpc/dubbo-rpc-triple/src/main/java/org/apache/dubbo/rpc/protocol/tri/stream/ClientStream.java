@@ -21,10 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.TripleHttp2ClientResponseHandler;
-import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
@@ -33,8 +30,11 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -55,6 +55,7 @@ import java.util.concurrent.Executor;
  * ClientStream is an abstraction for bi-directional messaging.
  * It maintains a {@link WriteQueue} to write Http2Frame to remote.
  * A {@link H2TransportListener} receives Http2Frame from remote.
+ * Instead of maintaining state, this class depends on upper layer or transport layer's states.
  */
 public class ClientStream extends AbstractStream implements Stream {
     public final ClientStreamListener listener;
@@ -161,7 +162,7 @@ public class ClientStream extends AbstractStream implements Stream {
         return eventLoop;
     }
 
-    class ClientTransportObserver extends AbstractTransportObserver implements H2TransportListener {
+    class ClientTransportObserver extends AbstractH2TransportListener implements H2TransportListener {
         private RpcStatus transportError;
         private DeCompressor decompressor;
         private boolean remoteClosed;
@@ -259,7 +260,6 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
                 if (deframer != null) {
                     deframer.close();
-//                    deframer = null;
                 }
             }
         }

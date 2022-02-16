@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;

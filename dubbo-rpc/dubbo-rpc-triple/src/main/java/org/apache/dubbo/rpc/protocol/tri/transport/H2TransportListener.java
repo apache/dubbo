@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.observer;
+package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
@@ -28,13 +28,10 @@ import java.util.Base64;
 /**
  * An observer used for transport messaging which provides full streaming support.
  * A TransportObserver receives raw data or control messages from local/remote.
- * Implementations should prefer to extend {@link OutboundTransportObserver} and {@link InboundTransportObserver}
- * instead of this interface.
  */
 public interface H2TransportListener {
     Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
-
 
     static String encodeBase64ASCII(byte[] in) {
         byte[] bytes = encodeBase64(in);

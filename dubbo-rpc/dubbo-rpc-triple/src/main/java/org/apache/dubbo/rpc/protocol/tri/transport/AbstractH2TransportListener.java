@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.observer;
+package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,8 +28,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractTransportObserver implements H2TransportListener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransportObserver.class);
+public abstract class AbstractH2TransportListener implements H2TransportListener {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractH2TransportListener.class);
 
     /**
      * Parse metadata to a KV pairs map.

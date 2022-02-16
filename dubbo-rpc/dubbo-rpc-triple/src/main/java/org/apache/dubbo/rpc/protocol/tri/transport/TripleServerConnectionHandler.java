@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,7 +31,7 @@ import java.net.SocketException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.apache.dubbo.rpc.protocol.tri.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
+import static org.apache.dubbo.rpc.protocol.tri.transport.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
 
 public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(TripleServerConnectionHandler.class);

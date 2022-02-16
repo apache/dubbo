@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.FlushQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
@@ -39,7 +40,7 @@ import org.mockito.stubbing.Answer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.rpc.protocol.tri.WriteQueue.DEQUE_CHUNK_SIZE;
+import static org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue.DEQUE_CHUNK_SIZE;
 
 
 /**

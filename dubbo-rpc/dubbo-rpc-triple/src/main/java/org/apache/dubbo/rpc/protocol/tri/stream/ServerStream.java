@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
@@ -35,8 +35,8 @@ import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 
 import com.google.protobuf.Any;
@@ -209,7 +209,7 @@ public class ServerStream extends AbstractStream {
         return eventLoop;
     }
 
-    public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportListener {
+    public class ServerTransportObserver extends AbstractH2TransportListener implements H2TransportListener {
 
 
         /**

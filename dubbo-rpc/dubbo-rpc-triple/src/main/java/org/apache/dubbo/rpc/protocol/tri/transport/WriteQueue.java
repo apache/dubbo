@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 

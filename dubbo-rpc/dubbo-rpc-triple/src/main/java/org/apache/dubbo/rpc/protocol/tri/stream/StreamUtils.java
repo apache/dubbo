@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.support.RpcUtils;

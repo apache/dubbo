@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;

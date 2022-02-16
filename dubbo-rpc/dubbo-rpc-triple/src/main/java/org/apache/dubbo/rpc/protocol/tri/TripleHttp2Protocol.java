@@ -30,6 +30,11 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
