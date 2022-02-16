@@ -30,11 +30,11 @@ public class FileCacheStoreFactoryTest {
     @Test
     public void testSafeName() throws URISyntaxException {
         FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../dubbo");
-        Assertions.assertEquals(getDirectoryOfClassPath() + File.separator + "..%002f..%002f..%002fdubbo.dubbo.cache", store1.getCacheFilePath());
+        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002fdubbo.dubbo.cache", store1.getCacheFilePath());
         store1.destroy();
 
         FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../中文");
-        Assertions.assertEquals(getDirectoryOfClassPath() + File.separator + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", store2.getCacheFilePath());
+        Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", store2.getCacheFilePath());
         store2.destroy();
     }
 

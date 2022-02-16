@@ -61,6 +61,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         this.mappingCacheManager = new MappingCacheManager("", applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getCacheRefreshingScheduledExecutor());
     }
 
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
      *
@@ -200,7 +205,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     }
 
     public Lock getMappingLock(String key) {
-        return mappingLocks.computeIfAbsent(key, _k -> new ReentrantLock());
+        mappingLocks.computeIfAbsent(key, _k -> new ReentrantLock());
+        return mappingLocks.get(key);
     }
 
     protected void removeMappingLock(String key) {
