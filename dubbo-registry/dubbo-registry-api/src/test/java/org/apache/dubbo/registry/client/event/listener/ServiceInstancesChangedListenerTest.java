@@ -104,7 +104,9 @@ public class ServiceInstancesChangedListenerTest {
     static String service2 = "org.apache.dubbo.demo.DemoService2";
     static String service3 = "org.apache.dubbo.demo.DemoService3";
 
-    static URL consumerURL = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?registry_cluster=default");
+    static URL consumerURL = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL2 = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService2?interface=org.apache.dubbo.demo.DemoService2&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL3 = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService3?interface=org.apache.dubbo.demo.DemoService3&protocol=dubbo&registry_cluster=default");
     static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
@@ -335,9 +337,9 @@ public class ServiceInstancesChangedListenerTest {
         serviceNames.add("app2");
         listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
         NotifyListener demoServiceListener = Mockito.mock(NotifyListener.class);
-        when(demoServiceListener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://127.0.0.1/" + service1 + "?interface=" + service1 + "&protocol=dubbo"));
+        when(demoServiceListener.getConsumerUrl()).thenReturn(consumerURL);
         NotifyListener demoService2Listener = Mockito.mock(NotifyListener.class);
-        when(demoService2Listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://127.0.0.1/" + service2 + "?interface=" + service2 + "&protocol=dubbo"));
+        when(demoService2Listener.getConsumerUrl()).thenReturn(consumerURL2);
         listener.addListenerAndNotify(service1 + ":dubbo", demoServiceListener);
         listener.addListenerAndNotify(service2 + ":dubbo", demoService2Listener);
         // notify app1 instance change
@@ -370,6 +372,7 @@ public class ServiceInstancesChangedListenerTest {
 
         // test service listener still get notified when added after instance notification.
         NotifyListener demoService3Listener = Mockito.mock(NotifyListener.class);
+        when(demoService3Listener.getConsumerUrl()).thenReturn(consumerURL3);
         listener.addListenerAndNotify(service3 + ":dubbo", demoService3Listener);
         Mockito.verify(demoService3Listener, Mockito.times(1)).notify(Mockito.anyList());
     }

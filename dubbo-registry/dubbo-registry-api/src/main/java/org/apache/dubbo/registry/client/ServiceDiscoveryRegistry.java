@@ -421,8 +421,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     public Lock getAppSubscription(String key) {
-        appSubscriptionLocks.computeIfAbsent(key, _k -> new ReentrantLock());
-        return appSubscriptionLocks.get(key);
+        return appSubscriptionLocks.computeIfAbsent(key, _k -> new ReentrantLock());
     }
 
     public void removeAppSubscriptionLock(String key) {

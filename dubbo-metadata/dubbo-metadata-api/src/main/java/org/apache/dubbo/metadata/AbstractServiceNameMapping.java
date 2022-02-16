@@ -205,8 +205,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     }
 
     public Lock getMappingLock(String key) {
-        mappingLocks.computeIfAbsent(key, _k -> new ReentrantLock());
-        return mappingLocks.get(key);
+        return mappingLocks.computeIfAbsent(key, _k -> new ReentrantLock());
     }
 
     protected void removeMappingLock(String key) {

@@ -163,8 +163,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                 break;
             } else {// failed
                 if (triedTimes > 0) {
-                    logger.info("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
-                        + "&cluster=" + instance.getRegistryCluster());
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
+                            + "&cluster=" + instance.getRegistryCluster());
+                    }
                 }
                 triedTimes++;
                 try {

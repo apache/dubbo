@@ -40,7 +40,7 @@ class AbstractServiceNameMappingTest {
     private MockServiceNameMapping mapping = new MockServiceNameMapping(ApplicationModel.defaultModel());
     private MockServiceNameMapping2 mapping2 = new MockServiceNameMapping2(ApplicationModel.defaultModel());
 
-    URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class);
+    URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class.getName());
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -79,7 +79,7 @@ class AbstractServiceNameMappingTest {
         Assertions.assertTrue(services.contains("registry-app1"));
 
         // remove mapping cache, check get() works.
-        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        mapping2.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
         mapping2.enabled = true;
         services = mapping2.getAndListen(registryURL, url, new MappingListener() {
             @Override
