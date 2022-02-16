@@ -81,6 +81,11 @@ class ClientStreamTest {
             byte[] message;
 
             @Override
+            public void onStart() {
+
+            }
+
+            @Override
             public void complete(RpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
                 this.status = rpcStatus;
             }
@@ -92,7 +97,7 @@ class ClientStreamTest {
         };
         WriteQueue writeQueue = mock(WriteQueue.class);
         when(writeQueue.enqueue(any())).thenReturn(parentChannel.newPromise());
-        ClientStream stream = new ClientStream(url, future.requestId, writeQueue, listener);
+        ClientStream stream = new ClientStream(url, future.requestId, executorService, writeQueue, listener);
 
         final RequestMetadata requestMetadata = StreamUtils.createRequest(url, methodDescriptor,
             invocation, future.requestId, Identity.IDENTITY,
