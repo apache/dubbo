@@ -308,6 +308,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
+        serviceMetadata.getAttachments().forEach((k, v) -> map.put(k, String.valueOf(v)));
         serviceMetadata.getAttachments().putAll(map);
 
         ref = createProxy(map);

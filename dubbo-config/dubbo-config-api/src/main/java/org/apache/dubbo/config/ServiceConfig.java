@@ -457,6 +457,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         //init serviceMetadata attachments
+        serviceMetadata.getAttachments().forEach((k, v) -> map.put(k, String.valueOf(v)));
         serviceMetadata.getAttachments().putAll(map);
 
         // export service
