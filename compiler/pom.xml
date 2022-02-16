@@ -26,7 +26,7 @@
 
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-compiler</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>com.salesforce.servicelibs</groupId>
             <artifactId>jprotoc</artifactId>
-            <version>0.9.1</version>
+            <version>1.2.1</version>
         </dependency>
     </dependencies>
 
