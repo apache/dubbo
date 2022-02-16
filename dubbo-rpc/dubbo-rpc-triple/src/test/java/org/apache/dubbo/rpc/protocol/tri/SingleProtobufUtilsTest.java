@@ -69,10 +69,10 @@ public class SingleProtobufUtilsTest {
         TripleWrapper.TripleRequestWrapper requestWrapper = TripleWrapper.TripleRequestWrapper.newBuilder()
             .setSerializeType("hessian4").build();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        SingleProtobufUtils.serialize(requestWrapper,bos);
+        SingleProtobufUtils.serialize(requestWrapper, bos);
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
         TripleWrapper.TripleRequestWrapper tripleRequestWrapper = SingleProtobufUtils.deserialize(bis, TripleWrapper.TripleRequestWrapper.class);
-        Assertions.assertEquals(tripleRequestWrapper.getSerializeType(),"hessian4");
+        Assertions.assertEquals(tripleRequestWrapper.getSerializeType(), "hessian4");
     }
 }

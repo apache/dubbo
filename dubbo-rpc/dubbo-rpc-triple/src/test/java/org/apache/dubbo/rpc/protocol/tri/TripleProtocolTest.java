@@ -60,7 +60,7 @@ public class TripleProtocolTest {
         serviceRepository.registerProvider(providerModel);
         url = url.setServiceModel(providerModel);
 
-        Protocol protocol =ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        Protocol protocol = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
         ProxyFactory proxy = ApplicationModel.defaultModel().getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         protocol.export(proxy.getInvoker(serviceImpl, IGreeter.class, url));
 

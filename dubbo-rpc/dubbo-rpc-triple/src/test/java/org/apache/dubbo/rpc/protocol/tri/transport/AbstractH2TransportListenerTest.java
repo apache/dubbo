@@ -35,7 +35,7 @@ class AbstractH2TransportListenerTest {
 
     @Test
     void headersToMap() {
-        AbstractH2TransportListener listener=new AbstractH2TransportListener() {
+        AbstractH2TransportListener listener = new AbstractH2TransportListener() {
             @Override
             public void onHeader(Http2Headers headers, boolean endStream) {
 
@@ -51,13 +51,13 @@ class AbstractH2TransportListenerTest {
 
             }
         };
-        DefaultHttp2Headers headers=new DefaultHttp2Headers();
+        DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HTTPS.name())
-                .path("/foo.bar")
-                    .method(HttpMethod.POST.asciiName());
-        headers.set("foo","bar");
+            .path("/foo.bar")
+            .method(HttpMethod.POST.asciiName());
+        headers.set("foo", "bar");
         final Map<String, Object> map = listener.headersToMap(headers);
-        Assertions.assertEquals(4,map.size());
+        Assertions.assertEquals(4, map.size());
     }
 
     @Test
