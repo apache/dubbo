@@ -17,16 +17,27 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+
+import io.netty.channel.EventLoop;
+
+import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements Stream {
-    final URL url;
-    final CancellationContext cancellationContext;
 
-    protected AbstractStream(URL url) {
-        this.url = url;
-        this.cancellationContext = new CancellationContext();
+    protected final Executor executor;
+
+    public AbstractStream(Executor executor) {
+        this.executor = new SerializingExecutor(executor);
     }
 
+    abstract EventLoop getEventLoop();
+
+    void runOnEventLoop(final Runnable r) {
+        if (getEventLoop().inEventLoop()) {
+            r.run();
+            return;
+        }
+        getEventLoop().execute(r);
+    }
 }

@@ -20,16 +20,15 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
@@ -62,7 +61,7 @@ public class ClientCall {
                       ExecutorService executor
     ) {
         this.url = url;
-        this.executor = new SerializingExecutor(executor);
+        this.executor = executor;
         this.connection = connection;
     }
 
@@ -85,23 +84,26 @@ public class ClientCall {
         }
     }
 
+
+    public void requestN(int n) {
+        stream.requestN(n);
+    }
+
     public void halfClose() {
-        executor.execute(() -> {
-            if (!headerSent) {
-                return;
-            }
-            if (canceled) {
-                return;
-            }
-            stream.halfClose();
-        });
+        if (!headerSent) {
+            return;
+        }
+        if (canceled) {
+            return;
+        }
+        stream.halfClose();
     }
 
     public void setCompression(String compression) {
         this.requestMetadata.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
     }
 
-    public void start(RequestMetadata metadata, Listener responseListener) {
+    public void start(RequestMetadata metadata, ClientCall.StartListener responseListener) {
         this.requestMetadata = metadata;
         final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
             PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
@@ -109,16 +111,12 @@ public class ClientCall {
         this.stream = new ClientStream(
             url,
             metadata.requestId,
+            executor,
             connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, unpack));
     }
 
-
     public void cancel(String message, Throwable t) {
-        executor.execute(() -> doCancel(message, t));
-    }
-
-    public void doCancel(String message, Throwable t) {
         if (canceled) {
             return;
         }
@@ -146,33 +144,43 @@ public class ClientCall {
         void onClose(RpcStatus status, Map<String, Object> trailers);
     }
 
+
+    public interface StartListener extends Listener {
+
+        void onStart();
+    }
+
     class ClientStreamListenerImpl implements ClientStreamListener {
-        private final Listener listener;
+
+        private final StartListener listener;
         private final PbUnpack<?> unpack;
         private boolean done;
 
-        ClientStreamListenerImpl(Listener listener, PbUnpack<?> unpack) {
+        ClientStreamListenerImpl(StartListener listener, PbUnpack<?> unpack) {
             this.unpack = unpack;
             this.listener = listener;
         }
 
         @Override
+        public void onStart() {
+            listener.onStart();
+        }
+
+        @Override
         public void onMessage(byte[] message) {
-            executor.execute(() -> {
-                if (done) {
-                    LOGGER.warn("Received message from closed stream,connection=" + connection
-                        + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
-                    return;
-                }
-                try {
-                    final Object unpacked = unpack.unpack(message);
-                    listener.onMessage(unpacked);
-                } catch (IOException e) {
-                    cancelByErr(RpcStatus.INTERNAL
-                        .withDescription("Deserialize response failed")
-                        .withCause(e));
-                }
-            });
+            if (done) {
+                LOGGER.warn("Received message from closed stream,connection=" + connection
+                    + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
+                return;
+            }
+            try {
+                final Object unpacked = unpack.unpack(message);
+                listener.onMessage(unpacked);
+            } catch (IOException e) {
+                cancelByErr(RpcStatus.INTERNAL
+                    .withDescription("Deserialize response failed")
+                    .withCause(e));
+            }
         }
 
         @Override

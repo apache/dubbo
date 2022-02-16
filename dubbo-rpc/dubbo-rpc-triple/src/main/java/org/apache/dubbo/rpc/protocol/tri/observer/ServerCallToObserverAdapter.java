@@ -37,12 +37,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     }
 
     public boolean isAutoRequestN() {
-        return call.autoRequestN;
-    }
-
-    @Override
-    public void disableAutoRequestN() {
-        call.disableAutoRequestN();
+        return call.isAutoRequestN();
     }
 
     @Override
@@ -73,16 +68,21 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     }
 
     @Override
-    public void requestN(int n) {
-        call.requestN(n);
-    }
-
-    @Override
     public void setCompression(String compression) {
         call.setCompression(compression);
     }
 
     public void cancel(Throwable throwable) {
         cancellationContext.cancel(throwable);
+    }
+
+    @Override
+    public void disableAutoInboundFlowControl() {
+        call.disableAutoRequestN();
+    }
+
+    @Override
+    public void request(int count) {
+        call.requestN(count);
     }
 }

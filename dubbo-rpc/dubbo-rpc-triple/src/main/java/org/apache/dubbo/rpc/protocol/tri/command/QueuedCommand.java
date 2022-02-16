@@ -49,9 +49,9 @@ public abstract class QueuedCommand {
     public final void send(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (ctx.channel().isActive()) {
             doSend(ctx, promise);
-            if (flush) {
+//            if (flush) {
                 ctx.flush();
-            }
+//            }
         }
     }
 

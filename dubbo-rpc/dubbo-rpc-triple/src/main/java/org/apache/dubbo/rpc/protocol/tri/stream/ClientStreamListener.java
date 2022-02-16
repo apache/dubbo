@@ -24,6 +24,8 @@ import java.util.Map;
 
 public interface ClientStreamListener extends StreamListener {
 
+    void onStart();
+
     /**
      * Indicate the stream is closed . Will be called exactly once
      *

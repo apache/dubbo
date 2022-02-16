@@ -29,7 +29,6 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
 
     public UnaryServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
-        call.requestN(2);
     }
 
     @Override

@@ -23,12 +23,12 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -47,7 +47,7 @@ import java.util.Map;
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
-    public static RequestMetadata createRequest(URL url, MethodDescriptor methodDescriptor,Invocation invocation,
+    public static RequestMetadata createRequest(URL url, MethodDescriptor methodDescriptor, Invocation invocation,
                                                 long requestId, Compressor compressor, String acceptEncoding,
                                                 int timeout, GenericPack genericPack, GenericUnpack genericUnpack) {
         final String methodName = RpcUtils.getMethodName(invocation);

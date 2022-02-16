@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.observer;
+
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.Http2Headers;

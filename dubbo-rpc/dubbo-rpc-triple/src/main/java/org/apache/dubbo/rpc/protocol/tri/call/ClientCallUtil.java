@@ -85,12 +85,12 @@ public class ClientCallUtil {
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
             context.addListener(context1 -> call.cancel("Canceled by app", null));
         }
-        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
+        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver, new ClientCallToObserverAdapter<>(call));
         return call(call, metadata, listener);
     }
 
     public static void unaryCall(ClientCall call, RequestMetadata metadata) {
-        final UnaryCallListener listener = new UnaryCallListener(metadata.requestId);
+        final UnaryCallListener listener = new UnaryCallListener(metadata.requestId, call);
         final StreamObserver<Object> requestObserver = call(call, metadata, listener);
         Object argument;
         if (metadata.method.isNeedWrap()) {
@@ -104,7 +104,7 @@ public class ClientCallUtil {
     }
 
     public static StreamObserver<Object> call(ClientCall call, RequestMetadata metadata,
-                                              ClientCall.Listener responseListener) {
+                                              ClientCall.StartListener responseListener) {
 
         if (metadata.method.isNeedWrap()) {
             return wrapperCall(call, metadata, responseListener);
@@ -113,15 +113,15 @@ public class ClientCallUtil {
     }
 
     public static StreamObserver<Object> wrapperCall(ClientCall call, RequestMetadata metadata,
-                                                     ClientCall.Listener responseListener) {
+                                                     ClientCall.StartListener responseListener) {
         final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call),
             metadata.method.getCompatibleParamSignatures(), metadata.genericPack);
-        final ClientCall.Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, metadata.genericUnpack);
+        final ClientCall.StartListener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, metadata.genericUnpack);
         call.start(metadata, wrapResponseListener);
         return requestObserver;
     }
 
-    public static StreamObserver<Object> callDirectly(ClientCall call, RequestMetadata metadata, ClientCall.Listener responseListener) {
+    public static StreamObserver<Object> callDirectly(ClientCall call, RequestMetadata metadata, ClientCall.StartListener responseListener) {
         final ClientCallToObserverAdapter<Object> requestObserver = new ClientCallToObserverAdapter<>(call);
         call.start(metadata, responseListener);
         return requestObserver;

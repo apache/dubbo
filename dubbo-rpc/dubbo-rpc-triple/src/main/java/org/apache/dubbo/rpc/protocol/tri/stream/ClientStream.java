@@ -18,9 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
@@ -33,10 +31,14 @@ import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
@@ -46,6 +48,7 @@ import io.netty.util.concurrent.Future;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 
 /**
@@ -58,14 +61,19 @@ public class ClientStream extends AbstractStream implements Stream {
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
+    private final URL url;
+    private EventLoop eventLoop;
+    private Deframer deframer;
 
     // for test
     ClientStream(URL url,
                  long requestId,
+                 Executor executor,
                  WriteQueue writeQueue,
                  ClientStreamListener listener) {
 
-        super(url);
+        super(executor);
+        this.url = url;
         this.requestId = requestId;
         this.listener = listener;
         this.writeQueue = writeQueue;
@@ -73,9 +81,11 @@ public class ClientStream extends AbstractStream implements Stream {
 
     public ClientStream(URL url,
                         long requestId,
+                        Executor executor,
                         Channel parent,
                         ClientStreamListener listener) {
-        super(url);
+        super(executor);
+        this.url = url;
         this.requestId = requestId;
         this.listener = listener;
         this.writeQueue = createWriteQueue(parent);
@@ -88,6 +98,7 @@ public class ClientStream extends AbstractStream implements Stream {
             throw new IllegalStateException("Create remote stream failed. channel:" + parent);
         }
         final Http2StreamChannel channel = future.getNow();
+        eventLoop = channel.eventLoop();
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(this));
@@ -138,7 +149,7 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     public void requestN(int n) {
-        //TODO
+        deframer.request(n);
     }
 
     public void halfClose() {
@@ -146,10 +157,14 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(cmd);
     }
 
+    @Override
+    EventLoop getEventLoop() {
+        return eventLoop;
+    }
+
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
         private RpcStatus transportError;
         private DeCompressor decompressor;
-        private TriDecoder decoder;
         private boolean remoteClosed;
         private boolean headerReceived;
         private Http2Headers trailers;
@@ -227,8 +242,8 @@ public class ClientStream extends AbstractStream implements Stream {
                     finishProcess(statusFromTrailers(trailers), trailers);
                 }
             };
-            decoder = new TriDecoder(decompressor, listener);
-            decoder.request(Integer.MAX_VALUE);
+            deframer = new TriDecoder(decompressor, listener);
+            ClientStream.this.listener.onStart();
         }
 
         void onTrailersReceived(Http2Headers trailers) {
@@ -240,12 +255,12 @@ public class ClientStream extends AbstractStream implements Stream {
             } else {
                 this.trailers = trailers;
                 RpcStatus status = statusFromTrailers(trailers);
-                if (decoder == null) {
+                if (deframer == null) {
                     finishProcess(status, trailers);
                 }
-                if (decoder != null) {
-                    decoder.close();
-                    decoder = null;
+                if (deframer != null) {
+                    deframer.close();
+//                    deframer = null;
                 }
             }
         }
@@ -279,38 +294,46 @@ public class ClientStream extends AbstractStream implements Stream {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            if (endStream) {
-                if (!remoteClosed) {
-                    writeQueue.enqueue(CancelQueueCommand.createCommand());
+            executor.execute(() -> {
+                if (endStream) {
+                    if (!remoteClosed) {
+                        writeQueue.enqueue(CancelQueueCommand.createCommand());
+                    }
+                    onTrailersReceived(headers);
+                } else {
+                    onHeaderReceived(headers);
                 }
-                onTrailersReceived(headers);
-            } else {
-                onHeaderReceived(headers);
-            }
+            });
+
         }
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            if (transportError != null) {
-                transportError.appendDescription("Data:" + data.toString(StandardCharsets.UTF_8));
-                ReferenceCountUtil.release(data);
-                if (transportError.description.length() > 512 || endStream) {
-                    handleH2TransportError(transportError);
+            executor.execute(() -> {
+                if (transportError != null) {
+                    transportError.appendDescription("Data:" + data.toString(StandardCharsets.UTF_8));
+                    ReferenceCountUtil.release(data);
+                    if (transportError.description.length() > 512 || endStream) {
+                        handleH2TransportError(transportError);
+
+                    }
+                    return;
                 }
-                return;
-            }
-            if (!headerReceived) {
-                handleH2TransportError(RpcStatus.INTERNAL
-                    .withDescription("headers not received before payload"));
-                return;
-            }
-            decoder.deframe(data);
+                if (!headerReceived) {
+                    handleH2TransportError(RpcStatus.INTERNAL
+                        .withDescription("headers not received before payload"));
+                    return;
+                }
+                deframer.deframe(data);
+            });
         }
 
         @Override
         public void cancelByRemote(RpcStatus status) {
-            transportError = status;
-            finishProcess(status, null);
+            executor.execute(() -> {
+                transportError = status;
+                finishProcess(status, null);
+            });
         }
     }
 }

@@ -24,6 +24,11 @@ import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
     private final ClientCall call;
     private boolean terminated;
+    private boolean autoRequestEnabled = true;
+
+    public boolean isAutoRequestEnabled() {
+        return autoRequestEnabled;
+    }
 
     public ClientCallToObserverAdapter(ClientCall call) {
         this.call = call;
@@ -61,5 +66,15 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void setCompression(String compression) {
         call.setCompression(compression);
+    }
+
+    @Override
+    public void request(int count) {
+        call.requestN(count);
+    }
+
+    @Override
+    public void disableAutoRequest() {
+        autoRequestEnabled = false;
     }
 }

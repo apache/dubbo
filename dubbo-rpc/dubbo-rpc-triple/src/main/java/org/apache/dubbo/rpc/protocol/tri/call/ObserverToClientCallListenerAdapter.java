@@ -19,19 +19,25 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
 import java.util.Map;
 
-public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
+public class ObserverToClientCallListenerAdapter implements ClientCall.StartListener {
     private final StreamObserver<Object> delegate;
+    private final ClientCallToObserverAdapter<Object> adapter;
 
-    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
+    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate, ClientCallToObserverAdapter<Object> adapter) {
         this.delegate = delegate;
+        this.adapter = adapter;
     }
 
     @Override
     public void onMessage(Object message) {
         delegate.onNext(message);
+        if (adapter.isAutoRequestEnabled()) {
+            adapter.request(1);
+        }
     }
 
     @Override
@@ -41,5 +47,10 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
         } else {
             delegate.onError(status.asException());
         }
+    }
+
+    @Override
+    public void onStart() {
+        adapter.request(1);
     }
 }
