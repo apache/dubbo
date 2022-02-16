@@ -63,7 +63,7 @@ public class MockDirInvocation implements Invocation {
     }
 
     @Override
-    public String getInterfaceName() {
+    public String getServiceName() {
         return "DemoService";
     }
 
