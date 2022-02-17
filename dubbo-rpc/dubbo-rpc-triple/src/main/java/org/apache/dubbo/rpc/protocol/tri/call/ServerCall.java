@@ -62,7 +62,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class ServerCall {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
@@ -78,6 +77,7 @@ public class ServerCall {
     private final PathResolver pathResolver;
     public String serializerType;
     public boolean autoRequestN = true;
+    public Long timeout;
     private Invoker<?> invoker;
     private ServiceDescriptor serviceDescriptor;
     private PbUnpack<?> unpack;
@@ -200,7 +200,7 @@ public class ServerCall {
         return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
     }
 
-    protected Long parseTimeoutToNanos(String timeoutVal) {
+    protected Long parseTimeoutToMills(String timeoutVal) {
         if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
             return null;
         }
@@ -208,17 +208,17 @@ public class ServerCall {
         char unit = timeoutVal.charAt(timeoutVal.length() - 1);
         switch (unit) {
             case 'n':
-                return value;
+                return TimeUnit.NANOSECONDS.toMillis(value);
             case 'u':
-                return TimeUnit.MICROSECONDS.toNanos(value);
+                return TimeUnit.MICROSECONDS.toMillis(value);
             case 'm':
-                return TimeUnit.MILLISECONDS.toNanos(value);
+                return value;
             case 'S':
-                return TimeUnit.SECONDS.toNanos(value);
+                return TimeUnit.SECONDS.toMillis(value);
             case 'M':
-                return TimeUnit.MINUTES.toNanos(value);
+                return TimeUnit.MINUTES.toMillis(value);
             case 'H':
-                return TimeUnit.HOURS.toNanos(value);
+                return TimeUnit.HOURS.toMillis(value);
             default:
                 // invalid timeout config
                 return null;
@@ -437,11 +437,8 @@ public class ServerCall {
             // handle timeout
             String timeout = (String) headers.get(TripleHeaderEnum.TIMEOUT.getHeader());
             try {
-                if (!Objects.isNull(timeout)) {
-                    final Long timeoutInNanos = parseTimeoutToNanos(timeout);
-                    if (!Objects.isNull(timeoutInNanos)) {
-                        inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
-                    }
+                if (Objects.nonNull(timeout)) {
+                    ServerCall.this.timeout = parseTimeoutToMills(timeout);
                 }
             } catch (Throwable t) {
                 LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",

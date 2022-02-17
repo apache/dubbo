@@ -90,7 +90,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
-        this(invocation.getServiceModel(), invocation.getMethodName(), invocation.getInterfaceName(), invocation.getProtocolServiceKey(),
+        this(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
                 invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
                 invocation.getInvoker(), invocation.getAttributes());
         if (invoker != null) {
@@ -120,7 +120,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation) {
-        this(invocation.getServiceModel(), invocation.getMethodName(), invocation.getInterfaceName(), invocation.getProtocolServiceKey(), invocation.getParameterTypes(),
+        this(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(), invocation.getParameterTypes(),
                 invocation.getArguments(), invocation.getObjectAttachments(), invocation.getInvoker(), invocation.getAttributes());
         this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
     }
@@ -270,11 +270,11 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
-    public String getInterfaceName() {
+    public String getServiceName() {
         return interfaceName;
     }
 
-    public void setInterfaceName(String interfaceName) {
+    public void setServiceName(String interfaceName) {
         this.interfaceName = interfaceName;
     }
 

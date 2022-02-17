@@ -293,7 +293,7 @@ public class MeshRuleRouterTest {
 
         RpcInvocation rpcInvocation = new RpcInvocation();
 
-        rpcInvocation.setInterfaceName("ccc");
+        rpcInvocation.setServiceName("ccc");
         rpcInvocation.setAttachment("trafficLabel", "xxx");
         assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
         assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
@@ -309,7 +309,7 @@ public class MeshRuleRouterTest {
         assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
         assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
 
-        rpcInvocation.setInterfaceName("aaa");
+        rpcInvocation.setServiceName("aaa");
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
         message = new Holder<>();
         meshRuleRouter.doRoute(invokers.clone(), null, rpcInvocation, true, null, message);
@@ -320,7 +320,7 @@ public class MeshRuleRouterTest {
         rules.add(yaml.load(rule3));
         meshRuleRouter.onRuleChange("app1", rules);
 
-        rpcInvocation.setInterfaceName("ccc");
+        rpcInvocation.setServiceName("ccc");
         rpcInvocation.setAttachment("trafficLabel", "xxx");
         assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
         assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
@@ -333,7 +333,7 @@ public class MeshRuleRouterTest {
         assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
         assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
 
-        rpcInvocation.setInterfaceName("aaa");
+        rpcInvocation.setServiceName("aaa");
         assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
         assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
 

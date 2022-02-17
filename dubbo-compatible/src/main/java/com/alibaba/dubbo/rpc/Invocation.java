@@ -63,7 +63,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
 
     @Override
-    default String getInterfaceName() {
+    default String getServiceName() {
         return null;
     }
 
@@ -141,7 +141,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         }
 
         @Override
-        public String getInterfaceName() {
+        public String getServiceName() {
             return null;
         }
 

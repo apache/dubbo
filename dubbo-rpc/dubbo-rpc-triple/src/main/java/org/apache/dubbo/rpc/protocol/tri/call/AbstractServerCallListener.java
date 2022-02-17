@@ -32,7 +32,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.RpcStatus.getStatus;
 
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
@@ -55,15 +54,15 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
 
     public void invoke() {
         RpcContext.restoreCancellationContext(cancellationContext);
-        final long stInNano = System.nanoTime();
+        final long stInMillis = System.currentTimeMillis();
         final Result result = invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
-        future.whenComplete(onResponse(stInNano));
+        future.whenComplete(onResponse(stInMillis));
         RpcContext.removeCancellationContext();
         RpcContext.removeContext();
     }
 
-    private BiConsumer<Object, Throwable> onResponse(long stInNano) {
+    private BiConsumer<Object, Throwable> onResponse(long stInMillis) {
         return (o, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("Invoke error", throwable);
@@ -75,13 +74,12 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
                 call.close(getStatus(response.getException()), response.getObjectAttachments());
                 return;
             }
-            final Object timeoutVal = invocation.getObjectAttachment(TIMEOUT_KEY);
-            final long cost = System.nanoTime() - stInNano;
-            if (timeoutVal != null && cost > ((Long) timeoutVal)) {
+            final long cost = System.currentTimeMillis() - stInMillis;
+            if (call.timeout != null && cost > call.timeout) {
                 LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
                     invocation.getTargetServiceUniqueName(),
                     invocation.getMethodName(),
-                    cost, timeoutVal));
+                    cost, call.timeout));
                 call.close(RpcStatus.DEADLINE_EXCEEDED, null);
             } else {
                 onServerResponse(response);
