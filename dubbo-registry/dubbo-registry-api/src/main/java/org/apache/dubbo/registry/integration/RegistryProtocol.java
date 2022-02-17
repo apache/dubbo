@@ -240,8 +240,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         final Registry registry = getRegistry(registryUrl);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
-        // decide if we need to delay publish
-        boolean register = providerUrl.getParameter(REGISTER_KEY, true);
+        // decide if we need to delay publish (provider itself and registry should both need to register)
+        boolean register = providerUrl.getParameter(REGISTER_KEY, true) && registryUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             register(registry, registeredProviderUrl);
         }
