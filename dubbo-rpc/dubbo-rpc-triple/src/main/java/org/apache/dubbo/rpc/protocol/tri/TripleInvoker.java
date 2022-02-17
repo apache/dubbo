@@ -96,6 +96,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) {
         ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
+        invocation.setAttachment(TIMEOUT_KEY,timeout);
         DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, invocation, timeout, executor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
         FutureContext.getContext().setCompatibleFuture(respFuture);

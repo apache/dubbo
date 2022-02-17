@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.ConnectionManager;
@@ -37,7 +38,12 @@ import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import grpc.health.v1.HealthCheckResponse;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+
 public class TripleProtocol extends AbstractProtocol {
+    private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
@@ -91,6 +97,12 @@ public class TripleProtocol extends AbstractProtocol {
             .getExtensionLoader(MultipleSerialization.class)
             .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
 
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
+        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        url.getOrDefaultApplicationModel()
+                .getExtensionLoader(ExecutorRepository.class)
+                .getDefaultExtension()
+                .createExecutorIfAbsent(url);
         // TODO support config
 //        String compressorStr = ConfigurationUtils.getCachedDynamicProperty(frameworkModel, COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
 //        Compressor defaultCompressor = Compressor.getCompressor(frameworkModel, compressorStr);

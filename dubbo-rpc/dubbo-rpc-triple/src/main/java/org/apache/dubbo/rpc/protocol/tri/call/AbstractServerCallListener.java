@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -28,65 +27,45 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
-import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import static org.apache.dubbo.rpc.protocol.tri.RpcStatus.getStatus;
-
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
     public final CancellationContext cancellationContext;
     final RpcInvocation invocation;
-    final ServerCall call;
     final Invoker<?> invoker;
     final ServerCallToObserverAdapter<Object> responseObserver;
 
 
-    public AbstractServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker,
+    public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
                                       ServerCallToObserverAdapter<Object> responseObserver) {
-        this.call = call;
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
         this.responseObserver = responseObserver;
     }
 
-    public void invoke() {
+    public Object invoke() throws Throwable {
         RpcContext.restoreCancellationContext(cancellationContext);
         final long stInMillis = System.currentTimeMillis();
-        final Result result = invoker.invoke(invocation);
-        CompletionStage<Object> future = result.thenApply(Function.identity());
-        future.whenComplete(onResponse(stInMillis));
-        RpcContext.removeCancellationContext();
-        RpcContext.removeContext();
-    }
-
-    private BiConsumer<Object, Throwable> onResponse(long stInMillis) {
-        return (o, throwable) -> {
-            if (throwable != null) {
-                LOGGER.error("Invoke error", throwable);
-                call.close(getStatus(throwable), null);
-                return;
-            }
-            AppResponse response = (AppResponse) o;
+        try {
+            final Result response = invoker.invoke(invocation);
+            responseObserver.setResponseAttachments(response.getObjectAttachments());
             if (response.hasException()) {
-                call.close(getStatus(response.getException()), response.getObjectAttachments());
-                return;
+                throw response.getException();
             }
             final long cost = System.currentTimeMillis() - stInMillis;
-            if (call.timeout != null && cost > call.timeout) {
-                LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
-                    invocation.getTargetServiceUniqueName(),
-                    invocation.getMethodName(),
-                    cost, call.timeout));
-                call.close(RpcStatus.DEADLINE_EXCEEDED, null);
+            if (responseObserver.isTimeout(cost)) {
+                LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getMethodName(),
+                        cost));
+                responseObserver.onCompleted(RpcStatus.DEADLINE_EXCEEDED);
+                return null;
             } else {
-                onServerResponse(response);
+                return response.getValue();
             }
-        };
+        } finally {
+            RpcContext.removeCancellationContext();
+            RpcContext.removeContext();
+        }
     }
-
-    protected abstract void onServerResponse(AppResponse response);
-
 }
