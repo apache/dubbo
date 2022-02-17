@@ -162,7 +162,7 @@ public class ClientStream extends AbstractStream implements Stream {
         return eventLoop;
     }
 
-    H2TransportListener createTransportListener(){
+    H2TransportListener createTransportListener() {
         return new ClientTransportListener();
     }
 

@@ -50,7 +50,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
-        this.responseObserver=responseObserver;
+        this.responseObserver = responseObserver;
     }
 
     public void invoke() {

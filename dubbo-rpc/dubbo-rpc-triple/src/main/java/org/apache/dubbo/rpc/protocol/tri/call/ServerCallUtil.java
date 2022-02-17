@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.observer.WrapperResponseObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 
 public class ServerCallUtil {
@@ -35,8 +36,13 @@ public class ServerCallUtil {
                                                 Invoker<?> invoker) {
         ServerCall.Listener listener;
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(invoker.getUrl(),
-            call, cancellationContext, methodDescriptor.isNeedWrap(), invocation.getReturnType().getName(), genericUnpack.serialization);
+        ServerCallToObserverAdapter<Object> responseObserver;
+        if (methodDescriptor.isNeedWrap()) {
+            responseObserver = new WrapperResponseObserver<>(call, cancellationContext, invocation.getReturnType().getName(),
+                genericUnpack.serialization, invoker.getUrl());
+        } else {
+            responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
+        }
         if (methodDescriptor instanceof StreamMethodDescriptor) {
             if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
                 listener = new ServerStreamServerCallListener(call, invocation, invoker, responseObserver);
