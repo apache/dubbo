@@ -28,9 +28,9 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -116,7 +116,7 @@ public class StreamUtils {
      * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
      * Only raw byte array or string value will be put.
      *
-     * @param metadata    the metadata holder
+     * @param headers     the metadata holder
      * @param attachments KV pairs
      */
     public static void convertAttachment(DefaultHttp2Headers headers, Map<String, Object> attachments) {
@@ -139,9 +139,9 @@ public class StreamUtils {
     /**
      * Convert each user's attach value to metadata
      *
-     * @param metadata {@link Metadata}
-     * @param key      metadata key
-     * @param v        metadata value (Metadata Only string and byte arrays are allowed)
+     * @param headers outbound headers
+     * @param key     metadata key
+     * @param v       metadata value (Metadata Only string and byte arrays are allowed)
      */
     private static void convertSingleAttachment(DefaultHttp2Headers headers, String key, Object v) {
         try {

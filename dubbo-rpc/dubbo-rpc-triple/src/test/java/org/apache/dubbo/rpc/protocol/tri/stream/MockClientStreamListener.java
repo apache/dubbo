@@ -24,10 +24,11 @@ import java.util.Map;
 public class MockClientStreamListener implements ClientStreamListener {
     public RpcStatus status;
     public byte[] message;
+    public boolean started;
 
     @Override
     public void onStart() {
-
+        started = true;
     }
 
     @Override

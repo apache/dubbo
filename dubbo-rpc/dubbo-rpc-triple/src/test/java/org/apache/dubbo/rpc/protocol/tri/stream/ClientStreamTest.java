@@ -26,28 +26,39 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
+import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpScheme;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.util.concurrent.ImmediateEventExecutor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ClientStreamTest {
     @Test
-    public void create() {
+    public void progress() throws InterruptedException {
         final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
         final Connection connection = mock(Connection.class);
 
@@ -58,13 +69,12 @@ class ClientStreamTest {
 
         final RpcInvocation invocation = mock(RpcInvocation.class);
         int timeout = 1000;
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        DefaultFuture2 future = DefaultFuture2.newFuture(connection, invocation, timeout, executorService);
+        DefaultFuture2 future = DefaultFuture2.newFuture(connection, invocation, timeout, ImmediateEventExecutor.INSTANCE);
         MockClientStreamListener listener = new MockClientStreamListener();
         WriteQueue writeQueue = mock(WriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
-        ClientStream stream = new ClientStream(url, future.requestId, executorService, writeQueue, listener);
+        ClientStream stream = new ClientStream(url, future.requestId,ImmediateEventExecutor.INSTANCE, writeQueue, listener);
 
         final RequestMetadata requestMetadata = StreamUtils.createRequest(url, methodDescriptor,
             invocation, future.requestId, Identity.IDENTITY,
@@ -73,6 +83,30 @@ class ClientStreamTest {
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
-    }
+        stream.writeMessage(new byte[0],0);
+        verify(writeQueue).enqueue(any(DataQueueCommand.class));
+        verify(writeQueue,times(2)).enqueue(any(QueuedCommand.class));
+        stream.halfClose();
+        verify(writeQueue).enqueue(any(EndStreamQueueCommand.class));
+        verify(writeQueue,times(3)).enqueue(any(QueuedCommand.class));
 
+        stream.cancelByLocal(RpcStatus.CANCELLED);
+        verify(writeQueue).enqueue(any(CancelQueueCommand.class));
+        verify(writeQueue,times(4)).enqueue(any(QueuedCommand.class));
+
+        H2TransportListener transportListener = stream.createTransportListener();
+        DefaultHttp2Headers headers=new DefaultHttp2Headers();
+        headers.scheme(HttpScheme.HTTP.name())
+                .status(HttpResponseStatus.OK.codeAsText());
+        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), RpcStatus.OK.code.code+"");
+        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(),TripleHeaderEnum.CONTENT_PROTO.getHeader());
+        transportListener.onHeader(headers,false);
+        Assertions.assertTrue(listener.started);
+        stream.requestN(2);
+        byte[] data=new byte[]{0,0,0,0,1,1};
+        final ByteBuf buf = Unpooled.wrappedBuffer(data);
+        transportListener.onData(buf,false);
+        buf.release();
+        Assertions.assertEquals(1,listener.message.length);
+    }
 }

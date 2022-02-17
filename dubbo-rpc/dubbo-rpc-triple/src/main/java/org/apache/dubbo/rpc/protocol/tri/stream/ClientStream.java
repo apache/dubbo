@@ -101,7 +101,7 @@ public class ClientStream extends AbstractStream implements Stream {
         eventLoop = channel.eventLoop();
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
-            .addLast(new TripleHttp2ClientResponseHandler(new ClientTransportObserver()));
+            .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
         DefaultFuture2.addTimeoutListener(requestId, channel::close);
         return new WriteQueue(channel);
     }
@@ -162,7 +162,11 @@ public class ClientStream extends AbstractStream implements Stream {
         return eventLoop;
     }
 
-    class ClientTransportObserver extends AbstractH2TransportListener implements H2TransportListener {
+    H2TransportListener createTransportListener(){
+        return new ClientTransportListener();
+    }
+
+    class ClientTransportListener extends AbstractH2TransportListener implements H2TransportListener {
         private RpcStatus transportError;
         private DeCompressor decompressor;
         private boolean remoteClosed;

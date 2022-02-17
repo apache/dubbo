@@ -307,7 +307,7 @@
 //        // here we manually call to simulate the behavior of the [server -> client]
 //        H2TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
 //        DefaultHttp2Headers headers = getHttp2Headers(stream);
-//        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
+//        assertNotEquals       inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
 //        Object resp = "RESPONSE";
 //        byte[] bytes = getPackedData(stream, resp);
 //        inboundTransportObserver.onData(bytes, false);
