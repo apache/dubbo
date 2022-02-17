@@ -343,7 +343,7 @@ public class DubboProtocol extends AbstractProtocol {
 
     private void checkDestroyed() {
         if (destroyed.get()) {
-            throw new IllegalStateException( getClass().getSimpleName() + " is destroyed");
+            throw new IllegalStateException(getClass().getSimpleName() + " is destroyed");
         }
     }
 

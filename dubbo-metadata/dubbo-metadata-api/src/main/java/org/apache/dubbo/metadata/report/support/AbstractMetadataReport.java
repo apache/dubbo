@@ -167,8 +167,24 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     if (!file.exists()) {
                         file.createNewFile();
                     }
+
+                    Properties tmpProperties;
+                    if (!syncReport) {
+                        // When syncReport = false, properties.setProperty and properties.store are called from the same
+                        // thread(reportCacheExecutor), so deep copy is not required
+                        tmpProperties = properties;
+                    } else {
+                        // Using store method and setProperty method of the this.properties will cause lock contention
+                        // under multi-threading, so deep copy a new container
+                        tmpProperties = new Properties();
+                        Set<Map.Entry<Object, Object>> entries = properties.entrySet();
+                        for (Map.Entry<Object, Object> entry : entries) {
+                            tmpProperties.setProperty((String) entry.getKey(), (String) entry.getValue());
+                        }
+                    }
+
                     try (FileOutputStream outputFile = new FileOutputStream(file)) {
-                        properties.store(outputFile, "Dubbo metadataReport Cache");
+                        tmpProperties.store(outputFile, "Dubbo metadataReport Cache");
                     }
                 } finally {
                     lock.release();

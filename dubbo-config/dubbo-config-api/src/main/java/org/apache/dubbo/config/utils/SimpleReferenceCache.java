@@ -143,9 +143,9 @@ public class SimpleReferenceCache implements ReferenceCache {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String key) {
-        List<ReferenceConfigBase<?>> referenceConfigs = referenceKeyMap.get(key);
-        if (referenceConfigs != null && referenceConfigs.size() > 0) {
-            return (T) referenceConfigs.get(0).get();
+        List<ReferenceConfigBase<?>> referenceConfigBases = referenceKeyMap.get(key);
+        if (CollectionUtils.isNotEmpty(referenceConfigBases)) {
+            return (T) referenceConfigBases.get(0).get();
         }
         return null;
     }
@@ -168,7 +168,7 @@ public class SimpleReferenceCache implements ReferenceCache {
     @SuppressWarnings("unchecked")
     public <T> T get(Class<T> type) {
         List<ReferenceConfigBase<?>> referenceConfigBases = referenceTypeMap.get(type);
-        if (referenceConfigBases != null && referenceConfigBases.size() > 0) {
+        if (CollectionUtils.isNotEmptyMap(referenceKeyMap)) {
             return (T) referenceConfigBases.get(0).get();
         }
         return null;

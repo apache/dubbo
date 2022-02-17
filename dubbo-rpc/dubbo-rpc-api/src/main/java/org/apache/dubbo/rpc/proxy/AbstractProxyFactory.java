@@ -55,13 +55,13 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
     public <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException {
         // when compiling with native image, ensure that the order of the interfaces remains unchanged
         LinkedHashSet<Class<?>> interfaces = new LinkedHashSet<>();
+        ClassLoader classLoader = getClassLoader(invoker);
 
         String config = invoker.getUrl().getParameter(INTERFACES);
         if (StringUtils.isNotEmpty(config)) {
             String[] types = COMMA_SPLIT_PATTERN.split(config);
             for (String type : types) {
                 try {
-                    ClassLoader classLoader = getClassLoader(invoker);
                     interfaces.add(ReflectUtils.forName(classLoader, type));
                 } catch (Throwable e) {
                     // ignore
@@ -75,7 +75,6 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
             try {
                 // find the real interface from url
                 String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
-                ClassLoader classLoader = getClassLoader(invoker);
                 realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
                 interfaces.add(realInterfaceClass);
             } catch (Throwable e) {
