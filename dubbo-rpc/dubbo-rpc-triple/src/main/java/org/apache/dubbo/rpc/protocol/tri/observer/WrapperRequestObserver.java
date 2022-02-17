@@ -44,7 +44,12 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
 
     @Override
     public void onNext(Object data) {
-        Object[] arguments = (Object[]) data;
+        final Object[] arguments;
+        if (data instanceof Object[]) {
+            arguments = (Object[]) data;
+        } else {
+            arguments = new Object[]{data};
+        }
         final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
             .setSerializeType(genericPack.serializationName);
         for (String type : argumentsType) {

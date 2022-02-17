@@ -22,19 +22,20 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener implements ServerCall.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
-    public UnaryServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
-        super(call, invocation, invoker);
+    public UnaryServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker,
+                                   ServerCallToObserverAdapter<Object> responseObserver) {
+        super(call, invocation, invoker,responseObserver);
     }
 
     @Override
     protected void onServerResponse(AppResponse response) {
-        call.writeMessage(response.getValue());
-        call.close(RpcStatus.OK, response.getObjectAttachments());
+        responseObserver.onNext(response.getValue());
+        responseObserver.onCompleted(response.getObjectAttachments());
     }
 
     @Override

@@ -17,23 +17,46 @@
 
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
+import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.ByteString;
+
+import java.io.IOException;
+import java.util.Map;
 
 public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     private final ServerCall call;
-    private final CancellationContext cancellationContext;
+    public final CancellationContext cancellationContext;
+    private final boolean wrap;
+    private final MultipleSerialization multipleSerialization;
+    private final String returnType;
+    private final URL url;
     private boolean terminated;
 
-    public ServerCallToObserverAdapter(ServerCall call, CancellationContext cancellationContext) {
+    public
+    ServerCallToObserverAdapter(URL url,
+                                       ServerCall call,
+                                       CancellationContext cancellationContext,
+                                       boolean wrap,
+                                       String returnType,
+                                       MultipleSerialization multipleSerialization) {
         this.call = call;
+        this.url = url;
+        this.wrap = wrap;
+        this.returnType = returnType;
         this.cancellationContext = cancellationContext;
+        this.multipleSerialization = multipleSerialization;
     }
 
     public boolean isAutoRequestN() {
@@ -45,6 +68,21 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         if (terminated) {
             throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
         }
+        GenericPack pack = new GenericPack(multipleSerialization, call.serializerType, url);
+        if (wrap) {
+            try {
+                data = TripleWrapper.TripleResponseWrapper.newBuilder()
+                    .setSerializeType(call.serializerType)
+                    .setType(returnType)
+                    .setData(ByteString.copyFrom(pack.pack(data)))
+                    .build();
+            } catch (IOException e) {
+                throw RpcStatus.INTERNAL
+                    .withDescription("Serialize response failed")
+                    .withCause(e)
+                    .asException();
+            }
+        }
         call.writeMessage(data);
     }
 
@@ -55,6 +93,14 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         }
         final RpcStatus status = RpcStatus.getStatus(throwable);
         call.close(status, null);
+        terminated = true;
+    }
+
+    public void onCompleted(Map<String, Object> attachments) {
+        if (terminated) {
+            return;
+        }
+        call.close(RpcStatus.OK, attachments);
         terminated = true;
     }
 

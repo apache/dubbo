@@ -15,17 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class CompressorTest {
+public class GzipTest {
 
     private static final String TEST_STR;
 
@@ -42,21 +40,17 @@ class CompressorTest {
     @ValueSource(strings = {"gzip"})
     @ParameterizedTest
     void compression(String compressorName) {
-        System.out.println("current compressor is " + compressorName);
         Compressor compressor = ApplicationModel.defaultModel().getDefaultModule()
             .getExtensionLoader(Compressor.class)
             .getExtension(compressorName);
 
         byte[] compressedByteArr = compressor.compress(TEST_STR.getBytes());
-        System.out.println("compressed byte length：" + compressedByteArr.length);
 
         DeCompressor deCompressor = ApplicationModel.defaultModel().getDefaultModule()
             .getExtensionLoader(DeCompressor.class)
             .getExtension(compressorName);
 
         byte[] decompressedByteArr = deCompressor.decompress(compressedByteArr);
-        System.out.println("decompressed byte length：" + decompressedByteArr.length);
         Assertions.assertEquals(new String(decompressedByteArr), TEST_STR);
     }
-
 }

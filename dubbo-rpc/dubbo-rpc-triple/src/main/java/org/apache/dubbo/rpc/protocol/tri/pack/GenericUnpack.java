@@ -25,7 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class GenericUnpack {
-    private final MultipleSerialization serialization;
+    public final MultipleSerialization serialization;
     private final URL url;
 
     public GenericUnpack(MultipleSerialization serialization, URL url) {

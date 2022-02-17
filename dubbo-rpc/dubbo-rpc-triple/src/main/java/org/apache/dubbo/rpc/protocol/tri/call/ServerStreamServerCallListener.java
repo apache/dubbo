@@ -25,11 +25,9 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
-    private final ServerCallToObserverAdapter<Object> responseObserver;
-
-    public ServerStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
-        super(call, invocation, invoker);
-        this.responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
+    public ServerStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker,
+                                          ServerCallToObserverAdapter<Object> responseObserver) {
+        super(call, invocation, invoker, responseObserver);
     }
 
     @Override
@@ -38,6 +36,9 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onMessage(Object message) {
+        if (message instanceof Object[]) {
+            message = ((Object[]) message)[0];
+        }
         invocation.setArguments(new Object[]{message, responseObserver});
     }
 

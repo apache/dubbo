@@ -25,12 +25,10 @@ import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
-    private final ServerCallToObserverAdapter<Object> responseObserver;
     private StreamObserver<Object> requestObserver;
 
-    public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
-        super(call, invocation, invoker);
-        this.responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
+    public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker, ServerCallToObserverAdapter<Object> responseObserver) {
+        super(call, invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
         invoke();
     }
@@ -42,6 +40,9 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onMessage(Object message) {
+        if (message instanceof Object[]) {
+            message = ((Object[]) message)[0];
+        }
         requestObserver.onNext(message);
         if (responseObserver.isAutoRequestN()) {
             call.requestN(1);

@@ -76,6 +76,7 @@ public class ServerCall {
     private final String methodName;
     private final String serviceName;
     private final PathResolver pathResolver;
+    public String serializerType;
     public boolean autoRequestN = true;
     private Invoker<?> invoker;
     private ServiceDescriptor serviceDescriptor;
@@ -292,6 +293,22 @@ public class ServerCall {
                     methodDescriptor = methodDescriptors.get(0);
                 }
             }
+            trySetUnpack();
+            pack = PbPack.INSTANCE;
+            trySetListener();
+            if (listener == null) {
+                // wrap request , need one message
+                requestN(1);
+            }
+        }
+
+        private void trySetUnpack() {
+            if (methodDescriptor == null) {
+                return;
+            }
+            if (unpack != null) {
+                return;
+            }
             if (methodDescriptor.isNeedWrap()) {
                 unpack = PbUnpack.REQ_PB_UNPACK;
             } else {
@@ -300,12 +317,6 @@ public class ServerCall {
                 } else {
                     unpack = new PbUnpack<>(methodDescriptor.getParameterClasses()[0]);
                 }
-            }
-            pack = PbPack.INSTANCE;
-            trySetListener();
-            if (listener == null) {
-                // wrap request , need one message
-                requestN(1);
             }
         }
 
@@ -350,22 +361,9 @@ public class ServerCall {
             if (closed) {
                 return;
             }
-
-            if (methodDescriptor instanceof StreamMethodDescriptor) {
-                requestN(1);
-                if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
-                    listener = new ServerStreamServerCallListener(ServerCall.this, invocation, invoker);
-                } else {
-                    listener = new BiStreamServerCallListener(ServerCall.this, invocation, invoker);
-                }
-            } else {
-                requestN(2);
-                listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
-            }
-            if (methodDescriptor.isNeedWrap()) {
-                listener = new WrapRequestServerCallListener(listener, genericUnpack);
-            }
+            listener = ServerCallUtil.startCall(ServerCall.this, invocation, methodDescriptor, genericUnpack, invoker);
         }
+
         /**
          * Error in create stream, unsupported config or triple protocol error.
          *
@@ -386,7 +384,9 @@ public class ServerCall {
 
         @Override
         public void complete() {
-            listener.onComplete();
+            if (listener != null) {
+                listener.onComplete();
+            }
         }
 
         @Override
@@ -402,6 +402,7 @@ public class ServerCall {
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
                 trySetMethodDescriptor(message);
+                trySetUnpack();
                 trySetListener();
                 if (providerModel != null) {
                     ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
@@ -409,8 +410,10 @@ public class ServerCall {
                 final Object obj = unpack.unpack(message);
                 listener.onMessage(obj);
             } catch (Throwable t) {
-                close(RpcStatus.INTERNAL.withDescription("Server error")
-                    .withCause(t), null);
+                final RpcStatus status = RpcStatus.INTERNAL.withDescription("Server error")
+                    .withCause(t);
+                close(status, null);
+                LOGGER.error("Process request failed. service=" + serviceName + " method=" + methodName, t);
             } finally {
                 ClassLoadUtil.switchContextLoader(tccl);
             }

@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
@@ -40,12 +41,16 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     final RpcInvocation invocation;
     final ServerCall call;
     final Invoker<?> invoker;
+    final ServerCallToObserverAdapter<Object> responseObserver;
 
-    public AbstractServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
+
+    public AbstractServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker,
+                                      ServerCallToObserverAdapter<Object> responseObserver) {
         this.call = call;
         this.invocation = invocation;
         this.invoker = invoker;
-        this.cancellationContext = RpcContext.getCancellationContext();
+        this.cancellationContext = responseObserver.cancellationContext;
+        this.responseObserver=responseObserver;
     }
 
     public void invoke() {
@@ -67,7 +72,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
             }
             AppResponse response = (AppResponse) o;
             if (response.hasException()) {
-                call.close(getStatus(response.getException()), null);
+                call.close(getStatus(response.getException()), response.getObjectAttachments());
                 return;
             }
             final Object timeoutVal = invocation.getObjectAttachment(TIMEOUT_KEY);
