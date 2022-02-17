@@ -185,7 +185,6 @@ public class ClientCall {
 
         @Override
         public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
-            executor.execute(() -> {
                 done = true;
                 final RpcStatus detailStatus;
                 final RpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
@@ -201,7 +200,6 @@ public class ClientCall {
                         .withDescription("Close stream error")
                         .withCause(t));
                 }
-            });
         }
 
         void cancelByErr(RpcStatus status) {

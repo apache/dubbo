@@ -171,7 +171,6 @@ public class ServerStream extends AbstractStream {
     @Override
     public void requestN(int n) {
         decoder.request(n);
-        runOnEventLoop(() -> decoder.request(n));
     }
 
     /**
