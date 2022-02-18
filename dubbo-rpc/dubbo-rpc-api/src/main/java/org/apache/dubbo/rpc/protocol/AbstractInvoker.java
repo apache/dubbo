@@ -294,6 +294,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         ExecutorService sharedExecutor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
             .getExecutor(url);
+        if (sharedExecutor == null) {
+            throw new IllegalArgumentException("sharedExecutor == null");
+        }
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
             return new ThreadlessExecutor(sharedExecutor);
         } else {
