@@ -152,13 +152,13 @@ public class ServerCall {
                 data = pack.pack(message);
             } catch (IOException e) {
                 close(RpcStatus.INTERNAL
-                        .withDescription("Serialize response failed")
-                        .withCause(e), null);
+                    .withDescription("Serialize response failed")
+                    .withCause(e), null);
                 return;
             }
             if (data == null) {
                 close(RpcStatus.INTERNAL
-                        .withDescription("Missing response"), null);
+                    .withDescription("Missing response"), null);
                 return;
             }
             if (compressor != null) {
@@ -179,9 +179,9 @@ public class ServerCall {
 
     private Invoker<?> getInvoker(Map<String, Object> headers, String serviceName) {
         final String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
-                TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+            TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
         final String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
-                .toString() : null;
+            .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
         if (invoker == null) {
@@ -251,8 +251,8 @@ public class ServerCall {
                 doOnHeaders(headers);
             } catch (Throwable t) {
                 responseErr(RpcStatus.UNKNOWN
-                        .withDescription("Server exception")
-                        .withCause(t));
+                    .withDescription("Server exception")
+                    .withCause(t));
             }
         }
 
@@ -260,14 +260,14 @@ public class ServerCall {
             invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
                 responseErr(RpcStatus.UNIMPLEMENTED
-                        .withDescription("Service not found:" + serviceName));
+                    .withDescription("Service not found:" + serviceName));
                 return;
             }
             FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
             providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
             if (providerModel == null || providerModel.getServiceModel() == null) {
                 responseErr(RpcStatus.UNIMPLEMENTED
-                        .withDescription("Service not found:" + serviceName));
+                    .withDescription("Service not found:" + serviceName));
                 return;
             }
             serviceDescriptor = providerModel.getServiceModel();
@@ -287,7 +287,7 @@ public class ServerCall {
                 }
                 if (CollectionUtils.isEmpty(methodDescriptors)) {
                     responseErr(RpcStatus.UNIMPLEMENTED
-                            .withDescription("Method : " + methodName + " not found of service:" + serviceName));
+                        .withDescription("Method : " + methodName + " not found of service:" + serviceName));
                     return;
                 }
                 // In most cases there is only one method
@@ -340,8 +340,8 @@ public class ServerCall {
             }
             if (methodDescriptor == null) {
                 close(RpcStatus.UNIMPLEMENTED
-                        .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
-                                "not found of service:" + serviceDescriptor.getInterfaceName()), null);
+                    .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
+                        "not found of service:" + serviceDescriptor.getInterfaceName()), null);
             }
         }
 
@@ -372,7 +372,7 @@ public class ServerCall {
         /**
          * Error in create stream, unsupported config or triple protocol error.
          *
-         * @param status
+         * @param status response status
          */
         private void responseErr(RpcStatus status) {
             if (closed) {
@@ -380,11 +380,12 @@ public class ServerCall {
             }
             closed = true;
             Http2Headers trailers = new DefaultHttp2Headers()
-                    .status(OK.codeAsText())
-                    .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                    .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-                    .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
+                .status(OK.codeAsText())
+                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
             serverStream.sendHeaderWithEos(trailers);
+            LOGGER.error("Triple request error: service=" + serviceName + " method" + methodName, status.asException());
         }
 
         @Override
@@ -416,7 +417,7 @@ public class ServerCall {
                 listener.onMessage(obj);
             } catch (Throwable t) {
                 final RpcStatus status = RpcStatus.INTERNAL.withDescription("Server error")
-                        .withCause(t);
+                    .withCause(t);
                 close(status, null);
                 LOGGER.error("Process request failed. service=" + serviceName + " method=" + methodName, t);
             } finally {
@@ -433,8 +434,8 @@ public class ServerCall {
         protected RpcInvocation buildInvocation(Map<String, Object> headers) {
             final URL url = invoker.getUrl();
             RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-                    methodName, serviceDescriptor.getInterfaceName(),
-                    url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
+                methodName, serviceDescriptor.getInterfaceName(),
+                url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
             inv.setTargetServiceUniqueName(url.getServiceKey());
             inv.setReturnTypes(methodDescriptor.getReturnTypes());
 
@@ -447,7 +448,7 @@ public class ServerCall {
                 }
             } catch (Throwable t) {
                 LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                        timeout, serviceDescriptor.getInterfaceName(), methodName));
+                    timeout, serviceDescriptor.getInterfaceName(), methodName));
             }
             return inv;
         }

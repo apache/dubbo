@@ -54,6 +54,8 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
             responseObserver.onCompleted(RpcStatus.OK);
         } catch (Throwable e) {
             responseObserver.onCompleted(RpcStatus.getStatus(e));
+            LOGGER.error("Invoke service=" + invocation.getTargetServiceUniqueName() + " method= "
+                + invocation.getMethodName() + "failed. Internal error", e);
         }
     }
 

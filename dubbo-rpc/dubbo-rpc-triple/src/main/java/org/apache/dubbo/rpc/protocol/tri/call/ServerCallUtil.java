@@ -35,16 +35,44 @@ public class ServerCallUtil {
                                                 MethodDescriptor methodDescriptor,
                                                 GenericUnpack genericUnpack,
                                                 Invoker<?> invoker) {
-        ServerCall.Listener listener;
-        CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        ServerCallToObserverAdapter<Object> responseObserver;
         if (methodDescriptor.isNeedWrap()) {
-            responseObserver = new WrapperResponseObserver<>(call, cancellationContext, invocation.getReturnType().getName(),
-                    genericUnpack.serialization, invoker.getUrl());
+            return startWrapCall(call, invocation, methodDescriptor, genericUnpack, invoker);
         } else {
-            responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
+            return startDirectCall(call, invocation, methodDescriptor, invoker);
         }
+    }
+
+    public static ServerCall.Listener startDirectCall(ServerCall call,
+                                                      RpcInvocation invocation,
+                                                      MethodDescriptor methodDescriptor,
+                                                      Invoker<?> invoker
+    ) {
+        CancellationContext cancellationContext = RpcContext.getCancellationContext();
+        ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
+        return startCall(call, methodDescriptor, invocation, invoker, responseObserver);
+    }
+
+
+    public static ServerCall.Listener startWrapCall(ServerCall call,
+                                                    RpcInvocation invocation,
+                                                    MethodDescriptor methodDescriptor,
+                                                    GenericUnpack genericUnpack,
+                                                    Invoker<?> invoker) {
+        CancellationContext cancellationContext = RpcContext.getCancellationContext();
+        ServerCallToObserverAdapter<Object> responseObserver = new WrapperResponseObserver<>(call, cancellationContext, invocation.getReturnType().getName(),
+            genericUnpack.serialization, invoker.getUrl());
+        final ServerCall.Listener listener = startCall(call, methodDescriptor, invocation, invoker, responseObserver);
+        return new WrapRequestServerCallListener(call, listener, genericUnpack);
+    }
+
+    public static ServerCall.Listener startCall(ServerCall call,
+                                                MethodDescriptor methodDescriptor,
+                                                RpcInvocation invocation,
+                                                Invoker<?> invoker,
+                                                ServerCallToObserverAdapter<Object> responseObserver) {
         try {
+
+            ServerCall.Listener listener;
             if (methodDescriptor instanceof StreamMethodDescriptor) {
                 if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
                     listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
@@ -56,13 +84,13 @@ public class ServerCallUtil {
                 listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
                 call.requestN(2);
             }
-            if (methodDescriptor.isNeedWrap()) {
-                listener = new WrapRequestServerCallListener(call, listener, genericUnpack);
-            }
             return listener;
-        }catch (Throwable t){
-            responseObserver.onCompleted(RpcStatus.getStatus(t));
+        } catch (Throwable t) {
+            responseObserver.onError(RpcStatus.INTERNAL.withDescription("Create stream failed")
+                .withCause(t)
+                .asException());
         }
         return null;
     }
 }
+

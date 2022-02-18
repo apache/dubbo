@@ -34,7 +34,6 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     final Invoker<?> invoker;
     final ServerCallToObserverAdapter<Object> responseObserver;
 
-
     public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
                                       ServerCallToObserverAdapter<Object> responseObserver) {
         this.invocation = invocation;
@@ -50,7 +49,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
             final Result response = invoker.invoke(invocation);
             responseObserver.setResponseAttachments(response.getObjectAttachments());
             if (response.hasException()) {
-                throw response.getException();
+                    throw response.getException();
             }
             final long cost = System.currentTimeMillis() - stInMillis;
             if (responseObserver.isTimeout(cost)) {
