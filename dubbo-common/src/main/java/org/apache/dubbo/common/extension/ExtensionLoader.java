@@ -944,7 +944,7 @@ public class ExtensionLoader<T> {
             strategy.overridden(), strategy.includedPackages(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
         String oldType = type.replace("org.apache", "com.alibaba");
         loadDirectory(extensionClasses, strategy.directory(), oldType, strategy.preferExtensionClassLoader(),
-            strategy.overridden(), strategy.includedPackagesInAlibaba(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
+            strategy.overridden(), strategy.includedPackagesInCompatibleType(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
     }
 
     /**

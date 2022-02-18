@@ -31,11 +31,11 @@ public interface LoadingStrategy extends Prioritized {
     }
 
     /**
-     * To restrict some class that should not be loaded from apache package type SPI class.
+     * To restrict some class that should not be loaded from `org.apache.dubbo` package type SPI class.
      * For example, we can restrict the implementation class which package is `org.xxx.xxx`
      * can be loaded as SPI implementation.
      *
-     * @return packages can be loaded in apache's SPI
+     * @return packages can be loaded in `org.apache.dubbo`'s SPI
      */
     default String[] includedPackages() {
         // default match all
@@ -43,14 +43,14 @@ public interface LoadingStrategy extends Prioritized {
     }
 
     /**
-     * To restrict some class that should not be loaded from alibaba(for compatible purpose)
+     * To restrict some class that should not be loaded from `org.alibaba.dubbo`(for compatible purpose)
      * package type SPI class.
      * For example, we can restrict the implementation class which package is `org.xxx.xxx`
      * can be loaded as SPI implementation
      *
-     * @return packages can be loaded in alibaba's SPI
+     * @return packages can be loaded in `org.alibaba.dubbo`'s SPI
      */
-    default String[] includedPackagesInAlibaba() {
+    default String[] includedPackagesInCompatibleType() {
         // default match all
         return null;
     }
