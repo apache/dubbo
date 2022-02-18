@@ -30,8 +30,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
@@ -580,7 +578,7 @@ public class RpcServiceContext extends RpcContext {
         if (consumerUrl == null) {
             return null;
         }
-        return consumerUrl.getParameter(PROTOCOL_KEY, DUBBO);
+        return consumerUrl.getProtocol();
     }
 
     @Override
@@ -607,11 +605,6 @@ public class RpcServiceContext extends RpcContext {
     @Override
     public void setConsumerUrl(URL consumerUrl) {
         this.consumerUrl = consumerUrl;
-    }
-
-    public static void setRpcContext(URL url) {
-        RpcServiceContext rpcContext = RpcContext.getServiceContext();
-        rpcContext.setConsumerUrl(url);
     }
 
     public boolean isNeedPrintRouterSnapshot() {

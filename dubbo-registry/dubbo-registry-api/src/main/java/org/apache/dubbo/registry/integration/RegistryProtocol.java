@@ -71,7 +71,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
@@ -99,6 +99,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
@@ -488,13 +489,16 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url, Map<String, String> parameters) {
         Map<String, Object> consumerAttribute = new HashMap<>(url.getAttributes());
         consumerAttribute.remove(REFER_KEY);
-        URL consumerUrl = new ServiceConfigURL(parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY),
+        String p = isEmpty(parameters.get(PROTOCOL_KEY)) ? CONSUMER : parameters.get(PROTOCOL_KEY);
+        URL consumerUrl = new ServiceConfigURL (
+            p,
             null,
             null,
             parameters.get(REGISTER_IP_KEY),
             0, getPath(parameters, type),
             parameters,
-            consumerAttribute);
+            consumerAttribute
+        );
         url = url.putAttribute(CONSUMER_URL_KEY, consumerUrl);
         ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
         return interceptInvoker(migrationInvoker, url, consumerUrl);
@@ -549,8 +553,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<>(directory.getConsumerUrl().getParameters());
         URL urlToRegistry = new ServiceConfigURL(
-            parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY),
-            parameters.remove(REGISTER_IP_KEY), 0, getPath(parameters, type), parameters);
+            parameters.get(PROTOCOL_KEY) == null ? CONSUMER : parameters.get(PROTOCOL_KEY),
+            parameters.remove(REGISTER_IP_KEY),
+            0,
+            getPath(parameters, type),
+            parameters
+        );
         urlToRegistry = urlToRegistry.setScopeModel(directory.getConsumerUrl().getScopeModel());
         urlToRegistry = urlToRegistry.setServiceModel(directory.getConsumerUrl().getServiceModel());
         if (directory.isShouldRegister()) {

@@ -460,7 +460,7 @@ public class ServiceInstancesChangedListenerTest {
 
     @Test
     public void testGetProtocolServiceKeyList() {
-        String protocolServiceKey1 = "group/Service:1.0:*";
+        String protocolServiceKey1 = "group/Service:1.0";
         String protocolServiceKey2 = "group/Service:1.0:consumer";
 
         NotifyListener listener = Mockito.mock(NotifyListener.class);
@@ -476,7 +476,7 @@ public class ServiceInstancesChangedListenerTest {
 
         when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service"));
         Set<String> keyList12 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey1, listener);
-        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo")), keyList12);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo", "group/Service:1.0:rest")), keyList12);
 
         when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=dubbo"));
         Set<String> keyList21 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
@@ -484,7 +484,7 @@ public class ServiceInstancesChangedListenerTest {
 
         when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service"));
         Set<String> keyList22 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
-        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo")), keyList22);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo", "group/Service:1.0:rest")), keyList22);
 
         when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=dubbo,tri"));
         Set<String> keyList23 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);

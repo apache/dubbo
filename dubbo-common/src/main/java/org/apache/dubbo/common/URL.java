@@ -61,6 +61,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -1398,7 +1400,14 @@ class URL implements Serializable {
         if (protocolServiceKey != null) {
             return protocolServiceKey;
         }
-        this.protocolServiceKey = getServiceKey() + ":" + getProtocol();
+        this.protocolServiceKey = getServiceKey();
+        /*
+        Special treatment if this is a consumer subscription url instance with no protocol specified - starts with 'consumer://'
+        If the specific protocol is specified on the consumer side, then this method will return as normal.
+        */
+        if (!CONSUMER.equals(getProtocol())) {
+            this.protocolServiceKey += (GROUP_CHAR_SEPARATOR + getProtocol());
+        }
         return protocolServiceKey;
     }
 

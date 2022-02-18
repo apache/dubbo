@@ -605,9 +605,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
                 if (logger.isInfoEnabled()) {
                     if (url.getParameter(REGISTER_KEY, true)) {
-                        logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url.getServiceKey() + " to registry " + registryURL.getAddress());
+                        logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL.getAddress());
                     } else {
-                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url.getServiceKey());
+                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
                     }
                 }
 

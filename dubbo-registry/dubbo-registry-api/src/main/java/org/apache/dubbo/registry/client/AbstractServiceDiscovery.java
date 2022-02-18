@@ -53,7 +53,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
     protected String metadataType;
-    protected MetaCacheManager metaCacheManager;
+    protected final MetaCacheManager metaCacheManager;
     protected URL registryURL;
 
     protected Set<ServiceInstancesChangedListener> instanceListeners = new ConcurrentHashSet<>();
@@ -145,6 +145,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         MetadataInfo metadata = metaCacheManager.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            metadata.init();
             // metadata loaded from cache
             if (logger.isDebugEnabled()) {
                 logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
@@ -153,34 +154,36 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return metadata;
         }
 
-        // try to load metadata from remote.
-        int triedTimes = 0;
-        while (triedTimes < 3) {
-            metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
+        synchronized (metaCacheManager) {
+            // try to load metadata from remote.
+            int triedTimes = 0;
+            while (triedTimes < 3) {
+                metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
 
-            if (metadata != MetadataInfo.EMPTY) {// succeeded
-                metadata.init();
-                break;
-            } else {// failed
-                if (triedTimes > 0) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
-                            + "&cluster=" + instance.getRegistryCluster());
+                if (metadata != MetadataInfo.EMPTY) {// succeeded
+                    metadata.init();
+                    break;
+                } else {// failed
+                    if (triedTimes > 0) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
+                                + "&cluster=" + instance.getRegistryCluster());
+                        }
+                    }
+                    triedTimes++;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
                     }
                 }
-                triedTimes++;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
             }
-        }
 
-        if (metadata == MetadataInfo.EMPTY) {
-            logger.error("Failed to get metadata for instance after 3 retries, " + instance.getAddress() + "?revision=" + revision
-                + "&cluster=" + instance.getRegistryCluster());
-        } else {
-            metaCacheManager.put(revision, metadata);
+            if (metadata == MetadataInfo.EMPTY) {
+                logger.error("Failed to get metadata for instance after 3 retries, " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster());
+            } else {
+                metaCacheManager.put(revision, metadata);
+            }
         }
         return metadata;
     }

@@ -54,6 +54,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptySet;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -87,9 +88,8 @@ public class ServiceInstancesChangedListener {
     private volatile boolean hasEmptyMetadata;
 
     // protocols subscribe by default, specify the protocol that should be subscribed through 'consumer.protocol'.
-    private static final String[] SUPPORTED_PROTOCOLS = new String[]{"dubbo", "tri"};
+    private static final String[] SUPPORTED_PROTOCOLS = new String[]{"dubbo", "tri", "rest"};
     public static final String CONSUMER_PROTOCOL_SUFFIX = ":consumer";
-    public static final String WILDCARD_PROTOCOL_SUFFIX = ":*";
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -358,19 +358,18 @@ public class ServiceInstancesChangedListener {
     }
 
     protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol) {
-        List<URL> urls;
-        urls = new ArrayList<>();
+        List<URL> urls = new ArrayList<>();
         for (String r : revisions) {
             for (ServiceInstance i : revisionToInstances.get(r)) {
                 // different protocols may have ports specified in meta
                 if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
                     if (endpoint != null && endpoint.getPort() != i.getPort()) {
-                        urls.add(((DefaultServiceInstance) i).copyFrom(endpoint).toURL());
+                        urls.add(((DefaultServiceInstance) i).copyFrom(endpoint).toURL(endpoint.getProtocol()));
                         continue;
                     }
                 }
-                urls.add(i.toURL().setScopeModel(i.getApplicationModel()));
+                urls.add(i.toURL(protocol).setScopeModel(i.getApplicationModel()));
             }
         }
         return urls;
@@ -400,13 +399,14 @@ public class ServiceInstancesChangedListener {
                     for (NotifyListenerWithKey listenerWithKey : listenerSet) {
                         String protocolServiceKey = listenerWithKey.getProtocolServiceKey();
                         notifyListener = listenerWithKey.getNotifyListener();
-                        List<URL> tmpUrls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
+                        List<URL> tmpUrls = getAddresses(protocolServiceKey, notifyListener.getConsumerUrl());
                         if (CollectionUtils.isNotEmpty(tmpUrls)) {
                             urls.addAll(tmpUrls);
                         }
                     }
                     if (notifyListener != null) {
                         logger.info("Notify service " + serviceKey + " with urls " + urls.size());
+                        urls = toUrlsWithEmpty(urls);
                         notifyListener.notify(urls);
                     }
                 }
@@ -472,9 +472,8 @@ public class ServiceInstancesChangedListener {
      * Calculate the protocol list that the consumer cares about.
      *
      * @param serviceKey possible input serviceKey includes
-     *                   1. {group}/{interface}:{version}:*
-     *                   2. {group}/{interface}:{version}:consumer
-     *                   3. {group}/{interface}:{version}:{user specified protocols}
+     *                   1. {group}/{interface}:{version}:consumer
+     *                   2. {group}/{interface}:{version}:{user specified protocols}
      * @param listener   listener also contains the user specified protocols
      * @return protocol list with the format {group}/{interface}:{version}:{protocol}
      */
@@ -485,21 +484,11 @@ public class ServiceInstancesChangedListener {
 
         Set<String> result = new HashSet<>();
         String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY);
-        if (serviceKey.endsWith(WILDCARD_PROTOCOL_SUFFIX)) {
-            serviceKey = serviceKey.substring(0, serviceKey.indexOf(WILDCARD_PROTOCOL_SUFFIX));
-        } else if (serviceKey.endsWith(CONSUMER_PROTOCOL_SUFFIX)) {
+        if (serviceKey.endsWith(CONSUMER_PROTOCOL_SUFFIX)) {
             serviceKey = serviceKey.substring(0, serviceKey.indexOf(CONSUMER_PROTOCOL_SUFFIX));
-        } else {
-            String p = serviceKey.substring(serviceKey.lastIndexOf(GROUP_CHAR_SEPARATOR) + GROUP_CHAR_SEPARATOR.length());
-            if (!p.contains(",")) {
-                result.add(serviceKey);
-                return result;
-            } else {
-                protocol = p;
-            }
         }
 
-        if (StringUtils.isNotEmpty(protocol)) {
+        if (StringUtils.isNotEmpty(protocol) && !StringUtils.isEquals(protocol, CONSUMER)) {
             String[] specifiedProtocols = protocol.split(",");
             for (String specifiedProtocol : specifiedProtocols) {
                 result.add(serviceKey + GROUP_CHAR_SEPARATOR + specifiedProtocol);

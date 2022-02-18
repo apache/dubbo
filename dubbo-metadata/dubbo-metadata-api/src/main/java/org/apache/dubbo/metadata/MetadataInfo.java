@@ -30,9 +30,11 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -66,11 +68,13 @@ public class MetadataInfo implements Serializable {
     private volatile String revision;
     // Json formatted metadata that will report to remote meta center, must always update together with revision, check {@link this#calAndGetRevision}
     private volatile String rawMetadataInfo;
+    // key format is '{group}/{interface name}:{version}:{protocol}'
     private final Map<String, ServiceInfo> services;
 
-    private AtomicBoolean initiated = new AtomicBoolean(false);
-
-    // used at runtime
+    /* used at runtime */
+    private transient AtomicBoolean initiated = new AtomicBoolean(false);
+    // key format is '{group}/{interface name}:{version}'
+    private transient Map<String, Set<ServiceInfo>> subscribedServices;
     private transient final Map<String, String> extendParams;
     private transient final Map<String, String> instanceParams;
     protected transient volatile boolean updated = false;
@@ -121,6 +125,12 @@ public class MetadataInfo implements Serializable {
         if (CollectionUtils.isNotEmptyMap(services)) {
             services.forEach((_k, serviceInfo) -> {
                 serviceInfo.init();
+                // create duplicate serviceKey(without protocol)->serviceInfo mapping to support metadata search when protocol is not specified on consumer side.
+                if (subscribedServices == null) {
+                    subscribedServices = new HashMap<>();
+                }
+                Set<ServiceInfo> serviceInfos = subscribedServices.computeIfAbsent(serviceInfo.getServiceKey(), _key -> new HashSet<>());
+                serviceInfos.add(serviceInfo);
             });
         }
     }
@@ -161,7 +171,7 @@ public class MetadataInfo implements Serializable {
     }
 
     /**
-     * Calculation of this instance's status and modification the instance must be synchronized among different threads.
+     * Calculation of this instance's status and modification of the instance must be synchronized among different threads.
      * <p>
      * Usage of this method is strictly restricted at certain point of registration, always try using {@link this#getRevision()}
      * instead of this method.
@@ -213,8 +223,42 @@ public class MetadataInfo implements Serializable {
         return services;
     }
 
+    /**
+     * Get service info of an interface with specified group, version and protocol
+     * @param protocolServiceKey key is of format '{group}/{interface name}:{version}:{protocol}'
+     * @return the specific service info related to protocolServiceKey
+     */
     public ServiceInfo getServiceInfo(String protocolServiceKey) {
         return services.get(protocolServiceKey);
+    }
+
+    /**
+     * Get service infos of an interface with specified group, version.
+     * There may have several service infos of different protocols, this method will simply pick the first one.
+     *
+     * @param serviceKeyWithoutProtocol key is of format '{group}/{interface name}:{version}'
+     * @return the first service info related to serviceKey
+     */
+    public ServiceInfo getNoProtocolServiceInfo(String serviceKeyWithoutProtocol) {
+        if (CollectionUtils.isEmptyMap(subscribedServices)) {
+            return null;
+        }
+        Set<ServiceInfo> subServices = subscribedServices.get(serviceKeyWithoutProtocol);
+        if (CollectionUtils.isNotEmpty(subServices)) {
+           return subServices.iterator().next();
+        }
+        return null;
+    }
+
+    public ServiceInfo getValidServiceInfo(String serviceKey) {
+        ServiceInfo serviceInfo = getServiceInfo(serviceKey);
+        if (serviceInfo == null) {
+            serviceInfo = getNoProtocolServiceInfo(serviceKey);
+            if (serviceInfo == null) {
+                return null;
+            }
+        }
+        return serviceInfo;
     }
 
     public Map<String, String> getExtendParams() {
@@ -226,15 +270,13 @@ public class MetadataInfo implements Serializable {
     }
 
     public String getParameter(String key, String serviceKey) {
-        ServiceInfo serviceInfo = services.get(serviceKey);
-        if (serviceInfo == null) {
-            return null;
-        }
+        ServiceInfo serviceInfo = getValidServiceInfo(serviceKey);
+        if (serviceInfo == null) return null;
         return serviceInfo.getParameter(key);
     }
 
     public Map<String, String> getParameters(String serviceKey) {
-        ServiceInfo serviceInfo = services.get(serviceKey);
+        ServiceInfo serviceInfo = getValidServiceInfo(serviceKey);
         if (serviceInfo == null) {
             return Collections.emptyMap();
         }
@@ -246,7 +288,7 @@ public class MetadataInfo implements Serializable {
             return null;
         }
 
-        ServiceInfo serviceInfo = services.get(protocolServiceKey);
+        ServiceInfo serviceInfo = getValidServiceInfo(protocolServiceKey);
         if (serviceInfo == null) {
             return null;
         }
@@ -462,7 +504,7 @@ public class MetadataInfo implements Serializable {
             buildServiceKey(name, group, version);
             // init method params
             this.methodParams = URLParam.initMethodParameters(params);
-            // Actually, consumer params is empty after deserialization on the consumer side, so no need to initialize.
+            // Actually, consumer params is empty after deserialized on the consumer side, so no need to initialize.
             // Check how InstanceAddressURL operates on consumer url for more detail.
 //            this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             // no need to init numbers for it's only for cache purpose
@@ -672,7 +714,6 @@ public class MetadataInfo implements Serializable {
         @Override
         public int hashCode() {
             return Objects.hash(getVersion(), getGroup(), getName(), getProtocol(), getParams());
-
         }
 
         @Override

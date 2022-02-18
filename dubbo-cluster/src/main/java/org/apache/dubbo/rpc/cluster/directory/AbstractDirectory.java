@@ -51,9 +51,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_TRY_COUNT;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -61,6 +61,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_PERIOD;
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_TRY_COUNT;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -152,9 +153,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
 
         if (consumerUrl == null) {
-            String host = StringUtils.isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
-            String path = StringUtils.isNotEmpty(queryMap.get(PATH_KEY)) ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY);
-            String consumedProtocol = StringUtils.isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? queryMap.get(PROTOCOL_KEY) : DUBBO;
+            String host = isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
+            String path = isNotEmpty(queryMap.get(PATH_KEY)) ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY);
+            String consumedProtocol = isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? CONSUMER : queryMap.get(PROTOCOL_KEY);
 
             URL consumerUrlFrom = this.url
                 .setHost(host)

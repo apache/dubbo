@@ -114,7 +114,7 @@ public class InstanceAddressURLTest {
         // test reading of keys in instance and metadata work fine
         assertEquals("value1", instanceURL.getParameter("key1"));//return instance key
         assertNull(instanceURL.getParameter("delay"));// no service key specified
-        RpcServiceContext.setRpcContext(consumerURL);
+        RpcServiceContext.getServiceContext().setConsumerUrl(consumerURL);
         assertEquals("1000", instanceURL.getParameter("delay"));
         assertEquals("1000", instanceURL.getServiceParameter(consumerURL.getProtocolServiceKey(), "delay"));
         assertEquals("9000", instanceURL.getMethodParameter("sayHello", "timeout"));
