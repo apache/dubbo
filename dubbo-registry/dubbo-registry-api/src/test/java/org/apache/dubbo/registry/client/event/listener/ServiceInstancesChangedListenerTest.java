@@ -422,8 +422,8 @@ public class ServiceInstancesChangedListenerTest {
         listener.onEvent(event2);
 
         // event2 did not really take effect
-        Assertions.assertEquals(3, listener.getAddresses(service1 + ":dubbo", consumerURL).size());
-        assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
+        Assertions.assertEquals(5, listener.getAddresses(service1 + ":dubbo", consumerURL).size());
+        assertTrue(isNotEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
 
         //
         init();

@@ -28,9 +28,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * TODO, Using randomly accessible file-based cache can be another choice if memory consumption turns to be an issue.
+ */
 public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
     private static final String DEFAULT_FILE_NAME = ".mapping";
-    private static final int DEFAULT_ENTRY_SIZE = 100000;
+    private static final int DEFAULT_ENTRY_SIZE = 1000;
     private static final Type founderSetType = new TypeToken<TreeSet<String>>() {
     }.getType();
 
