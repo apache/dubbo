@@ -941,7 +941,7 @@ public class ExtensionLoader<T> {
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy, String type) {
         loadDirectory(extensionClasses, strategy.directory(), type, strategy.preferExtensionClassLoader(),
-            strategy.overridden(), strategy.includedPackagesInApache(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
+            strategy.overridden(), strategy.includedPackages(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
         String oldType = type.replace("org.apache", "com.alibaba");
         loadDirectory(extensionClasses, strategy.directory(), oldType, strategy.preferExtensionClassLoader(),
             strategy.overridden(), strategy.includedPackagesInAlibaba(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
@@ -970,11 +970,11 @@ public class ExtensionLoader<T> {
     }
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
-        loadDirectory(extensionClasses, dir, type, false, false, new Pattern[]{}, new String[]{}, new String[]{});
+        loadDirectory(extensionClasses, dir, type, false, false, new String[]{}, new String[]{}, new String[]{});
     }
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type,
-                               boolean extensionLoaderClassLoaderFirst, boolean overridden, Pattern[] includedPackages,
+                               boolean extensionLoaderClassLoaderFirst, boolean overridden, String[] includedPackages,
                                String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         String fileName = dir + type;
         try {
@@ -1013,7 +1013,7 @@ public class ExtensionLoader<T> {
     }
 
     private void loadFromClass(Map<String, Class<?>> extensionClasses, boolean overridden, Set<java.net.URL> urls, ClassLoader classLoader,
-                               Pattern[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
+                               String[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         if (CollectionUtils.isNotEmpty(urls)) {
             for (java.net.URL url : urls) {
                 loadResource(extensionClasses, classLoader, url, overridden, includedPackages, excludedPackages, onlyExtensionClassLoaderPackages);
@@ -1022,7 +1022,7 @@ public class ExtensionLoader<T> {
     }
 
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader,
-                              java.net.URL resourceURL, boolean overridden, Pattern[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
+                              java.net.URL resourceURL, boolean overridden, String[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
                 String line;
@@ -1061,10 +1061,10 @@ public class ExtensionLoader<T> {
         }
     }
 
-    private boolean isIncluded(String className, Pattern... includedPackages) {
+    private boolean isIncluded(String className, String... includedPackages) {
         if (includedPackages != null && includedPackages.length > 0) {
-            for (Pattern includedPackage : includedPackages) {
-                if (includedPackage.matcher(className).matches()) {
+            for (String includedPackage : includedPackages) {
+                if (className.startsWith(includedPackage + ".")) {
                     // one match, return true
                     return true;
                 }

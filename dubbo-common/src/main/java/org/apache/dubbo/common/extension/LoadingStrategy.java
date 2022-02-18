@@ -18,8 +18,6 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.lang.Prioritized;
 
-import java.util.regex.Pattern;
-
 public interface LoadingStrategy extends Prioritized {
 
     String directory();
@@ -39,7 +37,7 @@ public interface LoadingStrategy extends Prioritized {
      *
      * @return packages can be loaded in apache's SPI
      */
-    default Pattern[] includedPackagesInApache() {
+    default String[] includedPackages() {
         // default match all
         return null;
     }
@@ -52,7 +50,7 @@ public interface LoadingStrategy extends Prioritized {
      *
      * @return packages can be loaded in alibaba's SPI
      */
-    default Pattern[] includedPackagesInAlibaba() {
+    default String[] includedPackagesInAlibaba() {
         // default match all
         return null;
     }
