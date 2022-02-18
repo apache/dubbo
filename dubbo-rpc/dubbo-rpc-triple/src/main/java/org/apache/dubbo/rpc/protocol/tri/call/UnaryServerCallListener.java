@@ -19,23 +19,17 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener implements ServerCall.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
-    public UnaryServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker,
+    public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
                                    ServerCallToObserverAdapter<Object> responseObserver) {
-        super(call, invocation, invoker, responseObserver);
-    }
-
-    @Override
-    protected void onServerResponse(AppResponse response) {
-        responseObserver.onNext(response.getValue());
-        responseObserver.onCompleted(response.getObjectAttachments());
+        super(invocation, invoker, responseObserver);
     }
 
     @Override
@@ -55,7 +49,12 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
 
     @Override
     public void onComplete() {
-        invoke();
+        try {
+            responseObserver.onNext(invoke());
+            responseObserver.onCompleted(RpcStatus.OK);
+        } catch (Throwable e) {
+            responseObserver.onCompleted(RpcStatus.getStatus(e));
+        }
     }
 
 }

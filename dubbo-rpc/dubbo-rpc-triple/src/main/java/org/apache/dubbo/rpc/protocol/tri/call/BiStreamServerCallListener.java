@@ -18,24 +18,18 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
-    private StreamObserver<Object> requestObserver;
+    private final StreamObserver<Object> requestObserver;
 
-    public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker, ServerCallToObserverAdapter<Object> responseObserver) {
-        super(call, invocation, invoker, responseObserver);
+    public BiStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker, ServerCallToObserverAdapter<Object> responseObserver) throws Throwable {
+        super(invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
-        invoke();
-    }
-
-    @Override
-    protected void onServerResponse(AppResponse response) {
-        requestObserver = (StreamObserver<Object>) response.getValue();
+        this.requestObserver = (StreamObserver<Object>) invoke();
     }
 
     @Override
@@ -45,14 +39,15 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         }
         requestObserver.onNext(message);
         if (responseObserver.isAutoRequestN()) {
-            call.requestN(1);
+            responseObserver.request(1);
         }
     }
 
     @Override
     public void onCancel(String errorInfo) {
-        responseObserver.cancel(RpcStatus.CANCELLED
-            .withDescription(errorInfo).asException());
+        requestObserver.onError(RpcStatus.CANCELLED
+                .withDescription(errorInfo).asException());
+        responseObserver.cancel(RpcStatus.CANCELLED.withDescription("Cancel by client:" + errorInfo).asException());
     }
 
 

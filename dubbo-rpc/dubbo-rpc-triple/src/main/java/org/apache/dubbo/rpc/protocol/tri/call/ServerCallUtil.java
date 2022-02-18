@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperResponseObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
@@ -39,24 +40,29 @@ public class ServerCallUtil {
         ServerCallToObserverAdapter<Object> responseObserver;
         if (methodDescriptor.isNeedWrap()) {
             responseObserver = new WrapperResponseObserver<>(call, cancellationContext, invocation.getReturnType().getName(),
-                genericUnpack.serialization, invoker.getUrl());
+                    genericUnpack.serialization, invoker.getUrl());
         } else {
             responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
         }
-        if (methodDescriptor instanceof StreamMethodDescriptor) {
-            if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
-                listener = new ServerStreamServerCallListener(call, invocation, invoker, responseObserver);
+        try {
+            if (methodDescriptor instanceof StreamMethodDescriptor) {
+                if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
+                    listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
+                } else {
+                    listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
+                }
+                call.requestN(1);
             } else {
-                listener = new BiStreamServerCallListener(call, invocation, invoker, responseObserver);
+                listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
+                call.requestN(2);
             }
-            call.requestN(1);
-        } else {
-            listener = new UnaryServerCallListener(call, invocation, invoker, responseObserver);
-            call.requestN(2);
+            if (methodDescriptor.isNeedWrap()) {
+                listener = new WrapRequestServerCallListener(call, listener, genericUnpack);
+            }
+            return listener;
+        }catch (Throwable t){
+            responseObserver.onCompleted(RpcStatus.getStatus(t));
         }
-        if (methodDescriptor.isNeedWrap()) {
-            listener = new WrapRequestServerCallListener(call, listener, genericUnpack);
-        }
-        return listener;
+        return null;
     }
 }

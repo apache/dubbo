@@ -30,6 +30,7 @@ import java.util.Map;
 public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     public final CancellationContext cancellationContext;
+    private Map<String, Object> attachments;
     private final ServerCall call;
     private boolean terminated;
 
@@ -61,11 +62,11 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         terminated = true;
     }
 
-    public void onCompleted(Map<String, Object> attachments) {
+    public void onCompleted(RpcStatus status) {
         if (terminated) {
             return;
         }
-        call.close(RpcStatus.OK, attachments);
+        call.close(status, attachments);
         terminated = true;
     }
 
@@ -78,6 +79,10 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         terminated = true;
     }
 
+    public void setResponseAttachments(Map<String, Object> attachments) {
+        this.attachments = attachments;
+    }
+
     @Override
     public void setCompression(String compression) {
         call.setCompression(compression);
@@ -85,6 +90,10 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     public void cancel(Throwable throwable) {
         cancellationContext.cancel(throwable);
+    }
+
+    public boolean isTimeout(long cost) {
+        return call.timeout != null && call.timeout < cost;
     }
 
     @Override

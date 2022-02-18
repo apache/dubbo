@@ -45,14 +45,16 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private final Executor executor;
     private final List<HeaderFilter> filters;
     private final GenericUnpack genericUnpack;
+    private final String defaultSerialization;
 
     public TripleHttp2FrameServerHandler(
-        FrameworkModel frameworkModel,
-        Executor executor,
-        List<HeaderFilter> filters,
-        GenericUnpack genericUnpack) {
+            FrameworkModel frameworkModel,
+            Executor executor,
+            List<HeaderFilter> filters,
+            String defaultSerialization, GenericUnpack genericUnpack) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
+        this.defaultSerialization = defaultSerialization;
         this.filters = filters;
         this.genericUnpack = genericUnpack;
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
@@ -84,7 +86,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
             serverStream.transportObserver.cancelByRemote(RpcStatus.CANCELLED
-                .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
+                    .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
         }
         ctx.close();
     }
@@ -107,7 +109,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor, pathResolver, filters, genericUnpack);
+        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor,defaultSerialization, pathResolver, filters, genericUnpack);
         ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).set(serverStream);
         serverStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }

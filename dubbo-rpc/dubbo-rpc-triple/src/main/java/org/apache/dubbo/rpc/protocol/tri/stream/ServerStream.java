@@ -72,12 +72,13 @@ public class ServerStream extends AbstractStream {
     private boolean trailersSent;
     private ServerStreamListener listener;
     private boolean closed;
+    private final String defaultSerialization;
     private TriDecoder decoder;
 
     public ServerStream(Channel channel,
                         FrameworkModel frameworkModel,
                         Executor executor,
-                        PathResolver pathResolver,
+                        String defaultSerialization, PathResolver pathResolver,
                         List<HeaderFilter> filters,
                         GenericUnpack genericUnpack) {
         super(executor);
@@ -85,6 +86,7 @@ public class ServerStream extends AbstractStream {
         this.pathResolver = pathResolver;
         this.filters = filters;
         this.frameworkModel = frameworkModel;
+        this.defaultSerialization = defaultSerialization;
         this.genericUnpack = genericUnpack;
         this.writeQueue = new WriteQueue(channel);
     }
@@ -95,8 +97,8 @@ public class ServerStream extends AbstractStream {
             return status.description;
         }
         return Optional.ofNullable(status.cause)
-            .map(Throwable::getMessage)
-            .orElse("unknown");
+                .map(Throwable::getMessage)
+                .orElse("unknown");
     }
 
     public void sendHeader(Http2Headers headers) {
@@ -142,24 +144,24 @@ public class ServerStream extends AbstractStream {
         grpcMessage = RpcStatus.encodeMessage(grpcMessage);
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         Status.Builder builder = Status.newBuilder()
-            .setCode(rpcStatus.code.code)
-            .setMessage(grpcMessage);
+                .setCode(rpcStatus.code.code)
+                .setMessage(grpcMessage);
         Throwable throwable = rpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                H2TransportListener.encodeBase64ASCII(status.toByteArray()));
+                    H2TransportListener.encodeBase64ASCII(status.toByteArray()));
             return headers;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-            // can not use now
-            // .setDetail(throwable.getMessage())
-            .build();
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+                // can not use now
+                // .setDetail(throwable.getMessage())
+                .build();
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            H2TransportListener.encodeBase64ASCII(status.toByteArray()));
+                H2TransportListener.encodeBase64ASCII(status.toByteArray()));
         return headers;
     }
 
@@ -181,10 +183,10 @@ public class ServerStream extends AbstractStream {
      */
     private void responsePlainTextError(int code, RpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
-            .status(String.valueOf(code))
-            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
+                .status(String.valueOf(code))
+                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
+                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
     }
@@ -196,10 +198,10 @@ public class ServerStream extends AbstractStream {
      */
     private void responseErr(RpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
-            .status(OK.codeAsText())
-            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
+                .status(OK.codeAsText())
+                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true));
     }
 
@@ -226,51 +228,51 @@ public class ServerStream extends AbstractStream {
             executor.execute(() -> {
                 if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
                     responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
-                        RpcStatus.INTERNAL
-                            .withDescription(String.format("Method '%s' is not supported", headers.method())));
+                            RpcStatus.INTERNAL
+                                    .withDescription(String.format("Method '%s' is not supported", headers.method())));
                     return;
                 }
 
                 if (headers.path() == null) {
                     responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                        RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
+                            RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
                     return;
                 }
 
                 final String path = headers.path().toString();
                 if (path.charAt(0) != '/') {
                     responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                        RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
-                            .withDescription(String.format("Expected path to start with /: %s", path)));
+                            RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
+                                    .withDescription(String.format("Expected path to start with /: %s", path)));
                     return;
                 }
 
                 final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
                 if (contentType == null) {
                     responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                        RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
-                            .withDescription("Content-Type is missing from the request"));
+                            RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
+                                    .withDescription("Content-Type is missing from the request"));
                     return;
                 }
 
                 final String contentString = contentType.toString();
                 if (!supportContentType(contentString)) {
                     responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                        RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
-                            .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
+                            RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
+                                    .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
                     return;
                 }
 
                 if (path.charAt(0) != '/') {
                     responseErr(RpcStatus.UNIMPLEMENTED
-                        .withDescription("Path must start with '/'. Request path: " + path));
+                            .withDescription("Path must start with '/'. Request path: " + path));
                     return;
                 }
 
                 String[] parts = path.split("/");
                 if (parts.length != 3) {
                     responseErr(RpcStatus.UNIMPLEMENTED
-                        .withDescription("Bad path format:" + path));
+                            .withDescription("Bad path format:" + path));
                     return;
                 }
                 String serviceName = parts[1];
@@ -285,7 +287,7 @@ public class ServerStream extends AbstractStream {
                         DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
                         if (null == compressor) {
                             responseErr(RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
-                                .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
+                                    .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                             return;
                         }
                         deCompressor = compressor;
@@ -297,15 +299,16 @@ public class ServerStream extends AbstractStream {
                     ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
                 } catch (Throwable t) {
                     close(RpcStatus.INTERNAL
-                        .withCause(t), null);
+                            .withCause(t), null);
                 }
                 ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
-                    serviceName,
-                    methodName,
-                    executor,
-                    filters,
-                    genericUnpack,
-                    pathResolver);
+                        serviceName,
+                        methodName,
+                        defaultSerialization,
+                        executor,
+                        filters,
+                        genericUnpack,
+                        pathResolver);
                 ServerStream.this.listener = call.streamListener;
                 listener.onHeaders(headersToMap(headers));
                 if (endStream) {
