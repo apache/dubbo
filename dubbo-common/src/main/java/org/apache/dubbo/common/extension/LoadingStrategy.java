@@ -18,6 +18,8 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.lang.Prioritized;
 
+import java.util.regex.Pattern;
+
 public interface LoadingStrategy extends Prioritized {
 
     String directory();
@@ -27,6 +29,31 @@ public interface LoadingStrategy extends Prioritized {
     }
 
     default String[] excludedPackages() {
+        return null;
+    }
+
+    /**
+     * To restrict some class that should not be loaded from apache package type SPI class.
+     * For example, we can restrict the implementation class which package is `org.xxx.xxx`
+     * can be loaded as SPI implementation.
+     *
+     * @return packages can be loaded in apache's SPI
+     */
+    default Pattern[] includedPackagesInApache() {
+        // default match all
+        return null;
+    }
+
+    /**
+     * To restrict some class that should not be loaded from alibaba(for compatible purpose)
+     * package type SPI class.
+     * For example, we can restrict the implementation class which package is `org.xxx.xxx`
+     * can be loaded as SPI implementation
+     *
+     * @return packages can be loaded in alibaba's SPI
+     */
+    default Pattern[] includedPackagesInAlibaba() {
+        // default match all
         return null;
     }
 
