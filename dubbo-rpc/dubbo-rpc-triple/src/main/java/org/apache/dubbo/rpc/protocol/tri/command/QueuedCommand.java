@@ -23,15 +23,10 @@ import io.netty.channel.ChannelPromise;
 
 public abstract class QueuedCommand {
 
-    protected boolean flush = false;
     private ChannelPromise promise;
 
     public ChannelPromise promise() {
         return promise;
-    }
-
-    public void setFlush(boolean flush) {
-        this.flush = flush;
     }
 
     public void promise(ChannelPromise promise) {
@@ -49,9 +44,7 @@ public abstract class QueuedCommand {
     public final void send(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (ctx.channel().isActive()) {
             doSend(ctx, promise);
-//            if (flush) {
             ctx.flush();
-//            }
         }
     }
 

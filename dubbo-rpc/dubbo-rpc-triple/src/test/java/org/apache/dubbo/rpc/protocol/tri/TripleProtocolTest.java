@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.rpc.protocol.tri.support.IGreeter.SERVER_MSG;
+
 
 public class TripleProtocolTest {
 
@@ -78,7 +80,7 @@ public class TripleProtocolTest {
         // 2. test serverStream
         MockStreamObserver outboundMessageSubscriber1 = new MockStreamObserver();
         greeterProxy.serverStream(REQUEST_MSG, outboundMessageSubscriber1);
-        outboundMessageSubscriber1.getLatch().await(1000, TimeUnit.MILLISECONDS);
+        outboundMessageSubscriber1.getLatch().await(3000, TimeUnit.MILLISECONDS);
         Assertions.assertEquals(outboundMessageSubscriber1.getOnNextData(), REQUEST_MSG);
         Assertions.assertTrue(outboundMessageSubscriber1.isOnCompleted());
 
@@ -87,9 +89,9 @@ public class TripleProtocolTest {
         StreamObserver<String> inboundMessageObserver = greeterProxy.bidirectionalStream(outboundMessageSubscriber2);
         inboundMessageObserver.onNext(REQUEST_MSG);
         inboundMessageObserver.onCompleted();
-        outboundMessageSubscriber2.getLatch().await(1000, TimeUnit.MILLISECONDS);
+        outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
         // verify client
-        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), IGreeter.SERVER_MSG);
+        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), SERVER_MSG);
         Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
         // verify server
         MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) ((IGreeterImpl) serviceImpl).getMockStreamObserver();

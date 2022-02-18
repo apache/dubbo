@@ -32,7 +32,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     public final CancellationContext cancellationContext;
     private Map<String, Object> attachments;
     private final ServerCall call;
-    private boolean terminated;
+    private boolean terminated = false;
 
     public ServerCallToObserverAdapter(ServerCall call,
                                        CancellationContext cancellationContext) {
@@ -44,9 +44,18 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         return call.isAutoRequestN();
     }
 
+
+    private boolean isTerminated() {
+        return terminated;
+    }
+
+    private void setTerminated(boolean terminated) {
+        this.terminated = terminated;
+    }
+
     @Override
     public void onNext(Object data) {
-        if (terminated) {
+        if (isTerminated()) {
             throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
         }
         call.writeMessage(data);
@@ -54,29 +63,30 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onError(Throwable throwable) {
-        if (terminated) {
+        if (isTerminated()) {
             return;
         }
         final RpcStatus status = RpcStatus.getStatus(throwable);
         call.close(status, null);
-        terminated = true;
+        setTerminated(true);
     }
 
     public void onCompleted(RpcStatus status) {
-        if (terminated) {
+        if (isTerminated()) {
             return;
         }
         call.close(status, attachments);
-        terminated = true;
+        setTerminated(true);
+
     }
 
     @Override
     public void onCompleted() {
-        if (terminated) {
+        if (isTerminated()) {
             return;
         }
         call.close(RpcStatus.OK, null);
-        terminated = true;
+        setTerminated(true);
     }
 
     public void setResponseAttachments(Map<String, Object> attachments) {

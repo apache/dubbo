@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
@@ -82,7 +80,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
     @Override
     public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
         final List<HeaderFilter> filters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
-        String defaultSerialization = url.getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION);
         final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
                 .gracefulShutdownTimeoutMillis(10000)
@@ -103,7 +100,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
             protected void initChannel(Channel ch) {
                 final ChannelPipeline p = ch.pipeline();
                 p.addLast(new TripleCommandOutBoundHandler());
-                p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url), filters, defaultSerialization, new GenericUnpack(serialization, url)));
+                p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url), filters, new GenericUnpack(serialization, url)));
             }
         });
         pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new TripleTailHandler());

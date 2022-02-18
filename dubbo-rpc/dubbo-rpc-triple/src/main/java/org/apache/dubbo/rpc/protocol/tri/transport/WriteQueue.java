@@ -66,7 +66,6 @@ public class WriteQueue {
                 i++;
                 if (i == DEQUE_CHUNK_SIZE) {
                     i = 0;
-                    cmd.setFlush(true);
                     channel.flush();
                     flushedOnce = true;
                 }

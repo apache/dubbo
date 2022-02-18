@@ -93,7 +93,6 @@ public class ServerCall {
                       FrameworkModel frameworkModel,
                       String serviceName,
                       String methodName,
-                      String defaultSerialization,
                       Executor executor,
                       List<HeaderFilter> headerFilters,
                       GenericUnpack genericUnpack,
@@ -101,7 +100,6 @@ public class ServerCall {
     ) {
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
-        this.serializerType = defaultSerialization;
         this.methodName = methodName;
         this.serviceName = serviceName;
         this.serverStream = serverStream;

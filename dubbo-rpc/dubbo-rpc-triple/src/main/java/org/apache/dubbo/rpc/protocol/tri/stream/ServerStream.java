@@ -72,13 +72,12 @@ public class ServerStream extends AbstractStream {
     private boolean trailersSent;
     private ServerStreamListener listener;
     private boolean closed;
-    private final String defaultSerialization;
     private TriDecoder decoder;
 
     public ServerStream(Channel channel,
                         FrameworkModel frameworkModel,
                         Executor executor,
-                        String defaultSerialization, PathResolver pathResolver,
+                       PathResolver pathResolver,
                         List<HeaderFilter> filters,
                         GenericUnpack genericUnpack) {
         super(executor);
@@ -86,7 +85,6 @@ public class ServerStream extends AbstractStream {
         this.pathResolver = pathResolver;
         this.filters = filters;
         this.frameworkModel = frameworkModel;
-        this.defaultSerialization = defaultSerialization;
         this.genericUnpack = genericUnpack;
         this.writeQueue = new WriteQueue(channel);
     }
@@ -304,7 +302,6 @@ public class ServerStream extends AbstractStream {
                 ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
                         serviceName,
                         methodName,
-                        defaultSerialization,
                         executor,
                         filters,
                         genericUnpack,
