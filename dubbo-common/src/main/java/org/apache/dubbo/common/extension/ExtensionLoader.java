@@ -941,10 +941,10 @@ public class ExtensionLoader<T> {
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy, String type) {
         loadDirectory(extensionClasses, strategy.directory(), type, strategy.preferExtensionClassLoader(),
-            strategy.overridden(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
+            strategy.overridden(), strategy.includedPackages(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
         String oldType = type.replace("org.apache", "com.alibaba");
         loadDirectory(extensionClasses, strategy.directory(), oldType, strategy.preferExtensionClassLoader(),
-            strategy.overridden(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
+            strategy.overridden(), strategy.includedPackagesInCompatibleType(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
     }
 
     /**
@@ -970,11 +970,11 @@ public class ExtensionLoader<T> {
     }
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type) {
-        loadDirectory(extensionClasses, dir, type, false, false, new String[]{}, new String[]{});
+        loadDirectory(extensionClasses, dir, type, false, false, new String[]{}, new String[]{}, new String[]{});
     }
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type,
-                               boolean extensionLoaderClassLoaderFirst, boolean overridden,
+                               boolean extensionLoaderClassLoaderFirst, boolean overridden, String[] includedPackages,
                                String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         String fileName = dir + type;
         try {
@@ -995,7 +995,7 @@ public class ExtensionLoader<T> {
                 Enumeration<java.net.URL> resources = ClassLoader.getSystemResources(fileName);
                 if (resources != null) {
                     while (resources.hasMoreElements()) {
-                        loadResource(extensionClasses, null, resources.nextElement(), overridden, excludedPackages, onlyExtensionClassLoaderPackages);
+                        loadResource(extensionClasses, null, resources.nextElement(), overridden, includedPackages, excludedPackages, onlyExtensionClassLoaderPackages);
                     }
                 }
             } else {
@@ -1004,7 +1004,7 @@ public class ExtensionLoader<T> {
 
             Map<ClassLoader, Set<java.net.URL>> resources = ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad);
             resources.forEach(((classLoader, urls) -> {
-                loadFromClass(extensionClasses, overridden, urls, classLoader, excludedPackages, onlyExtensionClassLoaderPackages);
+                loadFromClass(extensionClasses, overridden, urls, classLoader, includedPackages, excludedPackages, onlyExtensionClassLoaderPackages);
             }));
         } catch (Throwable t) {
             logger.error("Exception occurred when loading extension class (interface: " +
@@ -1013,16 +1013,16 @@ public class ExtensionLoader<T> {
     }
 
     private void loadFromClass(Map<String, Class<?>> extensionClasses, boolean overridden, Set<java.net.URL> urls, ClassLoader classLoader,
-                               String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
+                               String[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         if (CollectionUtils.isNotEmpty(urls)) {
             for (java.net.URL url : urls) {
-                loadResource(extensionClasses, classLoader, url, overridden, excludedPackages, onlyExtensionClassLoaderPackages);
+                loadResource(extensionClasses, classLoader, url, overridden, includedPackages, excludedPackages, onlyExtensionClassLoaderPackages);
             }
         }
     }
 
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader,
-                              java.net.URL resourceURL, boolean overridden, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
+                              java.net.URL resourceURL, boolean overridden, String[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
                 String line;
@@ -1043,7 +1043,7 @@ public class ExtensionLoader<T> {
                             } else {
                                 clazz = line;
                             }
-                            if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages)
+                            if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages) && isIncluded(clazz, includedPackages)
                                 && !isExcludedByClassLoader(clazz, classLoader, onlyExtensionClassLoaderPackages)) {
                                 loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
                             }
@@ -1059,6 +1059,21 @@ public class ExtensionLoader<T> {
             logger.error("Exception occurred when loading extension class (interface: " +
                 type + ", class file: " + resourceURL + ") in " + resourceURL, t);
         }
+    }
+
+    private boolean isIncluded(String className, String... includedPackages) {
+        if (includedPackages != null && includedPackages.length > 0) {
+            for (String includedPackage : includedPackages) {
+                if (className.startsWith(includedPackage + ".")) {
+                    // one match, return true
+                    return true;
+                }
+            }
+            // none matcher match, return false
+            return false;
+        }
+        // matcher is empty, return true
+        return true;
     }
 
     private boolean isExcluded(String className, String... excludedPackages) {
