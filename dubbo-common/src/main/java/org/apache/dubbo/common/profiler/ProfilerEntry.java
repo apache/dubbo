@@ -18,6 +18,7 @@ package org.apache.dubbo.common.profiler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProfilerEntry {
     private final List<ProfilerEntry> sub = new ArrayList<>(4);
@@ -25,6 +26,7 @@ public class ProfilerEntry {
     private final ProfilerEntry parent;
     private final ProfilerEntry first;
     private final long startTime;
+    private final AtomicInteger requestCount;
     private long endTime;
 
     public ProfilerEntry(String message) {
@@ -32,6 +34,7 @@ public class ProfilerEntry {
         this.parent = null;
         this.first = this;
         this.startTime = System.nanoTime();
+        this.requestCount = new AtomicInteger(1);
     }
 
     public ProfilerEntry(String message, ProfilerEntry parentEntry, ProfilerEntry firstEntry) {
@@ -39,6 +42,7 @@ public class ProfilerEntry {
         this.parent = parentEntry;
         this.first = firstEntry;
         this.startTime = System.nanoTime();
+        this.requestCount = parentEntry.getRequestCount();
     }
 
     public List<ProfilerEntry> getSub() {
@@ -67,5 +71,9 @@ public class ProfilerEntry {
 
     public long getEndTime() {
         return endTime;
+    }
+
+    public AtomicInteger getRequestCount() {
+        return requestCount;
     }
 }
