@@ -97,14 +97,21 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
-        ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
+        URL url = getUrl();
+        ExecutorService executor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+                .getDefaultExtension()
+                .getExecutor(url);
+        if (executor == null) {
+            throw new IllegalStateException("No callbackExecutor found in " + url);
+        }
+        ExecutorService callbackExecutor = getCallbackExecutor(executor, invocation);
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
         invocation.setAttachment(TIMEOUT_KEY, timeout);
-        DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, invocation, timeout, executor);
+        DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, invocation, timeout, callbackExecutor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
         FutureContext.getContext().setCompatibleFuture(respFuture);
         AsyncRpcResult result = new AsyncRpcResult(respFuture, invocation);
-        result.setExecutor(executor);
+        result.setExecutor(callbackExecutor);
 
         if (!connection.isAvailable()) {
             final RpcStatus status = RpcStatus.UNAVAILABLE
@@ -137,6 +144,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             return new ThreadlessExecutor(callbackExecutor);
         }
         return callbackExecutor;
+    }
+
+
+    private ExecutorService getCallbackExecutor(ExecutorService executor, Invocation inv) {
+        if (executor == null) {
+            throw new IllegalStateException("No executor found in " + getUrl());
+        }
+        if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
+            return new ThreadlessExecutor(null);
+        }
+        return executor;
     }
 
     @Override

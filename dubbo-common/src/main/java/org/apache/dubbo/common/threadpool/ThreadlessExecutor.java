@@ -68,6 +68,11 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         return waiting;
     }
 
+
+    private void setWaiting(boolean waiting) {
+        this.waiting = waiting;
+    }
+
     /**
      * Waits until there is a task, executes the task and all queued tasks (if there're any). The task is either a normal
      * response or a timeout response.
@@ -90,12 +95,12 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         try {
             runnable = queue.take();
         }catch (InterruptedException e){
-            waiting = false;
+            setWaiting(false);
             throw e;
         }
 
         synchronized (lock) {
-            waiting = false;
+            setWaiting(false);
             runnable.run();
         }
 
@@ -134,11 +139,13 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     public void execute(Runnable runnable) {
         runnable = new RunnableWrapper(runnable);
         synchronized (lock) {
-            if (!waiting) {
-                sharedExecutor.execute(runnable);
-            } else {
-                queue.add(runnable);
-            }
+            queue.add(runnable);
+
+//            if (!isWaiting()) {
+//                sharedExecutor.execute(runnable);
+//            } else {
+//                queue.add(runnable);
+//            }
         }
     }
 
