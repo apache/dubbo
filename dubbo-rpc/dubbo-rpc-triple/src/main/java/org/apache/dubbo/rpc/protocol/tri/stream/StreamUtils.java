@@ -54,17 +54,19 @@ public class StreamUtils {
         final RequestMetadata meta = new RequestMetadata();
         meta.scheme = getSchemeFromUrl(url);
         meta.requestId = requestId;
-        String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
-        if (application == null) {
-            application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
+        final Map<String, Object> objectAttachments = invocation.getObjectAttachments();
+        if (objectAttachments != null) {
+            String application = (String) objectAttachments.get(CommonConstants.APPLICATION_KEY);
+            if (application == null) {
+                application = (String) objectAttachments.get(CommonConstants.REMOTE_APPLICATION_KEY);
+            }
+            meta.application = application;
+            meta.attachments = objectAttachments;
         }
-        meta.application = application;
-
         meta.method = methodDescriptor;
         if (meta.method == null) {
             throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
         }
-        meta.attachments = invocation.getObjectAttachments();
         meta.compressor = compressor;
         meta.acceptEncoding = acceptEncoding;
         meta.address = url.getAddress();

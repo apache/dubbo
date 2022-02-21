@@ -17,18 +17,15 @@
 
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.stream.StreamObserver;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 
+@Experimental("Experiment api for abstract method descriptor, this class may be renamed or deleted in the future")
 public class StreamMethodDescriptor extends MethodDescriptor {
 
-
-    private static final String GRPC_ASYNC_RETURN_CLASS = "com.google.common.util.concurrent.ListenableFuture";
-    private static final String TRI_ASYNC_RETURN_CLASS = "java.util.concurrent.CompletableFuture";
-    private static final String REACTOR_RETURN_CLASS = "reactor.core.publisher.Mono";
-    private static final String RX_RETURN_CLASS = "io.reactivex.Single";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
 
     public Class<?> requestType;
@@ -80,12 +77,12 @@ public class StreamMethodDescriptor extends MethodDescriptor {
         throw new IllegalStateException("method params error method=" + methodName);
     }
 
-    public enum StreamType {
-        SERVER, CLIENT, BI_DIRECTIONAL
+    public boolean isServerStream() {
+        return streamType == StreamType.SERVER;
     }
 
 
-    public boolean isServerStream() {
-        return streamType == StreamType.SERVER;
+    public enum StreamType {
+        SERVER, CLIENT, BI_DIRECTIONAL
     }
 }
