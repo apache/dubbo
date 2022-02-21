@@ -45,8 +45,7 @@ public class ServerCallUtil {
     public static ServerCall.Listener startDirectCall(ServerCall call,
                                                       RpcInvocation invocation,
                                                       MethodDescriptor methodDescriptor,
-                                                      Invoker<?> invoker
-    ) {
+                                                      Invoker<?> invoker) {
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
         ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
         return startCall(call, methodDescriptor, invocation, invoker, responseObserver);
@@ -71,7 +70,6 @@ public class ServerCallUtil {
                                                 Invoker<?> invoker,
                                                 ServerCallToObserverAdapter<Object> responseObserver) {
         try {
-
             ServerCall.Listener listener;
             if (methodDescriptor instanceof StreamMethodDescriptor) {
                 if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {

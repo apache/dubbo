@@ -40,7 +40,6 @@ public class TriDecoder implements Deframer {
 
     private int requiredLength = HEADER_LENGTH;
 
-
     private GrpcDecodeState state = GrpcDecodeState.HEADER;
 
     public TriDecoder(DeCompressor decompressor, Listener listener) {
