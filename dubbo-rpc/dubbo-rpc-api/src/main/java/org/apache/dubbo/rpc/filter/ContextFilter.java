@@ -126,7 +126,12 @@ public class ContextFilter implements Filter, Filter.Listener {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        return invoker.invoke(invocation);
+        try {
+            context.clearAfterEachInvoke(false);
+            return invoker.invoke(invocation);
+        } finally {
+            context.clearAfterEachInvoke(true);
+        }
     }
 
     @Override
