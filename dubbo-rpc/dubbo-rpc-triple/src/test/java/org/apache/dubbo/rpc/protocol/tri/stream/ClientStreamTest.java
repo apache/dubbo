@@ -74,7 +74,7 @@ class ClientStreamTest {
         WriteQueue writeQueue = mock(WriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
-        ClientStream stream = new ClientStream(url, future.requestId,ImmediateEventExecutor.INSTANCE, writeQueue, listener);
+        ClientStream stream = new ClientStream(url, future.requestId, ImmediateEventExecutor.INSTANCE, writeQueue, listener);
 
         final RequestMetadata requestMetadata = StreamUtils.createRequest(url, methodDescriptor,
             invocation, future.requestId, Identity.IDENTITY,
@@ -83,30 +83,30 @@ class ClientStreamTest {
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
-        stream.writeMessage(new byte[0],0);
+        stream.writeMessage(new byte[0], 0);
         verify(writeQueue).enqueue(any(DataQueueCommand.class));
-        verify(writeQueue,times(2)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
         stream.halfClose();
         verify(writeQueue).enqueue(any(EndStreamQueueCommand.class));
-        verify(writeQueue,times(3)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
         stream.cancelByLocal(RpcStatus.CANCELLED);
         verify(writeQueue).enqueue(any(CancelQueueCommand.class));
-        verify(writeQueue,times(4)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue, times(4)).enqueue(any(QueuedCommand.class));
 
         H2TransportListener transportListener = stream.createTransportListener();
-        DefaultHttp2Headers headers=new DefaultHttp2Headers();
+        DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HttpScheme.HTTP.name())
-                .status(HttpResponseStatus.OK.codeAsText());
-        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), RpcStatus.OK.code.code+"");
-        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(),TripleHeaderEnum.CONTENT_PROTO.getHeader());
-        transportListener.onHeader(headers,false);
+            .status(HttpResponseStatus.OK.codeAsText());
+        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), RpcStatus.OK.code.code + "");
+        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleHeaderEnum.CONTENT_PROTO.getHeader());
+        transportListener.onHeader(headers, false);
         Assertions.assertTrue(listener.started);
         stream.requestN(2);
-        byte[] data=new byte[]{0,0,0,0,1,1};
+        byte[] data = new byte[]{0, 0, 0, 0, 1, 1};
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
-        transportListener.onData(buf,false);
+        transportListener.onData(buf, false);
         buf.release();
-        Assertions.assertEquals(1,listener.message.length);
+        Assertions.assertEquals(1, listener.message.length);
     }
 }
