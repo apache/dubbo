@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -42,19 +41,21 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
 
-    private ExecutorService sharedExecutor;
-
     private CompletableFuture<?> waitingFuture;
 
-    private boolean finished = false;
+    private volatile boolean finished = false;
 
     private volatile boolean waiting = true;
 
-    private final Object lock = new Object();
-
-    public ThreadlessExecutor(ExecutorService sharedExecutor) {
-        this.sharedExecutor = sharedExecutor;
+    public boolean isFinished() {
+        return finished;
     }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
+    private final Object lock = new Object();
 
     public CompletableFuture<?> getWaitingFuture() {
         return waitingFuture;
@@ -66,6 +67,11 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     public boolean isWaiting() {
         return waiting;
+    }
+
+
+    private void setWaiting(boolean waiting) {
+        this.waiting = waiting;
     }
 
     /**
@@ -90,12 +96,12 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         try {
             runnable = queue.take();
         }catch (InterruptedException e){
-            waiting = false;
+            setWaiting(false);
             throw e;
         }
 
         synchronized (lock) {
-            waiting = false;
+            setWaiting(false);
             runnable.run();
         }
 
@@ -134,11 +140,11 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     public void execute(Runnable runnable) {
         runnable = new RunnableWrapper(runnable);
         synchronized (lock) {
-            if (!waiting) {
-                sharedExecutor.execute(runnable);
-            } else {
-                queue.add(runnable);
+            if (isFinished() || !isWaiting()) {
+                runnable.run();
+                return;
             }
+            queue.add(runnable);
         }
     }
 
