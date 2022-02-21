@@ -43,7 +43,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private CompletableFuture<?> waitingFuture;
 
-    private volatile boolean finished = false;
+    private boolean finished = false;
 
     private volatile boolean waiting = true;
 
@@ -95,7 +95,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         Runnable runnable;
         try {
             runnable = queue.take();
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             setWaiting(false);
             throw e;
         }
@@ -140,7 +140,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
     public void execute(Runnable runnable) {
         runnable = new RunnableWrapper(runnable);
         synchronized (lock) {
-            if (isFinished() || !isWaiting()) {
+            if (!isWaiting()) {
                 runnable.run();
                 return;
             }
