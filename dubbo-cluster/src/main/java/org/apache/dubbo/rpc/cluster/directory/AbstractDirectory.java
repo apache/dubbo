@@ -155,7 +155,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (consumerUrl == null) {
             String host = isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
             String path = isNotEmpty(queryMap.get(PATH_KEY)) ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY);
-            String consumedProtocol = isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? CONSUMER : queryMap.get(PROTOCOL_KEY);
+            String consumedProtocol = isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? queryMap.get(PROTOCOL_KEY) : CONSUMER;
 
             URL consumerUrlFrom = this.url
                 .setHost(host)
