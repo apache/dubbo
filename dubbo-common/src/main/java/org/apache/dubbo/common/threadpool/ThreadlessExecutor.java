@@ -47,14 +47,6 @@ public class ThreadlessExecutor extends AbstractExecutorService {
 
     private volatile boolean waiting = true;
 
-    public boolean isFinished() {
-        return finished;
-    }
-
-    public void setFinished(boolean finished) {
-        this.finished = finished;
-    }
-
     private final Object lock = new Object();
 
     public CompletableFuture<?> getWaitingFuture() {
@@ -65,10 +57,17 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         this.waitingFuture = waitingFuture;
     }
 
+    private boolean isFinished() {
+        return finished;
+    }
+
+    private void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
     public boolean isWaiting() {
         return waiting;
     }
-
 
     private void setWaiting(boolean waiting) {
         this.waiting = waiting;
@@ -88,7 +87,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
          * 'finished' only appear in waitAndDrain, since waitAndDrain is binding to one RPC call (one thread), the call
          * of it is totally sequential.
          */
-        if (finished) {
+        if (isFinished()) {
             return;
         }
 
@@ -111,23 +110,7 @@ public class ThreadlessExecutor extends AbstractExecutorService {
             runnable = queue.poll();
         }
         // mark the status of ThreadlessExecutor as finished.
-        finished = true;
-    }
-
-    public long waitAndDrain(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
-        /*long startInMs = System.currentTimeMillis();
-        Runnable runnable = queue.poll(timeout, unit);
-        if (runnable == null) {
-            throw new TimeoutException();
-        }
-        runnable.run();
-        long elapsedInMs = System.currentTimeMillis() - startInMs;
-        long timeLeft = timeout - elapsedInMs;
-        if (timeLeft < 0) {
-            throw new TimeoutException();
-        }
-        return timeLeft;*/
-        throw new UnsupportedOperationException();
+        setFinished(true);
     }
 
     /**
