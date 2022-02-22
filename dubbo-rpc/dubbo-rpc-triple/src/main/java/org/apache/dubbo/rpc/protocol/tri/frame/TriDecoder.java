@@ -28,7 +28,6 @@ public class TriDecoder implements Deframer {
     private static final int HEADER_LENGTH = 5;
     private static final int COMPRESSED_FLAG_MASK = 1;
     private static final int RESERVED_MASK = 0xFE;
-    private static final int MAX_BUFFER_SIZE = 1024 * 1024 * 2;
     private final CompositeByteBuf accumulate = Unpooled.compositeBuffer();
     private final Listener listener;
     private final DeCompressor decompressor;
@@ -114,7 +113,6 @@ public class TriDecoder implements Deframer {
     private void processHeader() {
         int type = accumulate.readUnsignedByte();
         if ((type & RESERVED_MASK) != 0) {
-            // todo
             throw new RpcException("gRPC frame header malformed: reserved bits not zero");
         }
         compressedFlag = (type & COMPRESSED_FLAG_MASK) != 0;
@@ -133,7 +131,7 @@ public class TriDecoder implements Deframer {
         // because the uncompressed bytes are provided through an InputStream whose total size is
         // unknown until all bytes are read, and we don't know when it happens.
         byte[] stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
-        // todo
+
         listener.onRawMessage(stream);
 
         // Done with this frame, begin processing the next header.

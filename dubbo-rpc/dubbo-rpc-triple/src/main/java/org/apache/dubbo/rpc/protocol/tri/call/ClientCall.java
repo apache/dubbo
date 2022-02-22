@@ -17,11 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
@@ -45,30 +44,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 public class ClientCall {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
     private final Connection connection;
     private final Executor executor;
-    private final URL url;
+    private final FrameworkModel frameworkModel;
     private RequestMetadata requestMetadata;
     private ClientStream stream;
     private boolean canceled;
     private boolean headerSent;
 
-    public ClientCall(URL url,
-                      Connection connection
+    public ClientCall(Connection connection,
+                      Executor executor,
+                      FrameworkModel frameworkModel
     ) {
-        this.url = url;
         this.connection = connection;
-        ExecutorService executor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
-            .getExecutor(url);
-        if (executor == null) {
-            throw new IllegalStateException("No available executor found in " + url);
-        }
         this.executor = executor;
+        this.frameworkModel = frameworkModel;
     }
 
     public void sendMessage(Object message) {
@@ -106,20 +99,20 @@ public class ClientCall {
     }
 
     public void setCompression(String compression) {
-        this.requestMetadata.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
+        this.requestMetadata.compressor = Compressor.getCompressor(frameworkModel, compression);
     }
 
     public void start(RequestMetadata metadata, ClientCall.StartListener responseListener) {
         this.requestMetadata = metadata;
         final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
-            PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
+                PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
 
         this.stream = new ClientStream(
-            url,
-            metadata.requestId,
-            executor,
-            connection.getChannel(),
-            new ClientStreamListenerImpl(responseListener, unpack));
+                frameworkModel,
+                metadata.requestId,
+                executor,
+                connection.getChannel(),
+                new ClientStreamListenerImpl(responseListener, unpack));
     }
 
     public void cancel(String message, Throwable t) {
@@ -176,7 +169,7 @@ public class ClientCall {
         public void onMessage(byte[] message) {
             if (done) {
                 LOGGER.warn("Received message from closed stream,connection=" + connection
-                    + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
+                        + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
                 return;
             }
             try {
@@ -184,8 +177,8 @@ public class ClientCall {
                 listener.onMessage(unpacked);
             } catch (IOException e) {
                 cancelByErr(RpcStatus.INTERNAL
-                    .withDescription("Deserialize response failed")
-                    .withCause(e));
+                        .withDescription("Deserialize response failed")
+                        .withCause(e));
             }
         }
 
@@ -203,8 +196,8 @@ public class ClientCall {
                 listener.onClose(detailStatus, attachments);
             } catch (Throwable t) {
                 cancelByErr(RpcStatus.INTERNAL
-                    .withDescription("Close stream error")
-                    .withCause(t));
+                        .withDescription("Close stream error")
+                        .withCause(t));
             }
         }
 
@@ -230,7 +223,7 @@ public class ClientCall {
 
                 // get common exception from DebugInfo
                 RpcStatus status = RpcStatus.fromCode(statusDetail.getCode())
-                    .withDescription(RpcStatus.decodeMessage(statusDetail.getMessage()));
+                        .withDescription(RpcStatus.decodeMessage(statusDetail.getMessage()));
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo != null) {
                     String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());

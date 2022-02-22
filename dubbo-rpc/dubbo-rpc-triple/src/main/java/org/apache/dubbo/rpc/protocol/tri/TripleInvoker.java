@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
@@ -106,17 +107,23 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         if (!connection.isAvailable()) {
             final RpcStatus status = RpcStatus.UNAVAILABLE
-                .withDescription(String.format("Connect to %s failed", this));
+                    .withDescription(String.format("Connect to %s failed", this));
             DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ?
-            (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
+                (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
         final MethodDescriptor methodDescriptor = consumerModel.getServiceModel()
-            .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+                .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), methodDescriptor, invocation, future.requestId,
-            compressor, acceptEncoding, timeout, genericPack, genericUnpack);
-        ClientCall call = new ClientCall(getUrl(), connection);
+                compressor, acceptEncoding, timeout, genericPack, genericUnpack);
+        ExecutorService executor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+                .getDefaultExtension()
+                .getExecutor(url);
+        if (executor == null) {
+            throw new IllegalStateException("No available executor found in " + url);
+        }
+        ClientCall call = new ClientCall(connection, executor, url.getOrDefaultFrameworkModel());
         ClientCallUtil.call(call, metadata);
         return result;
     }

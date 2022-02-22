@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
@@ -66,13 +67,12 @@ public class ServerStream extends AbstractStream {
     private final PathResolver pathResolver;
     private final List<HeaderFilter> filters;
     private final GenericUnpack genericUnpack;
-    private final FrameworkModel frameworkModel;
     private final EventLoop eventLoop;
     private boolean headerSent;
     private boolean trailersSent;
     private ServerStreamListener listener;
     private boolean closed;
-    private TriDecoder decoder;
+    private Deframer deframer;
 
     public ServerStream(Channel channel,
                         FrameworkModel frameworkModel,
@@ -80,11 +80,10 @@ public class ServerStream extends AbstractStream {
                         PathResolver pathResolver,
                         List<HeaderFilter> filters,
                         GenericUnpack genericUnpack) {
-        super(executor);
+        super(executor,frameworkModel);
         this.eventLoop = channel.eventLoop();
         this.pathResolver = pathResolver;
         this.filters = filters;
-        this.frameworkModel = frameworkModel;
         this.genericUnpack = genericUnpack;
         this.writeQueue = new WriteQueue(channel);
     }
@@ -170,7 +169,7 @@ public class ServerStream extends AbstractStream {
 
     @Override
     public void requestN(int n) {
-        decoder.request(n);
+        deframer.request(n);
     }
 
     /**
@@ -294,7 +293,7 @@ public class ServerStream extends AbstractStream {
 
                 try {
                     final TriDecoder.Listener listener = new ServerDecoderListener();
-                    ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
+                    ServerStream.this.deframer = new TriDecoder(deCompressor, listener);
                 } catch (Throwable t) {
                     close(RpcStatus.INTERNAL
                         .withCause(t), null);
@@ -309,7 +308,7 @@ public class ServerStream extends AbstractStream {
                 ServerStream.this.listener = call.streamListener;
                 listener.onHeaders(headersToMap(headers));
                 if (endStream) {
-                    decoder.close();
+                    deframer.close();
                 }
             });
         }
@@ -318,9 +317,9 @@ public class ServerStream extends AbstractStream {
         @Override
         public void onData(ByteBuf data, boolean endStream) {
             executor.execute(() -> {
-                decoder.deframe(data);
+                deframer.deframe(data);
                 if (endStream) {
-                    decoder.close();
+                    deframer.close();
                 }
             });
         }
