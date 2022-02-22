@@ -39,7 +39,7 @@ class ClientCallTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
         MethodDescriptor echoMethod = new MethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
-        final RequestMetadata request = StreamUtils.createRequest(url,echoMethod, invocation, 1L, Compressor.NONE, "", 3000,
+        final RequestMetadata request = StreamUtils.createRequest(url, echoMethod, invocation, 1L, Compressor.NONE, "", 3000,
             null, null);
         ClientCallUtil.call(call, request);
     }

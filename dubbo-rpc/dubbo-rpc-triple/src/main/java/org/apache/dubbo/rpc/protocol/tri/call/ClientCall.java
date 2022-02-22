@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
@@ -57,12 +58,17 @@ public class ClientCall {
     private boolean headerSent;
 
     public ClientCall(URL url,
-                      Connection connection,
-                      ExecutorService executor
+                      Connection connection
     ) {
         this.url = url;
-        this.executor = executor;
         this.connection = connection;
+        ExecutorService executor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .getExecutor(url);
+        if (executor == null) {
+            throw new IllegalStateException("No callbackExecutor found in " + url);
+        }
+        this.executor = executor;
     }
 
     public void sendMessage(Object message) {

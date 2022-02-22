@@ -110,14 +110,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
-
         ConsumerModel consumerModel = invocation.getServiceModel() != null ?
             (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
         final MethodDescriptor methodDescriptor = consumerModel.getServiceModel()
             .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), methodDescriptor, invocation, future.requestId,
             compressor, acceptEncoding, timeout, genericPack, genericUnpack);
-        ClientCall call = new ClientCall(getUrl(), connection, executor);
+        ClientCall call = new ClientCall(getUrl(), connection);
         ClientCallUtil.call(call, metadata);
         return result;
     }
