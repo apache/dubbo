@@ -26,9 +26,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Service;
 
 @SpringBootApplication
-@Service
+@DubboService
 @EnableDubbo
-public class ConsumerApplication {
+public class ConsumerApplication implements ConsumerInterface{
 
     @DubboReference
     private DemoService demoService;
@@ -44,4 +44,8 @@ public class ConsumerApplication {
     public String doSayHello(String name) {
         return demoService.sayHello(name);
     }
+}
+
+interface ConsumerInterface {
+    
 }
