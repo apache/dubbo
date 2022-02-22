@@ -133,7 +133,7 @@ public class WrappedChannelHandlerTest {
         Assertions.assertEquals(preferredExecutorService, sharedExecutor);
         future.cancel();
 
-        ThreadlessExecutor executor = new ThreadlessExecutor(sharedExecutor);
+        ThreadlessExecutor executor = new ThreadlessExecutor();
         future = DefaultFuture.newFuture(channel, request, 1000, executor);
         preferredExecutorService = handler.getPreferredExecutorService(response);
         Assertions.assertEquals(preferredExecutorService, executor);

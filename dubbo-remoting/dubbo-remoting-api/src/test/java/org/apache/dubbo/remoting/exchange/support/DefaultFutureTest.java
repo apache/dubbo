@@ -136,7 +136,7 @@ public class DefaultFutureTest {
         Request request = new Request(channelId);
         ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
                 .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
-        ThreadlessExecutor executor = new ThreadlessExecutor(sharedExecutor);
+        ThreadlessExecutor executor = new ThreadlessExecutor();
         DefaultFuture f = DefaultFuture.newFuture(channel, request, 1000, executor);
         //mark the future is sent
         DefaultFuture.sent(channel, request);
