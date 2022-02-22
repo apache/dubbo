@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -26,7 +27,6 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
-import io.netty.util.concurrent.GlobalEventExecutor;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -35,7 +35,10 @@ class ClientCallTest {
     public void testNewCall() throws NoSuchMethodException {
         Connection connection = Mockito.mock(Connection.class);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
-        ClientCall call = new ClientCall(url, connection, GlobalEventExecutor.INSTANCE);
+        url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .createExecutorIfAbsent(url);
+        ClientCall call = new ClientCall(url, connection);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
         MethodDescriptor echoMethod = new MethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));

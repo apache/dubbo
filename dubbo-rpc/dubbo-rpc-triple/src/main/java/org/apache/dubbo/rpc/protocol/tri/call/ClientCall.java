@@ -66,7 +66,7 @@ public class ClientCall {
             .getDefaultExtension()
             .getExecutor(url);
         if (executor == null) {
-            throw new IllegalStateException("No callbackExecutor found in " + url);
+            throw new IllegalStateException("No available executor found in " + url);
         }
         this.executor = executor;
     }
