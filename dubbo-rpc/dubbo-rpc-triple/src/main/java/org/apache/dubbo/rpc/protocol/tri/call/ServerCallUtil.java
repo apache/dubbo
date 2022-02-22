@@ -58,8 +58,9 @@ public class ServerCallUtil {
                                                     GenericUnpack genericUnpack,
                                                     Invoker<?> invoker) {
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        ServerCallToObserverAdapter<Object> responseObserver = new WrapperResponseObserver<>(call, cancellationContext, invocation.getReturnType().getName(),
-            genericUnpack.serialization, invoker.getUrl());
+        final String returnClass = methodDescriptor.getReturnClass().getName();
+        ServerCallToObserverAdapter<Object> responseObserver = new WrapperResponseObserver<>(call,
+            cancellationContext, returnClass, genericUnpack.serialization, invoker.getUrl());
         final ServerCall.Listener listener = startCall(call, methodDescriptor, invocation, invoker, responseObserver);
         return new WrapRequestServerCallListener(call, listener, genericUnpack);
     }
