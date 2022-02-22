@@ -50,6 +50,12 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     try {
                         AppResponse result;
                         if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
+                            if (getData() == null) {
+                                final GrpcStatus clientStatus = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                                    .withDescription("Missing response data");
+                                onError(clientStatus);
+                                return;
+                            }
                             final Object resp = deserializeResponse(getData());
                             result = new AppResponse(resp);
                         } else {
