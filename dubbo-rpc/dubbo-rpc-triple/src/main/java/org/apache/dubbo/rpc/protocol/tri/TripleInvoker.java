@@ -131,32 +131,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         return result;
     }
 
-
-    @Override
-    protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
-        ExecutorService callbackExecutor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension()
-                .getExecutor(url);
-        if (callbackExecutor == null) {
-            throw new IllegalStateException("No callbackExecutor found in " + url);
-        }
-        if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
-            return new ThreadlessExecutor(callbackExecutor);
-        }
-        return callbackExecutor;
-    }
-
-
-    private ExecutorService getCallbackExecutor(ExecutorService executor, Invocation inv) {
-        if (executor == null) {
-            throw new IllegalStateException("No executor found in " + getUrl());
-        }
-        if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
-            return new ThreadlessExecutor(null);
-        }
-        return executor;
-    }
-
     @Override
     public boolean isAvailable() {
         if (!super.isAvailable()) {
