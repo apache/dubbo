@@ -340,8 +340,8 @@ public class ServiceInstancesChangedListenerTest {
         when(demoServiceListener.getConsumerUrl()).thenReturn(consumerURL);
         NotifyListener demoService2Listener = Mockito.mock(NotifyListener.class);
         when(demoService2Listener.getConsumerUrl()).thenReturn(consumerURL2);
-        listener.addListenerAndNotify(service1 + ":dubbo", demoServiceListener);
-        listener.addListenerAndNotify(service2 + ":dubbo", demoService2Listener);
+        listener.addListenerAndNotify(consumerURL.getProtocolServiceKey(), demoServiceListener);
+        listener.addListenerAndNotify(consumerURL2.getProtocolServiceKey(), demoService2Listener);
         // notify app1 instance change
         ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1Instances);
         listener.onEvent(app1_event);
@@ -373,7 +373,7 @@ public class ServiceInstancesChangedListenerTest {
         // test service listener still get notified when added after instance notification.
         NotifyListener demoService3Listener = Mockito.mock(NotifyListener.class);
         when(demoService3Listener.getConsumerUrl()).thenReturn(consumerURL3);
-        listener.addListenerAndNotify(service3 + ":dubbo", demoService3Listener);
+        listener.addListenerAndNotify(consumerURL3.getProtocolServiceKey(), demoService3Listener);
         Mockito.verify(demoService3Listener, Mockito.times(1)).notify(Mockito.anyList());
     }
 
