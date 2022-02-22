@@ -61,8 +61,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     private final Invocation invocation;
     private final Connection connection;
     private final int timeout;
-    private final long start = System.currentTimeMillis();    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
-    private final List<Runnable> timeoutListeners = new ArrayList<>();
+    private final long start = System.currentTimeMillis();
+    private final List<Runnable> timeoutListeners = new ArrayList<>();    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private Timeout timeoutCheckTask;
     private volatile long sent;
     private ExecutorService executor;

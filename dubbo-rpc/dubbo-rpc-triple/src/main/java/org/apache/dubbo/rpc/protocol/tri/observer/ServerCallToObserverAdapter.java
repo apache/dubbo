@@ -30,8 +30,8 @@ import java.util.Map;
 public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     public final CancellationContext cancellationContext;
-    private Map<String, Object> attachments;
     private final ServerCall call;
+    private Map<String, Object> attachments;
     private boolean terminated = false;
 
     public ServerCallToObserverAdapter(ServerCall call,

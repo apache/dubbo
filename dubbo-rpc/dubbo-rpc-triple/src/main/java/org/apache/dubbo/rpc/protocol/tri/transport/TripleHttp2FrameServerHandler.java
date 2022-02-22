@@ -47,10 +47,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private final GenericUnpack genericUnpack;
 
     public TripleHttp2FrameServerHandler(
-            FrameworkModel frameworkModel,
-            Executor executor,
-            List<HeaderFilter> filters,
-            GenericUnpack genericUnpack) {
+        FrameworkModel frameworkModel,
+        Executor executor,
+        List<HeaderFilter> filters,
+        GenericUnpack genericUnpack) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
         this.filters = filters;
@@ -84,7 +84,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
             serverStream.transportObserver.cancelByRemote(RpcStatus.CANCELLED
-                    .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
+                .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
         }
         ctx.close();
     }

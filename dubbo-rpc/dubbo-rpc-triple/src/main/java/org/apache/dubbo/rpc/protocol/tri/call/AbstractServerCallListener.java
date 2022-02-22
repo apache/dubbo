@@ -49,14 +49,14 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
             final Result response = invoker.invoke(invocation);
             responseObserver.setResponseAttachments(response.getObjectAttachments());
             if (response.hasException()) {
-                    throw response.getException();
+                throw response.getException();
             }
             final long cost = System.currentTimeMillis() - stInMillis;
             if (responseObserver.isTimeout(cost)) {
                 LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
-                        invocation.getTargetServiceUniqueName(),
-                        invocation.getMethodName(),
-                        cost));
+                    invocation.getTargetServiceUniqueName(),
+                    invocation.getMethodName(),
+                    cost));
                 responseObserver.onCompleted(RpcStatus.DEADLINE_EXCEEDED);
                 return null;
             } else {

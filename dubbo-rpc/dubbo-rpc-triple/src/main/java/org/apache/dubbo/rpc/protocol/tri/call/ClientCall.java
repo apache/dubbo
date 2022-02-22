@@ -185,21 +185,21 @@ public class ClientCall {
 
         @Override
         public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
-                done = true;
-                final RpcStatus detailStatus;
-                final RpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
-                if (statusFromTrailers != null) {
-                    detailStatus = statusFromTrailers;
-                } else {
-                    detailStatus = status;
-                }
-                try {
-                    listener.onClose(detailStatus, attachments);
-                } catch (Throwable t) {
-                    cancelByErr(RpcStatus.INTERNAL
-                        .withDescription("Close stream error")
-                        .withCause(t));
-                }
+            done = true;
+            final RpcStatus detailStatus;
+            final RpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
+            if (statusFromTrailers != null) {
+                detailStatus = statusFromTrailers;
+            } else {
+                detailStatus = status;
+            }
+            try {
+                listener.onClose(detailStatus, attachments);
+            } catch (Throwable t) {
+                cancelByErr(RpcStatus.INTERNAL
+                    .withDescription("Close stream error")
+                    .withCause(t));
+            }
         }
 
         void cancelByErr(RpcStatus status) {

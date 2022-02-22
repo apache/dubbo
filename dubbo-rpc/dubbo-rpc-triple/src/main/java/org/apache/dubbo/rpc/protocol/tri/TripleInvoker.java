@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
@@ -28,7 +26,6 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -98,13 +95,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(final Invocation invocation) {
         URL url = getUrl();
-        ExecutorService executor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension()
-                .getExecutor(url);
-        if (executor == null) {
-            throw new IllegalStateException("No callbackExecutor found in " + url);
-        }
-        ExecutorService callbackExecutor = getCallbackExecutor(executor, invocation);
+        ExecutorService callbackExecutor = getCallbackExecutor(url, invocation);
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
         invocation.setAttachment(TIMEOUT_KEY, timeout);
         DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, invocation, timeout, callbackExecutor);
@@ -115,17 +106,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         if (!connection.isAvailable()) {
             final RpcStatus status = RpcStatus.UNAVAILABLE
-                    .withDescription(String.format("Connect to %s failed", this));
+                .withDescription(String.format("Connect to %s failed", this));
             DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
 
         ConsumerModel consumerModel = invocation.getServiceModel() != null ?
-                (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
+            (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
         final MethodDescriptor methodDescriptor = consumerModel.getServiceModel()
-                .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+            .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), methodDescriptor, invocation, future.requestId,
-                compressor, acceptEncoding, timeout, genericPack, genericUnpack);
+            compressor, acceptEncoding, timeout, genericPack, genericUnpack);
         ClientCall call = new ClientCall(getUrl(), connection, executor);
         ClientCallUtil.call(call, metadata);
         return result;
