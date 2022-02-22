@@ -104,9 +104,9 @@ public class ServiceInstancesChangedListenerTest {
     static String service2 = "org.apache.dubbo.demo.DemoService2";
     static String service3 = "org.apache.dubbo.demo.DemoService3";
 
-    static URL consumerURL = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo&registry_cluster=default");
-    static URL consumerURL2 = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService2?interface=org.apache.dubbo.demo.DemoService2&protocol=dubbo&registry_cluster=default");
-    static URL consumerURL3 = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService3?interface=org.apache.dubbo.demo.DemoService3&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL2 = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService2?interface=org.apache.dubbo.demo.DemoService2&protocol=dubbo&registry_cluster=default");
+    static URL consumerURL3 = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService3?interface=org.apache.dubbo.demo.DemoService3&protocol=dubbo&registry_cluster=default");
     static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
@@ -460,9 +460,6 @@ public class ServiceInstancesChangedListenerTest {
 
     @Test
     public void testGetProtocolServiceKeyList() {
-        String protocolServiceKey1 = "group/Service:1.0";
-        String protocolServiceKey2 = "group/Service:1.0:consumer";
-
         NotifyListener listener = Mockito.mock(NotifyListener.class);
 
         Set<String> serviceNames = new HashSet<>();
@@ -470,24 +467,24 @@ public class ServiceInstancesChangedListenerTest {
         ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
         ServiceInstancesChangedListener instancesChangedListener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
-        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=tri"));
-        Set<String> keyList11 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey1, listener);
-        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri")), keyList11);
+        URL url1 = URL.valueOf("tri://localhost/Service?protocol=tri");
+        when(listener.getConsumerUrl()).thenReturn(url1);
+        Set<String> keyList11 = instancesChangedListener.getProtocolServiceKeyList(url1.getProtocolServiceKey(), listener);
+        assertEquals(getExpectedSet(Arrays.asList("Service:tri")), keyList11);
 
-        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service"));
-        Set<String> keyList12 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey1, listener);
+        URL url2 = URL.valueOf("consumer://localhost/Service?group=group&version=1.0");
+        when(listener.getConsumerUrl()).thenReturn(url2);
+        Set<String> keyList12 = instancesChangedListener.getProtocolServiceKeyList(url2.getProtocolServiceKey(), listener);
         assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo", "group/Service:1.0:rest")), keyList12);
 
-        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=dubbo"));
-        Set<String> keyList21 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
+        URL url3 = URL.valueOf("dubbo://localhost/Service?protocol=dubbo&group=group&version=1.0");
+        when(listener.getConsumerUrl()).thenReturn(url3);
+        Set<String> keyList21 = instancesChangedListener.getProtocolServiceKeyList(url3.getProtocolServiceKey(), listener);
         assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:dubbo")), keyList21);
 
-        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service"));
-        Set<String> keyList22 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
-        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo", "group/Service:1.0:rest")), keyList22);
-
-        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=dubbo,tri"));
-        Set<String> keyList23 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
+        URL url4 = URL.valueOf("dubbo,tri://localhost/Service?protocol=dubbo,tri&group=group&version=1.0");
+        when(listener.getConsumerUrl()).thenReturn(url4);
+        Set<String> keyList23 = instancesChangedListener.getProtocolServiceKeyList(url4.getProtocolServiceKey(), listener);
         assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:dubbo", "group/Service:1.0:tri")), keyList23);
     }
 

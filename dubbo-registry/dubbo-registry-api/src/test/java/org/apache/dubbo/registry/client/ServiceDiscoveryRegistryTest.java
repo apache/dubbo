@@ -208,7 +208,7 @@ public class ServiceDiscoveryRegistryTest {
 
         // different interface mapping to the same apps
         NotifyListener testServiceListener2 = mock(NotifyListener.class);
-        URL url2 = URL.valueOf("consumer://127.0.0.1/TestService2?interface=TestService2&check=false&protocol=tri");
+        URL url2 = URL.valueOf("tri://127.0.0.1/TestService2?interface=TestService2&check=false&protocol=tri");
         when(testServiceListener2.getConsumerUrl()).thenReturn(url2);
         serviceDiscoveryRegistry.subscribeURLs(url2, testServiceListener2, multiApps);
         // check instance listeners not changed, methods not called

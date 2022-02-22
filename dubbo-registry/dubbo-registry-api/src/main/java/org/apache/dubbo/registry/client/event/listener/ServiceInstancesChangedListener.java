@@ -54,7 +54,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptySet;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -488,10 +487,16 @@ public class ServiceInstancesChangedListener {
             serviceKey = serviceKey.substring(0, serviceKey.indexOf(CONSUMER_PROTOCOL_SUFFIX));
         }
 
-        if (StringUtils.isNotEmpty(protocol) && !StringUtils.isEquals(protocol, CONSUMER)) {
-            String[] specifiedProtocols = protocol.split(",");
-            for (String specifiedProtocol : specifiedProtocols) {
-                result.add(serviceKey + GROUP_CHAR_SEPARATOR + specifiedProtocol);
+        if (StringUtils.isNotEmpty(protocol)) {
+            int protocolIndex = serviceKey.indexOf(":" + protocol);
+            if (protocol.contains(",") && protocolIndex != -1) {
+                serviceKey = serviceKey.substring(0, protocolIndex);
+                String[] specifiedProtocols = protocol.split(",");
+                for (String specifiedProtocol : specifiedProtocols) {
+                    result.add(serviceKey + GROUP_CHAR_SEPARATOR + specifiedProtocol);
+                }
+            } else {
+                result.add(serviceKey);
             }
         } else {
             for (String supportedProtocol : SUPPORTED_PROTOCOLS) {
