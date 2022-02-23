@@ -107,6 +107,8 @@ public class RpcContext {
         CANCELLATION_CONTEXT.set(oldContext);
     }
 
+    private boolean remove = true;
+
     protected RpcContext() {
     }
 
@@ -156,6 +158,14 @@ public class RpcContext {
         return SERVER_ATTACHMENT.get();
     }
 
+    public boolean canRemove() {
+        return remove;
+    }
+
+    public void clearAfterEachInvoke(boolean remove) {
+        this.remove = remove;
+    }
+
     /**
      * Using to pass environment parameters in the whole invocation. For example, `remotingApplicationName`,
      * `remoteAddress`, etc. {@link RpcServiceContext}
@@ -171,19 +181,27 @@ public class RpcContext {
     }
 
     public static void removeClientAttachment() {
-        CLIENT_ATTACHMENT.remove();
+        if (CLIENT_ATTACHMENT.get().canRemove()) {
+            CLIENT_ATTACHMENT.remove();
+        }
     }
 
     public static void removeServerAttachment() {
-        SERVER_ATTACHMENT.remove();
+        if (SERVER_ATTACHMENT.get().canRemove()) {
+            SERVER_ATTACHMENT.remove();
+        }
     }
 
     /**
      * customized for internal use.
      */
     public static void removeContext() {
-        CLIENT_ATTACHMENT.remove();
-        SERVER_ATTACHMENT.remove();
+        if (CLIENT_ATTACHMENT.get().canRemove()) {
+            CLIENT_ATTACHMENT.remove();
+        }
+        if (SERVER_ATTACHMENT.get().canRemove()) {
+            SERVER_ATTACHMENT.remove();
+        }
         SERVER_LOCAL.remove();
         SERVICE_CONTEXT.remove();
         CANCELLATION_CONTEXT.remove();
