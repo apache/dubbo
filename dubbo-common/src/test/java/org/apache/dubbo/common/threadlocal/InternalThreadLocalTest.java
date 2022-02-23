@@ -54,7 +54,7 @@ public class InternalThreadLocalTest {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
 
             @Override
-            protected Integer initialValue() throws Exception {
+            protected Integer initialValue() {
                 Integer v = index.getAndIncrement();
                 System.out.println("thread : " + Thread.currentThread().getName() + " init value : " + v);
                 return v;
