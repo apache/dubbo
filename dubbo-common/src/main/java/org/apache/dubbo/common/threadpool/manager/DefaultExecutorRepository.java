@@ -70,6 +70,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private ScheduledExecutorService connectivityScheduledExecutor;
 
+    private ScheduledExecutorService cacheRefreshingScheduledExecutor;
+
+    private ExecutorService mappingRefreshingExecutor;
+
     public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
 
     private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
@@ -103,6 +107,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         }
 
         connectivityScheduledExecutor = Executors.newScheduledThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-connectivity-scheduler", true));
+        cacheRefreshingScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
+        mappingRefreshingExecutor = Executors.newFixedThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-mapping-refreshing-scheduler", true));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
 
@@ -366,6 +372,15 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
+    public ScheduledExecutorService getCacheRefreshingScheduledExecutor() {
+        return cacheRefreshingScheduledExecutor;
+    }
+
+    public ExecutorService getMappingRefreshingExecutor() {
+        return mappingRefreshingExecutor;
+    }
+
+    @Override
     public void destroyAll() {
         logger.info("destroying executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
@@ -398,6 +413,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         // connectivityScheduledExecutor
         shutdownExecutorService(connectivityScheduledExecutor, "connectivityScheduledExecutor");
+        shutdownExecutorService(cacheRefreshingScheduledExecutor, "cacheRefreshingScheduledExecutor");
 
         // shutdown share executor
         shutdownExecutorService(sharedExecutor, "sharedExecutor");

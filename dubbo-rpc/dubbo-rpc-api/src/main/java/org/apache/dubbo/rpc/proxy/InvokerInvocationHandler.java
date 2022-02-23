@@ -77,7 +77,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
         // invoker.getUrl() returns consumer url.
-        RpcServiceContext.setRpcContext(url);
+        RpcServiceContext.getServiceContext().setConsumerUrl(url);
 
         if (serviceModel instanceof ConsumerModel) {
             rpcInvocation.put(Constants.CONSUMER_MODEL, serviceModel);

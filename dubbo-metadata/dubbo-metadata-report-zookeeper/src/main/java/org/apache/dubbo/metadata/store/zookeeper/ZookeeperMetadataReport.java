@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -35,7 +36,6 @@ import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
-import com.google.gson.Gson;
 import org.apache.zookeeper.data.Stat;
 
 import java.util.ArrayList;
@@ -60,8 +60,6 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     private final String root;
 
     ZookeeperClient zkClient;
-
-    private Gson gson = new Gson();
 
     private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
 
@@ -141,8 +139,8 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     @Override
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
         String path = getNodePath(identifier);
-        if (StringUtils.isBlank(zkClient.getContent(path))) {
-            zkClient.create(path, gson.toJson(metadataInfo), false);
+        if (StringUtils.isBlank(zkClient.getContent(path)) && StringUtils.isNotEmpty(metadataInfo.getContent())) {
+            zkClient.create(path, metadataInfo.getContent(), false);
         }
     }
 
@@ -157,15 +155,18 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         String content = zkClient.getContent(getNodePath(identifier));
-        return gson.fromJson(content, MetadataInfo.class);
+        return JsonUtils.getGson().fromJson(content, MetadataInfo.class);
     }
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         String path = buildPathKey(DEFAULT_MAPPING_GROUP, serviceKey);
-        if (null == casListenerMap.get(path)) {
-            addCasServiceMappingListener(path, serviceKey, listener);
-        }
+        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(path, _k -> {
+            MappingDataListener newMappingListener = new MappingDataListener(serviceKey, path);
+            zkClient.addDataListener(path, newMappingListener);
+            return newMappingListener;
+        });
+        mappingDataListener.addListener(listener);
         return getAppNames(zkClient.getContent(path));
     }
 
@@ -213,12 +214,6 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private String buildPathKey(String group, String serviceKey) {
         return toRootDir() + group + PATH_SEPARATOR + serviceKey;
-    }
-
-    private void addCasServiceMappingListener(String path, String serviceKey, MappingListener listener) {
-        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(path, _k -> new MappingDataListener(serviceKey, path));
-        mappingDataListener.addListener(listener);
-        zkClient.addDataListener(path, mappingDataListener);
     }
 
     private void removeCasServiceMappingListener(String path, MappingListener listener) {

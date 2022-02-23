@@ -768,8 +768,9 @@ public class RpcContext {
         SERVICE_CONTEXT.get().setConsumerUrl(consumerUrl);
     }
 
+    @Deprecated
     public static void setRpcContext(URL url) {
-        RpcServiceContext.setRpcContext(url);
+        RpcServiceContext.getServiceContext().setConsumerUrl(url);
     }
 
     protected static RestoreContext clearAndStoreContext() {

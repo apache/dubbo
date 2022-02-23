@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -31,7 +32,6 @@ import java.util.TreeSet;
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
-import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
 /**
  * This will interact with remote metadata center to find the interface-app mapping and will cache the data locally.
@@ -39,7 +39,7 @@ import static org.apache.dubbo.common.utils.StringUtils.SLASH;
  * Call variants of getCachedMapping() methods whenever need to use the mapping data.
  */
 @SPI(value = "metadata", scope = APPLICATION)
-public interface ServiceNameMapping {
+public interface ServiceNameMapping extends Destroyable {
 
     String DEFAULT_MAPPING_GROUP = "mapping";
 
@@ -63,7 +63,8 @@ public interface ServiceNameMapping {
 
     static String buildGroup(String serviceInterface) {
         //the issue : https://github.com/apache/dubbo/issues/4671
-        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
+//        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
+        return serviceInterface;
     }
 
     static String toStringKeys(Set<String> serviceNames) {
@@ -89,24 +90,23 @@ public interface ServiceNameMapping {
     }
 
     /**
-     * Get the mapping data from remote metadata center and cache in local storage.
+     * Init the mapping data from local storage and url parameter.
      *
-     * @return app list current interface mapping to, in sequence determined by:
-     * 1.check PROVIDED_BY
-     * 2.check remote metadata center
-     *
+     * @return app list that current interface maps to, in sequence determined by:
+     * 1. PROVIDED_BY specified by user
+     * 2. snapshot in local file
      */
-    Set<String> getServices(URL subscribedURL);
+    void initInterfaceAppMapping(URL subscribedURL);
 
     /**
-     * Register listener to get notified once mapping data changes.
+     * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.
      *
-     * @param listener
-     * @return
+     * @param listener listener that will be notified on mapping change
+     * @return the latest mapping result from remote center
      */
     Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener);
 
-    MappingListener stopListen(URL subscribeURL);
+    MappingListener stopListen(URL subscribeURL, MappingListener listener);
 
     void putCachedMapping(String serviceKey, Set<String> apps);
 

@@ -108,6 +108,20 @@ public interface ExecutorRepository {
     ScheduledExecutorService getConnectivityScheduledExecutor();
 
     /**
+     * Scheduler used to refresh file based caches from memory to disk.
+     *
+     * @return
+     */
+    ScheduledExecutorService getCacheRefreshingScheduledExecutor();
+
+    /**
+     * Executor used to run async mapping tasks
+     *
+     * @return
+     */
+    ExecutorService getMappingRefreshingExecutor();
+
+    /**
      * Destroy all executors that are not in shutdown state
      */
     void destroyAll();

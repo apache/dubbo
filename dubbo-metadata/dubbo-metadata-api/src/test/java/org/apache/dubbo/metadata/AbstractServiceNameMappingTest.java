@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -36,13 +37,14 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SER
  */
 class AbstractServiceNameMappingTest {
 
-    private MockServiceNameMapping mapping = new MockServiceNameMapping();
-    private MockServiceNameMapping2 mapping2 = new MockServiceNameMapping2();
+    private MockServiceNameMapping mapping = new MockServiceNameMapping(ApplicationModel.defaultModel());
+    private MockServiceNameMapping2 mapping2 = new MockServiceNameMapping2(ApplicationModel.defaultModel());
 
-    URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class);
+    URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class.getName());
 
     @BeforeEach
-    public void setUp() throws Exception {}
+    public void setUp() throws Exception {
+    }
 
     @AfterEach
     public void clearup() throws Exception {
@@ -52,21 +54,16 @@ class AbstractServiceNameMappingTest {
     @Test
     void testGetServices() {
         url = url.addParameter(PROVIDED_BY, "app1,app2");
-        Set<String> services = mapping.getServices(url);
+        mapping.initInterfaceAppMapping(url);
+        Set<String> services = mapping.getCachedMapping(url);
         Assertions.assertTrue(services.contains("app1"));
         Assertions.assertTrue(services.contains("app2"));
 
-        // check mapping cache works.
-        url = url.removeParameter(PROVIDED_BY);
-        services = mapping.getServices(url);
-        Assertions.assertTrue(services.contains("app1"));
-        Assertions.assertTrue(services.contains("app2"));
-
-        // remove mapping cache, check get() works.
-        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
-        services = mapping.getServices(url);
-        Assertions.assertTrue(services.contains("remote-app1"));
-        Assertions.assertTrue(services.contains("remote-app2"));
+//        // remove mapping cache, check get() works.
+//        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+//        services = mapping.initInterfaceAppMapping(url);
+//        Assertions.assertTrue(services.contains("remote-app1"));
+//        Assertions.assertTrue(services.contains("remote-app2"));
 
 
         Assertions.assertNotNull(mapping.getCachedMapping(url));
@@ -82,7 +79,7 @@ class AbstractServiceNameMappingTest {
         Assertions.assertTrue(services.contains("registry-app1"));
 
         // remove mapping cache, check get() works.
-        mapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        mapping2.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
         mapping2.enabled = true;
         services = mapping2.getAndListen(registryURL, url, new MappingListener() {
             @Override
@@ -102,6 +99,10 @@ class AbstractServiceNameMappingTest {
     private class MockServiceNameMapping extends AbstractServiceNameMapping {
 
         public boolean enabled = false;
+
+        public MockServiceNameMapping(ApplicationModel applicationModel) {
+            super(applicationModel);
+        }
 
         @Override
         public Set<String> get(URL url) {
@@ -130,6 +131,10 @@ class AbstractServiceNameMappingTest {
     private class MockServiceNameMapping2 extends AbstractServiceNameMapping {
 
         public boolean enabled = false;
+
+        public MockServiceNameMapping2(ApplicationModel applicationModel) {
+            super(applicationModel);
+        }
 
         @Override
         public Set<String> get(URL url) {

@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
@@ -52,7 +53,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
     protected String metadataType;
-    protected MetaCacheManager metaCacheManager;
+    protected final MetaCacheManager metaCacheManager;
     protected URL registryURL;
 
     protected Set<ServiceInstancesChangedListener> instanceListeners = new ConcurrentHashSet<>();
@@ -77,7 +78,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.registryURL = registryURL;
         this.serviceName = serviceName;
         this.metadataInfo = new MetadataInfo(serviceName);
-        this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix());
+        this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix(), applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getCacheRefreshingScheduledExecutor());
     }
 
     public synchronized void register() throws RuntimeException {
@@ -87,13 +88,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-        // update origin metadataInfo's revision
-        this.metadataInfo.calAndGetRevision();
-        // clone metadataInfo to prevent metadataInfo changed during `calOrUpdateInstanceRevision` to `reportMetadata`
-        MetadataInfo copyOfMetaInfo = this.metadataInfo.clone();
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance, copyOfMetaInfo);
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
-            reportMetadata(copyOfMetaInfo);
+            reportMetadata(this.metadataInfo);
             doRegister(this.serviceInstance);
         }
     }
@@ -119,15 +116,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-
-        // update origin metadataInfo's revision
-        this.metadataInfo.calAndGetRevision();
-        // clone metadataInfo to prevent metadataInfo changed during `calOrUpdateInstanceRevision` to `reportMetadata`
-        MetadataInfo copyOfMetaInfo = this.metadataInfo.clone();
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance, copyOfMetaInfo);
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
-            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", copyOfMetaInfo.getRevision()));
-            doUpdate(this.serviceInstance, copyOfMetaInfo);
+            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", this.serviceInstance.getServiceMetadata().getRevision()));
+            doUpdate(this.serviceInstance);
         }
     }
 
@@ -153,6 +145,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         MetadataInfo metadata = metaCacheManager.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            metadata.init();
             // metadata loaded from cache
             if (logger.isDebugEnabled()) {
                 logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
@@ -161,32 +154,36 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return metadata;
         }
 
-        // try to load metadata from remote.
-        int triedTimes = 0;
-        while (triedTimes < 3) {
-            metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
+        synchronized (metaCacheManager) {
+            // try to load metadata from remote.
+            int triedTimes = 0;
+            while (triedTimes < 3) {
+                metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
 
-            if (metadata != MetadataInfo.EMPTY) {// succeeded
-                metadata.init();
-                break;
-            } else {// failed
-                if (triedTimes > 0) {
-                    logger.info("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
-                        + "&cluster=" + instance.getRegistryCluster());
-                }
-                triedTimes++;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                if (metadata != MetadataInfo.EMPTY) {// succeeded
+                    metadata.init();
+                    break;
+                } else {// failed
+                    if (triedTimes > 0) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
+                                + "&cluster=" + instance.getRegistryCluster());
+                        }
+                    }
+                    triedTimes++;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    }
                 }
             }
-        }
 
-        if (metadata == MetadataInfo.EMPTY) {
-            logger.error("Failed to get metadata for instance after 3 retries, " + instance.getAddress() + "?revision=" + revision
-                + "&cluster=" + instance.getRegistryCluster());
-        } else {
-            metaCacheManager.put(revision, metadata);
+            if (metadata == MetadataInfo.EMPTY) {
+                logger.error("Failed to get metadata for instance after 3 retries, " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster());
+            } else {
+                metaCacheManager.put(revision, metadata);
+            }
         }
         return metadata;
     }
@@ -233,11 +230,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
        throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
-    protected void doUpdate(ServiceInstance serviceInstance, MetadataInfo metadataInfo) throws RuntimeException {
+    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
 
         this.unregister();
 
-        reportMetadata(metadataInfo);
+        reportMetadata(serviceInstance.getServiceMetadata());
         this.doRegister(serviceInstance);
     }
 
@@ -260,14 +257,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         return instance;
     }
 
-    protected boolean calOrUpdateInstanceRevision(ServiceInstance instance, MetadataInfo metadataInfo) {
+    protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
         String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+        MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
             if (EMPTY_REVISION.equals(newRevision)) {
                 return false;
             }
-            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
+            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
             return true;
         }
         return false;

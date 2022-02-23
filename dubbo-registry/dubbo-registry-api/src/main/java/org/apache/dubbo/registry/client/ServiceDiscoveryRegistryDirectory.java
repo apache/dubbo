@@ -133,7 +133,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             return;
         }
         // Set the context of the address notification thread.
-        RpcServiceContext.setRpcContext(getConsumerUrl());
+        RpcServiceContext.getServiceContext().setConsumerUrl(getConsumerUrl());
 
         //  3.x added for extend URL address
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
@@ -325,8 +325,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
 
-        return !oldURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey())
-            .equals(newURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey()));
+        return !oldURL.getMetadataInfo().getValidServiceInfo(getConsumerUrl().getProtocolServiceKey())
+            .equals(newURL.getMetadataInfo().getValidServiceInfo(getConsumerUrl().getProtocolServiceKey()));
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {

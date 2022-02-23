@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -131,8 +132,8 @@ public class RegistryProtocolTest {
         URL consumerUrl = ((MigrationInvoker<?>) invoker).getConsumerUrl();
         Assertions.assertTrue((consumerUrl != null));
 
-        // verify that the default is dubbo protocol
-        Assertions.assertEquals("dubbo", consumerUrl.getProtocol());
+        // verify that the protocol header of consumerUrl is set to "consumer"
+        Assertions.assertEquals("consumer", consumerUrl.getProtocol());
         Assertions.assertEquals(parameters.get(REGISTER_IP_KEY), consumerUrl.getHost());
         Assertions.assertFalse(consumerUrl.getAttributes().containsKey(REFER_KEY));
         Assertions.assertEquals("value1", consumerUrl.getAttribute("key1"));
@@ -520,7 +521,7 @@ public class RegistryProtocolTest {
 
         Map<String, String> urlParameters = consumerUrl.getParameters();
         URL urlToRegistry = new ServiceConfigURL(
-            urlParameters.get(PROTOCOL_KEY) == null ? DUBBO : urlParameters.get(PROTOCOL_KEY),
+            urlParameters.get(PROTOCOL_KEY) == null ? CONSUMER : urlParameters.get(PROTOCOL_KEY),
             urlParameters.remove(REGISTER_IP_KEY), 0, consumerUrl.getPath(), urlParameters);
 
         URL registeredConsumerUrl = urlToRegistry.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY,
