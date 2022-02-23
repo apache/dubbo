@@ -33,8 +33,10 @@ import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -254,7 +256,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         instance.setServiceMetadata(metadataInfo);
         setMetadataStorageType(instance, metadataType);
         ServiceInstanceMetadataUtils.customizeInstance(instance, applicationModel);
+        appendRuntimeParameters(instance);
         return instance;
+    }
+
+    protected void appendRuntimeParameters(DefaultServiceInstance instance) {
+        Map<String, String> metadata = instance.getMetadata();
+        metadata.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
     }
 
     protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
