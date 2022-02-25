@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_PID_KEY;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
-import static org.apache.dubbo.common.URLStrParser.ENCODED_TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CACHE_CLEAR_TASK_INTERVAL;
 import static org.apache.dubbo.common.constants.CommonConstants.CACHE_CLEAR_WAITING_THRESHOLD;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
@@ -66,7 +65,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(CacheableFailbackRegistry.class);
-    private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
+    private static String[] VARIABLE_KEYS = new String[]{ENCODED_PID_KEY};
 
     protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
     protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();

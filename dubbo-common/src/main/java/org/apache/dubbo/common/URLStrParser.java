@@ -30,7 +30,6 @@ import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
 
 public final class URLStrParser {
     public static final String ENCODED_QUESTION_MARK = "%3F";
-    public static final String ENCODED_TIMESTAMP_KEY = "timestamp%3D";
     public static final String ENCODED_PID_KEY = "pid%3D";
     public static final String ENCODED_AND_MARK = "%26";
     private static final char SPACE = 0x20;
