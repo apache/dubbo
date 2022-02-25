@@ -64,7 +64,7 @@ public class StubTest {
     private DubboBootstrap configProviderApp(DubboBootstrap dubboBootstrap) {
         ProtocolConfig protocol1 = new ProtocolConfig();
         protocol1.setName("dubbo");
-        protocol1.setPort(20111);
+        protocol1.setPort(9103);
 
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(DemoService.class);

@@ -276,6 +276,7 @@ public class DubboProtocol extends AbstractProtocol {
         // if it's callback service on client side
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
+            // The port of the client exposed stub service is 0
             port = 0;
         }
 

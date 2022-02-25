@@ -24,9 +24,6 @@ import org.apache.dubbo.config.api.User;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * DemoServiceImpl
- */
 public class DemoServiceImpl implements DemoService {
 
     private static boolean isConnected = false;
