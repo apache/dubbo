@@ -116,4 +116,9 @@ public class InjvmProtocol extends AbstractProtocol {
             return false;
         }
     }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
 }

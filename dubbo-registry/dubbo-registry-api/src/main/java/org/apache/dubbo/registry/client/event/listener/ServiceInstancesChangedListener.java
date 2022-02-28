@@ -102,7 +102,13 @@ public class ServiceInstancesChangedListener {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
         this.scheduler = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
         if (SUPPORTED_PROTOCOLS == null) {
-            SUPPORTED_PROTOCOLS = applicationModel.getExtensionLoader(Protocol.class).getSupportedExtensions();
+            Set<Protocol> allProtocols = applicationModel.getExtensionLoader(Protocol.class).getSupportedExtensionInstances();
+            SUPPORTED_PROTOCOLS = new HashSet<>(allProtocols.size());
+            for (Protocol protocol : allProtocols) {
+                if (protocol.isRPC()) {
+                    SUPPORTED_PROTOCOLS.add(protocol.getName());
+                }
+            }
         }
     }
 

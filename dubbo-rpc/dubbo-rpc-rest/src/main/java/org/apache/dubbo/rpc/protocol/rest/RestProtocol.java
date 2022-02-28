@@ -63,6 +63,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
     private static final String DEFAULT_SERVER = "jetty";
+    public static final String NAME = "rest";
 
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
@@ -201,6 +202,11 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected int getErrorCode(Throwable e) {
         // TODO
         return super.getErrorCode(e);
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
     @Override

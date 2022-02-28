@@ -88,4 +88,15 @@ public interface Protocol {
         return Collections.emptyList();
     }
 
+    /**
+     * To identify if the current implementation is an RPC Protocol.
+     * @return for compatibility purpose, return false by default
+     */
+    default boolean isRPC() {
+        return false;
+    }
+
+    default String getName() {
+        return "";
+    }
 }

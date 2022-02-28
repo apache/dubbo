@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentMap;
 public class GrpcProtocol extends AbstractProxyProtocol {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcProtocol.class);
+    public static final String NAME = "grpc";
 
     public final static int DEFAULT_PORT = 50051;
 
@@ -186,6 +187,11 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
     @Override

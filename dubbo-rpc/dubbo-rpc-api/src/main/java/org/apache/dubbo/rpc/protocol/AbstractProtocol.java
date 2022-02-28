@@ -136,4 +136,14 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
+
+    @Override
+    public String getName() {
+        String className = this.getClass().getSimpleName();
+        int idx = className.indexOf("Protocol");
+        if (idx > 0) {
+            return className.substring(0, idx).toLowerCase();
+        }
+        return "";
+    }
 }

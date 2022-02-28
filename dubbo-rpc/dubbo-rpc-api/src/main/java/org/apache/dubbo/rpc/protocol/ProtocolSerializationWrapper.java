@@ -61,4 +61,14 @@ public class ProtocolSerializationWrapper implements Protocol {
     public List<ProtocolServer> getServers() {
         return protocol.getServers();
     }
+
+    @Override
+    public boolean isRPC() {
+        return protocol.isRPC();
+    }
+
+    @Override
+    public String getName() {
+        return protocol.getName();
+    }
 }

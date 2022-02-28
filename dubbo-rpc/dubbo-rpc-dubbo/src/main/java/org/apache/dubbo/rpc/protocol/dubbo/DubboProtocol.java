@@ -706,6 +706,16 @@ public class DubboProtocol extends AbstractProtocol {
         super.destroy();
     }
 
+    @Override
+    public boolean isRPC() {
+        return true;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
     /**
      * close ReferenceCountExchangeClient
      *

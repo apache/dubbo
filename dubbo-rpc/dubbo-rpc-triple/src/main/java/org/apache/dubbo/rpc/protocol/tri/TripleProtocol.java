@@ -37,6 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_T
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
+    public static final String NAME = "tri";
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
@@ -100,6 +101,11 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     protected <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException {
         return null;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
 
     @Override
