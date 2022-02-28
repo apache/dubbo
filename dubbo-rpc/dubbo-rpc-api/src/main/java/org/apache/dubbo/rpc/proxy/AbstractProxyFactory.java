@@ -109,7 +109,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
     private <T> ClassLoader getClassLoader(Invoker<T> invoker) {
         ServiceModel serviceModel = invoker.getUrl().getServiceModel();
         ClassLoader classLoader = null;
-        if (serviceModel != null) {
+        if (serviceModel != null && serviceModel.getConfig() != null) {
             classLoader = serviceModel.getConfig().getInterfaceClassLoader();
         }
         if (classLoader == null) {
