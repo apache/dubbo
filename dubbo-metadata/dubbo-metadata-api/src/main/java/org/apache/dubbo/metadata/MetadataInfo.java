@@ -66,13 +66,13 @@ public class MetadataInfo implements Serializable {
     private String app;
     // revision that will report to registry or remote meta center, must always update together with rawMetadataInfo, check {@link this#calAndGetRevision}
     private volatile String revision;
-    // Json formatted metadata that will report to remote meta center, must always update together with revision, check {@link this#calAndGetRevision}
-    private volatile String rawMetadataInfo;
     // key format is '{group}/{interface name}:{version}:{protocol}'
     private final Map<String, ServiceInfo> services;
 
     /* used at runtime */
     private transient AtomicBoolean initiated = new AtomicBoolean(false);
+    // Json formatted metadata that will report to remote meta center, must always update together with revision, check {@link this#calAndGetRevision}
+    private transient volatile String rawMetadataInfo;
     // key format is '{group}/{interface name}:{version}'
     private transient Map<String, Set<ServiceInfo>> subscribedServices;
     private transient final Map<String, String> extendParams;
