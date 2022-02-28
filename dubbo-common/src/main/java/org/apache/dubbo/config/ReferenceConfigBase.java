@@ -318,11 +318,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
-        if (consumer != null) {
-            if (notHasSelfRegistryProperty()) {
-                setRegistries(consumer.getRegistries());
-                setRegistryIds(consumer.getRegistryIds());
-            }
+        if (consumer != null && notHasSelfRegistryProperty()) {
+            setRegistries(consumer.getRegistries());
+            setRegistryIds(consumer.getRegistryIds());
         }
         super.computeValidRegistryIds();
     }
