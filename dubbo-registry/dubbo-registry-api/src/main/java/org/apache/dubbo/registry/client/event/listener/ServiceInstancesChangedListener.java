@@ -33,6 +33,8 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
@@ -87,7 +89,7 @@ public class ServiceInstancesChangedListener {
     private volatile boolean hasEmptyMetadata;
 
     // protocols subscribe by default, specify the protocol that should be subscribed through 'consumer.protocol'.
-    private static final String[] SUPPORTED_PROTOCOLS = new String[]{"dubbo", "tri", "rest"};
+    private static volatile Set<String> SUPPORTED_PROTOCOLS;
     public static final String CONSUMER_PROTOCOL_SUFFIX = ":consumer";
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
@@ -97,8 +99,11 @@ public class ServiceInstancesChangedListener {
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
-            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
+        this.scheduler = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+        if (SUPPORTED_PROTOCOLS == null) {
+            SUPPORTED_PROTOCOLS = applicationModel.getExtensionLoader(Protocol.class).getSupportedExtensions();
+        }
     }
 
     /**
