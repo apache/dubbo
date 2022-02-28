@@ -33,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
     private static final String DEFAULT_FILE_NAME = ".mapping";
-    private static final int DEFAULT_ENTRY_SIZE = 1000;
+    private static final int DEFAULT_ENTRY_SIZE = 10000;
     private static final Type founderSetType = new TypeToken<TreeSet<String>>() {
     }.getType();
 
