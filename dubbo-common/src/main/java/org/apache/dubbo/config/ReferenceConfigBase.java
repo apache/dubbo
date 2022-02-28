@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
@@ -158,15 +157,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         appendAttributes(metaData, consumer);
         appendAttributes(metaData, this);
         return metaData;
-    }
-
-    protected void checkProtocol() {
-        if (StringUtils.isEmpty(protocol)) {
-            List<ProtocolConfig> defaultProtocols = getConfigManager().getDefaultProtocols();
-            if (CollectionUtils.isNotEmpty(defaultProtocols)) {
-                protocol = defaultProtocols.iterator().next().getName();
-            }
-        }
     }
 
     /**
