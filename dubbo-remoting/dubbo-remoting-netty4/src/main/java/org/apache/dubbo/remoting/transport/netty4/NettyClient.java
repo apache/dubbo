@@ -239,7 +239,7 @@ public class NettyClient extends AbstractClient {
     }
 
     protected EventLoopGroup getEventLoopGroup() {
-        return EVENT_LOOP_GROUP;
+        return EVENT_LOOP_GROUP.get();
     }
 
     protected Bootstrap getBootstrap() {
