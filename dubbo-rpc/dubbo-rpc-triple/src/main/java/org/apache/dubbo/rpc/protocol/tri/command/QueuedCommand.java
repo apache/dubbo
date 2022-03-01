@@ -21,54 +21,33 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-public interface QueuedCommand {
+public abstract class QueuedCommand {
 
-    void setFlush(boolean flush);
+    private ChannelPromise promise;
 
-    ChannelPromise promise();
-
-    void promise(ChannelPromise promise);
-
-    void run(Channel channel);
-
-    abstract class AbstractQueuedCommand implements QueuedCommand {
-
-        protected boolean flush = false;
-        private ChannelPromise promise;
-
-        @Override
-        public ChannelPromise promise() {
-            return promise;
-        }
-
-        public void setFlush(boolean flush) {
-            this.flush = flush;
-        }
-
-        @Override
-        public void promise(ChannelPromise promise) {
-            this.promise = promise;
-        }
-
-        @Override
-        public void run(Channel channel) {
-            if (channel.isActive()) {
-                channel.write(this, promise);
-            } else {
-                promise.trySuccess();
-            }
-        }
-
-        public final void send(ChannelHandlerContext ctx, ChannelPromise promise) {
-            if (ctx.channel().isActive()) {
-                doSend(ctx, promise);
-                if (flush) {
-                    ctx.flush();
-                }
-            }
-        }
-
-        public abstract void doSend(ChannelHandlerContext ctx, ChannelPromise promise);
+    public ChannelPromise promise() {
+        return promise;
     }
 
+    public void promise(ChannelPromise promise) {
+        this.promise = promise;
+    }
+
+    public void run(Channel channel) {
+        if (channel.isActive()) {
+            channel.write(this, promise);
+        } else {
+            promise.trySuccess();
+        }
+    }
+
+    public final void send(ChannelHandlerContext ctx, ChannelPromise promise) {
+        if (ctx.channel().isActive()) {
+            doSend(ctx, promise);
+            ctx.flush();
+        }
+    }
+
+    public abstract void doSend(ChannelHandlerContext ctx, ChannelPromise promise);
 }
+

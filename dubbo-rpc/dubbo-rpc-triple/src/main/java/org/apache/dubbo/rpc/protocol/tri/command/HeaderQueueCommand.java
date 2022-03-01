@@ -17,35 +17,20 @@
 
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import org.apache.dubbo.rpc.protocol.tri.Metadata;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 
-public class HeaderQueueCommand extends QueuedCommand.AbstractQueuedCommand {
+public class HeaderQueueCommand extends QueuedCommand {
 
     private final Http2Headers headers;
 
     private final boolean endStream;
 
-    private HeaderQueueCommand(Metadata headers, boolean endStream) {
-        this(getHttp2Headers(headers), endStream);
-    }
-
     private HeaderQueueCommand(Http2Headers headers, boolean endStream) {
         this.headers = headers;
         this.endStream = endStream;
-    }
-
-    public static HeaderQueueCommand createHeaders(Metadata headers, boolean endStream) {
-        return new HeaderQueueCommand(getHttp2Headers(headers), endStream);
-    }
-
-    public static HeaderQueueCommand createHeaders(Metadata headers) {
-        return new HeaderQueueCommand(headers, false);
     }
 
     public static HeaderQueueCommand createHeaders(Http2Headers headers) {
@@ -56,22 +41,12 @@ public class HeaderQueueCommand extends QueuedCommand.AbstractQueuedCommand {
         return new HeaderQueueCommand(headers, endStream);
     }
 
-    public static HeaderQueueCommand createTrailers(Metadata headers) {
-        return new HeaderQueueCommand(headers, true);
-    }
-
     public Http2Headers getHeaders() {
         return headers;
     }
 
     public boolean isEndStream() {
         return endStream;
-    }
-
-    private static Http2Headers getHttp2Headers(Metadata metadata) {
-        Http2Headers http2Headers = new DefaultHttp2Headers(true);
-        metadata.forEach((kv) -> http2Headers.set(kv.getKey(), kv.getValue()));
-        return http2Headers;
     }
 
     @Override

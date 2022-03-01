@@ -19,22 +19,22 @@ import "google/protobuf/any.proto";
 package org.apache.dubbo.triple;
 
 message TripleRequestWrapper {
-    // hessian4
-    // json
-    string serializeType = 1;
-    repeated bytes args = 2;
-    repeated string argTypes = 3;
+  // hessian4
+  // json
+  string serializeType = 1;
+  repeated bytes args = 2;
+  repeated string argTypes = 3;
 }
 
 message TripleResponseWrapper {
-    string serializeType = 1;
-    bytes data = 2;
-    string type = 3;
+  string serializeType = 1;
+  bytes data = 2;
+  string type = 3;
 }
 
 message TripleExceptionWrapper {
-    string language = 1;
-    string serialization = 2;
-    string className = 3;
-    bytes data = 4;
+  string language = 1;
+  string serialization = 2;
+  string className = 3;
+  bytes data = 4;
 }

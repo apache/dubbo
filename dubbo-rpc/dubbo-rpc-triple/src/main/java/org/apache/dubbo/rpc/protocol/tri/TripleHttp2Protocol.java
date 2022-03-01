@@ -14,16 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -34,6 +46,10 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.ssl.SslContext;
 
+import java.util.List;
+import java.util.concurrent.Executor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
@@ -63,6 +79,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+        final List<HeaderFilter> filters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
         final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
             .gracefulShutdownTimeoutMillis(10000)
@@ -74,23 +91,36 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                 .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 8192)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        final MultipleSerialization serialization = frameworkModel
+            .getExtensionLoader(MultipleSerialization.class)
+            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInitializer<Channel>() {
 
             @Override
             protected void initChannel(Channel ch) {
                 final ChannelPipeline p = ch.pipeline();
                 p.addLast(new TripleCommandOutBoundHandler());
-                p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-                // TODO constraint MAX DATA_SIZE
-                p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE, false));
-                p.addLast(new TripleServerInboundHandler());
+                p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url), filters, new GenericUnpack(serialization, url)));
             }
         });
         pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new TripleTailHandler());
     }
 
+
+    private Executor lookupExecutor(URL url) {
+        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension();
+        Executor urlExecutor = executorRepository.getExecutor(url);
+        if (urlExecutor == null) {
+            urlExecutor = executorRepository.createExecutorIfAbsent(url);
+        }
+        return urlExecutor;
+    }
+
     @Override
     public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+
         final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
@@ -104,6 +134,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
             .frameLogger(CLIENT_LOGGER)
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler, new TripleClientRequestHandler(frameworkModel));
+        pipeline.addLast(codec, handler);
     }
 }

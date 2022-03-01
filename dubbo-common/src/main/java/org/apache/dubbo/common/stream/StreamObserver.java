@@ -24,6 +24,8 @@ package org.apache.dubbo.common.stream;
  * @param <T> type of message
  */
 public interface StreamObserver<T> {
+
+
     /**
      * onNext
      *
