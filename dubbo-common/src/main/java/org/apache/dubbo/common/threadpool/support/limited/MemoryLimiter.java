@@ -47,6 +47,9 @@ public class MemoryLimiter {
     }
 
     public MemoryLimiter(long memoryLimit, Instrumentation inst) {
+        if (memoryLimit <= 0) {
+            throw new IllegalArgumentException();
+        }
         this.memoryLimit = memoryLimit;
         this.inst = inst;
     }
@@ -113,12 +116,14 @@ public class MemoryLimiter {
         }
         acquireLock.lock();
         try {
+            final long sum = memory.sum();
             final long objectSize = inst.getObjectSize(e);
-            if (memory.sum() + objectSize < memoryLimit) {
-                memory.add(objectSize);
-                if (memory.sum() < memoryLimit) {
-                    notLimited.signal();
-                }
+            if (sum + objectSize >= memoryLimit) {
+                return false;
+            }
+            memory.add(objectSize);
+            if (sum < memoryLimit) {
+                notLimited.signal();
             }
         } finally {
             acquireLock.unlock();
@@ -133,14 +138,15 @@ public class MemoryLimiter {
         if (e == null) {
             throw new NullPointerException();
         }
-        final long objectSize = inst.getObjectSize(e);
         acquireLock.lockInterruptibly();
         try {
-            while (memory.sum() + objectSize >= memoryLimit) {
+            final long sum = memory.sum();
+            final long objectSize = inst.getObjectSize(e);
+            while (sum + objectSize >= memoryLimit) {
                 notLimited.await();
             }
             memory.add(objectSize);
-            if (memory.sum() < memoryLimit) {
+            if (sum < memoryLimit) {
                 notLimited.signal();
             }
         } finally {
@@ -156,9 +162,9 @@ public class MemoryLimiter {
             throw new NullPointerException();
         }
         long nanos = unit.toNanos(timeout);
-        final long objectSize = inst.getObjectSize(e);
         acquireLock.lockInterruptibly();
         try {
+            final long objectSize = inst.getObjectSize(e);
             while (memory.sum() + objectSize >= memoryLimit) {
                 if (nanos <= 0) {
                     return false;
@@ -185,9 +191,9 @@ public class MemoryLimiter {
         if (memory.sum() == 0) {
             return;
         }
-        final long objectSize = inst.getObjectSize(e);
         releaseLock.lock();
         try {
+            final long objectSize = inst.getObjectSize(e);
             if (memory.sum() > 0) {
                 memory.add(-objectSize);
                 if (memory.sum() > 0) {
@@ -206,9 +212,9 @@ public class MemoryLimiter {
         if (null == e) {
             return;
         }
-        final long objectSize = inst.getObjectSize(e);
         releaseLock.lockInterruptibly();
         try {
+            final long objectSize = inst.getObjectSize(e);
             while (memory.sum() == 0) {
                 notEmpty.await();
             }
@@ -228,10 +234,10 @@ public class MemoryLimiter {
         if (null == e) {
             return;
         }
-        final long objectSize = inst.getObjectSize(e);
         long nanos = unit.toNanos(timeout);
         releaseLock.lockInterruptibly();
         try {
+            final long objectSize = inst.getObjectSize(e);
             while (memory.sum() == 0) {
                 if (nanos <= 0) {
                     return;
