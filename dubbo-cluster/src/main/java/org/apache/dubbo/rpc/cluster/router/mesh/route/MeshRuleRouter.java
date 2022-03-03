@@ -108,7 +108,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 }
             }
         }
-        result = result.or(ruleCache.getUnmatchedInvokers());
+
+        // result = result.or(ruleCache.getUnmatchedInvokers());
 
         // empty protection
         if (result.isEmpty()) {
