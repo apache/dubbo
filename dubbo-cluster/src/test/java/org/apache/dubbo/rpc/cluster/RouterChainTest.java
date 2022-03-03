@@ -158,17 +158,25 @@ public class RouterChainTest {
         Assertions.assertTrue(result.contains(invoker5));
 
         String snapshotLog =
-            "Router snapshot service DemoInterface from registry localhost on the consumer 192.168.1.3 using the dubbo version  is below: \n" +
-            "[ Parent (Input: 6) (Current Node Output: 6) (Chain Node Output: 1) ] Input: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103 -> Chain Node Output: localhost:9103...\n" +
-            "  [ MockInvokersSelector (Input: 6) (Current Node Output: 5) (Chain Node Output: 1) Router message: invocation.need.mock not set. Return normal Invokers. ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
-            "    [ StandardMeshRuleRouter (Input: 5) (Current Node Output: 4) (Chain Node Output: 1) Router message: Match App: app Subset: isolation  ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
-            "      [ TagStateRouter (Input: 4) (Current Node Output: 3) (Chain Node Output: 1) Router message: Disable Tag Router. Reason: tagRouterRule is invalid or disabled ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
-            "        [ ServiceRouter (Input: 3) (Current Node Output: 3) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
-            "          [ ConditionStateRouter (Input: 3) (Current Node Output: 2) (Chain Node Output: 2) Router message: Match return. ] Current Node Output: localhost:9103,localhost:9103\n" +
-            "          [ AppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103\n" +
-            "            [ ConditionStateRouter (Input: 2) (Current Node Output: 1) (Chain Node Output: 1) Router message: Match return. ] Current Node Output: localhost:9103";
+                 "[ Parent (Input: 6) (Current Node Output: 6) (Chain Node Output: 1) ] Input: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103 -> Chain Node Output: localhost:9103...\n" +
+                "  [ MockInvokersSelector (Input: 6) (Current Node Output: 5) (Chain Node Output: 1) Router message: invocation.need.mock not set. Return normal Invokers. ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
+                "    [ StandardMeshRuleRouter (Input: 5) (Current Node Output: 4) (Chain Node Output: 1) Router message: Match App: app Subset: isolation  ] Current Node Output: localhost:9103,localhost:9103,localhost:9103,localhost:9103\n" +
+                "      [ TagStateRouter (Input: 4) (Current Node Output: 3) (Chain Node Output: 1) Router message: Disable Tag Router. Reason: tagRouterRule is invalid or disabled ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
+                "        [ ServiceStateRouter (Input: 3) (Current Node Output: 3) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103,localhost:9103\n" +
+                "          [ ConditionStateRouter (Input: 3) (Current Node Output: 2) (Chain Node Output: 2) Router message: Match return. ] Current Node Output: localhost:9103,localhost:9103\n" +
+                "          [ AppStateRouter (Input: 2) (Current Node Output: 2) (Chain Node Output: 1) Router message: null ] Current Node Output: localhost:9103,localhost:9103\n" +
+                "            [ ConditionStateRouter (Input: 2) (Current Node Output: 1) (Chain Node Output: 1) Router message: Match return. ] Current Node Output: localhost:9103";
         String[] snapshot = routerSnapshotSwitcher.cloneSnapshot();
         Assertions.assertTrue(snapshot[0].contains(snapshotLog));
+
+        RpcContext.getServiceContext().setNeedPrintRouterSnapshot(false);
+        result = routerChain.route(consumerUrl, invokers, rpcInvocation);
+        Assertions.assertEquals(result.size(), 1);
+        Assertions.assertTrue(result.contains(invoker5));
+
+        routerChain.destroy();
+        Assertions.assertEquals(routerChain.getRouters().size(), 0);
+        Assertions.assertEquals(routerChain.getStateRouters().size(), 0);
 
     }
 
