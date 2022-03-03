@@ -172,7 +172,7 @@ public class ServiceInstancesChangedListener {
                     retryFuture.cancel(true);
                 }
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
-                logger.warn("Address refresh try task submitted.");
+                logger.warn("Address refresh try task submitted");
             }
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
@@ -326,12 +326,25 @@ public class ServiceInstancesChangedListener {
         if (revisionToInstances == null) {
             return 0;
         }
+
+        StringBuilder builder = new StringBuilder();
         int emptyMetadataNum = 0;
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             DefaultServiceInstance serviceInstance = (DefaultServiceInstance) entry.getValue().get(0);
             if (serviceInstance == null || serviceInstance.getServiceMetadata() == MetadataInfo.EMPTY) {
                 emptyMetadataNum++;
             }
+
+            builder.append(entry.getKey());
+            builder.append(" ");
+        }
+
+        if (emptyMetadataNum > 0) {
+            builder.insert(0, emptyMetadataNum + "/" + revisionToInstances.size() + " revisions failed to get metadata from remote: ");
+            logger.error(builder.toString());
+        } else {
+            builder.insert(0, revisionToInstances.size() + " unique working revisions: ");
+            logger.info(builder.toString());
         }
         return emptyMetadataNum;
     }

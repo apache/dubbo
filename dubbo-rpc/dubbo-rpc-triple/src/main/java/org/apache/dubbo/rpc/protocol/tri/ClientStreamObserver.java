@@ -17,18 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.stream.StreamObserver;
 
-public interface ClientStreamObserver<T> extends StreamObserver<T> {
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+
+public interface ClientStreamObserver<T> extends CallStreamObserver<T> {
 
     /**
-     * Sets the compression algorithm to use for the call
-     * <p>
-     * For stream set compression needs to determine whether the metadata has been sent, and carry on corresponding processing
-     *
-     * @param compression {@link Compressor}
+     * Swaps to manual flow control where no message will be delivered to {@link
+     * StreamObserver#onNext(Object)} unless it is {@link #request request()}ed. Since {@code
+     * request()} may not be called before the call is started, a number of initial requests may be
+     * specified.
      */
-    void setCompression(String compression);
-
+    void disableAutoRequest();
 
 }

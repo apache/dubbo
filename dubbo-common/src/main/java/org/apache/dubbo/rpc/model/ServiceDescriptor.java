@@ -51,8 +51,7 @@ public class ServiceDescriptor {
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
-        return serviceDefinitions.computeIfAbsent(serviceKey,
-            (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
+        return serviceDefinitions.computeIfAbsent(serviceKey, (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
     }
 
     private void initMethods() {
@@ -60,7 +59,12 @@ public class ServiceDescriptor {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            MethodDescriptor methodDescriptor = new MethodDescriptor(method);
+            MethodDescriptor methodDescriptor;
+            if (StreamMethodDescriptor.isStreamMethod(method)) {
+                methodDescriptor = new StreamMethodDescriptor(method);
+            } else {
+                methodDescriptor = new MethodDescriptor(method);
+            }
 
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
             methodModels.add(methodDescriptor);
@@ -137,9 +141,9 @@ public class ServiceDescriptor {
         }
         ServiceDescriptor that = (ServiceDescriptor) o;
         return Objects.equals(interfaceName, that.interfaceName)
-            && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
-            && Objects.equals(methods, that.methods)
-            && Objects.equals(descToMethods, that.descToMethods);
+                && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
+                && Objects.equals(methods, that.methods)
+                && Objects.equals(descToMethods, that.descToMethods);
     }
 
     @Override

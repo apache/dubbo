@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-public class FlushQueueCommand extends QueuedCommand.AbstractQueuedCommand {
+public class FlushQueueCommand extends QueuedCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {

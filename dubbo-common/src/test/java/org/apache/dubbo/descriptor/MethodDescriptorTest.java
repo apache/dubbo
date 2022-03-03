@@ -19,6 +19,7 @@ package org.apache.dubbo.descriptor;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.proto.HelloReply;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 
 import io.reactivex.Single;
 import org.junit.jupiter.api.Assertions;
@@ -48,7 +49,6 @@ public class MethodDescriptorTest {
         MethodDescriptor descriptor = new MethodDescriptor(method);
         assertEquals("", descriptor.getParamDesc());
         Assertions.assertEquals(0, descriptor.getParameterClasses().length);
-        assertTrue(descriptor.isUnary());
         assertFalse(descriptor.isNeedWrap());
     }
 
@@ -58,63 +58,56 @@ public class MethodDescriptorTest {
         MethodDescriptor descriptor = new MethodDescriptor(method);
         assertEquals("", descriptor.getParamDesc());
         Assertions.assertEquals(0, descriptor.getParameterClasses().length);
-        assertTrue(descriptor.isUnary());
         assertTrue(descriptor.isNeedWrap());
     }
 
     @Test
     public void testWrapperBiStream() throws Exception {
         Method method = DescriptorService.class.getMethod("wrapBidirectionalStream", StreamObserver.class);
-        MethodDescriptor descriptor = new MethodDescriptor(method);
+        StreamMethodDescriptor descriptor = new StreamMethodDescriptor(method);
         Assertions.assertEquals(1, descriptor.getParameterClasses().length);
-        assertTrue(descriptor.isStream());
-        assertSame(descriptor.getRpcType(), MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM);
+        assertSame(descriptor.streamType, StreamMethodDescriptor.StreamType.BI_DIRECTIONAL);
         assertTrue(descriptor.isNeedWrap());
     }
 
     @Test
     public void testBiStream() throws Exception {
         Method method = DescriptorService.class.getMethod("bidirectionalStream", StreamObserver.class);
-        MethodDescriptor descriptor = new MethodDescriptor(method);
+        StreamMethodDescriptor descriptor = new StreamMethodDescriptor(method);
         Assertions.assertEquals(1, descriptor.getParameterClasses().length);
-        assertTrue(descriptor.isStream());
-        assertSame(descriptor.getRpcType(), MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM);
+        assertSame(descriptor.streamType, StreamMethodDescriptor.StreamType.BI_DIRECTIONAL);
         assertFalse(descriptor.isNeedWrap());
     }
 
     @Test
     public void testIsStream() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
-        MethodDescriptor descriptor = new MethodDescriptor(method);
-        Assertions.assertFalse(descriptor.isStream());
+
+        Assertions.assertFalse(StreamMethodDescriptor.isStreamMethod(method));
 
         method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
-        descriptor = new MethodDescriptor(method);
-        Assertions.assertFalse(descriptor.isStream());
+        Assertions.assertFalse(StreamMethodDescriptor.isStreamMethod(method));
     }
 
     @Test
     public void testIsUnary() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
         MethodDescriptor descriptor = new MethodDescriptor(method);
-        Assertions.assertTrue(descriptor.isUnary());
+        Assertions.assertFalse(StreamMethodDescriptor.isStreamMethod(method));
 
         method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
-        descriptor = new MethodDescriptor(method);
-        Assertions.assertTrue(descriptor.isUnary());
+        Assertions.assertFalse(StreamMethodDescriptor.isStreamMethod(method));
     }
 
     @Test
     public void testIsServerStream() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class,
             StreamObserver.class);
-        MethodDescriptor descriptor = new MethodDescriptor(method);
-        Assertions.assertFalse(descriptor.isUnary());
+        StreamMethodDescriptor descriptor = new StreamMethodDescriptor(method);
         Assertions.assertFalse(descriptor.isNeedWrap());
 
         Method method2 = DescriptorService.class.getMethod("sayHelloServerStream2", Object.class, StreamObserver.class);
-        MethodDescriptor descriptor2 = new MethodDescriptor(method2);
-        Assertions.assertFalse(descriptor2.isUnary());
+        StreamMethodDescriptor descriptor2 = new StreamMethodDescriptor(method2);
         Assertions.assertTrue(descriptor2.isNeedWrap());
     }
 
@@ -140,12 +133,12 @@ public class MethodDescriptorTest {
         Assertions.assertFalse(descriptor2.isNeedWrap());
 
         Method method3 = DescriptorService.class.getMethod("reactorMethod2", Mono.class);
-        MethodDescriptor  descriptor3 = new MethodDescriptor(method3);
+        MethodDescriptor descriptor3 = new MethodDescriptor(method3);
         Assertions.assertFalse(descriptor3.isNeedWrap());
 
 
         Method method4 = DescriptorService.class.getMethod("rxJavaMethod", Single.class);
-        MethodDescriptor  descriptor4 = new MethodDescriptor(method4);
+        MethodDescriptor descriptor4 = new MethodDescriptor(method4);
         Assertions.assertFalse(descriptor4.isNeedWrap());
     }
 
