@@ -164,7 +164,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                 providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                 invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
-                invocation.getInvoker(), invocation.getAttributes());
+                invocation.getInvoker(), new HashMap<>());
             copiedInvocation.setInvoker(invoker);
             return copiedInvocation;
         }
@@ -193,7 +193,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                     providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
-                    invocation.getInvoker(), invocation.getAttributes());
+                    invocation.getInvoker(), new HashMap<>());
                 copiedInvocation.setInvoker(invoker);
                 return copiedInvocation;
             } finally {
