@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>3.0.5</dubbo.version>
+    <dubbo.version>3.0.6</dubbo.version>
 </properties>
 
 <dependencies>
