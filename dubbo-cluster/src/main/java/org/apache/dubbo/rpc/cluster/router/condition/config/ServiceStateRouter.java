@@ -22,10 +22,10 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 /**
  * Service level router, "server-unique-name.condition-router"
  */
-public class ServiceRouter<T> extends ListenableStateRouter<T> {
+public class ServiceStateRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "SERVICE_ROUTER";
 
-    public ServiceRouter(URL url) {
+    public ServiceStateRouter(URL url) {
         super(url, DynamicConfiguration.getRuleKey(url));
     }
 }

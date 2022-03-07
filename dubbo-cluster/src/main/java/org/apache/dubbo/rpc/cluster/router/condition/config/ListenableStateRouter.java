@@ -145,6 +145,6 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
 
     @Override
     public void stop() {
-        this.getRuleRepository().removeListener(ruleKey, this);
+        this.getRuleRepository().removeListener(ruleKey + RULE_SUFFIX, this);
     }
 }

@@ -58,7 +58,7 @@ public class RouterSnapshotSwitcher {
     public void setSnapshot(String snapshot) {
         if (enable) {
             // lock free
-            recentSnapshot[offset.incrementAndGet() % MAX_LENGTH] = System.currentTimeMillis() + " - " + snapshot;
+            recentSnapshot[offset.getAndIncrement() % MAX_LENGTH] = System.currentTimeMillis() + " - " + snapshot;
         }
     }
 
