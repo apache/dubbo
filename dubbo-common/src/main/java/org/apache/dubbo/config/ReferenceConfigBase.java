@@ -240,9 +240,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
         this.interfaceClass = interfaceClass;
-        if (getInterfaceClassLoader() == null) {
-            setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
-        }
+        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
     }
 
     public String getClient() {
