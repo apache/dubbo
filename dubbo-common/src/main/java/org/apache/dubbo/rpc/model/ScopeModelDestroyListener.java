@@ -18,4 +18,8 @@ package org.apache.dubbo.rpc.model;
 
 public interface ScopeModelDestroyListener<T extends ScopeModel> {
     void onDestroy(T scopeModel);
+
+    default boolean isProtocol() {
+        return false;
+    }
 }

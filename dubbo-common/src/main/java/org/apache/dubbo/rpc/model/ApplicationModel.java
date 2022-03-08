@@ -240,24 +240,28 @@ public class ApplicationModel extends ScopeModel {
 
         // 2. pre-destroy, set stopping
         if (deployer != null) {
+            // destroy registries and unregister services from registries first to notify consumers to stop consuming this instance.
             deployer.preDestroy();
         }
 
-        // destroy application resources
+        // 3. Try to destroy protocols to stop this instance from receiving new requests from connections
+        frameworkModel.tryDestroyProtocols();
+
+        // 4. destroy application resources
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             if (moduleModel != internalModule) {
                 moduleModel.destroy();
             }
         }
-        // destroy internal module later
+        // 5. destroy internal module later
         internalModule.destroy();
 
-        // post-destroy, release registry resources
+        // 6. post-destroy, release registry resources
         if (deployer != null) {
             deployer.postDestroy();
         }
 
-        // destroy other resources (e.g. ZookeeperTransporter )
+        // 7. destroy other resources (e.g. ZookeeperTransporter )
         notifyDestroy();
 
         if (environment != null) {
@@ -273,7 +277,7 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository = null;
         }
 
-        // destroy framework if none application
+        // 8. destroy framework if none application
         frameworkModel.tryDestroy();
     }
 

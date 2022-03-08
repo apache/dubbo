@@ -754,6 +754,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
+            destroyRegistries();
+            destroyServiceDiscoveries();
+            destroyMetadataReports();
+
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
@@ -771,10 +775,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             try {
                 executeShutdownCallbacks();
-
-                destroyRegistries();
-                destroyServiceDiscoveries();
-                destroyMetadataReports();
 
                 // TODO should we close unused protocol server which only used by this application?
                 // protocol server will be closed on all applications of same framework are stopped currently, but no associate to application
