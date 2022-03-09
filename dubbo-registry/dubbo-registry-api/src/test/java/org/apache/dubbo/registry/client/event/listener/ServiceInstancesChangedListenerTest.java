@@ -27,7 +27,6 @@ import org.apache.dubbo.registry.client.InstanceAddressURL;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.registry.client.support.MockServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -65,6 +64,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -160,27 +160,18 @@ public class ServiceInstancesChangedListenerTest {
         metadataInfo_333 = gson.fromJson(metadata_333, MetadataInfo.class);
         metadataInfo_444 = gson.fromJson(metadata_444, MetadataInfo.class);
 
-        when(metadataService.getMetadataInfo(eq("111"))).thenReturn(metadataInfo_111);
-        when(metadataService.getMetadataInfo(eq("222"))).thenReturn(metadataInfo_222);
-        when(metadataService.getMetadataInfo(eq("333"))).thenReturn(metadataInfo_333);
-        when(metadataService.getMetadataInfo(eq("444"))).thenThrow(IllegalStateException.class);
+        serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
+        when(serviceDiscovery.getUrl()).thenReturn(registryURL);
 
-        serviceDiscovery = new MockServiceDiscovery("app1,app2", registryURL);
-
+        when(serviceDiscovery.getRemoteMetadata(eq("111"), anyList())).thenReturn(metadataInfo_111);
+        when(serviceDiscovery.getRemoteMetadata(eq("222"), anyList())).thenReturn(metadataInfo_222);
+        when(serviceDiscovery.getRemoteMetadata(eq("333"), anyList())).thenReturn(metadataInfo_333);
+        when(serviceDiscovery.getRemoteMetadata(eq("444"), anyList())).thenReturn(MetadataInfo.EMPTY);
     }
 
 
     @BeforeEach
     public void init() {
-
-        // Because in the MetadataUtils#getRemoteMetadata method, the metadataService is deleted when it is used up,
-        // so each unit test needs to re-store the metadataService into MetadataUtils.metadataServiceProxies
-        app1Instances.forEach(instance -> MetadataUtils.metadataServiceProxies.computeIfAbsent(MetadataUtils.computeKey(instance), k -> metadataService));
-        app2Instances.forEach(instance -> MetadataUtils.metadataServiceProxies.computeIfAbsent(MetadataUtils.computeKey(instance), k -> metadataService));
-        app1FailedInstances.forEach(instance -> MetadataUtils.metadataServiceProxies.computeIfAbsent(MetadataUtils.computeKey(instance), k -> metadataService));
-        app1FailedInstances2.forEach(instance -> MetadataUtils.metadataServiceProxies.computeIfAbsent(MetadataUtils.computeKey(instance), k -> metadataService));
-        app1InstancesWithNoRevision.forEach(instance -> MetadataUtils.metadataServiceProxies.computeIfAbsent(MetadataUtils.computeKey(instance), k -> metadataService));
-
         // Because all tests use the same ServiceDiscovery, the previous metadataCache should be cleared before next unit test
         // to avoid contaminating next unit test.
         clearMetadataCache();
@@ -192,7 +183,6 @@ public class ServiceInstancesChangedListenerTest {
             listener.destroy();
             listener = null;
         }
-        MetadataUtils.metadataServiceProxies.clear();
     }
 
     @AfterAll
@@ -408,13 +398,13 @@ public class ServiceInstancesChangedListenerTest {
         ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
         listener.onEvent(event);
 
-        when(metadataService.getMetadataInfo(eq("222"))).thenAnswer(new Answer<MetadataInfo>() {
+        when(serviceDiscovery.getRemoteMetadata(eq("222"), anyList())).thenAnswer(new Answer<MetadataInfo>() {
             @Override
             public MetadataInfo answer(InvocationOnMock invocationOnMock) throws Throwable {
                 if (Thread.currentThread().getName().contains("Dubbo-metadata-retry")) {
                     return metadataInfo_222;
                 }
-                return null;
+                return MetadataInfo.EMPTY;
             }
         });
 
@@ -422,8 +412,8 @@ public class ServiceInstancesChangedListenerTest {
         listener.onEvent(event2);
 
         // event2 did not really take effect
-        Assertions.assertEquals(5, listener.getAddresses(service1 + ":dubbo", consumerURL).size());
-        assertTrue(isNotEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
+        Assertions.assertEquals(3, listener.getAddresses(service1 + ":dubbo", consumerURL).size());
+        assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
 
         //
         init();

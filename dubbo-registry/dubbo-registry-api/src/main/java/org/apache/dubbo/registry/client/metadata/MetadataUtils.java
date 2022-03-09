@@ -36,12 +36,12 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -51,18 +51,6 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MetadataUtils {
     public static final Logger logger = LoggerFactory.getLogger(MetadataUtils.class);
-
-    public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
-
-    public static ConcurrentMap<String, Invoker<?>> metadataServiceInvokers = new ConcurrentHashMap<>();
-
-    public static ConcurrentMap<String, Invoker<?>> getMetadataServiceInvokers() {
-        return metadataServiceInvokers;
-    }
-
-    public static synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
-        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> referProxy(k, instance));
-    }
 
     public static void publishServiceDefinition(URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).size() == 0) {
@@ -109,23 +97,7 @@ public class MetadataUtils {
         }
     }
 
-    public static String computeKey(ServiceInstance serviceInstance) {
-        return serviceInstance.getServiceName() + "##" + serviceInstance.getAddress() + "##" +
-                ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
-    }
-
-    public static synchronized void destroyMetadataServiceProxy(ServiceInstance instance) {
-        String key = computeKey(instance);
-        if (metadataServiceProxies.containsKey(key)) {
-            metadataServiceProxies.remove(key);
-        }
-        if (metadataServiceInvokers.containsKey(key)) {
-            Invoker<?> invoker = metadataServiceInvokers.remove(key);
-            invoker.destroy();
-        }
-    }
-
-    private static MetadataService referProxy(String key, ServiceInstance instance) {
+    public static MetadataService referProxy(ServiceInstance instance) {
         MetadataServiceURLBuilder builder;
         ExtensionLoader<MetadataServiceURLBuilder> loader = instance.getApplicationModel()
             .getExtensionLoader(MetadataServiceURLBuilder.class);
@@ -149,17 +121,13 @@ public class MetadataUtils {
         ScopeModel scopeModel = instance.getApplicationModel();
         Protocol protocol = scopeModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
-        metadataServiceInvokers.put(key, invoker);
 
         ProxyFactory proxyFactory = scopeModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         return proxyFactory.getProxy(invoker);
     }
 
-    public static ConcurrentMap<String, MetadataService> getMetadataServiceProxies() {
-        return metadataServiceProxies;
-    }
-
-    public static MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance, MetadataReport metadataReport) {
+    public static MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances, MetadataReport metadataReport) {
+        ServiceInstance instance = selectInstance(instances);
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         MetadataInfo metadataInfo;
         try {
@@ -170,11 +138,18 @@ public class MetadataUtils {
                 metadataInfo = MetadataUtils.getMetadata(revision, instance, metadataReport);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance
-                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
-                metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
-                MetadataUtils.destroyMetadataServiceProxy(instance);
+                MetadataService metadataServiceProxy = null;
+                try {
+                    metadataServiceProxy = MetadataUtils.referProxy(instance);
+                    metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                } finally {
+                    if (metadataServiceProxy instanceof Destroyable) {
+                        ((Destroyable)metadataServiceProxy).$destroy();
+                    }
+                }
             }
         } catch (Exception e) {
+            logger.error("Failed to get app metadata for revision " + revision + " for type " + metadataType + " from instance " + instance.getAddress(), e);
             metadataInfo = null;
         }
 
@@ -202,6 +177,13 @@ public class MetadataUtils {
 
     private static Map<String, MetadataReport> getMetadataReports(ApplicationModel applicationModel) {
         return applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReports(false);
+    }
+
+    private static ServiceInstance selectInstance(List<ServiceInstance> instances) {
+        if (instances.size() == 1) {
+            return instances.get(0);
+        }
+        return instances.get(ThreadLocalRandom.current().nextInt(0, instances.size()));
     }
 
 }
