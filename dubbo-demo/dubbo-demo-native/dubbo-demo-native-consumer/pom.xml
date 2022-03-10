@@ -127,7 +127,7 @@
                             <encoding>UTF-8</encoding>
                             <compilerArguments>
                                 <sourcepath>
-                                    ${project.basedir}/src/main/java
+                                    ${project.basedir}${file.separator}src${file.separator}main${file.separator}java
                                 </sourcepath>
                             </compilerArguments>
                         </configuration>
