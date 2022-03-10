@@ -148,6 +148,8 @@ public class ExtensionDirector implements ExtensionAccessor {
                 extensionLoader.destroy();
             }
             extensionLoadersMap.clear();
+            extensionScopeMap.clear();
+            extensionPostProcessors.clear();
         }
     }
 

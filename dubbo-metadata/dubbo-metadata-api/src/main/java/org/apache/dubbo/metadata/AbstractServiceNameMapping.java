@@ -155,6 +155,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
                 removeListener(subscribeURL, listener);
             }
             if (CollectionUtils.isEmpty(listeners)) {
+                mappingListeners.remove(mappingKey);
                 removeCachedMapping(mappingKey);
                 removeMappingLock(mappingKey);
             }

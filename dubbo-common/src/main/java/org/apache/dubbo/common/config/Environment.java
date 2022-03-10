@@ -162,7 +162,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      * All configurations will be converged into a data bus - URL, and then drive the subsequent process.
      * <p>
      * At present, there are many configuration sources, including AbstractConfig (API, XML, annotation), - D, config center, etc.
-     * This method helps us to filter out the most priority values from various configuration sources.
+     * This methood helps us t filter out the most priority values from various configuration sources.
      *
      * @param config
      * @param prefix

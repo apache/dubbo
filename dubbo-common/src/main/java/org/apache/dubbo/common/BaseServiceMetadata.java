@@ -37,7 +37,7 @@ public class BaseServiceMetadata {
         int length = path == null ? 0 : path.length();
         length += group == null ? 0 : group.length();
         length += version == null ? 0 : version.length();
-        length += 3;
+        length += 2;
         StringBuilder buf = new StringBuilder(length);
         if (StringUtils.isNotEmpty(group)) {
             buf.append(group).append('/');
@@ -106,7 +106,7 @@ public class BaseServiceMetadata {
 
     public static String keyWithoutGroup(String interfaceName, String version) {
         if (StringUtils.isEmpty(version)) {
-            return interfaceName + ":0.0.0";
+            return interfaceName + DEFAULT_VERSION;
         }
         return interfaceName + ":" + version;
     }
