@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.curator;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
@@ -257,8 +257,8 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    public CuratorWatcherImpl createTargetChildListener(String path, ChildListener listener) {
-        return new CuratorWatcherImpl(client, listener, path);
+    public Curator5ZookeeperClient.CuratorWatcherImpl createTargetChildListener(String path, ChildListener listener) {
+        return new Curator5ZookeeperClient.CuratorWatcherImpl(client, listener, path);
     }
 
     @Override
@@ -273,17 +273,17 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected NodeCacheListenerImpl createTargetDataListener(String path, DataListener listener) {
+    protected Curator5ZookeeperClient.NodeCacheListenerImpl createTargetDataListener(String path, DataListener listener) {
         return new NodeCacheListenerImpl(client, listener, path);
     }
 
     @Override
-    protected void addTargetDataListener(String path, NodeCacheListenerImpl nodeCacheListener) {
+    protected void addTargetDataListener(String path, Curator5ZookeeperClient.NodeCacheListenerImpl nodeCacheListener) {
         this.addTargetDataListener(path, nodeCacheListener, null);
     }
 
     @Override
-    protected void addTargetDataListener(String path, NodeCacheListenerImpl nodeCacheListener, Executor executor) {
+    protected void addTargetDataListener(String path, Curator5ZookeeperClient.NodeCacheListenerImpl nodeCacheListener, Executor executor) {
         try {
             NodeCache nodeCache = new NodeCache(client, path);
             if (nodeCacheMap.putIfAbsent(path, nodeCache) != null) {
@@ -302,7 +302,7 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void removeTargetDataListener(String path, NodeCacheListenerImpl nodeCacheListener) {
+    protected void removeTargetDataListener(String path, Curator5ZookeeperClient.NodeCacheListenerImpl nodeCacheListener) {
         NodeCache nodeCache = nodeCacheMap.get(path);
         if (nodeCache != null) {
             nodeCache.getListenable().removeListener(nodeCacheListener);
