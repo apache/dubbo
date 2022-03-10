@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -102,7 +103,9 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setPath(MetadataService.class.getName())
                 .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
                 .addParameter(SIDE_KEY, CONSUMER)
-                .addParameter(CONNECTIONS_KEY, 1);
+                .addParameter(CONNECTIONS_KEY, 1)
+                .addParameter(RETRIES_KEY, 0);
+
 
         // add parameters
         params.forEach(urlBuilder::addParameter);
@@ -137,7 +140,8 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)
-                .addParameter(VERSION_KEY, MetadataService.VERSION);
+                .addParameter(VERSION_KEY, MetadataService.VERSION)
+                .addParameter(RETRIES_KEY, 0);
 
 //        // add ServiceInstance Metadata notify support
 //        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);

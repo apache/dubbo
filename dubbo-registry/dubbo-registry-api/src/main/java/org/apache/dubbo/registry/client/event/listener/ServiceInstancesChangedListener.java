@@ -49,7 +49,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -151,8 +150,7 @@ public class ServiceInstancesChangedListener {
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
-            ServiceInstance instance = selectInstance(subInstances);
-            MetadataInfo metadata = serviceDiscovery.getRemoteMetadata(revision, instance);
+            MetadataInfo metadata = serviceDiscovery.getRemoteMetadata(revision, subInstances);
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
@@ -360,13 +358,6 @@ public class ServiceInstancesChangedListener {
         }
 
         return localServiceToRevisions;
-    }
-
-    private ServiceInstance selectInstance(List<ServiceInstance> instances) {
-        if (instances.size() == 1) {
-            return instances.get(0);
-        }
-        return instances.get(ThreadLocalRandom.current().nextInt(0, instances.size()));
     }
 
     protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol) {
