@@ -75,4 +75,14 @@ public class NopMetadataReport implements MetadataReport {
     public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
         return null;
     }
+
+    @Override
+    public boolean shouldReportDefinition() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldReportMetadata() {
+        return false;
+    }
 }

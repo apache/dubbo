@@ -141,7 +141,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             return (CompletableFuture<Object>) value;
         } else if (RpcContext.getServerAttachment().isAsyncStarted()) {
             invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
-            return ((AsyncContextImpl) (RpcContext.getServiceContext().getAsyncContext())).getInternalFuture();
+            return ((AsyncContextImpl) (RpcContext.getServerAttachment().getAsyncContext())).getInternalFuture();
         }
         return CompletableFuture.completedFuture(value);
     }

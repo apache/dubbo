@@ -35,6 +35,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -141,15 +143,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance) {
+    public MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
         MetadataInfo metadata = metaCacheManager.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
             metadata.init();
             // metadata loaded from cache
             if (logger.isDebugEnabled()) {
-                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
+                logger.debug("MetadataInfo for revision=" + revision + ", " + metadata);
             }
             return metadata;
         }
@@ -158,7 +159,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             // try to load metadata from remote.
             int triedTimes = 0;
             while (triedTimes < 3) {
-                metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
+                metadata = MetadataUtils.getRemoteMetadata(revision, instances, metadataReport);
 
                 if (metadata != MetadataInfo.EMPTY) {// succeeded
                     metadata.init();
@@ -166,8 +167,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                 } else {// failed
                     if (triedTimes > 0) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
-                                + "&cluster=" + instance.getRegistryCluster());
+                            logger.debug("Retry the " + triedTimes + " times to get metadata for revision=" + revision);
                         }
                     }
                     triedTimes++;
@@ -179,8 +179,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             }
 
             if (metadata == MetadataInfo.EMPTY) {
-                logger.error("Failed to get metadata for instance after 3 retries, " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster());
+                logger.error("Failed to get metadata for revision after 3 retries, revision=" + revision);
             } else {
                 metaCacheManager.put(revision, metadata);
             }
@@ -274,14 +273,18 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected void reportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-            metadataReport.publishAppMetadata(identifier, metadataInfo);
+            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                metadataReport.publishAppMetadata(identifier, metadataInfo);
+            }
         }
     }
 
     protected void unReportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-            metadataReport.unPublishAppMetadata(identifier, metadataInfo);
+            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                metadataReport.unPublishAppMetadata(identifier, metadataInfo);
+            }
         }
     }
 

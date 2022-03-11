@@ -217,6 +217,10 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
+    String REPORT_METADATA_KEY = "report-metadata";
+
+    String REPORT_DEFINITION_KEY = "report-definition";
+
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";

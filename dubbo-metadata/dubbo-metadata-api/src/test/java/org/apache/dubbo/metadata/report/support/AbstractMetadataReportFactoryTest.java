@@ -85,6 +85,16 @@ public class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
+                public boolean shouldReportDefinition() {
+                    return true;
+                }
+
+                @Override
+                public boolean shouldReportMetadata() {
+                    return false;
+                }
+
+                @Override
                 public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
                     return null;
                 }
