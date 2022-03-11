@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.ByteString;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,12 +32,18 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import grpc.health.v1.HealthCheckResponse;
+import org.apache.dubbo.triple.TripleWrapper;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
@@ -50,6 +57,7 @@ public class TripleProtocol extends AbstractProtocol {
     private final TriBuiltinService triBuiltinService;
     private final ConnectionManager connectionManager;
     private final FrameworkModel frameworkModel;
+    private boolean versionChecked = false;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -66,6 +74,7 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl();
+        checkProtobufVersion(url);
         String key = serviceKey(url);
         final AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
             @Override
@@ -133,5 +142,35 @@ public class TripleProtocol extends AbstractProtocol {
         PortUnificationExchanger.close();
         pathResolver.destroy();
         super.destroy();
+    }
+
+    private void checkProtobufVersion(URL url) {
+        if (versionChecked) {
+            return;
+        }
+        if (url.getServiceModel() == null) {
+            return;
+        }
+        ServiceDescriptor descriptor = url.getServiceModel().getServiceModel();
+        if (descriptor == null) {
+            return;
+        }
+        if (descriptor.getAllMethods().stream().noneMatch(MethodDescriptor::isNeedWrap)) {
+            return;
+        }
+
+        TripleWrapper.TripleResponseWrapper responseWrapper = TripleWrapper.TripleResponseWrapper.newBuilder()
+            .setData(ByteString.copyFromUtf8("Test"))
+            .setSerializeType("Test")
+            .build();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            responseWrapper.writeTo(baos);
+        } catch (IOException e) {
+            throw new IllegalStateException("Bad protobuf-java version detected! Please make sure the version is" +
+                " greater than 3.14.0 ", e);
+        }
+        this.versionChecked = true;
     }
 }
