@@ -95,4 +95,9 @@ public interface MetadataReport {
     default Set<String> getServiceAppMapping(String serviceKey, URL url) {
         return Collections.emptySet();
     }
+
+    boolean shouldReportDefinition();
+
+    boolean shouldReportMetadata();
+
 }

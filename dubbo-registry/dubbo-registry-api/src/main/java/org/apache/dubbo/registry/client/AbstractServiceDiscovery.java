@@ -35,6 +35,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.List;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -271,14 +273,18 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected void reportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-            metadataReport.publishAppMetadata(identifier, metadataInfo);
+            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                metadataReport.publishAppMetadata(identifier, metadataInfo);
+            }
         }
     }
 
     protected void unReportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
-            metadataReport.unPublishAppMetadata(identifier, metadataInfo);
+            if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                metadataReport.unPublishAppMetadata(identifier, metadataInfo);
+            }
         }
     }
 
