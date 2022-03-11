@@ -42,6 +42,9 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
         // applicationDeployer
         ApplicationDeployer applicationDeployer = beanFactory.registerBean(DefaultApplicationDeployer.class);
         applicationModel.setDeployer(applicationDeployer);
+        if (applicationModel.isInternal()) {
+            applicationDeployer.start();
+        }
 
     }
 

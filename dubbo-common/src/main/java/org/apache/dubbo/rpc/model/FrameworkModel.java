@@ -97,7 +97,6 @@ public class FrameworkModel extends ScopeModel {
         internalApplicationModel.getApplicationConfigManager().setApplication(
             new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
         internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
-        internalApplicationModel.getDeployer().start();
     }
 
     @Override
