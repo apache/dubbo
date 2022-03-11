@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.command.util;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistry;
@@ -25,8 +24,6 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public class ServiceCheckUtils {
 
@@ -43,19 +40,21 @@ public class ServiceCheckUtils {
     public static int getConsumerAddressNum(ConsumerModel consumerModel) {
         // TODO, only check one registry by default.
         int num = 0;
-        RegistryManager registryManager = consumerModel.getModuleModel().getApplicationModel().getBeanFactory().getBean(RegistryManager.class);
 
+        RegistryManager registryManager = consumerModel.getModuleModel().getApplicationModel().getBeanFactory().getBean(RegistryManager.class);
         Collection<Registry> registries = registryManager.getRegistries();
-        if (CollectionUtils.isNotEmpty(registries)) {
-            AbstractRegistry abstractRegistry = (AbstractRegistry) registries.iterator().next();
-            for (Map.Entry<URL, Map<String, List<URL>>> entry : abstractRegistry.getNotified().entrySet()) {
-                if (entry.getKey().getServiceKey().equals(consumerModel.getServiceKey())) {
-                    if (CollectionUtils.isNotEmptyMap(entry.getValue())) {
-                        num = entry.getValue().size();
-                    }
-                }
-            }
+        if (CollectionUtils.isEmpty(registries)) {
+            return num;
         }
-        return num;
+        return registries.stream()
+            .filter(v -> v instanceof AbstractRegistry)
+            .findFirst()
+            .map(v -> (AbstractRegistry)v)
+            .flatMap(abstractRegistry -> abstractRegistry.getNotified().entrySet().stream()
+                .filter(kv -> kv.getKey().getServiceKey().equals(consumerModel.getServiceKey()))
+                .filter(kv -> CollectionUtils.isNotEmptyMap(kv.getValue()))
+                .findFirst()
+                .map(kv -> kv.getValue().size()))
+            .orElse(num);
     }
 }

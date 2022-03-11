@@ -17,19 +17,25 @@
 package org.apache.dubbo.qos.command.util;
 
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.qos.DemoService;
 import org.apache.dubbo.qos.DemoServiceImpl;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceMetadata;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
+import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.*;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.util.Collection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for ServiceCheckUtils
@@ -59,5 +65,31 @@ public class ServiceCheckUtilsTest {
         boolean registered = ServiceCheckUtils.isRegistered(providerModel);
         assertFalse(registered);
     }
+
+    private static final ConsumerModel consumerModel;
+
+    static {
+        consumerModel = Mockito.mock(ConsumerModel.class);
+        ServiceDiscoveryRegistry serviceDiscoveryRegistry = Mockito.mock(ServiceDiscoveryRegistry.class);
+        Collection<Registry> registries = Lists.newArrayList(serviceDiscoveryRegistry);
+
+        ModuleModel moduleModel = Mockito.mock(ModuleModel.class);
+        ApplicationModel applicationModel = Mockito.mock(ApplicationModel.class);
+        ScopeBeanFactory scopeBeanFactory = Mockito.mock(ScopeBeanFactory.class);
+        RegistryManager registryManager = Mockito.mock(RegistryManager.class);
+        when(applicationModel.getBeanFactory()).thenReturn(scopeBeanFactory);
+        when(scopeBeanFactory.getBean(RegistryManager.class)).thenReturn(registryManager);
+        when(moduleModel.getApplicationModel()).thenReturn(applicationModel);
+        when(consumerModel.getModuleModel()).thenReturn(moduleModel);
+
+        when(registryManager.getRegistries()).thenReturn(registries);
+    }
+
+    @Test
+    public void testGetConsumerAddressNum() {
+        int consumerAddressNum = ServiceCheckUtils.getConsumerAddressNum(consumerModel);
+        assertEquals(0, consumerAddressNum);
+    }
+
 
 }
