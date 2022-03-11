@@ -68,6 +68,10 @@ public class MetadataUtils {
                     serviceDefinition.setParameters(url.getParameters());
                     for (Map.Entry<String, MetadataReport> entry : getMetadataReports(applicationModel).entrySet()) {
                         MetadataReport metadataReport = entry.getValue();
+                        if (!metadataReport.shouldReportDefinition()) {
+                            logger.info("Report of service definition is disabled for " + entry.getKey());
+                            continue;
+                        }
                         metadataReport.storeProviderMetadata(
                             new MetadataIdentifier(
                                 url.getServiceInterface(),
@@ -81,6 +85,10 @@ public class MetadataUtils {
             } else {
                 for (Map.Entry<String, MetadataReport> entry : getMetadataReports(applicationModel).entrySet()) {
                     MetadataReport metadataReport = entry.getValue();
+                    if (!metadataReport.shouldReportDefinition()) {
+                        logger.info("Report of service definition is disabled for " + entry.getKey());
+                        continue;
+                    }
                     metadataReport.storeConsumerMetadata(
                         new MetadataIdentifier(
                             url.getServiceInterface(),

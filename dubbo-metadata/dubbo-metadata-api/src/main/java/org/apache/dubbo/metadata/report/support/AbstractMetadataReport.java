@@ -65,6 +65,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRY_TIMES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
@@ -100,6 +102,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public MetadataReportRetry metadataReportRetry;
     private ScheduledExecutorService reportTimerScheduler;
 
+    private final boolean reportMetadata;
+    private final boolean reportDefinition;
+
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
@@ -130,6 +135,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             reportTimerScheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
             reportTimerScheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
         }
+
+        this.reportMetadata = reportServerURL.getParameter(REPORT_METADATA_KEY, false);
+        this.reportDefinition = reportServerURL.getParameter(REPORT_DEFINITION_KEY, true);
     }
 
     public URL getUrl() {
@@ -362,6 +370,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      */
     public boolean retry() {
         return doHandleMetadataCollection(failedReports);
+    }
+
+    @Override
+    public boolean shouldReportDefinition() {
+        return reportDefinition;
+    }
+
+    @Override
+    public boolean shouldReportMetadata() {
+        return reportMetadata;
     }
 
     private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap) {
