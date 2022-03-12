@@ -817,7 +817,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void notifyModuleChanged(ModuleModel moduleModel, DeployState state) {
-        checkState(moduleModel, state);
+        
+        (moduleModel, state);
 
         // notify module state changed or module changed
         synchronized (stateLock) {
@@ -828,7 +829,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
-            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
+            if (!applicationModel.isInternal() && !moduleModel.isInternal() && moduleState == DeployState.STARTED) {
                 prepareApplicationInstance();
             }
             DeployState newState = calculateState();
