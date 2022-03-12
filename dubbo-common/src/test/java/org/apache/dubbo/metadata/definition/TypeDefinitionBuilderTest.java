@@ -25,6 +25,8 @@ public class TypeDefinitionBuilderTest {
 
     @Test
     public void testSortTypeBuilder() {
+        TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
+        
         TypeBuilder tb = TypeDefinitionBuilder.BUILDERS.get(0);
         Assertions.assertTrue(tb instanceof TestTypeBuilder);
 
