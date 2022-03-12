@@ -501,6 +501,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
 
             try {
+
+                startInternalApplicationModule();
+
                 // maybe call start again after add new module, check if any new module
                 boolean hasPendingModule = hasPendingModule();
 
@@ -532,6 +535,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
 
             return startFuture;
+        }
+    }
+
+    private void startInternalApplicationModule() {
+        if (applicationModel.isInternal()) {
+            return;
+        }
+        ApplicationModel internalApplicationModel = applicationModel.getFrameworkModel().getInternalApplicationModel();
+        if (internalApplicationModel.getDeployer().isPending()) {
+            Future internalFuture = internalApplicationModel.getDeployer().start();
+            try {
+                internalFuture.get();
+            } catch (Exception e) {
+                throw new IllegalStateException("await dubbo internal application start finish failure", e);
+            }
         }
     }
 
