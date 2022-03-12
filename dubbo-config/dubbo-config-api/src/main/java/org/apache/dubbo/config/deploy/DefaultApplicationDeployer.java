@@ -818,7 +818,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void notifyModuleChanged(ModuleModel moduleModel, DeployState state) {
         
-        (moduleModel, state);
+        checkState(moduleModel, state);
 
         // notify module state changed or module changed
         synchronized (stateLock) {
