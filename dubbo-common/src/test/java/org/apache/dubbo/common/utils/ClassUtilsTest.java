@@ -20,11 +20,11 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.verify;
 
 public class ClassUtilsTest {
@@ -117,14 +117,13 @@ public class ClassUtilsTest {
     @Test
     public void testConvertPrimitive() throws Exception {
 
-        assertThat(ClassUtils.convertPrimitive(char.class, ""), equalTo('\0'));
+        assertThat(ClassUtils.convertPrimitive(char.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(char.class, null), equalTo(null));
-        assertThat(ClassUtils.convertPrimitive(char.class, "6"), equalTo('6'));
+        assertThat(ClassUtils.convertPrimitive(char.class, "6"), equalTo(Character.valueOf('6')));
 
-        assertThat(ClassUtils.convertPrimitive(boolean.class, ""), equalTo(Boolean.FALSE));
+        assertThat(ClassUtils.convertPrimitive(boolean.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(boolean.class, null), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(boolean.class, "true"), equalTo(Boolean.TRUE));
-
 
         assertThat(ClassUtils.convertPrimitive(byte.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(byte.class, null), equalTo(null));
@@ -141,15 +140,15 @@ public class ClassUtilsTest {
 
         assertThat(ClassUtils.convertPrimitive(long.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(long.class, null), equalTo(null));
-        assertThat(ClassUtils.convertPrimitive(long.class, "6"), equalTo(new Long(6)));
+        assertThat(ClassUtils.convertPrimitive(long.class, "6"), equalTo(Long.valueOf(6)));
 
         assertThat(ClassUtils.convertPrimitive(float.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(float.class, null), equalTo(null));
-        assertThat(ClassUtils.convertPrimitive(float.class, "1.1"), equalTo(new Float(1.1)));
+        assertThat(ClassUtils.convertPrimitive(float.class, "1.1"), equalTo(Float.valueOf(1.1F)));
 
         assertThat(ClassUtils.convertPrimitive(double.class, ""), equalTo(null));
         assertThat(ClassUtils.convertPrimitive(double.class, null), equalTo(null));
-        assertThat(ClassUtils.convertPrimitive(double.class, "10.1"), equalTo(new Double(10.1)));
+        assertThat(ClassUtils.convertPrimitive(double.class, "10.1"), equalTo(Double.valueOf(10.1)));
     }
 
 }

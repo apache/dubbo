@@ -16,38 +16,33 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
@@ -97,25 +92,13 @@ public class ServiceInstanceMetadataUtils {
 
     public static final String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
 
-    private static final Gson gson = new Gson();
-
-    /**
-     * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
-     *
-     * @param serviceInstance the instance of {@link ServiceInstance}
-     * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
-     */
-    public static Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) gson.fromJson(param,Map.class);
-    }
+    public static final Gson gson = new Gson();
 
     public static String getMetadataServiceParameter(URL url) {
-        url = url.removeParameter(APPLICATION_KEY);
-        url = url.removeParameter(GROUP_KEY);
-        url = url.removeParameter(DEPRECATED_KEY);
-        url = url.removeParameter(TIMESTAMP_KEY);
+        if (url == null) {
+            return "";
+        }
+        url = url.removeParameters(APPLICATION_KEY, GROUP_KEY, DEPRECATED_KEY, TIMESTAMP_KEY);
         Map<String, String> params = getParams(url);
 
         if (params.isEmpty()) {
@@ -155,10 +138,8 @@ public class ServiceInstanceMetadataUtils {
     }
 
     /**
-     * Get the metadata's storage type is used to which {@link WritableMetadataService} instance.
-     *
-     * @param serviceInstance the specified {@link ServiceInstance}
-     * @return if not found in {@link ServiceInstance#getMetadata() metadata} of {@link ServiceInstance}, return
+     * Get the metadata storage type specified by the peer instance.
+     * @return storage type, remote or local
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
@@ -216,87 +197,42 @@ public class ServiceInstanceMetadataUtils {
         return null;
     }
 
-    public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
-        String registryCluster = serviceDiscovery.getUrl() == null ? DEFAULT_KEY : serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
-        if (registryCluster == null) {
-            registryCluster = DEFAULT_KEY;
-        }
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(instance.getApplicationModel());
-        MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
-        if (metadataInfo == null) {
-            metadataInfo = writableMetadataService.getDefaultMetadataInfo();
-        }
-        if (metadataInfo != null) {
-            String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
-            if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {
-                instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
-                if (existingInstanceRevision != null) {// skip the first registration.
-                    instance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
-                }
-            }
-        }
+    public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
+        LOGGER.info("Start registering instance address to registry.");
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        // register service instance
+        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
     }
 
-    public static boolean isInstanceUpdated(ServiceInstance instance) {
-        return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
+    public static void refreshMetadataAndInstance(ApplicationModel applicationModel) {
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        // update service instance revision
+        registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::update);
     }
 
-    public static void resetInstanceUpdateKey(ServiceInstance instance) {
-        instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
-    }
-
-    public static void registerMetadataAndInstance(ServiceInstance serviceInstance) {
-        // register instance only when at least one service is exported.
-        if (serviceInstance.getPort() > 0) {
-            reportMetadataToRemote(serviceInstance);
-            LOGGER.info("Start registering instance address to registry.");
-            RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
-            registryManager.getServiceDiscoveries().forEach(serviceDiscovery ->
-            {
-                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
-                calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
-                }
-                // register service instance
-                serviceDiscovery.register(serviceInstanceForRegistry);
-            });
-        }
-    }
-
-    public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        reportMetadataToRemote(serviceInstance);
-        RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
+    public static void unregisterMetadataAndInstance(ApplicationModel applicationModel) {
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         registryManager.getServiceDiscoveries().forEach(serviceDiscovery -> {
-            ServiceInstance instance = serviceDiscovery.getLocalInstance();
-            if (instance == null) {
-                LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
-                instance = serviceInstance;
-            }
-            calInstanceRevision(serviceDiscovery, instance);
-            customizeInstance(instance);
-            if (serviceInstance.getPort() > 0) {
-                // update service instance revision
-                serviceDiscovery.update(instance);
+            try {
+                serviceDiscovery.unregister();
+            } catch (Exception ignored) {
+                // ignored
             }
         });
     }
 
-    public static void customizeInstance(ServiceInstance instance) {
+    public static void customizeInstance(ServiceInstance instance, ApplicationModel applicationModel) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
                 instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customize
-            customizer.customize(instance);
+            customizer.customize(instance, applicationModel);
         });
     }
 
-    private static void reportMetadataToRemote(ServiceInstance serviceInstance) {
-        if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(getMetadataStorageType(serviceInstance))) {
-            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getApplicationModel());
-            remoteMetadataService.publishMetadata(serviceInstance.getApplicationModel().getApplicationName());
-        }
+    public static boolean isValidInstance(ServiceInstance instance) {
+        return instance != null && instance.getHost() != null && instance.getPort() != 0;
     }
 
     /**

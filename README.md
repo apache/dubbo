@@ -1,7 +1,6 @@
 # Apache Dubbo Project
 
 [![Build Status](https://github.com/apache/dubbo/workflows/Build%20and%20Test%20For%20Dubbo%203/badge.svg?branch=3.0)](https://github.com/apache/dubbo/actions/workflows/build-and-test-3.yml?query=branch%3A3.0)
-[![Build Status](https://travis-ci.com/apache/dubbo.svg?branch=master)](https://travis-ci.com/apache/dubbo)
 [![Codecov](https://codecov.io/gh/apache/dubbo/branch/3.0/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
 ![Maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
 ![License](https://img.shields.io/github/license/alibaba/dubbo.svg)
@@ -13,7 +12,7 @@
 
 Apache Dubbo is a high-performance, Java-based open-source RPC framework. Please visit the [official site](http://dubbo.apache.org) for the quick start guide and documentation, as well as the [wiki](https://github.com/apache/dubbo/wiki) for news, FAQ, and release notes.
 
-We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/1012), thanks :)
+We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [issue#9436: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/9436), thanks :)
 
 ## Architecture
 
@@ -43,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>3.0.3</dubbo.version>
+    <dubbo.version>3.0.6</dubbo.version>
 </properties>
 
 <dependencies>

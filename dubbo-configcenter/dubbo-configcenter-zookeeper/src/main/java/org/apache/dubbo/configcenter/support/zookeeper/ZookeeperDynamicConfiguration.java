@@ -41,29 +41,24 @@ import java.util.concurrent.TimeUnit;
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
-    // The final root path would be: /configRootPath/"config"
-    private String rootPath;
-    private final ZookeeperClient zkClient;
+    private ZookeeperClient zkClient;
 
     private CacheListener cacheListener;
-    private URL url;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
-        this.url = url;
-        rootPath = getRootPath(url);
 
         this.cacheListener = new CacheListener(rootPath);
 
         final String threadName = this.getClass().getSimpleName();
         this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
-                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
-                new NamedThreadFactory(threadName, true),
-                new AbortPolicyWithReport(threadName, url));
+            THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(DEFAULT_QUEUE),
+            new NamedThreadFactory(threadName, true),
+            new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();
@@ -83,7 +78,11 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doClose() throws Exception {
-        zkClient.close();
+        // zkClient is shared in framework, should not close it here
+        // zkClient.close();
+        // See: org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
+        // All zk clients is created and destroyed in ZookeeperTransporter.
+        zkClient = null;
     }
 
     @Override

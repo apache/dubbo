@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class EagerThreadPoolExecutorTest {
@@ -98,5 +99,40 @@ public class EagerThreadPoolExecutorTest {
                 .getExecutor(URL);
         Assertions.assertEquals("EagerThreadPoolExecutor", executorService.getClass()
             .getSimpleName(), "test spi fail!");
+    }
+
+    @Test
+    public void testEagerThreadPool_rejectExecution() throws Exception {
+        String name = "eager-tf";
+        int cores = 1;
+        int threads = 3;
+        int queues = 2;
+        long alive = 1000;
+
+        // init queue and executor
+        TaskQueue<Runnable> taskQueue = new TaskQueue<>(queues);
+        final EagerThreadPoolExecutor executor = new EagerThreadPoolExecutor(cores,
+            threads,
+            alive, TimeUnit.MILLISECONDS,
+            taskQueue,
+            new NamedThreadFactory(name, true),
+            new AbortPolicyWithReport(name, URL));
+        taskQueue.setExecutor(executor);
+
+        Runnable runnable = () -> {
+            System.out.println("thread number in current pool: " + executor.getPoolSize() + ", task number is task queue: " + executor.getQueue().size());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        };
+        for (int i = 0; i < 5; i++) {
+            Thread.sleep(50);
+            executor.execute(runnable);
+        }
+        Assertions.assertThrows(RejectedExecutionException.class, () -> executor.execute(runnable));
+
+        Thread.sleep(10000);
     }
 }

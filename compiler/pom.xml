@@ -26,11 +26,13 @@
 
     <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-compiler</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
     <properties>
+        <grpc.verison>1.44.0</grpc.verison>
+        <jprotoc.version>1.2.1</jprotoc.version>
         <maven_compiler_version>3.6.0</maven_compiler_version>
         <maven_jar_version>3.0.2</maven_jar_version>
         <maven_source_version>3.0.1</maven_source_version>
@@ -42,6 +44,26 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-core</artifactId>
+            <version>${grpc.verison}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>${grpc.verison}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>${grpc.verison}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-context</artifactId>
+            <version>${grpc.verison}</version>
+        </dependency>
+        <dependency>
             <groupId>com.salesforce.servicelibs</groupId>
             <artifactId>grpc-contrib</artifactId>
             <version>0.8.1</version>
@@ -49,7 +71,7 @@
         <dependency>
             <groupId>com.salesforce.servicelibs</groupId>
             <artifactId>jprotoc</artifactId>
-            <version>0.9.1</version>
+            <version>${jprotoc.version}</version>
         </dependency>
     </dependencies>
 
@@ -103,7 +125,7 @@
         <profile>
             <id>release</id>
             <properties>
-                <log4j2_version>2.11.1</log4j2_version>
+                <log4j2_version>2.17.0</log4j2_version>
             </properties>
             <build>
                 <plugins>

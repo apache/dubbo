@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -142,7 +141,7 @@ public class ForkingClusterInvokerTest {
         Assertions.assertTrue(afterInvoke != null && afterInvoke.size() == 0, "clear attachment failed!");
     }
 
-    @Test()
+    @Test
     public void testInvokeNoException() {
 
         resetInvokerToNoException();
@@ -152,7 +151,7 @@ public class ForkingClusterInvokerTest {
         Assertions.assertSame(result, ret);
     }
 
-    @Test()
+    @Test
     public void testInvokeWithIllegalForksParam() {
         URL url = URL.valueOf("test://test:11/test?forks=-1");
         given(dic.getUrl()).willReturn(url);

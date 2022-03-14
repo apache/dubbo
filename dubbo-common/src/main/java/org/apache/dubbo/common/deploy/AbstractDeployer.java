@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.common.deploy;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
 import static org.apache.dubbo.common.deploy.DeployState.PENDING;
@@ -31,11 +32,15 @@ import static org.apache.dubbo.common.deploy.DeployState.STOPPING;
 
 public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer<E> {
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDeployer.class);
+
     private volatile DeployState state = PENDING;
 
-    protected AtomicBoolean initialized = new AtomicBoolean(false);
+    private volatile Throwable lastError;
 
-    private List<DeployListener<E>> listeners = new ArrayList<>();
+    protected volatile boolean initialized = false;
+
+    protected List<DeployListener<E>> listeners = new ArrayList<>();
 
     private E scopeModel;
 
@@ -100,38 +105,68 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     protected void setStarting() {
         this.state = STARTING;
         for (DeployListener<E> listener : listeners) {
-            listener.onStarting(scopeModel);
+            try {
+                listener.onStarting(scopeModel);
+            } catch (Throwable e) {
+                logger.error(getIdentifier() + " an exception occurred when handle starting event", e);
+            }
         }
     }
 
     protected void setStarted() {
         this.state = STARTED;
         for (DeployListener<E> listener : listeners) {
-            listener.onStarted(scopeModel);
+            try {
+                listener.onStarted(scopeModel);
+            } catch (Throwable e) {
+                logger.error(getIdentifier() + " an exception occurred when handle started event", e);
+            }
         }
     }
     protected void setStopping() {
         this.state = STOPPING;
         for (DeployListener<E> listener : listeners) {
-            listener.onStopping(scopeModel);
+            try {
+                listener.onStopping(scopeModel);
+            } catch (Throwable e) {
+                logger.error(getIdentifier() + " an exception occurred when handle stopping event", e);
+            }
         }
     }
 
     protected void setStopped() {
         this.state = STOPPED;
         for (DeployListener<E> listener : listeners) {
-            listener.onStopped(scopeModel);
+            try {
+                listener.onStopped(scopeModel);
+            } catch (Throwable e) {
+                logger.error(getIdentifier() + " an exception occurred when handle stopped event", e);
+            }
         }
     }
 
-    protected void setFailed(Throwable cause) {
+    protected void setFailed(Throwable error) {
         this.state = FAILED;
+        this.lastError = error;
         for (DeployListener<E> listener : listeners) {
-            listener.onFailure(scopeModel, cause);
+            try {
+                listener.onFailure(scopeModel, error);
+            } catch (Throwable e) {
+                logger.error(getIdentifier() + " an exception occurred when handle failed event", e);
+            }
         }
+    }
+
+    @Override
+    public Throwable getError() {
+        return lastError;
     }
 
     public boolean isInitialized() {
-        return initialized.get();
+        return initialized;
+    }
+
+    protected String getIdentifier() {
+        return scopeModel.getDesc();
     }
 }

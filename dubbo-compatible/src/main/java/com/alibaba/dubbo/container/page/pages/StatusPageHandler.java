@@ -16,11 +16,11 @@
  */
 package com.alibaba.dubbo.container.page.pages;
 
-import com.alibaba.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.support.StatusUtils;
 
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.status.StatusChecker;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;

@@ -17,11 +17,15 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboAttachmentMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboMethodMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
+
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,105 +40,99 @@ public class DubboMatchRequestTest {
         DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
 
         // methodMatch
-        {
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch nameStringMatch = new StringMatch();
-            nameStringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(nameStringMatch);
+        DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
+        StringMatch nameStringMatch = new StringMatch();
+        nameStringMatch.setExact("sayHello");
+        dubboMethodMatch.setName_match(nameStringMatch);
 
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-        }
-        assertTrue(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, new HashMap(), new HashMap(), new HashMap(), new HashMap()));
-        assertFalse(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHi", new String[]{}, new Object[]{}, new HashMap(), new HashMap(), new HashMap(), new HashMap()));
+        dubboMatchRequest.setMethod(dubboMethodMatch);
+
+        RpcInvocation rpcInvocation = new RpcInvocation();
+        rpcInvocation.setMethodName("sayHello");
+        assertTrue(dubboMatchRequest.isMatch(rpcInvocation, new HashMap<>(), Collections.emptySet()));
+
+        rpcInvocation.setMethodName("satHi");
+        assertFalse(dubboMatchRequest.isMatch(rpcInvocation, new HashMap<>(), Collections.emptySet()));
+
         // sourceLabels
-        {
-            Map<String, String> sourceLabels = new HashMap<>();
-            sourceLabels.put("key1", "value1");
-            sourceLabels.put("key2", "value2");
+        Map<String, String> sourceLabels = new HashMap<>();
+        sourceLabels.put("key1", "value1");
+        sourceLabels.put("key2", "value2");
 
-            dubboMatchRequest.setSourceLabels(sourceLabels);
-        }
+        dubboMatchRequest.setSourceLabels(sourceLabels);
 
-        Map<String, String> inputSourceLablesMap = new HashMap<>();
-        inputSourceLablesMap.put("key1", "value1");
-        inputSourceLablesMap.put("key2", "value2");
-        inputSourceLablesMap.put("key3", "value3");
+        Map<String, String> inputSourceLabelsMap = new HashMap<>();
+        inputSourceLabelsMap.put("key1", "value1");
+        inputSourceLabelsMap.put("key2", "value2");
+        inputSourceLabelsMap.put("key3", "value3");
 
-        Map<String, String> inputSourceLablesMap2 = new HashMap<>();
-        inputSourceLablesMap2.put("key1", "other");
-        inputSourceLablesMap2.put("key2", "value2");
-        inputSourceLablesMap2.put("key3", "value3");
+        Map<String, String> inputSourceLabelsMap2 = new HashMap<>();
+        inputSourceLabelsMap2.put("key1", "other");
+        inputSourceLabelsMap2.put("key2", "value2");
+        inputSourceLabelsMap2.put("key3", "value3");
 
-        assertTrue(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, inputSourceLablesMap, new HashMap(), new HashMap(), new HashMap()));
-        assertFalse(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, inputSourceLablesMap2, new HashMap(), new HashMap(), new HashMap()));
-
-
-        // eagleeyeContext
-        {
-            DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
-
-            {
-                Map<String, StringMatch> eagleeyecontextMatchMap = new HashMap<>();
-                StringMatch nameMatch = new StringMatch();
-                nameMatch.setExact("qinliujie");
-                eagleeyecontextMatchMap.put("name", nameMatch);
-                dubboAttachmentMatch.setEagleeyecontext(eagleeyecontextMatchMap);
-            }
-
-            dubboMatchRequest.setAttachments(dubboAttachmentMatch);
-        }
-
-        Map<String, String> invokeEagleEyeContextMap = new HashMap<>();
-        invokeEagleEyeContextMap.put("name", "qinliujie");
-        invokeEagleEyeContextMap.put("machineGroup", "test_host");
-        invokeEagleEyeContextMap.put("other", "other");
-
-        assertTrue(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, inputSourceLablesMap, invokeEagleEyeContextMap, new HashMap(), new HashMap()));
+        rpcInvocation.setMethodName("sayHello");
+        assertTrue(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.emptySet()));
+        assertFalse(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap2, Collections.emptySet()));
 
 
-        Map<String, String> invokeEagleEyeContextMap2 = new HashMap<>();
-        invokeEagleEyeContextMap2.put("name", "jack");
-        invokeEagleEyeContextMap2.put("machineGroup", "test_host");
-        invokeEagleEyeContextMap2.put("other", "other");
+        // tracingContext
+        DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
+        Map<String, StringMatch> tracingContextMatchMap = new HashMap<>();
+        StringMatch nameMatch = new StringMatch();
+        nameMatch.setExact("qinliujie");
+        tracingContextMatchMap.put("name", nameMatch);
+        dubboAttachmentMatch.setTracingContext(tracingContextMatchMap);
+        dubboMatchRequest.setAttachments(dubboAttachmentMatch);
 
-        assertFalse(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, inputSourceLablesMap, invokeEagleEyeContextMap2, new HashMap(), new HashMap()));
+        Map<String, String> invokeTracingContextMap = new HashMap<>();
+        invokeTracingContextMap.put("name", "qinliujie");
+        invokeTracingContextMap.put("machineGroup", "test_host");
+        invokeTracingContextMap.put("other", "other");
+
+        TracingContextProvider tracingContextProvider = (invocation, key) -> invokeTracingContextMap.get(key);
+        assertTrue(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider)));
+
+
+        Map<String, String> invokeTracingContextMap2 = new HashMap<>();
+        invokeTracingContextMap2.put("name", "jack");
+        invokeTracingContextMap2.put("machineGroup", "test_host");
+        invokeTracingContextMap2.put("other", "other");
+
+        TracingContextProvider tracingContextProvider2 = (invocation, key) -> invokeTracingContextMap2.get(key);
+        assertFalse(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider2)));
 
 
         //dubbo context
+        dubboAttachmentMatch = new DubboAttachmentMatch();
 
-        {
-            DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
-
-            {
-                Map<String, StringMatch> eagleeyecontextMatchMap = new HashMap<>();
-                StringMatch nameMatch = new StringMatch();
-                nameMatch.setExact("qinliujie");
-                eagleeyecontextMatchMap.put("name", nameMatch);
-                dubboAttachmentMatch.setEagleeyecontext(eagleeyecontextMatchMap);
-            }
+        Map<String, StringMatch> eagleeyecontextMatchMap = new HashMap<>();
+        nameMatch = new StringMatch();
+        nameMatch.setExact("qinliujie");
+        eagleeyecontextMatchMap.put("name", nameMatch);
+        dubboAttachmentMatch.setTracingContext(eagleeyecontextMatchMap);
 
 
-            {
-                Map<String, StringMatch> dubboContextMatchMap = new HashMap<>();
-                StringMatch dpathMatch = new StringMatch();
-                dpathMatch.setExact("PRE");
-                dubboContextMatchMap.put("dpath", dpathMatch);
-                dubboAttachmentMatch.setDubbocontext(dubboContextMatchMap);
-            }
+        Map<String, StringMatch> dubboContextMatchMap = new HashMap<>();
+        StringMatch dpathMatch = new StringMatch();
+        dpathMatch.setExact("PRE");
+        dubboContextMatchMap.put("dpath", dpathMatch);
+        dubboAttachmentMatch.setDubboContext(dubboContextMatchMap);
 
-            dubboMatchRequest.setAttachments(dubboAttachmentMatch);
-        }
+        dubboMatchRequest.setAttachments(dubboAttachmentMatch);
 
 
         Map<String, String> invokeDubboContextMap = new HashMap<>();
         invokeDubboContextMap.put("dpath", "PRE");
 
-        assertTrue(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, inputSourceLablesMap, invokeEagleEyeContextMap, invokeDubboContextMap, new HashMap()));
-
+        rpcInvocation.setAttachments(invokeDubboContextMap);
+        TracingContextProvider tracingContextProvider3 = (invocation, key) -> invokeTracingContextMap.get(key);
+        assertTrue(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider3)));
 
         Map<String, String> invokeDubboContextMap2 = new HashMap<>();
         invokeDubboContextMap.put("dpath", "other");
 
-        assertFalse(DubboMatchRequest.isMatch(dubboMatchRequest, "sayHello", new String[]{}, new Object[]{}, inputSourceLablesMap, invokeEagleEyeContextMap, invokeDubboContextMap2, new HashMap()));
+        rpcInvocation.setAttachments(invokeDubboContextMap2);
+        assertFalse(dubboMatchRequest.isMatch(rpcInvocation, inputSourceLabelsMap, Collections.singleton(tracingContextProvider3)));
     }
 }

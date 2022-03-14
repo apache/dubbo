@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.URL;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.GlobalEventExecutor;
-import org.apache.dubbo.common.URL;
 
 import java.util.List;
 

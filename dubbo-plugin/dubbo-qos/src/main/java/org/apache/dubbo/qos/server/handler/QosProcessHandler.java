@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,8 +33,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.ScheduledFuture;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

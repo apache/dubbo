@@ -51,7 +51,7 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
                 logger.error("Unable to deep copy parameter to target class.", e);
             }
 
-        } catch (IOException e) {
+        } catch (Throwable e) {
             logger.error("Unable to deep copy parameter to target class.", e);
         }
 

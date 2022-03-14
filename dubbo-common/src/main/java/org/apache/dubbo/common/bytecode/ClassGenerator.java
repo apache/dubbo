@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -24,10 +28,8 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
+import javassist.LoaderClassPath;
 import javassist.NotFoundException;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -91,7 +93,8 @@ public final class ClassGenerator {
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
             pool = new ClassPool(true);
-            pool.insertClassPath(new CustomizedLoaderClassPath(loader));
+            pool.insertClassPath(new LoaderClassPath(loader));
+            pool.insertClassPath(new DubboLoaderClassPath());
             POOL_MAP.put(loader, pool);
         }
         return pool;
@@ -281,12 +284,17 @@ public final class ClassGenerator {
         return mPool;
     }
 
-    public Class<?> toClass() {
-        return toClass(mClassLoader,
-                getClass().getProtectionDomain());
+    /**
+     * @param neighbor    A class belonging to the same package that this
+     *                    class belongs to.  It is used to load the class.
+     */
+    public Class<?> toClass(Class<?> neighbor) {
+        return toClass(neighbor,
+            mClassLoader,
+            getClass().getProtectionDomain());
     }
 
-    public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {
+    public Class<?> toClass(Class<?> neighborClass, ClassLoader loader, ProtectionDomain pd) {
         if (mCtc != null) {
             mCtc.detach();
         }
@@ -337,7 +345,15 @@ public final class ClassGenerator {
                     }
                 }
             }
-            return mCtc.toClass(loader, pd);
+
+            try {
+                return mPool.toClass(mCtc, neighborClass, loader, pd);
+            } catch (Throwable t) {
+                if (!(t instanceof CannotCompileException)) {
+                    return mPool.toClass(mCtc, loader, pd);
+                }
+                throw t;
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (NotFoundException | CannotCompileException e) {

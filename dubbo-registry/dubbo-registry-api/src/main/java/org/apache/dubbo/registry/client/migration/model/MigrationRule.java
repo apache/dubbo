@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -86,8 +87,6 @@ public class MigrationRule {
 
     private transient Map<String, SubMigrationRule> interfaceRules;
     private transient Map<String, SubMigrationRule> applicationRules;
-
-
 
     @SuppressWarnings("unchecked")
     private static MigrationRule parseFromMap(Map<String, Object> map) {
@@ -161,12 +160,14 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getServices(consumerURL);
+            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
-                    if (rule.getStep() != null) {
-                        return rule.getStep();
+                    if (rule != null) {
+                        if (rule.getStep() != null) {
+                            return rule.getStep();
+                        }
                     }
                 }
             }
@@ -202,7 +203,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getServices(consumerURL);
+            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -242,7 +243,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getServices(consumerURL);
+            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -278,7 +279,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getServices(consumerURL);
+            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -318,7 +319,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getServices(consumerURL);
+            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -364,7 +365,6 @@ public class MigrationRule {
                 applicationRules.put(rule.getServiceKey(), rule);
             });
         }
-
     }
 
     public static MigrationRule parse(String rawRule) {

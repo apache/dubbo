@@ -91,7 +91,7 @@
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
         <spring_version>5.2.8.RELEASE</spring_version>
-        <javassist_version>3.23.1-GA</javassist_version>
+        <javassist_version>3.28.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.56.Final</netty4_version>
         <mina_version>1.1.7</mina_version>
@@ -114,6 +114,7 @@
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.43.v20210629</jetty_version>
+        <validation_new_version>3.0.1</validation_new_version>
         <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
@@ -132,14 +133,15 @@
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.69</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
-        <nacos_version>2.0.3</nacos_version>
+        <nacos_version>2.0.4</nacos_version>
         <grpc.version>1.31.1</grpc.version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
-        <log4j2_version>2.11.1</log4j2_version>
+        <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
+        <log4j2_version>2.17.0</log4j2_version>
         <commons_io_version>2.6</commons_io_version>
 
         <embedded_redis_version>0.10.0</embedded_redis_version>
@@ -157,10 +159,9 @@
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.15.3</test_container_version>
         <etcd_launcher_version>0.5.3</etcd_launcher_version>
-        <hessian_lite_version>3.2.11</hessian_lite_version>
+        <hessian_lite_version>3.2.12</hessian_lite_version>
         <swagger_version>1.5.24</swagger_version>
 
-        <roaringbitmap_version>0.9.0</roaringbitmap_version>
         <bouncycastle-bcprov_version>1.68</bouncycastle-bcprov_version>
         <metrics_version>2.0.1</metrics_version>
         <sofa_registry_version>5.2.0</sofa_registry_version>
@@ -169,7 +170,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>3.0.4-SNAPSHOT</revision>
+        <revision>3.0.7-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -336,11 +337,6 @@
                 <version>${protobuf-java_version}</version>
             </dependency>
             <dependency>
-                <groupId>org.roaringbitmap</groupId>
-                <artifactId>RoaringBitmap</artifactId>
-                <version>${roaringbitmap_version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>${bouncycastle-bcprov_version}</version>
@@ -398,6 +394,16 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
                 <version>${jel_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${validation_new_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.validator</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate_validator_new_version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.cache</groupId>
@@ -639,18 +645,6 @@
 
             <!-- Test lib -->
             <dependency>
-                <groupId>org.apache.curator</groupId>
-                <artifactId>curator-test</artifactId>
-                <version>${curator_test_version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
-                    </exclusion>
-                </exclusions>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.github.codemonstur</groupId>
                 <artifactId>embedded-redis</artifactId>
                 <version>${embedded_redis_version}</version>
@@ -775,6 +769,16 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>curator5</id>
+            <activation>
+                <jdk>[17,)</jdk>
+            </activation>
+            <properties>
+                <zookeeper_version>3.7.0</zookeeper_version>
+                <curator_version>5.1.0</curator_version>
+            </properties>
+        </profile>
         <profile>
             <id>release</id>
             <build>

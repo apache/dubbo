@@ -41,6 +41,8 @@
     <properties>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
+        <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
+        <log4j2_version>2.17.0</log4j2_version>
     </properties>
 
     <dependencyManagement>
@@ -78,6 +80,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

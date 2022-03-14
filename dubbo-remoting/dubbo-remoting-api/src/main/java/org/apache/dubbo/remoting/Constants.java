@@ -103,6 +103,12 @@ public interface Constants {
 
     int DEFAULT_IO_THREADS = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
+    String EVENT_LOOP_BOSS_POOL_NAME  = "NettyServerBoss";
+
+    String EVENT_LOOP_WORKER_POOL_NAME  = "NettyServerWorker";
+
+    String NETTY_EPOLL_ENABLE_KEY = "netty.epoll.enable";
+
     String BIND_IP_KEY = "bind.ip";
 
     String BIND_PORT_KEY = "bind.port";
@@ -128,7 +134,7 @@ public interface Constants {
     String PROMPT_KEY = "prompt";
 
     String DEFAULT_PROMPT = "dubbo>";
-    String TELNET = "telnet";
+    String TELNET_KEY = "telnet";
     String HEARTBEAT_KEY = "heartbeat";
     int DEFAULT_HEARTBEAT = 60 * 1000;
     String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";

@@ -59,13 +59,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
 import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
 import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
-import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
 
 /**
@@ -169,7 +169,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             method = new MetricName(DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
                 {
                     put(SERVICE, serviceName);
-                    put(METHOD, methodName);
+                    put(METHOD_KEY, methodName);
                 }
             }, MetricLevel.NORMAL);
         } else {
@@ -177,7 +177,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             method = new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
                 {
                     put(SERVICE, serviceName);
-                    put(METHOD, methodName);
+                    put(METHOD_KEY, methodName);
                 }
             }, MetricLevel.NORMAL);
         }

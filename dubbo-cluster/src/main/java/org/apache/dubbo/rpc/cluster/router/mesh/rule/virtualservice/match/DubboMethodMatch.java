@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
+import org.apache.dubbo.rpc.Invocation;
+
 import java.util.List;
 import java.util.Map;
 
@@ -68,52 +70,6 @@ public class DubboMethodMatch {
         this.headers = headers;
     }
 
-    public static boolean isMatch(DubboMethodMatch dubboMethodMatch, String methodName, String[] parameterTypeList, Object[] parameters) {
-        StringMatch nameMatch = dubboMethodMatch.getName_match();
-        if (nameMatch != null && !StringMatch.isMatch(nameMatch, methodName)) {
-            return false;
-        }
-
-        Integer argc = dubboMethodMatch.getArgc();
-        if (argc != null &&
-                ((argc != 0 && (parameters == null || parameters.length == 0)) || (argc != parameters.length))) {
-            return false;
-        }
-        List<StringMatch> argp = dubboMethodMatch.getArgp();
-        if (argp != null) {
-            if (((parameterTypeList == null || parameterTypeList.length == 0) && argp.size() > 0)
-                    || (argp.size() != parameterTypeList.length)) {
-                return false;
-            }
-
-            for (int index = 0; index < argp.size(); index++) {
-                if (!StringMatch.isMatch(argp.get(index), parameterTypeList[index])) {
-                    return false;
-                }
-            }
-        }
-
-        List<DubboMethodArg> args = dubboMethodMatch.getArgs();
-
-        if (args != null && args.size() > 0) {
-            if (parameters == null || parameters.length == 0) {
-                return false;
-            }
-
-            for (DubboMethodArg dubboMethodArg : args) {
-                int index = dubboMethodArg.getIndex();
-                if (index >= parameters.length) {
-                    throw new IndexOutOfBoundsException("DubboMethodArg index >= parameters.length");
-                }
-                if (!DubboMethodArg.isMatch(dubboMethodArg, parameters[index])) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
     @Override
     public String toString() {
         return "DubboMethodMatch{" +
@@ -123,6 +79,58 @@ public class DubboMethodMatch {
                 ", argp=" + argp +
                 ", headers=" + headers +
                 '}';
+    }
+
+    public boolean isMatch(Invocation invocation) {
+        StringMatch nameMatch = getName_match();
+        if (nameMatch != null && !nameMatch.isMatch(invocation.getMethodName())) {
+            return false;
+        }
+
+        Integer argc = getArgc();
+        Object[] arguments = invocation.getArguments();
+        if (argc != null &&
+            ((argc != 0 && (arguments == null || arguments.length == 0)) || (argc != arguments.length))) {
+            return false;
+        }
+
+        List<StringMatch> argp = getArgp();
+        Class<?>[] parameterTypes = invocation.getParameterTypes();
+        if (argp != null && argp.size() > 0) {
+            if (parameterTypes == null || parameterTypes.length == 0) {
+                return false;
+            }
+            if (argp.size() != parameterTypes.length) {
+                return false;
+            }
+
+            for (int index = 0; index < argp.size(); index++) {
+                boolean match = argp.get(index).isMatch(parameterTypes[index].getName())
+                    || argp.get(index).isMatch(parameterTypes[index].getSimpleName());
+                if (!match) {
+                    return false;
+                }
+            }
+        }
+
+        List<DubboMethodArg> args = getArgs();
+        if (args != null && args.size() > 0) {
+            if (arguments == null || arguments.length == 0) {
+                return false;
+            }
+
+            for (DubboMethodArg dubboMethodArg : args) {
+                int index = dubboMethodArg.getIndex();
+                if (index >= arguments.length) {
+                    throw new IndexOutOfBoundsException("DubboMethodArg index >= parameters.length");
+                }
+                if (!dubboMethodArg.isMatch(arguments[index])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
 

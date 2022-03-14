@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,7 +27,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

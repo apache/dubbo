@@ -22,10 +22,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -153,7 +155,7 @@ public class DubboAnnotationUtils {
      */
     public static Map<String, String> convertParameters(String[] parameters) {
         if (ArrayUtils.isEmpty(parameters)) {
-            return null;
+            return Collections.emptyMap();
         }
 
         List<String> compatibleParameterArray = Arrays.stream(parameters)

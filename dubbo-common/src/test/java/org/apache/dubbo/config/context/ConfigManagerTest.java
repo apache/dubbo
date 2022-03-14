@@ -26,11 +26,13 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
@@ -43,7 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
+ * {@link AbstractConfigManager} Test
  * {@link ConfigManager} Test
+ * {@link ModuleConfigManager} Test
  *
  * @since 2.7.5
  */
@@ -105,6 +109,7 @@ public class ConfigManagerTest {
         configManager.setApplication(config);
         assertTrue(configManager.getApplication().isPresent());
         assertEquals(config, configManager.getApplication().get());
+        assertEquals(config, moduleConfigManager.getApplication().get());
     }
 
     // Test MonitorConfig correlative methods
@@ -115,9 +120,10 @@ public class ConfigManagerTest {
         configManager.setMonitor(monitorConfig);
         assertTrue(configManager.getMonitor().isPresent());
         assertEquals(monitorConfig, configManager.getMonitor().get());
+        assertEquals(monitorConfig, moduleConfigManager.getMonitor().get());
     }
 
-    // Test MonitorConfig correlative methods
+    // Test ModuleConfig correlative methods
     @Test
     public void testModuleConfig() {
         ModuleConfig config = new ModuleConfig();
@@ -134,6 +140,7 @@ public class ConfigManagerTest {
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());
+        assertEquals(config, moduleConfigManager.getMetrics().get());
     }
 
     // Test ProviderConfig correlative methods
@@ -183,6 +190,7 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultProtocols().isEmpty());
+        assertEquals(configs, moduleConfigManager.getProtocols());
     }
 
     // Test RegistryConfig correlative methods
@@ -194,6 +202,7 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultRegistries().isEmpty());
+        assertEquals(configs, moduleConfigManager.getRegistries());
     }
 
     // Test ConfigCenterConfig correlative methods
@@ -215,7 +224,7 @@ public class ConfigManagerTest {
         configs = configManager.getConfigCenters();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-
+        assertEquals(configs, moduleConfigManager.getConfigCenters());
     }
 
     @Test
@@ -232,6 +241,7 @@ public class ConfigManagerTest {
     @Test
     public void testRefreshAll() {
         configManager.refreshAll();
+        moduleConfigManager.refreshAll();
     }
 
     @Test
@@ -299,5 +309,96 @@ public class ConfigManagerTest {
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }
+    }
+
+    @Test
+    public void testGetConfigByIdOrName() {
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setId("registryID_1");
+        configManager.addRegistry(registryConfig);
+        Optional<RegistryConfig> registryConfigOptional = configManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
+
+
+        ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
+        configManager.addProtocol(protocolConfig);
+        Optional<ProtocolConfig> protocolConfigOptional = configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
+        Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
+
+        ModuleConfig moduleConfig = new ModuleConfig();
+        moduleConfig.setId("moduleID_1");
+        moduleConfigManager.setModule(moduleConfig);
+        Optional<ModuleConfig> moduleConfigOptional = moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
+        Assertions.assertEquals(moduleConfigOptional.get(), moduleConfig);
+
+        Optional<RegistryConfig> config = moduleConfigManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Assertions.assertEquals(config.get(), registryConfig);
+    }
+
+    @Test
+    public void testLoadConfigsOfTypeFromProps() {
+        try {
+            // dubbo.application.enable-file-cache = false
+            configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
+            Optional<ApplicationConfig> application = configManager.getApplication();
+            Assertions.assertTrue(application.isPresent());
+            configManager.removeConfig(application.get());
+
+            System.setProperty("dubbo.protocols.dubbo1.port", "20880");
+            System.setProperty("dubbo.protocols.dubbo2.port", "20881");
+            System.setProperty("dubbo.protocols.rest1.port", "8080");
+            System.setProperty("dubbo.protocols.rest2.port", "8081");
+            configManager.loadConfigsOfTypeFromProps(ProtocolConfig.class);
+            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Assertions.assertEquals(protocols.size(), 4);
+
+            System.setProperty("dubbo.applications.app1.name", "app-demo1");
+            System.setProperty("dubbo.applications.app2.name", "app-demo2");
+            try {
+                configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
+                Assertions.fail();
+            } catch (Exception e) {
+                Assertions.assertTrue(e.getMessage().contains("load config failed"));
+            }
+        } finally {
+            System.clearProperty("dubbo.protocols.dubbo1.port");
+            System.clearProperty("dubbo.protocols.dubbo2.port");
+            System.clearProperty("dubbo.protocols.rest1.port");
+            System.clearProperty("dubbo.protocols.rest2.port");
+            System.clearProperty("dubbo.applications.app1.name");
+            System.clearProperty("dubbo.applications.app2.name");
+        }
+
+    }
+
+    @Test
+    public void testLoadConfig() {
+        configManager.loadConfigs();
+        Assertions.assertTrue(configManager.getApplication().isPresent());
+        Assertions.assertTrue(configManager.getSsl().isPresent());
+        Assertions.assertFalse(configManager.getProtocols().isEmpty());
+
+        int port = 20880;
+        ProtocolConfig config1 = new ProtocolConfig();
+        config1.setName("dubbo");
+        config1.setPort(port);
+
+        ProtocolConfig config2 = new ProtocolConfig();
+        config2.setName("rest");
+        config2.setPort(port);
+        configManager.addProtocols(asList(config1, config2));
+        try {
+            configManager.loadConfigs();
+            Assertions.fail();
+        } catch (Exception e) {
+            Assertions.assertTrue(e instanceof IllegalStateException);
+            Assertions.assertTrue(e.getMessage().contains("Duplicated port used by protocol configs, port: " + port));
+        }
+
+        moduleConfigManager.loadConfigs();
+        Assertions.assertTrue(moduleConfigManager.getModule().isPresent());
+        Assertions.assertFalse(moduleConfigManager.getProviders().isEmpty());
+        Assertions.assertFalse(moduleConfigManager.getConsumers().isEmpty());
+
     }
 }

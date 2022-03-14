@@ -20,14 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PortUnificationServerTest {
 
     @Test
-    public void testBind() throws RemotingException {
+    public void testBind() {
         URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 8898,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
 

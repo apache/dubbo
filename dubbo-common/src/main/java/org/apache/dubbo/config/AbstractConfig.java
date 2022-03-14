@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -58,7 +59,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
@@ -187,9 +187,10 @@ public abstract class AbstractConfig implements Serializable {
                             continue;
                         }
                         // get parameter key
-                        key = calculatePropertyFromGetter(name);
                         if (parameter != null && parameter.key().length() > 0) {
                             key = parameter.key();
+                        } else {
+                            key = calculatePropertyFromGetter(name);
                         }
                     } else { // as attributes
                         // filter non attribute
@@ -197,7 +198,7 @@ public abstract class AbstractConfig implements Serializable {
                             continue;
                         }
                         // get attribute name
-                        String propertyName = calculateAttributeFromGetter(method.getName());
+                        String propertyName = calculateAttributeFromGetter(name);
                         // convert camelCase/snake_case to kebab-case
                         key = StringUtils.convertToSplitName(propertyName, "-");
                     }
@@ -249,17 +250,14 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
-        return properties.keySet().stream().filter(k -> k.contains(prefix)).map(k -> {
-            k = k.substring(prefix.length());
-            return k.substring(0, k.indexOf("."));
-        }).collect(Collectors.toSet());
-    }
-
     protected static String extractPropertyName(String setter) {
         String propertyName = setter.substring("set".length());
         propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
         return propertyName;
+    }
+
+    private static String calculatePropertyToGetter(String name) {
+        return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
     private static String calculatePropertyFromGetter(String name) {
@@ -285,6 +283,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private static Map<String, String> invokeGetParameters(Class c, Object o) {
         try {
+
             Method method = findMethodByMethodSignature(c, "getParameters", null);
             if (method != null && isParametersGetter(method)) {
                 return (Map<String, String>) method.invoke(o);
@@ -360,12 +359,12 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         Map<String, String> result = new HashMap<>();
-        String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
+        String pre = (StringUtils.isNotEmpty(prefix) ? prefix + "." : "");
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             result.put(pre + key, value);
-            // For compatibility, key like "registry-type" will has a duplicate key "registry.type"
+            // For compatibility, key like "registry-type" will have a duplicate key "registry.type"
             if (Arrays.binarySearch(Constants.DOT_COMPATIBLE_KEYS, key) >= 0) {
                 result.put(pre + key.replace('-', '.'), value);
             }
@@ -421,6 +420,7 @@ public abstract class AbstractConfig implements Serializable {
      *   }
      * }
      * </pre>
+     *
      * @param oldScopeModel
      * @param newScopeModel
      */
@@ -438,7 +438,7 @@ public abstract class AbstractConfig implements Serializable {
         return scopeModel.getExtensionLoader(type);
     }
 
-    @Parameter(excluded = true, attribute = true)
+    @Parameter(excluded = true)
     public String getId() {
         return id;
     }
@@ -519,7 +519,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private static BeanInfo getBeanInfo(Class cls) {
-        BeanInfo beanInfo = null;
+        BeanInfo beanInfo;
         try {
             beanInfo = Introspector.getBeanInfo(cls);
         } catch (IntrospectionException e) {
@@ -562,6 +562,84 @@ public abstract class AbstractConfig implements Serializable {
 
     public static String getTypePrefix(Class<? extends AbstractConfig> cls) {
         return CommonConstants.DUBBO + "." + getTagName(cls);
+    }
+
+    public ConfigMode getConfigMode() {
+        return getApplicationModel().getApplicationConfigManager().getConfigMode();
+    }
+
+    public void overrideWithConfig(AbstractConfig newOne, boolean overrideAll) {
+        if (!Objects.equals(this.getClass(), newOne.getClass())) {
+            // ignore if two config is not the same class
+            return;
+        }
+
+        List<Method> methods = MethodUtils.getMethods(this.getClass(), method -> method.getDeclaringClass() != Object.class);
+        for (Method method : methods) {
+            try {
+                Method getterMethod;
+                try {
+                    String propertyName = extractPropertyName(method.getName());
+                    String getterName = calculatePropertyToGetter(propertyName);
+                    getterMethod = this.getClass().getDeclaredMethod(getterName);
+                } catch (Exception ignore) {
+                    continue;
+                }
+
+                if (MethodUtils.isSetter(method)) {
+                    Object oldOne = getterMethod.invoke(this);
+
+                    // if old one is null or need to override
+                    if (overrideAll || oldOne == null) {
+                        Object newResult = getterMethod.invoke(newOne);
+                        // if new one is non-null and new one is not equals old one
+                        if (newResult != null && Objects.equals(newResult, oldOne)) {
+                            method.invoke(this, newResult);
+                        }
+                    }
+                } else if (isParametersSetter(method)) {
+                    Object oldOne = getterMethod.invoke(this);
+                    Object newResult = getterMethod.invoke(newOne);
+
+                    Map<String, String> oldMap = null;
+                    if (oldOne instanceof Map) {
+                        oldMap = (Map) oldOne;
+                    }
+
+                    Map<String, String> newMap = null;
+                    if (newResult instanceof Map) {
+                        newMap = (Map) newResult;
+                    }
+
+                    // if new map is null, skip
+                    if (newMap == null) {
+                        continue;
+                    }
+
+                    // if old map is null, override with new map
+                    if (oldMap == null) {
+                        invokeSetParameters(newMap, this);
+                        continue;
+                    }
+
+                    // if mode is OVERRIDE_IF_ABSENT, put all old map entries to new map, will override the same key
+                    // if mode is OVERRIDE_ALL, put all keyed entries not in new map from old map to new map (ignore the same key appeared in old map)
+                    if (overrideAll) {
+                        oldMap.forEach(newMap::putIfAbsent);
+                    } else {
+                        newMap.putAll(oldMap);
+                    }
+
+                    invokeSetParameters(newMap, this);
+                } else if (isNestedSetter(this, method)) {
+                    // not support
+                }
+
+            } catch (Throwable t) {
+                logger.error("Failed to override field value of config bean: " + this, t);
+                throw new IllegalStateException("Failed to override field value of config bean: " + this, t);
+            }
+        }
     }
 
     /**
@@ -609,7 +687,7 @@ public abstract class AbstractConfig implements Serializable {
 
             assignProperties(this, environment, subProperties, subPropsConfiguration);
 
-            // process extra refresh of sub class, e.g. refresh method configs
+            // process extra refresh of subclass, e.g. refresh method configs
             processExtraRefresh(preferredPrefix, subPropsConfiguration);
 
         } catch (Exception e) {
@@ -621,19 +699,32 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
+        // if old one (this) contains non-null value, do not override
+        boolean overrideIfAbsent = getConfigMode() == ConfigMode.OVERRIDE_IF_ABSENT;
+
+        // even if old one (this) contains non-null value, do override
+        boolean overrideAll = getConfigMode() == ConfigMode.OVERRIDE_ALL;
+
         // loop methods, get override value and set the new value back to method
-        Method[] methods = obj.getClass().getMethods();
+        List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
+
+                // if config mode is OVERRIDE_IF_ABSENT and property has set, skip
+                if (overrideIfAbsent && isPropertySet(propertyName)) {
+                    continue;
+                }
+
                 // convert camelCase/snake_case to kebab-case
                 String kebabPropertyName = StringUtils.convertToSplitName(propertyName, "-");
 
                 try {
                     String value = StringUtils.trim(configuration.getString(kebabPropertyName));
                     // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                    if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value) &&
-                        !isIgnoredAttribute(obj.getClass(), propertyName)) {
+                    if (StringUtils.hasText(value)
+                        && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
+                        && !isIgnoredAttribute(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
                         method.invoke(obj, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                     }
@@ -644,15 +735,46 @@ public abstract class AbstractConfig implements Serializable {
                 }
             } else if (isParametersSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
+
+                // get old map from original obj
+                Map<String, String> oldMap = null;
+                try {
+                    String getterName = calculatePropertyToGetter(propertyName);
+                    Method getterMethod = this.getClass().getDeclaredMethod(getterName);
+                    Object oldOne = getterMethod.invoke(this);
+                    if (oldOne instanceof Map) {
+                        oldMap = (Map) oldOne;
+                    }
+                } catch (Exception ignore) {
+
+                }
+
                 String value = StringUtils.trim(configuration.getString(propertyName));
-                Map<String, String> parameterMap = null;
+                Map<String, String> parameterMap;
                 if (StringUtils.hasText(value)) {
                     parameterMap = StringUtils.parseParameters(value);
                 } else {
                     // in this case, maybe parameters.item3=value3.
                     parameterMap = ConfigurationUtils.getSubProperties(properties, PARAMETERS);
                 }
-                invokeSetParameters(convert(parameterMap, ""), obj);
+                Map<String, String> newMap = convert(parameterMap, "");
+
+                // if old map is null, directly set params
+                if (oldMap == null) {
+                    invokeSetParameters(newMap, obj);
+                    continue;
+                }
+
+                // if mode is OVERRIDE_IF_ABSENT, put all old map entries to new map, will override the same key
+                // if mode is OVERRIDE_ALL, put all keyed entries not in new map from old map to new map (ignore the same key appeared in old map)
+                // if mode is others, override with new map
+                if (overrideIfAbsent) {
+                    newMap.putAll(oldMap);
+                } else if (overrideAll) {
+                    oldMap.forEach(newMap::putIfAbsent);
+                }
+
+                invokeSetParameters(newMap, obj);
             } else if (isNestedSetter(obj, method)) {
                 try {
                     Class<?> clazz = method.getParameterTypes()[0];
@@ -667,6 +789,20 @@ public abstract class AbstractConfig implements Serializable {
                 }
             }
         }
+    }
+
+    private boolean isPropertySet(String propertyName) {
+        try {
+            String getterName = calculatePropertyToGetter(propertyName);
+            Method getterMethod = this.getClass().getDeclaredMethod(getterName);
+            Object oldOne = getterMethod.invoke(this);
+            if (oldOne != null) {
+                return true;
+            }
+        } catch (Exception ignore) {
+
+        }
+        return false;
     }
 
     private void invokeSetParameters(Map<String, String> values, Object obj) {
@@ -688,6 +824,7 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 getter = clazz.getMethod("is" + capitalizePropertyName);
             } catch (NoSuchMethodException ex) {
+                // ignore
             }
         }
 
@@ -862,7 +999,7 @@ public abstract class AbstractConfig implements Serializable {
                     continue;
                 }
                 String propertyName = calculateAttributeFromGetter(method.getName());
-                // filter non writable property, exclude non property methods, fix #4225
+                // filter non-writable property, exclude non property methods, fix #4225
                 if (!isWritableProperty(beanInfo, propertyName)) {
                     continue;
                 }

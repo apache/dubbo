@@ -26,6 +26,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Exchangers;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -34,10 +35,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_REQUEST_WITH_WARNING;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WARNING_KEY;
 
 /**
@@ -47,23 +47,20 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WA
 final class LazyConnectExchangeClient implements ExchangeClient {
 
     private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
-    protected final boolean requestWithWarning;
+    private final boolean requestWithWarning;
     private final URL url;
     private final ExchangeHandler requestHandler;
     private final Lock connectLock = new ReentrantLock();
     private final int warningPeriod = 5000;
-    /**
-     * lazy connect, initial state for connection
-     */
-    private final boolean initialState;
+    private final boolean needReconnect;
     private volatile ExchangeClient client;
-    private AtomicLong warningcount = new AtomicLong(0);
+    private final AtomicLong warningCount = new AtomicLong(0);
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
-        this.url = url.addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+        this.url = url.addParameter(LAZY_CONNECT_KEY, true);
+        this.needReconnect = url.getParameter(SEND_RECONNECT_KEY, false);
         this.requestHandler = requestHandler;
-        this.initialState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
         this.requestWithWarning = url.getParameter(LAZY_REQUEST_WITH_WARNING_KEY, DEFAULT_LAZY_REQUEST_WITH_WARNING);
     }
 
@@ -88,7 +85,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     @Override
     public CompletableFuture<Object> request(Object request) throws RemotingException {
         warning();
-        initClient();
+        checkClient();
         return client.request(request);
     }
 
@@ -109,33 +106,33 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     @Override
     public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
         warning();
-        initClient();
+        checkClient();
         return client.request(request, timeout);
     }
 
     @Override
     public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
         warning();
-        initClient();
+        checkClient();
         return client.request(request, executor);
     }
 
     @Override
     public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         warning();
-        initClient();
+        checkClient();
         return client.request(request, timeout, executor);
     }
 
     /**
-     * If {@link #REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
+     * If {@link Constants.LAZY_REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
      */
     private void warning() {
         if (requestWithWarning) {
-            if (warningcount.get() % warningPeriod == 0) {
+            if (warningCount.get() % warningPeriod == 0) {
                 logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
             }
-            warningcount.incrementAndGet();
+            warningCount.incrementAndGet();
         }
     }
 
@@ -148,7 +145,9 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     @Override
     public boolean isConnected() {
         if (client == null) {
-            return initialState;
+            // Before the request arrives, LazyConnectExchangeClient always exists in a normal connection state
+            // to prevent ReconnectTask from initiating a reconnection action.
+            return true;
         } else {
             return client.isConnected();
         }
@@ -170,13 +169,13 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     @Override
     public void send(Object message) throws RemotingException {
-        initClient();
+        checkClient();
         client.send(message);
     }
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
-        initClient();
+        checkClient();
         client.send(message, sent);
     }
 
@@ -261,9 +260,15 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     private void checkClient() {
-        if (client == null) {
-            throw new IllegalStateException(
-                    "LazyConnectExchangeClient state error. the client has not be init .url:" + url);
+        try {
+            initClient();
+        } catch (Exception e) {
+            throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
+        }
+
+        if (!isConnected() && !needReconnect) {
+            throw new IllegalStateException("LazyConnectExchangeClient is not connected normally, " +
+                "and send.reconnect is configured as false, the request fails quickly" + url);
         }
     }
 }

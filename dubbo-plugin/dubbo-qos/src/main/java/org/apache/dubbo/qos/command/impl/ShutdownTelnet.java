@@ -17,7 +17,6 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -43,7 +42,7 @@ public class ShutdownTelnet implements BaseCommand {
 
         int sleepMilliseconds = 0;
         if (args != null && args.length > 0) {
-            if (args.length == 2 && "-t".equals(args[0]) && StringUtils.isInteger(args[1])) {
+            if (args.length == 2 && "-t".equals(args[0]) && StringUtils.isNumber(args[1])) {
                 sleepMilliseconds = Integer.parseInt(args[1]);
             } else {
                 return "Invalid parameter,please input like shutdown -t 10000";
@@ -60,8 +59,7 @@ public class ShutdownTelnet implements BaseCommand {
         StringBuilder buf = new StringBuilder();
         List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
-            DefaultApplicationDeployer deployer = applicationModel.getBeanFactory().getBean(DefaultApplicationDeployer.class);
-            deployer.destroy();
+            applicationModel.destroy();
         }
         // TODO change to ApplicationDeployer.destroy() or ApplicationModel.destroy()
 //        DubboShutdownHook.getDubboShutdownHook().unregister();

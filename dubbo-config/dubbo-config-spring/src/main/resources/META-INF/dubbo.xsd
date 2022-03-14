@@ -36,12 +36,6 @@
                 <xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="connections" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation>
-                    <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:attribute name="loadbalance" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The method load balance. ]]></xsd:documentation>
@@ -177,6 +171,12 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Defines the service tag]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="connections" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>
@@ -342,7 +342,7 @@
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="export-async" type="xsd:boolean" >
+                <xsd:attribute name="export-async" type="xsd:boolean">
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
@@ -427,9 +427,16 @@
                 <xsd:documentation><![CDATA[ Register consumer instance or not, default false. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="publish-interface" type="xsd:boolean">
+        <xsd:attribute name="register-mode" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Register interface/instance/all addresses to registry, default all. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="enable-empty-protection" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
@@ -482,12 +489,14 @@
         </xsd:attribute>
         <xsd:attribute name="background" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Whether start module in background, if true do not await finish. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Whether start module in background, if true do not await finish. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="refer-async" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Weather the reference is refer asynchronously, default false.  ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Weather the reference is refer asynchronously, default false.  ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="refer-thread-num" type="xsd:boolean">
@@ -497,7 +506,8 @@
         </xsd:attribute>
         <xsd:attribute name="export-async" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="export-thread-num" type="xsd:boolean">
@@ -670,14 +680,16 @@
                 <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="publish-interface" type="xsd:boolean">
+        <xsd:attribute name="register-mode" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Register interface/instance/all addresses to registry, default all. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="publish-instance" type="xsd:boolean">
+        <xsd:attribute name="enable-empty-protection" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish instance level url to registry, default true. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -766,6 +778,18 @@
             <xsd:annotation>
                 <xsd:documentation>
                     <![CDATA[ The policy to apply when connecting to metadata center fails. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="report-metadata" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether to report metadata to remote center, default is false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="report-definition" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether to report service definition to remote center, default is true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -913,9 +937,9 @@
 
     <xsd:complexType name="metricsType">
         <xsd:all>
-                <xsd:element ref="prometheus-exporter" minOccurs="0"/>
-                <xsd:element ref="prometheus-pushgateway" minOccurs="0"/>
-                <xsd:element ref="aggregation" minOccurs="0"/>
+            <xsd:element ref="prometheus-exporter" minOccurs="0"/>
+            <xsd:element ref="prometheus-pushgateway" minOccurs="0"/>
+            <xsd:element ref="aggregation" minOccurs="0"/>
         </xsd:all>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
@@ -1146,12 +1170,14 @@
                 </xsd:attribute>
                 <xsd:attribute name="refer-thread-num" type="xsd:integer">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="refer-background" type="xsd:boolean">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1547,12 +1573,14 @@
                 </xsd:attribute>
                 <xsd:attribute name="export-thread-num" type="xsd:integer">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="export-background" type="xsd:boolean">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Deprecated. Whether export should run in background or not, default false. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Deprecated. Whether export should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>

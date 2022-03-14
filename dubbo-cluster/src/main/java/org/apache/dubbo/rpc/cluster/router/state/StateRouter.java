@@ -17,25 +17,26 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
-
-import java.util.List;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 
 /**
  * State Router. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
- * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
+ * It is recommended to implement StateRouter by extending {@link AbstractStateRouter}
+ *
+ * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory, boolean)
+ * @see AbstractStateRouter
  * @see Directory#list(Invocation)
  * @since 3.0
  */
-public interface StateRouter extends Comparable<StateRouter> {
-
-    int DEFAULT_PRIORITY = Integer.MAX_VALUE;
+public interface StateRouter<T> {
 
     /**
      * Get the router url.
@@ -48,21 +49,14 @@ public interface StateRouter extends Comparable<StateRouter> {
      * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      * Caching address lists in BitMap mode improves routing performance.
      * @param invokers  invoker bit list
-     * @param cache      router address cache
      * @param url        refer url
      * @param invocation invocation
-     * @param <T>
-     * @return routed invokers
-     * @throws RpcException
-     * @Since 3.0
+     * @param needToPrintMessage whether to print router state. Such as `use router branch a`.
+     * @return state with route result
+     * @since 3.0
      */
-    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
-        throws
-        RpcException;
-
-    default <T> void notify(List<Invoker<T>> invokers) {
-
-    }
+    BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                     boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) throws RpcException;
 
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
@@ -72,29 +66,39 @@ public interface StateRouter extends Comparable<StateRouter> {
      */
     boolean isRuntime();
 
-    boolean isEnable();
-
+    /**
+     * To decide whether this router should take effect when none of the invoker can match the router rule, which
+     * means the {@link #route(BitList, URL, Invocation, boolean, Holder)} would be empty. Most of time, most router implementation would
+     * default this value to false.
+     *
+     * @return true to execute if none of invokers matches the current router
+     */
     boolean isForce();
 
-    int getPriority();
+    /**
+     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
+     * chance to prepare before {@link StateRouter#route(BitList, URL, Invocation, boolean, Holder)} gets called.
+     * No need to notify next node.
+     *
+     * @param invokers invoker list
+     */
+    void notify(BitList<Invoker<T>> invokers);
 
-    @Override
-    default int compareTo(StateRouter o) {
-        if (o == null) {
-            throw new IllegalArgumentException();
-        }
-        return Integer.compare(this.getPriority(), o.getPriority());
-    }
-
-    String getName();
-
-    boolean shouldRePool();
-
-    <T> RouterCache<T> pool(List<Invoker<T>> invokers);
-
-    void pool();
+    /**
+     * Build Router's Current State Snapshot for QoS
+     *
+     * @return Current State
+     */
+    String buildSnapshot();
 
     default void stop() {
         //do nothing by default
     }
+
+    /**
+     * Notify next router node to current router.
+     *
+     * @param nextRouter next router node
+     */
+    void setNextRouter(StateRouter<T> nextRouter);
 }

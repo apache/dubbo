@@ -16,6 +16,16 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.utils.UrlUtils;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -29,15 +39,6 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -47,6 +48,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
 /**
  * PortUnificationServer.
@@ -100,10 +103,10 @@ public class PortUnificationServer {
     protected void doOpen() {
         bootstrap = new ServerBootstrap();
 
-        bossGroup = NettyEventLoopFactory.eventLoopGroup(1, "NettyServerBoss");
+        bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
         workerGroup = NettyEventLoopFactory.eventLoopGroup(
             getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-            "NettyServerWorker");
+            EVENT_LOOP_WORKER_POOL_NAME);
 
         bootstrap.group(bossGroup, workerGroup)
             .channel(NettyEventLoopFactory.serverSocketChannelClass())

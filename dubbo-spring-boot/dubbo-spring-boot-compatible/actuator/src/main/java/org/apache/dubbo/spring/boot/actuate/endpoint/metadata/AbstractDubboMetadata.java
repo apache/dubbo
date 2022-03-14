@@ -19,8 +19,8 @@ package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

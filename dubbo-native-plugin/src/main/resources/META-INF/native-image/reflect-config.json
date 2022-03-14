@@ -1,0 +1,2675 @@
+[
+  {
+    "name": "boolean",
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.intellij.rt.execution.application.AppMainV2$Agent",
+    "methods": [
+      {
+        "name": "premain",
+        "parameterTypes": [
+          "java.lang.String",
+          "java.lang.instrument.Instrumentation"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.bootstrap.ServerBootstrap$1"
+  },
+  {
+    "name": "io.netty.bootstrap.ServerBootstrap$ServerBootstrapAcceptor",
+    "methods": [
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.buffer.AbstractByteBufAllocator",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "io.netty.buffer.AbstractReferenceCountedByteBuf",
+    "fields": [
+      {
+        "name": "refCnt",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.ChannelDuplexHandler",
+    "methods": [
+      {
+        "name": "bind",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.net.SocketAddress",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "close",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "connect",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.net.SocketAddress",
+          "java.net.SocketAddress",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "deregister",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "disconnect",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "flush",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "read",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.ChannelHandlerAdapter",
+    "methods": [
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.ChannelInboundHandlerAdapter",
+    "methods": [
+      {
+        "name": "channelActive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "channelReadComplete",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRegistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelUnregistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelWritabilityChanged",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      },
+      {
+        "name": "userEventTriggered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.ChannelInitializer",
+    "methods": [
+      {
+        "name": "channelRegistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.ChannelOutboundHandlerAdapter",
+    "methods": [
+      {
+        "name": "bind",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.net.SocketAddress",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "close",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "connect",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.net.SocketAddress",
+          "java.net.SocketAddress",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "deregister",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "disconnect",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "flush",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "read",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.DefaultChannelPipeline$HeadContext",
+    "methods": [
+      {
+        "name": "bind",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.net.SocketAddress",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "channelActive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "channelReadComplete",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRegistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelUnregistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelWritabilityChanged",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "close",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "connect",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.net.SocketAddress",
+          "java.net.SocketAddress",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "deregister",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "disconnect",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "io.netty.channel.ChannelPromise"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      },
+      {
+        "name": "flush",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "read",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "userEventTriggered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "write",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object",
+          "io.netty.channel.ChannelPromise"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.DefaultChannelPipeline$TailContext",
+    "methods": [
+      {
+        "name": "channelActive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "channelReadComplete",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRegistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelUnregistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelWritabilityChanged",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      },
+      {
+        "name": "userEventTriggered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.socket.nio.NioServerSocketChannel",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "io.netty.channel.socket.nio.NioSocketChannel",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "io.netty.handler.codec.ByteToMessageDecoder",
+    "methods": [
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "channelReadComplete",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "userEventTriggered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.handler.codec.MessageToByteEncoder",
+    "methods": [
+      {
+        "name": "write",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object",
+          "io.netty.channel.ChannelPromise"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.handler.timeout.IdleStateHandler",
+    "methods": [
+      {
+        "name": "channelActive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "channelReadComplete",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRegistered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "write",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object",
+          "io.netty.channel.ChannelPromise"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "io.netty.util.ReferenceCountUtil",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueColdProducerFields",
+    "fields": [
+      {
+        "name": "producerLimit",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueConsumerFields",
+    "fields": [
+      {
+        "name": "consumerIndex",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "io.netty.util.internal.shaded.org.jctools.queues.BaseMpscLinkedArrayQueueProducerFields",
+    "fields": [
+      {
+        "name": "producerIndex",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueConsumerIndexField",
+    "fields": [
+      {
+        "name": "consumerIndex",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerIndexField",
+    "fields": [
+      {
+        "name": "producerIndex",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "io.netty.util.internal.shaded.org.jctools.queues.MpscArrayQueueProducerLimitField",
+    "fields": [
+      {
+        "name": "producerLimit",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "java.io.File",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.io.Serializable",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.lang.Cloneable",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.lang.Comparable",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.lang.Enum",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.lang.Integer",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "java.lang.Number",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.lang.Object",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "java.lang.StackTraceElement",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "java.lang.String"
+  },
+  {
+    "name": "java.lang.String[]"
+  },
+  {
+    "name": "java.lang.Thread",
+    "methods": [
+      {
+        "name": "getContextClassLoader",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.lang.Throwable",
+    "fields": [
+      {
+        "name": "detailMessage"
+      },
+      {
+        "name": "stackTrace"
+      }
+    ]
+  },
+  {
+    "name": "java.lang.management.ManagementFactory",
+    "methods": [
+      {
+        "name": "getRuntimeMXBean",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.lang.management.RuntimeMXBean",
+    "methods": [
+      {
+        "name": "getName",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.math.BigDecimal",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.math.BigInteger",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "java.net.URL",
+    "fields": [
+      {
+        "name": "ref"
+      }
+    ]
+  },
+  {
+    "name": "java.nio.Bits",
+    "methods": [
+      {
+        "name": "unaligned",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.nio.Buffer",
+    "fields": [
+      {
+        "name": "address",
+        "allowUnsafeAccess": true
+      }
+    ]
+  },
+  {
+    "name": "java.nio.DirectByteBuffer",
+    "fields": [
+      {
+        "name": "cleaner",
+        "allowUnsafeAccess": true
+      }
+    ],
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "long",
+          "int"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.security.MessageDigestSpi"
+  },
+  {
+    "name": "java.sql.Date",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "long"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.sql.Time",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "long"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.sql.Timestamp",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "long"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.time.Duration"
+  },
+  {
+    "name": "java.time.Instant"
+  },
+  {
+    "name": "java.time.LocalDate"
+  },
+  {
+    "name": "java.time.LocalDateTime"
+  },
+  {
+    "name": "java.time.LocalTime"
+  },
+  {
+    "name": "java.time.MonthDay"
+  },
+  {
+    "name": "java.time.OffsetDateTime"
+  },
+  {
+    "name": "java.time.OffsetTime"
+  },
+  {
+    "name": "java.time.Period"
+  },
+  {
+    "name": "java.time.Year"
+  },
+  {
+    "name": "java.time.YearMonth"
+  },
+  {
+    "name": "java.time.ZoneId"
+  },
+  {
+    "name": "java.time.ZoneOffset"
+  },
+  {
+    "name": "java.time.ZonedDateTime"
+  },
+  {
+    "name": "java.util.AbstractMap",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.util.ArrayList",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.util.BitSet",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "java.util.HashMap",
+    "allDeclaredMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.util.LinkedHashMap",
+    "allPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.util.Map",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.util.NavigableMap",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.util.SortedMap",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "java.util.TreeMap",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "java.util.Map",
+    "allPublicConstructors": true
+  },
+  {
+    "name": "java.util.concurrent.ConcurrentNavigableMap"
+  },
+  {
+    "name": "java.util.concurrent.ConcurrentSkipListMap"
+  },
+  {
+    "name": "javax.management.ObjectName",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apace.dubbo.graalvm.demo.DemoService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.curator.x.discovery.ServiceType",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.apache.curator.x.discovery.details.OldServiceInstance",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.common.CommonScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.URL",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.apache.dubbo.common.beans.ScopeBeanExtensionInjector",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.compiler.support.AdaptiveCompiler",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.compiler.support.JavassistCompiler",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.compiler.support.JdkCompiler",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.config.Environment",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.common.config.ModuleEnvironment",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigurationFactory"
+  },
+  {
+    "name": "org.apache.dubbo.common.config.configcenter.nop.NopDynamicConfigurationFactory"
+  },
+  {
+    "name": "org.apache.dubbo.common.extension.inject.AdaptiveExtensionInjector",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.extension.inject.SpiExtensionInjector",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.infra.support.EnvironmentAdapter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.lang.ShutdownHookCallbacks",
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.common.logger.jcl.JclLoggerAdapter"
+  },
+  {
+    "name": "org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter"
+  },
+  {
+    "name": "org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter"
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.hessian2.dubbo.DefaultHessian2FactoryInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.serialize.hessian2.dubbo.WhitelistHessian2FactoryInitializer"
+  },
+  {
+    "name": "org.apache.dubbo.common.status.reporter.FrameworkStatusReportService",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.ThreadPool",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.ThreadPool$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.manager.DefaultExecutorRepository",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.support.cached.CachedThreadPool",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.support.eager.EagerThreadPool"
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.support.limited.LimitedThreadPool"
+  },
+  {
+    "name": "org.apache.dubbo.common.url.component.URLAddress",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.apache.dubbo.common.url.component.URLParam",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.apache.dubbo.common.url.component.param.DefaultDynamicParamSource",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.AbstractConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.AbstractInterfaceConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.AbstractMethodConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.AbstractReferenceConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.AbstractServiceConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.ApplicationConfig",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "monitor"
+      },
+      {
+        "name": "registries"
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ArgumentConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.ConfigCenterConfig",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "appExternalConfiguration"
+      },
+      {
+        "name": "externalConfiguration"
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ConfigScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ConsumerConfig",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.MethodConfig",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "arguments"
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ModuleConfig",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "monitor"
+      },
+      {
+        "name": "registries"
+      }
+    ],
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ProtocolConfig",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ProviderConfig",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ReferenceConfig",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "invoker"
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.ReferenceConfigBase",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.RegistryConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.ServiceConfig",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.ServiceConfigBase",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.config.SslConfig",
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "clientKeyCertChainPathStream"
+      },
+      {
+        "name": "clientPrivateKeyPathStream"
+      },
+      {
+        "name": "clientTrustCertCollectionPathStream"
+      },
+      {
+        "name": "serverKeyCertChainPathStream"
+      },
+      {
+        "name": "serverPrivateKeyPathStream"
+      },
+      {
+        "name": "serverTrustCertCollectionPathStream"
+      }
+    ],
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.context.ConfigManager",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.config.deploy.DefaultApplicationDeployer",
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.config.deploy.DefaultModuleDeployer",
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.metadata.ServiceInstanceHostPortCustomizer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.utils.DefaultConfigValidator",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.configcenter.support.zookeeper.ZookeeperDynamicConfigurationFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.demo.graalvm.provider.DemoServiceImpl",
+    "methods": [
+      {
+        "name": "sayHello",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.InstanceMetadataChangedListener",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.apache.dubbo.metadata.MetadataInfo",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.apache.dubbo.metadata.MetadataInfo$ServiceInfo",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.apache.dubbo.metadata.MetadataService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.builder.ArrayTypeBuilder",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.builder.CollectionTypeBuilder",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.builder.EnumTypeBuilder",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.builder.MapTypeBuilder",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.model.MethodDefinition",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.model.ServiceDefinition",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.definition.model.TypeDefinition",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.report.MetadataReportInstance",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.metadata.report.MetadataScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.monitor.MetricsService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.monitor.MonitorService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.monitor.support.MetricsServiceDetector",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.monitor.support.MonitorFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.monitor.support.MonitorClusterFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.monitor.support.MonitorFilter"
+  },
+  {
+    "name": "org.apache.dubbo.monitor.support.MonitorServiceDetector",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.RegistryFactory",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.registry.RegistryFactory$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.RegistryFactoryWrapper",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.registry.RegistryFactory"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.RegistryScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.DefaultRegistryClusterIdentifier",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.DefaultServiceInstance$Endpoint",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.ServiceDiscoveryRegistryFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.metadata.MetadataServiceNameMapping",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.metadata.MetadataServiceURLParamsMetadataCustomizer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.metadata.ProtocolPortsMetadataCustomizer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataCustomizer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.migration.DefaultMigrationAddressComparator",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.client.migration.MigrationRuleListener",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.integration.RegistryProtocol",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.multicast.MulticastRegistryFactory"
+  },
+  {
+    "name": "org.apache.dubbo.registry.multicast.MulticastServiceDiscoveryFactory"
+  },
+  {
+    "name": "org.apache.dubbo.registry.support.DefaultProviderFirstParams",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.support.RegistryManager",
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.registry.zookeeper.ZookeeperInstance",
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.registry.zookeeper.ZookeeperRegistryFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscoveryFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.Dispatcher",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.remoting.Dispatcher$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.Transporter",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.remoting.Transporter$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.exchange.codec.ExchangeCodec"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.exchange.support.header.HeaderExchanger",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.telnet.codec.TelnetCodec"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.codec.TransportCodec"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedDispatcher"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.dispatcher.direct.DirectDispatcher"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyClient$1"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyClientHandler",
+    "methods": [
+      {
+        "name": "channelActive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      },
+      {
+        "name": "userEventTriggered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "write",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object",
+          "io.netty.channel.ChannelPromise"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter$InternalDecoder"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter$InternalEncoder"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyServer$1"
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyServerHandler",
+    "methods": [
+      {
+        "name": "channelActive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelInactive",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext"
+        ]
+      },
+      {
+        "name": "channelRead",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "exceptionCaught",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Throwable"
+        ]
+      },
+      {
+        "name": "userEventTriggered",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object"
+        ]
+      },
+      {
+        "name": "write",
+        "parameterTypes": [
+          "io.netty.channel.ChannelHandlerContext",
+          "java.lang.Object",
+          "io.netty.channel.ChannelPromise"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.transport.netty4.NettyTransporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.Invoker",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.Protocol",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.Protocol$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.ProxyFactory",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.ProxyFactory$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.Cluster",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.Cluster$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.ClusterScopeModelInitializer",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.ConfiguratorFactory",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.ConfiguratorFactory$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.Directory",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.RouterFactory",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.RouterFactory$Adaptive",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.configurator.absent.AbsentConfiguratorFactory"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.configurator.override.OverrideConfiguratorFactory"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.filter.DefaultFilterChainBuilder",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.filter.ProtocolFilterWrapper",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.Protocol"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.filter.support.ConsumerContextFilter",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.filter.support.ZoneAwareFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.governance.DefaultGovernanceRuleRepositoryImpl",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.loadbalance.ConsistentHashLoadBalance"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.loadbalance.ShortestResponseLoadBalance"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.merger.MergerFactory",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.ClusterUtils",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ClassLoaderFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.CompatibleFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ContextFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.DeprecatedFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.EchoFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ExceptionFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ExecuteLimitFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.GenericFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.TimeoutFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.ServiceStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.file.FileStateRouterFactory"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleAddressListenerInterceptor",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.mesh.route.StandardMeshRuleRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.mock.MockStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.tag.TagDynamicStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.tag.TagStaticStateRouterFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.AvailableCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.BroadcastCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.ClusterUtils",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.FailbackCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.FailfastCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.FailoverCluster",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.FailsafeCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.ForkingCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.MergeableCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.merger.DefaultProviderURLMergeProcessor",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.cluster.Cluster"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.AccessLogFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ClassLoaderFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.CompatibleFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ContextFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.DeprecatedFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.EchoFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ExceptionFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.ExecuteLimitFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.GenericFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.TimeoutFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.TokenFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.filter.TpsLimitFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.listener.DeprecatedInvokerListener"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.Protocol"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.ProtocolSerializationWrapper",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.Protocol"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.dubbo.DubboCountCodec",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.dubbo.filter.TraceFilter"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.proxy.javassist.JavassistProxyFactory"
+  },
+  {
+    "name": "org.apache.dubbo.rpc.proxy.jdk.JdkProxyFactory",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.proxy.wrapper.StubProxyFactoryWrapper",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.ProxyFactory"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.service.Destroyable",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.service.EchoService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.service.EchoServiceDetector",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.service.GenericService",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.dubbo.rpc.service.GenericServiceDetector",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.support.MockProtocol"
+  },
+  {
+    "name": "org.apache.log4j.Appender"
+  },
+  {
+    "name": "org.apache.log4j.Category"
+  },
+  {
+    "name": "org.apache.log4j.CategoryKey"
+  },
+  {
+    "name": "org.apache.log4j.ConsoleAppender",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.log4j.Layout",
+    "allPublicMethods": true
+  },
+  {
+    "name": "org.apache.log4j.Logger"
+  },
+  {
+    "name": "org.apache.log4j.PatternLayout",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.log4j.helpers.Loader"
+  },
+  {
+    "name": "org.apache.log4j.spi.OptionHandler"
+  },
+  {
+    "name": "org.apache.zookeeper.ClientCnxnSocketNIO",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.misc.Cleaner",
+    "methods": [
+      {
+        "name": "clean",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.misc.Unsafe",
+    "fields": [
+      {
+        "name": "theUnsafe"
+      }
+    ],
+    "methods": [
+      {
+        "name": "copyMemory",
+        "parameterTypes": [
+          "java.lang.Object",
+          "long",
+          "java.lang.Object",
+          "long",
+          "long"
+        ]
+      },
+      {
+        "name": "getAndAddLong",
+        "parameterTypes": [
+          "java.lang.Object",
+          "long",
+          "long"
+        ]
+      },
+      {
+        "name": "getAndSetObject",
+        "parameterTypes": [
+          "java.lang.Object",
+          "long",
+          "java.lang.Object"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sun.misc.VM",
+    "methods": [
+      {
+        "name": "maxDirectMemory",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.nio.ch.SelectorImpl",
+    "fields": [
+      {
+        "name": "publicSelectedKeys"
+      },
+      {
+        "name": "selectedKeys"
+      }
+    ]
+  },
+  {
+    "name": "sun.security.provider.ConfigFile",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.security.provider.MD5",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.security.provider.NativePRNG",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.security.provider.SHA",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.security.provider.Sun",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  }
+]

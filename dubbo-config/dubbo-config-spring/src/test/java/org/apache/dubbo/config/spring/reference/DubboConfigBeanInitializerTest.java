@@ -22,9 +22,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,23 +54,19 @@ import java.util.List;
     })
 @TestPropertySource(properties = {
     "dubbo.protocol.port=-1",
-    "dubbo.registry.address=zookeeper://127.0.0.1:2181"
+    "dubbo.registry.address=${zookeeper.connection.address}"
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboConfigBeanInitializerTest {
 
-    private static RegistryCenter singleRegistryCenter;
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
-        singleRegistryCenter.shutdown();
         DubboBootstrap.reset();
     }
 

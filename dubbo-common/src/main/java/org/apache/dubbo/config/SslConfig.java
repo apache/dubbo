@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,13 @@ public class SslConfig extends AbstractConfig {
     private InputStream clientKeyCertChainPathStream;
     private InputStream clientPrivateKeyPathStream;
     private InputStream clientTrustCertCollectionPathStream;
+
+    public SslConfig() {
+    }
+
+    public SslConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     @Parameter(key = "server-key-cert-chain-path")
     public String getServerKeyCertChainPath() {

@@ -58,7 +58,7 @@ public interface ExecutorRepository {
 
     ExecutorService nextExecutorExecutor();
 
-    ExecutorService getServiceExportExecutor();
+    ScheduledExecutorService getServiceExportExecutor();
 
     /**
      * The executor only used in bootstrap currently, we should call this method to release the resource
@@ -92,7 +92,34 @@ public interface ExecutorRepository {
      */
     ExecutorService getSharedExecutor();
 
+    /**
+     * Get the shared schedule executor
+     * @return
+     */
+    ScheduledExecutorService getSharedScheduledExecutor();
+
     ExecutorService getPoolRouterExecutor();
+
+    /**
+     * Scheduled executor handle connectivity check task
+     *
+     * @return
+     */
+    ScheduledExecutorService getConnectivityScheduledExecutor();
+
+    /**
+     * Scheduler used to refresh file based caches from memory to disk.
+     *
+     * @return
+     */
+    ScheduledExecutorService getCacheRefreshingScheduledExecutor();
+
+    /**
+     * Executor used to run async mapping tasks
+     *
+     * @return
+     */
+    ExecutorService getMappingRefreshingExecutor();
 
     /**
      * Destroy all executors that are not in shutdown state

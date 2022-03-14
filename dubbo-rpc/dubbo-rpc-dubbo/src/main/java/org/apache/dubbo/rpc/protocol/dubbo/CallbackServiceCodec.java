@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -61,7 +61,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
 /**
  * callback service helper
  */
-class CallbackServiceCodec {
+public class CallbackServiceCodec {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
 
     private static final byte CALLBACK_NONE = 0x0;
@@ -116,12 +116,12 @@ class CallbackServiceCodec {
         params.put(IS_SERVER_KEY, Boolean.FALSE.toString());
         // mark it's a callback, for troubleshooting
         params.put(IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
-        String group = (url == null ? null : url.getGroup());
+        String group = (inv == null ? null : (String) inv.getObjectAttachment(GROUP_KEY));
         if (group != null && group.length() > 0) {
             params.put(GROUP_KEY, group);
         }
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
-        params.put(METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
+        params.put(METHODS_KEY, StringUtils.join(ClassUtils.getDeclaredMethodNames(clazz), ","));
 
         Map<String, String> tmpMap = new HashMap<>();
         if (url != null) {
@@ -266,7 +266,7 @@ class CallbackServiceCodec {
         if (count != null && count >= limit) {
             //client side error
             throw new IllegalStateException("interface " + interfaceClass + " `s callback instances num exceed providers limit :" + limit
-                    + " ,current num: " + (count + 1) + ". The new callback service will not work !!! you can cancle the callback service which exported before. channel :" + channel);
+                + " ,current num: " + (count + 1) + ". The new callback service will not work !!! you can cancle the callback service which exported before. channel :" + channel);
         } else {
             return false;
         }
@@ -309,10 +309,10 @@ class CallbackServiceCodec {
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackStatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv,  url, pts[paraIndex], args[paraIndex], true));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv, url, pts[paraIndex], args[paraIndex], true));
                 return null;
             case CallbackServiceCodec.CALLBACK_DESTROY:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv,  url, pts[paraIndex], args[paraIndex], false));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv, url, pts[paraIndex], args[paraIndex], false));
                 return null;
             default:
                 return args[paraIndex];

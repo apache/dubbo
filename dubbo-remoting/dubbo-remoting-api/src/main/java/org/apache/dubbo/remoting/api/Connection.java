@@ -16,6 +16,15 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingException;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -34,14 +43,6 @@ import io.netty.util.ReferenceCounted;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +54,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
-public class Connection extends AbstractReferenceCounted implements ReferenceCounted {
+public class Connection extends AbstractReferenceCounted {
 
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
@@ -90,11 +91,11 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     private Bootstrap create() {
         final Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
+        bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .remoteAddress(getConnectAddress())
+                .remoteAddress(remote)
                 .channel(socketChannelClass());
 
         final ConnectionHandler connectionHandler = new ConnectionHandler(this);
@@ -103,16 +104,17 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
             @Override
             protected void initChannel(SocketChannel ch) {
+                final ChannelPipeline pipeline = ch.pipeline();
                 SslContext sslContext = null;
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(url));
+                    pipeline.addLast("negotiation", new SslClientTlsHandler(url));
                 }
 
-                final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
-                p.addLast(connectionHandler);
-                protocol.configClientPipeline(url, p, sslContext);
+                pipeline.addLast(connectionHandler);
+                protocol.configClientPipeline(url, pipeline, sslContext);
                 // TODO support Socks5
             }
         });

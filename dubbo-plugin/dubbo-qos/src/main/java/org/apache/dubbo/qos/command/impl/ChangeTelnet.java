@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 @Cmd(name = "cd", summary = "Change default service.", example = {
     "cd [service]"
@@ -42,7 +44,7 @@ public class ChangeTelnet implements BaseCommand {
     public String execute(CommandContext commandContext, String[] args) {
         Channel channel = commandContext.getRemote();
 
-        if (args == null || args.length < 1) {
+        if (ArrayUtils.isEmpty(args)) {
             return "Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService";
         }
         String message = args[0];

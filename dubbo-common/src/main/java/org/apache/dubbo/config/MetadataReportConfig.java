@@ -21,10 +21,17 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_TIMES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
@@ -79,7 +86,7 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private Integer retryPeriod;
     /**
-     * By default the metadata store will store full metadata repeatedly every day .
+     * By default, the metadata store will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 
@@ -110,11 +117,23 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean check;
 
+    private Boolean reportMetadata;
+
+    private Boolean reportDefinition;
 
     public MetadataReportConfig() {
     }
 
+    public MetadataReportConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     public MetadataReportConfig(String address) {
+        setAddress(address);
+    }
+
+    public MetadataReportConfig(ApplicationModel applicationModel, String address) {
+        super(applicationModel);
         setAddress(address);
     }
 
@@ -213,7 +232,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
-    @Parameter(key = "retry-times")
+    @Parameter(key = RETRY_TIMES_KEY)
     public Integer getRetryTimes() {
         return retryTimes;
     }
@@ -222,7 +241,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.retryTimes = retryTimes;
     }
 
-    @Parameter(key = "retry-period")
+    @Parameter(key = RETRY_PERIOD_KEY)
     public Integer getRetryPeriod() {
         return retryPeriod;
     }
@@ -231,7 +250,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.retryPeriod = retryPeriod;
     }
 
-    @Parameter(key = "cycle-report")
+    @Parameter(key = CYCLE_REPORT_KEY)
     public Boolean getCycleReport() {
         return cycleReport;
     }
@@ -240,7 +259,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.cycleReport = cycleReport;
     }
 
-    @Parameter(key = "sync-report")
+    @Parameter(key = SYNC_REPORT_KEY)
     public Boolean getSyncReport() {
         return syncReport;
     }
@@ -304,5 +323,23 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setCheck(Boolean check) {
         this.check = check;
+    }
+
+    @Parameter(key = REPORT_METADATA_KEY)
+    public Boolean getReportMetadata() {
+        return reportMetadata;
+    }
+
+    public void setReportMetadata(Boolean reportMetadata) {
+        this.reportMetadata = reportMetadata;
+    }
+
+    @Parameter(key = REPORT_DEFINITION_KEY)
+    public Boolean getReportDefinition() {
+        return reportDefinition;
+    }
+
+    public void setReportDefinition(Boolean reportDefinition) {
+        this.reportDefinition = reportDefinition;
     }
 }

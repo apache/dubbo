@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.qos.server;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -24,11 +30,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.server.handler.QosProcessHandler;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

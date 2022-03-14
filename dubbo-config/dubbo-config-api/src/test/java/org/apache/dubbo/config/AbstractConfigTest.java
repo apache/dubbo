@@ -23,6 +23,7 @@ import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -184,8 +185,8 @@ public class AbstractConfigTest {
         // secret is excluded for url parameters, but keep for attributes
         Assertions.assertEquals(config.getSecret(), attributes.get("secret"));
         Assertions.assertEquals(config.getName(), attributes.get("name"));
-        Assertions.assertEquals(""+config.getNumber(), attributes.get("number"));
-        Assertions.assertEquals(""+config.getAge(), attributes.get("age"));
+        Assertions.assertEquals(String.valueOf(config.getNumber()), attributes.get("number"));
+        Assertions.assertEquals(String.valueOf(config.getAge()), attributes.get("age"));
         Assertions.assertEquals(StringUtils.encodeParameters(config.getParameters()), attributes.get("parameters"));
     }
 
@@ -348,7 +349,6 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("system", overrideConfig.getKey2());
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -373,7 +373,6 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
             Assertions.assertEquals("system", overrideConfig.getKey());
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -396,6 +395,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://127.0.0.1:2181", overrideConfig.getAddress());
             Assertions.assertEquals("override-config", overrideConfig.getProtocol());
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
+            Assertions.assertEquals("properties", overrideConfig.getKey2());
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
@@ -498,7 +498,6 @@ public class AbstractConfigTest {
             Assertions.assertEquals("value6", overrideConfig.getParameters().get("key3"));
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -511,7 +510,6 @@ public class AbstractConfigTest {
             overrideConfig.refresh();
             assertEquals("value00", overrideConfig.getParameters().get("key00"));
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -938,7 +936,7 @@ public class AbstractConfigTest {
             AbstractConfig config = configClass.newInstance();
             Map<String, String> metaData = config.getMetaData();
             Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
-            System.out.println(configClass.getSimpleName()+" metadata is checked.");
+            System.out.println(configClass.getSimpleName() + " metadata is checked.");
         }
     }
 

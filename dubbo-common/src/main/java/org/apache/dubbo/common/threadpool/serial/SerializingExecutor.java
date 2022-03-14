@@ -80,7 +80,7 @@ public final class SerializingExecutor implements Executor, Runnable {
                         // ConcurrentLinkedQueue claims that null elements are not allowed, but seems to not
                         // throw if the item to remove is null.  If removable is present in the queue twice,
                         // the wrong one may be removed.  It doesn't seem possible for this case to exist today.
-                        // This is important to run in case of RejectedExectuionException, so that future calls
+                        // This is important to run in case of RejectedExecutionException, so that future calls
                         // to execute don't succeed and accidentally run a previous runnable.
                         runQueue.remove(removable);
                     }

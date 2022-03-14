@@ -18,8 +18,8 @@ package org.apache.dubbo.registry.multiple;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.DefaultPage;
-import org.apache.dubbo.common.utils.Page;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -40,12 +40,10 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     private static final String SERVICE = "service";
     private final Map<String, ServiceDiscovery> serviceDiscoveries = new ConcurrentHashMap<>();
     private URL registryURL;
-    private ServiceInstance serviceInstance;
     private String applicationName;
     private volatile boolean isDestroy;
 
-    @Override
-    public void initialize(URL registryURL) throws Exception {
+    public MultipleServiceDiscovery(URL registryURL) {
         this.registryURL = registryURL;
         this.applicationName = registryURL.getApplication();
 
@@ -55,7 +53,6 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
                 URL url = URL.valueOf(registryURL.getParameter(key)).addParameter(CommonConstants.APPLICATION_KEY, applicationName)
                     .addParameter(REGISTRY_TYPE, SERVICE);
                 ServiceDiscovery serviceDiscovery = ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url);
-                serviceDiscovery.initialize(url);
                 serviceDiscoveries.put(key, serviceDiscovery);
             }
         }
@@ -80,19 +77,18 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
-        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+    public void register() throws RuntimeException {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register());
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update(serviceInstance));
+    public void update() throws RuntimeException {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update());
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister(serviceInstance));
+    public void unregister() throws RuntimeException {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister());
     }
 
     @Override
@@ -114,16 +110,12 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly)
-        throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
-
+    public List<ServiceInstance> getInstances(String serviceName) {
         List<ServiceInstance> serviceInstanceList = new ArrayList<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
-            Page<ServiceInstance> serviceInstancePage = serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
-            serviceInstanceList.addAll(serviceInstancePage.getData());
+            serviceInstanceList.addAll(serviceDiscovery.getInstances(serviceName));
         }
-
-        return new DefaultPage<>(offset, pageSize, serviceInstanceList, serviceInstanceList.size());
+        return serviceInstanceList;
     }
 
     @Override
@@ -137,7 +129,47 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public ServiceInstance getLocalInstance() {
-        return serviceInstance;
+        return null;
+    }
+
+    @Override
+    public MetadataInfo getLocalMetadata() {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+    }
+
+    @Override
+    public MetadataInfo getRemoteMetadata(String revision) {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+    }
+
+    @Override
+    public MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+    }
+
+    @Override
+    public void register(URL url) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(url));
+    }
+
+    @Override
+    public void unregister(URL url) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister(url));
+    }
+
+    @Override
+    public void subscribe(URL url, NotifyListener listener) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.subscribe(url, listener));
+    }
+
+    @Override
+    public void unsubscribe(URL url, NotifyListener listener) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unsubscribe(url, listener));
+    }
+
+    @Override
+    public List<URL> lookup(URL url) {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support lookup() method.");
     }
 
     protected static class MultiServiceInstancesChangedListener extends ServiceInstancesChangedListener {

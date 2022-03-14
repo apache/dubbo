@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -32,13 +31,12 @@ import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 
 import grpc.health.v1.Health;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 
 /**
- * tri internal  service like grpc internal service
+ * tri internal service like grpc internal service
  **/
 public class TriBuiltinService {
 
@@ -59,11 +57,7 @@ public class TriBuiltinService {
         healthService = healthStatusManager.getHealthService();
         proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
-        if (CollectionUtils.isEmpty(applicationModels)) {
-            throw new IllegalStateException("Should have at least one applicationModel in frameworkModel. FrameworkModel:" + frameworkModel);
-        }
-        repository = applicationModels.get(0).getInternalModule().getServiceRepository();
+        repository = frameworkModel.getInternalApplicationModel().getInternalModule().getServiceRepository();
         init();
     }
 
@@ -90,7 +84,7 @@ public class TriBuiltinService {
             Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
             pathResolver.add(url.getServiceKey(), invoker);
             pathResolver.add(url.getServiceInterface(), invoker);
-            providerModel.setDestroyCaller(()->{
+            providerModel.setDestroyCaller(() -> {
                 pathResolver.remove(url.getServiceKey());
                 pathResolver.remove(url.getServiceInterface());
                 return null;

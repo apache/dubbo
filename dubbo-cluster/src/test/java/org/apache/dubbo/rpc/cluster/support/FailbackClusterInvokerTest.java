@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.rpc.AppResponse;
@@ -37,11 +38,13 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -195,5 +198,99 @@ public class FailbackClusterInvokerTest {
         Assertions.assertEquals(2, LogUtil.findMessage(Level.ERROR, "Failed retry times exceed threshold"), "must have two error message ");
         Assertions.assertEquals(1, LogUtil.findMessage(Level.ERROR, "Failback background works error"), "must have one error message ");
         // it can be invoke successfully
+    }
+
+
+
+    private long getRetryFailedPeriod() throws NoSuchFieldException, IllegalAccessException {
+        Field retryFailedPeriod = FailbackClusterInvoker.class.getDeclaredField("RETRY_FAILED_PERIOD");
+        retryFailedPeriod.setAccessible(true);
+        return retryFailedPeriod.getLong(FailbackClusterInvoker.class);
+    }
+
+    @Test
+    @Order(5)
+    public void testInvokeRetryTimesWithZeroValue() throws InterruptedException, NoSuchFieldException,
+            IllegalAccessException {
+        int retries = 0;
+        resetInvokerToException();
+        given(dic.getConsumerUrl()).willReturn(url.addParameter(RETRIES_KEY, retries));
+
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
+        LogUtil.start();
+        DubboAppender.clear();
+
+        invocation.setMethodName("testInvokeRetryTimesWithZeroValue");
+        invoker.invoke(invocation);
+
+        CountDownLatch countDown = new CountDownLatch(1);
+        countDown.await(getRetryFailedPeriod() * (retries + 1), TimeUnit.SECONDS);
+        LogUtil.stop();
+        Assertions.assertEquals(0, LogUtil.findMessage(Level.INFO, "Attempt to retry to invoke method " +
+                "testInvokeRetryTimesWithZeroValue"), "No retry messages allowed");
+    }
+
+    @Test
+    @Order(6)
+    public void testInvokeRetryTimesWithTwoValue() throws InterruptedException, NoSuchFieldException,
+            IllegalAccessException {
+        int retries = 2;
+        resetInvokerToException();
+        given(dic.getConsumerUrl()).willReturn(url.addParameter(RETRIES_KEY, retries));
+
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
+        LogUtil.start();
+        DubboAppender.clear();
+
+        invocation.setMethodName("testInvokeRetryTimesWithTwoValue");
+        invoker.invoke(invocation);
+
+        CountDownLatch countDown = new CountDownLatch(1);
+        countDown.await(getRetryFailedPeriod() * (retries + 1), TimeUnit.SECONDS);
+        LogUtil.stop();
+        Assertions.assertEquals(2, LogUtil.findMessage(Level.INFO, "Attempt to retry to invoke method " +
+                "testInvokeRetryTimesWithTwoValue"), "Must have two error message ");
+    }
+
+    @Test
+    @Order(7)
+    public void testInvokeRetryTimesWithDefaultValue() throws InterruptedException, NoSuchFieldException,
+            IllegalAccessException {
+        resetInvokerToException();
+        given(dic.getConsumerUrl()).willReturn(URL.valueOf("test://test:11/test"));
+
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
+        LogUtil.start();
+        DubboAppender.clear();
+
+        invocation.setMethodName("testInvokeRetryTimesWithDefaultValue");
+        invoker.invoke(invocation);
+
+        CountDownLatch countDown = new CountDownLatch(1);
+        countDown.await(getRetryFailedPeriod() * (CommonConstants.DEFAULT_FAILBACK_TIMES + 1), TimeUnit.SECONDS);
+        LogUtil.stop();
+        Assertions.assertEquals(3, LogUtil.findMessage(Level.INFO, "Attempt to retry to invoke method " +
+                "testInvokeRetryTimesWithDefaultValue"), "Must have three error message ");
+    }
+
+    @Test
+    @Order(8)
+    public void testInvokeRetryTimesWithIllegalValue() throws InterruptedException, NoSuchFieldException,
+            IllegalAccessException {
+        resetInvokerToException();
+        given(dic.getConsumerUrl()).willReturn(url.addParameter(RETRIES_KEY, -100));
+
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
+        LogUtil.start();
+        DubboAppender.clear();
+
+        invocation.setMethodName("testInvokeRetryTimesWithIllegalValue");
+        invoker.invoke(invocation);
+
+        CountDownLatch countDown = new CountDownLatch(1);
+        countDown.await(getRetryFailedPeriod() * (CommonConstants.DEFAULT_FAILBACK_TIMES + 1), TimeUnit.SECONDS);
+        LogUtil.stop();
+        Assertions.assertEquals(3, LogUtil.findMessage(Level.INFO, "Attempt to retry to invoke method " +
+                "testInvokeRetryTimesWithIllegalValue"), "Must have three error message ");
     }
 }

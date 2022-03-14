@@ -31,8 +31,16 @@
             <param name="LevelMax" value="DEBUG" />
         </filter> -->
     </appender>
+
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{dd/MM/yy HH:mm:ss:SSS z}] %t %5p %c{2}: %m%n"/>
+        </layout>
+    </appender>
+
     <root>
         <level value="INFO"/>
         <appender-ref ref="dubbo"/>
+        <appender-ref ref="console"/>
     </root>
 </log4j:configuration>

@@ -17,30 +17,32 @@
 package org.apache.dubbo.remoting.zookeeper.curator;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class CuratorZookeeperTransporterTest {
-    private TestingServer zkServer;
     private ZookeeperClient zookeeperClient;
     private CuratorZookeeperTransporter curatorZookeeperTransporter;
-    private int zkServerPort;
+    private static String zookeeperConnectionAddress1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
-        zkServerPort = NetUtils.getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        zookeeperClient = new CuratorZookeeperTransporter().connect(URL.valueOf("zookeeper://127.0.0.1:" +
-                zkServerPort + "/service"));
+        zookeeperClient = new CuratorZookeeperTransporter().connect(URL.valueOf(zookeeperConnectionAddress1 + "/service"));
         curatorZookeeperTransporter = new CuratorZookeeperTransporter();
     }
 
@@ -50,8 +52,4 @@ public class CuratorZookeeperTransporterTest {
         zookeeperClient.close();
     }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        zkServer.stop();
-    }
 }

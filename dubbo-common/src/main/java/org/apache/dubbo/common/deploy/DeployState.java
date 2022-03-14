@@ -20,5 +20,38 @@ package org.apache.dubbo.common.deploy;
  * Deploy state enum
  */
 public enum DeployState {
-    PENDING, STARTING, STARTED, STOPPING, STOPPED, FAILED
+    /**
+     * Unknown state
+     */
+    UNKNOWN,
+
+    /**
+     * Pending, wait for start
+     */
+    PENDING,
+
+    /**
+     * Starting
+     */
+    STARTING,
+
+    /**
+     * Started
+     */
+    STARTED,
+
+    /**
+     * Stopping
+     */
+    STOPPING,
+
+    /**
+     * Stopped
+     */
+    STOPPED,
+
+    /**
+     * Failed
+     */
+    FAILED
 }

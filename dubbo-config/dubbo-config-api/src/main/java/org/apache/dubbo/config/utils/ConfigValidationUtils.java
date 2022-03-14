@@ -121,7 +121,6 @@ import static org.apache.dubbo.config.Constants.OWNER;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SUBSCRIBE_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
@@ -129,7 +128,7 @@ import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.remoting.Constants.TELNET;
+import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
 import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
@@ -189,11 +188,15 @@ public class ConfigValidationUtils {
 
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
-        List<URL> registryList = new ArrayList<URL>();
+        List<URL> registryList = new ArrayList<>();
         ApplicationConfig application = interfaceConfig.getApplication();
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
+                // try to refresh registry in case it is set directly by user using config.setRegistries()
+                if (!config.isRefreshed()) {
+                    config.refresh();
+                }
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
@@ -215,8 +218,8 @@ public class ConfigValidationUtils {
                             .setProtocol(extractRegistryType(url))
                             .setScopeModel(interfaceConfig.getScopeModel())
                             .build();
-                        if ((provider && url.getParameter(REGISTER_KEY, true))
-                            || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
+                        // provider delay register state will be checked in RegistryProtocol#export
+                        if (provider || url.getParameter(SUBSCRIBE_KEY, true)) {
                             registryList.add(url);
                         }
                     }
@@ -537,7 +540,7 @@ public class ConfigValidationUtils {
                 checkMultiExtension(config.getScopeModel(), Transporter.class, CLIENT_KEY, config.getClient());
             }
 
-            checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET, config.getTelnet());
+            checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
             checkMultiExtension(config.getScopeModel(), StatusChecker.class, "status", config.getStatus());
             checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
             checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
@@ -550,7 +553,7 @@ public class ConfigValidationUtils {
     public static void validateProviderConfig(ProviderConfig config) {
         checkPathName(CONTEXTPATH_KEY, config.getContextpath());
         checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
-        checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET, config.getTelnet());
+        checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
         checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
         checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());

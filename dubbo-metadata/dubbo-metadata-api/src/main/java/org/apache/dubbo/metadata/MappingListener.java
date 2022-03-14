@@ -18,4 +18,6 @@ package org.apache.dubbo.metadata;
 
 public interface MappingListener {
     void onEvent(MappingChangedEvent event);
+
+    void stop();
 }

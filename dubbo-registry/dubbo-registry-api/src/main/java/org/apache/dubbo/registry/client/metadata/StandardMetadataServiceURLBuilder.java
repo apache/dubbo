@@ -25,23 +25,26 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
+import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 
 /**
  * Standard Dubbo provider enabling introspection service discovery mode.
@@ -49,17 +52,18 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @see MetadataService
  * @since 2.7.5
  */
-public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder, ScopeModelAware {
+public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String NAME = "standard";
 
     private ApplicationModel applicationModel;
+    private Integer metadataServicePort;
 
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public StandardMetadataServiceURLBuilder(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        metadataServicePort = applicationModel.getCurrentConfig().getMetadataServicePort();
     }
 
     /**
@@ -98,7 +102,10 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setProtocol(protocol)
                 .setPath(MetadataService.class.getName())
                 .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
-                .addParameter(SIDE_KEY, CONSUMER);
+                .addParameter(SIDE_KEY, CONSUMER)
+                .addParameter(CONNECTIONS_KEY, 1)
+                .addParameter(RETRIES_KEY, 0);
+
 
         // add parameters
         params.forEach(urlBuilder::addParameter);
@@ -109,7 +116,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     }
 
     private URL generateUrlWithoutMetadata(String serviceName, String host, Integer instancePort) {
-        Integer port = ApplicationModel.defaultModel().getCurrentConfig().getMetadataServicePort();
+        Integer port = metadataServicePort;
         if (port == null || port < 1) {
             logger.warn("Metadata Service Port is not provided, since DNS is not able to negotiate the metadata port " +
                     "between Provider and Consumer, will try to use instance port as the default metadata port.");
@@ -133,11 +140,24 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)
-                .addParameter(VERSION_KEY, MetadataService.VERSION);
+                .addParameter(VERSION_KEY, MetadataService.VERSION)
+                .addParameter(RETRIES_KEY, 0);
 
-        // add ServiceInstance Metadata notify support
-        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
+//        // add ServiceInstance Metadata notify support
+//        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
 
         return urlBuilder.build();
+    }
+
+    /**
+     * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
+     *
+     * @param serviceInstance the instance of {@link ServiceInstance}
+     * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
+     */
+    private Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
+        return isBlank(param) ? emptyMap() : (Map) ServiceInstanceMetadataUtils.gson.fromJson(param,Map.class);
     }
 }

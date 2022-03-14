@@ -38,6 +38,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 
 /**
  * Abort Policy.
@@ -54,10 +56,6 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
     private static volatile long lastPrintTime = 0;
 
     private static final long TEN_MINUTES_MILLS = 10 * 60 * 1000;
-
-    private static final String OS_WIN_PREFIX = "win";
-
-    private static final String OS_NAME_KEY = "os.name";
 
     private static final String WIN_DATETIME_FORMAT = "yyyy-MM-dd_HH-mm-ss";
 

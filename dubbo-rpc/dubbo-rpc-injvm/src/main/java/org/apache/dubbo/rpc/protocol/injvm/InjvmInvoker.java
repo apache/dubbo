@@ -40,10 +40,13 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
@@ -59,13 +62,16 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final ParamDeepCopyUtil paramDeepCopyUtil;
 
+    private final boolean shouldIgnoreSameModule;
+
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
         this.key = key;
         this.exporterMap = exporterMap;
         this.executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         this.paramDeepCopyUtil = url.getOrDefaultFrameworkModel().getExtensionLoader(ParamDeepCopyUtil.class)
-            .getExtension(url.getParameter("injvm-copy-util", DefaultParamDeepCopyUtil.NAME));
+            .getExtension(url.getParameter(CommonConstants.INJVM_COPY_UTIL_KEY, DefaultParamDeepCopyUtil.NAME));
+        this.shouldIgnoreSameModule = url.getParameter(CommonConstants.INJVM_IGNORE_SAME_MODULE_KEY, false);
     }
 
     @Override
@@ -92,6 +98,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
+
+        invocation.setAttachment(TIMEOUT_KEY, invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT));
 
         String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
 
@@ -147,11 +155,16 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             return invocation;
         }
         String methodName = invocation.getMethodName();
-        if(CommonConstants.$INVOKE.equals(methodName)) {
+
+        ServiceModel consumerServiceModel = invocation.getServiceModel();
+        boolean shouldSkip = shouldIgnoreSameModule && consumerServiceModel != null &&
+            Objects.equals(providerServiceModel.getModuleModel(), consumerServiceModel.getModuleModel());
+        if(CommonConstants.$INVOKE.equals(methodName) || shouldSkip) {
             // generic invoke, skip copy arguments
-            RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
+            RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
+                providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                 invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
-                invocation.getInvoker(), invocation.getAttributes());
+                invocation.getInvoker(), new HashMap<>());
             copiedInvocation.setInvoker(invoker);
             return copiedInvocation;
         }
@@ -177,9 +190,10 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                     realArgument = args;
                 }
 
-                RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
+                    providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
-                    invocation.getInvoker(), invocation.getAttributes());
+                    invocation.getInvoker(), new HashMap<>());
                 copiedInvocation.setInvoker(invoker);
                 return copiedInvocation;
             } finally {

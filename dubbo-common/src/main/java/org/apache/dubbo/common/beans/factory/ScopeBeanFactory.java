@@ -21,14 +21,18 @@ import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,12 +42,15 @@ import java.util.stream.Collectors;
  */
 public class ScopeBeanFactory {
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeBeanFactory.class);
+
     private final ScopeBeanFactory parent;
     private ExtensionAccessor extensionAccessor;
     private List<ExtensionPostProcessor> extensionPostProcessors;
     private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
-    private List<BeanInfo> registeredBeanInfos = Collections.synchronizedList(new ArrayList<>());
+    private List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
+    private AtomicBoolean destroyed = new AtomicBoolean();
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -73,6 +80,7 @@ public class ScopeBeanFactory {
     }
 
     private <T> T createAndRegisterBean(String name, Class<T> clazz) {
+        checkDestroyed();
         T instance = getBean(name, clazz);
         if (instance != null) {
             throw new ScopeBeanException("already exists bean with same name and type, name=" + name + ", type=" + clazz.getName());
@@ -91,6 +99,7 @@ public class ScopeBeanFactory {
     }
 
     public void registerBean(String name, Object bean) {
+        checkDestroyed();
         // avoid duplicated register same bean
         if (containsBean(name, bean)) {
             return;
@@ -148,6 +157,7 @@ public class ScopeBeanFactory {
     }
 
     private void initializeBean(String name, Object bean) {
+        checkDestroyed();
         try {
             if (bean instanceof ExtensionAccessorAware) {
                 ((ExtensionAccessorAware) bean).setExtensionAccessor(extensionAccessor);
@@ -187,6 +197,7 @@ public class ScopeBeanFactory {
     }
 
     private <T> T getBeanInternal(String name, Class<T> type) {
+        checkDestroyed();
         // All classes are derived from java.lang.Object, cannot filter bean by it
         if (type == Object.class) {
             return null;
@@ -225,6 +236,28 @@ public class ScopeBeanFactory {
             return (T) firstCandidate.instance;
         }
         return null;
+    }
+
+    public void destroy() {
+        if (destroyed.compareAndSet(false, true)){
+            for (BeanInfo beanInfo : registeredBeanInfos) {
+                if (beanInfo.instance instanceof Disposable) {
+                    try {
+                        Disposable beanInstance = (Disposable) beanInfo.instance;
+                        beanInstance.destroy();
+                    } catch (Throwable e) {
+                        LOGGER.error("An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
+                    }
+                }
+            }
+            registeredBeanInfos.clear();
+        }
+    }
+
+    private void checkDestroyed() {
+        if (destroyed.get()) {
+            throw new IllegalStateException("ScopeBeanFactory is destroyed");
+        }
     }
 
     static class BeanInfo {

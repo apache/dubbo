@@ -40,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
@@ -57,8 +58,6 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = -10000)
 public class ContextFilter implements Filter, Filter.Listener {
-
-    private static final String TAG_KEY = "dubbo.tag";
 
     private static final Set<String> UNLOADING_KEYS;
 
@@ -100,11 +99,11 @@ public class ContextFilter implements Filter, Filter.Listener {
 //                .setAttachments(attachments)  // merged from dubbox
         context.setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
 
-        String remoteApplication = (String) invocation.getAttachment(REMOTE_APPLICATION_KEY);
+        String remoteApplication = invocation.getAttachment(REMOTE_APPLICATION_KEY);
         if (StringUtils.isNotEmpty(remoteApplication)) {
             RpcContext.getServiceContext().setRemoteApplicationName(remoteApplication);
         } else {
-            RpcContext.getServiceContext().setRemoteApplicationName((String) context.getAttachment(REMOTE_APPLICATION_KEY));
+            RpcContext.getServiceContext().setRemoteApplicationName(context.getAttachment(REMOTE_APPLICATION_KEY));
         }
 
         long timeout = RpcUtils.getTimeout(invocation, -1);
@@ -114,9 +113,9 @@ public class ContextFilter implements Filter, Filter.Listener {
         }
 
         // merged from dubbox
-        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
+        // we may already add some attachments into RpcContext before this filter (e.g. in rest protocol)
         if (attachments != null) {
-            if (context.getObjectAttachments() != null) {
+            if (context.getObjectAttachments().size() > 0) {
                 context.getObjectAttachments().putAll(attachments);
             } else {
                 context.setObjectAttachments(attachments);
@@ -132,11 +131,6 @@ public class ContextFilter implements Filter, Filter.Listener {
             return invoker.invoke(invocation);
         } finally {
             context.clearAfterEachInvoke(true);
-            RpcContext.removeServerAttachment();
-            RpcContext.removeServiceContext();
-            // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
-            RpcContext.getClientAttachment().removeAttachment(TIME_COUNTDOWN_KEY);
-            RpcContext.removeServerContext();
         }
     }
 
@@ -144,10 +138,18 @@ public class ContextFilter implements Filter, Filter.Listener {
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
         appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
+        removeContext();
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        removeContext();
+    }
 
+    private void removeContext() {
+        RpcContext.removeServerAttachment();
+        RpcContext.removeClientAttachment();
+        RpcContext.removeServiceContext();
+        RpcContext.removeServerContext();
     }
 }

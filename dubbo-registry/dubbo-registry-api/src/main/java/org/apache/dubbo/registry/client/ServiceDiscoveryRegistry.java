@@ -17,45 +17,41 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
-import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
-import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.dubbo.registry.support.FailbackRegistry;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
+import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
 /**
+ * TODO, this bridge implementation is not necessary now, protocol can interact with service discovery directly.
+ *
  * ServiceDiscoveryRegistry is a very special Registry implementation, which is used to bridge the old interface-level service discovery model
  * with the new service discovery model introduced in 3.0 in a compatible manner.
  * <p>
@@ -74,25 +70,29 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final ServiceDiscovery serviceDiscovery;
 
-    private final WritableMetadataService writableMetadataService;
+    private final AbstractServiceNameMapping serviceNameMapping;
 
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
+    private final Map<String, MappingListener> mappingListeners = new ConcurrentHashMap<>();
+    /* This lock has the same scope and lifecycle as its corresponding instance listener.
+    It's used to make sure that only one interface mapping to the same app list can do subscribe or unsubscribe at the same moment.
+    And the lock should be destroyed when listener destroying its corresponding instance listener.
+    * */
+    private final ConcurrentMap<String, Lock> appSubscriptionLocks = new ConcurrentHashMap<>();
 
-    private RegistryManager registryManager;
-
-    public ServiceDiscoveryRegistry(URL registryURL) {
+    public ServiceDiscoveryRegistry(URL registryURL, ApplicationModel applicationModel) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
-        this.registryManager = registryURL.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
+        this.serviceNameMapping = (AbstractServiceNameMapping) ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
+        super.applicationModel = applicationModel;
     }
 
     // Currently, for test purpose
-    protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, WritableMetadataService writableMetadataService) {
+    protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, ServiceNameMapping serviceNameMapping) {
         super(registryURL);
         this.serviceDiscovery = serviceDiscovery;
-        this.writableMetadataService = writableMetadataService;
+        this.serviceNameMapping = (AbstractServiceNameMapping)serviceNameMapping;
     }
 
     public ServiceDiscovery getServiceDiscovery() {
@@ -106,15 +106,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return non-null
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
-        ServiceDiscovery serviceDiscovery = getServiceDiscovery(registryURL);
-        execute(() -> serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-            .removeParameter(REGISTRY_TYPE_KEY)));
-        return serviceDiscovery;
-    }
-
-    private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {
-        ExtensionLoader<SubscribedURLsSynthesizer> loader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(SubscribedURLsSynthesizer.class);
-        return Collections.unmodifiableList(new ArrayList<>(loader.getSupportedExtensionInstances()));
+        return getServiceDiscovery(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
+            .removeParameter(REGISTRY_TYPE_KEY));
     }
 
     /**
@@ -141,6 +134,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             }
         }
 
+        if (!acceptable(providerURL)) {
+            logger.info("URL " + providerURL + " will not be registered to Registry. Registry " + this.getUrl() + " does not accept service of this protocol type.");
+            return false;
+        }
+
         return should;
     }
 
@@ -158,16 +156,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
+        // fixme, add registry-cluster is not necessary anymore
         url = addRegistryClusterKey(url);
-        if (writableMetadataService.exportURL(url)) {
-            if (logger.isInfoEnabled()) {
-                logger.info(format("The URL[%s] registered successfully.", url.toString()));
-            }
-        } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn(format("The URL[%s] has been registered.", url.toString()));
-            }
-        }
+        serviceDiscovery.register(url);
     }
 
     @Override
@@ -180,16 +171,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void doUnregister(URL url) {
+        // fixme, add registry-cluster is not necessary anymore
         url = addRegistryClusterKey(url);
-        if (writableMetadataService.unexportURL(url)) {
-            if (logger.isInfoEnabled()) {
-                logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
-            }
-        } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn(format("The URL[%s] has been deregistered.", url.toString()));
-            }
-        }
+        serviceDiscovery.unregister(url);
     }
 
     @Override
@@ -197,32 +181,42 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-        url = addRegistryClusterKey(url);
         doSubscribe(url, listener);
     }
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-        writableMetadataService.subscribeURL(url);
+        url = addRegistryClusterKey(url);
+
+        serviceDiscovery.subscribe(url, listener);
 
         boolean check = url.getParameter(CHECK_KEY, false);
 
-        Set<String> subscribedServices = Collections.emptySet();
+        String key = ServiceNameMapping.buildMappingKey(url);
+        Lock mappingLock = serviceNameMapping.getMappingLock(key);
         try {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(this.getUrl().getScopeModel());
-            subscribedServices = serviceNameMapping.getAndListenServices(this.getUrl(), url, new DefaultMappingListener(url, subscribedServices, listener));
-        } catch (Exception e) {
-            logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
-        }
-
-        if (CollectionUtils.isEmpty(subscribedServices)) {
-            if (check) {
-                throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+            mappingLock.lock();
+            Set<String> subscribedServices = serviceNameMapping.getCachedMapping(url);
+            try {
+                MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
+                subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
+                mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
+            } catch (Exception e) {
+                logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
             }
-            return;
-        }
 
-        subscribeURLs(url, listener, subscribedServices);
+            if (CollectionUtils.isEmpty(subscribedServices)) {
+                logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
+//                if (check) {
+//                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+//                }
+                return;
+            }
+
+            subscribeURLs(url, listener, subscribedServices);
+        } finally {
+            mappingLock.unlock();
+        }
     }
 
     @Override
@@ -245,17 +239,26 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
         // TODO: remove service name mapping listener
-        writableMetadataService.unsubscribeURL(url);
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
-        Set<String> serviceNames = writableMetadataService.getCachedMapping(url);
+        serviceDiscovery.unsubscribe(url, listener);
+        String protocolServiceKey = url.getProtocolServiceKey();
+        Set<String> serviceNames = serviceNameMapping.getCachedMapping(url);
+        serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             String serviceNamesKey = toStringKeys(serviceNames);
-            ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
-            if (instancesChangedListener != null) {
-                instancesChangedListener.removeListener(protocolServiceKey, listener);
-                if (!instancesChangedListener.hasListeners()) {
-                    serviceListeners.remove(serviceNamesKey);
+            Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
+            try {
+                appSubscriptionLock.lock();
+                ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
+                if (instancesChangedListener != null) {
+                    instancesChangedListener.removeListener(protocolServiceKey, listener);
+                    if (!instancesChangedListener.hasListeners()) {
+                        instancesChangedListener.destroy();
+                        serviceListeners.remove(serviceNamesKey);
+                        removeAppSubscriptionLock(serviceNamesKey);
+                    }
                 }
+            } finally {
+                appSubscriptionLock.unlock();
             }
         }
     }
@@ -275,18 +278,31 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         registryManager.removeDestroyedRegistry(this);
         // stop ServiceDiscovery
         execute(serviceDiscovery::destroy);
+        // destroy all event listener
+        for (ServiceInstancesChangedListener listener : serviceListeners.values()) {
+            listener.destroy();
+        }
+        appSubscriptionLocks.clear();
+        serviceListeners.clear();
+        mappingListeners.clear();
+    }
+
+    @Override
+    public boolean isServiceDiscovery() {
+        return true;
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
-        serviceNames = new TreeSet<>(serviceNames);
+        serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        String protocolServiceKey = url.getProtocolServiceKey();
+        logger.info(String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, protocolServiceKey));
 
         // register ServiceInstancesChangedListener
-        boolean serviceListenerRegistered = true;
-        ServiceInstancesChangedListener serviceInstancesChangedListener;
-        synchronized (this) {
-            serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
+        Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
+        try {
+            appSubscriptionLock.lock();
+            ServiceInstancesChangedListener serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (serviceInstancesChangedListener == null) {
                 serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
                 serviceInstancesChangedListener.setUrl(url);
@@ -296,27 +312,21 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                         serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
                     }
                 }
-                serviceListenerRegistered = false;
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
-        }
 
-        serviceInstancesChangedListener.setUrl(url);
-        listener.addServiceListener(serviceInstancesChangedListener);
-        serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
-        if (!serviceListenerRegistered) {
-            serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+            if (!serviceInstancesChangedListener.isDestroyed()) {
+                serviceInstancesChangedListener.setUrl(url);
+                listener.addServiceListener(serviceInstancesChangedListener);
+                serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
+                serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+            } else {
+                logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
+                serviceListeners.remove(serviceNamesKey);
+            }
+        } finally {
+            appSubscriptionLock.unlock();
         }
-    }
-
-    /**
-     * Create an instance of {@link ServiceDiscoveryRegistry} if supported
-     *
-     * @param registryURL the {@link URL url} of registry
-     * @return <code>null</code> if not supported
-     */
-    public static ServiceDiscoveryRegistry create(URL registryURL) {
-        return supports(registryURL) ? new ServiceDiscoveryRegistry(registryURL) : null;
     }
 
     /**
@@ -329,20 +339,16 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
     }
 
-    private static boolean isCompatibleProtocol(String protocol, URL targetURL) {
-        return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
-            || Objects.equals(protocol, targetURL.getProtocol());
-    }
-
     public Map<String, ServiceInstancesChangedListener> getServiceListeners() {
         return serviceListeners;
     }
 
     private class DefaultMappingListener implements MappingListener {
         private final Logger logger = LoggerFactory.getLogger(DefaultMappingListener.class);
-        private URL url;
+        private final URL url;
         private Set<String> oldApps;
         private NotifyListener listener;
+        private volatile boolean stopped;
 
         public DefaultMappingListener(URL subscribedURL, Set<String> serviceNames, NotifyListener listener) {
             this.url = subscribedURL;
@@ -351,30 +357,81 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
 
         @Override
-        public void onEvent(MappingChangedEvent event) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Received mapping notification from meta server, " + event);
+        public synchronized void onEvent(MappingChangedEvent event) {
+            logger.info("Received mapping notification from meta server, " + event);
+
+            if (stopped) {
+                logger.warn("Listener has been stopped, ignore mapping notification, check why listener is not removed.");
+                return;
             }
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
-            oldApps = newApps;
 
-            if (CollectionUtils.isEmpty(newApps)) {
+            if (CollectionUtils.isEmpty(newApps) || CollectionUtils.equals(newApps, tempOldApps)) {
                 return;
             }
 
-            if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
-                writableMetadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
-                subscribeURLs(url, listener, newApps);
-                return;
-            }
+            logger.info("Mapping of service " + event.getServiceKey() + "changed from " + tempOldApps + " to " + newApps);
 
-            for (String newAppName : newApps) {
-                if (!tempOldApps.contains(newAppName)) {
-                    writableMetadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+            Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
+            try {
+                mappingLock.lock();
+                if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
+                    serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
+                    oldApps = newApps;
                     return;
                 }
+
+                for (String newAppName : newApps) {
+                    if (!tempOldApps.contains(newAppName)) {
+                        serviceNameMapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+                        serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                        // old instance listener related to old app list that needs to be destroyed after subscribe refresh.
+                        ServiceInstancesChangedListener oldListener = listener.getServiceListener();
+                        if (oldListener != null) {
+                            String appKey = toStringKeys(toTreeSet(tempOldApps));
+                            Lock appSubscriptionLock = getAppSubscription(appKey);
+                            try {
+                                appSubscriptionLock.lock();
+                                oldListener.removeListener(url.getProtocolServiceKey(), listener);
+                                if (!oldListener.hasListeners()) {
+                                    oldListener.destroy();
+                                    removeAppSubscriptionLock(appKey);
+                                }
+                            } finally {
+                                appSubscriptionLock.unlock();
+                            }
+                        }
+
+                        subscribeURLs(url, listener, newApps);
+                        oldApps = newApps;
+                        return;
+                    }
+                }
+            } finally {
+                mappingLock.unlock();
+            }
+        }
+
+        @Override
+        public void stop() {
+            stopped = true;
+        }
+    }
+
+    public Lock getAppSubscription(String key) {
+        return appSubscriptionLocks.computeIfAbsent(key, _k -> new ReentrantLock());
+    }
+
+    public void removeAppSubscriptionLock(String key) {
+        Lock lock = appSubscriptionLocks.get(key);
+        if (lock != null) {
+            try {
+                lock.lock();
+                appSubscriptionLocks.remove(key);
+            } finally {
+                lock.unlock();
             }
         }
     }

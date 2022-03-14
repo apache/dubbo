@@ -20,19 +20,22 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+
 /**
  * The factory to create {@link ServiceDiscovery}
  *
  * @see ServiceDiscovery
  * @since 2.7.5
  */
-@SPI("default")
+@SPI(value = "default", scope = APPLICATION)
 public interface ServiceDiscoveryFactory {
 
     /**
      * Get the instance of {@link ServiceDiscovery}
      *
      * @param registryURL the {@link URL} to connect the registry
+     * @param model, the application model context
      * @return non-null
      */
     ServiceDiscovery getServiceDiscovery(URL registryURL);

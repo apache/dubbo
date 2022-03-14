@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,11 +52,11 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
      * Use {@link NamedInternalThreadFactory} to produce {@link org.apache.dubbo.common.threadlocal.InternalThread}
      * which with the use of {@link org.apache.dubbo.common.threadlocal.InternalThreadLocal} in {@link RpcContext}.
      */
-    private final ExecutorService executor = Executors.newCachedThreadPool(
-        new NamedInternalThreadFactory("forking-cluster-timer", true));
+    private final ExecutorService executor;
 
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
+        executor = directory.getUrl().getOrDefaultApplicationModel().getApplicationExecutorRepository().getSharedExecutor();
     }
 
     @Override
@@ -82,11 +81,14 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
             RpcContext.getServiceContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
-            final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
+            final BlockingQueue<Object> ref = new LinkedBlockingQueue<>(1);
             for (final Invoker<T> invoker : selected) {
                 URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
                 executor.execute(() -> {
                     try {
+                        if (ref.size() > 0) {
+                            return;
+                        }
                         Result result = invokeWithContextAsync(invoker, invocation, consumerUrl);
                         ref.offer(result);
                     } catch (Throwable e) {

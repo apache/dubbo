@@ -55,7 +55,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     /**
      * Whether to async
-     * note that: it is an unreliable asynchronism that ignores return values and does not block threads.
+     * note that: it is an unreliable asynchronous that ignores return values and does not block threads.
      */
     protected Boolean async;
 
@@ -101,6 +101,10 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     public AbstractMethodConfig() {
         super(ApplicationModel.defaultModel().getDefaultModule());
+    }
+
+    public AbstractMethodConfig(ModuleModel moduleModel) {
+        super(moduleModel);
     }
 
     @Override
