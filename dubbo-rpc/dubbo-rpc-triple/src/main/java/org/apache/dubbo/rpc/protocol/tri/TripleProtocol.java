@@ -168,8 +168,8 @@ public class TripleProtocol extends AbstractProtocol {
         try {
             responseWrapper.writeTo(baos);
         } catch (IOException e) {
-            throw new IllegalStateException("Bad protobuf-java version detected! Please make sure the version is" +
-                " greater than 3.14.0 ", e);
+            throw new IllegalStateException("Bad protobuf-java version detected! Please make sure the version of user's " +
+                "classloader is greater than 3.11.0 ", e);
         }
         this.versionChecked = true;
     }
