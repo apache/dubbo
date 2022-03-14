@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.ByteString;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -38,9 +37,10 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
-
-import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.ByteString;
+import grpc.health.v1.HealthCheckResponse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
