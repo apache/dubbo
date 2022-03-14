@@ -62,6 +62,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext.getServiceContext()
+                .setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0);
 
