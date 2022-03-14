@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * ProviderModel is about published services
@@ -52,7 +53,7 @@ public class ProviderModel {
         this.serviceInstance = serviceInstance;
         this.serviceModel = serviceModel;
         this.serviceConfig = serviceConfig;
-        this.urls = new ArrayList<>(1);
+        this.urls = new CopyOnWriteArrayList<>();
     }
 
     public String getServiceKey() {
