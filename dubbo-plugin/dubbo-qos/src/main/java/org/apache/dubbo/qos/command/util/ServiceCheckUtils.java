@@ -47,6 +47,10 @@ public class ServiceCheckUtils {
 
         Collection<Registry> registries = registryManager.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
+            Registry registry = registries.iterator().next();
+            if (!(registry instanceof AbstractRegistry)) {
+                return num;
+            }
             AbstractRegistry abstractRegistry = (AbstractRegistry) registries.iterator().next();
             for (Map.Entry<URL, Map<String, List<URL>>> entry : abstractRegistry.getNotified().entrySet()) {
                 if (entry.getKey().getServiceKey().equals(consumerModel.getServiceKey())) {
