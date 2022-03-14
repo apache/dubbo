@@ -307,10 +307,16 @@ public class FrameworkModel extends ScopeModel {
         return scopeModel != null ? scopeModel.getDesc() : null;
     }
 
+    /**
+     * Get all application models except for the internal application model.
+     */
     public List<ApplicationModel> getApplicationModels() {
         return Collections.unmodifiableList(pubApplicationModels);
     }
 
+    /**
+     * Get all application models including the internal application model.
+     */
     public List<ApplicationModel> getAllApplicationModels() {
         return Collections.unmodifiableList(applicationModels);
     }
