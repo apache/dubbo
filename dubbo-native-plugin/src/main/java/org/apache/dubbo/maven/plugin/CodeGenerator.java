@@ -23,16 +23,19 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugin.logging.SystemStreamLog;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
@@ -76,12 +79,12 @@ public class CodeGenerator {
                 }
                 AdaptiveClassCodeGenerator codeGenerator = new AdaptiveClassCodeGenerator(it, value);
                 String code = codeGenerator.generate();
-                String file = p + File.separator + it.getName().replaceAll("\\.", File.separator);
+                String file = p + File.separator + it.getName().replaceAll("\\.", Matcher.quoteReplacement(File.separator));
                 String dir = Paths.get(file).getParent().toString();
                 FileUtils.forceMkdir(new File(dir));
                 code = licensedStr + code + "\n";
                 File tmpFile = new File(file + "$Adaptive.java");
-                FileUtils.write(tmpFile, code);
+                FileUtils.write(tmpFile, code, Charset.defaultCharset());
                 log.info("Generate file:" + tmpFile);
             } catch (Throwable e) {
                 log.error("error:" + it.getPackage());
@@ -93,8 +96,9 @@ public class CodeGenerator {
 
     public static void main(String[] args) {
         URL r = Thread.currentThread().getContextClassLoader().getResource("");
-        String p = Paths.get(r.getFile()).getParent().getParent().toString() + File.separator + "src" + File.separator + "main" + File.separator + "java";
-        execute(p, null);
+        String targetClassPath = new File(r.getFile()).getAbsolutePath();
+        String p = Paths.get(targetClassPath).getParent().getParent().toString() + File.separator + "src" + File.separator + "main" + File.separator + "java";
+        execute(p, new SystemStreamLog());
     }
 
 
