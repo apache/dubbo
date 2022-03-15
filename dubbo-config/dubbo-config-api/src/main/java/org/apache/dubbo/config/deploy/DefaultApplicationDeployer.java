@@ -447,9 +447,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
-        String id = isEmpty(registryConfig.getId()) ? ("metadata-center-" + protocol + "-" + url.getHost() + "-" + url.getPort()) : registryConfig.getId();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-        metadataReportConfig.setId(id);
+        metadataReportConfig.setId(registryConfig.getId());
         metadataReportConfig.setScopeModel(applicationModel);
         if (metadataReportConfig.getParameters() == null) {
             metadataReportConfig.setParameters(new HashMap<>());
