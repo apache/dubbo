@@ -138,7 +138,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
         cacheListener.removeListener(pathKey, listener);
         Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
-        if (CollectionUtils.isNotEmpty(configurationListeners)) {
+        if (CollectionUtils.isEmpty(configurationListeners)) {
             zkClient.removeDataListener(pathKey, cacheListener);
         }
     }
