@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
@@ -100,7 +101,7 @@ public class ZoneAwareClusterInvokerTest {
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
-        given(invocation.getAttachment(REGISTRY_ZONE)).willReturn(zoneKey);
+        RpcContext.getClientAttachment().setAttachment(REGISTRY_ZONE, zoneKey);
 
         firstInvoker = newUnexpectedInvoker();
         thirdInvoker = newUnexpectedInvoker();
@@ -144,8 +145,8 @@ public class ZoneAwareClusterInvokerTest {
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
-        given(invocation.getAttachment(REGISTRY_ZONE)).willReturn(zoneKey);
-        given(invocation.getAttachment(REGISTRY_ZONE_FORCE)).willReturn("true");
+        RpcContext.getClientAttachment().setAttachment(REGISTRY_ZONE, zoneKey);
+        RpcContext.getClientAttachment().setAttachment(REGISTRY_ZONE_FORCE, "true");
 
         firstInvoker = newUnexpectedInvoker();
         secondInvoker = newUnexpectedInvoker();
