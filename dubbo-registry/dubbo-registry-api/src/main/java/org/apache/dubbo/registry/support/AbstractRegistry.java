@@ -196,8 +196,24 @@ public abstract class AbstractRegistry implements Registry {
                     if (!file.exists()) {
                         file.createNewFile();
                     }
+
+                    Properties tmpProperties;
+                    if (syncSaveFile) {
+                        // When syncReport = true, properties.setProperty and properties.store are called from the same
+                        // thread(reportCacheExecutor), so deep copy is not required
+                        tmpProperties = properties;
+                    } else {
+                        // Using properties.setProperty and properties.store method will cause lock contention
+                        // under multi-threading, so deep copy a new container
+                        tmpProperties = new Properties();
+                        Set<Map.Entry<Object, Object>> entries = properties.entrySet();
+                        for (Map.Entry<Object, Object> entry : entries) {
+                            tmpProperties.setProperty((String) entry.getKey(), (String) entry.getValue());
+                        }
+                    }
+
                     try (FileOutputStream outputFile = new FileOutputStream(file)) {
-                        properties.store(outputFile, "Dubbo Registry Cache");
+                        tmpProperties.store(outputFile, "Dubbo Registry Cache");
                     }
                 } finally {
                     lock.release();
