@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
@@ -75,6 +76,9 @@ public abstract class AbstractLoadBalance implements LoadBalance {
     int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight;
         URL url = invoker.getUrl();
+        if (invoker instanceof ClusterInvoker) {
+            url = ((ClusterInvoker<?>) invoker).getRegistryUrl();
+        }
         // Multiple registry scenario, load balance among multiple registries.
         if (REGISTRY_SERVICE_REFERENCE_PATH.equals(url.getServiceInterface())) {
             weight = url.getParameter(REGISTRY_KEY + "." + WEIGHT_KEY, DEFAULT_WEIGHT);
