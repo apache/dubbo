@@ -97,8 +97,8 @@ public class ClientStream extends AbstractStream implements Stream {
         final Http2StreamChannel channel = future.getNow();
         eventLoop = channel.eventLoop();
         channel.pipeline()
-                .addLast(new TripleCommandOutBoundHandler())
-                .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
+            .addLast(new TripleCommandOutBoundHandler())
+            .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
         DefaultFuture2.addTimeoutListener(requestId, channel::close);
         return new WriteQueue(channel);
     }
@@ -121,8 +121,8 @@ public class ClientStream extends AbstractStream implements Stream {
 
     private void transportException(Throwable cause) {
         final RpcStatus status = RpcStatus.INTERNAL
-                .withDescription("Http2 exception")
-                .withCause(cause);
+            .withDescription("Http2 exception")
+            .withCause(cause);
         listener.complete(status);
     }
 
@@ -139,8 +139,8 @@ public class ClientStream extends AbstractStream implements Stream {
             this.writeQueue.enqueue(cmd);
         } catch (Throwable t) {
             cancelByLocal(RpcStatus.INTERNAL
-                    .withDescription("Client write message failed")
-                    .withCause(t));
+                .withDescription("Client write message failed")
+                .withCause(t));
         }
     }
 
@@ -197,7 +197,7 @@ public class ClientStream extends AbstractStream implements Stream {
             final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
             if (contentType == null || !contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())) {
                 return RpcStatus.fromCode(RpcStatus.httpStatusToGrpcCode(httpStatus))
-                        .withDescription("invalid content-type: " + contentType);
+                    .withDescription("invalid content-type: " + contentType);
             }
             return null;
         }
@@ -209,7 +209,7 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             if (headerReceived) {
                 transportError = RpcStatus.INTERNAL
-                        .withDescription("Received headers twice");
+                    .withDescription("Received headers twice");
                 return;
             }
             Integer httpStatus = headers.status() == null ? null : Integer.parseInt(headers.status().toString());
@@ -229,8 +229,8 @@ public class ClientStream extends AbstractStream implements Stream {
                     DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
                     if (null == compressor) {
                         throw RpcStatus.UNIMPLEMENTED
-                                .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
-                                .asException();
+                            .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
+                            .asException();
                     } else {
                         decompressor = compressor;
                     }
@@ -324,7 +324,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
                 if (!headerReceived) {
                     handleH2TransportError(RpcStatus.INTERNAL
-                            .withDescription("headers not received before payload"));
+                        .withDescription("headers not received before payload"));
                     return;
                 }
                 deframer.deframe(data);

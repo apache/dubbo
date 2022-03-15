@@ -80,7 +80,7 @@ public class ServerStream extends AbstractStream {
                         PathResolver pathResolver,
                         List<HeaderFilter> filters,
                         GenericUnpack genericUnpack) {
-        super(executor,frameworkModel);
+        super(executor, frameworkModel);
         this.eventLoop = channel.eventLoop();
         this.pathResolver = pathResolver;
         this.filters = filters;
