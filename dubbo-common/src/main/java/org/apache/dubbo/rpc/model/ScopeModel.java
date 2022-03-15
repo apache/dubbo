@@ -134,6 +134,14 @@ public abstract class ScopeModel implements ExtensionAccessor {
         }
     }
 
+    protected void notifyProtocolDestroy() {
+        for (ScopeModelDestroyListener destroyListener : destroyListeners) {
+            if (destroyListener.isProtocol()) {
+                destroyListener.onDestroy(this);
+            }
+        }
+    }
+
     protected abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
