@@ -64,7 +64,7 @@ class ClientStreamTest {
 
         final ModuleServiceRepository repo = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         repo.registerService(IGreeter.class);
-        final ServiceDescriptor serviceDescriptor = repo.getService(IGreeter.class.getName());
+        final ServiceDescriptor serviceDescriptor = repo.lookupService(IGreeter.class.getName());
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo", new Class<?>[]{String.class});
 
         final RpcInvocation invocation = mock(RpcInvocation.class);

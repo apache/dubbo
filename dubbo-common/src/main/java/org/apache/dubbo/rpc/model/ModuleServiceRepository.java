@@ -188,22 +188,13 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(serviceDescriptors);
     }
 
-    public ServiceDescriptor getService(String serviceName) {
+    public ServiceDescriptor lookupService(String serviceName) {
         // TODO, may need to distinguish service by class loader.
         List<ServiceDescriptor> serviceDescriptors = services.get(serviceName);
         if (CollectionUtils.isEmpty(serviceDescriptors)) {
             return null;
         }
         return serviceDescriptors.get(0);
-    }
-
-    public ServiceDescriptor lookupService(String interfaceName) {
-        if (services.containsKey(interfaceName)) {
-            List<ServiceDescriptor> serviceDescriptors = services.get(interfaceName);
-            return serviceDescriptors.size() > 0 ? serviceDescriptors.get(0) : null;
-        } else {
-            return null;
-        }
     }
 
     public MethodDescriptor lookupMethod(String interfaceName, String methodName) {
