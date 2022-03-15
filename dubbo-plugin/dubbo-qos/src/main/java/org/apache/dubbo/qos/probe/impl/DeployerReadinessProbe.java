@@ -37,7 +37,7 @@ public class DeployerReadinessProbe implements ReadinessProbe {
         if (this.frameworkModel == null) {
             this.frameworkModel = FrameworkModel.defaultModel();
         }
-        List<ApplicationModel> applicationModels = frameworkModel.getAllApplicationModels();
+        List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
         for (ApplicationModel applicationModel : applicationModels) {
             for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                 if (!moduleModel.getDeployer().isStarted()) {
