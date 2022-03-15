@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.probe.StartupProbe;
 import org.apache.dubbo.qos.probe.impl.DeployerStartupProbe;
@@ -34,6 +36,7 @@ import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class StartupTest {
     private FrameworkModel frameworkModel;
@@ -44,10 +47,13 @@ public class StartupTest {
         frameworkModel = Mockito.mock(FrameworkModel.class);
         ApplicationModel applicationModel = Mockito.mock(ApplicationModel.class);
         ModuleModel moduleModel = Mockito.mock(ModuleModel.class);
+        ConfigManager manager = Mockito.mock(ConfigManager.class);
+        Mockito.when(manager.getApplication()).thenReturn(Optional.of(new ApplicationConfig("ReadyTest")));
         moduleDeployer = Mockito.mock(ModuleDeployer.class);
         Mockito.when(frameworkModel.newApplication()).thenReturn(applicationModel);
-        Mockito.when(frameworkModel.getAllApplicationModels()).thenReturn(Arrays.asList(applicationModel));
+        Mockito.when(frameworkModel.getApplicationModels()).thenReturn(Arrays.asList(applicationModel));
         Mockito.when(applicationModel.getModuleModels()).thenReturn(Arrays.asList(moduleModel));
+        Mockito.when(applicationModel.getApplicationConfigManager()).thenReturn(manager);
         Mockito.when(moduleModel.getDeployer()).thenReturn(moduleDeployer);
         Mockito.when(moduleDeployer.isRunning()).thenReturn(true);
 
@@ -66,12 +72,12 @@ public class StartupTest {
         CommandContext commandContext = new CommandContext("startup");
 
         String result = startup.execute(commandContext, new String[0]);
-        Assertions.assertEquals(result, "true");
+        Assertions.assertEquals("true", result);
         Assertions.assertEquals(commandContext.getHttpCode(), 200);
 
         Mockito.when(moduleDeployer.isRunning()).thenReturn(false);
         result = startup.execute(commandContext, new String[0]);
-        Assertions.assertEquals(result, "false");
+        Assertions.assertEquals("false", result);
         Assertions.assertEquals(commandContext.getHttpCode(), 503);
     }
 }
