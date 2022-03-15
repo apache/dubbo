@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * ProviderModel is about published services
@@ -44,7 +45,7 @@ public class ProviderModel extends ServiceModel {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
 
-        this.urls = new ArrayList<>(1);
+        this.urls = new CopyOnWriteArrayList<>();
     }
 
     public ProviderModel(String serviceKey,
