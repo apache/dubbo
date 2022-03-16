@@ -60,6 +60,19 @@ public class MethodDescriptor {
     private final boolean wrap;
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
+    public MethodDescriptor(String methodName) {
+        // TODO fill here
+        this.method = null;
+        this.methodName = methodName;
+        this.parameterClasses = null;
+        this.returnClass = null;
+        this.wrap = false;
+        this.generic = false;
+        this.returnTypes = null;
+        this.compatibleParamSignatures = null;
+        this.paramDesc = null;
+    }
+
     public MethodDescriptor(Method method) {
         this(method, method.getParameterTypes(), method.getReturnType());
     }

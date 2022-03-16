@@ -19,8 +19,12 @@ package io.grpc.examples.helloworld;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-public interface GreeterService {
+public interface IGreeter {
+
+    HelloReply sayHello(HelloRequest request);
 
     void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver);
+
+    StreamObserver<HelloRequest> sayHello(StreamObserver<HelloReply> responseObserver);
 
 }

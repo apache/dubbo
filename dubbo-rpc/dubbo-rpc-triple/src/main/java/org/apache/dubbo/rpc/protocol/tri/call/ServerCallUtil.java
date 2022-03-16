@@ -17,12 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperResponseObserver;
@@ -90,6 +92,13 @@ public class ServerCallUtil {
                 .asException());
         }
         return null;
+    }
+
+    public static void callUnimplementedMethod(StubMethodDescriptor methodDescriptor, StreamObserver<?> responseObserver){
+        responseObserver.onError(RpcStatus.UNIMPLEMENTED
+            .withDescription(String.format("Method %s is unimplemented",
+                methodDescriptor.fullMethodName))
+                .asException());
     }
 }
 

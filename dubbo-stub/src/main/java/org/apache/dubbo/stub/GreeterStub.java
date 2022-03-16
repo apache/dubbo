@@ -24,7 +24,6 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,20 +31,27 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ReflectedMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
+import org.apache.dubbo.rpc.protocol.tri.call.ServerCallUtil;
 
 import io.grpc.examples.helloworld.HelloReply;
 import io.grpc.examples.helloworld.HelloRequest;
+import io.grpc.examples.helloworld.IGreeter;
 import io.netty.channel.ChannelFuture;
 
 import java.util.concurrent.Executors;
 
-public class GreeterStub {
+public class GreeterStub implements IGreeter {
     private static final String SERVICE_NAME = "org.apache.dubbo.sample.tri.PbGreeter";
-    private static volatile ServiceDescriptor serviceDescriptor;
-    private static volatile MethodDescriptor sayHelloMethod;
+    private static final String SERVICE_VERSION = "1.0.0";
+    private static final String SERVICE_GROUP = "";
+
+    private static final ServiceDescriptor serviceDescriptor;
+    private static final StubMethodDescriptor sayHelloMethod=new StubMethodDescriptor();
     final Connection connection;
 
     protected GreeterStub(Connection connection) {
@@ -56,7 +62,7 @@ public class GreeterStub {
         return new GreeterStub(connection);
     }
 
-    static <ReqT, RespT> void asyncCall(Connection connection, MethodDescriptor method, ReqT request, StreamObserver<RespT> responseObserver) {
+    static <ReqT, RespT> void asyncCall(Connection connection, StubMethodDescriptor method, ReqT request, StreamObserver<RespT> responseObserver) {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setArguments(new Object[]{request, responseObserver});
         invocation.setObjectAttachment(CommonConstants.PATH_KEY, SERVICE_NAME);
@@ -122,7 +128,7 @@ public class GreeterStub {
             });
     }
 
-    public static MethodDescriptor getSayHelloMethod() {
+    public static ReflectedMethodDescriptor getSayHelloMethod() {
         if (sayHelloMethod != null) {
             return sayHelloMethod;
         }
@@ -130,7 +136,7 @@ public class GreeterStub {
             if (sayHelloMethod != null) {
                 return sayHelloMethod;
             }
-            sayHelloMethod = new MethodDescriptor("greet", HelloRequest.class, HelloReply.class, MethodDescriptor.RpcType.UNARY);
+            sayHelloMethod = new ReflectedMethodDescriptor("greet", HelloRequest.class, HelloReply.class, ReflectedMethodDescriptor.RpcType.UNARY);
         }
         return sayHelloMethod;
     }
@@ -150,8 +156,24 @@ public class GreeterStub {
         return serviceDescriptor;
     }
 
+    @Override
+    public HelloReply sayHello(HelloRequest request) {
+        return null;
+    }
+
     public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
         asyncCall(connection, getSayHelloMethod(), request, responseObserver);
     }
 
+    @Override
+    public StreamObserver<HelloRequest> sayHello(StreamObserver<HelloReply> responseObserver) {
+        return null;
+    }
+
+    public static abstract class IGreeterImplBase implements IGreeter {
+        @Override
+        public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
+            ServerCallUtil.callUnimplementedMethod(sayHelloMethod, responseObserver);
+        }
+    }
 }

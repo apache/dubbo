@@ -19,16 +19,15 @@ package org.apache.dubbo.stub;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ReflectedMethodDescriptor;
 
 public interface Stub {
 
     static <ReqType, RespType> void asyncCall(
             Connection connection,
-            MethodDescriptor method,
+            ReflectedMethodDescriptor method,
             ReqType request,
             StreamObserver<RespType> responseObserver) {
-
     }
 
 }
