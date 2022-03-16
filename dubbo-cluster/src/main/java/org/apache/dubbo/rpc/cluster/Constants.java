@@ -26,6 +26,8 @@ public interface Constants {
 
     String WEIGHT_KEY = "weight";
 
+    String REGISTRY_WEIGHT_KEY = "registry.weight";
+
     int DEFAULT_WEIGHT = 100;
 
     String MOCK_PROTOCOL = "mock";
