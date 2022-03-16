@@ -379,11 +379,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 .filter(this::isUsedRegistryAsMetadataCenter)
                 .map(this::registryAsMetadataCenter)
                 .forEach(metadataReportConfig -> {
-                    Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
-                    if (configOptional.isPresent()) {
-                        return;
+                    if (metadataReportConfig.getId() == null) {
+                        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+                        if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
+                            for (MetadataReportConfig existedConfig : metadataReportConfigs) {
+                                if (existedConfig.getId() == null && existedConfig.getAddress().equals(metadataReportConfig.getAddress())) {
+                                    return;
+                                }
+                            }
+                        }
+                        configManager.addMetadataReport(metadataReportConfig);
+                    } else {
+                        Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
+                        if (configOptional.isPresent()) {
+                            return;
+                        }
+                        configManager.addMetadataReport(metadataReportConfig);
                     }
-                    configManager.addMetadataReport(metadataReportConfig);
                     logger.info("use registry as metadata-center: " + metadataReportConfig);
                 });
         }
