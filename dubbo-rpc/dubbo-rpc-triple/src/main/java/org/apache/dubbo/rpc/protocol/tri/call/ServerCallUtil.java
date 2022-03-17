@@ -21,24 +21,35 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperResponseObserver;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+
+import java.util.function.Function;
 
 public class ServerCallUtil {
 
     public static ServerCall.Listener startCall(ServerCall call,
                                                 RpcInvocation invocation,
+                                                StubMethodDescriptor methodDescriptor,
+                                                Invoker<?> invoker) {
+        return startDirectCall(call, invocation, methodDescriptor, invoker);
+    }
+
+    public static ServerCall.Listener startCall(ServerCall call,
+                                                RpcInvocation invocation,
                                                 MethodDescriptor methodDescriptor,
                                                 GenericUnpack genericUnpack,
-                                                Invoker<?> invoker) {
+                                                GenericPack genericPack, Invoker<?> invoker) {
         if (methodDescriptor.isNeedWrap()) {
-            return startWrapCall(call, invocation, methodDescriptor, genericUnpack, invoker);
+            return startWrapCall(call, invocation, methodDescriptor, genericUnpack, genericPack, invoker);
         } else {
             return startDirectCall(call, invocation, methodDescriptor, invoker);
         }
@@ -49,7 +60,8 @@ public class ServerCallUtil {
                                                       MethodDescriptor methodDescriptor,
                                                       Invoker<?> invoker) {
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
+        ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(call,
+                cancellationContext);
         return startCall(call, methodDescriptor, invocation, invoker, responseObserver);
     }
 
@@ -58,13 +70,13 @@ public class ServerCallUtil {
                                                     RpcInvocation invocation,
                                                     MethodDescriptor methodDescriptor,
                                                     GenericUnpack genericUnpack,
-                                                    Invoker<?> invoker) {
+                                                    GenericPack genericPack, Invoker<?> invoker) {
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
         final String returnClass = methodDescriptor.getReturnClass().getName();
         ServerCallToObserverAdapter<Object> responseObserver = new WrapperResponseObserver<>(call,
-            cancellationContext, returnClass, genericUnpack.serialization, invoker.getUrl());
+                cancellationContext, returnClass, genericPack);
         final ServerCall.Listener listener = startCall(call, methodDescriptor, invocation, invoker, responseObserver);
-        return new WrapRequestServerCallListener(call, listener, genericUnpack);
+        return new WrapRequestServerCallListener(listener, genericUnpack);
     }
 
     public static ServerCall.Listener startCall(ServerCall call,
@@ -87,18 +99,14 @@ public class ServerCallUtil {
             }
             return listener;
         } catch (Throwable t) {
-            responseObserver.onError(RpcStatus.INTERNAL.withDescription("Create stream failed")
-                .withCause(t)
-                .asException());
+            responseObserver.onError(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
+                    .withCause(t)
+                    .asException());
         }
         return null;
     }
 
-    public static void callUnimplementedMethod(StubMethodDescriptor methodDescriptor, StreamObserver<?> responseObserver){
-        responseObserver.onError(RpcStatus.UNIMPLEMENTED
-            .withDescription(String.format("Method %s is unimplemented",
-                methodDescriptor.fullMethodName))
-                .asException());
-    }
+
+
 }
 

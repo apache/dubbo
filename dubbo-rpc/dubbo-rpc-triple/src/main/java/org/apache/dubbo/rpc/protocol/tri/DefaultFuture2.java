@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
@@ -131,11 +132,11 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         }
     }
 
-    public static void received(long requestId, RpcStatus status, AppResponse appResponse) {
+    public static void received(long requestId, TriRpcStatus status, AppResponse appResponse) {
         DefaultFuture2 future = FUTURES.remove(requestId);
         if (future != null) {
             Timeout t = future.timeoutCheckTask;
-            if (status.code != RpcStatus.Code.DEADLINE_EXCEEDED) {
+            if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {
                 // decrease Time
                 t.cancel();
             }
@@ -165,7 +166,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        doReceived(RpcStatus.CANCELLED, null);
+        doReceived(TriRpcStatus.CANCELLED, null);
         FUTURES.remove(requestId);
         timeoutCheckTask.cancel();
         return true;
@@ -175,10 +176,10 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         this.cancel(true);
     }
 
-    private void doReceived(RpcStatus status, AppResponse appResponse) {
+    private void doReceived(TriRpcStatus status, AppResponse appResponse) {
         if (status.isOk()) {
             this.complete(appResponse);
-        } else if (status.code == RpcStatus.Code.DEADLINE_EXCEEDED) {
+        } else if (status.code == TriRpcStatus.Code.DEADLINE_EXCEEDED) {
             this.completeExceptionally(new TimeoutException(isSent(), null, connection.getRemote(), "Request timeout"));
         } else {
             final InetSocketAddress local;
@@ -249,7 +250,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         }
 
         private void notifyTimeout(DefaultFuture2 future) {
-            final RpcStatus status = RpcStatus.DEADLINE_EXCEEDED.withDescription(future.getTimeoutMessage());
+            final TriRpcStatus status = TriRpcStatus.DEADLINE_EXCEEDED.withDescription(future.getTimeoutMessage());
             DefaultFuture2.received(future.requestId, status, null);
         }
     }

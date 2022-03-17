@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Collections;
 import java.util.Map;
@@ -32,13 +32,13 @@ public interface ClientStreamListener extends StreamListener {
      * @param rpcStatus
      * @param attachments
      */
-    void complete(RpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders);
+    void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders);
 
-    default void complete(RpcStatus rpcStatus, Map<String, Object> attachments) {
+    default void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments) {
         complete(rpcStatus, attachments, Collections.emptyMap());
     }
 
-    default void complete(RpcStatus rpcStatus) {
+    default void complete(TriRpcStatus rpcStatus) {
         complete(rpcStatus, Collections.emptyMap(), Collections.emptyMap());
     }
 }

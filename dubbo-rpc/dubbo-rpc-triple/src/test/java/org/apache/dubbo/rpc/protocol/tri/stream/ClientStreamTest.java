@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
@@ -90,7 +90,7 @@ class ClientStreamTest {
         verify(writeQueue).enqueue(any(EndStreamQueueCommand.class));
         verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
-        stream.cancelByLocal(RpcStatus.CANCELLED);
+        stream.cancelByLocal(TriRpcStatus.CANCELLED);
         verify(writeQueue).enqueue(any(CancelQueueCommand.class));
         verify(writeQueue, times(4)).enqueue(any(QueuedCommand.class));
 
@@ -98,7 +98,7 @@ class ClientStreamTest {
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HttpScheme.HTTP.name())
             .status(HttpResponseStatus.OK.codeAsText());
-        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), RpcStatus.OK.code.code + "");
+        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
         headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleHeaderEnum.CONTENT_PROTO.getHeader());
         transportListener.onHeader(headers, false);
         Assertions.assertTrue(listener.started);

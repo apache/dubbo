@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
@@ -57,7 +57,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
                     invocation.getTargetServiceUniqueName(),
                     invocation.getMethodName(),
                     cost));
-                responseObserver.onCompleted(RpcStatus.DEADLINE_EXCEEDED);
+                responseObserver.onCompleted(TriRpcStatus.DEADLINE_EXCEEDED);
                 return null;
             } else {
                 return response.getValue();

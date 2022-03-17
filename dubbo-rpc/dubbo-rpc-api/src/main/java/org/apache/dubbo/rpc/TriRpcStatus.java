@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.TimeoutException;
-import org.apache.dubbo.rpc.RpcException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -37,50 +36,50 @@ import static org.apache.dubbo.rpc.RpcException.TIMEOUT_TERMINATE;
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
  */
 
-public class RpcStatus {
-    public static final RpcStatus OK = fromCode(Code.OK);
-    public static final RpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
-    public static final RpcStatus INTERNAL = fromCode(Code.INTERNAL);
-    public static final RpcStatus CANCELLED = fromCode(Code.CANCELLED);
-    public static final RpcStatus UNAVAILABLE = fromCode(Code.UNAVAILABLE);
-    public static final RpcStatus UNIMPLEMENTED = fromCode(Code.UNIMPLEMENTED);
-    public static final RpcStatus DEADLINE_EXCEEDED = fromCode(Code.DEADLINE_EXCEEDED);
+public class TriRpcStatus {
+    public static final TriRpcStatus OK = fromCode(Code.OK);
+    public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
+    public static final TriRpcStatus INTERNAL = fromCode(Code.INTERNAL);
+    public static final TriRpcStatus CANCELLED = fromCode(Code.CANCELLED);
+    public static final TriRpcStatus UNAVAILABLE = fromCode(Code.UNAVAILABLE);
+    public static final TriRpcStatus UNIMPLEMENTED = fromCode(Code.UNIMPLEMENTED);
+    public static final TriRpcStatus DEADLINE_EXCEEDED = fromCode(Code.DEADLINE_EXCEEDED);
 
     public final Code code;
     public final Throwable cause;
     public final String description;
 
-    public RpcStatus(Code code, Throwable cause, String description) {
+    public TriRpcStatus(Code code, Throwable cause, String description) {
         this.code = code;
         this.cause = cause;
         this.description = description;
     }
 
-    public static RpcStatus fromCode(int code) {
+    public static TriRpcStatus fromCode(int code) {
         return fromCode(Code.fromCode(code));
     }
 
-    public static RpcStatus fromCode(Code code) {
-        return new RpcStatus(code, null, null);
+    public static TriRpcStatus fromCode(Code code) {
+        return new TriRpcStatus(code, null, null);
     }
 
     /**
      * todo The remaining exceptions are converted to status
      */
-    public static RpcStatus getStatus(Throwable throwable) {
+    public static TriRpcStatus getStatus(Throwable throwable) {
         return getStatus(throwable, null);
     }
 
-    public static RpcStatus getStatus(Throwable throwable, String description) {
+    public static TriRpcStatus getStatus(Throwable throwable, String description) {
         if (throwable instanceof RpcException) {
             RpcException rpcException = (RpcException) throwable;
             Code code = rpcExceptionCodeToGrpcCode(rpcException.getCode());
-            return new RpcStatus(code, throwable, description);
+            return new TriRpcStatus(code, throwable, description);
         }
         if (throwable instanceof TimeoutException) {
-            return new RpcStatus(RpcStatus.Code.DEADLINE_EXCEEDED, throwable, description);
+            return new TriRpcStatus(TriRpcStatus.Code.DEADLINE_EXCEEDED, throwable, description);
         }
-        return new RpcStatus(Code.UNKNOWN, throwable, description);
+        return new TriRpcStatus(Code.UNKNOWN, throwable, description);
     }
 
     public static Code rpcExceptionCodeToGrpcCode(int rpcExceptionCode) {
@@ -139,27 +138,27 @@ public class RpcStatus {
         return encoder.toString().substring(2);
     }
 
-    public static RpcStatus.Code httpStatusToGrpcCode(int httpStatusCode) {
+    public static TriRpcStatus.Code httpStatusToGrpcCode(int httpStatusCode) {
         if (httpStatusCode >= 100 && httpStatusCode < 200) {
-            return RpcStatus.Code.INTERNAL;
+            return TriRpcStatus.Code.INTERNAL;
         }
         if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code() ||
             httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
         ) {
-            return RpcStatus.Code.INTERNAL;
+            return TriRpcStatus.Code.INTERNAL;
         } else if (httpStatusCode == HttpResponseStatus.UNAUTHORIZED.code()) {
-            return RpcStatus.Code.UNAUTHENTICATED;
+            return TriRpcStatus.Code.UNAUTHENTICATED;
         } else if (httpStatusCode == HttpResponseStatus.FORBIDDEN.code()) {
-            return RpcStatus.Code.PERMISSION_DENIED;
+            return TriRpcStatus.Code.PERMISSION_DENIED;
         } else if (httpStatusCode == HttpResponseStatus.NOT_FOUND.code()) {
-            return RpcStatus.Code.UNIMPLEMENTED;
+            return TriRpcStatus.Code.UNIMPLEMENTED;
         } else if (httpStatusCode == HttpResponseStatus.BAD_GATEWAY.code()
             || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
             || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
             || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
             return Code.UNAVAILABLE;
         } else {
-            return RpcStatus.Code.UNKNOWN;
+            return TriRpcStatus.Code.UNKNOWN;
         }
     }
 
@@ -167,15 +166,15 @@ public class RpcStatus {
         return Code.isOk(code.code);
     }
 
-    public RpcStatus withCause(Throwable cause) {
-        return new RpcStatus(this.code, cause, this.description);
+    public TriRpcStatus withCause(Throwable cause) {
+        return new TriRpcStatus(this.code, cause, this.description);
     }
 
-    public RpcStatus withDescription(String description) {
-        return new RpcStatus(code, cause, description);
+    public TriRpcStatus withDescription(String description) {
+        return new TriRpcStatus(code, cause, description);
     }
 
-    public RpcStatus appendDescription(String description) {
+    public TriRpcStatus appendDescription(String description) {
         if (this.description == null) {
             return withDescription(description);
         } else {

@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.protocol.tri.PathResolver;
+import org.apache.dubbo.rpc.PathResolver;
 
 import grpc.health.v1.Health;
 import org.junit.jupiter.api.Assertions;

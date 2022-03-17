@@ -19,12 +19,13 @@ package org.apache.dubbo.rpc.protocol.tri.pack;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class GenericPack implements Pack {
+public class GenericPack implements StubMethodDescriptor.Pack {
     public final String serializationName;
     private final MultipleSerialization serialization;
     private final String innerSerializationName;

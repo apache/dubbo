@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.TimeoutCountDown;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -106,7 +107,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(callbackExecutor);
 
         if (!connection.isAvailable()) {
-            final RpcStatus status = RpcStatus.UNAVAILABLE
+            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE
                     .withDescription(String.format("Connect to %s failed", this));
             DefaultFuture2.received(future.requestId, status, null);
             return result;

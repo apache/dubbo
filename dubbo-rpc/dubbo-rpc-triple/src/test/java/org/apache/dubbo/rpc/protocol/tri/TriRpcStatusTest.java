@@ -17,26 +17,28 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.rpc.TriRpcStatus;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class RpcStatusTest {
+class TriRpcStatusTest {
 
     @Test
     public void fromMessage() {
         String origin = "haha test 😊";
-        final RpcStatus status = RpcStatus.INTERNAL
+        final TriRpcStatus status = TriRpcStatus.INTERNAL
             .withDescription(origin);
-        final String encoded = RpcStatus.encodeMessage(origin);
+        final String encoded = TriRpcStatus.encodeMessage(origin);
         Assertions.assertNotEquals(origin, encoded);
-        final String decoded = RpcStatus.decodeMessage(encoded);
+        final String decoded = TriRpcStatus.decodeMessage(encoded);
         Assertions.assertEquals(origin, decoded);
     }
 
     @Test
     public void toMessage() {
         String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
-        final RpcStatus status = RpcStatus.INTERNAL
+        final TriRpcStatus status = TriRpcStatus.INTERNAL
             .withDescription(content);
         Assertions.assertEquals(content, status.toMessage());
     }

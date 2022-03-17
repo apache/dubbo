@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.stub;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.rpc.model.ReflectedMethodDescriptor;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-public interface Stub {
+/**
+ * PathResolver maintains a mapping between request path and Invoker for multiple protocols.
+ */
+@SPI(value = CommonConstants.TRIPLE, scope = ExtensionScope.FRAMEWORK)
+public interface PathResolver {
 
-    static <ReqType, RespType> void asyncCall(
-            Connection connection,
-            ReflectedMethodDescriptor method,
-            ReqType request,
-            StreamObserver<RespType> responseObserver) {
-    }
+    void add(String path, Invoker<?> invoker);
 
+    Invoker<?> resolve(String path);
+
+    boolean hasNativeStub(String path);
+
+    void addNativeStub(String path);
+
+    void remove(String path);
+
+    void destroy();
 }

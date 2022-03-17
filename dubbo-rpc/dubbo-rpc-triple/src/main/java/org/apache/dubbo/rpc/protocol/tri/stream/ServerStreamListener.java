@@ -17,13 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
-
-import java.util.Map;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 public interface ServerStreamListener extends StreamListener {
-
-    void onHeaders(Map<String, Object> headers);
 
     /**
      * Indicate the stream is closed . Will be called exactly once
@@ -33,6 +29,6 @@ public interface ServerStreamListener extends StreamListener {
      */
     void complete();
 
-    void cancel(RpcStatus status);
+    void cancel(TriRpcStatus status);
 
 }

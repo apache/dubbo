@@ -21,8 +21,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.PathResolver;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.PathResolver;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
@@ -83,7 +83,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
-            serverStream.transportObserver.cancelByRemote(RpcStatus.CANCELLED
+            serverStream.transportObserver.cancelByRemote(TriRpcStatus.CANCELLED
                 .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
         }
         ctx.close();
@@ -94,7 +94,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (LOGGER.isWarnEnabled()) {
             LOGGER.warn("Exception in processing triple message", cause);
         }
-        RpcStatus status = RpcStatus.getStatus(cause, "Provider's error:\n" + cause.getMessage());
+        TriRpcStatus status = TriRpcStatus.getStatus(cause, "Provider's error:\n" + cause.getMessage());
         final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         if (serverStream != null) {
             serverStream.close(status, null);

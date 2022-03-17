@@ -17,23 +17,27 @@
 
 package org.apache.dubbo.rpc.protocol.tri.pack;
 
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-public class PbUnpack<T> {
-    public static PbUnpack<TripleWrapper.TripleResponseWrapper> RESP_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleResponseWrapper.class);
-    public static PbUnpack<TripleWrapper.TripleRequestWrapper> REQ_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleRequestWrapper.class);
+public class PbUnpack<T> implements StubMethodDescriptor.UnPack {
+    public static PbUnpack<TripleWrapper.TripleResponseWrapper> RESP_PB_UNPACK = new PbUnpack<>(
+            TripleWrapper.TripleResponseWrapper.class);
+    public static PbUnpack<TripleWrapper.TripleRequestWrapper> REQ_PB_UNPACK = new PbUnpack<>(
+            TripleWrapper.TripleRequestWrapper.class);
     private final Class<?> clz;
 
     public PbUnpack(Class<?> clz) {
         this.clz = clz;
     }
 
-    public T unpack(byte[] data) throws IOException {
+    @Override
+    public Object unpack(byte[] data) throws IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return (T) SingleProtobufUtils.deserialize(bais, clz);
+        return SingleProtobufUtils.deserialize(bais, clz);
     }
 }

@@ -24,18 +24,15 @@ import org.apache.dubbo.triple.TripleWrapper;
 public class WrapRequestServerCallListener implements ServerCall.Listener {
     private final ServerCall.Listener delegate;
     private final WrapRequestUnpack unpack;
-    private final ServerCall call;
 
-    public WrapRequestServerCallListener(ServerCall call, ServerCall.Listener delegate, GenericUnpack unpack) {
+    public WrapRequestServerCallListener(ServerCall.Listener delegate, GenericUnpack unpack) {
         this.delegate = delegate;
-        this.call = call;
         this.unpack = new WrapRequestUnpack(unpack);
     }
 
     @Override
     public void onMessage(Object message) {
         final Object args = this.unpack.unpack((TripleWrapper.TripleRequestWrapper) message);
-        call.serializerType = ((TripleWrapper.TripleRequestWrapper) message).getSerializeType();
         delegate.onMessage(args);
     }
 

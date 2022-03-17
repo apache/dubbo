@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperRequestObserver;
 
@@ -42,7 +42,7 @@ public class ClientCallUtil {
             }
         } catch (Throwable t) {
             cancelByThrowable(call, t);
-            final RpcStatus status = RpcStatus.INTERNAL
+            final TriRpcStatus status = TriRpcStatus.INTERNAL
                 .withCause(t)
                 .withDescription("Call aborted cause client exception");
             DefaultFuture2.received(metadata.requestId, status, null);
@@ -59,7 +59,7 @@ public class ClientCallUtil {
             callBiOrClientStream(call, metadata, appResponse);
         }
         DefaultFuture2.sent(metadata.requestId);
-        DefaultFuture2.received(metadata.requestId, RpcStatus.OK, appResponse);
+        DefaultFuture2.received(metadata.requestId, TriRpcStatus.OK, appResponse);
     }
 
     private static void callBiOrClientStream(ClientCall call, RequestMetadata metadata, AppResponse appResponse) {

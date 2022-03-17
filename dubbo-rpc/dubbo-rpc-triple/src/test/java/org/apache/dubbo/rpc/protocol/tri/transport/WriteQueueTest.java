@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.FlushQueueCommand;
@@ -73,7 +73,7 @@ public class WriteQueueTest {
         WriteQueue writeQueue = new WriteQueue(channel);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0));
-        RpcStatus status = RpcStatus.UNKNOWN
+        TriRpcStatus status = TriRpcStatus.UNKNOWN
             .withCause(new RpcException())
             .withDescription("Encode Response data error");
         writeQueue.enqueue(CancelQueueCommand.createCommand());

@@ -44,6 +44,11 @@ public class ServiceDescriptor {
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
     private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
 
+    public ServiceDescriptor(String interfaceName,Class<?> interfaceClass) {
+        this.interfaceName=interfaceName;
+        this.serviceInterfaceClass=interfaceClass;
+    }
+
     public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.interfaceName = interfaceClass.getName();

@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class WrapRequestUnpack {
             }
             return ret;
         } catch (ClassNotFoundException | IOException e) {
-            throw RpcStatus.INTERNAL
+            throw TriRpcStatus.INTERNAL
                 .withDescription("Deserialize response failed")
                 .withCause(e)
                 .asException();

@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
@@ -39,7 +39,7 @@ public class UnaryCallListener implements ClientCall.StartListener {
     }
 
     @Override
-    public void onClose(RpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {

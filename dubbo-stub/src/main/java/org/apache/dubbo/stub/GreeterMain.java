@@ -17,28 +17,23 @@
 
 package org.apache.dubbo.stub;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.api.SingleProtocolConnectionManager;
 
-import io.grpc.examples.helloworld.HelloReply;
-import io.grpc.examples.helloworld.HelloRequest;
+import org.apache.dubbo.sample.tri.HelloReply;
+import org.apache.dubbo.sample.tri.HelloRequest;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class GreeterMain {
     public static void main(String[] args) throws RemotingException, InterruptedException {
-        final SingleProtocolConnectionManager connectionManager = new SingleProtocolConnectionManager();
-        Connection connection = connectionManager.connect(URL.valueOf("tri://localhost:50053"));
-        final GreeterStub stub = GreeterStub.newStub(connection);
+        final GreeterStub stub = new GreeterStub();
         final HelloRequest request = HelloRequest.newBuilder()
                 .setName("stub request")
                 .build();
         final CountDownLatch latch = new CountDownLatch(1);
-        stub.sayHello(request, new StreamObserver<HelloReply>() {
+        StreamObserver<HelloRequest> requestObserver = stub.sayHello(new StreamObserver<HelloReply>() {
             @Override
             public void onNext(HelloReply data) {
                 System.out.println("next");
@@ -55,6 +50,10 @@ public class GreeterMain {
                 System.out.println("Done");
             }
         });
+        requestObserver.onNext(HelloRequest.newBuilder()
+                .setName("I'm Stub")
+                .build());
+        requestObserver.onCompleted();
 
         latch.await(30, TimeUnit.SECONDS);
     }

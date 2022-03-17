@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -66,13 +66,13 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
         LOGGER.warn("Triple Client received remote reset errorCode=" + resetFrame.errorCode());
-        transportListener.cancelByRemote(RpcStatus.CANCELLED);
+        transportListener.cancelByRemote(TriRpcStatus.CANCELLED);
         ctx.close();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        final RpcStatus status = RpcStatus.INTERNAL
+        final TriRpcStatus status = TriRpcStatus.INTERNAL
             .withCause(cause);
         LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
         transportListener.cancelByRemote(status);

@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
@@ -46,7 +46,7 @@ class AbstractH2TransportListenerTest {
             }
 
             @Override
-            public void cancelByRemote(RpcStatus status) {
+            public void cancelByRemote(TriRpcStatus status) {
 
             }
         };

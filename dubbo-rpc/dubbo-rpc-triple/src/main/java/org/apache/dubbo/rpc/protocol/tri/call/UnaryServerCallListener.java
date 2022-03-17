@@ -21,7 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener implements ServerCall.Listener {
@@ -51,9 +51,9 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
     public void onComplete() {
         try {
             responseObserver.onNext(invoke());
-            responseObserver.onCompleted(RpcStatus.OK);
+            responseObserver.onCompleted(TriRpcStatus.OK);
         } catch (Throwable e) {
-            responseObserver.onCompleted(RpcStatus.getStatus(e));
+            responseObserver.onCompleted(TriRpcStatus.getStatus(e));
             LOGGER.error("Invoke service=" + invocation.getTargetServiceUniqueName() + " method= "
                 + invocation.getMethodName() + "failed. Internal error", e);
         }
