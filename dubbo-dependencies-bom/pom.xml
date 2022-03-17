@@ -90,7 +90,7 @@
     <properties>
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
-        <spring_version>5.2.8.RELEASE</spring_version>
+        <spring_version>5.2.9.RELEASE</spring_version>
         <javassist_version>3.28.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.56.Final</netty4_version>
@@ -116,7 +116,7 @@
         <jetty_version>9.4.43.v20210629</jetty_version>
         <validation_new_version>3.0.1</validation_new_version>
         <validation_version>1.1.0.Final</validation_version>
-        <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
+        <hibernate_validator_version>6.0.23.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
         <jcache_version>1.0.0</jcache_version>
         <kryo_version>4.0.2</kryo_version>
