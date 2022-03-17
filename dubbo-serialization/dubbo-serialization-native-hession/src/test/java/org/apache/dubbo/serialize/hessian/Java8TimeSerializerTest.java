@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.serialize.hessian;
 
+import org.apache.dubbo.serialize.hessian.dubbo.Hessian2FactoryInitializer;
+
 import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.Hessian2Output;
 import com.caucho.hessian.io.SerializerFactory;
@@ -47,7 +49,7 @@ import java.util.Calendar;
  */
 public class Java8TimeSerializerTest {
 
-    private static SerializerFactory factory = Hessian2SerializerFactory.INSTANCE;
+    private static SerializerFactory factory = Hessian2FactoryInitializer.getInstance().getSerializerFactory();
     private static ByteArrayOutputStream os = new ByteArrayOutputStream();
 
     @Test

@@ -59,8 +59,8 @@ public class BaseServiceMetadataTest {
         assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0").getDisplayServiceKey(),
                 "org.apache.dubbo.common.TestInterface:1.0.0");
         assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface").getDisplayServiceKey(),
-                "org.apache.dubbo.common.TestInterface:null");
-        assertEquals(BaseServiceMetadata.revertDisplayServiceKey(null).getDisplayServiceKey(),"null:null");
-        assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0:1").getDisplayServiceKey(),"null:null");
+                "org.apache.dubbo.common.TestInterface");
+        assertEquals(BaseServiceMetadata.revertDisplayServiceKey(null).getDisplayServiceKey(),"");
+        assertEquals(BaseServiceMetadata.revertDisplayServiceKey("org.apache.dubbo.common.TestInterface:1.0.0:1").getDisplayServiceKey(),"");
     }
 }

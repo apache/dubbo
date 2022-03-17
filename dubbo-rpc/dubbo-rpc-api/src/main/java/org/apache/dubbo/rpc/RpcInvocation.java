@@ -125,7 +125,6 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
         this(method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
-        this.returnType = method.getReturnType();
     }
 
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
@@ -159,6 +158,7 @@ public class RpcInvocation implements Invocation, Serializable {
                     this.parameterTypesDesc = methodDescriptor.getParamDesc();
                     this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
                     this.returnTypes = methodDescriptor.getReturnTypes();
+                    this.returnType = methodDescriptor.getReturnClass();
                 }
             }
         }
@@ -167,6 +167,7 @@ public class RpcInvocation implements Invocation, Serializable {
             this.parameterTypesDesc = ReflectUtils.getDesc(this.getParameterTypes());
             this.compatibleParamSignatures = Stream.of(this.parameterTypes).map(Class::getName).toArray(String[]::new);
             this.returnTypes = RpcUtils.getReturnTypes(this);
+            this.returnType = RpcUtils.getReturnType(this);
         }
     }
 
@@ -179,10 +180,12 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Override
     public Object put(Object key, Object value) {
         return attributes.put(key, value);
     }
 
+    @Override
     public Object get(Object key) {
         return attributes.get(key);
     }
@@ -241,6 +244,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.parameterTypesDesc = parameterTypesDesc;
     }
 
+    @Override
     public String[] getCompatibleParamSignatures() {
         return compatibleParamSignatures;
     }
@@ -285,6 +289,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.attachments = attachments == null ? new HashMap<>() : attachments;
     }
 
+    @Override
     public void setAttachment(String key, Object value) {
        setObjectAttachment(key, value);
     }
@@ -302,6 +307,7 @@ public class RpcInvocation implements Invocation, Serializable {
         setObjectAttachmentIfAbsent(key, value);
     }
 
+    @Override
     public void setAttachmentIfAbsent(String key, Object value) {
         setObjectAttachmentIfAbsent(key, value);
     }
@@ -357,7 +363,6 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
-    @Deprecated
     public String getAttachment(String key) {
         if (attachments == null) {
             return null;
@@ -396,6 +401,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Deprecated
+    @Override
     public Object getObjectAttachment(String key, Object defaultValue) {
         if (attachments == null) {
             return defaultValue;

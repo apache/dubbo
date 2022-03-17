@@ -95,6 +95,12 @@ public final class URLStrParser {
      */
     private static URL parseURLBody(String fullURLStr, String decodedBody, Map<String, String> parameters) {
         int starIdx = 0, endIdx = decodedBody.length();
+        // ignore the url content following '#'
+        int poundIndex = decodedBody.indexOf('#');
+        if (poundIndex != -1) {
+            endIdx = poundIndex;
+        }
+
         String protocol = null;
         int protoEndIdx = decodedBody.indexOf("://");
         if (protoEndIdx >= 0) {
@@ -118,7 +124,7 @@ public final class URLStrParser {
         String path = null;
         int pathStartIdx = indexOf(decodedBody, '/', starIdx, endIdx);
         if (pathStartIdx >= 0) {
-            path = decodedBody.substring(pathStartIdx + 1);
+            path = decodedBody.substring(pathStartIdx + 1, endIdx);
             endIdx = pathStartIdx;
         }
 
@@ -224,32 +230,20 @@ public final class URLStrParser {
             valueStart = valueEnd + 1;
         }
 
+        String name;
+        String value;
         if (isEncoded) {
-            String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
-            String value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
-            if (valueStart == valueEnd) {
-                value = name;
-            } else {
-                value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
-            }
-            params.put(name, value);
-            // compatible with lower versions registering "default." keys
-            if (name.startsWith(DEFAULT_KEY_PREFIX)) {
-                params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
-            }
+            name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
+            value = valueStart >= valueEnd ? name : decodeComponent(str, valueStart, valueEnd, false, tempBuf);
         } else {
-            String name = str.substring(nameStart, valueStart - 1);
-            String value = str.substring(valueStart, valueEnd);
-            if (valueStart == valueEnd) {
-                value = name;
-            } else {
-                value = str.substring(valueStart, valueEnd);
-            }
-            params.put(name, value);
-            // compatible with lower versions registering "default." keys
-            if (name.startsWith(DEFAULT_KEY_PREFIX)) {
-                params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
-            }
+            name = str.substring(nameStart, valueStart - 1);
+            value = valueStart >= valueEnd ? name : str.substring(valueStart, valueEnd);
+        }
+
+        params.put(name, value);
+        // compatible with lower versions registering "default." keys
+        if (name.startsWith(DEFAULT_KEY_PREFIX)) {
+            params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
         }
         return true;
     }

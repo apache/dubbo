@@ -122,9 +122,9 @@ public class ConfigUtilsTest {
         try {
             System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, "properties.load");
             Properties p = ConfigUtils.getProperties();
-            assertThat((String) p.get("a"), equalTo("12"));
-            assertThat((String) p.get("b"), equalTo("34"));
-            assertThat((String) p.get("c"), equalTo("56"));
+            assertThat(p.get("a"), equalTo("12"));
+            assertThat(p.get("b"), equalTo("34"));
+            assertThat(p.get("c"), equalTo("56"));
         } finally {
             System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
         }
@@ -142,7 +142,7 @@ public class ConfigUtilsTest {
         Properties p = new Properties();
         p.put("key1", "value1");
         ConfigUtils.addProperties(p);
-        assertThat((String) ConfigUtils.getProperties().get("key1"), equalTo("value1"));
+        assertThat(ConfigUtils.getProperties().get("key1"), equalTo("value1"));
     }
 
     @Test

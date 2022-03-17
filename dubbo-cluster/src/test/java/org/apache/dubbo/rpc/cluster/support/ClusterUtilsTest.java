@@ -72,6 +72,7 @@ public class ClusterUtilsTest {
                 .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
                 .addParameter(APPLICATION_KEY, "provider")
                 .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
+                .addParameter(TAG_KEY,"TTT")
                 .build();
 
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
@@ -79,6 +80,7 @@ public class ClusterUtilsTest {
                 .addParameter(THREADPOOL_KEY, "foo")
                 .addParameter(APPLICATION_KEY, "consumer")
                 .addParameter(REFERENCE_FILTER_KEY, "filter3")
+                .addParameter(TAG_KEY,"UUU")
                 .build();
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
@@ -108,6 +110,8 @@ public class ClusterUtilsTest {
         Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "consumer");
         Assertions.assertEquals(url.getParameter(REMOTE_APPLICATION_KEY), "provider");
         Assertions.assertEquals(url.getParameter(REFERENCE_FILTER_KEY), "filter1,filter2,filter3");
+
+        Assertions.assertEquals(url.getParameter(TAG_KEY), "TTT");
     }
 
     @Test

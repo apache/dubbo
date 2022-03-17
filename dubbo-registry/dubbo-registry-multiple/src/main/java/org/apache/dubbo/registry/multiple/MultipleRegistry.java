@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -43,7 +44,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  */
 public class MultipleRegistry extends AbstractRegistry {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
 
     public static final String REGISTRY_FOR_SERVICE = "service-registry";
     public static final String REGISTRY_FOR_REFERENCE = "reference-registry";
@@ -205,14 +206,14 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public List<URL> lookup(URL url) {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         for (Registry registry : referenceRegistries.values()) {
             List<URL> tmpUrls = registry.lookup(url);
             if (!CollectionUtils.isEmpty(tmpUrls)) {
                 urls.addAll(tmpUrls);
             }
         }
-        return urls;
+        return urls.stream().distinct().collect(Collectors.toList());
     }
 
     protected void init() {

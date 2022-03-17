@@ -124,7 +124,28 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-redis</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-http</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-zookeeper</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -330,6 +351,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-container-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-container-spring</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -422,6 +450,13 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-gson</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-msgpack</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -631,8 +666,10 @@
                                     <include>org.apache.dubbo:dubbo-remoting-mina</include>
                                     <include>org.apache.dubbo:dubbo-remoting-grizzly</include>
                                     <include>org.apache.dubbo:dubbo-remoting-p2p</include>
+                                    <include>org.apache.dubbo:dubbo-remoting-redis</include>
                                     <include>org.apache.dubbo:dubbo-remoting-http</include>
                                     <include>org.apache.dubbo:dubbo-remoting-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-remoting-zookeeper-curator5</include>
                                     <include>org.apache.dubbo:dubbo-rpc-api</include>
                                     <include>org.apache.dubbo:dubbo-rpc-dubbo</include>
                                     <include>org.apache.dubbo:dubbo-rpc-injvm</include>
@@ -677,9 +714,8 @@
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protostuff</include>
                                     <include>org.apache.dubbo:dubbo-serialization-gson</include>
+                                    <include>org.apache.dubbo:dubbo-serialization-msgpack</include>
                                     <include>org.apache.dubbo:dubbo-serialization-protobuf</include>
-                                    <include>org.apache.dubbo:dubbo-configcenter-api</include>
-                                    <include>org.apache.dubbo:dubbo-configcenter-definition</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-consul</include>

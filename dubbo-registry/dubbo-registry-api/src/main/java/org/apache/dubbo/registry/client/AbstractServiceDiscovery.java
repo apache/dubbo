@@ -35,11 +35,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      */
     @Override
     public final void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
         /**
          * 服务注册
          */
         doRegister(serviceInstance);
+        this.serviceInstance = serviceInstance;
     }
 
     /**
@@ -60,8 +60,6 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (!isInstanceUpdated(serviceInstance)) {
             return;
         }
-
-        this.serviceInstance = serviceInstance;
         /**
          * 更新注册服务信息
          */
@@ -70,6 +68,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
          *
          */
         resetInstanceUpdateKey(serviceInstance);
+        this.serviceInstance = serviceInstance;
     }
 
     /**

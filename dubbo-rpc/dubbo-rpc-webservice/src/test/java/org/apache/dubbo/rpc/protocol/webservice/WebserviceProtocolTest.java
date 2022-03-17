@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.webservice;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.startup.Tomcat;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -30,6 +26,10 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
+import org.apache.catalina.Context;
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
+import org.apache.catalina.startup.Tomcat;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -85,7 +85,7 @@ public class WebserviceProtocolTest {
 
     @Test
     public void testWebserviceServlet() throws LifecycleException {
-        int port = 55065;
+        int port = NetUtils.getAvailablePort();
         Tomcat tomcat = buildTomcat("/dubbo-webservice", "/services/*", port);
         DemoService service = new DemoServiceImpl();
 
@@ -96,7 +96,7 @@ public class WebserviceProtocolTest {
                 .setPort(port)
                 .setPath("dubbo-webservice2/" + DemoService.class.getName())
                 .addParameter("server", "servlet")
-                .addParameter("bind.port", 55065)
+                .addParameter("bind.port", port)
                 .addParameter("contextpath", "dubbo-webservice2")
                 .addParameter(SERVICE_PATH_PREFIX, "dubbo-webservice/services")
                 .addParameter("codec", "exchange")
@@ -116,7 +116,7 @@ public class WebserviceProtocolTest {
     public void testWebserviceJetty() throws LifecycleException {
         Tomcat tomcat = buildTomcat("/dubbo-webservice", "/services/*", 55065);
         DemoService service = new DemoServiceImpl();
-        int port = 55066;
+        int port = NetUtils.getAvailablePort();
 
         URLBuilder builder = new URLBuilder()
                 .setProtocol("webservice")
@@ -124,7 +124,7 @@ public class WebserviceProtocolTest {
                 .setPort(port)
                 .setPath("dubbo-webservice3/" + DemoService.class.getName())
                 .addParameter("server", "jetty")
-                .addParameter("bind.port", 55066)
+                .addParameter("bind.port", port)
                 .addParameter("contextpath", "dubbo-webservice2")
                 .addParameter("codec", "exchange")
                 .addParameter("timeout", 3000);

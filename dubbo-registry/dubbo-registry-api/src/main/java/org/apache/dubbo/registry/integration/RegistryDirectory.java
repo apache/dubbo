@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,15 +27,11 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -44,7 +39,6 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +58,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CO
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -72,15 +65,13 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
-import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
-import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 
 /**
  * RegistryDirectory
  */
-public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
+public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
     private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
@@ -155,7 +146,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
-                providerURLs = addressListener.notify(providerURLs, getConsumerUrl(),this);
+                providerURLs = addressListener.notify(providerURLs, getConsumerUrl(), this);
             }
         }
         /**
@@ -228,7 +219,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
             Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
@@ -244,6 +234,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             if (invokerUrls.isEmpty()) {
                 return;
             }
+            this.forbidden = false; // Allow to access
             /**
              * 将urls转换为invokers  如果url已经执行refer则不会被重新引用
              * 将urls转换为invokers  如果url已经执行refer则不会被重新引用
@@ -281,15 +272,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
              */
             this.urlInvokerMap = newUrlInvokerMap;
 
-            try {
-                /**
-                 * 检查缓存中的invokers是否需要destroyed
-                 * 如果设置url的属性：refer.autodestroy=false，则invokers只会增加而不减少，可能会出现引用泄漏
-                 */
-                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-            } catch (Exception e) {
-                logger.warn("destroyUnusedInvokers error. ", e);
-            }
+            // Close the unused Invoker
+            /**
+             * 检查缓存中的invokers是否需要destroyed
+             * 如果设置url的属性：refer.autodestroy=false，则invokers只会增加而不减少，可能会出现引用泄漏
+             */
+            destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap);
+
         }
 
         // notify invokers refreshed
@@ -298,23 +287,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
-        Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
-        for (Invoker<T> invoker : invokers) {
-            String group = invoker.getUrl().getParameter(GROUP_KEY, "");
-            groupMap.computeIfAbsent(group, k -> new ArrayList<>());
-            groupMap.get(group).add(invoker);
-        }
+        // group by invoker#url#group
+        Map<String, List<Invoker<T>>> groupMap =
+                invokers.stream().collect(Collectors.groupingBy(x -> x.getUrl().getParameter(GROUP_KEY, "")));
 
-        if (groupMap.size() == 1) {
-            mergedInvokers.addAll(groupMap.values().iterator().next());
-        } else if (groupMap.size() > 1) {
+        if (groupMap.size() > 1) {
             for (List<Invoker<T>> groupList : groupMap.values()) {
                 StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
                 staticDirectory.buildRouterChain();
                 mergedInvokers.add(CLUSTER.join(staticDirectory));
             }
         } else {
-            mergedInvokers = invokers;
+            mergedInvokers.addAll(invokers);
         }
         return mergedInvokers;
     }
@@ -325,7 +309,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      * else :routers list
      */
     private Optional<List<Router>> toRouters(List<URL> urls) {
-        if (urls == null || urls.isEmpty()) {
+        if (CollectionUtils.isEmpty(urls)) {
             return Optional.empty();
         }
 
@@ -360,7 +344,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      */
     private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
         Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
-        if (urls == null || urls.isEmpty()) {
+        if (CollectionUtils.isEmpty(urls)) {
             return newUrlInvokerMap;
         }
         Set<URL> keys = new HashSet<>();
@@ -463,7 +447,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
         // The combination of directoryUrl and override is at the end of notify, which can't be handled here
-//        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
+        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
@@ -517,7 +501,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                 } catch (Throwable t) {
                     logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
@@ -545,35 +529,20 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             return;
         }
         // check deleted invoker
-        /**
-         * 比较oldUrlInvokerMap和newUrlInvokerMap  找出待删除的invoker
-         */
-        List<URL> deleted = null;
         if (oldUrlInvokerMap != null) {
             /**
+             * 比较oldUrlInvokerMap和newUrlInvokerMap  找出待删除的invoker
              * 遍历oldUrlInvokerMap  找出在newInvokers中不存在的invoker
              */
-            for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newUrlInvokerMap.containsKey(entry.getKey())) {
-                    if (deleted == null) {
-                        deleted = new ArrayList<>();
-                    }
-                    deleted.add(entry.getKey());
-                }
-            }
-        }
-
-        if (deleted != null) {
-            for (URL url : deleted) {
-                if (url != null) {
+            for (URL key : oldUrlInvokerMap.keySet()) {
+                if (null != key && !newUrlInvokerMap.containsKey(key)) {
                     /**
                      * 在oldUrlInvokerMap中删除invoker
                      */
-                    Invoker<T> invoker = oldUrlInvokerMap.get(url);
+                    Invoker<T> invoker = oldUrlInvokerMap.get(key);
                     if (invoker != null) {
                         try {
-                            // destroy
-                            invoker.destroy();
+                            invoker.destroyAll();
                             if (logger.isDebugEnabled()) {
                                 logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                             }
@@ -587,68 +556,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
     }
 
     @Override
-    public List<Invoker<T>> doList(Invocation invocation) {
-        if (forbidden) {
-            // 服务提供者关闭或禁用了服务，此时抛出 No provider 异常
-            // 1. No service provider 2. Service providers are disabled
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
-                    NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
-                    ", please check status of providers(disabled, not registered or in blacklist).");
-        }
-
-        if (multiGroup) {
-            return this.invokers == null ? Collections.emptyList() : this.invokers;
-        }
-
-        List<Invoker<T>> invokers = null;
-        try {
-            // Get invokers from cache, only runtime routers will be executed.
-            invokers = routerChain.route(getConsumerUrl(), invocation);
-        } catch (Throwable t) {
-            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
-        }
-
-        return invokers == null ? Collections.emptyList() : invokers;
-    }
-
-    @Override
-    public Class<T> getInterface() {
-        return serviceType;
-    }
-
-    @Override
-    public List<Invoker<T>> getAllInvokers() {
-        return invokers;
-    }
-
-    @Override
-    public URL getConsumerUrl() {
-        return this.overrideDirectoryUrl;
-    }
-
-    public URL getRegisteredConsumerUrl() {
-        return registeredConsumerUrl;
-    }
-
-    public void setRegisteredConsumerUrl(URL url) {
-        if (!shouldSimplified) {
-            this.registeredConsumerUrl = url.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY,
-                    String.valueOf(false));
-        } else {
-            this.registeredConsumerUrl = URL.valueOf(url, DEFAULT_REGISTER_CONSUMER_KEYS, null).addParameters(
-                    CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
-        }
-    }
-
-    @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
             return false;
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         try {
-            if (CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
+            if (!forbidden && CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
                     && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable)) {
                 return true;
             }
@@ -658,21 +572,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return false;
     }
 
-    public void buildRouterChain(URL url) {
-        this.setRouterChain(RouterChain.buildChain(url));
-    }
-
     /**
      * Haomin: added for test purpose
      */
     public Map<URL, Invoker<T>> getUrlInvokerMap() {
         return urlInvokerMap;
     }
-
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
-    }
-
     /**
      * url的category  只能为以下值
      * @param url

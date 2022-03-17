@@ -70,11 +70,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new IllegalArgumentException("url == null");
         }
 
-        queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        String path = queryMap.get(PATH_KEY);
+        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         this.consumedProtocol = this.queryMap.get(PROTOCOL_KEY) == null ? DUBBO : this.queryMap.get(PROTOCOL_KEY);
         this.url = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
 
+        String path = queryMap.get(PATH_KEY);
         URL consumerUrlFrom = this.url.setProtocol(consumedProtocol)
                 .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
         if (isUrlFromRegistry) {
@@ -85,6 +85,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
 
         setRouterChain(routerChain);
+    }
+
+    public URL getSubscribeConsumerurl() {
+        return this.consumerUrl;
     }
 
     @Override

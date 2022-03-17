@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.multiple;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.ConditionalEventListener;
@@ -98,11 +99,17 @@ public class MultipleRegistryServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
-
         List<ServiceInstance> serviceInstanceList = new ArrayList<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
             Page<ServiceInstance> serviceInstancePage = serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
-            serviceInstanceList.addAll(serviceInstancePage.getData());
+            if (CollectionUtils.isNotEmpty(serviceInstancePage.getData())) {
+                // remove duplicate instance
+                for (ServiceInstance instance : serviceInstancePage.getData()) {
+                    if (!serviceInstanceList.contains(instance)) {
+                        serviceInstanceList.add(instance);
+                    }
+                }
+            }
         }
 
         return new DefaultPage<>(offset, pageSize, serviceInstanceList, serviceInstanceList.size());
@@ -115,6 +122,11 @@ public class MultipleRegistryServiceDiscovery extends AbstractServiceDiscovery {
             services.addAll(serviceDiscovery.getServices());
         }
         return services;
+    }
+
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
     }
 
     protected static class MultiServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
@@ -134,15 +146,16 @@ public class MultipleRegistryServiceDiscovery extends AbstractServiceDiscovery {
         public void onEvent(ServiceInstancesChangedEvent event) {
             List<ServiceInstance> serviceInstances = new ArrayList<>();
             for (SingleServiceInstancesChangedListener singleListener : singleListenerMap.values()) {
-                if (null != singleListener.event && null != singleListener.event.getServiceInstances()) {
-                    for (ServiceInstance serviceInstance : singleListener.event.getServiceInstances()) {
+                ServiceInstancesChangedEvent source = singleListener.event;
+                if (source != null && source.getServiceInstances() != null) {
+                    for (ServiceInstance serviceInstance : source.getServiceInstances()) {
+                        // remove duplicate instance
                         if (!serviceInstances.contains(serviceInstance)) {
                             serviceInstances.add(serviceInstance);
                         }
                     }
                 }
             }
-
             sourceListener.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
         }
 

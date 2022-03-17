@@ -246,14 +246,9 @@ class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
-        // ignore the url content following '#'
-        int poundIndex = url.indexOf('#');
-        if (poundIndex != -1) {
-            url = url.substring(0, poundIndex);
-        }
         int i = url.indexOf('?'); // separator between body and parameters
         if (i >= 0) {
-            String[] parts = url.substring(i + 1).split("&");
+            String[] parts = url.substring(i + 1).split("[&;]");
             parameters = new HashMap<>();
             for (String part : parts) {
                 part = part.trim();
@@ -274,6 +269,13 @@ class URL implements Serializable {
             }
             url = url.substring(0, i);
         }
+
+        // ignore the url content following '#'
+        int poundIndex = url.indexOf('#');
+        if (poundIndex != -1) {
+            url = url.substring(0, poundIndex);
+        }
+
         i = url.indexOf("://");
         if (i >= 0) {
             if (i == 0) {
@@ -1247,18 +1249,10 @@ class URL implements Serializable {
      * @return
      */
     public URL addParameters(String... pairs) {
-        if (pairs == null || pairs.length == 0) {
+        if (ArrayUtils.isEmpty(pairs)) {
             return this;
         }
-        if (pairs.length % 2 != 0) {
-            throw new IllegalArgumentException("Map pairs can not be odd number.");
-        }
-        Map<String, String> map = new HashMap<>();
-        int len = pairs.length / 2;
-        for (int i = 0; i < len; i++) {
-            map.put(pairs[2 * i], pairs[2 * i + 1]);
-        }
-        return addParameters(map);
+        return addParameters(CollectionUtils.toStringMap(pairs));
     }
 
     public URL addParameterString(String query) {

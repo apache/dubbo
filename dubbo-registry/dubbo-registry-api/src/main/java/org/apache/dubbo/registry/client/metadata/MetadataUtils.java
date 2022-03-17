@@ -48,8 +48,6 @@ public class MetadataUtils {
 
     public static RemoteMetadataServiceImpl remoteMetadataService;
 
-    public static WritableMetadataService localMetadataService;
-
     /**
      * 实际为InMemoryWritableMetadataService
      * @return

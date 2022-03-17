@@ -90,14 +90,36 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         bootstrap = new ServerBootstrap();
 
         // 创建 boss 和 worker 线程池
-        bossGroup = NettyEventLoopFactory.eventLoopGroup(1, "NettyServerBoss");
-        workerGroup = NettyEventLoopFactory.eventLoopGroup(
-                getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
-                "NettyServerWorker");
+        bossGroup = createBossGroup();
+        workerGroup = createWorkerGroup();
 
-        final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
+        final NettyServerHandler nettyServerHandler = createNettyServerHandler();
         channels = nettyServerHandler.getChannels();
 
+        initServerBootstrap(nettyServerHandler);
+
+        // bind
+        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
+        channelFuture.syncUninterruptibly();
+        channel = channelFuture.channel();
+
+    }
+
+    protected EventLoopGroup createBossGroup() {
+        return NettyEventLoopFactory.eventLoopGroup(1, "NettyServerBoss");
+    }
+
+    protected EventLoopGroup createWorkerGroup() {
+        return NettyEventLoopFactory.eventLoopGroup(
+                getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
+                "NettyServerWorker");
+    }
+
+    protected NettyServerHandler createNettyServerHandler() {
+        return new NettyServerHandler(getUrl(), this);
+    }
+
+    protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
 
         bootstrap.group(bossGroup, workerGroup)
@@ -123,12 +145,6 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
-        // bind
-        // 绑定到指定的 ip 和端口上
-        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
-        channelFuture.syncUninterruptibly();
-        channel = channelFuture.channel();
-
     }
 
     @Override
@@ -142,9 +158,9 @@ public class NettyServer extends AbstractServer implements RemotingServer {
             logger.warn(e.getMessage(), e);
         }
         try {
-            Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
+            Collection<Channel> channels = getChannels();
             if (channels != null && channels.size() > 0) {
-                for (org.apache.dubbo.remoting.Channel channel : channels) {
+                for (Channel channel : channels) {
                     try {
                         channel.close();
                     } catch (Throwable e) {
@@ -202,4 +218,23 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         return channel.isActive();
     }
 
+    protected EventLoopGroup getBossGroup() {
+        return bossGroup;
+    }
+
+    protected EventLoopGroup getWorkerGroup() {
+        return workerGroup;
+    }
+
+    protected ServerBootstrap getServerBootstrap() {
+        return bootstrap;
+    }
+
+    protected io.netty.channel.Channel getBossChannel() {
+        return channel;
+    }
+
+    protected Map<String, Channel> getServerChannels() {
+        return channels;
+    }
 }

@@ -30,7 +30,7 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,7 +66,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
      */
     public static Collection<Registry> getRegistries() {
         //service-discovery-registry://113.96.131.199:8849/org.apache.dubbo.registry.RegistryService -> {ServiceDiscoveryRegistry@5778}
-        return Collections.unmodifiableCollection(new LinkedList<>(REGISTRIES.values()));
+        return Collections.unmodifiableCollection(new HashSet<>(REGISTRIES.values()));
     }
 
     public static Registry getRegistry(String key) {
@@ -249,8 +249,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     // for unit test
-    public static void clearRegistryNotDestroy() {
+    @Deprecated
+    public static void reset() {
         REGISTRIES.clear();
+        destroyed.set(false);
     }
 
 }

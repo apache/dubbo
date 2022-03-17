@@ -253,7 +253,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     @Override
     public void initialize(URL registryURL) {
 
-        assertInitialized(INITIALIZE_ACTION);
+        assertDestroyed(INITIALIZE_ACTION);
 
         if (isInitialized()) {
             if (logger.isWarnEnabled()) {
@@ -280,13 +280,6 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
         assertDestroyed(DESTROY_ACTION);
 
-        if (isDestroyed()) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("It's ignored to stop current ServiceDiscovery, because it has been stopped.");
-            }
-            return;
-        }
-
         executeWithEvents(
                 of(new ServiceDiscoveryDestroyingEvent(this, serviceDiscovery)),
                 serviceDiscovery::destroy,
@@ -312,6 +305,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
             //业务执行
             action.execute();
         } catch (Throwable e) {
+            logger.error("Execute action throws and dispatch a ServiceDiscoveryExceptionEvent.", e);
             dispatchEvent(new ServiceDiscoveryExceptionEvent(this, serviceDiscovery, e));
         }
         //业务执行后  发布时间
@@ -331,14 +325,14 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void assertDestroyed(String action) throws IllegalStateException {
-        if (!isInitialized()) {
-            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is not initialized yet.");
+        if (isDestroyed()) {
+            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is destroyed already.");
         }
     }
 
     protected void assertInitialized(String action) throws IllegalStateException {
-        if (isDestroyed()) {
-            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is destroyed already.");
+        if (!isInitialized()) {
+            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is not initialized yet.");
         }
     }
 }

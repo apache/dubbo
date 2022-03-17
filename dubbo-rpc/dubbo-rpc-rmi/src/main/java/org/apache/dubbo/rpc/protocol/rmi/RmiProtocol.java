@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 /**
  * RmiProtocol.
  */
-public class RmiProtocol extends AbstractProxyProtocol {
+public class RmiProtocol extends AbstractProxyProtocol{
 
     public static final int DEFAULT_PORT = 1099;
 

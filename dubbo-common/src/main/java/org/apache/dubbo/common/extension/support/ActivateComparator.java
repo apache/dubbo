@@ -74,9 +74,20 @@ public class ActivateComparator implements Comparator<Class> {
                     return -1;
                 }
             }
+
+            return a1.order > a2.order ? 1 : -1;
         }
-        // never return 0 even if n1 equals n2, otherwise, o1 and o2 will override each other in collection like HashSet
-        return a1.order > a2.order ? 1 : -1;
+
+        // In order to avoid the problem of inconsistency between the loading order of two filters
+        // in different loading scenarios without specifying the order attribute of the filter,
+        // when the order is the same, compare its filterName
+        if (a1.order > a2.order) {
+            return 1;
+        } else if (a1.order == a2.order) {
+            return o1.getSimpleName().compareTo(o2.getSimpleName()) > 0 ? 1 : -1;
+        } else {
+            return -1;
+        }
     }
 
     private Class<?> findSpi(Class clazz) {

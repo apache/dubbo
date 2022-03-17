@@ -37,7 +37,7 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
  */
 public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
-    private final static Logger logger = LoggerFactory.getLogger(InterfaceCompatibleRegistryProtocol.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterfaceCompatibleRegistryProtocol.class);
 
     @Override
     protected URL getRegistryUrl(Invoker<?> originInvoker) {

@@ -103,6 +103,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      */
     public ReferenceAnnotationBeanPostProcessor() {
         super(DubboReference.class, Reference.class, com.alibaba.dubbo.config.annotation.Reference.class);
+        setClassValuesAsString(false);
+        setNestedAnnotationsAsMap(false);
     }
 
     /**
@@ -156,11 +158,11 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         prepareReferenceBean(referencedBeanName, referenceBean, localServiceBean);
 
-        registerReferenceBean(referencedBeanName, referenceBean, attributes, localServiceBean, injectedType);
+        registerReferenceBean(referencedBeanName, referenceBean, localServiceBean, referenceBeanName);
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
-        return referenceBean.get();
+        return getBeanFactory().applyBeanPostProcessorsAfterInitialization(referenceBean.get(), referenceBeanName);
     }
 
     /**
@@ -174,17 +176,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      * @since 2.7.3
      */
     private void registerReferenceBean(String referencedBeanName, ReferenceBean referenceBean,
-                                       AnnotationAttributes attributes,
-                                       boolean localServiceBean, Class<?> interfaceClass) {
+                                       boolean localServiceBean, String beanName) {
 
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-
-        String beanName = getReferenceBeanName(attributes, interfaceClass);
 
         if (localServiceBean) {  // If @Service bean is local one
             /**
              * Get  the @Service's BeanDefinition from {@link BeanFactory}
-             * Refer to {@link ServiceAnnotationBeanPostProcessor#buildServiceBeanDefinition}
+             * Refer to {@link ServiceClassPostProcessor#buildServiceBeanDefinition}
              */
             AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) beanFactory.getBeanDefinition(referencedBeanName);
             RuntimeBeanReference runtimeBeanReference = (RuntimeBeanReference) beanDefinition.getPropertyValues().get("ref");
@@ -371,7 +370,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         if (referenceBean == null) {
             ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
                     .create(attributes, applicationContext)
-                    .interfaceClass(referencedType);
+                    .interfaceClass(referencedType)
+                    .beanName(referenceBeanName);
             referenceBean = beanBuilder.build();
             referenceBeanCache.put(referenceBeanName, referenceBean);
         } else if (!referencedType.isAssignableFrom(referenceBean.getInterfaceClass())) {

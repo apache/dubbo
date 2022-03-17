@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
-    private final static Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
+    private static final Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
 
     private final String root = "/services";
 
@@ -61,6 +61,8 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
 
     EtcdClient etcdClient;
     EventDispatcher dispatcher;
+
+    private URL registryURL;
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
@@ -90,6 +92,7 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
 
         this.dispatcher = EventDispatcher.getDefaultExtension();
         this.dispatcher.addEventListener(this);
+        this.registryURL = registryURL;
     }
 
     @Override
@@ -202,5 +205,10 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
             }
             register(serviceInstance);
         }
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 }

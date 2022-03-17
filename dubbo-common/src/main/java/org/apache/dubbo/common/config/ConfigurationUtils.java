@@ -124,9 +124,7 @@ public class ConfigurationUtils {
      */
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
-        if (StringUtils.isEmpty(content)) {
-            logger.warn("You specified the config center, but there's not even one single config item in it.");
-        } else {
+        if (StringUtils.isNotEmpty(content)) {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
             properties.stringPropertyNames().forEach(

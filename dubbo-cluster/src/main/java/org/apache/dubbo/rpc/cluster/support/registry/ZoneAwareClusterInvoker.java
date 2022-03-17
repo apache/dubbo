@@ -39,12 +39,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.LOADBALANCE_AMONG_REGISTRIES;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
+import static org.apache.dubbo.config.RegistryConfig.PREFER_REGISTRY_KEY;
 
 /**
  * When there're more than one registry for subscription.
@@ -58,10 +57,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
 public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZoneAwareClusterInvoker.class);
-
-    private static final String PREFER_REGISTRY_KEY = REGISTRY_KEY + "." + PREFERRED_KEY;
-
-    private static final String PREFER_REGISTRY_WITH_ZONE_KEY = REGISTRY_KEY + "." + ZONE_KEY;
 
     private final LoadBalance loadBalanceAmongRegistries = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(LOADBALANCE_AMONG_REGISTRIES);
 
@@ -86,7 +81,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
                 ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
-                if (clusterInvoker.isAvailable() && zone.equals(clusterInvoker.getRegistryUrl().getParameter(PREFER_REGISTRY_WITH_ZONE_KEY))) {
+                if (clusterInvoker.isAvailable() && zone.equals(clusterInvoker.getRegistryUrl().getParameter(ZONE_KEY))) {
                     return clusterInvoker.invoke(invocation);
                 }
             }

@@ -45,7 +45,7 @@ public class MetadataReportInstance {
      * @param metadataReportURL
      */
     public static void init(MetadataReportConfig config) {
-        if (init.get()) {
+        if (!init.compareAndSet(false, true)) {
             return;
         }
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
@@ -74,7 +74,6 @@ public class MetadataReportInstance {
          * 根据metadataReportURL  获取对应得实现
          */
         metadataReports.put(relatedRegistryId, metadataReportFactory.getMetadataReport(url));
-        init.set(true);
     }
 
     public static Map<String, MetadataReport> getMetadataReports(boolean checked) {
@@ -98,6 +97,15 @@ public class MetadataReportInstance {
     private static void checkInit() {
         if (!init.get()) {
             throw new IllegalStateException("the metadata report was not inited.");
+        }
+    }
+
+    // only for unit test
+    @Deprecated
+    public static void destroy() {
+        if (init.get()) {
+            metadataReports.clear();
+            init.compareAndSet(true, false);
         }
     }
 }

@@ -16,21 +16,21 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +44,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.event.annotation.AfterTestMethod;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collection;
@@ -57,6 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.5.7
  */
+@EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
@@ -65,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 ReferenceAnnotationBeanPostProcessorTest.TestAspect.class
         })
 @TestPropertySource(properties = {
-        "packagesToScan = org.apache.dubbo.config.spring.context.annotation.provider",
+        "packagesToScan = nopackage",
         "consumer.version = ${demo.service.version}",
         "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
 })
@@ -73,14 +75,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ReferenceAnnotationBeanPostProcessorTest {
 
-    @BeforeAll
-    public static void setUp() {
-        ApplicationModel.reset();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        ApplicationModel.reset();
+    @AfterTestMethod
+    public void setUp() {
+        DubboBootstrap.reset();
     }
 
     private static final String AOP_SUFFIX = "(based on AOP)";
@@ -100,11 +97,6 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         return new TestBean();
     }
 
-    @Bean(BEAN_NAME)
-    public ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor() {
-        return new ReferenceAnnotationBeanPostProcessor();
-    }
-
     @Autowired
     private ConfigurableApplicationContext context;
 
@@ -121,7 +113,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloService;
 
     // #5 ReferenceBean (Field Injection #3)
-    @Reference
+    @Reference(id="helloService2", tag = "demo_tag")
     private HelloService helloService2;
 
     // Instance 1
@@ -209,6 +201,17 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Assertions.assertNotNull(ReferenceConfigCache.getCache().get(referenceBean));
 
+        ReferenceBean helloService2Bean = getReferenceBean("helloService2", referenceBeans);
+        Assertions.assertEquals("demo_tag", helloService2Bean.getTag());
+    }
+
+    private ReferenceBean getReferenceBean(String name, Collection<ReferenceBean<?>> referenceBeans) {
+        for (ReferenceBean<?> referenceBean : referenceBeans) {
+            if (StringUtils.isEquals(name, referenceBean.getId())) {
+                return referenceBean;
+            }
+        }
+        return null;
     }
 
     @Test

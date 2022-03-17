@@ -399,7 +399,15 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return URL.buildKey(interfaceName, getGroup(), getVersion());
     }
 
+    @Override
+    public String getGroup() {
+        return StringUtils.isEmpty(this.group) ? (provider != null ? provider.getGroup() : this.group) : this.group;
+    }
 
+    @Override
+    public String getVersion() {
+        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
+    }
 
     @Override
     protected void computeValidRegistryIds() {

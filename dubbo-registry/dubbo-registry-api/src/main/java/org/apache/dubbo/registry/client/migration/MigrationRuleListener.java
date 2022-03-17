@@ -48,7 +48,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private volatile String rawRule;
 
     public MigrationRuleListener() {
-        Optional<DynamicConfiguration> optional =  ApplicationModel.getEnvironment().getDynamicConfiguration();
+        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
 
         if (optional.isPresent()) {
             this.configuration = optional.get();
@@ -100,7 +100,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
      * @param url
      */
     @Override
-    public synchronized  void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
+    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
         MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
         MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
@@ -114,7 +114,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     @Override
     public void onDestroy() {
         if (null != configuration) {
-            configuration.removeListener(MigrationRule.RULE_KEY, this);
+            configuration.removeListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
         }
     }
 }

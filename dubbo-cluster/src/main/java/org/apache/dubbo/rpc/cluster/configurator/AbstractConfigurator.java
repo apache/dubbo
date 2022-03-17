@@ -126,7 +126,26 @@ public abstract class AbstractConfigurator implements Configurator {
                 String currentApplication = url.getParameter(APPLICATION_KEY, url.getUsername());
                 if (configApplication == null || ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {
-                    Set<String> conditionKeys = new HashSet<String>();
+
+                    Set<String> tildeKeys = new HashSet<>();
+                    for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        String tildeKey = StringUtils.isNotEmpty(key) && key.startsWith(TILDE) ? key : null;
+
+                        if (tildeKey != null || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
+                            if (value != null && !ANY_VALUE.equals(value)
+                                    && !value.equals(url.getParameter(tildeKey != null ? key.substring(1) : key))) {
+                                return url;
+                            }
+                        }
+
+                        if (tildeKey != null) {
+                            tildeKeys.add(tildeKey);
+                        }
+                    }
+
+                    Set<String> conditionKeys = new HashSet<>();
                     conditionKeys.add(CATEGORY_KEY);
                     conditionKeys.add(Constants.CHECK_KEY);
                     conditionKeys.add(DYNAMIC_KEY);
@@ -138,32 +157,13 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(CONFIG_VERSION_KEY);
                     conditionKeys.add(COMPATIBLE_CONFIG_KEY);
                     conditionKeys.add(INTERFACES);
-                    for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        boolean startWithTilde = startWithTilde(key);
-                        if (startWithTilde || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
-                            if (startWithTilde) {
-                                conditionKeys.add(key);
-                            }
-                            if (value != null && !ANY_VALUE.equals(value)
-                                    && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
-                                return url;
-                            }
-                        }
-                    }
+                    conditionKeys.addAll(tildeKeys);
+
                     return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                 }
             }
         }
         return url;
-    }
-
-    private boolean startWithTilde(String key) {
-        if (StringUtils.isNotEmpty(key) && key.startsWith(TILDE)) {
-            return true;
-        }
-        return false;
     }
 
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);

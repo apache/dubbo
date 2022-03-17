@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
@@ -27,7 +26,7 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
-
+import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -61,10 +60,8 @@ import org.springframework.util.StringUtils;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -80,7 +77,7 @@ import static org.springframework.core.annotation.AnnotationUtils.getAnnotationA
 import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
- * {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes. it's also the
+ * {@link BeanFactoryPostProcessor} used for processing of {@link DubboService @Service} annotated classes. it's also the
  * infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbo:annotation /&gt;
  *
  * @see AnnotationBeanDefinitionParser
@@ -90,7 +87,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
+    private static final List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
             // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
             DubboService.class,
             // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
@@ -141,7 +138,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     }
 
     /**
-     * Registers Beans whose classes was annotated {@link Service}
+     * Registers Beans whose classes was annotated {@link DubboService}
      *
      * @param packagesToScan The base packages to scan
      * @param registry       {@link BeanDefinitionRegistry}
@@ -176,7 +173,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
                 }
 
                 if (logger.isInfoEnabled()) {
-                    logger.info(beanDefinitionHolders.size() + " annotated Dubbo's @Service Components { " +
+                    logger.info(beanDefinitionHolders.size() + " annotated Dubbo's @DubboService Components { " +
                             beanDefinitionHolders +
                             " } were scanned under package[" + packageToScan + "]");
                 }
@@ -184,7 +181,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
             } else {
 
                 if (logger.isWarnEnabled()) {
-                    logger.warn("No Spring Bean annotating Dubbo's @Service was found under package["
+                    logger.warn("No Spring Bean annotating Dubbo's @DubboService was found under package["
                             + packageToScan + "]");
                 }
 
@@ -236,7 +233,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
     /**
      * Finds a {@link Set} of {@link BeanDefinitionHolder BeanDefinitionHolders} whose bean type annotated
-     * {@link Service} Annotation.
+     * {@link DubboService} Annotation.
      *
      * @param scanner       {@link ClassPathBeanDefinitionScanner}
      * @param packageToScan package to scan
@@ -265,7 +262,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     }
 
     /**
-     * Registers {@link ServiceBean} from new annotated {@link Service} {@link BeanDefinition}
+     * Registers {@link ServiceBean} from new annotated {@link DubboService} {@link BeanDefinition}
      *
      * @param beanDefinitionHolder
      * @param registry
@@ -281,7 +278,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         Annotation service = findServiceAnnotation(beanClass);
 
         /**
-         * The {@link AnnotationAttributes} of @Service annotation
+         * The {@link AnnotationAttributes} of @DubboService annotation
          */
         AnnotationAttributes serviceAnnotationAttributes = getAnnotationAttributes(service, false, false);
 
@@ -297,6 +294,9 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
+            if (!serviceBeanDefinition.getPropertyValues().contains("id")) {
+                serviceBeanDefinition.getPropertyValues().addPropertyValue("id", beanName);
+            }
 
             if (logger.isInfoEnabled()) {
                 logger.info("The BeanDefinition[" + serviceBeanDefinition +
@@ -335,7 +335,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
      * Generates the bean name of {@link ServiceBean}
      *
      * @param serviceAnnotationAttributes
-     * @param interfaceClass              the class of interface annotated {@link Service}
+     * @param interfaceClass              the class of interface annotated {@link DubboService}
      * @return ServiceBean@interfaceClassName#annotatedServiceBeanName
      * @since 2.7.3
      */
@@ -404,7 +404,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         // Set interface
         builder.addPropertyValue("interface", interfaceClass.getName());
         // Convert parameters into map
-        builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
+        builder.addPropertyValue("parameters", DubboAnnotationUtils.convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
         // Add methods parameters
         List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
         if (!methodConfigs.isEmpty()) {
@@ -499,22 +499,6 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     private void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, String beanName) {
         String resolvedBeanName = environment.resolvePlaceholders(beanName);
         builder.addPropertyReference(propertyName, resolvedBeanName);
-    }
-
-    private Map<String, String> convertParameters(String[] parameters) {
-        if (ArrayUtils.isEmpty(parameters)) {
-            return null;
-        }
-
-        if (parameters.length % 2 != 0) {
-            throw new IllegalArgumentException("parameter attribute must be paired with key followed by value");
-        }
-
-        Map<String, String> map = new HashMap<>();
-        for (int i = 0; i < parameters.length; i += 2) {
-            map.put(parameters[i], parameters[i + 1]);
-        }
-        return map;
     }
 
     @Override

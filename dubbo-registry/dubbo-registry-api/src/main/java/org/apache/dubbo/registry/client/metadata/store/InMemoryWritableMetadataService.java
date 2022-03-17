@@ -30,7 +30,7 @@ import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -202,8 +202,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 if (StringUtils.isNotEmpty(interfaceName)) {
                     Class interfaceClass = Class.forName(interfaceName);
                     ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
-                    Gson gson = new Gson();
-                    String data = gson.toJson(serviceDefinition);
+                    String data = JSON.toJSONString(serviceDefinition);
                     /**
                      * 本地缓存
                      */

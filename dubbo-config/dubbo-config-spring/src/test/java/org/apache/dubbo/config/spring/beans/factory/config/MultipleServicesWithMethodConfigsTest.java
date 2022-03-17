@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ public class MultipleServicesWithMethodConfigsTest {
 
     @BeforeAll
     public static void setUp() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Autowired

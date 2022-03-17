@@ -49,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Service Discovery Changed {@link EventListener Event Listener}
@@ -75,7 +76,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
-        this.registryId = serviceDiscovery.getUrl().getParameter("id");
+        this.registryId = serviceDiscovery.getUrl().getParameter(ID_KEY);
         this.listeners = new HashMap<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
@@ -238,10 +239,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
          * 向instance的extendParams中缓存REGISTRY_CLUSTER  值为url参数map中registry-cluster-type的值
          */
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
-        MetadataInfo metadataInfo;
+        MetadataInfo metadataInfo = null;
         try {
             if (logger.isDebugEnabled()) {
-                logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+                logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 /**
@@ -267,11 +268,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
             if (logger.isDebugEnabled()) {
-                logger.info("Metadata " + metadataInfo.toString());
+                logger.debug("Metadata " + metadataInfo.toString());
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, metadata type is " + metadataType, e);
-            metadataInfo = null;
             // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
         return metadataInfo;

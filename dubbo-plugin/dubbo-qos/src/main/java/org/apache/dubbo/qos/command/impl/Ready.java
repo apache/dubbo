@@ -32,7 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Cmd(name = "ready",summary = "Judge if application or service has started? ")
+@Cmd(name = "ready", summary = "Judge if application or service has started? ", example = {
+        "ready",
+        "ready xx.xx.xxx.service"
+})
 public class Ready implements BaseCommand {
 
     @Override

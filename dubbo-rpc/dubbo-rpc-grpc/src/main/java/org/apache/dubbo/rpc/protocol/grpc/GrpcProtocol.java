@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class GrpcProtocol extends AbstractProxyProtocol {
 
-    public final static int DEFAULT_PORT = 50051;
+    public static final int DEFAULT_PORT = 50051;
 
     /* <address, gRPC channels> */
     private final ConcurrentMap<String, ReferenceCountManagedChannel> channelMap = new ConcurrentHashMap<>();

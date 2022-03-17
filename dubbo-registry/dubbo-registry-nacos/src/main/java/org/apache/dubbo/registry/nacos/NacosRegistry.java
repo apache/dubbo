@@ -48,7 +48,10 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -64,6 +67,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.registry.nacos.NacosServiceName.NAME_SEPARATOR;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.valueOf;
 
 /**
@@ -119,6 +123,8 @@ public class NacosRegistry extends FailbackRegistry {
     private volatile ScheduledExecutorService scheduledExecutorService;
 
     private final NacosNamingServiceWrapper namingService;
+
+    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, EventListener>> nacosListeners = new ConcurrentHashMap<>();
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
@@ -281,6 +287,19 @@ public class NacosRegistry extends FailbackRegistry {
         if (isAdminProtocol(url)) {
             shutdownServiceNamesLookup();
         }
+        else {
+            Set<String> serviceNames = getServiceNames(url, listener);
+
+            doUnsubscribe(url, listener, serviceNames);
+        }
+    }
+
+    private void doUnsubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
+        execute(namingService -> {
+            for (String serviceName : serviceNames) {
+                unsubscribeEventListener(serviceName, url, listener);
+            }
+        });
     }
 
     private void shutdownServiceNamesLookup() {
@@ -343,19 +362,29 @@ public class NacosRegistry extends FailbackRegistry {
     private Set<String> filterServiceNames(NacosServiceName serviceName) {
         Set<String> serviceNames = new LinkedHashSet<>();
 
-        execute(namingService -> {
-
-            serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
-                    getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP)).getData()
-                    .stream()
-                    .map(NacosServiceName::new)
-                    .filter(serviceName::isCompatible)
-                    .map(NacosServiceName::toString)
-                    .collect(Collectors.toList()));
-
-        });
+        execute(namingService -> serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
+                getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP)).getData()
+                .stream()
+                .filter(this::isConformRules)
+                .map(NacosServiceName::new)
+                .filter(serviceName::isCompatible)
+                .map(NacosServiceName::toString)
+                .collect(Collectors.toList())));
 
         return serviceNames;
+    }
+
+    /**
+     * Verify whether it is a dubbo service
+     *
+     * @param serviceName
+     * @return
+     * @since 2.7.12
+     */
+    private boolean isConformRules(String serviceName) {
+
+        return serviceName.split(NAME_SEPARATOR, -1).length == 4;
+
     }
 
     /**
@@ -562,38 +591,61 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
+        ConcurrentMap<NotifyListener, EventListener> listeners = nacosListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
         /**
          * 服务下实例变化回调通知
          */
-        EventListener eventListener = event -> {
-            if (event instanceof NamingEvent) {
-                NamingEvent e = (NamingEvent) event;
-                List<Instance> instances = e.getInstances();
+        EventListener nacosListener = listeners.computeIfAbsent(listener, k -> {
+            EventListener eventListener = event -> {
+                if (event instanceof NamingEvent) {
+                    NamingEvent e = (NamingEvent) event;
+                    List<Instance> instances = e.getInstances();
 
-                if (isServiceNamesWithCompatibleMode(url)) {
+
+                    if (isServiceNamesWithCompatibleMode(url)) {
+
+                        // Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
+                        // in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                        /**
+                         * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
+                         * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                         */
+                        /**
+                         * 获取具有相应服务名称的所有实例，以避免实例覆盖但提到的实例为空
+                         */
+                        NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
+                        instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                    }
+
                     /**
-                     * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
-                     * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                     * 通知  服务提供者发生变化  更新缓存中的invoker并销毁失效的invoker
                      */
-                    /**
-                     * 获取具有相应服务名称的所有实例，以避免实例覆盖但提到的实例为空
-                     */
-                    NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
-                    instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                    notifySubscriber(url, listener, instances);
                 }
-
-                /**
-                 * 通知  服务提供者发生变化  更新缓存中的invoker并销毁失效的invoker
-                 */
-                notifySubscriber(url, listener, instances);
-            }
-        };
+            };
+            return eventListener;
+        });
         /**
          * nacos订阅服务
          */
         namingService.subscribe(serviceName,
                 getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
-                eventListener);
+                nacosListener);
+    }
+
+    private void unsubscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
+            throws NacosException {
+        ConcurrentMap<NotifyListener, EventListener> notifyListenerEventListenerConcurrentMap = nacosListeners.get(url);
+        if(notifyListenerEventListenerConcurrentMap == null){
+            return;
+        }
+        EventListener nacosListener = notifyListenerEventListenerConcurrentMap.get(listener);
+        if(nacosListener == null){
+            return;
+        }
+        namingService.unsubscribe(serviceName,
+                getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
+                nacosListener);
     }
 
     /**
@@ -628,7 +680,7 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private List<String> getCategories(URL url) {
         return ANY_VALUE.equals(url.getServiceInterface()) ?
-                ALL_SUPPORTED_CATEGORIES : Arrays.asList(DEFAULT_CATEGORY);
+                ALL_SUPPORTED_CATEGORIES : Collections.singletonList(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(Instance instance) {

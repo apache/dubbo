@@ -117,6 +117,9 @@ public class AppResponseTest {
         Assertions.assertEquals(1, response.getObjectAttachment("objectKey3"));
         Assertions.assertEquals(3, response.getObjectAttachments().size());
 
+        response.getAttachments().put("objectKey4", "value4");
+        Assertions.assertEquals(response.getAttachment("objectKey4"), "value4");
+
         HashMap<String, Object> map = new HashMap<>();
         map.put("mapKey1", 1);
         map.put("mapKey2", "mapValue2");

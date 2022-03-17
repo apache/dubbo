@@ -19,7 +19,7 @@ package org.apache.dubbo.common.config;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
@@ -80,14 +80,14 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         this.appExternalConfiguration.setProperties(appExternalConfigurationMap);
     }
 
-    @DisableInject
+    @Inject(enable = false)
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         if (externalConfiguration != null) {
             this.externalConfigurationMap = externalConfiguration;
         }
     }
 
-    @DisableInject
+    @Inject(enable = false)
     public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
         if (appExternalConfiguration != null) {
             this.appExternalConfigurationMap = appExternalConfiguration;
@@ -191,7 +191,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return configCenterFirst;
     }
 
-    @DisableInject
+    @Inject(enable = false)
     public void setConfigCenterFirst(boolean configCenterFirst) {
         this.configCenterFirst = configCenterFirst;
     }
@@ -200,7 +200,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return Optional.ofNullable(dynamicConfiguration);
     }
 
-    @DisableInject
+    @Inject(enable = false)
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
     }
@@ -209,6 +209,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public void destroy() throws IllegalStateException {
         clearExternalConfigs();
         clearAppExternalConfigs();
+        clearDynamicConfiguration();
     }
 
     public PropertiesConfiguration getPropertiesConfiguration() {
@@ -241,5 +242,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public void clearAppExternalConfigs() {
         this.appExternalConfiguration.clear();
         this.appExternalConfigurationMap.clear();
+    }
+
+    public void clearDynamicConfiguration() {
+        this.dynamicConfiguration = null;
     }
 }

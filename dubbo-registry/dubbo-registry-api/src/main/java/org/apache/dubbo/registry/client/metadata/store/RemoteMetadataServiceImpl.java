@@ -80,7 +80,6 @@ public class RemoteMetadataServiceImpl {
                 /**
                  * 计算revision
                  */
-                metadataInfo.calAndGetRevision();
                 metadataInfo.getExtendParams().put(REGISTRY_CLUSTER_KEY, registryCluster);
                 /**
                  * 获取【registryCluster】对应的注册中心
