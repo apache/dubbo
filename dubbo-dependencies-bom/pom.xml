@@ -99,7 +99,7 @@
         <httpclient_version>4.5.13</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.70</fastjson_version>
-        <zookeeper_version>3.4.13</zookeeper_version>
+        <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.2.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>3.6.0</jedis_version>
@@ -138,11 +138,11 @@
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
-        <log4j_version>1.2.16</log4j_version>
-        <logback_version>1.2.2</logback_version>
+        <log4j_version>1.2.17</log4j_version>
+        <logback_version>1.2.11</logback_version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-        <log4j2_version>2.17.0</log4j2_version>
-        <commons_io_version>2.6</commons_io_version>
+        <log4j2_version>2.17.2</log4j2_version>
+        <commons_io_version>2.7</commons_io_version>
 
         <embedded_redis_version>0.10.0</embedded_redis_version>
 
