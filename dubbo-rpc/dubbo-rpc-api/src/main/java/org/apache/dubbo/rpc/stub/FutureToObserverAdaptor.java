@@ -1,4 +1,4 @@
-package org.apache.dubbo.stub;
+package org.apache.dubbo.rpc.stub;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 

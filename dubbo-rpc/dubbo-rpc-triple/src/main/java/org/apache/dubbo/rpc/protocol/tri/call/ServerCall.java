@@ -24,11 +24,11 @@ import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -63,17 +63,13 @@ public abstract class ServerCall {
     private boolean closed;
     ServerCall.Listener listener;
 
-
     public final String methodName;
     public final String serviceName;
 
-    ServerCall(Invoker<?> invoker,
-               ServerStream serverStream,
-               FrameworkModel frameworkModel,
-               String serviceName,
-               String methodName,
-               Executor executor) {
-        this.serviceDescriptor = invoker.getUrl().getServiceModel().getServiceModel();
+    ServerCall(Invoker<?> invoker, ServerStream serverStream, FrameworkModel frameworkModel, String serviceName, String methodName, Executor executor) {
+        this.serviceDescriptor = invoker.getUrl()
+            .getServiceModel()
+            .getServiceModel();
         this.invoker = invoker;
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
@@ -92,9 +88,9 @@ public abstract class ServerCall {
      */
     protected RpcInvocation buildInvocation(Map<String, Object> headers, MethodDescriptor methodDescriptor) {
         final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-                methodDescriptor.getMethodName(), serviceDescriptor.getInterfaceName(),
-                url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
+        RpcInvocation inv = new RpcInvocation(url.getServiceModel(), methodDescriptor.getMethodName(),
+            serviceDescriptor.getInterfaceName(), url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(),
+            new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(headers);
@@ -109,8 +105,8 @@ public abstract class ServerCall {
                 this.timeout = parseTimeoutToMills(timeout);
             }
         } catch (Throwable t) {
-            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                    timeout, serviceDescriptor.getInterfaceName(), methodName));
+            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout,
+                serviceDescriptor.getInterfaceName(), methodName));
         }
         return doStartCall(metadata);
     }
@@ -163,14 +159,12 @@ public abstract class ServerCall {
         try {
             data = packResponse(message);
         } catch (IOException e) {
-            close(TriRpcStatus.INTERNAL
-                    .withDescription("Serialize response failed")
-                    .withCause(e), null);
+            close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
+                .withCause(e), null);
             return;
         }
         if (data == null) {
-            close(TriRpcStatus.INTERNAL
-                    .withDescription("Missing response"), null);
+            close(TriRpcStatus.INTERNAL.withDescription("Missing response"), null);
             return;
         }
         if (compressor != null) {
@@ -204,12 +198,13 @@ public abstract class ServerCall {
             if (closed) {
                 return;
             }
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            ClassLoader tccl = Thread.currentThread()
+                .getContextClassLoader();
             try {
                 doOnMessage(message);
             } catch (Throwable t) {
                 final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Server error")
-                        .withCause(t);
+                    .withCause(t);
                 close(status, null);
                 LOGGER.error("Process request failed. service=" + serviceName + " method=" + methodName, t);
             } finally {
@@ -256,11 +251,10 @@ public abstract class ServerCall {
             return;
         }
         closed = true;
-        Http2Headers trailers = new DefaultHttp2Headers()
-                .status(OK.codeAsText())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
+        Http2Headers trailers = new DefaultHttp2Headers().status(OK.codeAsText())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         serverStream.sendHeaderWithEos(trailers);
         LOGGER.error("Triple request error: service=" + serviceName + " method" + methodName, status.asException());
     }

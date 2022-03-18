@@ -3,9 +3,9 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
-public interface ServerService {
+public interface ServerService<T> {
 
-    <T> Invoker<T> getInvoker(URL url);
+    Invoker<T> getInvoker(URL url);
 
     ServiceDescriptor getServiceDescriptor();
 
