@@ -30,10 +30,10 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -77,7 +77,7 @@ public class RpcInvocation implements Invocation, Serializable {
     /**
      * Only used on the caller side, will not appear on the wire.
      */
-    private transient Map<Object, Object> attributes = new ConcurrentHashMap<>();
+    private transient Map<Object, Object> attributes = Collections.synchronizedMap(new HashMap<>());
 
     private transient Invoker<?> invoker;
 
@@ -183,7 +183,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<>() : attachments;
-        this.attributes = attributes == null ? new ConcurrentHashMap<>() : attributes;
+        this.attributes = attributes == null ? Collections.synchronizedMap(new HashMap<>()) : attributes;
         this.invoker = invoker;
         initParameterDesc();
     }
