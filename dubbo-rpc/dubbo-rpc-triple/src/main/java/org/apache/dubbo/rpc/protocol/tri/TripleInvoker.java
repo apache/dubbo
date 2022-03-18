@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCallUtil;
@@ -72,13 +73,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final GenericUnpack genericUnpack;
 
     public TripleInvoker(Class<T> serviceType,
-                         URL url,
-                         MultipleSerialization serialization,
-                         String serializationName,
-                         Compressor defaultCompressor,
-                         String acceptEncoding,
-                         ConnectionManager connectionManager,
-                         Set<Invoker<?>> invokers) throws RemotingException {
+        URL url,
+        MultipleSerialization serialization,
+        String serializationName,
+        Compressor defaultCompressor,
+        String acceptEncoding,
+        ConnectionManager connectionManager,
+        Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.genericPack = new GenericPack(serialization, serializationName, url);
         this.genericUnpack = new GenericUnpack(serialization, url);
@@ -107,20 +108,21 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(callbackExecutor);
 
         if (!connection.isAvailable()) {
-            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE
-                    .withDescription(String.format("Connect to %s failed", this));
+            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE.withDescription(
+                String.format("Connect to %s failed", this));
             DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
-        ConsumerModel consumerModel = invocation.getServiceModel() != null ?
-                (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
-        final MethodDescriptor methodDescriptor = consumerModel.getServiceModel()
-                .getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), methodDescriptor, invocation, future.requestId,
-                compressor, acceptEncoding, timeout, genericPack, genericUnpack);
-        ExecutorService executor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension()
-                .getExecutor(url);
+        ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
+        ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
+        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(invocation.getMethodName(),
+            invocation.getParameterTypes());
+        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), serviceDescriptor, methodDescriptor,
+            invocation, future.requestId, compressor, acceptEncoding, timeout, genericPack, genericUnpack);
+        ExecutorService executor = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .getExecutor(url);
         if (executor == null) {
             throw new IllegalStateException("No available executor found in " + url);
         }

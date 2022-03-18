@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -47,9 +48,16 @@ import java.util.Map;
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
-    public static RequestMetadata createRequest(URL url, MethodDescriptor methodDescriptor, Invocation invocation,
-                                                long requestId, Compressor compressor, String acceptEncoding,
-                                                int timeout, GenericPack genericPack, GenericUnpack genericUnpack) {
+    public static RequestMetadata createRequest(URL url,
+        ServiceDescriptor serviceDescriptor,
+        MethodDescriptor methodDescriptor,
+        Invocation invocation,
+        long requestId,
+        Compressor compressor,
+        String acceptEncoding,
+        int timeout,
+        GenericPack genericPack,
+        GenericUnpack genericUnpack) {
         final String methodName = RpcUtils.getMethodName(invocation);
         final RequestMetadata meta = new RequestMetadata();
         meta.scheme = getSchemeFromUrl(url);
@@ -70,7 +78,7 @@ public class StreamUtils {
         meta.compressor = compressor;
         meta.acceptEncoding = acceptEncoding;
         meta.address = url.getAddress();
-        meta.service = url.getPath();
+        meta.service = serviceDescriptor.getInterfaceName();
         meta.group = url.getGroup();
         meta.version = url.getVersion();
         meta.timeout = timeout + "m";

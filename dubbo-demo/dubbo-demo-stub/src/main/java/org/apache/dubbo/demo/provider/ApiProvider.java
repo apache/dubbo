@@ -22,14 +22,13 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
-import org.apache.dubbo.sample.tri.IGreeter;
 import org.apache.dubbo.sample.tri.IGreeterImpl;
+import org.apache.dubbo.stub.DubboIGreeterTriple;
 
 public class ApiProvider {
     public static void main(String[] args) {
-        ServiceConfig<IGreeter> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterface(IGreeter.class);
+        ServiceConfig<DubboIGreeterTriple.IGreeter> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DubboIGreeterTriple.IGreeter.class);
         serviceConfig.setRef(new IGreeterImpl());
         serviceConfig.setProxy("nativestub");
 

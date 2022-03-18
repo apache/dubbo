@@ -28,12 +28,13 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.stub.BiStreamMethodHandler;
 import org.apache.dubbo.rpc.stub.ServerStreamMethodHandler;
+import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 import org.apache.dubbo.rpc.stub.StubInvoker;
 import org.apache.dubbo.rpc.stub.StubMethodHandler;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.stub.UnaryStubMethodHandler;
 import org.apache.dubbo.sample.tri.HelloReply;
 import org.apache.dubbo.sample.tri.HelloRequest;
-import org.apache.dubbo.sample.tri.IGreeter;
 
 import com.google.protobuf.Message;
 
@@ -41,53 +42,48 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class GreeterStub implements IGreeter {
-    private static final String SERVICE_NAME = "org.apache.dubbo.sample.tri.IGreeter";
+public class DubboIGreeterTriple {
+
+    public static final String SERVICE_NAME = "org.apache.dubbo.sample.tri.IGreeter";
     private static final ServiceDescriptor serviceDescriptor = new ServiceDescriptor(SERVICE_NAME, IGreeter.class);
     private static final Map<String, StubMethodDescriptor> NAME_2_METHOD_DESCRIPTORS = new HashMap<>();
+
+
+
+    public interface IGreeter {
+
+        HelloReply sayHello(HelloRequest request);
+
+        void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver);
+
+        void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> replyStream);
+
+        StreamObserver<HelloRequest> sayHelloClientStream(StreamObserver<HelloReply> replyStream);
+
+        StreamObserver<HelloRequest> sayHelloStream(StreamObserver<HelloReply> replyStream);
+
+    }
+
+
     private static final StubMethodDescriptor SAY_HELLO_METHOD = new StubMethodDescriptor("sayHello",
-        HelloRequest.class,
-        HelloReply.class,
-        serviceDescriptor,
-        StubMethodDescriptor.RpcType.UNARY,
-        obj -> ((Message) obj).toByteArray(),
-        obj -> ((Message) obj).toByteArray(),
-        HelloRequest::parseFrom,
-        HelloReply::parseFrom,
-        "/" + SERVICE_NAME + "/sayHello");
+        HelloRequest.class, HelloReply.class, serviceDescriptor, StubMethodDescriptor.RpcType.UNARY,
+        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), HelloRequest::parseFrom,
+        HelloReply::parseFrom, "/" + SERVICE_NAME + "/sayHello");
     private static final StubMethodDescriptor SAY_HELLO_STREAM_METHOD = new StubMethodDescriptor("sayHelloStream",
-        HelloRequest.class,
-        HelloReply.class,
-        serviceDescriptor,
-        StubMethodDescriptor.RpcType.BI_STREAM,
-        obj -> ((Message) obj).toByteArray(),
-        obj -> ((Message) obj).toByteArray(),
-        HelloRequest::parseFrom,
-        HelloReply::parseFrom,
-        "/" + SERVICE_NAME + "/sayHelloStream");
+        HelloRequest.class, HelloReply.class, serviceDescriptor, StubMethodDescriptor.RpcType.BI_STREAM,
+        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), HelloRequest::parseFrom,
+        HelloReply::parseFrom, "/" + SERVICE_NAME + "/sayHelloStream");
 
     private static final StubMethodDescriptor SAY_HELLO_CLIENT_STREAM_METHOD = new StubMethodDescriptor(
-        "sayHelloClientStream",
-        HelloRequest.class,
-        HelloReply.class,
-        serviceDescriptor,
-        StubMethodDescriptor.RpcType.CLIENT_STREAM,
-        obj -> ((Message) obj).toByteArray(),
-        obj -> ((Message) obj).toByteArray(),
-        HelloRequest::parseFrom,
-        HelloReply::parseFrom,
+        "sayHelloClientStream", HelloRequest.class, HelloReply.class, serviceDescriptor,
+        StubMethodDescriptor.RpcType.CLIENT_STREAM, obj -> ((Message) obj).toByteArray(),
+        obj -> ((Message) obj).toByteArray(), HelloRequest::parseFrom, HelloReply::parseFrom,
         "/" + SERVICE_NAME + "/sayHelloClientStream");
 
     private static final StubMethodDescriptor SAY_HELLO_SERVER_STREAM_METHOD = new StubMethodDescriptor(
-        "sayHelloServerStream",
-        HelloRequest.class,
-        HelloReply.class,
-        serviceDescriptor,
-        StubMethodDescriptor.RpcType.SERVER_STREAM,
-        obj -> ((Message) obj).toByteArray(),
-        obj -> ((Message) obj).toByteArray(),
-        HelloRequest::parseFrom,
-        HelloReply::parseFrom,
+        "sayHelloServerStream", HelloRequest.class, HelloReply.class, serviceDescriptor,
+        StubMethodDescriptor.RpcType.SERVER_STREAM, obj -> ((Message) obj).toByteArray(),
+        obj -> ((Message) obj).toByteArray(), HelloRequest::parseFrom, HelloReply::parseFrom,
         "/" + SERVICE_NAME + "/sayHelloClientStream");
 
     static {
@@ -95,9 +91,13 @@ public class GreeterStub implements IGreeter {
         NAME_2_METHOD_DESCRIPTORS.put(SAY_HELLO_STREAM_METHOD.getMethodName(), SAY_HELLO_STREAM_METHOD);
         NAME_2_METHOD_DESCRIPTORS.put(SAY_HELLO_SERVER_STREAM_METHOD.getMethodName(), SAY_HELLO_SERVER_STREAM_METHOD);
         NAME_2_METHOD_DESCRIPTORS.put(SAY_HELLO_CLIENT_STREAM_METHOD.getMethodName(), SAY_HELLO_CLIENT_STREAM_METHOD);
+        StubSuppliers.addSupplier(IGreeter.class.getName(), i -> newStub((Invoker<IGreeter>) i));
+        StubSuppliers.addDescriptor(IGreeter.class.getName(), serviceDescriptor);
     }
 
-    //    private static final ServiceDescriptor serviceDescriptor;
+    public static IGreeter newStub(Invoker<IGreeter> invoker) {
+        return new GreeterStub(invoker);
+    }
 
     public static StubMethodDescriptor getSayHelloStreamMethod() {
         return SAY_HELLO_STREAM_METHOD;
@@ -107,32 +107,37 @@ public class GreeterStub implements IGreeter {
         return SAY_HELLO_METHOD;
     }
 
-    @Override
-    public HelloReply sayHello(HelloRequest request) {
-        return null;
-    }
+    public static class GreeterStub implements IGreeter {
+        private final Invoker<IGreeter> invoker;
 
-    @Override
-    public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
-    }
+        public GreeterStub(Invoker<IGreeter> invoker) {
+            this.invoker = invoker;
+        }
 
-    @Override
-    public void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> replyStream) {
+        @Override
+        public HelloReply sayHello(HelloRequest request) {
+            return StubInvocationUtil.unaryCall(invoker, SAY_HELLO_METHOD, request);
+        }
 
-    }
+        @Override
+        public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
+            StubInvocationUtil.unaryCall(invoker, SAY_HELLO_METHOD, request, responseObserver);
+        }
 
-    @Override
-    public StreamObserver<HelloRequest> sayHelloClientStream(StreamObserver<HelloReply> replyStream) {
-        return null;
-    }
+        @Override
+        public void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> replyStream) {
 
-    @Override
-    public StreamObserver<HelloRequest> sayHelloStream(StreamObserver<HelloReply> replyStream) {
-        return null;
-    }
+        }
 
-    private static StubMethodDescriptor getMethod(String method) {
-        return NAME_2_METHOD_DESCRIPTORS.get(method);
+        @Override
+        public StreamObserver<HelloRequest> sayHelloClientStream(StreamObserver<HelloReply> replyStream) {
+            return null;
+        }
+
+        @Override
+        public StreamObserver<HelloRequest> sayHelloStream(StreamObserver<HelloReply> replyStream) {
+            return null;
+        }
     }
 
     public static abstract class IGreeterImplBase implements IGreeter, ServerService<IGreeter> {
@@ -193,9 +198,8 @@ public class GreeterStub implements IGreeter {
         }
 
         private RpcException unimplementedMethodException(StubMethodDescriptor methodDescriptor) {
-            return TriRpcStatus.UNIMPLEMENTED.withDescription(String.format("Method %s is unimplemented",
-                    methodDescriptor.fullMethodName))
-                .asException();
+            return TriRpcStatus.UNIMPLEMENTED.withDescription(
+                String.format("Method %s is unimplemented", methodDescriptor.fullMethodName)).asException();
         }
     }
 

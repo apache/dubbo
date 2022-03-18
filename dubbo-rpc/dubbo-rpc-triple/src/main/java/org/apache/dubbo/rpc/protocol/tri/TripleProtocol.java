@@ -72,7 +72,7 @@ public class TripleProtocol extends AbstractProtocol {
             @Override
             public void afterUnExport() {
                 pathResolver.remove(url.getServiceKey());
-                pathResolver.remove(url.getServiceInterface());
+                pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
                 exporterMap.remove(key);
             }
         };
@@ -82,7 +82,7 @@ public class TripleProtocol extends AbstractProtocol {
         invokers.add(invoker);
 
         pathResolver.add(url.getServiceKey(), invoker);
-        pathResolver.add(url.getServiceInterface(), invoker);
+        pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
 
         // set service status
         triBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);

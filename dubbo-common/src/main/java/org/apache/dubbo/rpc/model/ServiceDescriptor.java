@@ -44,13 +44,13 @@ public class ServiceDescriptor {
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
     private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
 
-    public ServiceDescriptor(String interfaceName,Class<?> interfaceClass) {
-        this.interfaceName=interfaceName;
-        this.serviceInterfaceClass=interfaceClass;
+    public ServiceDescriptor(String interfaceName, Class<?> interfaceClass) {
+        this.interfaceName = interfaceName;
+        this.serviceInterfaceClass = interfaceClass;
     }
 
-    public void addMethod(MethodDescriptor methodDescriptor){
-        methods.put(methodDescriptor.getMethodName(),Collections.singletonList(methodDescriptor));
+    public void addMethod(MethodDescriptor methodDescriptor) {
+        methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
     }
 
     public ServiceDescriptor(Class<?> interfaceClass) {
@@ -60,7 +60,8 @@ public class ServiceDescriptor {
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
-        return serviceDefinitions.computeIfAbsent(serviceKey, (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
+        return serviceDefinitions.computeIfAbsent(serviceKey,
+            (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
     }
 
     private void initMethods() {
@@ -149,10 +150,9 @@ public class ServiceDescriptor {
             return false;
         }
         ServiceDescriptor that = (ServiceDescriptor) o;
-        return Objects.equals(interfaceName, that.interfaceName)
-                && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
-                && Objects.equals(methods, that.methods)
-                && Objects.equals(descToMethods, that.descToMethods);
+        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(serviceInterfaceClass,
+            that.serviceInterfaceClass) && Objects.equals(methods, that.methods) && Objects.equals(descToMethods,
+            that.descToMethods);
     }
 
     @Override

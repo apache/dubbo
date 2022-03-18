@@ -1,9 +1,9 @@
 package org.apache.dubbo.sample.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.stub.GreeterStub;
+import org.apache.dubbo.stub.DubboIGreeterTriple;
 
-public class IGreeterImpl extends GreeterStub.IGreeterImplBase {
+public class IGreeterImpl extends DubboIGreeterTriple.IGreeterImplBase {
     @Override
     public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
         responseObserver.onNext(HelloReply.newBuilder()
@@ -37,7 +37,7 @@ public class IGreeterImpl extends GreeterStub.IGreeterImplBase {
             @Override
             public void onCompleted() {
                 replyStream.onNext(HelloReply.newBuilder()
-                    .setMessage("hello!" )
+                    .setMessage("hello!")
                     .build());
                 replyStream.onCompleted();
             }
