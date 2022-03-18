@@ -23,11 +23,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.StubInvoker;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.call.ReflectionServerCall;
@@ -79,12 +78,7 @@ public class ServerStream extends AbstractStream {
     private boolean closed;
     private Deframer deframer;
 
-    public ServerStream(Channel channel,
-                        FrameworkModel frameworkModel,
-                        Executor executor,
-                        PathResolver pathResolver,
-                        List<HeaderFilter> filters,
-                        GenericUnpack genericUnpack) {
+    public ServerStream(Channel channel, FrameworkModel frameworkModel, Executor executor, PathResolver pathResolver, List<HeaderFilter> filters, GenericUnpack genericUnpack) {
         super(executor, frameworkModel);
         this.eventLoop = channel.eventLoop();
         this.pathResolver = pathResolver;
@@ -99,8 +93,8 @@ public class ServerStream extends AbstractStream {
             return status.description;
         }
         return Optional.ofNullable(status.cause)
-                .map(Throwable::getMessage)
-                .orElse("unknown");
+            .map(Throwable::getMessage)
+            .orElse("unknown");
     }
 
     public void sendHeader(Http2Headers headers) {
@@ -146,24 +140,24 @@ public class ServerStream extends AbstractStream {
         grpcMessage = TriRpcStatus.encodeMessage(grpcMessage);
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         Status.Builder builder = Status.newBuilder()
-                .setCode(rpcStatus.code.code)
-                .setMessage(grpcMessage);
+            .setCode(rpcStatus.code.code)
+            .setMessage(grpcMessage);
         Throwable throwable = rpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                    H2TransportListener.encodeBase64ASCII(status.toByteArray()));
+                H2TransportListener.encodeBase64ASCII(status.toByteArray()));
             return headers;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-                // can not use now
-                // .setDetail(throwable.getMessage())
-                .build();
+            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+            // can not use now
+            // .setDetail(throwable.getMessage())
+            .build();
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                H2TransportListener.encodeBase64ASCII(status.toByteArray()));
+            H2TransportListener.encodeBase64ASCII(status.toByteArray()));
         return headers;
     }
 
@@ -184,11 +178,10 @@ public class ServerStream extends AbstractStream {
      * @param status
      */
     private void responsePlainTextError(int code, TriRpcStatus status) {
-        Http2Headers headers = new DefaultHttp2Headers(true)
-                .status(String.valueOf(code))
-                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
-                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
+        Http2Headers headers = new DefaultHttp2Headers(true).status(String.valueOf(code))
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
+            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
     }
@@ -199,11 +192,10 @@ public class ServerStream extends AbstractStream {
      * @param status
      */
     private void responseErr(TriRpcStatus status) {
-        Http2Headers trailers = new DefaultHttp2Headers()
-                .status(OK.codeAsText())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
+        Http2Headers trailers = new DefaultHttp2Headers().status(OK.codeAsText())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true));
     }
 
@@ -231,66 +223,64 @@ public class ServerStream extends AbstractStream {
         }
 
         private void processHeader(Http2Headers headers, boolean endStream) {
-            if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
+            if (!HttpMethod.POST.asciiName()
+                .contentEquals(headers.method())) {
                 responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
-                        TriRpcStatus.INTERNAL
-                                .withDescription(String.format("Method '%s' is not supported", headers.method())));
+                    TriRpcStatus.INTERNAL.withDescription(
+                        String.format("Method '%s' is not supported", headers.method())));
                 return;
             }
 
             if (headers.path() == null) {
                 responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                        TriRpcStatus.fromCode(TriRpcStatus.Code.UNIMPLEMENTED.code)
-                                .withDescription("Expected path but is missing"));
+                    TriRpcStatus.fromCode(TriRpcStatus.Code.UNIMPLEMENTED.code)
+                        .withDescription("Expected path but is missing"));
                 return;
             }
 
-            final String path = headers.path().toString();
+            final String path = headers.path()
+                .toString();
             if (path.charAt(0) != '/') {
                 responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                        TriRpcStatus.fromCode(TriRpcStatus.Code.UNIMPLEMENTED.code)
-                                .withDescription(String.format("Expected path to start with /: %s", path)));
+                    TriRpcStatus.fromCode(TriRpcStatus.Code.UNIMPLEMENTED.code)
+                        .withDescription(String.format("Expected path to start with /: %s", path)));
                 return;
             }
 
             final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
             if (contentType == null) {
                 responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                        TriRpcStatus.fromCode(TriRpcStatus.Code.INTERNAL.code)
-                                .withDescription("Content-Type is missing from the request"));
+                    TriRpcStatus.fromCode(TriRpcStatus.Code.INTERNAL.code)
+                        .withDescription("Content-Type is missing from the request"));
                 return;
             }
 
             final String contentString = contentType.toString();
             if (!supportContentType(contentString)) {
                 responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                        TriRpcStatus.fromCode(TriRpcStatus.Code.INTERNAL.code)
-                                .withDescription(
-                                        String.format("Content-Type '%s' is not supported", contentString)));
+                    TriRpcStatus.fromCode(TriRpcStatus.Code.INTERNAL.code)
+                        .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
                 return;
             }
 
             if (path.charAt(0) != '/') {
-                responseErr(TriRpcStatus.UNIMPLEMENTED
-                        .withDescription("Path must start with '/'. Request path: " + path));
+                responseErr(
+                    TriRpcStatus.UNIMPLEMENTED.withDescription("Path must start with '/'. Request path: " + path));
                 return;
             }
 
             String[] parts = path.split("/");
             if (parts.length != 3) {
-                responseErr(TriRpcStatus.UNIMPLEMENTED
-                        .withDescription("Bad path format:" + path));
+                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Bad path format:" + path));
                 return;
             }
             String serviceName = parts[1];
             String originalMethodName = parts[2];
-            String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(
-                    1);
+            String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
 
             Invoker<?> invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
-                responseErr(TriRpcStatus.UNIMPLEMENTED
-                        .withDescription("Service not found:" + serviceName));
+                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
                 return;
             }
 
@@ -302,7 +292,7 @@ public class ServerStream extends AbstractStream {
                     DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
                     if (null == compressor) {
                         responseErr(TriRpcStatus.fromCode(TriRpcStatus.Code.UNIMPLEMENTED.code)
-                                .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
+                            .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                         return;
                     }
                     deCompressor = compressor;
@@ -313,27 +303,17 @@ public class ServerStream extends AbstractStream {
                 final TriDecoder.Listener listener = new ServerDecoderListener();
                 ServerStream.this.deframer = new TriDecoder(deCompressor, listener);
             } catch (Throwable t) {
-                close(TriRpcStatus.INTERNAL
-                        .withCause(t), null);
+                close(TriRpcStatus.INTERNAL.withCause(t), null);
             }
 
             ServerCall call;
             boolean hasStub = pathResolver.hasNativeStub(path);
-            if(hasStub){
-                call = new StubServerCall(invoker,
-                        ServerStream.this, frameworkModel,
-                        serviceName,
-                        methodName,
-                        executor);
+            if (hasStub) {
+                call = new StubServerCall(invoker, ServerStream.this, frameworkModel, serviceName, methodName,
+                    executor);
             } else {
-                call = new ReflectionServerCall(invoker,
-                        ServerStream.this,
-                        frameworkModel,
-                        serviceName,
-                        methodName,
-                        filters,
-                        executor,
-                        genericUnpack);
+                call = new ReflectionServerCall(invoker, ServerStream.this, frameworkModel, serviceName, methodName,
+                    filters, executor, genericUnpack);
             }
             ServerStream.this.listener = call.startCall(headersToMap(headers));
             if (listener == null) {
@@ -374,17 +354,20 @@ public class ServerStream extends AbstractStream {
 
             @Override
             public void close() {
-                ServerStream.this.listener.complete();
+                if (ServerStream.this.listener != null) {
+                    ServerStream.this.listener.complete();
+                }
             }
         }
     }
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
         final String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
-                TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+                TripleHeaderEnum.SERVICE_VERSION.getHeader())
+            .toString() : null;
         final String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(
-                        TripleHeaderEnum.SERVICE_GROUP.getHeader())
-                .toString() : null;
+                TripleHeaderEnum.SERVICE_GROUP.getHeader())
+            .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
         if (invoker == null) {

@@ -25,4 +25,10 @@ public interface IGreeter {
 
     void sayHello(HelloRequest request,StreamObserver<HelloReply> responseObserver);
 
+    void sayHelloServerStream(HelloRequest request, StreamObserver<HelloReply> replyStream);
+
+    StreamObserver<HelloRequest> sayHelloClientStream(StreamObserver<HelloReply> replyStream);
+
+    StreamObserver<HelloRequest> sayHelloStream(StreamObserver<HelloReply> replyStream);
+
 }
