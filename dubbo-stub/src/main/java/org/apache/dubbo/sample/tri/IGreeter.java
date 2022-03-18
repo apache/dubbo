@@ -23,6 +23,6 @@ public interface IGreeter {
 
     HelloReply sayHello(HelloRequest request);
 
-    StreamObserver<HelloRequest> sayHello(StreamObserver<HelloReply> responseObserver);
+    void sayHello(HelloRequest request,StreamObserver<HelloReply> responseObserver);
 
 }

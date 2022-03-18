@@ -5,6 +5,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class StubCallUtil {
@@ -14,31 +16,18 @@ public class StubCallUtil {
                         methodDescriptor.fullMethodName))
                 .asException();
     }
-    public static <T, R> StreamObserver<T> callMethod(StubMethodDescriptor methodDescriptor,
-                                                      StreamObserver<R> responseObserver,
-                                                      Function<T, R> function
-    ) {
-        return new StreamObserver<T>() {
-            @Override
-            public void onNext(T data) {
-                try {
-                    responseObserver.onNext(function.apply(data));
-                    responseObserver.onCompleted();
-                } catch (Throwable t) {
-                    responseObserver.onError(TriRpcStatus.INTERNAL
-                            .withDescription(String.format("Call %s error", methodDescriptor.fullMethodName))
-                            .asException());
-                }
-            }
 
-            @Override
-            public void onError(Throwable throwable) {
-            }
-
-            @Override
-            public void onCompleted() {
-            }
-        };
+    public static <T, R> void callUnaryMethod(T request, StreamObserver<R> responseObserver,
+                                              Function<T, R> unaryFunction) {
+        R response = unaryFunction.apply(request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
     }
 
+    public static <T, R> CompletableFuture<R> callUnaryMethod(T request, BiConsumer<T, StreamObserver<R>> method) {
+        CompletableFuture<R> future = new CompletableFuture<>();
+        StreamObserver<R> responseObserver = new FutureToObserverAdaptor<>(future);
+        method.accept(request, responseObserver);
+        return future;
+    }
 }

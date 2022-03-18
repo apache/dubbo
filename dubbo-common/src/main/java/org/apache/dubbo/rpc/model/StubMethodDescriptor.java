@@ -40,6 +40,7 @@ public class StubMethodDescriptor extends MethodDescriptor {
         this.responseUnpack = responseUnpack;
         this.requestUnpack = requestUnpack;
         this.fullMethodName = fullMethodName;
+        serviceDescriptor.addMethod(this);
     }
 
     public interface Pack {

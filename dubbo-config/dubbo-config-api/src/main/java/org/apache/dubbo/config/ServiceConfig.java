@@ -364,7 +364,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
+        ServiceDescriptor serviceDescriptor;
+        if(ref instanceof ServerService){
+            serviceDescriptor=((ServerService) ref).getServiceDescriptor();
+            repository.registerService(serviceDescriptor);
+        }else{
+             serviceDescriptor = repository.registerService(getInterfaceClass());
+        }
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
             serviceDescriptor,

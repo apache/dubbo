@@ -33,6 +33,8 @@ import com.google.protobuf.Message;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class GreeterStub implements IGreeter {
@@ -46,7 +48,7 @@ public class GreeterStub implements IGreeter {
             StubMethodDescriptor.RpcType.UNARY, obj -> ((Message) obj).toByteArray(),
             obj -> ((Message) obj).toByteArray(),
             HelloRequest::parseFrom,
-            HelloReply::parseFrom, "/"+SERVICE_NAME + "/sayHello");
+            HelloReply::parseFrom, "/" + SERVICE_NAME + "/sayHello");
 
     static {
         NAME_2_METHOD_DESCRIPTORS.put(SAY_HELLO_METHOD.getMethodName(), SAY_HELLO_METHOD);
@@ -92,8 +94,7 @@ public class GreeterStub implements IGreeter {
 //    }
 
     @Override
-    public StreamObserver<HelloRequest> sayHello(StreamObserver<HelloReply> responseObserver) {
-        return null;
+    public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
     }
 
     private static StubMethodDescriptor getMethod(String method) {
@@ -109,9 +110,11 @@ public class GreeterStub implements IGreeter {
                                            .getExtensionLoader(PathResolver.class)
                                            .getDefaultExtension();
             pathResovler.addNativeStub(getSayHelloMethod().fullMethodName);
-            Map<String, Function<Object[], Object>> handlers = new HashMap<>();
-            handlers.put(getSayHelloMethod().getMethodName(), objects -> sayHello((HelloRequest) objects[0]));
-            return new StubInvoker<>(this, url, IGreeter.class, handlers);
+            Map<String, Function<Object[], CompletableFuture<?>>> handlers = new HashMap<>();
+            BiConsumer<HelloRequest, StreamObserver<HelloReply>> sayHelloMethodConsumer = (a, b) -> sayHello(a, b);
+            handlers.put(getSayHelloMethod().getMethodName(),
+                    objects -> StubCallUtil.callUnaryMethod((HelloRequest) objects[0], sayHelloMethodConsumer));
+            return new StubInvoker<IGreeter>(url, IGreeter.class, handlers);
         }
 
         @Override
@@ -120,9 +123,13 @@ public class GreeterStub implements IGreeter {
         }
 
         @Override
-        public StreamObserver<HelloRequest> sayHello(StreamObserver<HelloReply> responseObserver) {
-            return StubCallUtil.callMethod(getSayHelloMethod(), responseObserver, this::sayHello);
+        public void sayHello(HelloRequest request, StreamObserver<HelloReply> responseObserver) {
+            StubCallUtil.callUnaryMethod(request, responseObserver, this::sayHello);
         }
 
+        @Override
+        public ServiceDescriptor getServiceDescriptor() {
+            return serviceDescriptor;
+        }
     }
 }

@@ -17,22 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
-import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperResponseObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-
-import java.util.function.Function;
 
 public class ServerCallUtil {
 
@@ -86,26 +82,44 @@ public class ServerCallUtil {
                                                 ServerCallToObserverAdapter<Object> responseObserver) {
         try {
             ServerCall.Listener listener;
-            if (methodDescriptor instanceof StreamMethodDescriptor) {
-                if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
-                    listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
-                } else {
-                    listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
+            if (methodDescriptor instanceof StubMethodDescriptor) {
+                switch (((StubMethodDescriptor) methodDescriptor).rpcType) {
+                    case UNARY:
+                        listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
+                        call.requestN(2);
+                        break;
+                    case SERVER_STREAM:
+                        listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
+                        call.requestN(2);
+                        break;
+                    case BI_STREAM:
+                        listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
+                        call.requestN(1);
+                        break;
+                    default:
+                        throw new IllegalStateException("Can not reach here");
                 }
-                call.requestN(1);
             } else {
-                listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
-                call.requestN(2);
+                if (methodDescriptor instanceof StreamMethodDescriptor) {
+                    if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
+                        listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
+                    } else {
+                        listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
+                    }
+                    call.requestN(1);
+                } else {
+                    listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
+                    call.requestN(2);
+                }
             }
             return listener;
         } catch (Throwable t) {
             responseObserver.onError(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
-                    .withCause(t)
-                    .asException());
+                                                          .withCause(t)
+                                                          .asException());
         }
         return null;
     }
-
 
 
 }

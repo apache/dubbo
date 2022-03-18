@@ -49,6 +49,10 @@ public class ServiceDescriptor {
         this.serviceInterfaceClass=interfaceClass;
     }
 
+    public void addMethod(MethodDescriptor methodDescriptor){
+        methods.put(methodDescriptor.getMethodName(),Collections.singletonList(methodDescriptor));
+    }
+
     public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.interfaceName = interfaceClass.getName();
