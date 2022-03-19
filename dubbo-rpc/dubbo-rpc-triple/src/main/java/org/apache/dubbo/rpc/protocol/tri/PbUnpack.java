@@ -18,9 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.model.PackableMethod;
-import org.apache.dubbo.rpc.model.StubMethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

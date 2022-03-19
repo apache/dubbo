@@ -29,14 +29,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
-import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
@@ -52,7 +50,7 @@ import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
     private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
-    public static final String METHOD_ATTR_PACK ="pack";
+    public static final String METHOD_ATTR_PACK = "pack";
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
@@ -95,8 +93,10 @@ public class TripleProtocol extends AbstractProtocol {
         pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
 
         // set service status
-        triBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
-        triBuiltinService.getHealthStatusManager().setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
+        triBuiltinService.getHealthStatusManager()
+            .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
+        triBuiltinService.getHealthStatusManager()
+            .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
@@ -127,8 +127,7 @@ public class TripleProtocol extends AbstractProtocol {
             compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
         }
         try {
-            invoker = new TripleInvoker<>(type, url, acceptEncoding, connectionManager,
-                compressor, invokers,
+            invoker = new TripleInvoker<>(type, url, acceptEncoding, connectionManager, compressor, invokers,
                 serviceDescriptor);
         } catch (RemotingException e) {
             throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
@@ -163,7 +162,7 @@ public class TripleProtocol extends AbstractProtocol {
         if (descriptor == null) {
             return;
         }
-        if(descriptor instanceof StubServiceDescriptor){
+        if (descriptor instanceof StubServiceDescriptor) {
             return;
         }
 
@@ -176,8 +175,9 @@ public class TripleProtocol extends AbstractProtocol {
         try {
             responseWrapper.writeTo(baos);
         } catch (IOException e) {
-            throw new IllegalStateException("Bad protobuf-java version detected! Please make sure the version of user's " +
-                "classloader is greater than 3.11.0 ", e);
+            throw new IllegalStateException(
+                "Bad protobuf-java version detected! Please make sure the version of user's " + "classloader is greater than 3.11.0 ",
+                e);
         }
         this.versionChecked = true;
     }

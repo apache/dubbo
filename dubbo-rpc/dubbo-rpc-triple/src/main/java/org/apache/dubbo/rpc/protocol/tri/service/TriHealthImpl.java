@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
 import grpc.health.v1.DubboHealthTriple;
-import grpc.health.v1.Health;
 import grpc.health.v1.HealthCheckRequest;
 import grpc.health.v1.HealthCheckResponse;
 
@@ -49,8 +48,7 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
     // user-defined equals() doesn't confuse our book-keeping of the StreamObservers.  Constructing
     // such Multimap would require extra lines and the end result is not significantly simpler, thus I
     // would rather not have the Guava collections dependency.
-    private final HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>>
-        watchers = new HashMap<>();
+    private final HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watchers = new HashMap<>();
     // Indicates if future status changes should be ignored.
     private boolean terminal;
 
@@ -60,8 +58,9 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
     }
 
     private static HealthCheckResponse getResponseForWatch(HealthCheckResponse.ServingStatus recordedStatus) {
-        return HealthCheckResponse.newBuilder().setStatus(
-            recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus).build();
+        return HealthCheckResponse.newBuilder()
+            .setStatus(recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus)
+            .build();
     }
 
     @Override
@@ -79,27 +78,24 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
         synchronized (watchLock) {
             HealthCheckResponse.ServingStatus status = statusMap.get(service);
             responseObserver.onNext(getResponseForWatch(status));
-            IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
-                watchers.get(service);
+            IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
             if (serviceWatchers == null) {
                 serviceWatchers = new IdentityHashMap<>();
                 watchers.put(service, serviceWatchers);
             }
             serviceWatchers.put(responseObserver, Boolean.TRUE);
         }
-        RpcContext.getCancellationContext()
-            .addListener(context -> {
-                synchronized (watchLock) {
-                    IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
-                        watchers.get(service);
-                    if (serviceWatchers != null) {
-                        serviceWatchers.remove(responseObserver);
-                        if (serviceWatchers.isEmpty()) {
-                            watchers.remove(service);
-                        }
+        RpcContext.getCancellationContext().addListener(context -> {
+            synchronized (watchLock) {
+                IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
+                if (serviceWatchers != null) {
+                    serviceWatchers.remove(responseObserver);
+                    if (serviceWatchers.isEmpty()) {
+                        watchers.remove(service);
                     }
                 }
-            });
+            }
+        });
     }
 
     void setStatus(String service, HealthCheckResponse.ServingStatus status) {
@@ -147,8 +143,7 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
     private void notifyWatchers(String service, HealthCheckResponse.ServingStatus status) {
         HealthCheckResponse response = getResponseForWatch(status);
-        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
-            watchers.get(service);
+        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
         if (serviceWatchers != null) {
             for (StreamObserver<HealthCheckResponse> responseObserver : serviceWatchers.keySet()) {
                 responseObserver.onNext(response);
