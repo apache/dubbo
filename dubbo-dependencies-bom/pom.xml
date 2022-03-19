@@ -142,7 +142,7 @@
         <logback_version>1.2.11</logback_version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <log4j2_version>2.17.2</log4j2_version>
-        <commons_io_version>2.7</commons_io_version>
+        <commons_io_version>2.11.0</commons_io_version>
 
         <embedded_redis_version>0.10.0</embedded_redis_version>
 
