@@ -515,8 +515,10 @@ public final class StringUtils {
     }
 
     /**
-     * @param s1
-     * @param s2
+     * if s1 is null and s2 is null, then return true
+     *
+     * @param s1 str1
+     * @param s2 str2
      * @return equals
      */
     public static boolean isEquals(String s1, String s2) {
@@ -530,19 +532,31 @@ public final class StringUtils {
     }
 
     /**
-     * is integer string.
+     * is positive integer or zero string.
      *
-     * @param str
-     * @return is integer
+     * @param str a string
+     * @return is positive integer or zero
      */
     public static boolean isNumber(String str) {
         return isNotEmpty(str) && NUM_PATTERN.matcher(str).matches();
     }
 
+    /**
+     * parse str to Integer(if str is not number or n < 0, then return 0)
+     *
+     * @param str a number str
+     * @return positive integer or zero
+     */
     public static int parseInteger(String str) {
         return isNumber(str) ? Integer.parseInt(str) : 0;
     }
 
+    /**
+     * parse str to Long(if str is not number or n < 0, then return 0)
+     *
+     * @param str a number str
+     * @return positive long or zero
+     */
     public static long parseLong(String str) {
         return isNumber(str) ? Long.parseLong(str) : 0;
     }

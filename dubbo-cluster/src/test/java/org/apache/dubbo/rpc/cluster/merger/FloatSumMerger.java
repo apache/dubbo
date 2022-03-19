@@ -14,12 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.rpc.cluster.merger;
 
-public interface ScopeModelDestroyListener<T extends ScopeModel> {
-    void onDestroy(T scopeModel);
+import org.apache.dubbo.rpc.cluster.Merger;
 
-    default boolean isProtocol() {
-        return false;
+import java.util.Arrays;
+import java.util.Objects;
+
+public class FloatSumMerger implements Merger<Float> {
+
+    @Override
+    public Float merge(Float... items) {
+        return Arrays.stream(items).filter(Objects::nonNull)
+            .reduce(0.0F, (f1, f2) -> f1 + f2);
     }
 }

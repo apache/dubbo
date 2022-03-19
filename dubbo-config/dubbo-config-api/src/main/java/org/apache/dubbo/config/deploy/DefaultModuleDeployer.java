@@ -141,11 +141,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             // export services
             exportServices();
 
-        // prepare application instance
-        // exclude internal module to avoid wait itself
-        if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
-            applicationDeployer.prepareInternalModule();
-        }
+            // prepare application instance
+            // exclude internal module to avoid wait itself
+            if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
+                applicationDeployer.prepareInternalModule();
+            }
 
             // refer services
             referServices();

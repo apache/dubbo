@@ -41,8 +41,8 @@ class ClientCallTest {
         Connection connection = Mockito.mock(Connection.class);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
         ExecutorService executorService = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension()
-                .createExecutorIfAbsent(url);
+            .getDefaultExtension()
+            .createExecutorIfAbsent(url);
         ClientCall call = new ClientCall(connection, executorService, url.getOrDefaultFrameworkModel());
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");

@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -196,8 +197,24 @@ public abstract class AbstractRegistry implements Registry {
                     if (!file.exists()) {
                         file.createNewFile();
                     }
+
+                    Properties tmpProperties;
+                    if (syncSaveFile) {
+                        // When syncReport = true, properties.setProperty and properties.store are called from the same
+                        // thread(reportCacheExecutor), so deep copy is not required
+                        tmpProperties = properties;
+                    } else {
+                        // Using properties.setProperty and properties.store method will cause lock contention
+                        // under multi-threading, so deep copy a new container
+                        tmpProperties = new Properties();
+                        Set<Map.Entry<Object, Object>> entries = properties.entrySet();
+                        for (Map.Entry<Object, Object> entry : entries) {
+                            tmpProperties.setProperty((String) entry.getKey(), (String) entry.getValue());
+                        }
+                    }
+
                     try (FileOutputStream outputFile = new FileOutputStream(file)) {
-                        properties.store(outputFile, "Dubbo Registry Cache");
+                        tmpProperties.store(outputFile, "Dubbo Registry Cache");
                     }
                 } finally {
                     lock.release();
@@ -206,7 +223,12 @@ public abstract class AbstractRegistry implements Registry {
         } catch (Throwable e) {
             savePropertiesRetryTimes.incrementAndGet();
             if (savePropertiesRetryTimes.get() >= MAX_RETRY_TIMES_SAVE_PROPERTIES) {
-                logger.warn("Failed to save registry cache file after retrying " + MAX_RETRY_TIMES_SAVE_PROPERTIES + " times, cause: " + e.getMessage(), e);
+                if (e instanceof OverlappingFileLockException) {
+                    // fix #9341, ignore OverlappingFileLockException
+                    logger.info("Failed to save registry cache file for file overlapping lock exception, file name " + file.getName());
+                } else {
+                    logger.warn("Failed to save registry cache file after retrying " + MAX_RETRY_TIMES_SAVE_PROPERTIES + " times, cause: " + e.getMessage(), e);
+                }
                 savePropertiesRetryTimes.set(0);
                 return;
             }

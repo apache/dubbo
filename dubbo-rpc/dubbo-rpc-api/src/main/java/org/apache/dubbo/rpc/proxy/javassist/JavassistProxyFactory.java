@@ -75,14 +75,14 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
             // try fall back to JDK proxy factory
             try {
                 Invoker<T> invoker = jdkProxyFactory.getInvoker(proxy, type, url);
-                logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy success. " +
+                logger.error("Failed to generate invoker by Javassist failed. Fallback to use JDK proxy success. " +
                     "Interfaces: " + type, fromJavassist);
                 // log out error
                 return invoker;
             } catch (Throwable fromJdk) {
-                logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
+                logger.error("Failed to generate invoker by Javassist failed. Fallback to use JDK proxy is also failed. " +
                     "Interfaces: " + type + " Javassist Error.", fromJavassist);
-                logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
+                logger.error("Failed to generate invoker by Javassist failed. Fallback to use JDK proxy is also failed. " +
                     "Interfaces: " + type + " JDK Error.", fromJdk);
                 throw fromJavassist;
             }

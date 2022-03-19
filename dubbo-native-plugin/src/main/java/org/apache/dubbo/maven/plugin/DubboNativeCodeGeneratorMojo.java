@@ -50,7 +50,7 @@ public class DubboNativeCodeGeneratorMojo extends AbstractMojo {
 
     private void generateCode(Log log, MavenProject project) throws IOException {
         String baseDir = project.getBasedir().getPath();
-        File source = new File(baseDir + "/src/main/generated");
+        File source = new File(baseDir + File.separator + "src" + File.separator + "main" + File.separator + "generated");
         FileUtils.forceMkdir(source);
         project.addCompileSourceRoot(source.getAbsolutePath());
         log.info("Source directory: " + source + " added.");
@@ -71,8 +71,8 @@ public class DubboNativeCodeGeneratorMojo extends AbstractMojo {
             project.getResources().stream().findFirst().ifPresent(resource -> {
                 String directory = resource.getDirectory();
                 try {
-                    FileUtils.forceMkdir(new File(directory + "/META-INF/native-image/"));
-                    File file = new File(directory + "/" + nativeFile);
+                    FileUtils.forceMkdir(new File(directory + File.separator + "META-INF" + File.separator + "native-image" + File.separator));
+                    File file = new File(directory + File.separator + nativeFile);
                     if (!file.exists()) {
                         FileUtils.copyInputStreamToFile(is, file);
                         log.info("Copy native config file:" + file);

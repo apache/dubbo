@@ -251,6 +251,19 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
+    /**
+     * Protocols are special resources that need to be destroyed as soon as possible.
+     *
+     * Since connections inside protocol are not classified by applications, trying to destroy protocols in advance might only work for singleton application scenario.
+     */
+    void tryDestroyProtocols() {
+        synchronized (instLock) {
+            if (pubApplicationModels.size() == 0) {
+                notifyProtocolDestroy();
+            }
+        }
+    }
+
     void tryDestroy() {
         synchronized (instLock) {
             if (pubApplicationModels.size() == 0) {
@@ -307,10 +320,16 @@ public class FrameworkModel extends ScopeModel {
         return scopeModel != null ? scopeModel.getDesc() : null;
     }
 
+    /**
+     * Get all application models except for the internal application model.
+     */
     public List<ApplicationModel> getApplicationModels() {
         return Collections.unmodifiableList(pubApplicationModels);
     }
 
+    /**
+     * Get all application models including the internal application model.
+     */
     public List<ApplicationModel> getAllApplicationModels() {
         return Collections.unmodifiableList(applicationModels);
     }

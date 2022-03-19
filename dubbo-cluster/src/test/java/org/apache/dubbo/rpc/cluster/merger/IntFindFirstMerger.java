@@ -14,12 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.rpc.cluster.merger;
 
-public interface ScopeModelDestroyListener<T extends ScopeModel> {
-    void onDestroy(T scopeModel);
+import org.apache.dubbo.rpc.cluster.Merger;
 
-    default boolean isProtocol() {
-        return false;
+import java.util.Arrays;
+
+public class IntFindFirstMerger implements Merger<Integer> {
+
+    @Override
+    public Integer merge(Integer... items) {
+        return Arrays.stream(items).findFirst().orElse(null);
     }
 }

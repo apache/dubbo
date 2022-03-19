@@ -379,11 +379,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 .filter(this::isUsedRegistryAsMetadataCenter)
                 .map(this::registryAsMetadataCenter)
                 .forEach(metadataReportConfig -> {
-                    Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
-                    if (configOptional.isPresent()) {
-                        return;
+                    if (metadataReportConfig.getId() == null) {
+                        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+                        if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
+                            for (MetadataReportConfig existedConfig : metadataReportConfigs) {
+                                if (existedConfig.getId() == null && existedConfig.getAddress().equals(metadataReportConfig.getAddress())) {
+                                    return;
+                                }
+                            }
+                        }
+                        configManager.addMetadataReport(metadataReportConfig);
+                    } else {
+                        Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
+                        if (configOptional.isPresent()) {
+                            return;
+                        }
+                        configManager.addMetadataReport(metadataReportConfig);
                     }
-                    configManager.addMetadataReport(metadataReportConfig);
                     logger.info("use registry as metadata-center: " + metadataReportConfig);
                 });
         }
@@ -447,9 +459,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
-        String id = "metadata-center-" + protocol + "-" + url.getHost() + "-" + url.getPort();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-        metadataReportConfig.setId(id);
+        metadataReportConfig.setId(registryConfig.getId());
         metadataReportConfig.setScopeModel(applicationModel);
         if (metadataReportConfig.getParameters() == null) {
             metadataReportConfig.setParameters(new HashMap<>());
@@ -754,6 +765,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
+            destroyRegistries();
+            destroyServiceDiscoveries();
+            destroyMetadataReports();
+
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
@@ -771,10 +786,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             try {
                 executeShutdownCallbacks();
-
-                destroyRegistries();
-                destroyServiceDiscoveries();
-                destroyMetadataReports();
 
                 // TODO should we close unused protocol server which only used by this application?
                 // protocol server will be closed on all applications of same framework are stopped currently, but no associate to application

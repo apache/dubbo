@@ -78,6 +78,12 @@ public abstract class AbstractCompiler implements Compiler {
         }
     }
 
-    protected abstract Class<?> doCompile(Class<?> neighbor,ClassLoader classLoader, String name, String source) throws Throwable;
+    protected Class<?> doCompile(ClassLoader classLoader, String name, String source) throws Throwable {
+        return null;
+    }
+
+    protected Class<?> doCompile(Class<?> neighbor,ClassLoader classLoader, String name, String source) throws Throwable {
+        return doCompile(classLoader, name, source);
+    }
 
 }

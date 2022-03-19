@@ -21,6 +21,7 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -69,15 +69,17 @@ public class AbstractLoadBalanceTest {
 
         Invoker invoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         URL url1 = new ServiceConfigURL("", "", 0, "DemoService", new HashMap<>());
-        url1 = url1.addParameter(REGISTRY_KEY + "." + WEIGHT_KEY, 10);
         given(invoker1.getUrl()).willReturn(url1);
 
-        Invoker invoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        ClusterInvoker invoker2 = mock(ClusterInvoker.class, Mockito.withSettings().stubOnly());
         URL url2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
-        url2 = url2.addParameter(REGISTRY_KEY + "." + WEIGHT_KEY, 20);
+        url2 = url2.addParameter(WEIGHT_KEY, 20);
+        URL registryUrl2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
+        registryUrl2 = registryUrl2.addParameter(WEIGHT_KEY, 30);
         given(invoker2.getUrl()).willReturn(url2);
+        given(invoker2.getRegistryUrl()).willReturn(registryUrl2);
 
         Assertions.assertEquals(100, balance.getWeight(invoker1, invocation));
-        Assertions.assertEquals(20, balance.getWeight(invoker2, invocation));
+        Assertions.assertEquals(30, balance.getWeight(invoker2, invocation));
     }
 }

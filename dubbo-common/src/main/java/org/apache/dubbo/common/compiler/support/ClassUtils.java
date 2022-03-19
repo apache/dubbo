@@ -21,13 +21,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -254,40 +250,6 @@ public class ClassUtils {
             return new URI(name);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public static Class<?> getGenericClass(Class<?> cls) {
-        return getGenericClass(cls, 0);
-    }
-
-    public static Class<?> getGenericClass(Class<?> cls, int i) {
-        try {
-            ParameterizedType parameterizedType = ((ParameterizedType) cls.getGenericInterfaces()[0]);
-            Object genericClass = parameterizedType.getActualTypeArguments()[i];
-            if (genericClass instanceof ParameterizedType) {
-                return (Class<?>) ((ParameterizedType) genericClass).getRawType();
-            } else if (genericClass instanceof GenericArrayType) {
-                Type type = ((GenericArrayType) genericClass).getGenericComponentType();
-                if (type instanceof TypeVariable) {
-                    return type.getClass();
-                }
-                return (((GenericArrayType) genericClass).getGenericComponentType() instanceof Class<?>)
-                        ? (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType()
-                        : ((GenericArrayType) genericClass).getGenericComponentType().getClass();
-            } else if (genericClass != null) {
-                if (genericClass instanceof TypeVariable) {
-                    return genericClass.getClass();
-                }
-                return (Class<?>) genericClass;
-            }
-        } catch (Throwable e) {
-
-        }
-        if (cls.getSuperclass() != null) {
-            return getGenericClass(cls.getSuperclass(), i);
-        } else {
-            throw new IllegalArgumentException(cls.getName() + " generic type undefined!");
         }
     }
 
