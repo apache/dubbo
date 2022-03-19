@@ -94,10 +94,6 @@ public interface CommonConstants {
 
     Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
 
-    String DEFAULT_PROXY = "javassist";
-
-    String DEFAULT_DIRECTORY = "dubbo";
-
     String PROTOCOL_KEY = "protocol";
 
     String DEFAULT_PROTOCOL = "dubbo";
