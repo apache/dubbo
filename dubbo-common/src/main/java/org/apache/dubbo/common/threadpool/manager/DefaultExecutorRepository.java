@@ -162,7 +162,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             if (serviceExportExecutor == null) {
                 int coreSize = getExportThreadNum();
                 serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-service-export", true));
+                    new NamedThreadFactory("Dubbo-" + applicationModel.getApplicationName() + "-service-export", true));
             }
         }
         return serviceExportExecutor;
@@ -189,7 +189,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             if (serviceReferExecutor == null) {
                 int coreSize = getReferThreadNum();
                 serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-service-refer", true));
+                    new NamedThreadFactory("Dubbo-" + applicationModel.getApplicationName() + "-service-refer", true));
             }
         }
         return serviceReferExecutor;
