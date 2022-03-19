@@ -1,0 +1,49 @@
+{{#packageName}}
+    package {{packageName}};
+{{/packageName}}
+
+import org.apache.dubbo.common.stream.StreamObserver;
+import com.google.protobuf.Message;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
+public interface {{interfaceClassName}} {
+
+{{#unaryMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{outputType}} {{methodName}}({{inputType}} request);
+
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    default void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){}
+
+{{/unaryMethods}}
+
+{{#serverStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver);
+{{/serverStreamingMethods}}
+
+{{#biStreamingWithoutClientStreamMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
+{{/biStreamingWithoutClientStreamMethods}}
+
+
+{{#clientStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    StreamObserver<{{inputType}}> {{methodName}}(StreamObserver<{{outputType}}> responseObserver);
+{{/clientStreamingMethods}}
+
+}

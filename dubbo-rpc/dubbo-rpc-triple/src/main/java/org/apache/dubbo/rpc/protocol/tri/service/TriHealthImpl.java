@@ -23,6 +23,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
+import grpc.health.v1.DubboHealthTriple;
 import grpc.health.v1.Health;
 import grpc.health.v1.HealthCheckRequest;
 import grpc.health.v1.HealthCheckResponse;
@@ -34,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
 
-public class TriHealthImpl implements Health {
+public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(TriHealthImpl.class);
 

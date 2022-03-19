@@ -162,6 +162,7 @@ public abstract class AbstractGenerator extends Generator {
 
     private MethodContext buildMethodContext(MethodDescriptorProto methodProto, ProtoTypeMap typeMap, List<Location> locations, int methodNumber) {
         MethodContext methodContext = new MethodContext();
+        methodContext.originMethodName = methodProto.getName();
         methodContext.methodName = lowerCaseFirst(methodProto.getName());
         methodContext.inputType = typeMap.toJavaTypeName(methodProto.getInputType());
         methodContext.outputType = typeMap.toJavaTypeName(methodProto.getOutputType());
@@ -318,6 +319,19 @@ public abstract class AbstractGenerator extends Generator {
         public List<MethodContext> biStreamingMethods() {
             return methods.stream().filter(m -> m.isManyInput).collect(Collectors.toList());
         }
+
+        public List<MethodContext> biStreamingWithoutClientStreamMethods() {
+            return methods.stream().filter(m->m.isManyInput&&m.isManyOutput).collect(Collectors.toList());
+        }
+
+        public List<MethodContext> clientStreamingMethods() {
+            return methods.stream().filter(m->m.isManyInput&&!m.isManyOutput).collect(Collectors.toList());
+        }
+
+        public List<MethodContext> methods() {
+            return methods;
+        }
+
     }
 
     /**
@@ -325,6 +339,7 @@ public abstract class AbstractGenerator extends Generator {
      */
     private class MethodContext {
         // CHECKSTYLE DISABLE VisibilityModifier FOR 10 LINES
+        public String originMethodName;
         public String methodName;
         public String inputType;
         public String outputType;

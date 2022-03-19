@@ -28,7 +28,7 @@
     <description>The triple protocol module</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <dubbo.compiler.version>0.0.3</dubbo.compiler.version>
+        <dubbo.compiler.version>0.0.4-SNAPSHOT</dubbo.compiler.version>
     </properties>
     <dependencies>
         <dependency>
@@ -72,7 +72,7 @@
                             <groupId>org.apache.dubbo</groupId>
                             <artifactId>dubbo-compiler</artifactId>
                             <version>${dubbo.compiler.version}</version>
-                            <mainClass>org.apache.dubbo.gen.dubbo.Dubbo3Generator</mainClass>
+                            <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
                         </protocPlugin>
                     </protocPlugins>
                 </configuration>

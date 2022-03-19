@@ -157,7 +157,6 @@
         <module>dubbo-native</module>
         <module>dubbo-test</module>
         <module>dubbo-native-plugin</module>
-        <module>dubbo-stub</module>
     </modules>
 
     <dependencyManagement>
