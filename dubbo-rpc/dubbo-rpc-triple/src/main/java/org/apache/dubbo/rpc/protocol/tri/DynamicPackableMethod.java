@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
@@ -68,9 +85,7 @@ public class DynamicPackableMethod implements PackableMethod {
             final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(MultipleSerialization.class)
                 .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
-            this.requestPack = new WrapRequestPack(serialization,
-                url,
-                serializeName,
+            this.requestPack = new WrapRequestPack(serialization, url, serializeName,
                 methodDescriptor.getCompatibleParamSignatures());
             this.responsePack = new WrapResponsePack(serialization, url, methodDescriptor.getReturnClass().getName());
             this.requestUnpack = new WrapRequestUnpack(serialization, url);
@@ -118,17 +133,23 @@ public class DynamicPackableMethod implements PackableMethod {
         if ($ECHO.equals(methodDescriptor.getMethodName())) {
             return true;
         }
-        if (canNotHandlerClass(methodDescriptor.getReturnClass()) || Arrays.stream(methodDescriptor.getParameterClasses())
-            .anyMatch(this::canNotHandlerClass)) {
-            throw new IllegalStateException("Bad stream method signature. method(" + methodDescriptor.getMethodName() + ":" + methodDescriptor.getParamDesc() + ")");
+        if (canNotHandlerClass(methodDescriptor.getReturnClass()) || Arrays.stream(
+            methodDescriptor.getParameterClasses()).anyMatch(this::canNotHandlerClass)) {
+            throw new IllegalStateException(
+                "Bad stream method signature. method(" + methodDescriptor.getMethodName() + ":" + methodDescriptor.getParamDesc() + ")");
         }
 
         int protobufParameterCount = 0;
         int javaParameterCount = 0;
+        int streamParamterCount = 0;
         for (Class<?> parameterClass : methodDescriptor.getParameterClasses()) {
             if (methodDescriptor.getRpcType() != MethodDescriptor.RpcType.UNARY && isStreamType(parameterClass)) {
-                // more than one stream param
-                throw new IllegalStateException("method params error: more than one Stream params. method=" + methodDescriptor.getMethodName());
+                streamParamterCount++;
+                if (streamParamterCount > 1) {
+                    // more than one stream param
+                    throw new IllegalStateException(
+                        "method params error: more than one Stream params. method=" + methodDescriptor.getMethodName());
+                }
             }
             if (isProtobufClass(parameterClass)) {
                 protobufParameterCount++;
@@ -141,7 +162,8 @@ public class DynamicPackableMethod implements PackableMethod {
         }
         // protobuf only support one param
         if (protobufParameterCount >= 2) {
-            throw new IllegalStateException("method params error: more than one protobuf params. method=" + methodDescriptor.getMethodName());
+            throw new IllegalStateException(
+                "method params error: more than one protobuf params. method=" + methodDescriptor.getMethodName());
         }
 
         boolean returnClassProtobuf = isProtobufClass(methodDescriptor.getReturnClass());
@@ -153,7 +175,8 @@ public class DynamicPackableMethod implements PackableMethod {
             return true;
         }
         // bidirectional-stream: StreamObserver<Request> foo(StreamObserver<Response>)
-        if (methodDescriptor.getParameterClasses().length == 1 && isStreamType(methodDescriptor.getParameterClasses()[0])) {
+        if (methodDescriptor.getParameterClasses().length == 1 && isStreamType(
+            methodDescriptor.getParameterClasses()[0])) {
             this.requestType = (Class<?>) ((ParameterizedType) methodDescriptor.getMethod()
                 .getGenericReturnType()).getActualTypeArguments()[0];
             this.responseType = (Class<?>) ((ParameterizedType) methodDescriptor.getMethod()
@@ -207,7 +230,8 @@ public class DynamicPackableMethod implements PackableMethod {
     }
 
     private boolean isFuture(Class<?> type) {
-        return TRI_ASYNC_RETURN_CLASS.equalsIgnoreCase(type.getName()) || GRPC_ASYNC_RETURN_CLASS.equals(type.getName());
+        return TRI_ASYNC_RETURN_CLASS.equalsIgnoreCase(type.getName()) || GRPC_ASYNC_RETURN_CLASS.equals(
+            type.getName());
     }
 
     private static class WrapResponsePack implements Pack {

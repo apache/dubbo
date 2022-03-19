@@ -269,7 +269,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor;
-        if (getProxy().equals(CommonConstants.NATIVE_STUB)) {
+        if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
             serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
             repository.registerService(serviceDescriptor);
         } else {

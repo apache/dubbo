@@ -44,8 +44,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
 public class StreamUtils {
@@ -72,16 +70,17 @@ public class StreamUtils {
             meta.application = application;
             meta.attachments = objectAttachments;
         }
-        if(methodDescriptor instanceof PackableMethod){
-            meta.packableMethod=(PackableMethod) methodDescriptor;
-        }else{
-            final String serializeName = url.getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION);
-            meta.packableMethod=
-                (PackableMethod) methodDescriptor.getAttribute(METHOD_ATTR_PACK +serializeName);
-        }
+
         meta.method = methodDescriptor;
         if (meta.method == null) {
-            throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
+            throw new IllegalStateException(
+                "MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(
+                    invocation.getCompatibleParamSignatures()));
+        }
+        if (methodDescriptor instanceof PackableMethod) {
+            meta.packableMethod = (PackableMethod) methodDescriptor;
+        } else {
+            meta.packableMethod = (PackableMethod) methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         }
         meta.compressor = compressor;
         meta.acceptEncoding = acceptEncoding;
