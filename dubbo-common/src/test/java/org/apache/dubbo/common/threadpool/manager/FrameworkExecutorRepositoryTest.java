@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterEach;
@@ -26,76 +24,36 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ExecutorRepositoryTest {
-    private ApplicationModel applicationModel;
-    private ExecutorRepository executorRepository;
+public class FrameworkExecutorRepositoryTest {
+    private FrameworkModel frameworkModel;
+    private FrameworkExecutorRepository frameworkExecutorRepository;
 
     @BeforeEach
     public void setup() {
-        applicationModel = FrameworkModel.defaultModel().newApplication();
-        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        frameworkModel = new FrameworkModel();
+        frameworkExecutorRepository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
     @AfterEach
     public void teardown() {
-        applicationModel.destroy();
+        frameworkModel.destroy();
     }
 
     @Test
     public void testGetExecutor() {
-        testGet(URL.valueOf("dubbo://127.0.0.1:23456"));
-        testGet(URL.valueOf("dubbo://127.0.0.1:23456?side=consumer"));
 
-        Assertions.assertNotNull(executorRepository.getSharedExecutor());
-        Assertions.assertNotNull(executorRepository.getServiceExportExecutor());
-        Assertions.assertNotNull(executorRepository.getServiceReferExecutor());
-        executorRepository.nextScheduledExecutor();
-    }
-
-    private void testGet(URL url) {
-        ExecutorService executorService = executorRepository.createExecutorIfAbsent(url);
-        executorService.shutdown();
-        executorService = executorRepository.createExecutorIfAbsent(url);
-        Assertions.assertFalse(executorService.isShutdown());
-
-        Assertions.assertEquals(executorService, executorRepository.getExecutor(url));
-        executorService.shutdown();
-        Assertions.assertNotEquals(executorService, executorRepository.getExecutor(url));
-    }
-
-    @Test
-    public void testUpdateExecutor() {
-        URL url = URL.valueOf("dubbo://127.0.0.1:23456?threads=5");
-        ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);
-
-        executorService.setCorePoolSize(3);
-        executorRepository.updateThreadpool(url, executorService);
-
-        executorService.setCorePoolSize(3);
-        executorService.setMaximumPoolSize(3);
-        executorRepository.updateThreadpool(url, executorService);
-
-        executorService.setMaximumPoolSize(20);
-        executorService.setCorePoolSize(10);
-        executorRepository.updateThreadpool(url, executorService);
-
-        executorService.setCorePoolSize(10);
-        executorService.setMaximumPoolSize(10);
-        executorRepository.updateThreadpool(url, executorService);
-
-        executorService.setCorePoolSize(5);
-        executorRepository.updateThreadpool(url, executorService);
+        Assertions.assertNotNull(frameworkExecutorRepository.getSharedExecutor());
+        frameworkExecutorRepository.nextScheduledExecutor();
     }
 
     @Test
     public void testSharedExecutor() throws Exception {
-        ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
-        MockTask task1 = new MockTask(2000);
-        MockTask task2 = new MockTask(100);
-        MockTask task3 = new MockTask(200);
+        ExecutorService sharedExecutor = frameworkExecutorRepository.getSharedExecutor();
+        FrameworkExecutorRepositoryTest.MockTask task1 = new FrameworkExecutorRepositoryTest.MockTask(2000);
+        FrameworkExecutorRepositoryTest.MockTask task2 = new FrameworkExecutorRepositoryTest.MockTask(100);
+        FrameworkExecutorRepositoryTest.MockTask task3 = new FrameworkExecutorRepositoryTest.MockTask(200);
         sharedExecutor.execute(task1);
         sharedExecutor.execute(task2);
         sharedExecutor.submit(task3);

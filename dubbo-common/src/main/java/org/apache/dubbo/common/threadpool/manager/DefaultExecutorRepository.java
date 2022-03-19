@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -30,18 +29,14 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
@@ -54,75 +49,24 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
-public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware, ScopeModelAware {
+public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
-
-    private int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
-
-    private final ExecutorService sharedExecutor;
-    private final ScheduledExecutorService sharedScheduledExecutor;
-
-    private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
     private volatile ExecutorService serviceReferExecutor;
 
-    private ScheduledExecutorService connectivityScheduledExecutor;
-
-    private ScheduledExecutorService cacheRefreshingScheduledExecutor;
-
-    private ExecutorService mappingRefreshingExecutor;
-
-    public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
-
-    private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
-
-    private ScheduledExecutorService metadataRetryExecutor;
-
-    private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
-
-    private ExecutorService poolRouterExecutor;
-
-    private Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
+    private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     private final Object LOCK = new Object();
     private ExtensionAccessor extensionAccessor;
 
-    private ApplicationModel applicationModel;
+    private final ApplicationModel applicationModel;
+    private final FrameworkExecutorRepository frameworkExecutorRepository;
 
-    public DefaultExecutorRepository() {
-        sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-shared-handler", true));
-        sharedScheduledExecutor = Executors.newScheduledThreadPool(8, new NamedThreadFactory("Dubbo-shared-scheduler", true));
-
-        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-                new NamedThreadFactory("Dubbo-framework-scheduler-" + i, true));
-            scheduledExecutors.addItem(scheduler);
-
-            executorServiceRing.addItem(new ThreadPoolExecutor(1, 1,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("Dubbo-state-router-loop-" + i, true)
-                , new ThreadPoolExecutor.AbortPolicy()));
-        }
-
-        connectivityScheduledExecutor = Executors.newScheduledThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-connectivity-scheduler", true));
-        cacheRefreshingScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-cache-refreshing-scheduler", true));
-        mappingRefreshingExecutor = Executors.newFixedThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-mapping-refreshing-scheduler", true));
-        poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
-            new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
-
-        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
-            ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor =
-                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh-" + i));
-            ScheduledExecutorService registryNotificationExecutor =
-                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification-" + i));
-
-            serviceDiscoveryAddressNotificationExecutorRing.addItem(serviceDiscoveryAddressNotificationExecutor);
-            registryNotificationExecutorRing.addItem(registryNotificationExecutor);
-        }
-
-        metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
+    public DefaultExecutorRepository(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
     /**
@@ -131,12 +75,13 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      * @param url
      * @return
      */
+    @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         if (url.getParameter(THREAD_NAME_KEY) == null) {
-            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-"+portKey);
+            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-" + portKey);
         }
         URL finalUrl = url;
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));
@@ -149,10 +94,15 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         return executor;
     }
 
+    private ExecutorService createExecutor(URL url) {
+        return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+    }
+
+    @Override
     public ExecutorService getExecutor(URL url) {
         Map<Integer, ExecutorService> executors = data.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
-        /**
+        /*
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
          * have Executor instances generated and stored.
          */
@@ -172,7 +122,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             logger.info("Executor for " + url + " is shutdown.");
         }
         if (executor == null) {
-            return sharedExecutor;
+            return frameworkExecutorRepository.getSharedExecutor();
         } else {
             return executor;
         }
@@ -207,22 +157,12 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
-    public ScheduledExecutorService nextScheduledExecutor() {
-        return scheduledExecutors.pollItem();
-    }
-
-    @Override
-    public ExecutorService nextExecutorExecutor() {
-        return executorServiceRing.pollItem();
-    }
-
-    @Override
     public ScheduledExecutorService getServiceExportExecutor() {
         synchronized (LOCK) {
             if (serviceExportExecutor == null) {
                 int coreSize = getExportThreadNum();
                 serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
-                        new NamedThreadFactory("Dubbo-service-export", true));
+                    new NamedThreadFactory("Dubbo-service-export", true));
             }
         }
         return serviceExportExecutor;
@@ -249,7 +189,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             if (serviceReferExecutor == null) {
                 int coreSize = getReferThreadNum();
                 serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
-                        new NamedThreadFactory("Dubbo-service-refer", true));
+                    new NamedThreadFactory("Dubbo-service-refer", true));
             }
         }
         return serviceReferExecutor;
@@ -334,58 +274,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
-    public ScheduledExecutorService getRegistryNotificationExecutor() {
-        return registryNotificationExecutorRing.pollItem();
-    }
-
-    public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
-        return serviceDiscoveryAddressNotificationExecutorRing.pollItem();
-    }
-
-    @Override
-    public ScheduledExecutorService getMetadataRetryExecutor() {
-        return metadataRetryExecutor;
-    }
-
-    @Override
-    public ExecutorService getSharedExecutor() {
-        return sharedExecutor;
-    }
-
-    @Override
-    public ScheduledExecutorService getSharedScheduledExecutor() {
-        return sharedScheduledExecutor;
-    }
-
-    private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
-    }
-
-    @Override
-    public ExecutorService getPoolRouterExecutor() {
-        return poolRouterExecutor;
-    }
-
-    @Override
-    public ScheduledExecutorService getConnectivityScheduledExecutor() {
-        return connectivityScheduledExecutor;
-    }
-
-    @Override
-    public ScheduledExecutorService getCacheRefreshingScheduledExecutor() {
-        return cacheRefreshingScheduledExecutor;
-    }
-
-    public ExecutorService getMappingRefreshingExecutor() {
-        return mappingRefreshingExecutor;
-    }
-
-    @Override
     public void destroyAll() {
-        logger.info("destroying executor repository ..");
-        shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
-        shutdownExecutorService(metadataRetryExecutor, "metadataRetryExecutor");
-
+        logger.info("destroying application executor repository ..");
         shutdownServiceExportExecutor();
         shutdownServiceReferExecutor();
 
@@ -404,35 +294,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             }
         });
         data.clear();
-
-        // scheduledExecutors
-        shutdownExecutorServices(scheduledExecutors.listItems(), "scheduledExecutors");
-
-        // executorServiceRing
-        shutdownExecutorServices(executorServiceRing.listItems(), "executorServiceRing");
-
-        // connectivityScheduledExecutor
-        shutdownExecutorService(connectivityScheduledExecutor, "connectivityScheduledExecutor");
-        shutdownExecutorService(cacheRefreshingScheduledExecutor, "cacheRefreshingScheduledExecutor");
-
-        // shutdown share executor
-        shutdownExecutorService(sharedExecutor, "sharedExecutor");
-        shutdownExecutorService(sharedScheduledExecutor, "sharedScheduledExecutor");
-
-        // serviceDiscoveryAddressNotificationExecutorRing
-        shutdownExecutorServices(serviceDiscoveryAddressNotificationExecutorRing.listItems(),
-            "serviceDiscoveryAddressNotificationExecutorRing");
-
-        // registryNotificationExecutorRing
-        shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
-            "registryNotificationExecutorRing");
-
-    }
-
-    private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {
-        for (ExecutorService executorService : executorServices) {
-            shutdownExecutorService(executorService, msg);
-        }
     }
 
     private void shutdownExecutorService(ExecutorService executorService, String name) {
@@ -450,7 +311,57 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+    public ScheduledExecutorService nextScheduledExecutor() {
+        return frameworkExecutorRepository.nextScheduledExecutor();
+    }
+
+    @Override
+    public ExecutorService nextExecutorExecutor() {
+        return frameworkExecutorRepository.nextExecutorExecutor();
+    }
+
+    @Override
+    public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
+        return frameworkExecutorRepository.getServiceDiscoveryAddressNotificationExecutor();
+    }
+
+    @Override
+    public ScheduledExecutorService getMetadataRetryExecutor() {
+        return frameworkExecutorRepository.getMetadataRetryExecutor();
+    }
+
+    @Override
+    public ScheduledExecutorService getRegistryNotificationExecutor() {
+        return frameworkExecutorRepository.getRegistryNotificationExecutor();
+    }
+
+    @Override
+    public ExecutorService getSharedExecutor() {
+        return frameworkExecutorRepository.getSharedExecutor();
+    }
+
+    @Override
+    public ScheduledExecutorService getSharedScheduledExecutor() {
+        return frameworkExecutorRepository.getSharedScheduledExecutor();
+    }
+
+    @Override
+    public ExecutorService getPoolRouterExecutor() {
+        return frameworkExecutorRepository.getPoolRouterExecutor();
+    }
+
+    @Override
+    public ScheduledExecutorService getConnectivityScheduledExecutor() {
+        return frameworkExecutorRepository.getConnectivityScheduledExecutor();
+    }
+
+    @Override
+    public ScheduledExecutorService getCacheRefreshingScheduledExecutor() {
+        return frameworkExecutorRepository.getCacheRefreshingScheduledExecutor();
+    }
+
+    @Override
+    public ExecutorService getMappingRefreshingExecutor() {
+        return frameworkExecutorRepository.getMappingRefreshingExecutor();
     }
 }

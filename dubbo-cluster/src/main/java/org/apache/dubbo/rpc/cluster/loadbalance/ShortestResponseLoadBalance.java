@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
@@ -57,7 +58,8 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         slidePeriod = applicationModel.getModelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
-        executorService = applicationModel.getApplicationExecutorRepository().getSharedExecutor();
+        executorService = applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
     }
 
     protected static class SlideWindowData {

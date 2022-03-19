@@ -25,6 +25,7 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
@@ -60,6 +61,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private ModuleModel moduleModel;
 
+    private FrameworkExecutorRepository frameworkExecutorRepository;
     private ExecutorRepository executorRepository;
 
     private final ModuleConfigManager configManager;
@@ -79,6 +81,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         super(moduleModel);
         this.moduleModel = moduleModel;
         configManager = moduleModel.getConfigManager();
+        frameworkExecutorRepository = moduleModel.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         executorRepository = moduleModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         referenceCache = SimpleReferenceCache.newCache();
         applicationDeployer = DefaultApplicationDeployer.get(moduleModel);
@@ -154,7 +157,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
                 onModuleStarted();
             } else {
-                executorRepository.getSharedExecutor().submit(() -> {
+                frameworkExecutorRepository.getSharedExecutor().submit(() -> {
                     try {
                         // wait for export finish
                         waitExportFinish();
