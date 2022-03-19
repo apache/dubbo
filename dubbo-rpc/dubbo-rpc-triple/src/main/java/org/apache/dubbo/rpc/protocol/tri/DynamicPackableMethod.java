@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
@@ -107,9 +108,9 @@ public class DynamicPackableMethod implements PackableMethod {
                 .getExtensionLoader(MultipleSerialization.class)
                 .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
             this.singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
-            this.requestPack = new WrapRequestPack(serialization, url, serializeName,
-                method.getCompatibleParamSignatures(), singleArgument);
-            this.responsePack = new WrapResponsePack(serialization, url, method.getReturnClass().getName());
+            String[] paramSigns = Stream.of(actualRequestTypes).map(Class::getName).toArray(String[]::new);
+            this.requestPack = new WrapRequestPack(serialization, url, serializeName, paramSigns, singleArgument);
+            this.responsePack = new WrapResponsePack(serialization, url, actualResponseType.getName());
             this.requestUnpack = new WrapRequestUnpack(serialization, url);
             this.responseUnpack = new WrapResponseUnpack(serialization, url);
         }

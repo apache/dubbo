@@ -219,8 +219,8 @@ public class ServerStream extends AbstractStream {
         private void processHeader(Http2Headers headers, boolean endStream) {
             if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
                 responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
-                    TriRpcStatus.INTERNAL.withDescription(String.format("Method '%s' is not supported",
-                        headers.method())));
+                    TriRpcStatus.INTERNAL.withDescription(
+                        String.format("Method '%s' is not supported", headers.method())));
                 return;
             }
 
@@ -256,7 +256,8 @@ public class ServerStream extends AbstractStream {
             }
 
             if (path.charAt(0) != '/') {
-                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Path must start with '/'. Request path: " + path));
+                responseErr(
+                    TriRpcStatus.UNIMPLEMENTED.withDescription("Path must start with '/'. Request path: " + path));
                 return;
             }
 
@@ -295,25 +296,17 @@ public class ServerStream extends AbstractStream {
                 ServerStream.this.deframer = new TriDecoder(deCompressor, listener);
             } catch (Throwable t) {
                 close(TriRpcStatus.INTERNAL.withCause(t), null);
+                return;
             }
 
             ServerCall call;
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
-                call = new StubServerCall(invoker,
-                    ServerStream.this,
-                    frameworkModel,
-                    serviceName,
-                    methodName,
+                call = new StubServerCall(invoker, ServerStream.this, frameworkModel, serviceName, methodName,
                     executor);
             } else {
-                call = new ReflectionServerCall(invoker,
-                    ServerStream.this,
-                    frameworkModel,
-                    serviceName,
-                    methodName,
-                    filters,
-                    executor);
+                call = new ReflectionServerCall(invoker, ServerStream.this, frameworkModel, serviceName, methodName,
+                    filters, executor);
             }
             ServerStream.this.listener = call.startCall(headersToMap(headers));
             if (listener == null) {
@@ -364,8 +357,8 @@ public class ServerStream extends AbstractStream {
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
         final String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
             TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
-        final String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
-            .toString() : null;
+        final String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(
+            TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
         if (invoker == null) {

@@ -106,14 +106,6 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         ServiceDescriptor serviceDescriptor = url.getServiceModel().getServiceModel();
 
-        if(serviceDescriptor instanceof StubServiceDescriptor){
-
-        }else{
-            for (MethodDescriptor method: serviceDescriptor.getAllMethods()) {
-                DynamicPackableMethod.init(method,url);
-            }
-        }
-
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         url.getOrDefaultApplicationModel()

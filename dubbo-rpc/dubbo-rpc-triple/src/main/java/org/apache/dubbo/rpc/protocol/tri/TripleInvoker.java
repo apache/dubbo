@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -95,21 +96,19 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(callbackExecutor);
 
         if (!connection.isAvailable()) {
-            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE.withDescription(String.format("Connect to %s failed",
-                this));
+            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE.withDescription(
+                String.format("Connect to %s failed", this));
             DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
-        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(invocation.getMethodName(),
-            invocation.getParameterTypes());
-        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(),
-            serviceDescriptor,
-            methodDescriptor,
-            invocation,
-            future.requestId,
-            compressor,
-            acceptEncoding,
-            timeout);
+        ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
+        ServiceDescriptor callService = serviceDescriptor;
+        if (consumerModel != null) {
+            callService = consumerModel.getServiceModel();
+        }
+        final MethodDescriptor methodDescriptor = callService.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
+        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), callService, methodDescriptor, invocation,
+            future.requestId, compressor, acceptEncoding, timeout);
         ExecutorService executor = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()

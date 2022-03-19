@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.DynamicPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -43,8 +44,6 @@ import io.netty.util.AsciiString;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-
-import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
@@ -80,12 +79,12 @@ public class StreamUtils {
         if (methodDescriptor instanceof PackableMethod) {
             meta.packableMethod = (PackableMethod) methodDescriptor;
         } else {
-            meta.packableMethod = (PackableMethod) methodDescriptor.getAttribute(METHOD_ATTR_PACK);
+            meta.packableMethod = DynamicPackableMethod.init(methodDescriptor, url);
         }
         meta.compressor = compressor;
         meta.acceptEncoding = acceptEncoding;
         meta.address = url.getAddress();
-        meta.service = serviceDescriptor.getInterfaceName();
+        meta.service = url.getPath();
         meta.group = url.getGroup();
         meta.version = url.getVersion();
         meta.timeout = timeout + "m";
