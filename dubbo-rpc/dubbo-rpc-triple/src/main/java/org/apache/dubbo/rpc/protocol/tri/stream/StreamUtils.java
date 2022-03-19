@@ -49,7 +49,6 @@ public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
     public static RequestMetadata createRequest(URL url,
-        ServiceDescriptor serviceDescriptor,
         MethodDescriptor methodDescriptor,
         Invocation invocation,
         long requestId,

@@ -79,8 +79,7 @@ public class StubInvoker<T> implements Invoker<T> {
             }
         }
 
-        CompletableFuture<?> future = handlers.get(invocation.getMethodName())
-            .invoke(invocation.getArguments());
+        CompletableFuture<?> future = handlers.get(invocation.getMethodName()).invoke(invocation.getArguments());
 
         if (ProfilerSwitch.isEnableSimpleProfiler()) {
             Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);

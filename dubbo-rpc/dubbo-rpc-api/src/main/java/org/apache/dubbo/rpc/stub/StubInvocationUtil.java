@@ -57,6 +57,7 @@ public class StubInvocationUtil {
             throw new RuntimeException(e);
         }
     }
+
     public static <T, R> void serverStreamCall(Invoker<?> invoker,
         MethodDescriptor method,
         T request,

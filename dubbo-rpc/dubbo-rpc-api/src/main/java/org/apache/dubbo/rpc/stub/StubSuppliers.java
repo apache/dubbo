@@ -46,6 +46,13 @@ public class StubSuppliers {
         return (T) STUB_SUPPLIERS.get(interfaceName).apply(invoker);
     }
 
+    public static String stubClassName(String interfaceName) {
+        int idx = interfaceName.lastIndexOf('.');
+        String pkg = interfaceName.substring(0, idx + 1);
+        String name = interfaceName.substring(idx + 1);
+        return pkg + "Dubbo" + name + "Triple";
+    }
+
     public static ServiceDescriptor getServiceDescriptor(String interfaceName) {
         //TODO DO not hack here
         ReflectUtils.forName(stubClassName(interfaceName));
@@ -53,12 +60,5 @@ public class StubSuppliers {
             throw new IllegalStateException("Can not find any stub supplier for " + interfaceName);
         }
         return SERVICE_DESCRIPTOR_MAP.get(interfaceName);
-    }
-
-    public static String stubClassName(String interfaceName) {
-        int idx = interfaceName.lastIndexOf('.');
-        String pkg = interfaceName.substring(0, idx + 1);
-        String name = interfaceName.substring(idx + 1);
-        return pkg + "Dubbo" + name + "Triple";
     }
 }

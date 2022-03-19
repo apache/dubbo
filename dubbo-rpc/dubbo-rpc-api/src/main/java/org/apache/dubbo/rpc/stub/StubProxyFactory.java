@@ -26,8 +26,7 @@ import org.apache.dubbo.rpc.ServerService;
 public class StubProxyFactory implements ProxyFactory {
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        return StubSuppliers.createStub(invoker.getInterface()
-            .getName(), invoker);
+        return StubSuppliers.createStub(invoker.getInterface().getName(), invoker);
     }
 
     @Override

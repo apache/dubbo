@@ -107,7 +107,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             callService = consumerModel.getServiceModel();
         }
         final MethodDescriptor methodDescriptor = callService.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), callService, methodDescriptor, invocation,
+        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), methodDescriptor, invocation,
             future.requestId, compressor, acceptEncoding, timeout);
         ExecutorService executor = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepository.class)

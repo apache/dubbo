@@ -74,7 +74,7 @@ class ClientStreamTest {
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         ClientStream stream = new ClientStream(url.getOrDefaultFrameworkModel(), future.requestId, ImmediateEventExecutor.INSTANCE, writeQueue, listener);
 
-        final RequestMetadata requestMetadata = StreamUtils.createRequest(url, serviceDescriptor, methodDescriptor,
+        final RequestMetadata requestMetadata = StreamUtils.createRequest(url, methodDescriptor,
             invocation, future.requestId, Identity.IDENTITY,
             "identity", timeout);
         stream.startCall(requestMetadata);

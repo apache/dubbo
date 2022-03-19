@@ -109,11 +109,11 @@ public class TriRpcStatus {
         return code;
     }
 
-    public static String limitSizeTo4KB(String desc) {
-        if (desc.length() < 4096) {
+    public static String limitSizeTo1KB(String desc) {
+        if (desc.length() < 1024) {
             return desc;
         } else {
-            return desc.substring(0, 4086);
+            return desc.substring(0, 1024);
         }
     }
 
@@ -188,7 +188,7 @@ public class TriRpcStatus {
     }
 
     public String toEncodedMessage() {
-        String output = limitSizeTo4KB(toMessage());
+        String output = limitSizeTo1KB(toMessage());
         return encodeComponent(output);
     }
 

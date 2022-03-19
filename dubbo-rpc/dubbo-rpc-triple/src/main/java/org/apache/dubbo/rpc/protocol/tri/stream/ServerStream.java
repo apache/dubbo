@@ -55,6 +55,8 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.util.List;
 import java.util.Map;
@@ -101,12 +103,21 @@ public class ServerStream extends AbstractStream {
             // todo handle this state
             return;
         }
+        GenericFutureListener<Future<? super Void>> listener = new GenericFutureListener<Future<? super Void>>() {
+            @Override
+            public void operationComplete(Future<? super Void> future) throws Exception {
+                if (future.isSuccess()) {
+                    return;
+                }
+                LOGGER.warn("Send response header failed:" + headers, future.cause());
+            }
+        };
         if (headerSent) {
             trailersSent = true;
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, true));
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, true)).addListener(listener);
         } else {
             headerSent = true;
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false)).addListener(listener);
         }
     }
 
@@ -136,7 +147,7 @@ public class ServerStream extends AbstractStream {
             return headers;
         }
         String grpcMessage = getGrpcMessage(rpcStatus);
-        grpcMessage = TriRpcStatus.encodeMessage(grpcMessage);
+        grpcMessage = TriRpcStatus.encodeMessage(TriRpcStatus.limitSizeTo1KB(grpcMessage));
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         Status.Builder builder = Status.newBuilder().setCode(rpcStatus.code.code).setMessage(grpcMessage);
         Throwable throwable = rpcStatus.cause;
@@ -146,7 +157,7 @@ public class ServerStream extends AbstractStream {
                 H2TransportListener.encodeBase64ASCII(status.toByteArray()));
             return headers;
         }
-        DebugInfo debugInfo = DebugInfo.newBuilder().addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+        DebugInfo debugInfo = DebugInfo.newBuilder().addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 6))
             // can not use now
             // .setDetail(throwable.getMessage())
             .build();
