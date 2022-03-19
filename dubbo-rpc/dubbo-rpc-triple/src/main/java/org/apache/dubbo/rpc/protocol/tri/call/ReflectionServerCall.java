@@ -38,8 +38,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.triple.TripleWrapper;
 
-import com.google.protobuf.Message;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -97,13 +95,17 @@ public class ReflectionServerCall extends ServerCall {
                 methodDescriptors = serviceDescriptor.getMethods(upperMethod);
             }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
-                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Method : " + methodName + " not found of service:" + serviceName));
+                responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription(
+                    "Method : " + methodName + " not found of service:" + serviceName));
                 return null;
             }
             // In most cases there is only one method
             if (methodDescriptors.size() == 1) {
                 methodDescriptor = methodDescriptors.get(0);
             }
+        }
+        if (methodDescriptor != null) {
+            packableMethod = DynamicPackableMethod.init(methodDescriptor, invoker.getUrl());
         }
         ServerStreamListenerImpl listener = new ServerStreamListenerImpl();
         listener.startCall(metadata);
@@ -112,7 +114,7 @@ public class ReflectionServerCall extends ServerCall {
 
     @Override
     protected byte[] packResponse(Object message) throws IOException {
-        return ((Message) message).toByteArray();
+        return packableMethod.packResponse(message);
     }
 
 
@@ -174,6 +176,7 @@ public class ReflectionServerCall extends ServerCall {
             if (methodDescriptor == null) {
                 close(TriRpcStatus.UNIMPLEMENTED.withDescription("Method :" + methodName + "[" + Arrays.toString(
                     paramTypes) + "] " + "not found of service:" + serviceDescriptor.getInterfaceName()), null);
+                return;
             }
             packableMethod = DynamicPackableMethod.init(methodDescriptor, invoker.getUrl());
         }
@@ -212,12 +215,8 @@ public class ReflectionServerCall extends ServerCall {
      */
     protected RpcInvocation buildInvocation(Map<String, Object> headers) {
         final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-            methodName,
-            serviceDescriptor.getInterfaceName(),
-            url.getProtocolServiceKey(),
-            methodDescriptor.getParameterClasses(),
-            new Object[0]);
+        RpcInvocation inv = new RpcInvocation(url.getServiceModel(), methodName, serviceDescriptor.getInterfaceName(),
+            url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(headers);

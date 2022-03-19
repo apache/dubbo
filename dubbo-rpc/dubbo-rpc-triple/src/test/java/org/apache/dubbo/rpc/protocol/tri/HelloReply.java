@@ -16,7 +16,7 @@
  */
 
 
-package org.apache.dubbo.proto;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import com.google.protobuf.Message;
 
