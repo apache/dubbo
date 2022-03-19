@@ -22,38 +22,45 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
+import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.observer.WrapperRequestObserver;
 
 public class ClientCallUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCallUtil.class);
 
     public static void call(ClientCall call, RequestMetadata metadata) {
         try {
-            if (metadata.method instanceof StreamMethodDescriptor) {
-                streamCall(call, metadata);
-            } else {
-                unaryCall(call, metadata);
+            switch (metadata.method.getRpcType()) {
+                case UNARY:
+                    if (metadata.arguments.length == 2 && metadata.arguments[1] instanceof StreamObserver) {
+                        streamCall(call, metadata);
+                    } else {
+                        unaryCall(call, metadata);
+                    }
+                    break;
+                case CLIENT_STREAM:
+                case SERVER_STREAM:
+                case BI_STREAM:
+                    streamCall(call, metadata);
+                    break;
+                default:
+                    throw new IllegalStateException("Can not reach here");
             }
         } catch (Throwable t) {
             cancelByThrowable(call, t);
-            final TriRpcStatus status = TriRpcStatus.INTERNAL
-                .withCause(t)
+            final TriRpcStatus status = TriRpcStatus.INTERNAL.withCause(t)
                 .withDescription("Call aborted cause client exception");
             DefaultFuture2.received(metadata.requestId, status, null);
         }
     }
 
-    public static void streamCall(ClientCall call,
-                                  RequestMetadata metadata) {
+    public static void streamCall(ClientCall call, RequestMetadata metadata) {
         AppResponse appResponse = new AppResponse();
-        StreamMethodDescriptor methodDescriptor = (StreamMethodDescriptor) metadata.method;
-        if (methodDescriptor.isServerStream()) {
+        if (metadata.method.getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
             callServerStream(call, metadata);
         } else {
             callBiOrClientStream(call, metadata, appResponse);
@@ -77,51 +84,36 @@ public class ClientCallUtil {
     }
 
     public static StreamObserver<Object> streamCall(ClientCall call,
-                                                    RequestMetadata metadata,
-                                                    StreamObserver<Object> responseObserver
-    ) {
+        RequestMetadata metadata,
+        StreamObserver<Object> responseObserver) {
         if (responseObserver instanceof CancelableStreamObserver) {
             final CancellationContext context = new CancellationContext();
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
             context.addListener(context1 -> call.cancel("Canceled by app", null));
         }
-        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver, new ClientCallToObserverAdapter<>(call));
-        return call(call, metadata, listener);
+        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver,
+            metadata.method.getRpcType() == MethodDescriptor.RpcType.UNARY,
+            new ClientCallToObserverAdapter<>(call));
+        return callDirectly(call, metadata, listener);
     }
 
     public static void unaryCall(ClientCall call, RequestMetadata metadata) {
-        final UnaryCallListener listener = new UnaryCallListener(metadata.requestId, call);
-        final StreamObserver<Object> requestObserver = call(call, metadata, listener);
+        final UnaryClientCallListener listener = new UnaryClientCallListener(metadata.requestId, call);
+        final StreamObserver<Object> requestObserver = callDirectly(call, metadata, listener);
         Object argument;
-        if (metadata.method.isNeedWrap()) {
-            argument = metadata.arguments;
-        } else {
+        if (metadata.packableMethod.singleArgument()) {
             argument = metadata.arguments[0];
+        } else {
+            argument = metadata.arguments;
         }
         requestObserver.onNext(argument);
         requestObserver.onCompleted();
         DefaultFuture2.sent(metadata.requestId);
     }
 
-    public static StreamObserver<Object> call(ClientCall call, RequestMetadata metadata,
-                                              ClientCall.StartListener responseListener) {
-
-        if (metadata.method.isNeedWrap()) {
-            return wrapperCall(call, metadata, responseListener);
-        }
-        return callDirectly(call, metadata, responseListener);
-    }
-
-    public static StreamObserver<Object> wrapperCall(ClientCall call, RequestMetadata metadata,
-                                                     ClientCall.StartListener responseListener) {
-        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call),
-            metadata.method.getCompatibleParamSignatures(), metadata.genericPack);
-        final ClientCall.StartListener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, metadata.genericUnpack);
-        call.start(metadata, wrapResponseListener);
-        return requestObserver;
-    }
-
-    public static StreamObserver<Object> callDirectly(ClientCall call, RequestMetadata metadata, ClientCall.StartListener responseListener) {
+    public static StreamObserver<Object> callDirectly(ClientCall call,
+        RequestMetadata metadata,
+        ClientCall.StartListener responseListener) {
         final ClientCallToObserverAdapter<Object> requestObserver = new ClientCallToObserverAdapter<>(call);
         call.start(metadata, responseListener);
         return requestObserver;

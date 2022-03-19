@@ -17,32 +17,41 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapRequestUnpack;
-import org.apache.dubbo.triple.TripleWrapper;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
-public class WrapRequestServerCallListener implements ServerCall.Listener {
-    private final ServerCall.Listener delegate;
-    private final WrapRequestUnpack unpack;
+import java.util.Map;
 
-    public WrapRequestServerCallListener(ServerCall.Listener delegate, GenericUnpack unpack) {
-        this.delegate = delegate;
-        this.unpack = new WrapRequestUnpack(unpack);
+public class UnaryClientCallListener implements ClientCall.StartListener {
+    private final long requestId;
+    private final ClientCall call;
+    private Object appResponse;
+
+    public UnaryClientCallListener(long requestId, ClientCall call) {
+        this.requestId = requestId;
+        this.call = call;
     }
 
     @Override
     public void onMessage(Object message) {
-        final Object args = this.unpack.unpack((TripleWrapper.TripleRequestWrapper) message);
-        delegate.onMessage(args);
+        this.appResponse = message;
     }
 
     @Override
-    public void onCancel(String errorInfo) {
-        delegate.onCancel(errorInfo);
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
+        AppResponse result = new AppResponse();
+        result.setObjectAttachments(trailers);
+        if (status.isOk()) {
+            result.setValue(appResponse);
+        } else {
+            result.setException(status.asException());
+        }
+        DefaultFuture2.received(requestId, status, result);
     }
 
     @Override
-    public void onComplete() {
-        delegate.onComplete();
+    public void onStart() {
+        call.requestN(2);
     }
 }

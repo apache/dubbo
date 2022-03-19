@@ -34,8 +34,6 @@ import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
@@ -78,7 +76,7 @@ class ClientStreamTest {
 
         final RequestMetadata requestMetadata = StreamUtils.createRequest(url, serviceDescriptor, methodDescriptor,
             invocation, future.requestId, Identity.IDENTITY,
-            "identity", timeout, mock(GenericPack.class), mock(GenericUnpack.class));
+            "identity", timeout);
         stream.startCall(requestMetadata);
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands

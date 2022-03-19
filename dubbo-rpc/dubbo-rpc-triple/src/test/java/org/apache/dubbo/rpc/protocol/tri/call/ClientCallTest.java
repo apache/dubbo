@@ -22,6 +22,8 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
+import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -44,10 +46,9 @@ class ClientCallTest {
         ClientCall call = new ClientCall(connection, executorService, url.getOrDefaultFrameworkModel());
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
-        MethodDescriptor echoMethod = new MethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
-        ServiceDescriptor serviceDescriptor=new ServiceDescriptor(IGreeter.class.getName(),IGreeter.class);
-        final RequestMetadata request = StreamUtils.createRequest(url, serviceDescriptor, echoMethod, invocation, 1L, Compressor.NONE, "", 3000,
-                null, null);
+        MethodDescriptor echoMethod = new ReflectionMethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
+        ServiceDescriptor serviceDescriptor=new ReflectionServiceDescriptor(IGreeter.class.getName(),IGreeter.class);
+        final RequestMetadata request = StreamUtils.createRequest(url, serviceDescriptor, echoMethod, invocation, 1L, Compressor.NONE, "", 3000);
         ClientCallUtil.call(call, request);
     }
 

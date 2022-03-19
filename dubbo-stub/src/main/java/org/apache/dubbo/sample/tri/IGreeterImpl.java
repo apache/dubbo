@@ -1,7 +1,6 @@
 package org.apache.dubbo.sample.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.stub.DubboIGreeterTriple;
 
 public class IGreeterImpl extends DubboIGreeterTriple.IGreeterImplBase {
     @Override

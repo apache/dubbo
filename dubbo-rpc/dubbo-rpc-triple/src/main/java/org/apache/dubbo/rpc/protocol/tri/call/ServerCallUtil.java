@@ -25,79 +25,44 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
-import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.observer.WrapperResponseObserver;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 
 public class ServerCallUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCallUtil.class);
 
-    public static ServerCall.Listener startCall(ServerCall call, RpcInvocation invocation, StubMethodDescriptor methodDescriptor, Invoker<?> invoker) {
-        return startDirectCall(call, invocation, methodDescriptor, invoker);
-    }
-
-    public static ServerCall.Listener startCall(ServerCall call, RpcInvocation invocation, MethodDescriptor methodDescriptor, GenericUnpack genericUnpack, GenericPack genericPack, Invoker<?> invoker) {
-        if (methodDescriptor.isNeedWrap()) {
-            return startWrapCall(call, invocation, methodDescriptor, genericUnpack, genericPack, invoker);
-        } else {
-            return startDirectCall(call, invocation, methodDescriptor, invoker);
-        }
-    }
-
-    public static ServerCall.Listener startDirectCall(ServerCall call, RpcInvocation invocation, MethodDescriptor methodDescriptor, Invoker<?> invoker) {
+    public static ServerCall.Listener startCall(ServerCall call,
+        RpcInvocation invocation,
+        MethodDescriptor methodDescriptor,
+        Invoker<?> invoker) {
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
         ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(call,
             cancellationContext);
         return startCall(call, methodDescriptor, invocation, invoker, responseObserver);
     }
 
-
-    public static ServerCall.Listener startWrapCall(ServerCall call, RpcInvocation invocation, MethodDescriptor methodDescriptor, GenericUnpack genericUnpack, GenericPack genericPack, Invoker<?> invoker) {
-        CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        final String returnClass = methodDescriptor.getReturnClass()
-            .getName();
-        ServerCallToObserverAdapter<Object> responseObserver = new WrapperResponseObserver<>(call, cancellationContext,
-            returnClass, genericPack);
-        final ServerCall.Listener listener = startCall(call, methodDescriptor, invocation, invoker, responseObserver);
-        return new WrapRequestServerCallListener(listener, genericUnpack);
-    }
-
-    public static ServerCall.Listener startCall(ServerCall call, MethodDescriptor methodDescriptor, RpcInvocation invocation, Invoker<?> invoker, ServerCallToObserverAdapter<Object> responseObserver) {
+    public static ServerCall.Listener startCall(ServerCall call,
+        MethodDescriptor methodDescriptor,
+        RpcInvocation invocation,
+        Invoker<?> invoker,
+        ServerCallToObserverAdapter<Object> responseObserver) {
         try {
             ServerCall.Listener listener;
-            if (methodDescriptor instanceof StubMethodDescriptor) {
-                switch (((StubMethodDescriptor) methodDescriptor).rpcType) {
-                    case UNARY:
-                        listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
-                        call.requestN(2);
-                        break;
-                    case SERVER_STREAM:
-                        listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
-                        call.requestN(2);
-                        break;
-                    case BI_STREAM:
-                    case CLIENT_STREAM:
-                        listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
-                        call.requestN(1);
-                        break;
-                    default:
-                        throw new IllegalStateException("Can not reach here");
-                }
-            } else {
-                if (methodDescriptor instanceof StreamMethodDescriptor) {
-                    if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
-                        listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
-                    } else {
-                        listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
-                    }
-                    call.requestN(1);
-                } else {
+            switch (methodDescriptor.getRpcType()) {
+                case UNARY:
                     listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
                     call.requestN(2);
-                }
+                    break;
+                case SERVER_STREAM:
+                    listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
+                    call.requestN(2);
+                    break;
+                case BI_STREAM:
+                case CLIENT_STREAM:
+                    listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
+                    call.requestN(1);
+                    break;
+                default:
+                    throw new IllegalStateException("Can not reach here");
             }
             return listener;
         } catch (Throwable t) {
@@ -108,7 +73,5 @@ public class ServerCallUtil {
         }
         return null;
     }
-
-
 }
 

@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
@@ -32,15 +31,12 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCallUtil;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -56,7 +52,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
-import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -69,29 +64,21 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Compressor compressor;
     private final String acceptEncoding;
     private final Set<Invoker<?>> invokers;
-    private final GenericPack genericPack;
-    private final GenericUnpack genericUnpack;
+    private final ServiceDescriptor serviceDescriptor;
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
-        MultipleSerialization serialization,
-        String serializationName,
-        Compressor defaultCompressor,
         String acceptEncoding,
         ConnectionManager connectionManager,
-        Set<Invoker<?>> invokers) throws RemotingException {
+        Compressor compressor,
+        Set<Invoker<?>> invokers,
+        ServiceDescriptor serviceDescriptor) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
-        this.genericPack = new GenericPack(serialization, serializationName, url);
-        this.genericUnpack = new GenericUnpack(serialization, url);
+        this.compressor = compressor;
+        this.serviceDescriptor = serviceDescriptor;
         this.invokers = invokers;
         this.acceptEncoding = acceptEncoding;
         this.connection = connectionManager.connect(url);
-        String compressorStr = url.getParameter(COMPRESSOR_KEY);
-        if (compressorStr == null) {
-            compressor = defaultCompressor;
-        } else {
-            compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
-        }
     }
 
 
@@ -108,17 +95,21 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(callbackExecutor);
 
         if (!connection.isAvailable()) {
-            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE.withDescription(
-                String.format("Connect to %s failed", this));
+            final TriRpcStatus status = TriRpcStatus.UNAVAILABLE.withDescription(String.format("Connect to %s failed",
+                this));
             DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
-        ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
-        ServiceDescriptor serviceDescriptor = consumerModel.getServiceModel();
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(invocation.getMethodName(),
             invocation.getParameterTypes());
-        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), serviceDescriptor, methodDescriptor,
-            invocation, future.requestId, compressor, acceptEncoding, timeout, genericPack, genericUnpack);
+        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(),
+            serviceDescriptor,
+            methodDescriptor,
+            invocation,
+            future.requestId,
+            compressor,
+            acceptEncoding,
+            timeout);
         ExecutorService executor = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()

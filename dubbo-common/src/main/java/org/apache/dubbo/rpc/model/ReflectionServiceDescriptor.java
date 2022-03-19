@@ -4,6 +4,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-public class StubServiceDescriptor implements ServiceDescriptor {
+public class ReflectionServiceDescriptor implements ServiceDescriptor {
     private final String interfaceName;
     private final Class<?> serviceInterfaceClass;
     // to accelerate search
@@ -23,21 +25,44 @@ public class StubServiceDescriptor implements ServiceDescriptor {
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
     private final ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
 
-    public StubServiceDescriptor(String interfaceName, Class<?> interfaceClass) {
+    public ReflectionServiceDescriptor(String interfaceName, Class<?> interfaceClass) {
         this.interfaceName = interfaceName;
         this.serviceInterfaceClass = interfaceClass;
     }
 
     public void addMethod(MethodDescriptor methodDescriptor) {
         methods.put(methodDescriptor.getMethodName(), Collections.singletonList(methodDescriptor));
-        Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodDescriptor.getMethodName(),
-            k -> new HashMap<>());
-        descMap.put(methodDescriptor.getParamDesc(), methodDescriptor);
+    }
+
+    public ReflectionServiceDescriptor(Class<?> interfaceClass) {
+        this.serviceInterfaceClass = interfaceClass;
+        this.interfaceName = interfaceClass.getName();
+        initMethods();
     }
 
     public FullServiceDefinition getFullServiceDefinition(String serviceKey) {
         return serviceDefinitions.computeIfAbsent(serviceKey,
             (k) -> ServiceDefinitionBuilder.buildFullDefinition(serviceInterfaceClass, Collections.emptyMap()));
+    }
+
+    private void initMethods() {
+        Method[] methodsToExport = this.serviceInterfaceClass.getMethods();
+        for (Method method : methodsToExport) {
+            method.setAccessible(true);
+
+            MethodDescriptor methodDescriptor = new ReflectionMethodDescriptor(method);
+
+            List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
+            methodModels.add(methodDescriptor);
+        }
+
+        methods.forEach((methodName, methodList) -> {
+            Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
+            methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));
+
+//            Map<Class<?>[], MethodModel> typesMap = typeToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
+//            methodList.forEach(methodModel -> typesMap.put(methodModel.getParameterClasses(), methodModel));
+        });
     }
 
     public String getInterfaceName() {
@@ -100,7 +125,7 @@ public class StubServiceDescriptor implements ServiceDescriptor {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        StubServiceDescriptor that = (StubServiceDescriptor) o;
+        ReflectionServiceDescriptor that = (ReflectionServiceDescriptor) o;
         return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(serviceInterfaceClass,
             that.serviceInterfaceClass) && Objects.equals(methods, that.methods) && Objects.equals(descToMethods,
             that.descToMethods);

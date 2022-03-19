@@ -94,7 +94,7 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
-        ServiceDescriptor serviceDescriptor = new ServiceDescriptor(interfaceClazz);
+        ServiceDescriptor serviceDescriptor = new ReflectionServiceDescriptor(interfaceClazz);
         List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
             k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {

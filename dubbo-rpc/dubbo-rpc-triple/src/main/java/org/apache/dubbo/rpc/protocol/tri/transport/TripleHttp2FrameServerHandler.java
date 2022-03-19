@@ -24,7 +24,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -44,17 +43,14 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private final FrameworkModel frameworkModel;
     private final Executor executor;
     private final List<HeaderFilter> filters;
-    private final GenericUnpack genericUnpack;
 
     public TripleHttp2FrameServerHandler(
         FrameworkModel frameworkModel,
         Executor executor,
-        List<HeaderFilter> filters,
-        GenericUnpack genericUnpack) {
+        List<HeaderFilter> filters) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
         this.filters = filters;
-        this.genericUnpack = genericUnpack;
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
     }
 
@@ -107,7 +103,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor, pathResolver, filters, genericUnpack);
+        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor, pathResolver, filters);
         ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).set(serverStream);
         serverStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }

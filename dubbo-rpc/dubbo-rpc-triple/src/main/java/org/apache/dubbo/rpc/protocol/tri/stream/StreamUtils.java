@@ -23,14 +23,13 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -45,6 +44,10 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
+import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
+
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
@@ -55,9 +58,7 @@ public class StreamUtils {
         long requestId,
         Compressor compressor,
         String acceptEncoding,
-        int timeout,
-        GenericPack genericPack,
-        GenericUnpack genericUnpack) {
+        int timeout) {
         final String methodName = RpcUtils.getMethodName(invocation);
         final RequestMetadata meta = new RequestMetadata();
         meta.scheme = getSchemeFromUrl(url);
@@ -71,6 +72,13 @@ public class StreamUtils {
             meta.application = application;
             meta.attachments = objectAttachments;
         }
+        if(methodDescriptor instanceof PackableMethod){
+            meta.packableMethod=(PackableMethod) methodDescriptor;
+        }else{
+            final String serializeName = url.getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION);
+            meta.packableMethod=
+                (PackableMethod) methodDescriptor.getAttribute(METHOD_ATTR_PACK +serializeName);
+        }
         meta.method = methodDescriptor;
         if (meta.method == null) {
             throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
@@ -82,8 +90,6 @@ public class StreamUtils {
         meta.group = url.getGroup();
         meta.version = url.getVersion();
         meta.timeout = timeout + "m";
-        meta.genericPack = genericPack;
-        meta.genericUnpack = genericUnpack;
         meta.arguments = invocation.getArguments();
         return meta;
     }

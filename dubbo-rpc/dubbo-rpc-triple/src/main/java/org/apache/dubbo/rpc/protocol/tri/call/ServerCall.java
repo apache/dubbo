@@ -212,7 +212,7 @@ public abstract class ServerCall {
             }
         }
 
-        protected abstract void doOnMessage(byte[] message) throws IOException;
+        protected abstract void doOnMessage(byte[] message) throws IOException, ClassNotFoundException;
 
     }
 

@@ -21,7 +21,8 @@ public class StubSuppliers {
     }
 
     public static <T> T createStub(String interfaceName, Invoker<T> invoker) {
-        ReflectUtils.forName(interfaceName.substring(0, interfaceName.lastIndexOf('$')));
+        //TODO DO not hack here
+        ReflectUtils.forName(stubClassName(interfaceName));
         if (!STUB_SUPPLIERS.containsKey(interfaceName)) {
             throw new IllegalStateException("Can not find any stub supplier for " + interfaceName);
         }
@@ -29,10 +30,18 @@ public class StubSuppliers {
     }
 
     public static ServiceDescriptor getServiceDescriptor(String interfaceName) {
-        ReflectUtils.forName(interfaceName.substring(0, interfaceName.lastIndexOf('$')));
+        //TODO DO not hack here
+        ReflectUtils.forName(stubClassName(interfaceName));
         if (!SERVICE_DESCRIPTOR_MAP.containsKey(interfaceName)) {
             throw new IllegalStateException("Can not find any stub supplier for " + interfaceName);
         }
         return SERVICE_DESCRIPTOR_MAP.get(interfaceName);
+    }
+
+    public static String stubClassName(String interfaceName) {
+        int idx = interfaceName.lastIndexOf('.');
+        String pkg = interfaceName.substring(0, idx + 1);
+        String name = interfaceName.substring(idx + 1);
+        return pkg + "Dubbo" + name + "Triple";
     }
 }

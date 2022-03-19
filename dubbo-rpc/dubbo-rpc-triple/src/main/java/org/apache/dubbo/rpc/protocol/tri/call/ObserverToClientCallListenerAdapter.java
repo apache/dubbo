@@ -26,17 +26,27 @@ import java.util.Map;
 public class ObserverToClientCallListenerAdapter implements ClientCall.StartListener {
     private final StreamObserver<Object> delegate;
     private final ClientCallToObserverAdapter<Object> adapter;
+    private final boolean unary;
+    private boolean receiveOneMessage;
 
-    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate, ClientCallToObserverAdapter<Object> adapter) {
+    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate,
+        boolean unary,
+        ClientCallToObserverAdapter<Object> adapter) {
         this.delegate = delegate;
         this.adapter = adapter;
+        this.unary = unary;
     }
 
     @Override
     public void onMessage(Object message) {
-        delegate.onNext(message);
-        if (adapter.isAutoRequestEnabled()) {
-            adapter.request(1);
+        if (receiveOneMessage && unary) {
+            throw TriRpcStatus.INTERNAL.withDescription("More than one value received for unary call").asException();
+        } else {
+            delegate.onNext(message);
+            if (adapter.isAutoRequestEnabled()) {
+                adapter.request(1);
+            }
+            receiveOneMessage = true;
         }
     }
 

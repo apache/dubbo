@@ -17,6 +17,7 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -24,11 +25,10 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.sample.tri.HelloReply;
 import org.apache.dubbo.sample.tri.HelloRequest;
+import org.apache.dubbo.sample.tri.IGreeter;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.stub.DubboIGreeterTriple.IGreeter;
 
 public class ApiConsumer {
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -49,15 +49,40 @@ public class ApiConsumer {
 
         IGreeter greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
+        HelloRequest request = HelloRequest.newBuilder().setName("triple").build();
         try {
-            final HelloReply reply = greeterService.sayHello(HelloRequest.newBuilder()
-                .setName("triple")
-                .build());
-            TimeUnit.SECONDS.sleep(1);
-            System.out.println("Reply: " + reply.getMessage());
+//            final HelloReply reply = greeterService.sayHello(request);
+//            TimeUnit.SECONDS.sleep(1);
+//            System.out.println("Reply: " + reply.getMessage());
 
-//            CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
-//            System.out.println("Async Reply: "+sayHelloAsync.get());
+            StreamObserver<HelloReply> observer = new StreamObserver<HelloReply>() {
+                @Override
+                public void onNext(HelloReply data) {
+                    System.out.println("Received server stream data:" + data);
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+                @Override
+                public void onCompleted() {
+                    System.out.println("Server stream done ");
+                }
+            };
+            greeterService.sayHelloServerStream(request, observer);
+            StreamObserver<HelloRequest> requestObserver = greeterService.sayHelloClientStream(observer);
+            for (int i = 0; i < 10; i++) {
+                requestObserver.onNext(request);
+            }
+            requestObserver.onCompleted();
+
+            StreamObserver<HelloRequest> ro2 = greeterService.sayHelloStream(observer);
+            for (int i = 0; i < 10; i++) {
+                ro2.onNext(request);
+            }
+            ro2.onCompleted();
         } catch (Throwable t) {
             t.printStackTrace();
         }

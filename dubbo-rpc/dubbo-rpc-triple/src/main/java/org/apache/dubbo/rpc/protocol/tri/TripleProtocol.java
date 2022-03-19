@@ -18,12 +18,9 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -32,6 +29,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -42,9 +42,11 @@ import grpc.health.v1.HealthCheckResponse;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
     private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
+    public static final String METHOD_ATTR_PACK ="pack";
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
@@ -94,9 +96,15 @@ public class TripleProtocol extends AbstractProtocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        final MultipleSerialization serialization = frameworkModel
-            .getExtensionLoader(MultipleSerialization.class)
-            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
+        ServiceDescriptor serviceDescriptor = url.getServiceModel().getServiceModel();
+
+        if(serviceDescriptor instanceof StubServiceDescriptor){
+
+        }else{
+            for (MethodDescriptor method: serviceDescriptor.getAllMethods()) {
+                DynamicPackableMethod.init(method,url);
+            }
+        }
 
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
@@ -110,10 +118,18 @@ public class TripleProtocol extends AbstractProtocol {
         Compressor defaultCompressor = Compressor.NONE;
 //        String acceptEncoding = Compressor.getAcceptEncoding(frameworkModel);
         String acceptEncoding = Compressor.NONE.getMessageEncoding();
-        final String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION);
         TripleInvoker<T> invoker;
+        String compressorStr = url.getParameter(COMPRESSOR_KEY);
+        Compressor compressor;
+        if (compressorStr == null) {
+            compressor = defaultCompressor;
+        } else {
+            compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
+        }
         try {
-            invoker = new TripleInvoker<>(type, url, serialization, serializationName, defaultCompressor, acceptEncoding, connectionManager, invokers);
+            invoker = new TripleInvoker<>(type, url, acceptEncoding, connectionManager,
+                compressor, invokers,
+                serviceDescriptor);
         } catch (RemotingException e) {
             throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
         }

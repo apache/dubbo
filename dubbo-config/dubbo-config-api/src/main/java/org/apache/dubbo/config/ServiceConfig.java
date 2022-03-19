@@ -365,7 +365,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void doExportUrls() {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor;
-        if(ref instanceof ServerService){
+        final boolean serverService =ref instanceof ServerService;
+        if(serverService){
             serviceDescriptor=((ServerService) ref).getServiceDescriptor();
             repository.registerService(serviceDescriptor);
         }else{
@@ -386,8 +387,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)
                     .orElse(path), group, version);
-            // In case user specified path, register service one more time to map it to path.
-            repository.registerService(pathKey, interfaceClass);
+            // stub service will use generated service name
+            if(!serverService) {
+                // In case user specified path, register service one more time to map it to path.
+                repository.registerService(pathKey, interfaceClass);
+            }
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }

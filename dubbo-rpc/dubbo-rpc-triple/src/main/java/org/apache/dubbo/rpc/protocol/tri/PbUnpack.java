@@ -15,33 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.pack;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.model.PackableMethod;
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-public class GenericUnpack {
-    public final MultipleSerialization serialization;
-    private final URL url;
+public class PbUnpack<T> implements PackableMethod.UnPack {
+    private final Class<T> clz;
 
-    public GenericUnpack(MultipleSerialization serialization, URL url) {
-        this.serialization = serialization;
-        this.url = url;
+    public PbUnpack(Class<T> clz) {
+        this.clz = clz;
     }
 
-    public Object unpack(byte[] data, String serializeType, String clz) throws ClassNotFoundException, IOException {
+    @Override
+    public Object unpack(byte[] data) throws IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return serialization.deserialize(url, convertHessianFromWrapper(serializeType), clz, bais);
-    }
-
-    protected String convertHessianFromWrapper(String serializeType) {
-        if (TripleConstant.HESSIAN4.equals(serializeType)) {
-            return TripleConstant.HESSIAN2;
-        }
-        return serializeType;
+        return SingleProtobufUtils.deserialize(bais, clz);
     }
 }
