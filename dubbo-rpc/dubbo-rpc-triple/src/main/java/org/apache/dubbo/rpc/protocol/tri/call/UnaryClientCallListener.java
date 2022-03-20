@@ -18,19 +18,18 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
 
 import java.util.Map;
 
-public class UnaryClientCallListener implements ClientCall.StartListener {
-    private final long requestId;
-    private final ClientCall call;
-    private Object appResponse;
+public class UnaryClientCallListener implements ClientCall.Listener{
 
-    public UnaryClientCallListener(long requestId, ClientCall call) {
-        this.requestId = requestId;
-        this.call = call;
+    private Object appResponse;
+    private final DeadlineFuture future;
+
+    public UnaryClientCallListener(DeadlineFuture deadlineFuture) {
+        this.future = deadlineFuture;
     }
 
     @Override
@@ -47,11 +46,12 @@ public class UnaryClientCallListener implements ClientCall.StartListener {
         } else {
             result.setException(status.asException());
         }
-        DefaultFuture2.received(requestId, status, result);
+        future.received(status, result);
     }
 
     @Override
-    public void onStart() {
+    public void onStart(ClientCall call) {
+        future.addTimeoutListener(() -> call.cancel("client timeout", null));
         call.requestN(2);
     }
 }

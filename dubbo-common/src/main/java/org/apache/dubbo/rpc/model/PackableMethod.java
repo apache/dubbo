@@ -53,7 +53,4 @@ public interface PackableMethod {
 
     UnPack getRequestUnpack();
 
-    default boolean singleArgument() {
-        return true;
-    }
 }

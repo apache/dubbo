@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DynamicPackableMethodTest {
+public class ReflectionPackableMethodTest {
     @Test
     public void testMethodWithNoParameters() throws Exception {
         Method method = DescriptorService.class.getMethod("noParameterMethod");
@@ -254,7 +254,7 @@ public class DynamicPackableMethodTest {
                 throw new IllegalStateException("Can not reach here");
         }
 
-        return DynamicPackableMethod.needWrap(method, actualRequestTypes, actualResponseType);
+        return ReflectionPackableMethod.needWrap(method, actualRequestTypes, actualResponseType);
     }
 
 }

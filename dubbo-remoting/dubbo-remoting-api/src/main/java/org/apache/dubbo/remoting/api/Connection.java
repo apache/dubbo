@@ -109,7 +109,6 @@ public class Connection extends AbstractReferenceCounted {
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                     pipeline.addLast("negotiation", new SslClientTlsHandler(url));
                 }
-
                 //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
@@ -142,6 +141,17 @@ public class Connection extends AbstractReferenceCounted {
                 }
             }
         }
+    }
+
+    public InetSocketAddress getLocal(){
+        Channel channel = getChannel();
+        final InetSocketAddress local;
+        if (channel != null) {
+            local = (InetSocketAddress) channel.localAddress();
+        } else {
+            local = null;
+        }
+        return local;
     }
 
     public Channel getChannel() {

@@ -27,12 +27,11 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.DynamicPackableMethod;
+import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
@@ -104,7 +103,7 @@ public class ReflectionServerCall extends ServerCall {
             }
         }
         if (methodDescriptor != null) {
-            packableMethod = DynamicPackableMethod.init(methodDescriptor, invoker.getUrl());
+            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
         }
         ServerStreamListenerImpl listener = new ServerStreamListenerImpl();
         listener.startCall(metadata);
@@ -177,7 +176,7 @@ public class ReflectionServerCall extends ServerCall {
                     paramTypes) + "] " + "not found of service:" + serviceDescriptor.getInterfaceName()), null);
                 return;
             }
-            packableMethod = DynamicPackableMethod.init(methodDescriptor, invoker.getUrl());
+            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
         }
 
         private void trySetListener() {

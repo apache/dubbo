@@ -26,7 +26,6 @@ import io.netty.util.AsciiString;
 import java.util.Map;
 
 public class RequestMetadata {
-    public long requestId;
     public AsciiString scheme;
     public String application;
     public String service;
@@ -38,6 +37,5 @@ public class RequestMetadata {
     public Compressor compressor;
     public MethodDescriptor method;
     public PackableMethod packableMethod;
-    public Object[] arguments;
     public Map<String, Object> attachments;
 }

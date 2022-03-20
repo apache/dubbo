@@ -17,78 +17,26 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.PackableMethod;
-import org.apache.dubbo.rpc.protocol.tri.DynamicPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.AsciiString;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
-    public static RequestMetadata createRequest(URL url,
-        MethodDescriptor methodDescriptor,
-        Invocation invocation,
-        long requestId,
-        Compressor compressor,
-        String acceptEncoding,
-        int timeout) {
-        final String methodName = RpcUtils.getMethodName(invocation);
-        final RequestMetadata meta = new RequestMetadata();
-        meta.scheme = getSchemeFromUrl(url);
-        meta.requestId = requestId;
-        final Map<String, Object> objectAttachments = invocation.getObjectAttachments();
-        if (objectAttachments != null) {
-            String application = (String) objectAttachments.get(CommonConstants.APPLICATION_KEY);
-            if (application == null) {
-                application = (String) objectAttachments.get(CommonConstants.REMOTE_APPLICATION_KEY);
-            }
-            meta.application = application;
-            meta.attachments = objectAttachments;
-        }
-
-        meta.method = methodDescriptor;
-        if (meta.method == null) {
-            throw new IllegalStateException(
-                "MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(
-                    invocation.getCompatibleParamSignatures()));
-        }
-        if (methodDescriptor instanceof PackableMethod) {
-            meta.packableMethod = (PackableMethod) methodDescriptor;
-        } else {
-            meta.packableMethod = DynamicPackableMethod.init(methodDescriptor, url);
-        }
-        meta.compressor = compressor;
-        meta.acceptEncoding = acceptEncoding;
-        meta.address = url.getAddress();
-        meta.service = url.getPath();
-        meta.group = url.getGroup();
-        meta.version = url.getVersion();
-        meta.timeout = timeout + "m";
-        meta.arguments = invocation.getArguments();
-        return meta;
-    }
 
     public static DefaultHttp2Headers metadataToHeaders(RequestMetadata metadata) {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
@@ -119,10 +67,6 @@ public class StreamUtils {
         headers.set(key, value);
     }
 
-    private static AsciiString getSchemeFromUrl(URL url) {
-        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
-    }
 
     /**
      * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.

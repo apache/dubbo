@@ -42,7 +42,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
-public class DynamicPackableMethod implements PackableMethod {
+public class ReflectionPackableMethod implements PackableMethod {
 
     private static final String GRPC_ASYNC_RETURN_CLASS = "com.google.common.util.concurrent.ListenableFuture";
     private static final String TRI_ASYNC_RETURN_CLASS = "java.util.concurrent.CompletableFuture";
@@ -55,32 +55,29 @@ public class DynamicPackableMethod implements PackableMethod {
     private final Pack responsePack;
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
-    private final boolean singleArgument;
 
-    public static DynamicPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        final String serializeName = url.getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION);
+    public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
+        final String serializeName = url.getParameter(SERIALIZATION_KEY,
+            DEFAULT_REMOTING_SERIALIZATION);
         Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         if (stored != null) {
-            return (DynamicPackableMethod) stored;
+            return (ReflectionPackableMethod) stored;
         }
-        DynamicPackableMethod dynamicPackableMethod = new DynamicPackableMethod(methodDescriptor, url, serializeName);
-        methodDescriptor.addAttribute(METHOD_ATTR_PACK, dynamicPackableMethod);
-        return dynamicPackableMethod;
+        ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
+            methodDescriptor, url, serializeName);
+        methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
+        return reflectionPackableMethod;
     }
 
-    @Override
-    public boolean singleArgument() {
-        return singleArgument;
-    }
-
-    public DynamicPackableMethod(MethodDescriptor method, URL url, String serializeName) {
+    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
             case CLIENT_STREAM:
             case BI_STREAM:
-                actualRequestTypes = new Class<?>[]{(Class<?>) ((ParameterizedType) method.getMethod()
-                    .getGenericReturnType()).getActualTypeArguments()[0]};
+                actualRequestTypes = new Class<?>[]{
+                    (Class<?>) ((ParameterizedType) method.getMethod()
+                        .getGenericReturnType()).getActualTypeArguments()[0]};
                 actualResponseType = (Class<?>) ((ParameterizedType) method.getMethod()
                     .getGenericParameterTypes()[0]).getActualTypeArguments()[0];
                 break;
@@ -97,20 +94,23 @@ public class DynamicPackableMethod implements PackableMethod {
                 throw new IllegalStateException("Can not reach here");
         }
 
+        boolean singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
         if (!needWrap(method, actualRequestTypes, actualResponseType)) {
-            requestPack = PB_PACK;
+            requestPack = new PbArrayPacker(singleArgument);
             responsePack = PB_PACK;
             requestUnpack = new PbUnpack<>(actualRequestTypes[0]);
             responseUnpack = new PbUnpack<>(actualResponseType);
-            singleArgument = true;
         } else {
             final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(MultipleSerialization.class)
-                .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
-            this.singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
-            String[] paramSigns = Stream.of(actualRequestTypes).map(Class::getName).toArray(String[]::new);
-            this.requestPack = new WrapRequestPack(serialization, url, serializeName, paramSigns, singleArgument);
-            this.responsePack = new WrapResponsePack(serialization, url, actualResponseType.getName());
+                .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
+                    CommonConstants.DEFAULT_KEY));
+            String[] paramSigns = Stream.of(actualRequestTypes).map(Class::getName)
+                .toArray(String[]::new);
+            this.requestPack = new WrapRequestPack(serialization, url, serializeName, paramSigns,
+                singleArgument);
+            this.responsePack = new WrapResponsePack(serialization, url,
+                actualResponseType.getName());
             this.requestUnpack = new WrapRequestUnpack(serialization, url);
             this.responseUnpack = new WrapResponseUnpack(serialization, url);
         }
@@ -138,7 +138,8 @@ public class DynamicPackableMethod implements PackableMethod {
 
 
     static boolean isStreamType(Class<?> type) {
-        return StreamObserver.class.isAssignableFrom(type) || GRPC_STREAM_CLASS.equalsIgnoreCase(type.getName());
+        return StreamObserver.class.isAssignableFrom(type) || GRPC_STREAM_CLASS.equalsIgnoreCase(
+            type.getName());
     }
 
     /**
@@ -146,10 +147,12 @@ public class DynamicPackableMethod implements PackableMethod {
      *
      * @return true if the request and response object is not generated by protobuf
      */
-    static boolean needWrap(MethodDescriptor methodDescriptor, Class<?>[] parameterClasses, Class<?> returnClass) {
+    static boolean needWrap(MethodDescriptor methodDescriptor, Class<?>[] parameterClasses,
+        Class<?> returnClass) {
         String methodName = methodDescriptor.getMethodName();
         // generic call must be wrapped
-        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(
+            methodName)) {
             return true;
         }
         // echo must be wrapped
@@ -183,36 +186,42 @@ public class DynamicPackableMethod implements PackableMethod {
         }
         // more than one stream param
         if (streamParameterCount > 1) {
-            throw new IllegalStateException("method params error: more than one Stream params. method=" + methodName);
+            throw new IllegalStateException(
+                "method params error: more than one Stream params. method=" + methodName);
         }
         // protobuf only support one param
         if (protobufParameterCount >= 2) {
-            throw new IllegalStateException("method params error: more than one protobuf params. method=" + methodName);
+            throw new IllegalStateException(
+                "method params error: more than one protobuf params. method=" + methodName);
         }
         // server stream support one normal param and one stream param
         if (streamParameterCount == 1) {
             if (javaParameterCount + protobufParameterCount > 1) {
                 throw new IllegalStateException(
-                    "method params error: server stream does not support more than one normal param." + " method=" + methodName);
+                    "method params error: server stream does not support more than one normal param."
+                        + " method=" + methodName);
             }
             // server stream: void foo(Request, StreamObserver<Response>)
             if (!secondParameterStream) {
                 throw new IllegalStateException(
-                    "method params error: server stream's second param must be StreamObserver." + " method=" + methodName);
+                    "method params error: server stream's second param must be StreamObserver."
+                        + " method=" + methodName);
             }
         }
         if (methodDescriptor.getRpcType() != MethodDescriptor.RpcType.UNARY) {
             if (MethodDescriptor.RpcType.SERVER_STREAM == methodDescriptor.getRpcType()) {
                 if (!secondParameterStream) {
                     throw new IllegalStateException(
-                        "method params error:server stream's second param must be StreamObserver." + " method=" + methodName);
+                        "method params error:server stream's second param must be StreamObserver."
+                            + " method=" + methodName);
                 }
             }
             // param type must be consistent
             if (returnClassProtobuf) {
                 if (javaParameterCount > 0) {
                     throw new IllegalStateException(
-                        "method params error: both normal and protobuf param found. method=" + methodName);
+                        "method params error: both normal and protobuf param found. method="
+                            + methodName);
                 }
             } else {
                 if (protobufParameterCount > 0) {
@@ -222,7 +231,8 @@ public class DynamicPackableMethod implements PackableMethod {
         } else {
             if (streamParameterCount > 0) {
                 throw new IllegalStateException(
-                    "method params error: unary method should not contain any StreamObserver." + " method=" + methodName);
+                    "method params error: unary method should not contain any StreamObserver."
+                        + " method=" + methodName);
             }
             if (protobufParameterCount > 0 && returnClassProtobuf) {
                 return false;
@@ -235,7 +245,8 @@ public class DynamicPackableMethod implements PackableMethod {
                 return true;
             }
             // handle grpc stub only consider gen by proto
-            if (GRPC_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName()) && protobufParameterCount == 1) {
+            if (GRPC_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName())
+                && protobufParameterCount == 1) {
                 return false;
             }
             // handle dubbo generated method
@@ -293,12 +304,14 @@ public class DynamicPackableMethod implements PackableMethod {
     }
 
     private static class WrapResponsePack implements Pack {
+
         private final MultipleSerialization multipleSerialization;
         private final URL url;
         private final String returnType;
         String serialize;
 
-        private WrapResponsePack(MultipleSerialization multipleSerialization, URL url, String returnType) {
+        private WrapResponsePack(MultipleSerialization multipleSerialization, URL url,
+            String returnType) {
             this.multipleSerialization = multipleSerialization;
             this.url = url;
             this.returnType = returnType;
@@ -318,6 +331,7 @@ public class DynamicPackableMethod implements PackableMethod {
     }
 
     private class WrapRequestUnpack implements UnPack {
+
         private final MultipleSerialization serialization;
         private final URL url;
 
@@ -328,19 +342,23 @@ public class DynamicPackableMethod implements PackableMethod {
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
-            TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(data);
+            TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(
+                data);
             Object[] ret = new Object[wrapper.getArgsCount()];
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ((WrapResponsePack) responsePack).serialize = serializeType;
             for (int i = 0; i < wrapper.getArgsList().size(); i++) {
-                ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getArgs(i).toByteArray());
-                ret[i] = serialization.deserialize(url, serializeType, wrapper.getArgTypes(i), bais);
+                ByteArrayInputStream bais = new ByteArrayInputStream(
+                    wrapper.getArgs(i).toByteArray());
+                ret[i] = serialization.deserialize(url, serializeType, wrapper.getArgTypes(i),
+                    bais);
             }
             return ret;
         }
     }
 
     private static class WrapResponseUnpack implements UnPack {
+
         private final MultipleSerialization serialization;
         private final URL url;
 
@@ -351,7 +369,8 @@ public class DynamicPackableMethod implements PackableMethod {
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
-            TripleWrapper.TripleResponseWrapper wrapper = TripleWrapper.TripleResponseWrapper.parseFrom(data);
+            TripleWrapper.TripleResponseWrapper wrapper = TripleWrapper.TripleResponseWrapper.parseFrom(
+                data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData().toByteArray());
             return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
@@ -359,6 +378,7 @@ public class DynamicPackableMethod implements PackableMethod {
     }
 
     private static class WrapRequestPack implements Pack {
+
         private final String serialize;
         private final MultipleSerialization multipleSerialization;
         private final String[] argumentsType;
@@ -399,7 +419,8 @@ public class DynamicPackableMethod implements PackableMethod {
         }
 
         /**
-         * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version (hessian4)
+         * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version
+         * (hessian4)
          *
          * @param serializeType literal type
          * @return hessian4 if the param is hessian2, otherwise return the param
@@ -418,5 +439,22 @@ public class DynamicPackableMethod implements PackableMethod {
             return TripleConstant.HESSIAN2;
         }
         return serializeType;
+    }
+
+    private static class PbArrayPacker implements Pack {
+
+        private final boolean singleArgument;
+
+        private PbArrayPacker(boolean singleArgument) {
+            this.singleArgument = singleArgument;
+        }
+
+        @Override
+        public byte[] pack(Object obj) throws IOException {
+            if (!singleArgument) {
+                obj = ((Object[]) obj)[0];
+            }
+            return PB_PACK.pack(obj);
+        }
     }
 }

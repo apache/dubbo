@@ -19,34 +19,23 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
 import java.util.Map;
 
-public class ObserverToClientCallListenerAdapter implements ClientCall.StartListener {
-    private final StreamObserver<Object> delegate;
-    private final ClientCallToObserverAdapter<Object> adapter;
-    private final boolean unary;
-    private boolean receiveOneMessage;
+public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
 
-    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate,
-        boolean unary,
-        ClientCallToObserverAdapter<Object> adapter) {
+    private final StreamObserver<Object> delegate;
+    private ClientCall call;
+
+    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
-        this.adapter = adapter;
-        this.unary = unary;
     }
 
     @Override
     public void onMessage(Object message) {
-        if (receiveOneMessage && unary) {
-            throw TriRpcStatus.INTERNAL.withDescription("More than one value received for unary call").asException();
-        } else {
-            delegate.onNext(message);
-            if (adapter.isAutoRequestEnabled()) {
-                adapter.request(1);
-            }
-            receiveOneMessage = true;
+        delegate.onNext(message);
+        if (call.isAutoRequestN()) {
+            call.requestN(1);
         }
     }
 
@@ -60,7 +49,10 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.StartList
     }
 
     @Override
-    public void onStart() {
-        adapter.request(1);
+    public void onStart(ClientCall call) {
+        this.call = call;
+        if (call.isAutoRequestN()) {
+            call.requestN(1);
+        }
     }
 }

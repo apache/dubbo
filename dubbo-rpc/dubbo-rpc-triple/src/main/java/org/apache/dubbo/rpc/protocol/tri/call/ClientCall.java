@@ -19,16 +19,19 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
+import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -53,6 +56,7 @@ public class ClientCall {
     private ClientStream stream;
     private boolean canceled;
     private boolean headerSent;
+    private boolean autoRequestN=true;
 
     public ClientCall(Connection connection, Executor executor, FrameworkModel frameworkModel) {
         this.connection = connection;
@@ -100,10 +104,11 @@ public class ClientCall {
         this.requestMetadata.compressor = Compressor.getCompressor(frameworkModel, compression);
     }
 
-    public void start(RequestMetadata metadata, ClientCall.StartListener responseListener) {
+    public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
-        this.stream = new ClientStream(frameworkModel, metadata.requestId, executor, connection.getChannel(),
+        this.stream = new ClientStream(frameworkModel, executor, connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, metadata.packableMethod));
+        return new ClientCallToObserverAdapter<>(this);
     }
 
     public void cancel(String message, Throwable t) {
@@ -127,33 +132,37 @@ public class ClientCall {
         stream.cancelByLocal(status);
     }
 
-    interface Listener {
+    public boolean isAutoRequestN() {
+        return autoRequestN;
+    }
+
+    public void setAutoRequestN(boolean autoRequestN) {
+        this.autoRequestN = autoRequestN;
+    }
+
+    public interface Listener {
+        
+        void onStart(ClientCall call);
 
         void onMessage(Object message);
 
         void onClose(TriRpcStatus status, Map<String, Object> trailers);
     }
 
-
-    public interface StartListener extends Listener {
-
-        void onStart();
-    }
-
     class ClientStreamListenerImpl implements ClientStreamListener {
 
-        private final StartListener listener;
+        private final Listener listener;
         private final PackableMethod packableMethod;
         private boolean done;
 
-        ClientStreamListenerImpl(StartListener listener, PackableMethod packableMethod) {
+        ClientStreamListenerImpl(Listener listener, PackableMethod packableMethod) {
             this.listener = listener;
             this.packableMethod = packableMethod;
         }
 
         @Override
         public void onStart() {
-            listener.onStart();
+            listener.onStart(ClientCall.this);
         }
 
         @Override

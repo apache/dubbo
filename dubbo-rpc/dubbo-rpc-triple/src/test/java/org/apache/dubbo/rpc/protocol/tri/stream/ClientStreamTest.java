@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
+import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -67,7 +67,7 @@ class ClientStreamTest {
 
         final RpcInvocation invocation = mock(RpcInvocation.class);
         int timeout = 1000;
-        DefaultFuture2 future = DefaultFuture2.newFuture(connection, invocation, timeout, ImmediateEventExecutor.INSTANCE);
+        DeadlineFuture future = DeadlineFuture.newFuture(connection, invocation, timeout, ImmediateEventExecutor.INSTANCE);
         MockClientStreamListener listener = new MockClientStreamListener();
         WriteQueue writeQueue = mock(WriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
