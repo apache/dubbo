@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
@@ -161,8 +162,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         synchronized (LOCK) {
             if (serviceExportExecutor == null) {
                 int coreSize = getExportThreadNum();
+                String applicationName = applicationModel.tryGetApplicationName();
+                applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
                 serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-" + applicationModel.getApplicationName() + "-service-export", true));
+                    new NamedThreadFactory("Dubbo-" + applicationName + "-service-export", true));
             }
         }
         return serviceExportExecutor;
@@ -188,8 +191,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         synchronized (LOCK) {
             if (serviceReferExecutor == null) {
                 int coreSize = getReferThreadNum();
+                String applicationName = applicationModel.tryGetApplicationName();
+                applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
                 serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-" + applicationModel.getApplicationName() + "-service-refer", true));
+                    new NamedThreadFactory("Dubbo-" + applicationName + "-service-refer", true));
             }
         }
         return serviceReferExecutor;
