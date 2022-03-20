@@ -18,7 +18,7 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -56,8 +56,8 @@ public class  PublishMetadata implements BaseCommand {
             } else {
                 try {
                     int delay = Integer.parseInt(args[0]);
-                    ExecutorRepository executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-                    executorRepository.nextScheduledExecutor()
+                    FrameworkExecutorRepository frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+                    frameworkExecutorRepository.nextScheduledExecutor()
                         .schedule(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel), delay, TimeUnit.SECONDS);
                 } catch (NumberFormatException e) {
                     logger.error("Wrong delay param", e);

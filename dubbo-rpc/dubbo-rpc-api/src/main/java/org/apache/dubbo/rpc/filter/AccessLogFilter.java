@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.Filter;
@@ -96,7 +97,8 @@ public class AccessLogFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         if (scheduled.compareAndSet(false, true)) {
-            inv.getModuleModel().getApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
+            inv.getModuleModel().getApplicationModel().getFrameworkModel().getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
                 .scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
         }
         try {

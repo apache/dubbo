@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -62,7 +62,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 /**
  * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should have already been mapped with metadata when reached here.
- *
+ * <p>
  * The operations of ServiceInstancesChangedListener should be synchronized.
  */
 public class ServiceInstancesChangedListener {
@@ -97,7 +97,7 @@ public class ServiceInstancesChangedListener {
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
         this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
-            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+            .getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
     }
 
     /**
@@ -113,7 +113,6 @@ public class ServiceInstancesChangedListener {
     }
 
     /**
-     *
      * @param event
      */
     private synchronized void doOnEvent(ServiceInstancesChangedEvent event) {

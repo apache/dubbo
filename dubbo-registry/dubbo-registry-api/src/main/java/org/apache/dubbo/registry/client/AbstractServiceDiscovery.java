@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
@@ -80,7 +80,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.registryURL = registryURL;
         this.serviceName = serviceName;
         this.metadataInfo = new MetadataInfo(serviceName);
-        this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix(), applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getCacheRefreshingScheduledExecutor());
+        this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix(),
+            applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
 
     public synchronized void register() throws RuntimeException {
