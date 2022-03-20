@@ -73,8 +73,7 @@ public class ReflectionServerCall extends ServerCall {
 
     @Override
     public ServerStreamListener doStartCall(Map<String, Object> metadata) {
-        FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
-        ProviderModel providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
+        ProviderModel providerModel = (ProviderModel) invoker.getUrl().getServiceModel();
         if (providerModel == null || providerModel.getServiceModel() == null) {
             responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
             return null;
@@ -89,10 +88,10 @@ public class ReflectionServerCall extends ServerCall {
             methodDescriptor = ServiceDescriptorInternalCache.echoService().getMethods(methodName).get(0);
         } else {
             methodDescriptors = serviceDescriptor.getMethods(methodName);
-            // try upper-case method
+            // try lower-case method
             if (CollectionUtils.isEmpty(methodDescriptors)) {
-                final String upperMethod = Character.toUpperCase(methodName.charAt(0)) + methodName.substring(1);
-                methodDescriptors = serviceDescriptor.getMethods(upperMethod);
+                final String lowerMethod = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
+                methodDescriptors = serviceDescriptor.getMethods(lowerMethod);
             }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
                 responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription(

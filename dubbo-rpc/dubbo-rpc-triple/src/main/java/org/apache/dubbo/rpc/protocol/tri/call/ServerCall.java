@@ -66,7 +66,12 @@ public abstract class ServerCall {
     public final String methodName;
     public final String serviceName;
 
-    ServerCall(Invoker<?> invoker, ServerStream serverStream, FrameworkModel frameworkModel, String serviceName, String methodName, Executor executor) {
+    ServerCall(Invoker<?> invoker,
+        ServerStream serverStream,
+        FrameworkModel frameworkModel,
+        String serviceName,
+        String methodName,
+        Executor executor) {
         this.serviceDescriptor = invoker.getUrl()
             .getServiceModel()
             .getServiceModel();

@@ -279,7 +279,6 @@ public class ServerStream extends AbstractStream {
             }
             String serviceName = parts[1];
             String originalMethodName = parts[2];
-            String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
 
             Invoker<?> invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
@@ -313,10 +312,10 @@ public class ServerStream extends AbstractStream {
             ServerCall call;
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
-                call = new StubServerCall(invoker, ServerStream.this, frameworkModel, serviceName, methodName,
+                call = new StubServerCall(invoker, ServerStream.this, frameworkModel, serviceName,originalMethodName,
                     executor);
             } else {
-                call = new ReflectionServerCall(invoker, ServerStream.this, frameworkModel, serviceName, methodName,
+                call = new ReflectionServerCall(invoker, ServerStream.this, frameworkModel, serviceName,originalMethodName,
                     filters, executor);
             }
             ServerStream.this.listener = call.startCall(headersToMap(headers));

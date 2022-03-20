@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.PathResolver;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import grpc.health.v1.Health;
 import org.junit.jupiter.api.Assertions;
@@ -39,6 +40,6 @@ public class TriBuiltinServiceTest {
 
         ModuleServiceRepository repository = frameworkModel.getInternalApplicationModel().getInternalModule().getServiceRepository();
         Assertions.assertFalse(repository.getAllServices().isEmpty());
-        Assertions.assertFalse(repository.getExportedServices().isEmpty());
+        Assertions.assertNotNull(StubSuppliers.getServiceDescriptor(Health.class.getName()));
     }
 }
