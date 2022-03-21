@@ -56,6 +56,15 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KE
 @Activate
 public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModelAware {
 
+    // 1 MiB
+    private static final int MIB_1 = 1 << 20;
+    private static final int MIB_16 = 1 << 24;
+    private static final int KIB_32 = 1 << 15;
+    private static final int DEFAULT_MAX_HEADER_LIST_SIZE = KIB_32;
+    private static final int DEFAULT_SETTING_HEADER_LIST_SIZE = 4096;
+    private static final int DEFAULT_MAX_FRAME_SIZE = MIB_16;
+    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_16;
+
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
 
@@ -83,12 +92,14 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
-                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, 4096))
+                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
                 .maxConcurrentStreams(
                     config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, 2 << 20))
-                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, 2 << 22))
-                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 2 << 16)))
+                .initialWindowSize(
+                    config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
+                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
+                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY,
+                    DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
@@ -124,13 +135,15 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
-                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, 4096))
+                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
                 .pushEnabled(config.getBoolean(H2_SETTINGS_ENABLE_PUSH_KEY, false))
                 .maxConcurrentStreams(
                     config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, 1 << 20))
-                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, 2 << 14))
-                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 8192)))
+                .initialWindowSize(
+                    config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
+                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
+                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY,
+                    DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(

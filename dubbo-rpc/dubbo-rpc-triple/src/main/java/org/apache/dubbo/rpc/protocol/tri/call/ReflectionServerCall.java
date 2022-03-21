@@ -112,11 +112,10 @@ public class ReflectionServerCall extends ServerCall {
             // Response foo(Request)
             // void foo(Request,StreamObserver<Response>)
             if (methodDescriptors.size() == 2) {
-                for (MethodDescriptor descriptor : methodDescriptors) {
-                    if (descriptor.getRpcType() == RpcType.UNARY) {
-                        methodDescriptor = descriptor;
-                        break;
-                    }
+                if (methodDescriptors.get(1).getRpcType() == RpcType.SERVER_STREAM) {
+                    methodDescriptor = methodDescriptors.get(0);
+                } else if (methodDescriptors.get(0).getRpcType() == RpcType.SERVER_STREAM) {
+                    methodDescriptor = methodDescriptors.get(1);
                 }
             }
         }
