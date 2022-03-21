@@ -148,11 +148,6 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(cmd);
     }
 
-    @Override
-    EventLoop getEventLoop() {
-        return eventLoop;
-    }
-
     /**
      * @return transport listener
      */

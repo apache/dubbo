@@ -24,11 +24,9 @@ import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.stub.StubSuppliers;
 
-import grpc.health.v1.Health;
+import io.grpc.health.v1.DubboHealthTriple;
+import io.grpc.health.v1.Health;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -60,25 +58,14 @@ public class TriBuiltinService {
 
     public void init() {
         if (init.compareAndSet(false, true)) {
-            ServiceMetadata serviceMetadata = new ServiceMetadata();
-            serviceMetadata.setServiceType(Health.class);
-            serviceMetadata.setTarget(healthService);
-            serviceMetadata.setServiceInterfaceName(Health.class.getName());
-            serviceMetadata.generateServiceKey();
-            int port = 0;
-            ProviderModel providerModel = new ProviderModel(Health.class.getName(), healthService,
-                StubSuppliers.getServiceDescriptor(Health.class.getName()), null, serviceMetadata);
-            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, port,
-                Health.class.getName()).addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
-                .setScopeModel(ApplicationModel.defaultModel().getInternalModule())
-                .setServiceModel(providerModel);
+            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
+                DubboHealthTriple.SERVICE_NAME)
+                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
+                .setScopeModel(ApplicationModel.defaultModel().getInternalModule());
             Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
-            pathResolver.add(url.getServiceKey(), invoker);
-            pathResolver.add(url.getServiceInterface(), invoker);
-            ApplicationModel.defaultModel().getInternalModule().addDestroyListener(scopeModel -> {
-                pathResolver.remove(url.getServiceKey());
-                pathResolver.remove(url.getServiceInterface());
-            });
+            pathResolver.add(DubboHealthTriple.SERVICE_NAME, invoker);
+            ApplicationModel.defaultModel().getInternalModule()
+                .addDestroyListener(scopeModel -> pathResolver.remove(url.getServiceKey()));
         }
     }
 

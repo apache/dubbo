@@ -39,8 +39,8 @@ import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
-import grpc.health.v1.HealthCheckResponse;
-import grpc.health.v1.HealthCheckResponse.ServingStatus;
+import io.grpc.health.v1.HealthCheckResponse;
+import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

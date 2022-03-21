@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
-import grpc.health.v1.Health;
+import io.grpc.health.v1.Health;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

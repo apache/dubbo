@@ -33,7 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -219,7 +219,7 @@ public class ClientCall {
                 return null;
             }
             final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader()));
-            byte[] statusDetailBin = H2TransportListener.decodeASCIIByte(raw);
+            byte[] statusDetailBin = StreamUtils.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
                 final Status statusDetail = Status.parseFrom(statusDetailBin);

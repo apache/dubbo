@@ -23,9 +23,9 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
-import grpc.health.v1.DubboHealthTriple;
-import grpc.health.v1.HealthCheckRequest;
-import grpc.health.v1.HealthCheckResponse;
+import io.grpc.health.v1.DubboHealthTriple;
+import io.grpc.health.v1.HealthCheckRequest;
+import io.grpc.health.v1.HealthCheckResponse;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;

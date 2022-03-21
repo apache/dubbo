@@ -54,18 +54,6 @@ public class DataQueueCommand extends QueuedCommand {
         }
     }
 
-    private int getCompressFlag(ChannelHandlerContext ctx) {
-//        AbstractStream stream = client ? ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get() : ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-//        return calcCompressFlag(stream.getCompressor());
-        // todo
-
-        return 0;
-    }
-
-//    protected int calcCompressFlag(Compressor compressor) {
-//
-//        return 1;
-//    }
 
     // for test
     public byte[] getData() {
@@ -77,8 +65,4 @@ public class DataQueueCommand extends QueuedCommand {
         return endStream;
     }
 
-    // for test
-//    public boolean isClient() {
-//        return client;
-//    }
 }

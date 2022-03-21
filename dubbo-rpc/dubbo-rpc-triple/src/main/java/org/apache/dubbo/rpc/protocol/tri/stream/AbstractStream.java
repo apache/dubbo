@@ -20,8 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import io.netty.channel.EventLoop;
-
 import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements Stream {
@@ -32,15 +30,5 @@ public abstract class AbstractStream implements Stream {
     public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
-    }
-
-    abstract EventLoop getEventLoop();
-
-    void runOnEventLoop(final Runnable r) {
-        if (getEventLoop().inEventLoop()) {
-            r.run();
-            return;
-        }
-        getEventLoop().execute(r);
     }
 }

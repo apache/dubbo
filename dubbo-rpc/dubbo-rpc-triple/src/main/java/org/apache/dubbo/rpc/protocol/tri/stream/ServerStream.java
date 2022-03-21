@@ -48,7 +48,6 @@ import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -72,7 +71,7 @@ public class ServerStream extends AbstractStream {
     private final WriteQueue writeQueue;
     private final PathResolver pathResolver;
     private final List<HeaderFilter> filters;
-    private final EventLoop eventLoop;
+    private final String acceptEncoding;
     private boolean headerSent;
     private boolean trailersSent;
     private ServerStreamListener listener;
@@ -83,10 +82,11 @@ public class ServerStream extends AbstractStream {
         FrameworkModel frameworkModel,
         Executor executor,
         PathResolver pathResolver,
+        String acceptEncoding,
         List<HeaderFilter> filters) {
         super(executor, frameworkModel);
-        this.eventLoop = channel.eventLoop();
         this.pathResolver = pathResolver;
+        this.acceptEncoding = acceptEncoding;
         this.filters = filters;
         this.writeQueue = new WriteQueue(channel);
     }
@@ -155,7 +155,7 @@ public class ServerStream extends AbstractStream {
         if (throwable == null) {
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                H2TransportListener.encodeBase64ASCII(status.toByteArray()));
+                StreamUtils.encodeBase64ASCII(status.toByteArray()));
             return headers;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
@@ -166,7 +166,7 @@ public class ServerStream extends AbstractStream {
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            H2TransportListener.encodeBase64ASCII(status.toByteArray()));
+            StreamUtils.encodeBase64ASCII(status.toByteArray()));
         return headers;
     }
 
@@ -208,10 +208,6 @@ public class ServerStream extends AbstractStream {
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true));
     }
 
-    @Override
-    EventLoop getEventLoop() {
-        return eventLoop;
-    }
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
         final String version =
@@ -340,13 +336,11 @@ public class ServerStream extends AbstractStream {
             ServerCall call;
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
-                call = new StubServerCall(invoker, ServerStream.this, frameworkModel, serviceName,
-                    originalMethodName,
-                    executor);
+                call = new StubServerCall(invoker, ServerStream.this, frameworkModel,
+                    acceptEncoding, serviceName, originalMethodName, executor);
             } else {
                 call = new ReflectionServerCall(invoker, ServerStream.this, frameworkModel,
-                    serviceName, originalMethodName,
-                    filters, executor);
+                    acceptEncoding, serviceName, originalMethodName, filters, executor);
             }
             ServerStream.this.listener = call.startCall(headersToMap(headers));
             if (listener == null) {
@@ -360,9 +354,7 @@ public class ServerStream extends AbstractStream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> {
-                doOnData(data, endStream);
-            });
+            executor.execute(() -> doOnData(data, endStream));
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {

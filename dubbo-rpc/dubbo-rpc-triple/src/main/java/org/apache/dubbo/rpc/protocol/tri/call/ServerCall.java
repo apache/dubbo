@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 
@@ -58,7 +59,8 @@ public abstract class ServerCall {
     public final Executor executor;
     public final String methodName;
     public final String serviceName;
-    public ServiceDescriptor serviceDescriptor;
+    public final ServiceDescriptor serviceDescriptor;
+    private final String acceptEncoding;
     public boolean autoRequestN = true;
     public Long timeout;
     ServerCall.Listener listener;
@@ -69,18 +71,19 @@ public abstract class ServerCall {
     ServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
+        ServiceDescriptor serviceDescriptor,
+        String acceptEncoding,
         String serviceName,
         String methodName,
         Executor executor) {
-        this.serviceDescriptor = invoker.getUrl()
-            .getServiceModel()
-            .getServiceModel();
         this.invoker = invoker;
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
-        this.methodName = methodName;
+        this.serviceDescriptor = serviceDescriptor;
         this.serviceName = serviceName;
+        this.methodName = methodName;
         this.serverStream = serverStream;
+        this.acceptEncoding = acceptEncoding;
     }
 
     protected abstract ServerStreamListener doStartCall(Map<String, Object> metadata);
@@ -106,6 +109,12 @@ public abstract class ServerCall {
     }
 
     public ServerStreamListener startCall(Map<String, Object> metadata) {
+        if (serviceDescriptor == null) {
+            responseErr(
+                TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
+            return null;
+        }
+
         // handle timeout
         String timeout = (String) metadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
         try {
@@ -126,7 +135,12 @@ public abstract class ServerCall {
             throw new IllegalStateException("Header has already sent");
         }
         headerSent = true;
-        final DefaultHttp2Headers headers = TripleConstant.createSuccessHttp2Headers();
+        DefaultHttp2Headers headers = new DefaultHttp2Headers();
+        headers.status(HttpResponseStatus.OK.codeAsText());
+        headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        if (acceptEncoding != null) {
+            headers.set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncoding);
+        }
         if (compressor != null) {
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());

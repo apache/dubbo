@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import io.netty.handler.codec.http2.Http2Headers;
 
@@ -50,7 +51,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                 try {
                     String realKey = key.substring(0,
                         key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
-                    byte[] value = H2TransportListener.decodeASCIIByte(header.getValue());
+                    byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);

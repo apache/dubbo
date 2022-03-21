@@ -17,13 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import com.google.protobuf.Message;
 
@@ -38,15 +41,27 @@ public class StubServerCall extends ServerCall {
     public StubServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
+        String acceptEncoding,
         String serviceName,
         String methodName,
         Executor executor) {
-        super(invoker, serverStream, frameworkModel, serviceName, methodName, executor);
-        this.methodDescriptor = (StubMethodDescriptor) invoker.getUrl()
-            .getServiceModel()
-            .getServiceModel()
-            .getMethods(methodName)
+        super(invoker, serverStream, frameworkModel,
+            getServiceDescriptor(invoker.getUrl(), serviceName),
+            acceptEncoding, serviceName, methodName, executor);
+        this.methodDescriptor = (StubMethodDescriptor) serviceDescriptor.getMethods(methodName)
             .get(0);
+    }
+
+    private static ServiceDescriptor getServiceDescriptor(URL url, String serviceName) {
+        ServiceDescriptor serviceDescriptor;
+        if (url.getServiceModel() != null) {
+            serviceDescriptor = url
+                .getServiceModel()
+                .getServiceModel();
+        } else {
+            serviceDescriptor = StubSuppliers.getServiceDescriptor(serviceName);
+        }
+        return serviceDescriptor;
     }
 
     @Override

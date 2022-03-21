@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import grpc.health.v1.Health;
-import grpc.health.v1.HealthCheckResponse;
+import io.grpc.health.v1.Health;
+import io.grpc.health.v1.HealthCheckResponse;
 
 public class HealthStatusManager {
 

@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
@@ -56,12 +57,25 @@ public class ReflectionServerCall extends ServerCall {
     public ReflectionServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
+        String acceptEncoding,
         String serviceName,
         String methodName,
         List<HeaderFilter> headerFilters,
         Executor executor) {
-        super(invoker, serverStream, frameworkModel, serviceName, methodName, executor);
+        super(invoker, serverStream, frameworkModel,
+            getServiceDescriptor(invoker.getUrl()),
+            acceptEncoding, serviceName, methodName,
+            executor);
         this.headerFilters = headerFilters;
+    }
+
+    private static ServiceDescriptor getServiceDescriptor(URL url) {
+        ProviderModel providerModel = (ProviderModel) url.getServiceModel();
+        if (providerModel == null || providerModel.getServiceModel() == null) {
+            return null;
+
+        }
+        return providerModel.getServiceModel();
     }
 
     private boolean isEcho(String methodName) {
@@ -75,13 +89,6 @@ public class ReflectionServerCall extends ServerCall {
 
     @Override
     public ServerStreamListener doStartCall(Map<String, Object> metadata) {
-        ProviderModel providerModel = (ProviderModel) invoker.getUrl().getServiceModel();
-        if (providerModel == null || providerModel.getServiceModel() == null) {
-            responseErr(
-                TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
-            return null;
-        }
-        serviceDescriptor = providerModel.getServiceModel();
 
         if (isGeneric(methodName)) {
             // There should be one and only one
