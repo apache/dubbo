@@ -45,6 +45,9 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 55233L;
 
+    /**
+     * metadata center protocol
+     */
     private String protocol;
 
     /**

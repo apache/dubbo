@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.metadata.report.support.NopMetadataReport;
@@ -48,6 +50,8 @@ import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT
  * <dubbo:metadata id=demo2 address="metadata://"/>
  */
 public class MetadataReportInstance implements Disposable {
+
+    private static final Logger log = LoggerFactory.getLogger(MetadataReportInstance.class);
 
     private AtomicBoolean init = new AtomicBoolean(false);
     private String metadataType;
@@ -82,6 +86,9 @@ public class MetadataReportInstance implements Disposable {
         URL url = config.toUrl();
         if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
             String protocol = url.getParameter(METADATA_REPORT_KEY, config.getProtocol());
+            if(isEmpty(protocol)){
+                log.error("Metadata report instance cannot work with an empty protocol,please check your address or protocol configuration");
+            }
             url = URLBuilder.from(url)
                     .setProtocol(protocol)
                     .setScopeModel(config.getScopeModel())
