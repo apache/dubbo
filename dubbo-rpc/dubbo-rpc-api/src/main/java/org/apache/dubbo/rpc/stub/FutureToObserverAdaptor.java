@@ -30,6 +30,9 @@ public class FutureToObserverAdaptor<T> implements StreamObserver<T> {
 
     @Override
     public void onNext(T data) {
+        if (future.isDone() || future.isCancelled()) {
+            throw new IllegalStateException("Too many response for unary method");
+        }
         future.complete(data);
     }
 
