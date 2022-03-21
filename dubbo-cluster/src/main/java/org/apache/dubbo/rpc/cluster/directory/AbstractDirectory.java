@@ -180,7 +180,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
         if (destroyed) {
-            throw new RpcException("Directory already destroyed .url: " + getUrl());
+            throw new RpcException("Directory already destroyed. url: " + getConsumerUrl());
         }
 
         BitList<Invoker<T>> availableInvokers;
