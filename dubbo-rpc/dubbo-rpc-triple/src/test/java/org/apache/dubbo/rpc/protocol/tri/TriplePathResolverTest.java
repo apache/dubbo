@@ -35,7 +35,7 @@ public class TriplePathResolverTest {
     private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
 
-    private static Invoker<Object> INVOKER = new Invoker<Object>() {
+    private static final Invoker<Object> INVOKER = new Invoker<Object>() {
         @Override
         public URL getUrl() {
             return null;

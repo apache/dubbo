@@ -70,7 +70,7 @@ public class ClientCall {
         }
         if (!headerSent) {
             headerSent = true;
-            stream.startCall(requestMetadata);
+            stream.sendHeader(requestMetadata.toHeaders());
         }
         final byte[] data;
         try {

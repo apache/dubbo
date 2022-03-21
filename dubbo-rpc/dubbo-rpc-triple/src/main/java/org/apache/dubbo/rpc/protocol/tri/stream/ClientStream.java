@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
@@ -37,8 +36,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.EventLoop;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
@@ -59,7 +56,6 @@ public class ClientStream extends AbstractStream implements Stream {
 
     public final ClientStreamListener listener;
     private final WriteQueue writeQueue;
-    private EventLoop eventLoop;
     private Deframer deframer;
 
     // for test
@@ -88,7 +84,6 @@ public class ClientStream extends AbstractStream implements Stream {
             throw new IllegalStateException("Create remote stream failed. channel:" + parent);
         }
         final Http2StreamChannel channel = future.getNow();
-        eventLoop = channel.eventLoop();
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
@@ -99,13 +94,11 @@ public class ClientStream extends AbstractStream implements Stream {
         writeQueue.close();
     }
 
-    public void startCall(RequestMetadata metadata) {
+    public void sendHeader(Http2Headers headers) {
         if (this.writeQueue == null) {
             // already processed at createStream()
             return;
         }
-        DefaultHttp2Headers headers = metadata.toHeaders();
-
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
         this.writeQueue.enqueue(headerCmd).addListener(future -> {
             if (!future.isSuccess()) {

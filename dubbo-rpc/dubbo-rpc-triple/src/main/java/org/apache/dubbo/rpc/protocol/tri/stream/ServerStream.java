@@ -369,7 +369,6 @@ public class ServerStream extends AbstractStream {
             executor.execute(() -> listener.cancel(status));
         }
 
-
         private class ServerDecoderListener implements TriDecoder.Listener {
 
             @Override

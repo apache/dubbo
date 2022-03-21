@@ -76,7 +76,7 @@ class ClientStreamTest {
         requestMetadata.service = url.getPath();
         requestMetadata.group = url.getGroup();
         requestMetadata.version = url.getVersion();
-        stream.startCall(requestMetadata);
+        stream.sendHeader(requestMetadata.toHeaders());
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
