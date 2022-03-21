@@ -56,7 +56,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         this.timeout = timeout;
         TimeoutCheckTask timeoutCheckTask = new TimeoutCheckTask();
         this.timeoutTask = TIME_OUT_TIMER.get()
-            .newTimeout(timeoutCheckTask, timeout, TimeUnit.MILLISECONDS);
+                .newTimeout(timeoutCheckTask, timeout, TimeUnit.MILLISECONDS);
     }
 
     public static void destroy() {
@@ -70,7 +70,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
      * @return a new DefaultFuture
      */
     public static DeadlineFuture newFuture(String serviceName, String methodName, String address,
-        int timeout, ExecutorService executor) {
+                                           int timeout, ExecutorService executor) {
         final DeadlineFuture future = new DeadlineFuture(serviceName, methodName, address, timeout);
         future.setExecutor(executor);
         // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
@@ -78,9 +78,11 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
             ((ThreadlessExecutor) executor).setWaitingFuture(future);
         }
         return future;
-    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
-            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
+    }
+
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+            () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
+                    TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 
     public void received(TriRpcStatus status, AppResponse appResponse) {
         if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {
@@ -124,14 +126,14 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     }
 
     private void doReceived(TriRpcStatus status, AppResponse appResponse) {
-        if (isDone()) {
+        if (isDone() || isCancelled() || isCompletedExceptionally()) {
             return;
         }
         if (status.isOk()) {
             this.complete(appResponse);
         } else {
             this.completeExceptionally(
-                status.appendDescription("RemoteAddress:" + address).asException());
+                    status.appendDescription("RemoteAddress:" + address).asException());
         }
 
         // the result is returning, but the caller thread may still waiting
@@ -140,8 +142,8 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             if (threadlessExecutor.isWaiting()) {
                 threadlessExecutor.notifyReturn(new IllegalStateException(
-                    "The result has returned, but the biz thread is still waiting"
-                        + " which is not an expected state, interrupt the thread manually by returning an exception."));
+                        "The result has returned, but the biz thread is still waiting"
+                                + " which is not an expected state, interrupt the thread manually by returning an exception."));
             }
         }
     }
@@ -149,10 +151,10 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private String getTimeoutMessage() {
         long nowTimestamp = System.currentTimeMillis();
         return "Waiting server-side response timeout by scan timer. start time: "
-            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start)))
-            + ", end time: " + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(
-            new Date(nowTimestamp))) + ", timeout: " + timeout + " ms, service: " + serviceName
-            + ", method: " + methodName;
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start)))
+                + ", end time: " + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(
+                new Date(nowTimestamp))) + ", timeout: " + timeout + " ms, service: " + serviceName
+                + ", method: " + methodName;
     }
 
     private class TimeoutCheckTask implements TimerTask {
@@ -177,12 +179,10 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
         private void notifyTimeout() {
             final TriRpcStatus status = TriRpcStatus.DEADLINE_EXCEEDED.withDescription(
-                getTimeoutMessage());
+                    getTimeoutMessage());
             DeadlineFuture.this.doReceived(status, null);
         }
     }
-
-
 
 
 }
