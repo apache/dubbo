@@ -194,7 +194,11 @@ public class TriRpcStatus {
     }
 
     public String toMessageWithoutCause() {
-        return String.format("%s : %s", code, description);
+        if (description != null) {
+            return String.format("%s : %s", code, description);
+        } else {
+            return code.toString();
+        }
     }
 
     public String toMessage() {

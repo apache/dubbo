@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
 import io.netty.channel.Channel;
@@ -45,21 +46,24 @@ class TripleInvokerTest {
         Connection connection = Mockito.mock(Connection.class);
         ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);
         when(connectionManager.connect(any(URL.class)))
-                .thenReturn(connection);
+            .thenReturn(connection);
         when(connection.getChannel())
-                .thenReturn(channel);
+            .thenReturn(channel);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
-        ExecutorService executorService = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension()
-                .createExecutorIfAbsent(url);
+        ExecutorService executorService = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .createExecutorIfAbsent(url);
         ClientCall call = Mockito.mock(ClientCall.class);
         StreamObserver streamObserver = Mockito.mock(StreamObserver.class);
         when(call.start(any(RequestMetadata.class), any(ClientCall.Listener.class)))
-                .thenReturn(streamObserver);
+            .thenReturn(streamObserver);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
-        TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url, connectionManager, new HashSet<>(), executorService);
-        MethodDescriptor echoMethod = new ReflectionMethodDescriptor(IGreeter.class.getDeclaredMethod("echo", String.class));
+        TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url,
+            Identity.MESSAGE_ENCODING, connectionManager, new HashSet<>(), executorService);
+        MethodDescriptor echoMethod = new ReflectionMethodDescriptor(
+            IGreeter.class.getDeclaredMethod("echo", String.class));
         invoker.invokeUnary(echoMethod, invocation, call);
     }
 

@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -44,6 +45,7 @@ import grpc.health.v1.HealthCheckResponse.ServingStatus;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
@@ -65,6 +67,7 @@ public class TripleProtocol extends AbstractProtocol {
     private final TriBuiltinService triBuiltinService;
     private final ConnectionManager connectionManager;
     private final FrameworkModel frameworkModel;
+    private final String acceptEncodings;
     private boolean versionChecked = false;
 
     public TripleProtocol(FrameworkModel frameworkModel) {
@@ -72,6 +75,9 @@ public class TripleProtocol extends AbstractProtocol {
         this.triBuiltinService = new TriBuiltinService(frameworkModel);
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
+        Set<String> supported = frameworkModel.getExtensionLoader(DeCompressor.class)
+            .getSupportedExtensions();
+        this.acceptEncodings = String.join(",", supported);
         this.connectionManager = frameworkModel.getExtensionLoader(ConnectionManager.class)
             .getExtension("multiple");
     }
@@ -122,8 +128,8 @@ public class TripleProtocol extends AbstractProtocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
             url.getOrDefaultApplicationModel());
-        TripleInvoker<T> invoker = new TripleInvoker<>(type, url, connectionManager, invokers,
-            streamExecutor);
+        TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
+            connectionManager, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
     }
