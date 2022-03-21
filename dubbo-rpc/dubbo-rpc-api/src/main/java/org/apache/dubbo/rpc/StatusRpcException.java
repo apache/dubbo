@@ -15,24 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.transport;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+public class StatusRpcException extends RpcException {
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+    public TriRpcStatus getStatus() {
+        return status;
+    }
 
-public class TripleCommandOutBoundHandler extends ChannelOutboundHandlerAdapter {
+    private final TriRpcStatus status;
 
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)
-        throws Exception {
-        if (msg instanceof QueuedCommand) {
-            QueuedCommand command = (QueuedCommand) msg;
-            command.send(ctx, promise);
-        } else {
-            super.write(ctx, msg, promise);
-        }
+    public StatusRpcException(TriRpcStatus status) {
+        super(status.code.code, status.toMessageWithoutCause(), status.cause);
+        this.status = status;
     }
 }

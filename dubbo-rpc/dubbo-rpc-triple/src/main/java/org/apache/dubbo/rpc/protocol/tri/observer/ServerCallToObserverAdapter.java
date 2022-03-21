@@ -20,14 +20,16 @@ package org.apache.dubbo.rpc.protocol.tri.observer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
 import java.util.Map;
 
-public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
+public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements
+    ServerStreamObserver<T> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     public final CancellationContext cancellationContext;
     private final ServerCall call;
@@ -35,7 +37,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     private boolean terminated = false;
 
     public ServerCallToObserverAdapter(ServerCall call,
-                                       CancellationContext cancellationContext) {
+        CancellationContext cancellationContext) {
         this.call = call;
         this.cancellationContext = cancellationContext;
     }
@@ -56,7 +58,8 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void onNext(Object data) {
         if (isTerminated()) {
-            throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
+            throw new IllegalStateException(
+                "Stream observer has been terminated, no more data is allowed");
         }
         call.writeMessage(data);
     }

@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 public class ReflectionServerCall extends ServerCall {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionServerCall.class);
     private final List<HeaderFilter> headerFilters;
     private MethodDescriptor methodDescriptor;
@@ -67,29 +68,34 @@ public class ReflectionServerCall extends ServerCall {
     }
 
     private boolean isGeneric(String methodName) {
-        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
+        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(
+            methodName);
     }
 
     @Override
     public ServerStreamListener doStartCall(Map<String, Object> metadata) {
         ProviderModel providerModel = (ProviderModel) invoker.getUrl().getServiceModel();
         if (providerModel == null || providerModel.getServiceModel() == null) {
-            responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
+            responseErr(
+                TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
             return null;
         }
         serviceDescriptor = providerModel.getServiceModel();
 
         if (isGeneric(methodName)) {
             // There should be one and only one
-            methodDescriptor = ServiceDescriptorInternalCache.genericService().getMethods(methodName).get(0);
+            methodDescriptor = ServiceDescriptorInternalCache.genericService()
+                .getMethods(methodName).get(0);
         } else if (isEcho(methodName)) {
             // There should be one and only one
-            methodDescriptor = ServiceDescriptorInternalCache.echoService().getMethods(methodName).get(0);
+            methodDescriptor = ServiceDescriptorInternalCache.echoService().getMethods(methodName)
+                .get(0);
         } else {
             methodDescriptors = serviceDescriptor.getMethods(methodName);
             // try lower-case method
             if (CollectionUtils.isEmpty(methodDescriptors)) {
-                final String lowerMethod = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
+                final String lowerMethod =
+                    Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
                 methodDescriptors = serviceDescriptor.getMethods(lowerMethod);
             }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
@@ -115,6 +121,22 @@ public class ReflectionServerCall extends ServerCall {
         return packableMethod.packResponse(message);
     }
 
+    /**
+     * Build the RpcInvocation with metadata and execute headerFilter
+     *
+     * @param headers request header
+     * @return RpcInvocation
+     */
+    protected RpcInvocation buildInvocation(Map<String, Object> headers) {
+        final URL url = invoker.getUrl();
+        RpcInvocation inv = new RpcInvocation(url.getServiceModel(), methodName,
+            serviceDescriptor.getInterfaceName(),
+            url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
+        inv.setTargetServiceUniqueName(url.getServiceKey());
+        inv.setReturnTypes(methodDescriptor.getReturnTypes());
+        inv.setObjectAttachments(headers);
+        return inv;
+    }
 
     class ServerStreamListenerImpl extends ServerCall.ServerStreamListenerBase {
 
@@ -149,7 +171,8 @@ public class ReflectionServerCall extends ServerCall {
                 return;
             }
             if (serviceDescriptor != null) {
-                ClassLoadUtil.switchContextLoader(serviceDescriptor.getServiceInterfaceClass().getClassLoader());
+                ClassLoadUtil.switchContextLoader(
+                    serviceDescriptor.getServiceInterfaceClass().getClassLoader());
             }
             final Object obj = packableMethod.getRequestUnpack().unpack(message);
             listener.onMessage(obj);
@@ -162,7 +185,8 @@ public class ReflectionServerCall extends ServerCall {
             final TripleWrapper.TripleRequestWrapper request;
             request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
 
-            final String[] paramTypes = request.getArgTypesList().toArray(new String[request.getArgsCount()]);
+            final String[] paramTypes = request.getArgTypesList()
+                .toArray(new String[request.getArgsCount()]);
             // wrapper mode the method can overload so maybe list
             for (MethodDescriptor descriptor : methodDescriptors) {
                 // params type is array
@@ -172,8 +196,10 @@ public class ReflectionServerCall extends ServerCall {
                 }
             }
             if (methodDescriptor == null) {
-                close(TriRpcStatus.UNIMPLEMENTED.withDescription("Method :" + methodName + "[" + Arrays.toString(
-                    paramTypes) + "] " + "not found of service:" + serviceDescriptor.getInterfaceName()), null);
+                close(TriRpcStatus.UNIMPLEMENTED.withDescription(
+                    "Method :" + methodName + "[" + Arrays.toString(
+                        paramTypes) + "] " + "not found of service:"
+                        + serviceDescriptor.getInterfaceName()), null);
                 return;
             }
             packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
@@ -197,28 +223,13 @@ public class ReflectionServerCall extends ServerCall {
             if (closed) {
                 return;
             }
-            listener = ServerCallUtil.startCall(ReflectionServerCall.this, invocation, methodDescriptor, invoker);
+            listener = ServerCallUtil.startCall(ReflectionServerCall.this, invocation,
+                methodDescriptor, invoker);
             if (listener == null) {
                 closed = true;
             }
         }
 
-    }
-
-    /**
-     * Build the RpcInvocation with metadata and execute headerFilter
-     *
-     * @param headers request header
-     * @return RpcInvocation
-     */
-    protected RpcInvocation buildInvocation(Map<String, Object> headers) {
-        final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(), methodName, serviceDescriptor.getInterfaceName(),
-            url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
-        inv.setTargetServiceUniqueName(url.getServiceKey());
-        inv.setReturnTypes(methodDescriptor.getReturnTypes());
-        inv.setObjectAttachments(headers);
-        return inv;
     }
 }
 

@@ -30,6 +30,7 @@ import io.netty.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class GracefulShutdown {
+
     static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
     private static final long GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(10);
     private final ChannelHandlerContext ctx;
@@ -38,7 +39,8 @@ public class GracefulShutdown {
     private boolean pingAckedOrTimeout;
     private Future<?> pingFuture;
 
-    public GracefulShutdown(ChannelHandlerContext ctx, String goAwayMessage, ChannelPromise originPromise) {
+    public GracefulShutdown(ChannelHandlerContext ctx, String goAwayMessage,
+        ChannelPromise originPromise) {
         this.ctx = ctx;
         this.goAwayMessage = goAwayMessage;
         this.originPromise = originPromise;

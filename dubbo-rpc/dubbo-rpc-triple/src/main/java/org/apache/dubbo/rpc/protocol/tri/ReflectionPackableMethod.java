@@ -56,19 +56,6 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
 
-    public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
-        final String serializeName = url.getParameter(SERIALIZATION_KEY,
-            DEFAULT_REMOTING_SERIALIZATION);
-        Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
-        if (stored != null) {
-            return (ReflectionPackableMethod) stored;
-        }
-        ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
-            methodDescriptor, url, serializeName);
-        methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
-        return reflectionPackableMethod;
-    }
-
     public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
@@ -116,26 +103,18 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
     }
 
-    @Override
-    public Pack getRequestPack() {
-        return requestPack;
+    public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
+        final String serializeName = url.getParameter(SERIALIZATION_KEY,
+            DEFAULT_REMOTING_SERIALIZATION);
+        Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
+        if (stored != null) {
+            return (ReflectionPackableMethod) stored;
+        }
+        ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
+            methodDescriptor, url, serializeName);
+        methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
+        return reflectionPackableMethod;
     }
-
-    @Override
-    public Pack getResponsePack() {
-        return responsePack;
-    }
-
-    @Override
-    public UnPack getResponseUnpack() {
-        return responseUnpack;
-    }
-
-    @Override
-    public UnPack getRequestUnpack() {
-        return requestUnpack;
-    }
-
 
     static boolean isStreamType(Class<?> type) {
         return StreamObserver.class.isAssignableFrom(type) || GRPC_STREAM_CLASS.equalsIgnoreCase(
@@ -279,7 +258,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         return Iterator.class.isAssignableFrom(returnClass);
     }
 
-
     static boolean isMono(Class<?> clz) {
         return REACTOR_RETURN_CLASS.equalsIgnoreCase(clz.getName());
     }
@@ -301,6 +279,33 @@ public class ReflectionPackableMethod implements PackableMethod {
             clazz = clazz.getSuperclass();
         }
         return false;
+    }
+
+    private static String convertHessianFromWrapper(String serializeType) {
+        if (TripleConstant.HESSIAN4.equals(serializeType)) {
+            return TripleConstant.HESSIAN2;
+        }
+        return serializeType;
+    }
+
+    @Override
+    public Pack getRequestPack() {
+        return requestPack;
+    }
+
+    @Override
+    public Pack getResponsePack() {
+        return responsePack;
+    }
+
+    @Override
+    public UnPack getResponseUnpack() {
+        return responseUnpack;
+    }
+
+    @Override
+    public UnPack getRequestUnpack() {
+        return requestUnpack;
     }
 
     private static class WrapResponsePack implements Pack {
@@ -327,33 +332,6 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .setData(ByteString.copyFrom(bos.toByteArray()))
                 .build()
                 .toByteArray();
-        }
-    }
-
-    private class WrapRequestUnpack implements UnPack {
-
-        private final MultipleSerialization serialization;
-        private final URL url;
-
-        private WrapRequestUnpack(MultipleSerialization serialization, URL url) {
-            this.serialization = serialization;
-            this.url = url;
-        }
-
-        @Override
-        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
-            TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(
-                data);
-            Object[] ret = new Object[wrapper.getArgsCount()];
-            final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
-            ((WrapResponsePack) responsePack).serialize = serializeType;
-            for (int i = 0; i < wrapper.getArgsList().size(); i++) {
-                ByteArrayInputStream bais = new ByteArrayInputStream(
-                    wrapper.getArgs(i).toByteArray());
-                ret[i] = serialization.deserialize(url, serializeType, wrapper.getArgTypes(i),
-                    bais);
-            }
-            return ret;
         }
     }
 
@@ -434,13 +412,6 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     }
 
-    private static String convertHessianFromWrapper(String serializeType) {
-        if (TripleConstant.HESSIAN4.equals(serializeType)) {
-            return TripleConstant.HESSIAN2;
-        }
-        return serializeType;
-    }
-
     private static class PbArrayPacker implements Pack {
 
         private final boolean singleArgument;
@@ -455,6 +426,33 @@ public class ReflectionPackableMethod implements PackableMethod {
                 obj = ((Object[]) obj)[0];
             }
             return PB_PACK.pack(obj);
+        }
+    }
+
+    private class WrapRequestUnpack implements UnPack {
+
+        private final MultipleSerialization serialization;
+        private final URL url;
+
+        private WrapRequestUnpack(MultipleSerialization serialization, URL url) {
+            this.serialization = serialization;
+            this.url = url;
+        }
+
+        @Override
+        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+            TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(
+                data);
+            Object[] ret = new Object[wrapper.getArgsCount()];
+            final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
+            ((WrapResponsePack) responsePack).serialize = serializeType;
+            for (int i = 0; i < wrapper.getArgsList().size(); i++) {
+                ByteArrayInputStream bais = new ByteArrayInputStream(
+                    wrapper.getArgs(i).toByteArray());
+                ret[i] = serialization.deserialize(url, serializeType, wrapper.getArgTypes(i),
+                    bais);
+            }
+            return ret;
         }
     }
 }

@@ -23,10 +23,10 @@ import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
 
 import java.util.Map;
 
-public class UnaryClientCallListener implements ClientCall.Listener{
+public class UnaryClientCallListener implements ClientCall.Listener {
 
-    private Object appResponse;
     private final DeadlineFuture future;
+    private Object appResponse;
 
     public UnaryClientCallListener(DeadlineFuture deadlineFuture) {
         this.future = deadlineFuture;

@@ -35,7 +35,9 @@ import java.util.Set;
 import static org.apache.dubbo.rpc.protocol.tri.transport.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
 
 public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TripleServerConnectionHandler.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(
+        TripleServerConnectionHandler.class);
     // Some exceptions are not very useful and add too much noise to the log
     private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
     private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();

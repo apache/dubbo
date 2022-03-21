@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
     public final CancellationContext cancellationContext;
     final RpcInvocation invocation;
@@ -35,7 +36,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     final ServerCallToObserverAdapter<Object> responseObserver;
 
     public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                      ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
@@ -53,7 +54,8 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
             }
             final long cost = System.currentTimeMillis() - stInMillis;
             if (responseObserver.isTimeout(cost)) {
-                LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
+                LOGGER.error(String.format(
+                    "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
                     invocation.getTargetServiceUniqueName(),
                     invocation.getMethodName(),
                     cost));

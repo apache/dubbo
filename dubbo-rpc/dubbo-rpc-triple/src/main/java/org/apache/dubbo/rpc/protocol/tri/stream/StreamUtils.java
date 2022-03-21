@@ -35,37 +35,11 @@ import java.util.Locale;
 import java.util.Map;
 
 public class StreamUtils {
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
 
-    public static DefaultHttp2Headers metadataToHeaders(RequestMetadata metadata) {
-        DefaultHttp2Headers header = new DefaultHttp2Headers(false);
-        header.scheme(metadata.scheme)
-            .authority(metadata.address)
-            .method(HttpMethod.POST.asciiName())
-            .path("/" + metadata.service + "/" + metadata.method.getMethodName())
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
-        setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), metadata.timeout);
-        if (!"1.0.0".equals(metadata.version)) {
-            setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getHeader(), metadata.version);
-        }
-        setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getHeader(), metadata.group);
-        setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), metadata.application);
-        setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), metadata.acceptEncoding);
-        if (!Identity.MESSAGE_ENCODING.equals(metadata.compressor.getMessageEncoding())) {
-            setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), metadata.compressor.getMessageEncoding());
-        }
-        StreamUtils.convertAttachment(header, metadata.attachments);
-        return header;
-    }
 
-    private static void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
-        if (value == null) {
-            return;
-        }
-        headers.set(key, value);
-    }
 
 
     /**
@@ -75,7 +49,8 @@ public class StreamUtils {
      * @param headers     the metadata holder
      * @param attachments KV pairs
      */
-    public static void convertAttachment(DefaultHttp2Headers headers, Map<String, Object> attachments) {
+    public static void convertAttachment(DefaultHttp2Headers headers,
+        Map<String, Object> attachments) {
         if (attachments == null) {
             return;
         }
@@ -110,7 +85,8 @@ public class StreamUtils {
                 headers.set(key + TripleConstant.GRPC_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {
-            LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
+            LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v,
+                t);
         }
     }
 

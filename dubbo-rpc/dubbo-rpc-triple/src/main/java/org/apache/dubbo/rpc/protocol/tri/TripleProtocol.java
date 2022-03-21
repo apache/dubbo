@@ -53,8 +53,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 public class TripleProtocol extends AbstractProtocol {
 
 
-    private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
     public static final String METHOD_ATTR_PACK = "pack";
+    private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
     private static final URL THREAD_POOL_URL = new URL(CommonConstants.TRIPLE,
         CommonConstants.LOCALHOST_VALUE, 50051)
         .addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)

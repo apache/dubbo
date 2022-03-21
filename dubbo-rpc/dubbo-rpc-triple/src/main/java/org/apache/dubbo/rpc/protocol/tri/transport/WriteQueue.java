@@ -55,7 +55,8 @@ public class WriteQueue {
             channel.eventLoop().execute(this::flush);
         }
     }
-    public void close(){
+
+    public void close() {
         channel.close();
     }
 

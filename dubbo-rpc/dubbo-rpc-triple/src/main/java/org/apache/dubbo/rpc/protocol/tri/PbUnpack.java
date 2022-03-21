@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class PbUnpack<T> implements PackableMethod.UnPack {
+
     private final Class<T> clz;
 
     public PbUnpack(Class<T> clz) {

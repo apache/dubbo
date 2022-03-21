@@ -32,7 +32,8 @@ public interface ClientStreamListener extends StreamListener {
      * @param rpcStatus
      * @param attachments
      */
-    void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders);
+    void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments,
+        Map<String, String> excludeHeaders);
 
     default void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments) {
         complete(rpcStatus, attachments, Collections.emptyMap());

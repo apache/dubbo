@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 public class StubServerCall extends ServerCall {
+
     private final StubMethodDescriptor methodDescriptor;
 
     public StubServerCall(Invoker<?> invoker,

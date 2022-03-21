@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -48,6 +47,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 public class ClientCall {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
     private final Connection connection;
     private final Executor executor;
@@ -56,7 +56,7 @@ public class ClientCall {
     private ClientStream stream;
     private boolean canceled;
     private boolean headerSent;
-    private boolean autoRequestN=true;
+    private boolean autoRequestN = true;
 
     public ClientCall(Connection connection, Executor executor, FrameworkModel frameworkModel) {
         this.connection = connection;
@@ -75,11 +75,14 @@ public class ClientCall {
         final byte[] data;
         try {
             data = requestMetadata.packableMethod.packRequest(message);
-            int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
+            int compressed =
+                Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding())
+                    ? 0 : 1;
             final byte[] compress = requestMetadata.compressor.compress(data);
             stream.writeMessage(compress, compressed);
         } catch (Throwable t) {
-            LOGGER.error(String.format("Serialize triple request failed, service=%s method=%s", requestMetadata.service,
+            LOGGER.error(String.format("Serialize triple request failed, service=%s method=%s",
+                requestMetadata.service,
                 requestMetadata.method), t);
             cancel("Serialize request failed", t);
         }
@@ -104,7 +107,8 @@ public class ClientCall {
         this.requestMetadata.compressor = Compressor.getCompressor(frameworkModel, compression);
     }
 
-    public StreamObserver<Object> start(RequestMetadata metadata, ClientCall.Listener responseListener) {
+    public StreamObserver<Object> start(RequestMetadata metadata,
+        ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.stream = new ClientStream(frameworkModel, executor, connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, metadata.packableMethod));
@@ -141,7 +145,7 @@ public class ClientCall {
     }
 
     public interface Listener {
-        
+
         void onStart(ClientCall call);
 
         void onMessage(Object message);
@@ -169,19 +173,23 @@ public class ClientCall {
         public void onMessage(byte[] message) {
             if (done) {
                 LOGGER.warn(
-                    "Received message from closed stream,connection=" + connection + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
+                    "Received message from closed stream,connection=" + connection + " service="
+                        + requestMetadata.service + " method="
+                        + requestMetadata.method.getMethodName());
                 return;
             }
             try {
                 final Object unpacked = packableMethod.parseResponse(message);
                 listener.onMessage(unpacked);
             } catch (IOException | ClassNotFoundException e) {
-                cancelByErr(TriRpcStatus.INTERNAL.withDescription("Deserialize response failed").withCause(e));
+                cancelByErr(TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
+                    .withCause(e));
             }
         }
 
         @Override
-        public void complete(TriRpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
+        public void complete(TriRpcStatus status, Map<String, Object> attachments,
+            Map<String, String> excludeHeaders) {
             done = true;
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
@@ -193,7 +201,8 @@ public class ClientCall {
             try {
                 listener.onClose(detailStatus, attachments);
             } catch (Throwable t) {
-                cancelByErr(TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t));
+                cancelByErr(
+                    TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t));
             }
         }
 
@@ -222,7 +231,8 @@ public class ClientCall {
                     .withDescription(TriRpcStatus.decodeMessage(statusDetail.getMessage()));
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo != null) {
-                    String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+                    String msg = ExceptionUtils.getStackFrameString(
+                        debugInfo.getStackEntriesList());
                     status = status.appendDescription(msg);
                 }
                 return status;

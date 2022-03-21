@@ -105,7 +105,7 @@ public class ClientStream extends AbstractStream implements Stream {
             // already processed at createStream()
             return;
         }
-        DefaultHttp2Headers headers = StreamUtils.metadataToHeaders(metadata);
+        DefaultHttp2Headers headers = metadata.toHeaders();
 
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
         this.writeQueue.enqueue(headerCmd).addListener(future -> {

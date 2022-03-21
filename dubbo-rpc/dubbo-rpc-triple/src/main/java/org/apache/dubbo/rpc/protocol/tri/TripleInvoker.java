@@ -69,6 +69,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  * TripleInvoker
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleInvoker.class);
 
 
@@ -88,6 +89,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         this.streamExecutor = streamExecutor;
     }
 
+    private static AsciiString getSchemeFromUrl(URL url) {
+        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
+        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+    }
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
@@ -170,7 +175,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
             context.addListener(context1 -> call.cancel("Canceled by app", null));
         }
-        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
+        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
+            responseObserver);
         return call.start(metadata, listener);
     }
 
@@ -253,12 +259,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         return meta;
     }
-
-    private static AsciiString getSchemeFromUrl(URL url) {
-        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
-    }
-
 
     @Override
     public boolean isAvailable() {

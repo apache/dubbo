@@ -49,22 +49,22 @@ import java.util.concurrent.TimeUnit;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public abstract class ServerCall {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
     public final Invoker<?> invoker;
-    public ServiceDescriptor serviceDescriptor;
     public final FrameworkModel frameworkModel;
     public final ServerStream serverStream;
     public final Executor executor;
+    public final String methodName;
+    public final String serviceName;
+    public ServiceDescriptor serviceDescriptor;
     public boolean autoRequestN = true;
     public Long timeout;
+    ServerCall.Listener listener;
     private Compressor compressor;
     private boolean headerSent;
     private boolean closed;
-    ServerCall.Listener listener;
-
-    public final String methodName;
-    public final String serviceName;
 
     ServerCall(Invoker<?> invoker,
         ServerStream serverStream,
@@ -91,10 +91,13 @@ public abstract class ServerCall {
      * @param headers request header
      * @return RpcInvocation
      */
-    protected RpcInvocation buildInvocation(Map<String, Object> headers, MethodDescriptor methodDescriptor) {
+    protected RpcInvocation buildInvocation(Map<String, Object> headers,
+        MethodDescriptor methodDescriptor) {
         final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(), methodDescriptor.getMethodName(),
-            serviceDescriptor.getInterfaceName(), url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(),
+        RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
+            methodDescriptor.getMethodName(),
+            serviceDescriptor.getInterfaceName(), url.getProtocolServiceKey(),
+            methodDescriptor.getParameterClasses(),
             new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
@@ -110,8 +113,10 @@ public abstract class ServerCall {
                 this.timeout = parseTimeoutToMills(timeout);
             }
         } catch (Throwable t) {
-            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout,
-                serviceDescriptor.getInterfaceName(), methodName));
+            LOGGER.warn(
+                String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
+                    timeout,
+                    serviceDescriptor.getInterfaceName(), methodName));
         }
         return doStartCall(metadata);
     }
@@ -123,7 +128,8 @@ public abstract class ServerCall {
         headerSent = true;
         final DefaultHttp2Headers headers = TripleConstant.createSuccessHttp2Headers();
         if (compressor != null) {
-            headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
+            headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
+                compressor.getMessageEncoding());
         }
         serverStream.sendHeader(headers);
     }
@@ -157,6 +163,9 @@ public abstract class ServerCall {
     }
 
     private void doWriteMessage(Object message) {
+        if (closed) {
+            return;
+        }
         if (!headerSent) {
             sendHeader();
         }
@@ -173,7 +182,8 @@ public abstract class ServerCall {
             return;
         }
         if (compressor != null) {
-            int compressedFlag = Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
+            int compressedFlag =
+                Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
             final byte[] compressed = compressor.compress(data);
             serverStream.writeMessage(compressed, compressedFlag);
         } else {
@@ -183,42 +193,6 @@ public abstract class ServerCall {
 
     public void close(TriRpcStatus status, Map<String, Object> trailers) {
         executor.execute(() -> serverStream.close(status, trailers));
-    }
-
-    interface Listener {
-
-        void onMessage(Object message);
-
-        void onCancel(String errorInfo);
-
-        void onComplete();
-    }
-
-
-    abstract class ServerStreamListenerBase implements ServerStreamListener {
-        protected boolean closed;
-
-        @Override
-        public void onMessage(byte[] message) {
-            if (closed) {
-                return;
-            }
-            ClassLoader tccl = Thread.currentThread()
-                .getContextClassLoader();
-            try {
-                doOnMessage(message);
-            } catch (Throwable t) {
-                final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Server error")
-                    .withCause(t);
-                close(status, null);
-                LOGGER.error("Process request failed. service=" + serviceName + " method=" + methodName, t);
-            } finally {
-                ClassLoadUtil.switchContextLoader(tccl);
-            }
-        }
-
-        protected abstract void doOnMessage(byte[] message) throws IOException, ClassNotFoundException;
-
     }
 
     protected Long parseTimeoutToMills(String timeoutVal) {
@@ -261,6 +235,45 @@ public abstract class ServerCall {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         serverStream.sendHeaderWithEos(trailers);
-        LOGGER.error("Triple request error: service=" + serviceName + " method" + methodName, status.asException());
+        LOGGER.error("Triple request error: service=" + serviceName + " method" + methodName,
+            status.asException());
+    }
+
+    interface Listener {
+
+        void onMessage(Object message);
+
+        void onCancel(String errorInfo);
+
+        void onComplete();
+    }
+
+    abstract class ServerStreamListenerBase implements ServerStreamListener {
+
+        protected boolean closed;
+
+        @Override
+        public void onMessage(byte[] message) {
+            if (closed) {
+                return;
+            }
+            ClassLoader tccl = Thread.currentThread()
+                .getContextClassLoader();
+            try {
+                doOnMessage(message);
+            } catch (Throwable t) {
+                final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Server error")
+                    .withCause(t);
+                close(status, null);
+                LOGGER.error(
+                    "Process request failed. service=" + serviceName + " method=" + methodName, t);
+            } finally {
+                ClassLoadUtil.switchContextLoader(tccl);
+            }
+        }
+
+        protected abstract void doOnMessage(byte[] message)
+            throws IOException, ClassNotFoundException;
+
     }
 }

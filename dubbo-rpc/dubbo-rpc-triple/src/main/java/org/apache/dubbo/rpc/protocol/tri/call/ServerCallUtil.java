@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerCallUtil {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCallUtil.class);
 
     public static ServerCall.Listener startCall(ServerCall call,
@@ -35,7 +36,8 @@ public class ServerCallUtil {
         MethodDescriptor methodDescriptor,
         Invoker<?> invoker) {
         CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(call,
+        ServerCallToObserverAdapter<Object> responseObserver = new ServerCallToObserverAdapter<>(
+            call,
             cancellationContext);
         return startCall(call, methodDescriptor, invocation, invoker, responseObserver);
     }
@@ -53,12 +55,14 @@ public class ServerCallUtil {
                     call.requestN(2);
                     break;
                 case SERVER_STREAM:
-                    listener = new ServerStreamServerCallListener(invocation, invoker, responseObserver);
+                    listener = new ServerStreamServerCallListener(invocation, invoker,
+                        responseObserver);
                     call.requestN(2);
                     break;
                 case BI_STREAM:
                 case CLIENT_STREAM:
-                    listener = new BiStreamServerCallListener(invocation, invoker, responseObserver);
+                    listener = new BiStreamServerCallListener(invocation, invoker,
+                        responseObserver);
                     call.requestN(1);
                     break;
                 default:

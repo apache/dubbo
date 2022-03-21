@@ -45,9 +45,11 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
-            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
+            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX)
+                && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
                 try {
-                    String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
+                    String realKey = key.substring(0,
+                        key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
                     byte[] value = H2TransportListener.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {

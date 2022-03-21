@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     public ServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                          ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
     }
 

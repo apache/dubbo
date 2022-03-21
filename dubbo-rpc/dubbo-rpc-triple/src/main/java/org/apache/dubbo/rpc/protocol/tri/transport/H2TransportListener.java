@@ -26,10 +26,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
- * An observer used for transport messaging which provides full streaming support.
- * A TransportObserver receives raw data or control messages from local/remote.
+ * An observer used for transport messaging which provides full streaming support. A
+ * TransportObserver receives raw data or control messages from local/remote.
  */
 public interface H2TransportListener {
+
     Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 

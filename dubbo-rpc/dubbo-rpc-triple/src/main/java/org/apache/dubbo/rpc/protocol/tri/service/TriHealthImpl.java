@@ -54,12 +54,15 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
     public TriHealthImpl() {
         // Copy of what Go and C++ do.
-        statusMap.put(HealthStatusManager.SERVICE_NAME_ALL_SERVICES, HealthCheckResponse.ServingStatus.SERVING);
+        statusMap.put(HealthStatusManager.SERVICE_NAME_ALL_SERVICES,
+            HealthCheckResponse.ServingStatus.SERVING);
     }
 
-    private static HealthCheckResponse getResponseForWatch(HealthCheckResponse.ServingStatus recordedStatus) {
+    private static HealthCheckResponse getResponseForWatch(
+        HealthCheckResponse.ServingStatus recordedStatus) {
         return HealthCheckResponse.newBuilder()
-            .setStatus(recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus)
+            .setStatus(recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN
+                : recordedStatus)
             .build();
     }
 
@@ -73,12 +76,14 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
     }
 
     @Override
-    public void watch(HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
+    public void watch(HealthCheckRequest request,
+        StreamObserver<HealthCheckResponse> responseObserver) {
         final String service = request.getService();
         synchronized (watchLock) {
             HealthCheckResponse.ServingStatus status = statusMap.get(service);
             responseObserver.onNext(getResponseForWatch(status));
-            IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
+            IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(
+                service);
             if (serviceWatchers == null) {
                 serviceWatchers = new IdentityHashMap<>();
                 watchers.put(service, serviceWatchers);
@@ -87,7 +92,8 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
         }
         RpcContext.getCancellationContext().addListener(context -> {
             synchronized (watchLock) {
-                IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
+                IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(
+                    service);
                 if (serviceWatchers != null) {
                     serviceWatchers.remove(responseObserver);
                     if (serviceWatchers.isEmpty()) {
@@ -143,7 +149,8 @@ public class TriHealthImpl extends DubboHealthTriple.HealthImplBase {
 
     private void notifyWatchers(String service, HealthCheckResponse.ServingStatus status) {
         HealthCheckResponse response = getResponseForWatch(status);
-        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(service);
+        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers = watchers.get(
+            service);
         if (serviceWatchers != null) {
             for (StreamObserver<HealthCheckResponse> responseObserver : serviceWatchers.keySet()) {
                 responseObserver.onNext(response);

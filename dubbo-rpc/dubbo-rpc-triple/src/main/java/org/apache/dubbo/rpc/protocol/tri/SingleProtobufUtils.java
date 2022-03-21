@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class SingleProtobufUtils {
+
     private static final ConcurrentHashMap<Class<?>, Message> INST_CACHE = new ConcurrentHashMap<>();
     private static final ExtensionRegistryLite GLOBAL_REGISTRY = ExtensionRegistryLite.getEmptyRegistry();
     private static final ConcurrentMap<Class<?>, SingleMessageMarshaller<?>> MARSHALLER_CACHE = new ConcurrentHashMap<>();
@@ -67,7 +68,8 @@ public class SingleProtobufUtils {
     }
 
     public static <T extends MessageLite> void marshaller(T defaultInstance) {
-        MARSHALLER_CACHE.put(defaultInstance.getClass(), new SingleMessageMarshaller<>(defaultInstance));
+        MARSHALLER_CACHE.put(defaultInstance.getClass(),
+            new SingleMessageMarshaller<>(defaultInstance));
     }
 
     @SuppressWarnings("all")
@@ -94,8 +96,9 @@ public class SingleProtobufUtils {
 
     public static <T> T deserialize(InputStream in, Class<T> clz) throws IOException {
         if (!isSupported(clz)) {
-            throw new IllegalArgumentException("This serialization only support google protobuf messages, but the " +
-                "actual input type is :" + clz.getName());
+            throw new IllegalArgumentException(
+                "This serialization only support google protobuf messages, but the " +
+                    "actual input type is :" + clz.getName());
         }
         try {
             return (T) getMarshaller(clz).parse(in);
@@ -114,6 +117,7 @@ public class SingleProtobufUtils {
     }
 
     public static final class SingleMessageMarshaller<T extends MessageLite> {
+
         private final Parser<T> parser;
         private final T defaultInstance;
 

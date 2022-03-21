@@ -40,11 +40,13 @@ public interface DeCompressor extends MessageEncoding {
     }
 
     static String getAcceptEncoding(FrameworkModel frameworkModel) {
-        Set<DeCompressor> supportedEncodingSet = frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensionInstances();
+        Set<DeCompressor> supportedEncodingSet = frameworkModel.getExtensionLoader(
+            DeCompressor.class).getSupportedExtensionInstances();
         if (supportedEncodingSet.isEmpty()) {
             return null;
         }
-        return supportedEncodingSet.stream().map(DeCompressor::getMessageEncoding).collect(Collectors.joining(","));
+        return supportedEncodingSet.stream().map(DeCompressor::getMessageEncoding)
+            .collect(Collectors.joining(","));
     }
 
     /**

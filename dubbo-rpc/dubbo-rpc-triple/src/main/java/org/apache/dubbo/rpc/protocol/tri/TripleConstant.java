@@ -47,11 +47,14 @@ public class TripleConstant {
     public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
 
-    public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf("tri_server_stream");
-    public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf("tri_client_stream");
+    public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
+        "tri_server_stream");
+    public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf(
+        "tri_client_stream");
 
     public static final String SUCCESS_RESPONSE_MESSAGE = "OK";
-    public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(TriRpcStatus.Code.OK.code);
+    public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(
+        TriRpcStatus.Code.OK.code);
 
     /**
      * default header
@@ -67,8 +70,10 @@ public class TripleConstant {
 
     public static DefaultHttp2Headers createSuccessHttp2Trailers() {
         DefaultHttp2Headers metadata = new DefaultHttp2Headers();
-        metadata.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_MESSAGE);
-        metadata.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_STATUS);
+        metadata.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(),
+            TripleConstant.SUCCESS_RESPONSE_MESSAGE);
+        metadata.set(TripleHeaderEnum.STATUS_KEY.getHeader(),
+            TripleConstant.SUCCESS_RESPONSE_STATUS);
         return metadata;
     }
 

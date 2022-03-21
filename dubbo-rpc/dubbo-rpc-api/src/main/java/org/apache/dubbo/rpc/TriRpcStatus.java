@@ -37,6 +37,7 @@ import static org.apache.dubbo.rpc.RpcException.TIMEOUT_TERMINATE;
  */
 
 public class TriRpcStatus {
+
     public static final TriRpcStatus OK = fromCode(Code.OK);
     public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
     public static final TriRpcStatus INTERNAL = fromCode(Code.INTERNAL);
@@ -184,12 +185,16 @@ public class TriRpcStatus {
     }
 
     public RpcException asException() {
-        return new RpcException(this.code.code, this.description, this.cause);
+        return new StatusRpcException(this);
     }
 
     public String toEncodedMessage() {
         String output = limitSizeTo1KB(toMessage());
         return encodeComponent(output);
+    }
+
+    public String toMessageWithoutCause() {
+        return String.format("Status:%s, description:%s",code,description);
     }
 
     public String toMessage() {
@@ -222,8 +227,7 @@ public class TriRpcStatus {
         UNAVAILABLE(14),
         DATA_LOSS(15),
         /**
-         * The request does not have valid authentication credentials for the
-         * operation.
+         * The request does not have valid authentication credentials for the operation.
          */
         UNAUTHENTICATED(16);
 
