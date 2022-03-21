@@ -24,7 +24,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.EventLoop;
-import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
 import java.util.concurrent.TimeUnit;
@@ -40,17 +39,9 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     public void onGoAway(Channel channel) {
-        final Attribute<Boolean> attr = channel.attr(GO_AWAY_KEY);
-        if (Boolean.TRUE.equals(attr.get())) {
-            return;
-        }
-
-        attr.set(true);
+        channel.attr(GO_AWAY_KEY).set(true);
         if (connection != null) {
             connection.onGoaway(channel);
-        }
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Channel %s go away ,schedule reconnect", channel));
         }
         reconnect(channel);
     }
@@ -74,16 +65,13 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        reconnect(ctx.channel());
         super.channelInactive(ctx);
-        final Attribute<Boolean> goawayAttr = ctx.channel().attr(GO_AWAY_KEY);
-        if (!Boolean.TRUE.equals(goawayAttr.get())) {
-            reconnect(ctx.channel());
-        }
     }
 
     private void reconnect(Channel channel) {
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Connection %s is reconnecting, attempt=%d", connection, 1));
+        if (log.isInfoEnabled()) {
+            log.info(String.format("Connection %s is reconnecting, attempt=%d", connection, 1));
         }
         final EventLoop eventLoop = channel.eventLoop();
         eventLoop.schedule(connection::connect, 1, TimeUnit.SECONDS);
