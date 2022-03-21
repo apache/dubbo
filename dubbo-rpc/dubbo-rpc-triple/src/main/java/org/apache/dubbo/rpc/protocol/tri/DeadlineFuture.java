@@ -47,9 +47,8 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     private final long start = System.currentTimeMillis();
     private final List<Runnable> timeoutListeners = new ArrayList<>();
     private final Timeout timeoutTask;
-    private ExecutorService executor;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
-            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
+    private ExecutorService executor;
+
     private DeadlineFuture(String serviceName, String methodName, String address, int timeout) {
         this.serviceName = serviceName;
         this.methodName = methodName;
@@ -62,7 +61,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
     public static void destroy() {
         TIME_OUT_TIMER.remove(Timer::stop);
-    }
+    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
+            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 
     /**
      * init a DefaultFuture 1.init a DefaultFuture 2.timeout check
@@ -180,6 +181,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
             DeadlineFuture.this.doReceived(status, null);
         }
     }
+
 
 
 
