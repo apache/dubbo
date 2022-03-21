@@ -20,6 +20,10 @@ public interface {{interfaceClassName}} {
     {{#javaDoc}}
         {{{javaDoc}}}
     {{/javaDoc}}
+    /**
+    * This server stream type unary method is <b>only</b> used for generated stub to support async unary method.
+    * It will not be called if you are NOT using Dubbo3 generated triple stub and <b>DO NOT</b> implement this method.
+    */
     default void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
       try {
           {{outputType}} response = {{methodName}}(request);
