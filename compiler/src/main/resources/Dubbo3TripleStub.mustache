@@ -179,15 +179,6 @@ public final class {{className}} {
             throw unimplementedMethodException({{methodName}}Method);
         }
 
-        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
-            try {
-                {{outputType}} response = {{methodName}}(request);
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-            } catch (Throwable t) {
-                    responseObserver.onError(t);
-            }
-        }
     {{/unaryMethods}}
 
     {{#serverStreamingMethods}}

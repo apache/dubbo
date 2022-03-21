@@ -20,7 +20,15 @@ public interface {{interfaceClassName}} {
     {{#javaDoc}}
         {{{javaDoc}}}
     {{/javaDoc}}
-    default void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){}
+    default void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
+      try {
+          {{outputType}} response = {{methodName}}(request);
+          responseObserver.onNext(response);
+          responseObserver.onCompleted();
+      } catch (Throwable t) {
+        responseObserver.onError(t);
+      }
+    }
 
 {{/unaryMethods}}
 

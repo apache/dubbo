@@ -61,9 +61,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
 
     public static void destroy() {
         TIME_OUT_TIMER.remove(Timer::stop);
-    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
-            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
+    }
 
     /**
      * init a DefaultFuture 1.init a DefaultFuture 2.timeout check
@@ -80,7 +78,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
             ((ThreadlessExecutor) executor).setWaitingFuture(future);
         }
         return future;
-    }
+    }    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30,
+            TimeUnit.MILLISECONDS), DeadlineFuture::destroy);
 
     public void received(TriRpcStatus status, AppResponse appResponse) {
         if (status.code != TriRpcStatus.Code.DEADLINE_EXCEEDED) {

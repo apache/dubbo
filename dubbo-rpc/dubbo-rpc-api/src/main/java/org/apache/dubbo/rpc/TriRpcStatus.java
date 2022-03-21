@@ -194,7 +194,7 @@ public class TriRpcStatus {
     }
 
     public String toMessageWithoutCause() {
-        return String.format("Status:%s, description:%s",code,description);
+        return String.format("%s : %s", code, description);
     }
 
     public String toMessage() {

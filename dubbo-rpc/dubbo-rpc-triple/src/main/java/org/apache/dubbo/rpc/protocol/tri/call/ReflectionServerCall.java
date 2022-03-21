@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -106,6 +107,17 @@ public class ReflectionServerCall extends ServerCall {
             // In most cases there is only one method
             if (methodDescriptors.size() == 1) {
                 methodDescriptor = methodDescriptors.get(0);
+            }
+            // generated unary method ,use unary type
+            // Response foo(Request)
+            // void foo(Request,StreamObserver<Response>)
+            if (methodDescriptors.size() == 2) {
+                for (MethodDescriptor descriptor : methodDescriptors) {
+                    if (descriptor.getRpcType() == RpcType.UNARY) {
+                        methodDescriptor = descriptor;
+                        break;
+                    }
+                }
             }
         }
         if (methodDescriptor != null) {
