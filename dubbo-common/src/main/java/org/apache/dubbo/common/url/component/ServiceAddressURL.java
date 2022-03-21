@@ -83,6 +83,16 @@ public abstract class ServiceAddressURL extends URL {
     }
 
     @Override
+    public String getGroup() {
+        return super.getParameter(GROUP_KEY);
+    }
+
+    @Override
+    public String getVersion() {
+        return super.getParameter(VERSION_KEY);
+    }
+
+    @Override
     public String getParameter(String key) {
         // call corresponding methods directly, then we can remove the following if branches.
         if (GROUP_KEY.equals(key)) {
