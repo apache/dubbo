@@ -1120,7 +1120,7 @@ class URL implements Serializable {
             return this;
         }
         if (pairs.length % 2 != 0) {
-            throw new IllegalArgumentException("Map pairs can not be odd numrer.");
+            throw new IllegalArgumentException("Map pairs can not be odd number.");
         }
         Map<String, String> map = new HashMap<>();
         int len = pairs.length / 2;
