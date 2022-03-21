@@ -67,7 +67,6 @@ public class ClientStream extends AbstractStream implements Stream {
         Executor executor,
         WriteQueue writeQueue,
         ClientStreamListener listener) {
-
         super(executor, frameworkModel);
         this.listener = listener;
         this.writeQueue = writeQueue;

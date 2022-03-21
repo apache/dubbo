@@ -59,10 +59,10 @@ public class WriteQueueTest {
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.newPromise()).thenReturn(promise);
         Mockito.when(channel.write(Mockito.any(), Mockito.any())).thenAnswer(
-            (Answer<ChannelPromise>) invocationOnMock -> {
-                writeMethodCalledTimes.incrementAndGet();
-                return promise;
-            });
+                (Answer<ChannelPromise>) invocationOnMock -> {
+                    writeMethodCalledTimes.incrementAndGet();
+                    return promise;
+                });
 
         writeMethodCalledTimes.set(0);
     }
@@ -74,8 +74,8 @@ public class WriteQueueTest {
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0));
         TriRpcStatus status = TriRpcStatus.UNKNOWN
-            .withCause(new RpcException())
-            .withDescription("Encode Response data error");
+                .withCause(new RpcException())
+                .withDescription("Encode Response data error");
         writeQueue.enqueue(CancelQueueCommand.createCommand());
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
         writeQueue.enqueue(new FlushQueueCommand());

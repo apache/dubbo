@@ -28,7 +28,7 @@ class TriRpcStatusTest {
     public void fromMessage() {
         String origin = "haha test 😊";
         final TriRpcStatus status = TriRpcStatus.INTERNAL
-            .withDescription(origin);
+                .withDescription(origin);
         final String encoded = TriRpcStatus.encodeMessage(origin);
         Assertions.assertNotEquals(origin, encoded);
         final String decoded = TriRpcStatus.decodeMessage(encoded);
@@ -39,7 +39,7 @@ class TriRpcStatusTest {
     public void toMessage() {
         String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
         final TriRpcStatus status = TriRpcStatus.INTERNAL
-            .withDescription(content);
+                .withDescription(content);
         Assertions.assertEquals(content, status.toMessage());
     }
 }

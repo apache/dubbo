@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class TriplePathResolverTest {
 
     private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
-        .getDefaultExtension();
+            .getDefaultExtension();
 
     private static Invoker<Object> INVOKER = new Invoker<Object>() {
         @Override

@@ -54,11 +54,11 @@ public class TripleProtocolTest {
         ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
 
         ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
-            serviceImpl,
-            serviceDescriptor,
-            null,
-            new ServiceMetadata());
+                url.getServiceKey(),
+                serviceImpl,
+                serviceDescriptor,
+                null,
+                new ServiceMetadata());
         serviceRepository.registerProvider(providerModel);
         url = url.setServiceModel(providerModel);
 
@@ -67,7 +67,7 @@ public class TripleProtocolTest {
         protocol.export(proxy.getInvoker(serviceImpl, IGreeter.class, url));
 
         ConsumerModel consumerModel = new ConsumerModel(url.getServiceKey(), null, serviceDescriptor, null,
-            new ServiceMetadata(), null);
+                new ServiceMetadata(), null);
         url = url.setServiceModel(consumerModel);
         IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, url));
         Thread.sleep(1000);

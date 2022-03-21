@@ -94,7 +94,7 @@ public class TriHealthImplTest {
         Field watchersField = triHealth.getClass().getDeclaredField("watchers");
         watchersField.setAccessible(true);
         HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watches =
-            (HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>>) watchersField.get(triHealth);
+                (HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>>) watchersField.get(triHealth);
         return watches;
     }
 

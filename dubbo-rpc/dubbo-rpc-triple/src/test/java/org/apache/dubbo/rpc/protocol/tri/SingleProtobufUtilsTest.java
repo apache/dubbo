@@ -67,7 +67,7 @@ public class SingleProtobufUtilsTest {
         Assertions.assertNotNull(parser);
 
         TripleWrapper.TripleRequestWrapper requestWrapper = TripleWrapper.TripleRequestWrapper.newBuilder()
-            .setSerializeType("hessian4").build();
+                .setSerializeType("hessian4").build();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         SingleProtobufUtils.serialize(requestWrapper, bos);
 

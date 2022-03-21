@@ -105,7 +105,7 @@ public class ReflectionPackableMethodTest {
     @Test
     public void testIsServerStream() throws NoSuchMethodException {
         Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class,
-            StreamObserver.class);
+                StreamObserver.class);
         ReflectionMethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
         Assertions.assertFalse(needWrap(descriptor));
 
@@ -149,7 +149,7 @@ public class ReflectionPackableMethodTest {
     @Test
     public void testMultiProtoParameter() throws Exception {
         Method method = DescriptorService.class.getMethod("testMultiProtobufParameters", HelloReply.class,
-            HelloReply.class);
+                HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
             needWrap(descriptor);
@@ -174,28 +174,28 @@ public class ReflectionPackableMethodTest {
     @Test
     public void testErrorServerStream() throws Exception {
         Method method = DescriptorService.class.getMethod("testErrorServerStream", StreamObserver.class,
-            HelloReply.class);
+                HelloReply.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method);
             needWrap(descriptor);
         });
 
         Method method2 = DescriptorService.class.getMethod("testErrorServerStream2", HelloReply.class, HelloReply.class,
-            StreamObserver.class);
+                StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method2);
             needWrap(descriptor);
         });
 
         Method method3 = DescriptorService.class.getMethod("testErrorServerStream3", String.class,
-            StreamObserver.class);
+                StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method3);
             needWrap(descriptor);
         });
 
         Method method4 = DescriptorService.class.getMethod("testErrorServerStream4", String.class, String.class,
-            StreamObserver.class);
+                StreamObserver.class);
         assertThrows(IllegalStateException.class, () -> {
             MethodDescriptor descriptor = new ReflectionMethodDescriptor(method4);
             needWrap(descriptor);
@@ -237,14 +237,14 @@ public class ReflectionPackableMethodTest {
             case CLIENT_STREAM:
             case BI_STREAM:
                 actualRequestTypes = new Class<?>[]{(Class<?>) ((ParameterizedType) method.getMethod()
-                    .getGenericReturnType()).getActualTypeArguments()[0]};
+                        .getGenericReturnType()).getActualTypeArguments()[0]};
                 actualResponseType = (Class<?>) ((ParameterizedType) method.getMethod()
-                    .getGenericParameterTypes()[0]).getActualTypeArguments()[0];
+                        .getGenericParameterTypes()[0]).getActualTypeArguments()[0];
                 break;
             case SERVER_STREAM:
                 actualRequestTypes = method.getMethod().getParameterTypes();
                 actualResponseType = (Class<?>) ((ParameterizedType) method.getMethod()
-                    .getGenericParameterTypes()[1]).getActualTypeArguments()[0];
+                        .getGenericParameterTypes()[1]).getActualTypeArguments()[0];
                 break;
             case UNARY:
                 actualRequestTypes = method.getParameterClasses();

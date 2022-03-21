@@ -52,8 +52,8 @@ class AbstractH2TransportListenerTest {
         };
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HTTPS.name())
-            .path("/foo.bar")
-            .method(HttpMethod.POST.asciiName());
+                .path("/foo.bar")
+                .method(HttpMethod.POST.asciiName());
         headers.set("foo", "bar");
         final Map<String, Object> map = listener.headersToMap(headers);
         Assertions.assertEquals(4, map.size());

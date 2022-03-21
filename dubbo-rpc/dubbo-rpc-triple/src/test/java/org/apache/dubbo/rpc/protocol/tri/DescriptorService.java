@@ -73,7 +73,7 @@ public interface DescriptorService {
 
     reactor.core.publisher.Mono<HelloReply> reactorMethod2(reactor.core.publisher.Mono<HelloReply> reactorRequest);
 
-   io.reactivex.Single<HelloReply> rxJavaMethod(io.reactivex.Single<HelloReply> replySingle);
+    io.reactivex.Single<HelloReply> rxJavaMethod(io.reactivex.Single<HelloReply> replySingle);
 
     /**********************test error*****************/
     void testMultiProtobufParameters(HelloReply reply1, HelloReply reply2);
@@ -95,7 +95,8 @@ public interface DescriptorService {
     StreamObserver<HelloReply> testErrorBiStream2(String reply, StreamObserver<HelloReply> observer);
 
     StreamObserver<String> testErrorBiStream3(StreamObserver<HelloReply> observer);
-    StreamObserver<String> testErrorBiStream4(StreamObserver<HelloReply> observer,String str);
+
+    StreamObserver<String> testErrorBiStream4(StreamObserver<HelloReply> observer, String str);
 
 
 }
