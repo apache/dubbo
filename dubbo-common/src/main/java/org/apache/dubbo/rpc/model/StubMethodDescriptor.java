@@ -43,7 +43,6 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
 
-
     public StubMethodDescriptor(String methodName,
         Class<?> requestClass,
         Class<?> responseClass,

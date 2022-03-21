@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -365,12 +366,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void doExportUrls() {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor;
-        final boolean serverService =ref instanceof ServerService;
+        final boolean serverService = ref instanceof ServerService;
         if(serverService){
             serviceDescriptor=((ServerService) ref).getServiceDescriptor();
             repository.registerService(serviceDescriptor);
         }else{
-             serviceDescriptor = repository.registerService(getInterfaceClass());
+            serviceDescriptor = repository.registerService(getInterfaceClass());
         }
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
@@ -461,6 +462,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } else {
                 map.put(TOKEN_KEY, token);
             }
+        }
+
+        if(ref instanceof ServerService){
+            map.put(PROXY_KEY, CommonConstants.NATIVE_STUB);
         }
 
         return map;
@@ -554,7 +559,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
         url = url.setScopeModel(getScopeModel());
-        url =  url.setServiceModel(providerModel);
+        url = url.setServiceModel(providerModel);
         return url;
     }
 

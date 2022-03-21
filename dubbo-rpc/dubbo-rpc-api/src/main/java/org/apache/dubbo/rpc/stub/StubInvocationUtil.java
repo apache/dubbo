@@ -20,55 +20,53 @@ package org.apache.dubbo.rpc.stub;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.proxy.InvocationUtil;
 
 public class StubInvocationUtil {
 
-    public static <T, R> R unaryCall(Invoker<?> invoker, StubMethodDescriptor methodDescriptor, T request) {
-        RpcInvocation rpcInvocation = new RpcInvocation(invoker.getUrl().getServiceModel(),
-            methodDescriptor.getMethodName(), invoker.getInterface().getName(),
-            invoker.getUrl().getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[]{request});
-        try {
-            return (R) InvocationUtil.invoke(invoker, rpcInvocation);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
+    public static <T, R> R unaryCall(Invoker<?> invoker, MethodDescriptor methodDescriptor,
+        T request) {
+        return (R) call(invoker, methodDescriptor, new Object[]{request});
     }
-
 
     public static <T, R> void unaryCall(Invoker<?> invoker,
         MethodDescriptor method,
         T request,
         StreamObserver<R> responseObserver) {
-
+        call(invoker, method, new Object[]{request, responseObserver});
     }
 
     public static <T, R> StreamObserver<T> biOrClientStreamCall(Invoker<?> invoker,
         MethodDescriptor method,
         StreamObserver<R> responseObserver) {
-        RpcInvocation rpcInvocation = new RpcInvocation(invoker.getUrl().getServiceModel(), method.getMethodName(),
-            invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), method.getParameterClasses(),
-            new Object[]{responseObserver});
-        try {
-            return (StreamObserver<T>) InvocationUtil.invoke(invoker, rpcInvocation);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
+        return (StreamObserver<T>) call(invoker, method, new Object[]{responseObserver});
     }
 
     public static <T, R> void serverStreamCall(Invoker<?> invoker,
         MethodDescriptor method,
         T request,
         StreamObserver<R> responseObserver) {
-        RpcInvocation rpcInvocation = new RpcInvocation(invoker.getUrl().getServiceModel(), method.getMethodName(),
-            invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), method.getParameterClasses(),
-            new Object[]{request, responseObserver});
+        call(invoker, method, new Object[]{request, responseObserver});
+    }
+
+    public static Object call(Invoker<?> invoker, MethodDescriptor methodDescriptor,
+        Object[] arguments) {
+        RpcInvocation rpcInvocation = new RpcInvocation(invoker.getUrl().getServiceModel(),
+            methodDescriptor.getMethodName(), invoker.getInterface().getName(),
+            invoker.getUrl().getProtocolServiceKey(), methodDescriptor.getParameterClasses(),
+            arguments);
         try {
-            InvocationUtil.invoke(invoker, rpcInvocation);
+            return InvocationUtil.invoke(invoker, rpcInvocation);
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw TriRpcStatus.INTERNAL
+                    .withCause(e)
+                    .asException();
+            }
         }
     }
 }
