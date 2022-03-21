@@ -58,12 +58,12 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     // 1 MiB
     private static final int MIB_1 = 1 << 20;
-    private static final int MIB_16 = 1 << 24;
+    private static final int MIB_8 = 1 << 23;
     private static final int KIB_32 = 1 << 15;
     private static final int DEFAULT_MAX_HEADER_LIST_SIZE = KIB_32;
     private static final int DEFAULT_SETTING_HEADER_LIST_SIZE = 4096;
-    private static final int DEFAULT_MAX_FRAME_SIZE = MIB_16;
-    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_16;
+    private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
+    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
