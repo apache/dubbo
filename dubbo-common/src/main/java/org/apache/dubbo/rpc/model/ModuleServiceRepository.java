@@ -99,30 +99,20 @@ public class ModuleServiceRepository {
         frameworkServiceRepository.registerProvider(providerModel);
     }
 
+    public ServiceDescriptor registerService(ServiceDescriptor serviceDescriptor) {
+        return registerService(serviceDescriptor.getServiceInterfaceClass(),serviceDescriptor);
+    }
+
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
         ServiceDescriptor serviceDescriptor = new ReflectionServiceDescriptor(interfaceClazz);
+        return registerService(interfaceClazz,serviceDescriptor);
+    }
+    public ServiceDescriptor registerService(Class<?> interfaceClazz,ServiceDescriptor serviceDescriptor) {
         List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
             k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
                 .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz)).findFirst();
-            if (previous.isPresent()) {
-                return previous.get();
-            } else {
-                serviceDescriptors.add(serviceDescriptor);
-                return serviceDescriptor;
-            }
-        }
-    }
-
-    public ServiceDescriptor registerService(ServiceDescriptor serviceDescriptor) {
-        List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(
-            serviceDescriptor.getInterfaceName(),
-            k -> new CopyOnWriteArrayList<>());
-        synchronized (serviceDescriptors) {
-            Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
-                .filter(s -> s.getServiceInterfaceClass().equals(serviceDescriptor.getServiceInterfaceClass()))
-                .findFirst();
             if (previous.isPresent()) {
                 return previous.get();
             } else {
