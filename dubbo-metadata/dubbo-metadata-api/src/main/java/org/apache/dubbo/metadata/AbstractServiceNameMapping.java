@@ -19,7 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -58,7 +58,9 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.mappingCacheManager = new MappingCacheManager("", applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getCacheRefreshingScheduledExecutor());
+        this.mappingCacheManager = new MappingCacheManager("",
+            applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
 
     @Override
@@ -133,7 +135,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
                 this.putCachedMapping(key, mappingServices);
             }
         } else {
-            ExecutorService executorService = applicationModel.getApplicationExecutorRepository().getMappingRefreshingExecutor();
+            ExecutorService executorService = applicationModel.getFrameworkModel().getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getMappingRefreshingExecutor();
             executorService.submit(new AsyncMappingTask(listener, subscribedURL, true));
         }
 

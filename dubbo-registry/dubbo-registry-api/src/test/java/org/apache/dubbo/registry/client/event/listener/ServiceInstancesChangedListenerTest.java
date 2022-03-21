@@ -401,7 +401,7 @@ public class ServiceInstancesChangedListenerTest {
         when(serviceDiscovery.getRemoteMetadata(eq("222"), anyList())).thenAnswer(new Answer<MetadataInfo>() {
             @Override
             public MetadataInfo answer(InvocationOnMock invocationOnMock) throws Throwable {
-                if (Thread.currentThread().getName().contains("Dubbo-metadata-retry")) {
+                if (Thread.currentThread().getName().contains("Dubbo-framework-metadata-retry")) {
                     return metadataInfo_222;
                 }
                 return MetadataInfo.EMPTY;

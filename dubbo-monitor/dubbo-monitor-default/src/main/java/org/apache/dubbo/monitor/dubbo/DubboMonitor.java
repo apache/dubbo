@@ -19,6 +19,7 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
@@ -74,7 +75,8 @@ public class DubboMonitor implements Monitor {
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
         this.monitorInvoker = monitorInvoker;
         this.monitorService = monitorService;
-        scheduledExecutorService = monitorInvoker.getUrl().getOrDefaultApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor();
+        scheduledExecutorService = monitorInvoker.getUrl().getOrDefaultFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
         // The time interval for timer <b>scheduledExecutorService</b> to send data
         final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter(MONITOR_SEND_DATA_INTERVAL_KEY, DEFAULT_MONITOR_SEND_DATA_INTERVAL);
         // collect timer for collecting statistics data
