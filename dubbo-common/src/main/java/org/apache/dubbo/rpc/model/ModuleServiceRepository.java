@@ -40,12 +40,12 @@ public class ModuleServiceRepository {
     /**
      * services
      */
-    private ConcurrentMap<String, List<ServiceDescriptor>> services = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<ServiceDescriptor>> services = new ConcurrentHashMap<>();
 
     /**
      * consumers ( key - group/interface:version value - consumerModel list)
      */
-    private ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
 
     /**
      * providers
@@ -55,8 +55,7 @@ public class ModuleServiceRepository {
 
     public ModuleServiceRepository(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
-        frameworkServiceRepository = ScopeModelUtil.getFrameworkModel(moduleModel)
-            .getServiceRepository();
+        frameworkServiceRepository = ScopeModelUtil.getFrameworkModel(moduleModel).getServiceRepository();
     }
 
     public ModuleModel getModuleModel() {
@@ -67,24 +66,31 @@ public class ModuleServiceRepository {
      * @deprecated Replaced to {@link ModuleServiceRepository#registerConsumer(ConsumerModel)}
      */
     @Deprecated
-    public void registerConsumer(String serviceKey, ServiceDescriptor serviceDescriptor, ReferenceConfigBase<?> rc, Object proxy, ServiceMetadata serviceMetadata) {
+    public void registerConsumer(String serviceKey,
+                                 ServiceDescriptor serviceDescriptor,
+                                 ReferenceConfigBase<?> rc,
+                                 Object proxy,
+                                 ServiceMetadata serviceMetadata) {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
             serviceMetadata, null);
         this.registerConsumer(consumerModel);
     }
 
     public void registerConsumer(ConsumerModel consumerModel) {
-        consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>())
-            .add(consumerModel);
+        consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
     /**
      * @deprecated Replaced to {@link ModuleServiceRepository#registerProvider(ProviderModel)}
      */
     @Deprecated
-    public void registerProvider(String serviceKey, Object serviceInstance, ServiceDescriptor serviceModel, ServiceConfigBase<?> serviceConfig, ServiceMetadata serviceMetadata) {
-        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig,
-            serviceMetadata);
+    public void registerProvider(String serviceKey,
+                                 Object serviceInstance,
+                                 ServiceDescriptor serviceModel,
+                                 ServiceConfigBase<?> serviceConfig,
+                                 ServiceMetadata serviceMetadata) {
+        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel,
+            serviceConfig, serviceMetadata);
         this.registerProvider(providerModel);
     }
 
@@ -99,9 +105,7 @@ public class ModuleServiceRepository {
             k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
-                .filter(s -> s.getServiceInterfaceClass()
-                    .equals(interfaceClazz))
-                .findFirst();
+                .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz)).findFirst();
             if (previous.isPresent()) {
                 return previous.get();
             } else {
@@ -112,10 +116,12 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor registerService(ServiceDescriptor serviceDescriptor) {
-        List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(serviceDescriptor.getInterfaceName(),
+        List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(
+            serviceDescriptor.getInterfaceName(),
             k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
+                .filter(s -> s.getServiceInterfaceClass().equals(serviceDescriptor.getServiceInterfaceClass()))
                 .findFirst();
             if (previous.isPresent()) {
                 return previous.get();
@@ -141,15 +147,12 @@ public class ModuleServiceRepository {
     public ServiceDescriptor registerService(String path, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = registerService(interfaceClass);
         // if path is different with interface name, add extra path mapping
-        if (!interfaceClass.getName()
-            .equals(path)) {
+        if (!interfaceClass.getName().equals(path)) {
             List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(path,
                 _k -> new CopyOnWriteArrayList<>());
             synchronized (serviceDescriptors) {
                 Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
-                    .filter(s -> s.getServiceInterfaceClass()
-                        .equals(serviceDescriptor.getServiceInterfaceClass()))
-                    .findFirst();
+                    .filter(s -> s.getServiceInterfaceClass().equals(serviceDescriptor.getServiceInterfaceClass())).findFirst();
                 if (previous.isPresent()) {
                     return previous.get();
                 } else {
@@ -175,8 +178,7 @@ public class ModuleServiceRepository {
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
         List<ConsumerModel> consumerModel = this.consumers.get(serviceKey);
         consumerModel.forEach(c -> c.setServiceKey(newServiceKey));
-        this.consumers.computeIfAbsent(newServiceKey, (k) -> new CopyOnWriteArrayList<>())
-            .addAll(consumerModel);
+        this.consumers.computeIfAbsent(newServiceKey, (k) -> new CopyOnWriteArrayList<>()).addAll(consumerModel);
         this.consumers.remove(serviceKey);
     }
 
@@ -195,15 +197,11 @@ public class ModuleServiceRepository {
     }
 
     public void unregisterConsumer(ConsumerModel consumerModel) {
-        consumers.get(consumerModel.getServiceKey())
-            .remove(consumerModel);
+        consumers.get(consumerModel.getServiceKey()).remove(consumerModel);
     }
 
     public List<ServiceDescriptor> getAllServices() {
-        List<ServiceDescriptor> serviceDescriptors = services.values()
-            .stream()
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        List<ServiceDescriptor> serviceDescriptors = services.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         return Collections.unmodifiableList(serviceDescriptors);
     }
 
@@ -235,8 +233,7 @@ public class ModuleServiceRepository {
         if (CollectionUtils.isEmpty(methods)) {
             return null;
         }
-        return methods.iterator()
-            .next();
+        return methods.iterator().next();
     }
 
     public List<ProviderModel> getExportedServices() {
@@ -248,10 +245,7 @@ public class ModuleServiceRepository {
     }
 
     public List<ConsumerModel> getReferredServices() {
-        List<ConsumerModel> consumerModels = consumers.values()
-            .stream()
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+        List<ConsumerModel> consumerModels = consumers.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         return Collections.unmodifiableList(consumerModels);
     }
 

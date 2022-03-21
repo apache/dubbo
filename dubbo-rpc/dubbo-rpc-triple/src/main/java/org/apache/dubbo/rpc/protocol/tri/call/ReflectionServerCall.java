@@ -73,7 +73,6 @@ public class ReflectionServerCall extends ServerCall {
         ProviderModel providerModel = (ProviderModel) url.getServiceModel();
         if (providerModel == null || providerModel.getServiceModel() == null) {
             return null;
-
         }
         return providerModel.getServiceModel();
     }
