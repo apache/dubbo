@@ -19,7 +19,7 @@ package org.apache.dubbo.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,8 +51,8 @@ public abstract class RegistryNotifier {
     public RegistryNotifier(URL registryUrl, long delayTime, ScheduledExecutorService scheduler) {
         this.delayTime = delayTime;
         if (scheduler == null) {
-            this.scheduler = registryUrl.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-                    .getDefaultExtension().getRegistryNotificationExecutor();
+            this.scheduler = registryUrl.getOrDefaultFrameworkModel().getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getRegistryNotificationExecutor();
         } else {
             this.scheduler = scheduler;
         }

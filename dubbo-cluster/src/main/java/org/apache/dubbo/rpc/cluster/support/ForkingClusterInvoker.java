@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -56,7 +57,8 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
-        executor = directory.getUrl().getOrDefaultApplicationModel().getApplicationExecutorRepository().getSharedExecutor();
+        executor = directory.getUrl().getOrDefaultFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
     }
 
     @Override

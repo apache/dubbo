@@ -34,6 +34,7 @@ import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -93,6 +94,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final ReferenceCache referenceCache;
 
+    private final FrameworkExecutorRepository frameworkExecutorRepository;
     private final ExecutorRepository executorRepository;
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
@@ -113,6 +115,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         environment = applicationModel.getModelEnvironment();
 
         referenceCache = new CompositeReferenceCache(applicationModel);
+        frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
 
@@ -727,7 +730,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
-            asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
+            asyncMetadataFuture = frameworkExecutorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
 
                 // ignore refresh metadata on stopping
                 if (applicationModel.isDestroyed()) {

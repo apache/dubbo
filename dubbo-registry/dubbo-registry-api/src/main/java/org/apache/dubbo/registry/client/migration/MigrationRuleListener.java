@@ -24,6 +24,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -110,7 +111,8 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         String localRawRule = moduleModel.getModelEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
-            localRuleMigrationFuture = moduleModel.getApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
+            localRuleMigrationFuture = moduleModel.getApplicationModel().getFrameworkModel().getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
                 .schedule(() -> {
                     if (this.rawRule.equals(INIT)) {
                         this.process(new ConfigChangedEvent(null, null, localRawRule));

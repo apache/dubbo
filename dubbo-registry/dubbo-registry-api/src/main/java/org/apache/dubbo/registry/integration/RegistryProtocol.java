@@ -21,7 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -867,9 +867,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
             this.originInvoker = originInvoker;
-            ExecutorRepository executorRepository = originInvoker.getUrl().getOrDefaultApplicationModel()
-                .getDefaultExtension(ExecutorRepository.class);
-            this.executor = executorRepository.getSharedScheduledExecutor();
+            FrameworkExecutorRepository frameworkExecutorRepository = originInvoker.getUrl().getOrDefaultFrameworkModel().getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class);
+            this.executor = frameworkExecutorRepository.getSharedScheduledExecutor();
         }
 
         public Invoker<T> getOriginInvoker() {
