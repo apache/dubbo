@@ -90,7 +90,7 @@
     <properties>
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
-        <spring_version>5.2.8.RELEASE</spring_version>
+        <spring_version>5.2.9.RELEASE</spring_version>
         <javassist_version>3.28.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.56.Final</netty4_version>
@@ -116,7 +116,7 @@
         <jetty_version>9.4.43.v20210629</jetty_version>
         <validation_new_version>3.0.1</validation_new_version>
         <validation_version>1.1.0.Final</validation_version>
-        <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
+        <hibernate_validator_version>5.4.3.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
         <jcache_version>1.0.0</jcache_version>
         <kryo_version>4.0.2</kryo_version>
@@ -142,7 +142,7 @@
         <logback_version>1.2.11</logback_version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <log4j2_version>2.17.2</log4j2_version>
-        <commons_io_version>2.7</commons_io_version>
+        <commons_io_version>2.11.0</commons_io_version>
 
         <embedded_redis_version>0.10.0</embedded_redis_version>
 
