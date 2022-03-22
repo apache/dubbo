@@ -42,7 +42,5 @@ public class TripleConstant {
     public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
 
-    public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
-        "tri_server_stream");
 
 }
