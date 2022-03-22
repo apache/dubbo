@@ -17,10 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
-
 import io.netty.util.AsciiString;
-import io.netty.util.AttributeKey;
 
 public class TripleConstant {
 
