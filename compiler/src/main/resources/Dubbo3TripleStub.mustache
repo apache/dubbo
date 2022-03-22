@@ -35,10 +35,6 @@ public final class {{className}} {
     private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME,{{interfaceClassName}}.class);
 
     static {
-        {{#methodTypes}}
-          org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils.marshaller(
-        {{.}}.getDefaultInstance());
-        {{/methodTypes}}
         StubSuppliers.addSupplier(SERVICE_NAME, i -> newStub((Invoker<{{interfaceClassName}}>) i));
         StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME, i -> newStub((Invoker<{{interfaceClassName}}>) i));
         StubSuppliers.addDescriptor(SERVICE_NAME, serviceDescriptor);
