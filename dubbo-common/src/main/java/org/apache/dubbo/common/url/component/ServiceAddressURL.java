@@ -84,20 +84,12 @@ public abstract class ServiceAddressURL extends URL {
 
     @Override
     public String getGroup() {
-        String group = super.getParameter(GROUP_KEY);
-        if (StringUtils.isNotEmpty(group)) {
-            return group;
-        }
-        return consumerURL.getGroup();
+        return super.getParameter(GROUP_KEY);
     }
 
     @Override
     public String getVersion() {
-        String version = super.getParameter(VERSION_KEY);
-        if (StringUtils.isNotEmpty(version)) {
-            return version;
-        }
-        return consumerURL.getVersion();
+        return super.getParameter(VERSION_KEY);
     }
 
     @Override
