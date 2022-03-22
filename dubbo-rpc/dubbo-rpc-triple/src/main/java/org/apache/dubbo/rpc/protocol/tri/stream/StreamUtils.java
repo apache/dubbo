@@ -27,6 +27,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -50,6 +51,19 @@ public class StreamUtils {
         return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
     }
 
+    public static Map<String, Object> toAttachments(Map<String, Object> origin) {
+        Map<String, Object> res = new HashMap<>(origin.size());
+        origin.forEach((k, v) -> {
+            if (Http2Headers.PseudoHeaderName.isPseudoHeader(k)) {
+                return;
+            }
+            if (TripleHeaderEnum.containsExcludeAttachments(k)) {
+                return;
+            }
+            res.put(k, v);
+        });
+        return res;
+    }
 
     /**
      * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
@@ -91,7 +105,7 @@ public class StreamUtils {
                 headers.set(key, str);
             } else if (v instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) v);
-                headers.set(key + TripleConstant.GRPC_BIN_SUFFIX, str);
+                headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v,

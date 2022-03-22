@@ -26,16 +26,23 @@ import com.google.protobuf.Message;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.concurrent.CompletableFuture;
 
 public final class {{className}} {
-    public static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+
+    public static final String SERVICE_NAME = {{interfaceClassName}}.SERVICE_NAME;
+
     private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME,{{interfaceClassName}}.class);
 
     static {
+        {{#methodTypes}}
+          org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils.marshaller(
+        {{.}}.getDefaultInstance());
+        {{/methodTypes}}
         StubSuppliers.addSupplier(SERVICE_NAME, i -> newStub((Invoker<{{interfaceClassName}}>) i));
-        StubSuppliers.addSupplier({{interfaceClassName}}.class.getName(), i -> newStub((Invoker<{{interfaceClassName}}>) i));
+        StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME, i -> newStub((Invoker<{{interfaceClassName}}>) i));
         StubSuppliers.addDescriptor(SERVICE_NAME, serviceDescriptor);
-        StubSuppliers.addDescriptor({{interfaceClassName}}.class.getName(), serviceDescriptor);
+        StubSuppliers.addDescriptor({{interfaceClassName}}.JAVA_SERVICE_NAME, serviceDescriptor);
     }
 
     public static {{interfaceClassName}} newStub(Invoker<{{interfaceClassName}}> invoker) {
@@ -63,7 +70,6 @@ public final class {{className}} {
 
 {{/serverStreamingMethods}}
 
-
 {{#clientStreamingMethods}}
     {{#javaDoc}}
     {{{javaDoc}}}
@@ -73,7 +79,6 @@ public final class {{className}} {
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
 {{/clientStreamingMethods}}
-
 
 {{#biStreamingWithoutClientStreamMethods}}
     {{#javaDoc}}

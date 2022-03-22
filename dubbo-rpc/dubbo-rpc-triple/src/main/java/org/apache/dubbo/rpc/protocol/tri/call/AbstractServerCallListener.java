@@ -36,7 +36,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     final ServerCallToObserverAdapter<Object> responseObserver;
 
     public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                      ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
@@ -61,14 +61,14 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
                 final long cost = System.currentTimeMillis() - stInMillis;
                 if (responseObserver.isTimeout(cost)) {
                     LOGGER.error(String.format(
-                            "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
-                            invocation.getTargetServiceUniqueName(),
-                            invocation.getMethodName(),
-                            cost));
+                        "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getMethodName(),
+                        cost));
                     responseObserver.onCompleted(TriRpcStatus.DEADLINE_EXCEEDED);
                     return;
                 }
-                onReturn(r);
+                onReturn(r.getValue());
             });
         } catch (Throwable t) {
             responseObserver.onError(t);

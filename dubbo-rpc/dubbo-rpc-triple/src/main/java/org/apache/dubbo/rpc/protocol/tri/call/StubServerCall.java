@@ -67,10 +67,9 @@ public class StubServerCall extends ServerCall {
     @Override
     public ServerStreamListener doStartCall(Map<String, Object> metadata) {
         RpcInvocation invocation = buildInvocation(metadata, methodDescriptor);
-        listener = ServerCallUtil.startCall(this, invocation, methodDescriptor, invoker);
+        listener = startCall(invocation, methodDescriptor, invoker);
         return new ServerStreamListenerImpl();
     }
-
 
     @Override
     protected byte[] packResponse(Object message) {

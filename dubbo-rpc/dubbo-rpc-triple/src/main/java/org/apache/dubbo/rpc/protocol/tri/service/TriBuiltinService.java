@@ -65,7 +65,7 @@ public class TriBuiltinService {
             Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
             pathResolver.add(DubboHealthTriple.SERVICE_NAME, invoker);
             ApplicationModel.defaultModel().getInternalModule()
-                .addDestroyListener(scopeModel -> pathResolver.remove(url.getServiceKey()));
+                .addDestroyListener(scopeModel -> pathResolver.remove(DubboHealthTriple.SERVICE_NAME));
         }
     }
 

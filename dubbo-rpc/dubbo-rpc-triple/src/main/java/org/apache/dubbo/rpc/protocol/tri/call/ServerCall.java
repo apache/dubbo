@@ -22,7 +22,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -33,8 +35,10 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -104,7 +108,7 @@ public abstract class ServerCall {
             new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
-        inv.setObjectAttachments(headers);
+        inv.setObjectAttachments(StreamUtils.toAttachments(headers));
         return inv;
     }
 
@@ -122,10 +126,8 @@ public abstract class ServerCall {
                 this.timeout = parseTimeoutToMills(timeout);
             }
         } catch (Throwable t) {
-            LOGGER.warn(
-                String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                    timeout,
-                    serviceDescriptor.getInterfaceName(), methodName));
+            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s "
+                + "method=%s", timeout, serviceDescriptor.getInterfaceName(), methodName));
         }
         return doStartCall(metadata);
     }
@@ -289,5 +291,43 @@ public abstract class ServerCall {
         protected abstract void doOnMessage(byte[] message)
             throws IOException, ClassNotFoundException;
 
+    }
+
+    public ServerCall.Listener startCall(
+        RpcInvocation invocation,
+        MethodDescriptor methodDescriptor,
+        Invoker<?> invoker) {
+        CancellationContext cancellationContext = RpcContext.getCancellationContext();
+        ServerCallToObserverAdapter<Object> responseObserver =
+            new ServerCallToObserverAdapter<>(this, cancellationContext);
+        try {
+            ServerCall.Listener listener;
+            switch (methodDescriptor.getRpcType()) {
+                case UNARY:
+                    listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
+                    requestN(2);
+                    break;
+                case SERVER_STREAM:
+                    listener = new ServerStreamServerCallListener(invocation, invoker,
+                        responseObserver);
+                    requestN(2);
+                    break;
+                case BI_STREAM:
+                case CLIENT_STREAM:
+                    listener = new BiStreamServerCallListener(invocation, invoker,
+                        responseObserver);
+                    requestN(1);
+                    break;
+                default:
+                    throw new IllegalStateException("Can not reach here");
+            }
+            return listener;
+        } catch (Throwable t) {
+            LOGGER.error("Create triple stream failed", t);
+            responseObserver.onError(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
+                .withCause(t)
+                .asException());
+        }
+        return null;
     }
 }

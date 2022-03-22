@@ -138,23 +138,6 @@ public class ReflectionServerCall extends ServerCall {
         return packableMethod.packResponse(message);
     }
 
-    /**
-     * Build the RpcInvocation with metadata and execute headerFilter
-     *
-     * @param headers request header
-     * @return RpcInvocation
-     */
-    protected RpcInvocation buildInvocation(Map<String, Object> headers) {
-        final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(), methodName,
-            serviceDescriptor.getInterfaceName(),
-            url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
-        inv.setTargetServiceUniqueName(url.getServiceKey());
-        inv.setReturnTypes(methodDescriptor.getReturnTypes());
-        inv.setObjectAttachments(headers);
-        return inv;
-    }
-
     class ServerStreamListenerImpl extends ServerCall.ServerStreamListenerBase {
 
         private Map<String, Object> metadata;
@@ -232,7 +215,7 @@ public class ReflectionServerCall extends ServerCall {
             if (closed) {
                 return;
             }
-            invocation = buildInvocation(metadata);
+            invocation = buildInvocation(metadata,methodDescriptor);
             if (closed) {
                 return;
             }
@@ -240,7 +223,7 @@ public class ReflectionServerCall extends ServerCall {
             if (closed) {
                 return;
             }
-            listener = ServerCallUtil.startCall(ReflectionServerCall.this, invocation,
+            listener = ReflectionServerCall.this.startCall(invocation,
                 methodDescriptor, invoker);
             if (listener == null) {
                 closed = true;

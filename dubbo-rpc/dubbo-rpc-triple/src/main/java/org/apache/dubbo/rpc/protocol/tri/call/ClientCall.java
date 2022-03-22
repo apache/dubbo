@@ -199,7 +199,7 @@ public class ClientCall {
                 detailStatus = status;
             }
             try {
-                listener.onClose(detailStatus, attachments);
+                listener.onClose(detailStatus, StreamUtils.toAttachments(attachments));
             } catch (Throwable t) {
                 cancelByErr(
                     TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t));
