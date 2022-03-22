@@ -27,7 +27,7 @@ public class StubProxyFactory implements ProxyFactory {
 
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
-        return StubSuppliers.createStub(invoker.getUrl().getPath(), invoker);
+        return StubSuppliers.createStub(invoker.getUrl().getServiceInterface(), invoker);
     }
 
     @Override
