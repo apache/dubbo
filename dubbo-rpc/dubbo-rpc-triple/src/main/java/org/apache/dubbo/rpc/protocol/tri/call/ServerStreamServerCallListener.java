@@ -30,6 +30,10 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
+    public void onReturn(Object value) {
+    }
+
+    @Override
     public void onMessage(Object message) {
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
@@ -46,10 +50,6 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        try {
-            invoke();
-        } catch (Throwable e) {
-            responseObserver.onCompleted(TriRpcStatus.getStatus(e));
-        }
+        invoke();
     }
 }

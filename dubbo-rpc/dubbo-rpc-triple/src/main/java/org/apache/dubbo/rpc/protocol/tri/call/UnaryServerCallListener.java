@@ -24,14 +24,19 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
-public class UnaryServerCallListener extends AbstractServerCallListener implements
-    ServerCall.Listener {
+public class UnaryServerCallListener extends AbstractServerCallListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) {
+                                   ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
+    }
+
+    @Override
+    public void onReturn(Object value) {
+        responseObserver.onNext(value);
+        responseObserver.onCompleted(TriRpcStatus.OK);
     }
 
     @Override
@@ -51,14 +56,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
 
     @Override
     public void onComplete() {
-        try {
-            responseObserver.onNext(invoke());
-            responseObserver.onCompleted(TriRpcStatus.OK);
-        } catch (Throwable e) {
-            responseObserver.onCompleted(TriRpcStatus.getStatus(e));
-            LOGGER.error("Invoke service=" + invocation.getTargetServiceUniqueName() + " method= "
-                + invocation.getMethodName() + "failed. Internal error", e);
-        }
+        invoke();
     }
 
 }

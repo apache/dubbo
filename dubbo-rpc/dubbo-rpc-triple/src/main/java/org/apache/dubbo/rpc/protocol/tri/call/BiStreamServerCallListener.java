@@ -25,13 +25,18 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
 
-    private final StreamObserver<Object> requestObserver;
+    private StreamObserver<Object> requestObserver;
 
     public BiStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-        ServerCallToObserverAdapter<Object> responseObserver) throws Throwable {
+                                      ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
-        this.requestObserver = (StreamObserver<Object>) invoke();
+        invoke();
+    }
+
+    @Override
+    public void onReturn(Object value) {
+        this.requestObserver = (StreamObserver<Object>) value;
     }
 
     @Override
@@ -48,9 +53,9 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     @Override
     public void onCancel(String errorInfo) {
         requestObserver.onError(TriRpcStatus.CANCELLED
-            .withDescription(errorInfo).asException());
+                .withDescription(errorInfo).asException());
         responseObserver.cancel(
-            TriRpcStatus.CANCELLED.withDescription("Cancel by client:" + errorInfo).asException());
+                TriRpcStatus.CANCELLED.withDescription("Cancel by client:" + errorInfo).asException());
     }
 
 

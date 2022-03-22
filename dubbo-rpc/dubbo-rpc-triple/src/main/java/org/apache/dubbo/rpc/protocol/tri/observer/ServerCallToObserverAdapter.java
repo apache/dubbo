@@ -66,12 +66,8 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onError(Throwable throwable) {
-        if (isTerminated()) {
-            return;
-        }
         final TriRpcStatus status = TriRpcStatus.getStatus(throwable);
-        call.close(status, null);
-        setTerminated(true);
+        onCompleted(status);
     }
 
     public void onCompleted(TriRpcStatus status) {
@@ -80,7 +76,6 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         }
         call.close(status, attachments);
         setTerminated(true);
-
     }
 
     @Override
@@ -88,7 +83,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         if (isTerminated()) {
             return;
         }
-        call.close(TriRpcStatus.OK, null);
+        call.close(TriRpcStatus.OK,attachments);
         setTerminated(true);
     }
 

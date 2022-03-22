@@ -30,7 +30,7 @@ public class BiStreamMethodHandler<T, R> implements StubMethodHandler<T, R> {
     }
 
     @Override
-    public CompletableFuture<?> invoke(Object[] arguments) {
+    public CompletableFuture<StreamObserver<T>> invoke(Object[] arguments) {
         StreamObserver<R> responseObserver = (StreamObserver<R>) arguments[0];
         StreamObserver<T> requestObserver = func.apply(responseObserver);
         return CompletableFuture.completedFuture(requestObserver);

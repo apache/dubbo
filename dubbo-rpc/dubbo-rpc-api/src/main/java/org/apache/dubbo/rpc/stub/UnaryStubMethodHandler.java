@@ -30,7 +30,7 @@ public class UnaryStubMethodHandler<T, R> implements StubMethodHandler<T, R> {
     }
 
     @Override
-    public CompletableFuture<?> invoke(Object[] arguments) {
+    public CompletableFuture<R> invoke(Object[] arguments) {
         T request = (T) arguments[0];
         CompletableFuture<R> future = new CompletableFuture<>();
         StreamObserver<R> responseObserver = new FutureToObserverAdaptor<>(future);
