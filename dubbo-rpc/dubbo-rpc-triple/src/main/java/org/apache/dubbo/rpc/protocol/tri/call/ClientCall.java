@@ -54,6 +54,7 @@ public class ClientCall {
     private final FrameworkModel frameworkModel;
     private RequestMetadata requestMetadata;
     private ClientStream stream;
+    private ClientCall.Listener listener;
     private boolean canceled;
     private boolean headerSent;
     private boolean autoRequestN = true;
@@ -85,6 +86,8 @@ public class ClientCall {
                 requestMetadata.service,
                 requestMetadata.method), t);
             cancel("Serialize request failed", t);
+            listener.onClose(TriRpcStatus.INTERNAL.withDescription("Serialize request failed")
+                .withCause(t), null);
         }
     }
 
@@ -110,6 +113,7 @@ public class ClientCall {
     public StreamObserver<Object> start(RequestMetadata metadata,
         ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
+        this.listener = responseListener;
         this.stream = new ClientStream(frameworkModel, executor, connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, metadata.packableMethod));
         return new ClientCallToObserverAdapter<>(this);
