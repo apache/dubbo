@@ -31,6 +31,7 @@ import static org.apache.dubbo.rpc.RpcException.NETWORK_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.SERIALIZATION_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.TIMEOUT_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.TIMEOUT_TERMINATE;
+import static org.apache.dubbo.rpc.RpcException.UNKNOWN_EXCEPTION;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -41,6 +42,7 @@ public class TriRpcStatus {
     public static final TriRpcStatus OK = fromCode(Code.OK);
     public static final TriRpcStatus UNKNOWN = fromCode(Code.UNKNOWN);
     public static final TriRpcStatus INTERNAL = fromCode(Code.INTERNAL);
+    public static final TriRpcStatus NOT_FOUND = fromCode(Code.NOT_FOUND);
     public static final TriRpcStatus CANCELLED = fromCode(Code.CANCELLED);
     public static final TriRpcStatus UNAVAILABLE = fromCode(Code.UNAVAILABLE);
     public static final TriRpcStatus UNIMPLEMENTED = fromCode(Code.UNIMPLEMENTED);
@@ -72,9 +74,12 @@ public class TriRpcStatus {
     }
 
     public static TriRpcStatus getStatus(Throwable throwable, String description) {
+        if (throwable instanceof StatusRpcException) {
+            return ((StatusRpcException) throwable).getStatus();
+        }
         if (throwable instanceof RpcException) {
             RpcException rpcException = (RpcException) throwable;
-            Code code = rpcExceptionCodeToGrpcCode(rpcException.getCode());
+            Code code = dubboCodeToTriCode(rpcException.getCode());
             return new TriRpcStatus(code, throwable, description);
         }
         if (throwable instanceof TimeoutException) {
@@ -83,7 +88,28 @@ public class TriRpcStatus {
         return new TriRpcStatus(Code.UNKNOWN, throwable, description);
     }
 
-    public static Code rpcExceptionCodeToGrpcCode(int rpcExceptionCode) {
+    public static int triCodeToDubboCode(Code triCode) {
+        int code;
+        switch (triCode) {
+            case DEADLINE_EXCEEDED:
+                code = TIMEOUT_EXCEPTION;
+                break;
+            case PERMISSION_DENIED:
+                code = FORBIDDEN_EXCEPTION;
+                break;
+            case UNAVAILABLE:
+                code = NETWORK_EXCEPTION;
+                break;
+            case UNIMPLEMENTED:
+                code = METHOD_NOT_FOUND;
+                break;
+            default:
+                code = UNKNOWN_EXCEPTION;
+        }
+        return code;
+    }
+
+    public static Code dubboCodeToTriCode(int rpcExceptionCode) {
         Code code;
         switch (rpcExceptionCode) {
             case TIMEOUT_EXCEPTION:
@@ -184,7 +210,7 @@ public class TriRpcStatus {
         }
     }
 
-    public RpcException asException() {
+    public StatusRpcException asException() {
         return new StatusRpcException(this);
     }
 

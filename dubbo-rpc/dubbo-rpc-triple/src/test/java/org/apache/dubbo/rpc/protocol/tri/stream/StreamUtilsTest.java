@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.protocol.tri.stream;
 
-public class StatusRpcException extends RpcException {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public TriRpcStatus getStatus() {
-        return status;
-    }
+import java.nio.charset.StandardCharsets;
 
-    private final TriRpcStatus status;
+class StreamUtilsTest {
 
-    public StatusRpcException(TriRpcStatus status) {
-        super(TriRpcStatus.triCodeToDubboCode(status.code), status.toMessageWithoutCause(),
-            status.cause);
-        this.status = status;
+    @Test
+    void encodeBase64ASCII() {
+        String content = "😯";
+        Assertions.assertArrayEquals(content.getBytes(StandardCharsets.UTF_8),
+            StreamUtils.decodeASCIIByte(StreamUtils.encodeBase64ASCII(content.getBytes(
+                StandardCharsets.UTF_8))));
     }
 }

@@ -31,27 +31,22 @@ public class StubInvocationUtil {
         return (R) call(invoker, methodDescriptor, new Object[]{request});
     }
 
-    public static <T, R> void unaryCall(Invoker<?> invoker,
-        MethodDescriptor method,
-        T request,
+    public static <T, R> void unaryCall(Invoker<?> invoker, MethodDescriptor method, T request,
         StreamObserver<R> responseObserver) {
         call(invoker, method, new Object[]{request, responseObserver});
     }
 
     public static <T, R> StreamObserver<T> biOrClientStreamCall(Invoker<?> invoker,
-        MethodDescriptor method,
-        StreamObserver<R> responseObserver) {
+        MethodDescriptor method, StreamObserver<R> responseObserver) {
         return (StreamObserver<T>) call(invoker, method, new Object[]{responseObserver});
     }
 
-    public static <T, R> void serverStreamCall(Invoker<?> invoker,
-        MethodDescriptor method,
-        T request,
-        StreamObserver<R> responseObserver) {
+    public static <T, R> void serverStreamCall(Invoker<?> invoker, MethodDescriptor method,
+        T request, StreamObserver<R> responseObserver) {
         call(invoker, method, new Object[]{request, responseObserver});
     }
 
-    public static Object call(Invoker<?> invoker, MethodDescriptor methodDescriptor,
+    private static Object call(Invoker<?> invoker, MethodDescriptor methodDescriptor,
         Object[] arguments) {
         RpcInvocation rpcInvocation = new RpcInvocation(invoker.getUrl().getServiceModel(),
             methodDescriptor.getMethodName(), invoker.getInterface().getName(),

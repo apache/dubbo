@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,14 +42,17 @@ public class GzipTest {
     @ParameterizedTest
     void compression(String compressorName) {
         Compressor compressor = ApplicationModel.defaultModel().getDefaultModule()
-                .getExtensionLoader(Compressor.class)
-                .getExtension(compressorName);
+            .getExtensionLoader(Compressor.class)
+            .getExtension(compressorName);
+        String loadByStatic = Compressor.getCompressor(new FrameworkModel(), compressorName)
+            .getMessageEncoding();
+        Assertions.assertEquals(loadByStatic, compressor.getMessageEncoding());
 
         byte[] compressedByteArr = compressor.compress(TEST_STR.getBytes());
 
         DeCompressor deCompressor = ApplicationModel.defaultModel().getDefaultModule()
-                .getExtensionLoader(DeCompressor.class)
-                .getExtension(compressorName);
+            .getExtensionLoader(DeCompressor.class)
+            .getExtension(compressorName);
 
         byte[] decompressedByteArr = deCompressor.decompress(compressedByteArr);
         Assertions.assertEquals(new String(decompressedByteArr), TEST_STR);

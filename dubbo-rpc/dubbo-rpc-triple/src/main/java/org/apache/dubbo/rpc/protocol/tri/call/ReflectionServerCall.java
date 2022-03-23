@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -29,7 +27,6 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
-import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -47,10 +44,8 @@ import java.util.concurrent.Executor;
 
 public class ReflectionServerCall extends ServerCall {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReflectionServerCall.class);
     private final List<HeaderFilter> headerFilters;
     private MethodDescriptor methodDescriptor;
-    private PackableMethod packableMethod;
     private List<MethodDescriptor> methodDescriptors;
     private RpcInvocation invocation;
 
@@ -133,11 +128,6 @@ public class ReflectionServerCall extends ServerCall {
         return listener;
     }
 
-    @Override
-    protected byte[] packResponse(Object message) throws IOException {
-        return packableMethod.packResponse(message);
-    }
-
     class ServerStreamListenerImpl extends ServerCall.ServerStreamListenerBase {
 
         private Map<String, Object> metadata;
@@ -215,7 +205,7 @@ public class ReflectionServerCall extends ServerCall {
             if (closed) {
                 return;
             }
-            invocation = buildInvocation(metadata,methodDescriptor);
+            invocation = buildInvocation(metadata, methodDescriptor);
             if (closed) {
                 return;
             }
@@ -223,7 +213,7 @@ public class ReflectionServerCall extends ServerCall {
             if (closed) {
                 return;
             }
-            listener = ReflectionServerCall.this.startCall(invocation,
+            listener = ReflectionServerCall.this.startInternalCall(invocation,
                 methodDescriptor, invoker);
             if (listener == null) {
                 closed = true;
@@ -232,4 +222,3 @@ public class ReflectionServerCall extends ServerCall {
 
     }
 }
-

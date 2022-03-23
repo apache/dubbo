@@ -23,9 +23,6 @@ public interface ServerStreamListener extends StreamListener {
 
     /**
      * Indicate the stream is closed . Will be called exactly once
-     *
-     * @param grpcStatus
-     * @param attachments
      */
     void complete();
 

@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -71,6 +72,8 @@ public abstract class ServerCall {
     private Compressor compressor;
     private boolean headerSent;
     private boolean closed;
+    protected PackableMethod packableMethod;
+
 
     ServerCall(Invoker<?> invoker,
         ServerStream serverStream,
@@ -171,8 +174,6 @@ public abstract class ServerCall {
         return autoRequestN;
     }
 
-    protected abstract byte[] packResponse(Object message) throws IOException;
-
     public void writeMessage(Object message) {
         final Runnable writeMessage = () -> doWriteMessage(message);
         executor.execute(writeMessage);
@@ -187,7 +188,7 @@ public abstract class ServerCall {
         }
         final byte[] data;
         try {
-            data = packResponse(message);
+            data = packableMethod.packResponse(message);
         } catch (IOException e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
@@ -293,7 +294,7 @@ public abstract class ServerCall {
 
     }
 
-    public ServerCall.Listener startCall(
+    protected ServerCall.Listener startInternalCall(
         RpcInvocation invocation,
         MethodDescriptor methodDescriptor,
         Invoker<?> invoker) {

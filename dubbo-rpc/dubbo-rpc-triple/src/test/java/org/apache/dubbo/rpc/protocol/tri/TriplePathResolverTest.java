@@ -32,8 +32,9 @@ import org.junit.jupiter.api.Test;
 
 public class TriplePathResolverTest {
 
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
-            .getDefaultExtension();
+    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(
+            PathResolver.class)
+        .getDefaultExtension();
 
     private static final Invoker<Object> INVOKER = new Invoker<Object>() {
         @Override
@@ -83,6 +84,14 @@ public class TriplePathResolverTest {
         Assertions.assertEquals(INVOKER, getInvokerByPath("/abc"));
         PATH_RESOLVER.remove("/abc");
         Assertions.assertNull(getInvokerByPath("/abc"));
+    }
+
+    @Test
+    public void testNative() {
+        String path = "path";
+        Assertions.assertFalse(PATH_RESOLVER.hasNativeStub(path));
+        PATH_RESOLVER.addNativeStub(path);
+        Assertions.assertTrue(PATH_RESOLVER.hasNativeStub(path));
     }
 
     @Test

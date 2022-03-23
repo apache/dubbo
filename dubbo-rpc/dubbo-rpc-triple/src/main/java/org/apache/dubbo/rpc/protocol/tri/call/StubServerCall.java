@@ -28,8 +28,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
-import com.google.protobuf.Message;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -50,6 +48,7 @@ public class StubServerCall extends ServerCall {
             acceptEncoding, serviceName, methodName, executor);
         this.methodDescriptor = (StubMethodDescriptor) serviceDescriptor.getMethods(methodName)
             .get(0);
+        this.packableMethod = methodDescriptor;
     }
 
     private static ServiceDescriptor getServiceDescriptor(URL url, String serviceName) {
@@ -67,13 +66,11 @@ public class StubServerCall extends ServerCall {
     @Override
     public ServerStreamListener doStartCall(Map<String, Object> metadata) {
         RpcInvocation invocation = buildInvocation(metadata, methodDescriptor);
-        listener = startCall(invocation, methodDescriptor, invoker);
+        listener = startInternalCall(invocation, methodDescriptor, invoker);
+        if (listener == null) {
+            return null;
+        }
         return new ServerStreamListenerImpl();
-    }
-
-    @Override
-    protected byte[] packResponse(Object message) {
-        return ((Message) message).toByteArray();
     }
 
     class ServerStreamListenerImpl extends ServerCall.ServerStreamListenerBase {

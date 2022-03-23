@@ -172,7 +172,7 @@ public final class {{className}} {
             handlers.put({{methodName}}Method.getMethodName(), new BiStreamMethodHandler<>(this::{{methodName}}));
         {{/biStreamingWithoutClientStreamMethods}}
 
-            return new StubInvoker<>(url, {{interfaceClassName}}.class, handlers);
+            return new StubInvoker<>(this, url, {{interfaceClassName}}.class, handlers);
         }
 
 

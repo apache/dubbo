@@ -17,23 +17,26 @@
 
 package org.apache.dubbo.rpc.stub;
 
+import org.apache.dubbo.common.stream.StreamObserver;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-/**
- * A generic methodHandler for stub invocation
- *
- * @param <T> Request Type
- * @param <R> Response Type
- */
-public interface StubMethodHandler<T, R> {
+class BiStreamMethodHandlerTest {
 
-    /**
-     * Invoke method
-     *
-     * @param arguments may contain {@link org.apache.dubbo.common.stream.StreamObserver} or just
-     *                  single request instance.
-     * @return an Async or Sync future
-     */
-    CompletableFuture<?> invoke(Object[] arguments);
+    @Test
+    void invoke() throws ExecutionException, InterruptedException, TimeoutException {
+        StreamObserver<String> responseObserver = Mockito.mock(StreamObserver.class);
+        BiStreamMethodHandler<String, String> handler = new BiStreamMethodHandler<>(
+            o -> responseObserver);
+        CompletableFuture<StreamObserver<String>> future = handler.invoke(
+            new Object[]{responseObserver});
+        Assertions.assertEquals(responseObserver, future.get(1, TimeUnit.SECONDS));
+    }
 }
-

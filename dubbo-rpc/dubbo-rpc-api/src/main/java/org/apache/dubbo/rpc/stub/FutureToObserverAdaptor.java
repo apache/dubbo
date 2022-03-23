@@ -22,6 +22,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import java.util.concurrent.CompletableFuture;
 
 public class FutureToObserverAdaptor<T> implements StreamObserver<T> {
+
     private final CompletableFuture<T> future;
 
     public FutureToObserverAdaptor(CompletableFuture<T> future) {
@@ -46,5 +47,9 @@ public class FutureToObserverAdaptor<T> implements StreamObserver<T> {
 
     @Override
     public void onCompleted() {
+        if (future.isDone() || future.isCancelled() || future.isCompletedExceptionally()) {
+            return;
+        }
+        throw new IllegalStateException("Completed without value or exception ");
     }
 }

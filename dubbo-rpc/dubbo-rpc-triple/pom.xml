@@ -29,7 +29,8 @@
     <description>The triple protocol module</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <dubbo.compiler.version>0.0.4-SNAPSHOT</dubbo.compiler.version>
+        <dubbo.compiler.version>0.0.4.1-SNAPSHOT</dubbo.compiler.version>
+
     </properties>
     <dependencies>
         <dependency>
@@ -42,20 +43,20 @@
             <artifactId>protobuf-java</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.4.15</version>
+            <version>3.4.16</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.command;
+package org.apache.dubbo.rpc;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class FlushQueueCommand extends QueuedCommand {
+class StatusRpcExceptionTest {
 
-    @Override
-    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.flush();
+    @Test
+    void getStatus() {
+        Assertions.assertEquals(TriRpcStatus.INTERNAL,
+            ((StatusRpcException) TriRpcStatus.INTERNAL.asException()).getStatus());
     }
 }

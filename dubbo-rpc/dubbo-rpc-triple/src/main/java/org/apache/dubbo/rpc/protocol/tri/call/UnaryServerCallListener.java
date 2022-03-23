@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -26,10 +24,8 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
-
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                   ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
     }
 

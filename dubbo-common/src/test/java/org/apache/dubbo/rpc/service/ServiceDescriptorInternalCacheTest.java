@@ -15,19 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.service;
 
-public class StatusRpcException extends RpcException {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public TriRpcStatus getStatus() {
-        return status;
+class ServiceDescriptorInternalCacheTest {
+
+    @Test
+    void genericService() {
+        Assertions.assertNotNull(ServiceDescriptorInternalCache.genericService());
+        Assertions.assertEquals(GenericService.class,
+            ServiceDescriptorInternalCache.genericService().getServiceInterfaceClass());
     }
 
-    private final TriRpcStatus status;
-
-    public StatusRpcException(TriRpcStatus status) {
-        super(TriRpcStatus.triCodeToDubboCode(status.code), status.toMessageWithoutCause(),
-            status.cause);
-        this.status = status;
+    @Test
+    void echoService() {
+        Assertions.assertNotNull(ServiceDescriptorInternalCache.echoService());
+        Assertions.assertEquals(EchoService.class,
+            ServiceDescriptorInternalCache.echoService().getServiceInterfaceClass());
     }
 }

@@ -23,6 +23,10 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.ServerService;
 
+/**
+ * Stub proxy factory is used to generate non-reflection invoker and proxy. It relies on Dubbo3
+ * Triple compiler.
+ */
 public class StubProxyFactory implements ProxyFactory {
 
     @Override

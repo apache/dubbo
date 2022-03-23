@@ -15,19 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.protocol.tri;
 
-public class StatusRpcException extends RpcException {
+import org.junit.jupiter.api.Test;
 
-    public TriRpcStatus getStatus() {
-        return status;
-    }
+class ClassLoadUtilTest {
 
-    private final TriRpcStatus status;
-
-    public StatusRpcException(TriRpcStatus status) {
-        super(TriRpcStatus.triCodeToDubboCode(status.code), status.toMessageWithoutCause(),
-            status.cause);
-        this.status = status;
+    @Test
+    void switchContextLoader() {
+        ClassLoadUtil.switchContextLoader(Thread.currentThread().getContextClassLoader());
     }
 }

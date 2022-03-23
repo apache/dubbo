@@ -17,29 +17,38 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.CancellationContext;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class TriRpcStatusTest {
+class CancelableStreamObserverTest {
 
     @Test
-    public void fromMessage() {
-        String origin = "haha test 😊";
-        final TriRpcStatus status = TriRpcStatus.INTERNAL
-                .withDescription(origin);
-        final String encoded = TriRpcStatus.encodeMessage(origin);
-        Assertions.assertNotEquals(origin, encoded);
-        final String decoded = TriRpcStatus.decodeMessage(encoded);
-        Assertions.assertEquals(origin, decoded);
+    void setCancellationContext() {
+        CancelableStreamObserver<Object> observer = new CancelableStreamObserver<Object>() {
+            @Override
+            public void onNext(Object data) {
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+
+            }
+        };
+        CancellationContext cancellationContext = new CancellationContext();
+        observer.setCancellationContext(cancellationContext);
+        observer.cancel(new IllegalStateException());
+        Assertions.assertTrue(cancellationContext.isCancelled());
     }
 
     @Test
-    public void toMessage() {
-        String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
-        final TriRpcStatus status = TriRpcStatus.INTERNAL
-                .withDescription(content);
-        Assertions.assertEquals(content, status.toMessage());
+    void cancel() {
     }
 }

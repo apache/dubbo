@@ -83,7 +83,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         if (isTerminated()) {
             return;
         }
-        call.close(TriRpcStatus.OK,attachments);
+        call.close(TriRpcStatus.OK, attachments);
         setTerminated(true);
     }
 

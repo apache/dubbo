@@ -38,4 +38,3 @@ public class UnaryStubMethodHandler<T, R> implements StubMethodHandler<T, R> {
         return future;
     }
 }
-

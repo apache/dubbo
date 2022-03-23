@@ -64,10 +64,10 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     }
 
     /**
-     * init a DefaultFuture 1.init a DefaultFuture 2.timeout check
+     * init a DeadlineFuture 1.init a DeadlineFuture 2.timeout check
      *
-     * @param timeout timeout
-     * @return a new DefaultFuture
+     * @param timeout timeout in Mills
+     * @return a new DeadlineFuture
      */
     public static DeadlineFuture newFuture(String serviceName, String methodName, String address,
         int timeout, ExecutorService executor) {
@@ -181,8 +181,5 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
             DeadlineFuture.this.doReceived(status, null);
         }
     }
-
-
-
 
 }

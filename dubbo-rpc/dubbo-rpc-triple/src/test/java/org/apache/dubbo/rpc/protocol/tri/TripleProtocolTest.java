@@ -18,9 +18,9 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -67,12 +67,11 @@ public class TripleProtocolTest {
         serviceRepository.registerProvider(providerModel);
         providerUrl = providerUrl.setServiceModel(providerModel);
 
-        Protocol protocol = applicationModel.getExtensionLoader(Protocol.class)
-            .getExtension(CommonConstants.TRIPLE);
+        Protocol protocol = new TripleProtocol(providerUrl.getOrDefaultFrameworkModel());
         ProxyFactory proxy = applicationModel.getExtensionLoader(ProxyFactory.class)
             .getAdaptiveExtension();
         Invoker<IGreeter> invoker = proxy.getInvoker(serviceImpl, IGreeter.class, providerUrl);
-        protocol.export(invoker);
+        Exporter<IGreeter> export = protocol.export(invoker);
 
         URL consumerUrl = URL.valueOf(
             "tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
@@ -112,6 +111,8 @@ public class TripleProtocolTest {
         Assertions.assertEquals(REQUEST_MSG, serverOutboundMessageSubscriber.getOnNextData());
         Assertions.assertTrue(serverOutboundMessageSubscriber.isOnCompleted());
 
+        export.unexport();
+        protocol.destroy();
         // resource recycle.
         serviceRepository.destroy();
         System.out.println("serviceRepository destroyed");

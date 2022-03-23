@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.rpc.protocol.tri;
 
-public class StatusRpcException extends RpcException {
+import io.grpc.health.v1.HealthCheckRequest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public TriRpcStatus getStatus() {
-        return status;
-    }
+import java.io.IOException;
 
-    private final TriRpcStatus status;
+class PbUnpackTest {
 
-    public StatusRpcException(TriRpcStatus status) {
-        super(TriRpcStatus.triCodeToDubboCode(status.code), status.toMessageWithoutCause(),
-            status.cause);
-        this.status = status;
+    @Test
+    void unpack() throws IOException {
+        HealthCheckRequest req = HealthCheckRequest.newBuilder()
+            .setService("service")
+            .build();
+        PbUnpack<HealthCheckRequest> unpack=new PbUnpack<>(HealthCheckRequest.class);
+        HealthCheckRequest obj= (HealthCheckRequest) unpack.unpack(req.toByteArray());
+        Assertions.assertEquals("service",obj.getService());
     }
 }
