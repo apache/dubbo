@@ -27,4 +27,5 @@ public class MetadataConstants {
     public static final int DEFAULT_METADATA_PUBLISH_DELAY = 30000;
     public static final String METADATA_PROXY_TIMEOUT_KEY = "dubbo.application.metadata.proxy.delay";
     public static final int DEFAULT_METADATA_TIMEOUT_VALUE = 5000;
+    public static String REPORT_CONSUMER_URL_KEY = "report-consumer-definition";
 }

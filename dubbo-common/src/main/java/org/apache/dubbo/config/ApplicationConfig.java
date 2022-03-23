@@ -165,6 +165,9 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String metadataType;
 
+    /**
+     * Used to control whether register instance to registry or not. Set to 'false' only when instance is pure consumer.
+     */
     private Boolean registerConsumer;
 
     private String repository;
