@@ -28,6 +28,14 @@ public class ConfigItem {
     public static final String WEIGHT_TYPE = "weight";
     public static final String BALANCING_TYPE = "balancing";
     public static final String DISABLED_TYPE = "disabled";
+    public static final String CONFIG_ITEM_TYPE = "type";
+    public static final String ENABLED_KEY = "enabled";
+    public static final String ADDRESSES_KEY = "addresses";
+    public static final String PROVIDER_ADDRESSES_KEY = "providerAddresses";
+    public static final String SERVICES_KEY = "services";
+    public static final String APPLICATIONS_KEY = "applications";
+    public static final String PARAMETERS_KEY = "parameters";
+    public static final String SIDE_KEY = "side";
 
     private String type;
     private Boolean enabled;
@@ -41,44 +49,43 @@ public class ConfigItem {
     @SuppressWarnings("unchecked")
     public static ConfigItem parseFromMap(Map<String, Object> map) {
         ConfigItem configItem = new ConfigItem();
-        configItem.setType((String) map.get("type"));
+        configItem.setType((String) map.get(CONFIG_ITEM_TYPE));
 
-        Object enabled = map.get("enabled");
+        Object enabled = map.get(ENABLED_KEY);
         if (enabled != null) {
             configItem.setEnabled(Boolean.parseBoolean(enabled.toString()));
         }
 
-        Object addresses = map.get("addresses");
+        Object addresses = map.get(ADDRESSES_KEY);
         if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
             configItem.setAddresses(((List<Object>) addresses).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
-        Object providerAddresses = map.get("providerAddresses");
+        Object providerAddresses = map.get(PROVIDER_ADDRESSES_KEY);
         if (providerAddresses != null && List.class.isAssignableFrom(providerAddresses.getClass())) {
             configItem.setProviderAddresses(((List<Object>) providerAddresses).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
-        Object services = map.get("services");
+        Object services = map.get(SERVICES_KEY);
         if (services != null && List.class.isAssignableFrom(services.getClass())) {
             configItem.setServices(((List<Object>) services).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
-        Object applications = map.get("applications");
+        Object applications = map.get(APPLICATIONS_KEY);
         if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
             configItem.setApplications(((List<Object>) applications).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
-        Object parameters = map.get("parameters");
+        Object parameters = map.get(PARAMETERS_KEY);
         if (parameters != null && Map.class.isAssignableFrom(parameters.getClass())) {
             configItem.setParameters(((Map<String, Object>) parameters).entrySet()
                     .stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString())));
         }
-
-        configItem.setSide((String) map.get("side"));
+        configItem.setSide((String) map.get(SIDE_KEY));
         return configItem;
     }
 
