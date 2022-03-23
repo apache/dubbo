@@ -58,7 +58,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public boolean map(URL url) {
         if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
-            logger.error("No valid metadata config center found for mapping report.");
+            logger.warn("No valid metadata config center found for mapping report.");
             return false;
         }
         String serviceInterface = url.getServiceInterface();
