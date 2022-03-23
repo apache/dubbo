@@ -250,13 +250,14 @@ public class DubboProtocol extends AbstractProtocol {
         int port = channel.getLocalAddress().getPort();
         String path = (String) inv.getObjectAttachments().get(PATH_KEY);
 
-        // if it's callback service on client side
+        //if it's stub service on client side(after enable stubevent, usually is set up onconnect or ondisconnect method)
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
-            port = channel.getRemoteAddress().getPort();
+            //when a stub service export to local, it usually can't be exposed to port
+            port = 0;
         }
 
-        //callback
+        // if it's callback service on client side
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {
             path += "." + inv.getObjectAttachments().get(CALLBACK_SERVICE_KEY);
