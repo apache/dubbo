@@ -29,8 +29,8 @@ public class ConfigItem {
     public static final String BALANCING_TYPE = "balancing";
     public static final String DISABLED_TYPE = "disabled";
     public static final String CONFIG_ITEM_TYPE = "type";
-    public static final String ENABLED_KEY ="enabled";
-    public static final String ADDRESSES_KEY="addresses";
+    public static final String ENABLED_KEY = "enabled";
+    public static final String ADDRESSES_KEY = "addresses";
     public static final String PROVIDER_ADDRESSES_KEY = "providerAddresses";
     public static final String SERVICES_KEY = "services";
     public static final String APPLICATIONS_KEY = "applications";

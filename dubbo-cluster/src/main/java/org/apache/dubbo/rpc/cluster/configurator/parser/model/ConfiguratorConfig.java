@@ -28,9 +28,9 @@ public class ConfiguratorConfig {
     public static final String SCOPE_APPLICATION = "application";
     public static final String CONFIG_VERSION_KEY = "configVersion";
     public static final String SCOPE_KEY = "scope";
-    public static final String CONFIG_KEY="key";
-    public static final String ENABLED_KEY="enabled";
-    public static final String CONFIGS_KEY="configs";
+    public static final String CONFIG_KEY = "key";
+    public static final String ENABLED_KEY = "enabled";
+    public static final String CONFIGS_KEY = "configs";
     private String configVersion;
     private String scope;
     private String key;
