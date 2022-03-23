@@ -29,7 +29,7 @@ public class ConfigItem {
     public static final String BALANCING_TYPE = "balancing";
     public static final String DISABLED_TYPE = "disabled";
     public static final String CONFIG_ITEM_TYPE = "type";
-    public static final String ENABLED_TYPE="enabled";
+    public static final String ENABLED_KEY ="enabled";
     public static final String ADDRESSES_KEY="addresses";
     public static final String PROVIDER_ADDRESSES_KEY = "providerAddresses";
     public static final String SERVICES_KEY = "services";
@@ -51,7 +51,7 @@ public class ConfigItem {
         ConfigItem configItem = new ConfigItem();
         configItem.setType((String) map.get(CONFIG_ITEM_TYPE));
 
-        Object enabled = map.get(ENABLED_TYPE);
+        Object enabled = map.get(ENABLED_KEY);
         if (enabled != null) {
             configItem.setEnabled(Boolean.parseBoolean(enabled.toString()));
         }
