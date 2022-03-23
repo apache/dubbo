@@ -109,6 +109,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTO
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -279,7 +281,7 @@ public class ConfigValidationUtils {
     }
 
     private static boolean isValidRegisterMode(String mode) {
-        return StringUtils.isNotEmpty(mode)
+        return isNotEmpty(mode)
             && (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(mode)
             || DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(mode)
             || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(mode)
@@ -500,6 +502,13 @@ public class ConfigValidationUtils {
         if (metadataReportConfig == null) {
             return;
         }
+
+        String address = metadataReportConfig.getAddress();
+        String protocol = metadataReportConfig.getProtocol();
+
+        if ((isEmpty(address) || !address.contains("://")) && isEmpty(protocol)) {
+            throw new IllegalArgumentException("Please specify valid protocol or address for metadata report " + address);
+        }
     }
 
     public static void validateMetricsConfig(MetricsConfig metricsConfig) {
@@ -582,7 +591,7 @@ public class ConfigValidationUtils {
         checkMethodName("name", config.getName());
 
         String mock = config.getMock();
-        if (StringUtils.isNotEmpty(mock)) {
+        if (isNotEmpty(mock)) {
             if (mock.startsWith(RETURN_PREFIX) || mock.startsWith(THROW_PREFIX + " ")) {
                 checkLength(MOCK_KEY, mock);
             } else if (mock.startsWith(FAIL_PREFIX) || mock.startsWith(FORCE_PREFIX)) {
@@ -599,12 +608,12 @@ public class ConfigValidationUtils {
 
     private static String getRegistryProtocolType(URL url) {
         String registryProtocol = url.getParameter("registry-protocol-type");
-        return StringUtils.isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
+        return isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 
     public static void checkExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
         checkName(property, value);
-        if (StringUtils.isNotEmpty(value)
+        if (isNotEmpty(value)
             && !scopeModel.getExtensionLoader(type).hasExtension(value)) {
             throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
         }
@@ -624,7 +633,7 @@ public class ConfigValidationUtils {
 
     public static void checkMultiExtension(ScopeModel scopeModel, List<Class<?>> types, String property, String value) {
         checkMultiName(property, value);
-        if (StringUtils.isNotEmpty(value)) {
+        if (isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
             for (String v : values) {
                 if (v.startsWith(REMOVE_VALUE_PREFIX)) {

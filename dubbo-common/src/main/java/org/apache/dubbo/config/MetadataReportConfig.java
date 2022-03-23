@@ -153,11 +153,7 @@ public class MetadataReportConfig extends AbstractConfig {
         // Normalize the parameters
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
-        String metadataProtocol = isEmpty(url.getProtocol()) ? map.get(PROTOCOL_KEY) : url.getProtocol();
-        if (isEmpty(metadataProtocol)) {
-            throw new IllegalArgumentException("Please specify valid protocol for metadata report." + address);
-        }
-        map.put("metadata", metadataProtocol);
+        map.put("metadata", isEmpty(url.getProtocol()) ? map.get(PROTOCOL_KEY) : url.getProtocol());
         return new ServiceConfigURL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
                 url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
 
