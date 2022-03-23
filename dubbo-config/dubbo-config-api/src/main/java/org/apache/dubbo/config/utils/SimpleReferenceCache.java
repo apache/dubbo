@@ -67,7 +67,7 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     private final Map<String, List<ReferenceConfigBase<?>>> referenceKeyMap = new ConcurrentHashMap<>();
     private final Map<Class<?>, List<ReferenceConfigBase<?>>> referenceTypeMap = new ConcurrentHashMap<>();
-    private final Map<ReferenceConfigBase<?>, Object> references = new ConcurrentHashMap<>();
+    private final Map<String, Object> references = new ConcurrentHashMap<>();
 
     protected SimpleReferenceCache(String name, KeyGenerator generator) {
         this.name = name;
@@ -107,9 +107,9 @@ public class SimpleReferenceCache implements ReferenceCache {
     public <T> T get(ReferenceConfigBase<T> rc) {
         String key = generator.generateKey(rc);
         Class<?> type = rc.getInterfaceClass();
-        Object proxy = rc.get();
 
-        references.computeIfAbsent(rc, _rc -> {
+        return (T) references.computeIfAbsent(key, _rc -> {
+            Object proxy = rc.get();
             List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.computeIfAbsent(type, _t -> Collections.synchronizedList(new ArrayList<>()));
             referencesOfType.add(rc);
             List<ReferenceConfigBase<?>> referenceConfigList = referenceKeyMap.computeIfAbsent(key, _k -> Collections.synchronizedList(new ArrayList<>()));
@@ -117,7 +117,6 @@ public class SimpleReferenceCache implements ReferenceCache {
             return proxy;
         });
 
-        return (T) proxy;
     }
 
     /**

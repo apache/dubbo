@@ -25,8 +25,7 @@ import org.apache.dubbo.config.utils.service.FooService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReferenceCacheTest {
 
@@ -48,10 +47,10 @@ public class ReferenceCacheTest {
         MockReferenceConfig configCopy = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         assertEquals(1L, configCopy.getCounter());
         cache.get(configCopy);
-        assertTrue(configCopy.isGetMethodRun());
+        assertFalse(configCopy.isGetMethodRun());
 
-        assertEquals(2L, config.getCounter());
-        assertEquals(2L, configCopy.getCounter());
+        assertEquals(1L, config.getCounter());
+        assertEquals(1L, configCopy.getCounter());
     }
 
     @Test
