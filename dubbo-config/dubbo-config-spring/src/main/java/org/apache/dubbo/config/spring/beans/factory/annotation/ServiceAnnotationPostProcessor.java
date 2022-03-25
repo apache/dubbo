@@ -245,7 +245,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     }
 
     /**
-     * It'd better to use BeanNameGenerator instance that should reference
+     * It'd be better to use BeanNameGenerator instance that should reference
      * {@link ConfigurationClassPostProcessor#componentScanBeanNameGenerator},
      * thus it maybe a potential problem on bean name generation.
      *
