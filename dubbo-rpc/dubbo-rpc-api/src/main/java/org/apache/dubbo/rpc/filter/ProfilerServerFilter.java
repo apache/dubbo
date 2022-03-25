@@ -75,21 +75,21 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                 ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
                 invocation.put(Profiler.PROFILER_KEY, profiler);
 
-                dumpIfNeed(invoker, invocation,(ProfilerEntry) fromInvocation);
+                dumpIfNeed(invoker, invocation, (ProfilerEntry) fromInvocation);
             }
         }
     }
 
     private void dumpIfNeed(Invoker<?> invoker, Invocation invocation, ProfilerEntry profiler) {
         int timeout;
-        Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-        if (timeoutKey instanceof Integer) {
-            timeout = (Integer) timeoutKey;
+        Object timeoutValue = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
+        if (timeoutValue instanceof Integer) {
+            timeout = (Integer) timeoutValue;
         } else {
             timeout = invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
-        if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
+        if (((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) && timeout != -1) {
 
             StringBuilder attachment = new StringBuilder();
             for (Map.Entry<String, Object> entry : invocation.getObjectAttachments().entrySet()) {
