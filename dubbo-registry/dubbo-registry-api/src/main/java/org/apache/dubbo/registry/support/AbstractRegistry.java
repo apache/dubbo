@@ -372,9 +372,6 @@ public abstract class AbstractRegistry implements Registry {
         if (listeners != null) {
             listeners.remove(listener);
         }
-        if (listeners.isEmpty()) {
-            subscribed.remove(url);
-        }
 
         // do not forget remove notified
         notified.remove(url);
