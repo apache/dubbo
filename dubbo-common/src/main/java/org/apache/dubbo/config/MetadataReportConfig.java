@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
@@ -152,7 +153,7 @@ public class MetadataReportConfig extends AbstractConfig {
         // Normalize the parameters
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
-        map.put("metadata", url.getProtocol());
+        map.put("metadata", isEmpty(url.getProtocol()) ? map.get(PROTOCOL_KEY) : url.getProtocol());
         return new ServiceConfigURL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
                 url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
 

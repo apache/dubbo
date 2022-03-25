@@ -284,10 +284,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-            if (!metadataReportConfig.isValid()) {
-                logger.warn("Ignore invalid metadata-report config: " + metadataReportConfig);
-                continue;
-            }
             validMetadataReportConfigs.add(metadataReportConfig);
         }
         metadataReportInstance.init(validMetadataReportConfigs);
