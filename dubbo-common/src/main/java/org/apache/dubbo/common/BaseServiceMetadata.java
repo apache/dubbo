@@ -106,7 +106,7 @@ public class BaseServiceMetadata {
 
     public static String keyWithoutGroup(String interfaceName, String version) {
         if (StringUtils.isEmpty(version)) {
-            return interfaceName + DEFAULT_VERSION;
+            return interfaceName + ":" + DEFAULT_VERSION;
         }
         return interfaceName + ":" + version;
     }
