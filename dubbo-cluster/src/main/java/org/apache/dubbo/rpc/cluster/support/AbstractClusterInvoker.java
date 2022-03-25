@@ -311,10 +311,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
     private void invalidateInvoker(Invoker<T> invoker) {
-        if (enableConnectivityValidation) {
-            if (getDirectory() != null) {
-                getDirectory().addInvalidateInvoker(invoker);
-            }
+        Directory<T> directory = getDirectory();
+        if (enableConnectivityValidation && directory != null) {
+            directory.addInvalidateInvoker(invoker);
         }
     }
 
