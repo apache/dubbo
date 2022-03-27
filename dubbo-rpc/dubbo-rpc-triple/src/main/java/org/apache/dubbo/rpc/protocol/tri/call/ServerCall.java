@@ -114,6 +114,10 @@ public abstract class ServerCall {
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(headers));
         inv.put(REMOTE_ADDRESS_KEY, serverStream.remoteAddress());
+        if (null != headers.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader())) {
+            inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY,
+                headers.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader()));
+        }
         return inv;
     }
 
