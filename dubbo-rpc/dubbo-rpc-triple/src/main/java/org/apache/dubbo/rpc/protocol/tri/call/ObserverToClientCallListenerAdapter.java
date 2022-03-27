@@ -18,30 +18,29 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
-public class ObserverToClientCallListenerAdapter implements ClientCall.StartListener {
-    private final StreamObserver<Object> delegate;
-    private final ClientCallToObserverAdapter<Object> adapter;
+public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
 
-    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate, ClientCallToObserverAdapter<Object> adapter) {
+    private final StreamObserver<Object> delegate;
+    private ClientCall call;
+
+    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
-        this.adapter = adapter;
     }
 
     @Override
     public void onMessage(Object message) {
         delegate.onNext(message);
-        if (adapter.isAutoRequestEnabled()) {
-            adapter.request(1);
+        if (call.isAutoRequestN()) {
+            call.requestN(1);
         }
     }
 
     @Override
-    public void onClose(RpcStatus status, Map<String, Object> trailers) {
+    public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
         if (status.isOk()) {
             delegate.onCompleted();
         } else {
@@ -50,7 +49,10 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.StartList
     }
 
     @Override
-    public void onStart() {
-        adapter.request(1);
+    public void onStart(ClientCall call) {
+        this.call = call;
+        if (call.isAutoRequestN()) {
+            call.requestN(1);
+        }
     }
 }

@@ -19,14 +19,18 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     public ServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                          ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
+    }
+
+    @Override
+    public void onReturn(Object value) {
     }
 
     @Override
@@ -40,16 +44,12 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onCancel(String errorInfo) {
-        responseObserver.cancel(RpcStatus.CANCELLED.withDescription(errorInfo).asException());
+        responseObserver.cancel(TriRpcStatus.CANCELLED.withDescription(errorInfo).asException());
     }
 
 
     @Override
     public void onComplete() {
-        try {
-            invoke();
-        } catch (Throwable e) {
-            responseObserver.onCompleted(RpcStatus.getStatus(e));
-        }
+        invoke();
     }
 }

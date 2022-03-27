@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.rpc.service;
 
+import org.apache.dubbo.rpc.model.ReflectionServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 public class ServiceDescriptorInternalCache {
-    private static final ServiceDescriptor genericServiceDescriptor = new ServiceDescriptor(GenericService.class);
-    private static final ServiceDescriptor echoServiceDescriptor = new ServiceDescriptor(EchoService.class);
+    private static final ServiceDescriptor genericServiceDescriptor = new ReflectionServiceDescriptor(GenericService.class);
+    private static final ServiceDescriptor echoServiceDescriptor = new ReflectionServiceDescriptor(EchoService.class);
 
     public static ServiceDescriptor genericService() {
         return genericServiceDescriptor;

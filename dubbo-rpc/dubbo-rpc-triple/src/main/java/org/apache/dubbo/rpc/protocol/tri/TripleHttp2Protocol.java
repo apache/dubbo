@@ -20,17 +20,13 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
@@ -59,6 +55,16 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KE
 
 @Activate
 public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModelAware {
+
+    // 1 MiB
+    private static final int MIB_1 = 1 << 20;
+    private static final int MIB_8 = 1 << 23;
+    private static final int KIB_32 = 1 << 15;
+    private static final int DEFAULT_MAX_HEADER_LIST_SIZE = KIB_32;
+    private static final int DEFAULT_SETTING_HEADER_LIST_SIZE = 4096;
+    private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
+    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
+
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
 
@@ -79,31 +85,35 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-        final List<HeaderFilter> filters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
+        final List<HeaderFilter> filters = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(HeaderFilter.class)
+            .getActivateExtension(url, HEADER_FILTER_KEY);
         final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
             .gracefulShutdownTimeoutMillis(10000)
-            .initialSettings(new Http2Settings()
-                .headerTableSize(config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, 4096))
-                .maxConcurrentStreams(config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, 1 << 20))
-                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, 2 << 14))
-                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 8192)))
+            .initialSettings(new Http2Settings().headerTableSize(
+                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
+                .maxConcurrentStreams(
+                    config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
+                .initialWindowSize(
+                    config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
+                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
+                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY,
+                    DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
-        final MultipleSerialization serialization = frameworkModel
-            .getExtensionLoader(MultipleSerialization.class)
-            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInitializer<Channel>() {
-
-            @Override
-            protected void initChannel(Channel ch) {
-                final ChannelPipeline p = ch.pipeline();
-                p.addLast(new TripleCommandOutBoundHandler());
-                p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url), filters, new GenericUnpack(serialization, url)));
-            }
-        });
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new TripleTailHandler());
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(
+            new ChannelInitializer<Channel>() {
+                @Override
+                protected void initChannel(Channel ch) {
+                    final ChannelPipeline p = ch.pipeline();
+                    p.addLast(new TripleCommandOutBoundHandler());
+                    p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
+                        filters));
+                }
+            });
+        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
+            new TripleTailHandler());
     }
 
 
@@ -124,16 +134,20 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
         final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
-            .initialSettings(new Http2Settings()
-                .headerTableSize(config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, 4096))
+            .initialSettings(new Http2Settings().headerTableSize(
+                    config.getInt(H2_SETTINGS_HEADER_TABLE_SIZE_KEY, DEFAULT_SETTING_HEADER_LIST_SIZE))
                 .pushEnabled(config.getBoolean(H2_SETTINGS_ENABLE_PUSH_KEY, false))
-                .maxConcurrentStreams(config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
-                .initialWindowSize(config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, 1 << 20))
-                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, 2 << 14))
-                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 8192)))
+                .maxConcurrentStreams(
+                    config.getInt(H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY, Integer.MAX_VALUE))
+                .initialWindowSize(
+                    config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_INIT_SIZE))
+                .maxFrameSize(config.getInt(H2_SETTINGS_MAX_FRAME_SIZE_KEY, DEFAULT_MAX_FRAME_SIZE))
+                .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY,
+                    DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler);
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(
+            new TripleClientHandler(frameworkModel));
+        pipeline.addLast(codec, handler, new TripleTailHandler());
     }
 }

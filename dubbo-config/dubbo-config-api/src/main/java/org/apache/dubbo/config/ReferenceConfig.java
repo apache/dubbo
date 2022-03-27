@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -49,6 +50,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
@@ -266,7 +268,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         initServiceAppsMapping(referenceParameters);
 
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        ServiceDescriptor serviceDescriptor;
+        if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
+            serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
+            repository.registerService(serviceDescriptor);
+        } else {
+            serviceDescriptor = repository.registerService(interfaceClass);
+        }
         consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
             getScopeModel(), serviceMetadata, createAsyncMethodInfo());
 

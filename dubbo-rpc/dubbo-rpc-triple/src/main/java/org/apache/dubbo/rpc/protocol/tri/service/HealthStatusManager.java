@@ -17,13 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import grpc.health.v1.Health;
-import grpc.health.v1.HealthCheckResponse;
+import io.grpc.health.v1.Health;
+import io.grpc.health.v1.HealthCheckResponse;
 
 public class HealthStatusManager {
 
     /**
-     * The special "service name" that represent all services on a GRPC server.  It is an empty string.
+     * The special "service name" that represent all services on a GRPC server.  It is an empty
+     * string.
      */
     public static final String SERVICE_NAME_ALL_SERVICES = "";
 
@@ -40,33 +41,35 @@ public class HealthStatusManager {
     /**
      * Updates the status of the server.
      *
-     * @param service the name of some aspect of the server that is associated with a health status. This name can have
-     *                no relation with the gRPC services that the server is running with. It can also be an empty String
-     *                {@code ""} per the gRPC specification.
+     * @param service the name of some aspect of the server that is associated with a health status.
+     *                This name can have no relation with the gRPC services that the server is
+     *                running with. It can also be an empty String {@code ""} per the gRPC
+     *                specification.
      * @param status  is one of the values {@link HealthCheckResponse.ServingStatus#SERVING}, {@link
-     *                HealthCheckResponse.ServingStatus#NOT_SERVING} and
-     *                {@link HealthCheckResponse.ServingStatus#UNKNOWN}.
+     *                HealthCheckResponse.ServingStatus#NOT_SERVING} and {@link
+     *                HealthCheckResponse.ServingStatus#UNKNOWN}.
      */
     public void setStatus(String service, HealthCheckResponse.ServingStatus status) {
         healthService.setStatus(service, status);
     }
 
     /**
-     * Clears the health status record of a service. The health service will respond with NOT_FOUND error on checking
-     * the status of a cleared service.
+     * Clears the health status record of a service. The health service will respond with NOT_FOUND
+     * error on checking the status of a cleared service.
      *
-     * @param service the name of some aspect of the server that is associated with a health status. This name can have
-     *                no relation with the gRPC services that the server is running with. It can also be an empty String
-     *                {@code ""} per the gRPC specification.
+     * @param service the name of some aspect of the server that is associated with a health status.
+     *                This name can have no relation with the gRPC services that the server is
+     *                running with. It can also be an empty String {@code ""} per the gRPC
+     *                specification.
      */
     public void clearStatus(String service) {
         healthService.clearStatus(service);
     }
 
     /**
-     * enterTerminalState causes the health status manager to mark all services as not serving, and prevents future
-     * updates to services.  This method is meant to be called prior to server shutdown as a way to indicate that
-     * clients should redirect their traffic elsewhere.
+     * enterTerminalState causes the health status manager to mark all services as not serving, and
+     * prevents future updates to services.  This method is meant to be called prior to server
+     * shutdown as a way to indicate that clients should redirect their traffic elsewhere.
      */
     public void enterTerminalState() {
         healthService.enterTerminalState();

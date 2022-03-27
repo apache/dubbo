@@ -56,7 +56,7 @@ public class TripleHttp2ClientResponseHandlerTest {
     public void testUserEventTriggered() throws Exception {
         // test Http2GoAwayFrame
         Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil
-            .writeAscii(ByteBufAllocator.DEFAULT, "app_requested"));
+                .writeAscii(ByteBufAllocator.DEFAULT, "app_requested"));
         handler.userEventTriggered(ctx, goAwayFrame);
         Mockito.verify(ctx, Mockito.times(1)).close();
 

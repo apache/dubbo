@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.service;
 
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.protocol.tri.PathResolver;
+import org.apache.dubbo.rpc.stub.StubSuppliers;
 
-import grpc.health.v1.Health;
+import io.grpc.health.v1.DubboHealthTriple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -33,12 +34,14 @@ public class TriBuiltinServiceTest {
     public void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
+        String serviceName = DubboHealthTriple.SERVICE_NAME;
         Assertions.assertNotNull(triBuiltinService.getHealthStatusManager());
-        PathResolver pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        Assertions.assertNotNull(pathResolver.resolve(Health.class.getName()));
-
-        ModuleServiceRepository repository = frameworkModel.getInternalApplicationModel().getInternalModule().getServiceRepository();
+        PathResolver pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
+            .getDefaultExtension();
+        Assertions.assertNotNull(pathResolver.resolve(serviceName));
+        ModuleServiceRepository repository = frameworkModel.getInternalApplicationModel()
+            .getInternalModule().getServiceRepository();
         Assertions.assertFalse(repository.getAllServices().isEmpty());
-        Assertions.assertFalse(repository.getExportedServices().isEmpty());
+        Assertions.assertNotNull(StubSuppliers.getServiceDescriptor(serviceName));
     }
 }

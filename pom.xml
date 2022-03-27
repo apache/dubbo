@@ -352,6 +352,7 @@
                                     </resourceExcludes>
                                     <resourceExcludes>
                                         **/generated/**/*
+                                        **/generated-sources/**/*
                                     </resourceExcludes>
                                 </configuration>
                                 <goals>

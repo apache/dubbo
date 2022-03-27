@@ -17,10 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.FlushQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
@@ -59,10 +58,10 @@ public class WriteQueueTest {
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.newPromise()).thenReturn(promise);
         Mockito.when(channel.write(Mockito.any(), Mockito.any())).thenAnswer(
-            (Answer<ChannelPromise>) invocationOnMock -> {
-                writeMethodCalledTimes.incrementAndGet();
-                return promise;
-            });
+                (Answer<ChannelPromise>) invocationOnMock -> {
+                    writeMethodCalledTimes.incrementAndGet();
+                    return promise;
+                });
 
         writeMethodCalledTimes.set(0);
     }
@@ -73,27 +72,25 @@ public class WriteQueueTest {
         WriteQueue writeQueue = new WriteQueue(channel);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0));
-        RpcStatus status = RpcStatus.UNKNOWN
-            .withCause(new RpcException())
-            .withDescription("Encode Response data error");
+        TriRpcStatus status = TriRpcStatus.UNKNOWN
+                .withCause(new RpcException())
+                .withDescription("Encode Response data error");
         writeQueue.enqueue(CancelQueueCommand.createCommand());
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
-        writeQueue.enqueue(new FlushQueueCommand());
 
-        while (writeMethodCalledTimes.get() != 5) {
+        while (writeMethodCalledTimes.get() != 4) {
             Thread.sleep(50);
         }
 
         ArgumentCaptor<QueuedCommand> commandArgumentCaptor = ArgumentCaptor.forClass(QueuedCommand.class);
         ArgumentCaptor<ChannelPromise> promiseArgumentCaptor = ArgumentCaptor.forClass(ChannelPromise.class);
-        Mockito.verify(channel, Mockito.times(5)).write(commandArgumentCaptor.capture(), promiseArgumentCaptor.capture());
+        Mockito.verify(channel, Mockito.times(4)).write(commandArgumentCaptor.capture(), promiseArgumentCaptor.capture());
         List<QueuedCommand> queuedCommands = commandArgumentCaptor.getAllValues();
-        Assertions.assertEquals(queuedCommands.size(), 5);
+        Assertions.assertEquals(queuedCommands.size(), 4);
         Assertions.assertTrue(queuedCommands.get(0) instanceof HeaderQueueCommand);
         Assertions.assertTrue(queuedCommands.get(1) instanceof DataQueueCommand);
         Assertions.assertTrue(queuedCommands.get(2) instanceof CancelQueueCommand);
         Assertions.assertTrue(queuedCommands.get(3) instanceof TextDataQueueCommand);
-        Assertions.assertTrue(queuedCommands.get(4) instanceof FlushQueueCommand);
     }
 
     @Test

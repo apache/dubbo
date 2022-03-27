@@ -25,6 +25,7 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 
 public class TriDecoder implements Deframer {
+
     private static final int HEADER_LENGTH = 5;
     private static final int COMPRESSED_FLAG_MASK = 1;
     private static final int RESERVED_MASK = 0xFE;
@@ -48,6 +49,10 @@ public class TriDecoder implements Deframer {
 
     @Override
     public void deframe(ByteBuf data) {
+        if (closing || closed) {
+            // ignored
+            return;
+        }
         accumulate.addComponent(true, data);
         deliver();
     }

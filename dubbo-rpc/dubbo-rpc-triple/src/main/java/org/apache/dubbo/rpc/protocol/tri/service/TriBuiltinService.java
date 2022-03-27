@@ -20,20 +20,18 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 
-import grpc.health.v1.Health;
+import io.grpc.health.v1.DubboHealthTriple;
+import io.grpc.health.v1.Health;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 /**
  * tri internal service like grpc internal service
@@ -43,8 +41,6 @@ public class TriBuiltinService {
     private final ProxyFactory proxyFactory;
 
     private final PathResolver pathResolver;
-
-    private final ModuleServiceRepository repository;
 
     private final Health healthService;
 
@@ -57,38 +53,19 @@ public class TriBuiltinService {
         healthService = healthStatusManager.getHealthService();
         proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        repository = frameworkModel.getInternalApplicationModel().getInternalModule().getServiceRepository();
         init();
     }
 
     public void init() {
         if (init.compareAndSet(false, true)) {
-            ServiceDescriptor serviceDescriptor = repository.registerService(Health.class);
-            ServiceMetadata serviceMetadata = new ServiceMetadata();
-            serviceMetadata.setServiceType(Health.class);
-            serviceMetadata.setTarget(healthService);
-            serviceMetadata.setServiceInterfaceName(Health.class.getName());
-            serviceMetadata.generateServiceKey();
-            ProviderModel providerModel = new ProviderModel(
-                Health.class.getName(),
-                healthService,
-                serviceDescriptor,
-                null,
-                serviceMetadata);
-            repository.registerProvider(providerModel);
-            int port = 0;
-            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
-                null, ANYHOST_VALUE, port, Health.class.getName());
-            url.setServiceModel(providerModel);
-            url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
+            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
+                DubboHealthTriple.SERVICE_NAME)
+                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
+                .setScopeModel(ApplicationModel.defaultModel().getInternalModule());
             Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
-            pathResolver.add(url.getServiceKey(), invoker);
-            pathResolver.add(url.getServiceInterface(), invoker);
-            providerModel.setDestroyCaller(() -> {
-                pathResolver.remove(url.getServiceKey());
-                pathResolver.remove(url.getServiceInterface());
-                return null;
-            });
+            pathResolver.add(DubboHealthTriple.SERVICE_NAME, invoker);
+            ApplicationModel.defaultModel().getInternalModule()
+                .addDestroyListener(scopeModel -> pathResolver.remove(DubboHealthTriple.SERVICE_NAME));
         }
     }
 

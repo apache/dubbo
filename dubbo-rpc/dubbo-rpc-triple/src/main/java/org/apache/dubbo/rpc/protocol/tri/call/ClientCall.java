@@ -19,20 +19,21 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -46,19 +47,19 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 public class ClientCall {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
     private final Connection connection;
     private final Executor executor;
     private final FrameworkModel frameworkModel;
     private RequestMetadata requestMetadata;
     private ClientStream stream;
+    private ClientCall.Listener listener;
     private boolean canceled;
     private boolean headerSent;
+    private boolean autoRequestN = true;
 
-    public ClientCall(Connection connection,
-                      Executor executor,
-                      FrameworkModel frameworkModel
-    ) {
+    public ClientCall(Connection connection, Executor executor, FrameworkModel frameworkModel) {
         this.connection = connection;
         this.executor = executor;
         this.frameworkModel = frameworkModel;
@@ -70,16 +71,23 @@ public class ClientCall {
         }
         if (!headerSent) {
             headerSent = true;
-            stream.startCall(requestMetadata);
+            stream.sendHeader(requestMetadata.toHeaders());
         }
         final byte[] data;
         try {
-            data = PbPack.INSTANCE.pack(message);
-            int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
+            data = requestMetadata.packableMethod.packRequest(message);
+            int compressed =
+                Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding())
+                    ? 0 : 1;
             final byte[] compress = requestMetadata.compressor.compress(data);
             stream.writeMessage(compress, compressed);
-        } catch (IOException e) {
-            cancel("Serialize request failed", e);
+        } catch (Throwable t) {
+            LOGGER.error(String.format("Serialize triple request failed, service=%s method=%s",
+                requestMetadata.service,
+                requestMetadata.method), t);
+            cancel("Serialize request failed", t);
+            listener.onClose(TriRpcStatus.INTERNAL.withDescription("Serialize request failed")
+                .withCause(t), null);
         }
     }
 
@@ -102,17 +110,13 @@ public class ClientCall {
         this.requestMetadata.compressor = Compressor.getCompressor(frameworkModel, compression);
     }
 
-    public void start(RequestMetadata metadata, ClientCall.StartListener responseListener) {
+    public StreamObserver<Object> start(RequestMetadata metadata,
+        ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
-        final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
-            PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
-
-        this.stream = new ClientStream(
-            frameworkModel,
-            metadata.requestId,
-            executor,
-            connection.getChannel(),
-            new ClientStreamListenerImpl(responseListener, unpack));
+        this.listener = responseListener;
+        this.stream = new ClientStream(frameworkModel, executor, connection.getChannel(),
+            new ClientStreamListenerImpl(responseListener, metadata.packableMethod));
+        return new ClientCallToObserverAdapter<>(this);
     }
 
     public void cancel(String message, Throwable t) {
@@ -127,7 +131,7 @@ public class ClientCall {
         if (stream == null) {
             return;
         }
-        RpcStatus status = RpcStatus.CANCELLED.withCause(t);
+        TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t);
         if (message != null) {
             status = status.withDescription(message);
         } else {
@@ -136,76 +140,81 @@ public class ClientCall {
         stream.cancelByLocal(status);
     }
 
-    interface Listener {
+    public boolean isAutoRequestN() {
+        return autoRequestN;
+    }
+
+    public void setAutoRequestN(boolean autoRequestN) {
+        this.autoRequestN = autoRequestN;
+    }
+
+    public interface Listener {
+
+        void onStart(ClientCall call);
 
         void onMessage(Object message);
 
-        void onClose(RpcStatus status, Map<String, Object> trailers);
-    }
-
-
-    public interface StartListener extends Listener {
-
-        void onStart();
+        void onClose(TriRpcStatus status, Map<String, Object> trailers);
     }
 
     class ClientStreamListenerImpl implements ClientStreamListener {
 
-        private final StartListener listener;
-        private final PbUnpack<?> unpack;
+        private final Listener listener;
+        private final PackableMethod packableMethod;
         private boolean done;
 
-        ClientStreamListenerImpl(StartListener listener, PbUnpack<?> unpack) {
-            this.unpack = unpack;
+        ClientStreamListenerImpl(Listener listener, PackableMethod packableMethod) {
             this.listener = listener;
+            this.packableMethod = packableMethod;
         }
 
         @Override
         public void onStart() {
-            listener.onStart();
+            listener.onStart(ClientCall.this);
         }
 
         @Override
         public void onMessage(byte[] message) {
             if (done) {
-                LOGGER.warn("Received message from closed stream,connection=" + connection
-                    + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
+                LOGGER.warn(
+                    "Received message from closed stream,connection=" + connection + " service="
+                        + requestMetadata.service + " method="
+                        + requestMetadata.method.getMethodName());
                 return;
             }
             try {
-                final Object unpacked = unpack.unpack(message);
+                final Object unpacked = packableMethod.parseResponse(message);
                 listener.onMessage(unpacked);
-            } catch (IOException e) {
-                cancelByErr(RpcStatus.INTERNAL
-                    .withDescription("Deserialize response failed")
+            } catch (IOException | ClassNotFoundException e) {
+                cancelByErr(TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
                     .withCause(e));
             }
         }
 
         @Override
-        public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
+        public void complete(TriRpcStatus status, Map<String, Object> attachments,
+            Map<String, String> excludeHeaders) {
             done = true;
-            final RpcStatus detailStatus;
-            final RpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
+            final TriRpcStatus detailStatus;
+            final TriRpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
             if (statusFromTrailers != null) {
                 detailStatus = statusFromTrailers;
             } else {
                 detailStatus = status;
             }
             try {
-                listener.onClose(detailStatus, attachments);
+                listener.onClose(detailStatus, StreamUtils.toAttachments(attachments));
             } catch (Throwable t) {
-                cancelByErr(RpcStatus.INTERNAL
-                    .withDescription("Close stream error")
-                    .withCause(t));
+                cancelByErr(
+                    TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t));
             }
         }
 
-        void cancelByErr(RpcStatus status) {
+        void cancelByErr(TriRpcStatus status) {
             stream.cancelByLocal(status);
         }
 
-        RpcStatus getStatusFromTrailers(Map<String, String> metadata) {
+        TriRpcStatus getStatusFromTrailers(Map<String, String> metadata) {
             if (null == metadata) {
                 return null;
             }
@@ -214,7 +223,7 @@ public class ClientCall {
                 return null;
             }
             final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader()));
-            byte[] statusDetailBin = H2TransportListener.decodeASCIIByte(raw);
+            byte[] statusDetailBin = StreamUtils.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
                 final Status statusDetail = Status.parseFrom(statusDetailBin);
@@ -222,11 +231,12 @@ public class ClientCall {
                 Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
 
                 // get common exception from DebugInfo
-                RpcStatus status = RpcStatus.fromCode(statusDetail.getCode())
-                    .withDescription(RpcStatus.decodeMessage(statusDetail.getMessage()));
+                TriRpcStatus status = TriRpcStatus.fromCode(statusDetail.getCode())
+                    .withDescription(TriRpcStatus.decodeMessage(statusDetail.getMessage()));
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo != null) {
-                    String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+                    String msg = ExceptionUtils.getStackFrameString(
+                        debugInfo.getStackEntriesList());
                     status = status.appendDescription(msg);
                 }
                 return status;

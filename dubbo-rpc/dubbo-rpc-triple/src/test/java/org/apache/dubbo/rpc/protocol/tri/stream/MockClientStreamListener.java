@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
 public class MockClientStreamListener implements ClientStreamListener {
-    public RpcStatus status;
+    public TriRpcStatus status;
     public byte[] message;
     public boolean started;
 
@@ -32,7 +32,7 @@ public class MockClientStreamListener implements ClientStreamListener {
     }
 
     @Override
-    public void complete(RpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
+    public void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
         this.status = rpcStatus;
     }
 
