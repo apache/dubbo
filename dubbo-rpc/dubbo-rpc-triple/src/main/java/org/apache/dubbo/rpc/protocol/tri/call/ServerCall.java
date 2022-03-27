@@ -56,6 +56,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public abstract class ServerCall {
 
+    public static final String REMOTE_ADDRESS_KEY = "tri.remote.address";
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
     public final Invoker<?> invoker;
@@ -112,6 +113,7 @@ public abstract class ServerCall {
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         inv.setObjectAttachments(StreamUtils.toAttachments(headers));
+        inv.put(REMOTE_ADDRESS_KEY, serverStream.remoteAddress());
         return inv;
     }
 

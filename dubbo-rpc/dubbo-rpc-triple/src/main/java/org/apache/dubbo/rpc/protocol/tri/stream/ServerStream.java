@@ -57,6 +57,8 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -76,6 +78,7 @@ public class ServerStream extends AbstractStream {
     private boolean trailersSent;
     private ServerStreamListener listener;
     private boolean closed;
+    private final InetSocketAddress remoteAddress;
     private Deframer deframer;
 
     public ServerStream(Channel channel,
@@ -89,8 +92,12 @@ public class ServerStream extends AbstractStream {
         this.acceptEncoding = acceptEncoding;
         this.filters = filters;
         this.writeQueue = new WriteQueue(channel);
+        this.remoteAddress = (InetSocketAddress) channel.remoteAddress();
     }
 
+    public SocketAddress remoteAddress() {
+        return remoteAddress;
+    }
 
     private String getGrpcMessage(TriRpcStatus status) {
         if (StringUtils.isNotEmpty(status.description)) {

@@ -19,13 +19,30 @@ package org.apache.dubbo.rpc.model;
 
 import java.io.IOException;
 
+/**
+ * A packable method is used to customize serialization for methods. It can provide a common wrapper
+ * for RESP / Protobuf.
+ */
 public interface PackableMethod {
 
     interface Pack {
+
+        /**
+         * @param obj instance
+         * @return byte array
+         * @throws IOException when error occurs
+         */
         byte[] pack(Object obj) throws IOException;
     }
 
     interface UnPack {
+
+        /**
+         * @param data byte array
+         * @return object instance
+         * @throws IOException            IOException
+         * @throws ClassNotFoundException when no class found
+         */
         Object unpack(byte[] data) throws IOException, ClassNotFoundException;
     }
 

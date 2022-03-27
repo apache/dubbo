@@ -27,6 +27,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
+import java.net.InetSocketAddress;
+
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
@@ -45,6 +47,9 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
 
     public void invoke() {
         RpcContext.restoreCancellationContext(cancellationContext);
+        InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
+            .remove(ServerCall.REMOTE_ADDRESS_KEY);
+        RpcContext.getServerContext().setRemoteAddress(remoteAddress);
         final long stInMillis = System.currentTimeMillis();
         try {
             final Result response = invoker.invoke(invocation);

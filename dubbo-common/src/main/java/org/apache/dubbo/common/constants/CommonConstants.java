@@ -534,5 +534,5 @@ public interface CommonConstants {
 
     String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
 
-    String NATIVE_STUB= "nativestub";
+    String NATIVE_STUB = "nativestub";
 }
