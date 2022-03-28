@@ -181,10 +181,27 @@ public class DubboProtocol extends AbstractProtocol {
             Invocation invocation = createInvocation(channel, channel.getUrl(), methodKey);
             if (invocation != null) {
                 try {
+                    if (Boolean.TRUE.toString().equals(invocation.getAttachment(STUB_EVENT_KEY))) {
+                        tryToGetStubService(channel, invocation);
+                    }
                     received(channel, invocation);
                 } catch (Throwable t) {
                     logger.warn("Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
                 }
+            }
+        }
+
+        private void tryToGetStubService(Channel channel, Invocation invocation) throws RemotingException {
+            try {
+                Invoker<?> invoker = getInvoker(channel, invocation);
+            } catch (RemotingException e) {
+                String serviceKey = serviceKey(
+                    0,
+                    (String) invocation.getObjectAttachments().get(PATH_KEY),
+                    (String) invocation.getObjectAttachments().get(VERSION_KEY),
+                    (String) invocation.getObjectAttachments().get(GROUP_KEY)
+                );
+                throw new RemotingException(channel, "The stub service[" + serviceKey + "] is not found, it may not be exported yet");
             }
         }
 
