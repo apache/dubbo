@@ -51,7 +51,7 @@ public class DubboConfigApplicationListener implements ApplicationListener<Dubbo
     @Override
     public void onApplicationEvent(DubboConfigInitEvent event) {
         if (nullSafeEquals(applicationContext, event.getSource())) {
-            // It's expected to be notify at org.springframework.context.support.AbstractApplicationContext.registerListeners(),
+            // It's expected to be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners(),
             // before loading non-lazy singleton beans. At this moment, all BeanFactoryPostProcessor have been processed,
             if (initialized.compareAndSet(false, true)) {
                 initDubboConfigBeans();

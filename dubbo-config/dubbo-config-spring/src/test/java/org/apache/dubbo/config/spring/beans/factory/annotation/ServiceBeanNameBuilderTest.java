@@ -62,9 +62,6 @@ public class ServiceBeanNameBuilderTest {
         ServiceBeanNameBuilder builder = ServiceBeanNameBuilder.create(service, INTERFACE_CLASS, environment);
         Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
                 builder.build());
-
-        Assertions.assertEquals("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:1.0.0:DUBBO",
-                builder.build());
     }
 
     @Test

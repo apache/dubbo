@@ -39,7 +39,6 @@ public class DubboMethodMatchTest {
 
         dubboMethodMatch.setName_match(nameStringMatch);
 
-        ;
         assertTrue(dubboMethodMatch.isMatch(new RpcInvocation(null, "sayHello", "",  "", new Class[]{}, new Object[]{})));
     }
 
@@ -50,8 +49,6 @@ public class DubboMethodMatchTest {
         dubboMethodMatch.setArgc(1);
 
         assertFalse(dubboMethodMatch.isMatch(new RpcInvocation(null, "sayHello", "",  "", new Class[]{}, new Object[]{})));
-        assertFalse(dubboMethodMatch.isMatch(new RpcInvocation(null, "sayHello", "",  "", new Class[]{}, new Object[]{})));
-
         assertTrue(dubboMethodMatch.isMatch(new RpcInvocation(null, "sayHello", "",  "", new Class[]{}, new Object[]{"1"})));
     }
 

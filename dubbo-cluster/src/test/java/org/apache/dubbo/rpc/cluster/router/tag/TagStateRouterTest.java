@@ -67,8 +67,6 @@ public class TagStateRouterTest {
         when(moduleModel.getExtensionLoader(TracingContextProvider.class)).thenReturn(extensionLoader);
 
         url = URL.valueOf("test://localhost/DemoInterface").setScopeModel(moduleModel);
-
-        url = URL.valueOf("test://localhost/DemoInterface").setScopeModel(moduleModel);
     }
 
     @Test
