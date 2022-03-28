@@ -17,34 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 /**
- * An observer used for transport messaging which provides full streaming support.
- * A TransportObserver receives raw data or control messages from local/remote.
+ * An observer used for transport messaging which provides full streaming support. A
+ * TransportObserver receives raw data or control messages from local/remote.
  */
 public interface H2TransportListener {
-    Base64.Decoder BASE64_DECODER = Base64.getDecoder();
-    Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
-
-    static String encodeBase64ASCII(byte[] in) {
-        byte[] bytes = encodeBase64(in);
-        return new String(bytes, StandardCharsets.US_ASCII);
-    }
-
-    static byte[] encodeBase64(byte[] in) {
-        return BASE64_ENCODER.encode(in);
-    }
-
-    static byte[] decodeASCIIByte(CharSequence value) {
-        return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
-    }
 
     /**
      * Transport metadata
@@ -63,6 +45,6 @@ public interface H2TransportListener {
     void onData(ByteBuf data, boolean endStream);
 
 
-    void cancelByRemote(RpcStatus status);
+    void cancelByRemote(TriRpcStatus status);
 
 }

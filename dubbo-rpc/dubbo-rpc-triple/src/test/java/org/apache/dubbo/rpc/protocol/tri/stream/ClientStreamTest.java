@@ -18,24 +18,20 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
@@ -58,28 +54,29 @@ import static org.mockito.Mockito.when;
 
 class ClientStreamTest {
     @Test
-    public void progress() throws InterruptedException {
+    public void progress() {
         final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
-        final Connection connection = mock(Connection.class);
-
         final ModuleServiceRepository repo = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         repo.registerService(IGreeter.class);
         final ServiceDescriptor serviceDescriptor = repo.getService(IGreeter.class.getName());
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo", new Class<?>[]{String.class});
 
-        final RpcInvocation invocation = mock(RpcInvocation.class);
-        int timeout = 1000;
-        DefaultFuture2 future = DefaultFuture2.newFuture(connection, invocation, timeout, ImmediateEventExecutor.INSTANCE);
         MockClientStreamListener listener = new MockClientStreamListener();
         WriteQueue writeQueue = mock(WriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
-        ClientStream stream = new ClientStream(url.getOrDefaultFrameworkModel(), future.requestId, ImmediateEventExecutor.INSTANCE, writeQueue, listener);
+        ClientStream stream = new ClientStream(url.getOrDefaultFrameworkModel(), ImmediateEventExecutor.INSTANCE, writeQueue, listener);
 
-        final RequestMetadata requestMetadata = StreamUtils.createRequest(url, methodDescriptor,
-            invocation, future.requestId, Identity.IDENTITY,
-            "identity", timeout, mock(GenericPack.class), mock(GenericUnpack.class));
-        stream.startCall(requestMetadata);
+        final RequestMetadata requestMetadata = new RequestMetadata();
+        requestMetadata.method = methodDescriptor;
+        requestMetadata.scheme = TripleConstant.HTTP_SCHEME;
+        requestMetadata.compressor = Compressor.NONE;
+        requestMetadata.acceptEncoding = Compressor.NONE.getMessageEncoding();
+        requestMetadata.address = url.getAddress();
+        requestMetadata.service = url.getPath();
+        requestMetadata.group = url.getGroup();
+        requestMetadata.version = url.getVersion();
+        stream.sendHeader(requestMetadata.toHeaders());
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
@@ -90,15 +87,15 @@ class ClientStreamTest {
         verify(writeQueue).enqueue(any(EndStreamQueueCommand.class));
         verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
-        stream.cancelByLocal(RpcStatus.CANCELLED);
+        stream.cancelByLocal(TriRpcStatus.CANCELLED);
         verify(writeQueue).enqueue(any(CancelQueueCommand.class));
         verify(writeQueue, times(4)).enqueue(any(QueuedCommand.class));
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HttpScheme.HTTP.name())
-            .status(HttpResponseStatus.OK.codeAsText());
-        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), RpcStatus.OK.code.code + "");
+                .status(HttpResponseStatus.OK.codeAsText());
+        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
         headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleHeaderEnum.CONTENT_PROTO.getHeader());
         transportListener.onHeader(headers, false);
         Assertions.assertTrue(listener.started);

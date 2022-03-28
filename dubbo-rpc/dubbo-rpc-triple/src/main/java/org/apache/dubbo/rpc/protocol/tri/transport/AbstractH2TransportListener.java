@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import io.netty.handler.codec.http2.Http2Headers;
 
@@ -45,10 +46,12 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
-            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
+            if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
+                && key.length() > TripleConstant.HEADER_BIN_SUFFIX.length()) {
                 try {
-                    String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
-                    byte[] value = H2TransportListener.decodeASCIIByte(header.getValue());
+                    String realKey = key.substring(0,
+                        key.length() - TripleConstant.HEADER_BIN_SUFFIX.length());
+                    byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);

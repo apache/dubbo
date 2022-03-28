@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 public class ClassLoadUtil {
+
     public static void switchContextLoader(ClassLoader loader) {
         try {
             if (loader != null && loader != Thread.currentThread().getContextClassLoader()) {

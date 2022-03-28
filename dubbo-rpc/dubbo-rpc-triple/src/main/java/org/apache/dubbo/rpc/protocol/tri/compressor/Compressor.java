@@ -22,13 +22,11 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 /**
- * compress payload for grpc request， and decompress response payload
- * Configure it in files, pictures or other configurations that exist in the system properties
- * Configure {@link Constants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the system property
+ * compress payload for grpc request， and decompress response payload Configure it in files,
+ * pictures or other configurations that exist in the system properties Configure {@link
+ * Constants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the
+ * system property
  */
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface Compressor extends MessageEncoding {
@@ -43,14 +41,6 @@ public interface Compressor extends MessageEncoding {
             return NONE;
         }
         return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
-    }
-
-    static String getAcceptEncoding(FrameworkModel frameworkModel) {
-        Set<Compressor> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensionInstances();
-        if (supportedEncodingSet.isEmpty()) {
-            return null;
-        }
-        return supportedEncodingSet.stream().map(Compressor::getMessageEncoding).collect(Collectors.joining(","));
     }
 
     /**

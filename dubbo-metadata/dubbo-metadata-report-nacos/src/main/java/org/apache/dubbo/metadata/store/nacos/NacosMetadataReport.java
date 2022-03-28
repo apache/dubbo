@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.metadata.MetadataConstants.REPORT_CONSUMER_URL_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
 
@@ -179,7 +180,9 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-        this.storeMetadata(consumerMetadataIdentifier, value);
+        if (getUrl().getParameter(REPORT_CONSUMER_URL_KEY, false)) {
+            this.storeMetadata(consumerMetadataIdentifier, value);
+        }
     }
 
     @Override

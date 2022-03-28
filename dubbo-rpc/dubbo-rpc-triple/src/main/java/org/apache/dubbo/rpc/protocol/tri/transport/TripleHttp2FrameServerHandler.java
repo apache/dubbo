@@ -20,11 +20,10 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
+import org.apache.dubbo.rpc.PathResolver;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.PathResolver;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -32,6 +31,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 
@@ -39,23 +39,30 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
+
+    private static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
+        "tri_server_stream");
+
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        TripleHttp2FrameServerHandler.class);
     private final PathResolver pathResolver;
     private final FrameworkModel frameworkModel;
     private final Executor executor;
     private final List<HeaderFilter> filters;
-    private final GenericUnpack genericUnpack;
+    private final String acceptEncoding;
 
     public TripleHttp2FrameServerHandler(
         FrameworkModel frameworkModel,
         Executor executor,
-        List<HeaderFilter> filters,
-        GenericUnpack genericUnpack) {
+        List<HeaderFilter> filters) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
         this.filters = filters;
-        this.genericUnpack = genericUnpack;
-        this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        this.acceptEncoding = String.join(",",
+            frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions());
+        this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
+            .getDefaultExtension();
     }
 
     @Override
@@ -80,10 +87,11 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
-        final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        final ServerStream serverStream = ctx.channel().attr(SERVER_STREAM_KEY)
+            .get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
-            serverStream.transportObserver.cancelByRemote(RpcStatus.CANCELLED
+            serverStream.transportObserver.cancelByRemote(TriRpcStatus.CANCELLED
                 .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
         }
         ctx.close();
@@ -94,21 +102,25 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (LOGGER.isWarnEnabled()) {
             LOGGER.warn("Exception in processing triple message", cause);
         }
-        RpcStatus status = RpcStatus.getStatus(cause, "Provider's error:\n" + cause.getMessage());
-        final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        TriRpcStatus status = TriRpcStatus.getStatus(cause,
+            "Provider's error:\n" + cause.getMessage());
+        final ServerStream serverStream = ctx.channel().attr(SERVER_STREAM_KEY)
+            .get();
         if (serverStream != null) {
             serverStream.close(status, null);
         }
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-        final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        final ServerStream serverStream = ctx.channel().attr(SERVER_STREAM_KEY)
+            .get();
         serverStream.transportObserver.onData(msg.content(), msg.isEndStream());
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor, pathResolver, filters, genericUnpack);
-        ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).set(serverStream);
+        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor,
+            pathResolver, acceptEncoding, filters);
+        ctx.channel().attr(SERVER_STREAM_KEY).set(serverStream);
         serverStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }
 

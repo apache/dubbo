@@ -20,6 +20,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,29 +49,38 @@ public class TripleProtocolTest {
         IGreeter serviceImpl = new IGreeterImpl();
 
         int availablePort = NetUtils.getAvailablePort();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
 
-        URL url = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
+        URL providerUrl = URL.valueOf(
+            "tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ModuleServiceRepository serviceRepository = applicationModel.getDefaultModule()
+            .getServiceRepository();
         ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
 
         ProviderModel providerModel = new ProviderModel(
-            url.getServiceKey(),
+            providerUrl.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
             null,
             new ServiceMetadata());
         serviceRepository.registerProvider(providerModel);
-        url = url.setServiceModel(providerModel);
+        providerUrl = providerUrl.setServiceModel(providerModel);
 
-        Protocol protocol = ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        ProxyFactory proxy = ApplicationModel.defaultModel().getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        protocol.export(proxy.getInvoker(serviceImpl, IGreeter.class, url));
+        Protocol protocol = new TripleProtocol(providerUrl.getOrDefaultFrameworkModel());
+        ProxyFactory proxy = applicationModel.getExtensionLoader(ProxyFactory.class)
+            .getAdaptiveExtension();
+        Invoker<IGreeter> invoker = proxy.getInvoker(serviceImpl, IGreeter.class, providerUrl);
+        Exporter<IGreeter> export = protocol.export(invoker);
 
-        ConsumerModel consumerModel = new ConsumerModel(url.getServiceKey(), null, serviceDescriptor, null,
-            new ServiceMetadata(), null);
-        url = url.setServiceModel(consumerModel);
-        IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, url));
+        URL consumerUrl = URL.valueOf(
+            "tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
+
+        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceKey(), null,
+            serviceDescriptor, null,
+            null, null);
+        consumerUrl = consumerUrl.setServiceModel(consumerModel);
+        IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, consumerUrl));
         Thread.sleep(1000);
 
         // 1. test unaryStream
@@ -86,7 +97,8 @@ public class TripleProtocolTest {
 
         // 3. test bidirectionalStream
         MockStreamObserver outboundMessageSubscriber2 = new MockStreamObserver();
-        StreamObserver<String> inboundMessageObserver = greeterProxy.bidirectionalStream(outboundMessageSubscriber2);
+        StreamObserver<String> inboundMessageObserver = greeterProxy.bidirectionalStream(
+            outboundMessageSubscriber2);
         inboundMessageObserver.onNext(REQUEST_MSG);
         inboundMessageObserver.onCompleted();
         outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
@@ -99,6 +111,8 @@ public class TripleProtocolTest {
         Assertions.assertEquals(REQUEST_MSG, serverOutboundMessageSubscriber.getOnNextData());
         Assertions.assertTrue(serverOutboundMessageSubscriber.isOnCompleted());
 
+        export.unexport();
+        protocol.destroy();
         // resource recycle.
         serviceRepository.destroy();
         System.out.println("serviceRepository destroyed");

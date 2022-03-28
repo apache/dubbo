@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,6 +39,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.ServerService;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
@@ -363,7 +365,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
+        ServiceDescriptor serviceDescriptor;
+        final boolean serverService = ref instanceof ServerService;
+        if(serverService){
+            serviceDescriptor=((ServerService) ref).getServiceDescriptor();
+            repository.registerService(serviceDescriptor);
+        }else{
+            serviceDescriptor = repository.registerService(getInterfaceClass());
+        }
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
             serviceDescriptor,
@@ -379,8 +388,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)
                     .orElse(path), group, version);
-            // In case user specified path, register service one more time to map it to path.
-            repository.registerService(pathKey, interfaceClass);
+            // stub service will use generated service name
+            if(!serverService) {
+                // In case user specified path, register service one more time to map it to path.
+                repository.registerService(pathKey, interfaceClass);
+            }
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -450,6 +462,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } else {
                 map.put(TOKEN_KEY, token);
             }
+        }
+
+        if(ref instanceof ServerService){
+            map.put(PROXY_KEY, CommonConstants.NATIVE_STUB);
         }
 
         return map;
@@ -543,7 +559,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
         url = url.setScopeModel(getScopeModel());
-        url =  url.setServiceModel(providerModel);
+        url = url.setServiceModel(providerModel);
         return url;
     }
 

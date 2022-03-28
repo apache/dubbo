@@ -56,6 +56,10 @@ public class WriteQueue {
         }
     }
 
+    public void close() {
+        channel.close();
+    }
+
     private void flush() {
         try {
             QueuedCommand cmd;

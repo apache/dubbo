@@ -24,10 +24,14 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
+import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
+import java.net.InetSocketAddress;
+
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
     public final CancellationContext cancellationContext;
     final RpcInvocation invocation;
@@ -35,36 +39,55 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     final ServerCallToObserverAdapter<Object> responseObserver;
 
     public AbstractServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                      ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         this.invocation = invocation;
         this.invoker = invoker;
         this.cancellationContext = responseObserver.cancellationContext;
         this.responseObserver = responseObserver;
     }
 
-    public Object invoke() throws Throwable {
+    public void invoke() {
         RpcContext.restoreCancellationContext(cancellationContext);
+        InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
+            .remove(ServerCall.REMOTE_ADDRESS_KEY);
+        RpcContext.getServerContext().setRemoteAddress(remoteAddress);
+        String remoteApp = (String) invocation.getAttributes()
+            .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
+        if (null != remoteApp) {
+            RpcContext.getServerContext().setRemoteApplicationName(remoteApp);
+        }
         final long stInMillis = System.currentTimeMillis();
         try {
             final Result response = invoker.invoke(invocation);
-            responseObserver.setResponseAttachments(response.getObjectAttachments());
-            if (response.hasException()) {
-                throw response.getException();
-            }
-            final long cost = System.currentTimeMillis() - stInMillis;
-            if (responseObserver.isTimeout(cost)) {
-                LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
-                    invocation.getTargetServiceUniqueName(),
-                    invocation.getMethodName(),
-                    cost));
-                responseObserver.onCompleted(RpcStatus.DEADLINE_EXCEEDED);
-                return null;
-            } else {
-                return response.getValue();
-            }
+            response.whenCompleteWithContext((r, t) -> {
+                responseObserver.setResponseAttachments(response.getObjectAttachments());
+                if (t != null) {
+                    responseObserver.onError(t);
+                    return;
+                }
+                if (response.hasException()) {
+                    responseObserver.onError(response.getException());
+                    return;
+                }
+                final long cost = System.currentTimeMillis() - stInMillis;
+                if (responseObserver.isTimeout(cost)) {
+                    LOGGER.error(String.format(
+                        "Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s",
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getMethodName(),
+                        cost));
+                    responseObserver.onCompleted(TriRpcStatus.DEADLINE_EXCEEDED);
+                    return;
+                }
+                onReturn(r.getValue());
+            });
+        } catch (Throwable t) {
+            responseObserver.onError(t);
         } finally {
             RpcContext.removeCancellationContext();
             RpcContext.removeContext();
         }
     }
+
+    public abstract void onReturn(Object value);
 }
