@@ -58,8 +58,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -109,8 +107,6 @@ public class DubboProtocol extends AbstractProtocol {
     private final Set<String> optimizers = new ConcurrentHashSet<>();
 
     private AtomicBoolean destroyed = new AtomicBoolean();
-
-    private Map<String, CountDownLatch> stubServiceToLatch = new ConcurrentHashMap<>();
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
@@ -185,29 +181,10 @@ public class DubboProtocol extends AbstractProtocol {
             Invocation invocation = createInvocation(channel, channel.getUrl(), methodKey);
             if (invocation != null) {
                 try {
-                    if (Boolean.TRUE.toString().equals(invocation.getAttachment(STUB_EVENT_KEY))) {
-                        getOrWaitStubService(channel, invocation);
-                    }
                     received(channel, invocation);
                 } catch (Throwable t) {
                     logger.warn("Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
                 }
-            }
-        }
-
-        private void getOrWaitStubService(Channel channel, Invocation invocation) throws InterruptedException {
-            try {
-                Invoker<?> invoker = getInvoker(channel, invocation);
-            } catch (RemotingException e) {
-                String serviceKey = serviceKey(
-                    0,
-                    (String) invocation.getObjectAttachments().get(PATH_KEY),
-                    (String) invocation.getObjectAttachments().get(VERSION_KEY),
-                    (String) invocation.getObjectAttachments().get(GROUP_KEY)
-                );
-                logger.warn("The stub service[" + serviceKey + "] is not found, it may not be exported yet, try to wait");
-                CountDownLatch latch = stubServiceToLatch.computeIfAbsent(serviceKey, k -> new CountDownLatch(1));
-                latch.await(5000L, TimeUnit.MILLISECONDS);
             }
         }
 
@@ -276,7 +253,7 @@ public class DubboProtocol extends AbstractProtocol {
         // if it's callback service on client side
         isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
-            port = 0;
+            port = channel.getRemoteAddress().getPort();
         }
 
         //callback
@@ -332,8 +309,6 @@ public class DubboProtocol extends AbstractProtocol {
                 }
 
             }
-            CountDownLatch latch = stubServiceToLatch.computeIfAbsent(key, k -> new CountDownLatch(1));
-            latch.countDown();
         }
 
         openServer(url);
@@ -727,8 +702,6 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
         referenceClientMap.clear();
-        
-        stubServiceToLatch.clear();
 
         super.destroy();
     }
