@@ -24,9 +24,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.CONDITIONS_KEY;
 
-/**
- *
- */
 public class ConditionRouterRule extends AbstractRouterRule {
     private List<String> conditions;
 

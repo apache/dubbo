@@ -148,7 +148,7 @@ public class DubboSpringInitializer {
     }
 
     private static ConfigurableListableBeanFactory findBeanFactory(BeanDefinitionRegistry registry) {
-        ConfigurableListableBeanFactory beanFactory = null;
+        ConfigurableListableBeanFactory beanFactory;
         if (registry instanceof ConfigurableListableBeanFactory) {
             beanFactory = (ConfigurableListableBeanFactory) registry;
         } else if (registry instanceof GenericApplicationContext) {

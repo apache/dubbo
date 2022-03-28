@@ -131,6 +131,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public synchronized void unregister() throws RuntimeException {
         // fixme, this metadata info might still being shared by other instances
 //        unReportMetadata(this.metadataInfo);
+        if (!isValidInstance(this.serviceInstance)) {
+            return;
+        }
         doUnregister(this.serviceInstance);
     }
 
