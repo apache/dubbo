@@ -40,7 +40,7 @@ public class ConsumerModel extends ServiceModel {
     private Map<Method, ConsumerMethodModel> methodModels = new HashMap<>();
 
     /**
-     * This constructor create an instance of ConsumerModel and passed objects should not be null.
+     * This constructor creates an instance of ConsumerModel and passed objects should not be null.
      * If service name, service instance, proxy object,methods should not be null. If these are null
      * then this constructor will throw {@link IllegalArgumentException}
      *

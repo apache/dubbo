@@ -490,7 +490,7 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("getSomething");
         Result ret = cluster.invoke(invocation);
         Assertions.assertTrue(ret.getValue() instanceof String, "result type must be String but was : " + ret.getValue().getClass());
-        Assertions.assertEquals("1688", (String) ret.getValue());
+        Assertions.assertEquals("1688", ret.getValue());
     }
 
     @Test
@@ -606,7 +606,7 @@ public class MockClusterInvokerTest {
         List<User> rl = (List<User>) ret.getValue();
         System.out.println(rl);
         Assertions.assertEquals(2, rl.size());
-        Assertions.assertEquals("hi1", ((User) rl.get(0)).getName());
+        Assertions.assertEquals("hi1", rl.get(0).getName());
     }
 
     @Test
@@ -641,7 +641,7 @@ public class MockClusterInvokerTest {
             cluster.invoke(invocation);
             Assertions.fail();
         } catch (RpcException e) {
-            Assertions.assertFalse(e.isBiz(), "not custem exception");
+            Assertions.assertFalse(e.isBiz(), "not custom exception");
         }
     }
 

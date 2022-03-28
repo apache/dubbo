@@ -90,7 +90,7 @@ public class ReferenceBeanSupport {
         // String[] registry => String registryIds
         String[] registryIds = (String[]) attributes.get(ReferenceAttributes.REGISTRY);
         if (registryIds != null) {
-            String value = join((String[]) registryIds, ",");
+            String value = join(registryIds, ",");
             attributes.remove(ReferenceAttributes.REGISTRY);
             attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
         }

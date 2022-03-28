@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ModuleEnvironment extends Environment implements ModuleExt {
 
@@ -35,6 +36,8 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     private static final Logger logger = LoggerFactory.getLogger(ModuleEnvironment.class);
 
     public static final String NAME = "moduleEnvironment";
+
+    private AtomicBoolean initialized = new AtomicBoolean(false);
 
     private final ModuleModel moduleModel;
 
@@ -54,7 +57,9 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
 
     @Override
     public void initialize() throws IllegalStateException {
-        this.orderedPropertiesConfiguration = new OrderedPropertiesConfiguration(moduleModel);
+        if (initialized.compareAndSet(false, true)) {
+            this.orderedPropertiesConfiguration = new OrderedPropertiesConfiguration(moduleModel);
+        }
     }
 
     @Override

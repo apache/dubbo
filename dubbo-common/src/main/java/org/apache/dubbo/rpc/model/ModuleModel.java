@@ -120,6 +120,11 @@ public class ModuleModel extends ScopeModel {
             moduleEnvironment = null;
         }
 
+        if (moduleConfigManager != null) {
+            moduleConfigManager.destroy();
+            moduleConfigManager = null;
+        }
+
         // destroy application if none pub module
         applicationModel.tryDestroy();
     }

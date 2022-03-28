@@ -53,7 +53,7 @@ import java.util.Map;
  */
 public interface DubboBeanUtils {
 
-    static final Log log = LogFactory.getLog(DubboBeanUtils.class);
+    Log log = LogFactory.getLog(DubboBeanUtils.class);
 
     /**
      * Register the common beans

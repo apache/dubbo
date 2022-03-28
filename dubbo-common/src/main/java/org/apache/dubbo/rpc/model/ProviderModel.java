@@ -153,8 +153,7 @@ public class ProviderModel extends ServiceModel {
     }
 
     private void initMethod(Class<?> serviceInterfaceClass) {
-        Method[] methodsToExport;
-        methodsToExport = serviceInterfaceClass.getMethods();
+        Method[] methodsToExport = serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
             method.setAccessible(true);

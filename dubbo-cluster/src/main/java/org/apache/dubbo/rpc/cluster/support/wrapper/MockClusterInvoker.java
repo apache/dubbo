@@ -107,11 +107,11 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
                 result = this.invoker.invoke(invocation);
 
                 //fix:#4585
-                if(result.getException() != null && result.getException() instanceof RpcException){
-                    RpcException rpcException= (RpcException)result.getException();
-                    if(rpcException.isBiz()){
-                        throw  rpcException;
-                    }else {
+                if (result.getException() != null && result.getException() instanceof RpcException) {
+                    RpcException rpcException = (RpcException) result.getException();
+                    if (rpcException.isBiz()) {
+                        throw rpcException;
+                    } else {
                         result = doMockInvoke(invocation, rpcException);
                     }
                 }

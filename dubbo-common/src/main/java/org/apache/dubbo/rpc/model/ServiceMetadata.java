@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.common.URL;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,7 +48,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
         this.defaultGroup = group;
         this.group = group;
         this.version = version;
-        this.serviceKey = URL.buildKey(serviceInterfaceName, group, version);
+        this.serviceKey = buildServiceKey(serviceInterfaceName, group, version);
         this.serviceType = serviceType;
     }
 

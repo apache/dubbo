@@ -251,7 +251,6 @@ public class ServiceDiscoveryRegistryTest {
         when(mapping.getCachedMapping(url2)).thenReturn(multiApps);
         serviceDiscoveryRegistry.doUnsubscribe(url2, testServiceListener2);
         assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
-        assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
         ServiceInstancesChangedListener instancesChangedListener = serviceDiscoveryRegistry.getServiceListeners().entrySet().iterator().next().getValue();
         assertTrue(instancesChangedListener.hasListeners());
         when(mapping.getCachedMapping(url)).thenReturn(multiApps);

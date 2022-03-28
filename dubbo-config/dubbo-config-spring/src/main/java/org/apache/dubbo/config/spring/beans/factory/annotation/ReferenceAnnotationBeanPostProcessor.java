@@ -177,7 +177,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
             applicationContext.publishEvent(new DubboConfigInitEvent(applicationContext));
         } catch (Exception e) {
-            // if spring version is less then 4.2, it does not support early application event
+            // if spring version is less than 4.2, it does not support early application event
             logger.warn("publish early application event failed, please upgrade spring version to 4.2.x or later: " + e);
         }
     }
@@ -358,7 +358,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 AnnotationAttributes attributes = methodElement.attributes;
                 String referenceBeanName = registerReferenceBean(methodElement.getPropertyName(), injectedType, attributes, methodElement.method);
 
-                //associate fieldElement and reference bean
+                //associate methodElement and reference bean
                 methodElement.injectedObject = referenceBeanName;
                 injectedMethodReferenceBeanCache.put(methodElement, referenceBeanName);
             }
@@ -495,7 +495,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         beanDefinitionRegistry.registerBeanDefinition(referenceBeanName, beanDefinition);
         referenceBeanManager.registerReferenceKeyAndBeanName(referenceKey, referenceBeanName);
-        logger.info("Register dubbo reference bean: "+referenceBeanName+" = "+referenceKey+" at "+member);
+        logger.info("Register dubbo reference bean: " + referenceBeanName + " = " + referenceKey + " at " + member);
         return referenceBeanName;
     }
 
