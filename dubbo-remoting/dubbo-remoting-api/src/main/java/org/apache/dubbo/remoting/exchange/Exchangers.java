@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -105,17 +104,12 @@ public class Exchangers {
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
-//        url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
         return getExchanger(url).connect(url, handler);
     }
 
     public static Exchanger getExchanger(URL url) {
         String type = url.getParameter(Constants.EXCHANGER_KEY, Constants.DEFAULT_EXCHANGER);
-        return getExchanger(type);
-    }
-
-    public static Exchanger getExchanger(String type) {
-        return ExtensionLoader.getExtensionLoader(Exchanger.class).getExtension(type);
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Exchanger.class).getExtension(type);
     }
 
 }

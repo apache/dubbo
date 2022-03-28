@@ -90,8 +90,8 @@ public class AbsentConfiguratorTest {
             // The host of configuratorUrl is 0.0.0.0 or the local address is the same as consumerUrlV27
             // same appName
             URL url = configurator.configure(URL.valueOf(consumerUrlV27));
-            Assertions.assertEquals(url.getParameter("timeout"), "100");
-            Assertions.assertEquals(url.getParameter("weight"), "200");
+            Assertions.assertEquals("100", url.getParameter("timeout"));
+            Assertions.assertEquals("200", url.getParameter("weight"));
         }
 
         {
@@ -112,8 +112,8 @@ public class AbsentConfiguratorTest {
             // same appName
             AbsentConfigurator configurator = new AbsentConfigurator(providerConfiguratorUrl);
             URL url = configurator.configure(URL.valueOf(providerUrlV27));
-            Assertions.assertEquals(url.getParameter("timeout"), "20000");
-            Assertions.assertEquals(url.getParameter("weight"), "100");
+            Assertions.assertEquals("20000", url.getParameter("timeout"));
+            Assertions.assertEquals("100", url.getParameter("weight"));
         }
     }
 

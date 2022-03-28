@@ -32,9 +32,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.config.context.ConfigManager.DUBBO_CONFIG_MODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,17 +45,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
+ * {@link AbstractConfigManager} Test
  * {@link ConfigManager} Test
+ * {@link ModuleConfigManager} Test
  *
  * @since 2.7.5
  */
 public class ConfigManagerTest {
 
-    private ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+    private ConfigManager configManager;
+    private ModuleConfigManager moduleConfigManager;
 
     @BeforeEach
     public void init() {
-        configManager.destroy();
+        ApplicationModel.defaultModel().destroy();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        configManager = applicationModel.getApplicationConfigManager();
+        moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
     }
 
     @Test
@@ -66,14 +74,7 @@ public class ConfigManagerTest {
         // assert single
         assertFalse(configManager.getApplication().isPresent());
         assertFalse(configManager.getMonitor().isPresent());
-        assertFalse(configManager.getModule().isPresent());
         assertFalse(configManager.getMetrics().isPresent());
-
-        // providers and consumers
-        assertFalse(configManager.getDefaultProvider().isPresent());
-        assertFalse(configManager.getDefaultConsumer().isPresent());
-        assertTrue(configManager.getProviders().isEmpty());
-        assertTrue(configManager.getConsumers().isEmpty());
 
         // protocols
         assertTrue(configManager.getProtocols().isEmpty());
@@ -83,15 +84,22 @@ public class ConfigManagerTest {
         assertTrue(configManager.getRegistries().isEmpty());
         assertTrue(configManager.getDefaultRegistries().isEmpty());
 
-        // services and references
-        assertTrue(configManager.getServices().isEmpty());
-        assertTrue(configManager.getReferences().isEmpty());
-
         // config centers
         assertTrue(configManager.getConfigCenters().isEmpty());
 
         // metadata
         assertTrue(configManager.getMetadataConfigs().isEmpty());
+
+        // services and references
+        assertTrue(moduleConfigManager.getServices().isEmpty());
+        assertTrue(moduleConfigManager.getReferences().isEmpty());
+
+        // providers and consumers
+        assertFalse(moduleConfigManager.getModule().isPresent());
+        assertFalse(moduleConfigManager.getDefaultProvider().isPresent());
+        assertFalse(moduleConfigManager.getDefaultConsumer().isPresent());
+        assertTrue(moduleConfigManager.getProviders().isEmpty());
+        assertTrue(moduleConfigManager.getConsumers().isEmpty());
     }
 
     // Test ApplicationConfig correlative methods
@@ -101,6 +109,7 @@ public class ConfigManagerTest {
         configManager.setApplication(config);
         assertTrue(configManager.getApplication().isPresent());
         assertEquals(config, configManager.getApplication().get());
+        assertEquals(config, moduleConfigManager.getApplication().get());
     }
 
     // Test MonitorConfig correlative methods
@@ -111,42 +120,45 @@ public class ConfigManagerTest {
         configManager.setMonitor(monitorConfig);
         assertTrue(configManager.getMonitor().isPresent());
         assertEquals(monitorConfig, configManager.getMonitor().get());
+        assertEquals(monitorConfig, moduleConfigManager.getMonitor().get());
     }
 
-    // Test MonitorConfig correlative methods
+    // Test ModuleConfig correlative methods
     @Test
-    public void tesModuleConfig() {
+    public void testModuleConfig() {
         ModuleConfig config = new ModuleConfig();
-        configManager.setModule(config);
-        assertTrue(configManager.getModule().isPresent());
-        assertEquals(config, configManager.getModule().get());
+        moduleConfigManager.setModule(config);
+        assertTrue(moduleConfigManager.getModule().isPresent());
+        assertEquals(config, moduleConfigManager.getModule().get());
     }
 
     // Test MetricsConfig correlative methods
     @Test
-    public void tesMetricsConfig() {
+    public void testMetricsConfig() {
         MetricsConfig config = new MetricsConfig();
+        config.setProtocol(PROTOCOL_PROMETHEUS);
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());
+        assertEquals(config, moduleConfigManager.getMetrics().get());
     }
 
     // Test ProviderConfig correlative methods
     @Test
     public void testProviderConfig() {
         ProviderConfig config = new ProviderConfig();
-        configManager.addProviders(asList(config, null));
-        Collection<ProviderConfig> configs = configManager.getProviders();
+        moduleConfigManager.addProviders(asList(config, null));
+        Collection<ProviderConfig> configs = moduleConfigManager.getProviders();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-        assertTrue(configManager.getDefaultProvider().isPresent());
+        assertTrue(moduleConfigManager.getDefaultProvider().isPresent());
 
         config = new ProviderConfig();
         config.setId(DEFAULT_KEY);
         config.setQueues(10);
-        configManager.addProvider(config);
-        assertTrue(configManager.getDefaultProvider().isPresent());
-        configs = configManager.getProviders();
+        moduleConfigManager.addProvider(config);
+        assertTrue(moduleConfigManager.getDefaultProvider().isPresent());
+        configs = moduleConfigManager.getProviders();
         assertEquals(2, configs.size());
     }
 
@@ -154,18 +166,18 @@ public class ConfigManagerTest {
     @Test
     public void testConsumerConfig() {
         ConsumerConfig config = new ConsumerConfig();
-        configManager.addConsumers(asList(config, null));
-        Collection<ConsumerConfig> configs = configManager.getConsumers();
+        moduleConfigManager.addConsumers(asList(config, null));
+        Collection<ConsumerConfig> configs = moduleConfigManager.getConsumers();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-        assertTrue(configManager.getDefaultConsumer().isPresent());
+        assertTrue(moduleConfigManager.getDefaultConsumer().isPresent());
 
         config = new ConsumerConfig();
         config.setId(DEFAULT_KEY);
         config.setThreads(10);
-        configManager.addConsumer(config);
-        assertTrue(configManager.getDefaultConsumer().isPresent());
-        configs = configManager.getConsumers();
+        moduleConfigManager.addConsumer(config);
+        assertTrue(moduleConfigManager.getDefaultConsumer().isPresent());
+        configs = moduleConfigManager.getConsumers();
         assertEquals(2, configs.size());
     }
 
@@ -178,6 +190,7 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultProtocols().isEmpty());
+        assertEquals(configs, moduleConfigManager.getProtocols());
     }
 
     // Test RegistryConfig correlative methods
@@ -189,6 +202,7 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultRegistries().isEmpty());
+        assertEquals(configs, moduleConfigManager.getRegistries());
     }
 
     // Test ConfigCenterConfig correlative methods
@@ -210,23 +224,24 @@ public class ConfigManagerTest {
         configs = configManager.getConfigCenters();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-
+        assertEquals(configs, moduleConfigManager.getConfigCenters());
     }
 
     @Test
     public void testAddConfig() {
         configManager.addConfig(new ApplicationConfig("ConfigManagerTest"));
-        configManager.addConfig(new ProviderConfig());
         configManager.addConfig(new ProtocolConfig());
+        moduleConfigManager.addConfig(new ProviderConfig());
 
         assertTrue(configManager.getApplication().isPresent());
-        assertFalse(configManager.getProviders().isEmpty());
         assertFalse(configManager.getProtocols().isEmpty());
+        assertFalse(moduleConfigManager.getProviders().isEmpty());
     }
 
     @Test
     public void testRefreshAll() {
         configManager.refreshAll();
+        moduleConfigManager.refreshAll();
     }
 
     @Test
@@ -294,5 +309,96 @@ public class ConfigManagerTest {
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }
+    }
+
+    @Test
+    public void testGetConfigByIdOrName() {
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setId("registryID_1");
+        configManager.addRegistry(registryConfig);
+        Optional<RegistryConfig> registryConfigOptional = configManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
+
+
+        ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
+        configManager.addProtocol(protocolConfig);
+        Optional<ProtocolConfig> protocolConfigOptional = configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
+        Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
+
+        ModuleConfig moduleConfig = new ModuleConfig();
+        moduleConfig.setId("moduleID_1");
+        moduleConfigManager.setModule(moduleConfig);
+        Optional<ModuleConfig> moduleConfigOptional = moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
+        Assertions.assertEquals(moduleConfigOptional.get(), moduleConfig);
+
+        Optional<RegistryConfig> config = moduleConfigManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Assertions.assertEquals(config.get(), registryConfig);
+    }
+
+    @Test
+    public void testLoadConfigsOfTypeFromProps() {
+        try {
+            // dubbo.application.enable-file-cache = false
+            configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
+            Optional<ApplicationConfig> application = configManager.getApplication();
+            Assertions.assertTrue(application.isPresent());
+            configManager.removeConfig(application.get());
+
+            System.setProperty("dubbo.protocols.dubbo1.port", "20880");
+            System.setProperty("dubbo.protocols.dubbo2.port", "20881");
+            System.setProperty("dubbo.protocols.rest1.port", "8080");
+            System.setProperty("dubbo.protocols.rest2.port", "8081");
+            configManager.loadConfigsOfTypeFromProps(ProtocolConfig.class);
+            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Assertions.assertEquals(protocols.size(), 4);
+
+            System.setProperty("dubbo.applications.app1.name", "app-demo1");
+            System.setProperty("dubbo.applications.app2.name", "app-demo2");
+            try {
+                configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
+                Assertions.fail();
+            } catch (Exception e) {
+                Assertions.assertTrue(e.getMessage().contains("load config failed"));
+            }
+        } finally {
+            System.clearProperty("dubbo.protocols.dubbo1.port");
+            System.clearProperty("dubbo.protocols.dubbo2.port");
+            System.clearProperty("dubbo.protocols.rest1.port");
+            System.clearProperty("dubbo.protocols.rest2.port");
+            System.clearProperty("dubbo.applications.app1.name");
+            System.clearProperty("dubbo.applications.app2.name");
+        }
+
+    }
+
+    @Test
+    public void testLoadConfig() {
+        configManager.loadConfigs();
+        Assertions.assertTrue(configManager.getApplication().isPresent());
+        Assertions.assertTrue(configManager.getSsl().isPresent());
+        Assertions.assertFalse(configManager.getProtocols().isEmpty());
+
+        int port = 20880;
+        ProtocolConfig config1 = new ProtocolConfig();
+        config1.setName("dubbo");
+        config1.setPort(port);
+
+        ProtocolConfig config2 = new ProtocolConfig();
+        config2.setName("rest");
+        config2.setPort(port);
+        configManager.addProtocols(asList(config1, config2));
+        try {
+            configManager.loadConfigs();
+            Assertions.fail();
+        } catch (Exception e) {
+            Assertions.assertTrue(e instanceof IllegalStateException);
+            Assertions.assertTrue(e.getMessage().contains("Duplicated port used by protocol configs, port: " + port));
+        }
+
+        moduleConfigManager.loadConfigs();
+        Assertions.assertTrue(moduleConfigManager.getModule().isPresent());
+        Assertions.assertFalse(moduleConfigManager.getProviders().isEmpty());
+        Assertions.assertFalse(moduleConfigManager.getConsumers().isEmpty());
+
     }
 }

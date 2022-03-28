@@ -16,23 +16,30 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- *
+ * {@link Environment}
  */
 public class EnvironmentTest {
 
     @Test
-    public void testResolvePlaceholders1() {
-        Environment environment = ApplicationModel.defaultModel().getApplicationEnvironment();
+    public void testResolvePlaceholders() {
+        Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
 
         Map<String, String> externalMap = new LinkedHashMap<>();
         externalMap.put("zookeeper.address", "127.0.0.1");
@@ -52,5 +59,57 @@ public class EnvironmentTest {
             }
         }
 
+    }
+
+    @Test
+    public void test() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        Environment environment = applicationModel.getModelEnvironment();
+
+        // test getPrefixedConfiguration
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setAddress("127.0.0.1");
+        registryConfig.setPort(2181);
+        String prefix = "dubbo.registry";
+        Configuration prefixedConfiguration = environment.getPrefixedConfiguration(registryConfig, prefix);
+        Assertions.assertTrue(prefixedConfiguration instanceof PrefixedConfiguration);
+
+        // test getConfigurationMaps(AbstractConfig config, String prefix)
+        List<Map<String, String>> configurationMaps = environment.getConfigurationMaps(registryConfig, prefix);
+        Assertions.assertEquals(configurationMaps.size(), 7);
+
+        // test getConfigurationMaps()
+        configurationMaps = environment.getConfigurationMaps();
+        Assertions.assertEquals(configurationMaps.size(), 6);
+
+        CompositeConfiguration configuration1 = environment.getConfiguration();
+        CompositeConfiguration configuration2 = environment.getConfiguration();
+        Assertions.assertEquals(configuration1, configuration2);
+
+        // test getDynamicConfiguration
+        Optional<DynamicConfiguration> dynamicConfiguration = environment.getDynamicConfiguration();
+        Assertions.assertFalse(dynamicConfiguration.isPresent());
+        // test getDynamicGlobalConfiguration
+        Configuration dynamicGlobalConfiguration = environment.getDynamicGlobalConfiguration();
+        Assertions.assertEquals(dynamicGlobalConfiguration, configuration1);
+
+        CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
+        environment.setDynamicConfiguration(compositeDynamicConfiguration);
+        dynamicConfiguration = environment.getDynamicConfiguration();
+        Assertions.assertEquals(dynamicConfiguration.get(), compositeDynamicConfiguration);
+
+        dynamicGlobalConfiguration = environment.getDynamicGlobalConfiguration();
+        Assertions.assertNotEquals(dynamicGlobalConfiguration, configuration1);
+
+        // test destroy
+        environment.destroy();
+        Assertions.assertNull(environment.getSystemConfiguration());
+        Assertions.assertNull(environment.getEnvironmentConfiguration());
+        Assertions.assertNull(environment.getAppExternalConfiguration());
+        Assertions.assertNull(environment.getExternalConfiguration());
+        Assertions.assertNull(environment.getAppConfiguration());
+
+        frameworkModel.destroy();
     }
 }

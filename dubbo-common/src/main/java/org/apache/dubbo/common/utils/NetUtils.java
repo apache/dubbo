@@ -43,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -101,8 +102,8 @@ public class NetUtils {
     }
 
     public synchronized static int getAvailablePort(int port) {
-        if (port < MIN_PORT) {
-            return port = MIN_PORT;
+         if (port < MIN_PORT) {
+            return MIN_PORT;
         }
         for (int i = port; i < MAX_PORT; i++) {
             if (USED_PORT.get(i)) {
@@ -110,12 +111,28 @@ public class NetUtils {
             }
             try (ServerSocket ignored = new ServerSocket(i)) {
                 USED_PORT.set(i);
-                return i;
+                port = i;
+                break;
             } catch (IOException e) {
                 // continue
             }
         }
         return port;
+    }
+
+
+    /**
+     * Check the port whether is in use in os
+     * @param port
+     * @return
+     */
+    public static boolean isPortInUsed(int port) {
+        try (ServerSocket ignored = new ServerSocket(port)) {
+            return false;
+        } catch (IOException e) {
+            // continue
+        }
+        return true;
     }
 
     public static boolean isInvalidPort(int port) {
@@ -330,8 +347,20 @@ public class NetUtils {
         if (StringUtils.isNotEmpty(ignoredInterfaces)
             && StringUtils.isNotEmpty(networkInterfaceDisplayName = networkInterface.getDisplayName())) {
             for (String ignoredInterface : ignoredInterfaces.split(",")) {
-                if (networkInterfaceDisplayName.matches(ignoredInterface.trim())) {
-                    return true;
+                String trimIgnoredInterface = ignoredInterface.trim();
+                boolean matched = false;
+                try {                     
+                    matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
+                } catch (PatternSyntaxException e) {
+                    // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
+                    logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
+                } finally {
+                    if (matched) {
+                        return true;
+                    }
+                    if (networkInterfaceDisplayName.equals(trimIgnoredInterface)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -614,7 +643,7 @@ public class NetUtils {
         int i = host.indexOf('.');
         if (i > 0) {
             String prefix = host.substring(0, i);
-            if (StringUtils.isInteger(prefix)) {
+            if (StringUtils.isNumber(prefix)) {
                 int p = Integer.parseInt(prefix);
                 return p >= 224 && p <= 239;
             }

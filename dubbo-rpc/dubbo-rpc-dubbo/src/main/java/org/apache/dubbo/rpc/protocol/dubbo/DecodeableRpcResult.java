@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -81,6 +82,10 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             log.debug("Decoding in thread -- [" + thread.getName() + "#" + thread.getId() + "]");
         }
 
+        // switch TCCL
+        if (invocation != null && invocation.getServiceModel() != null) {
+            Thread.currentThread().setContextClassLoader(invocation.getServiceModel().getClassLoader());
+        }
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 
@@ -119,7 +124,8 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 if (invocation != null) {
-                    if (ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
+                    Configuration systemConfiguration = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel());
+                    if (systemConfiguration == null || systemConfiguration.getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
                         Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
                         if (serializationTypeObj != null) {
                             if ((byte) serializationTypeObj != serializationType) {
@@ -150,7 +156,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             } else {
                 returnTypes = RpcUtils.getReturnTypes(invocation);
             }
-            Object value = null;
+            Object value;
             if (ArrayUtils.isEmpty(returnTypes)) {
                 // This almost never happens?
                 value = in.readObject();

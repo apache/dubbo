@@ -17,9 +17,10 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Map;
 
@@ -29,36 +30,40 @@ import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCES
 /**
  * ClusterUtils
  */
-public class ClusterUtils {
+public class ClusterUtils implements ScopeModelAware {
 
-    private ClusterUtils() {
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
-    public static URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
+    public URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
 
         String ump = localMap.get(URL_MERGE_PROCESSOR_KEY);
-        ProviderURLMergeProcessor providerURLMergeProcessor;
+        ProviderURLMergeProcessor providerUrlMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
         } else {
-            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
         }
 
-        return providerURLMergeProcessor.mergeUrl(remoteUrl, localMap);
+        return providerUrlMergeProcessor.mergeUrl(remoteUrl, localMap);
     }
 
-    public static Map<String, String> mergeLocalParams(Map<String, String> localMap) {
+    public Map<String, String> mergeLocalParams(Map<String, String> localMap) {
         String ump = localMap.get(URL_MERGE_PROCESSOR_KEY);
-        ProviderURLMergeProcessor providerURLMergeProcessor;
+        ProviderURLMergeProcessor providerUrlMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
         } else {
-            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
         }
 
-        return providerURLMergeProcessor.mergeLocalParams(localMap);
+        return providerUrlMergeProcessor.mergeLocalParams(localMap);
 
     }
 

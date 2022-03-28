@@ -65,6 +65,10 @@ public class NacosConfigServiceWrapper {
         return configService.removeConfig(handleInnerSymbol(dataId), handleInnerSymbol(group));
     }
 
+    public void shutdown() throws NacosException {
+        configService.shutDown();
+    }
+
     /**
      * see {@link com.alibaba.nacos.client.config.utils.ParamUtils#isValid(java.lang.String)}
      */

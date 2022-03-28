@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.router;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
@@ -29,7 +28,7 @@ public abstract class AbstractRouter implements Router {
     private GovernanceRuleRepository ruleRepository;
 
     public AbstractRouter(URL url) {
-        this.ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
     }
 

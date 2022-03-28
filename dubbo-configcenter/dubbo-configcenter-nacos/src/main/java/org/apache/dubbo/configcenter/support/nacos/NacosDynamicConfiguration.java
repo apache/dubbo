@@ -86,6 +86,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      */
     private final Map<String, NacosConfigListener> watchListenerMap;
 
+    private MD5Utils md5Utils = new MD5Utils();
+
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
@@ -177,6 +179,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public void close() throws Exception {
+        configService.shutdown();
+    }
+
+    @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
         NacosConfigListener nacosConfigListener =
@@ -217,7 +224,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         String content = getConfig(key, group);
         String casMd5 = "";
         if (StringUtils.isNotEmpty(content)) {
-            casMd5 = MD5Utils.getMd5(content);
+            casMd5 = md5Utils.getMd5(content);
         }
         return new ConfigItem(content, casMd5);
     }

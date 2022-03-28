@@ -35,16 +35,22 @@ import java.util.stream.Collectors;
  */
 public class ModuleServiceRepository {
 
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
-    // services
-    private ConcurrentMap<String, List<ServiceDescriptor>> services = new ConcurrentHashMap<>();
+    /**
+     * services
+     */
+    private final ConcurrentMap<String, List<ServiceDescriptor>> services = new ConcurrentHashMap<>();
 
-    // consumers ( key - group/interface:version value - consumerModel list)
-    private ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
+    /**
+     * consumers ( key - group/interface:version value - consumerModel list)
+     */
+    private final ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
 
-    // providers
-    private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
+    /**
+     * providers
+     */
+    private final ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
     private final FrameworkServiceRepository frameworkServiceRepository;
 
     public ModuleServiceRepository(ModuleModel moduleModel) {
@@ -56,6 +62,9 @@ public class ModuleServiceRepository {
         return moduleModel;
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#registerConsumer(ConsumerModel)}
+     */
     @Deprecated
     public void registerConsumer(String serviceKey,
                                  ServiceDescriptor serviceDescriptor,
@@ -71,6 +80,9 @@ public class ModuleServiceRepository {
         consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#registerProvider(ProviderModel)}
+     */
     @Deprecated
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
@@ -87,10 +99,17 @@ public class ModuleServiceRepository {
         frameworkServiceRepository.registerProvider(providerModel);
     }
 
+    public ServiceDescriptor registerService(ServiceDescriptor serviceDescriptor) {
+        return registerService(serviceDescriptor.getServiceInterfaceClass(),serviceDescriptor);
+    }
+
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
-        ServiceDescriptor serviceDescriptor = new ServiceDescriptor(interfaceClazz);
+        ServiceDescriptor serviceDescriptor = new ReflectionServiceDescriptor(interfaceClazz);
+        return registerService(interfaceClazz,serviceDescriptor);
+    }
+    public ServiceDescriptor registerService(Class<?> interfaceClazz,ServiceDescriptor serviceDescriptor) {
         List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
-            _k -> new CopyOnWriteArrayList<>());
+            k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
                 .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz)).findFirst();
@@ -138,8 +157,10 @@ public class ModuleServiceRepository {
     @Deprecated
     public void reRegisterProvider(String newServiceKey, String serviceKey) {
         ProviderModel providerModel = this.providers.get(serviceKey);
+        frameworkServiceRepository.unregisterProvider(providerModel);
         providerModel.setServiceKey(newServiceKey);
         this.providers.putIfAbsent(newServiceKey, providerModel);
+        frameworkServiceRepository.registerProvider(providerModel);
         this.providers.remove(serviceKey);
     }
 
@@ -174,6 +195,15 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(serviceDescriptors);
     }
 
+    public ServiceDescriptor getService(String serviceName) {
+        // TODO, may need to distinguish service by class loader.
+        List<ServiceDescriptor> serviceDescriptors = services.get(serviceName);
+        if (CollectionUtils.isEmpty(serviceDescriptors)) {
+            return null;
+        }
+        return serviceDescriptors.get(0);
+    }
+
     public ServiceDescriptor lookupService(String interfaceName) {
         if (services.containsKey(interfaceName)) {
             List<ServiceDescriptor> serviceDescriptors = services.get(interfaceName);
@@ -200,7 +230,6 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(new ArrayList<>(providers.values()));
     }
 
-    @Deprecated
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
     }
@@ -210,6 +239,9 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(consumerModels);
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#lookupReferredServices(String)}
+     */
     @Deprecated
     public ConsumerModel lookupReferredService(String serviceKey) {
         if (consumers.containsKey(serviceKey)) {
@@ -220,7 +252,6 @@ public class ModuleServiceRepository {
         }
     }
 
-    @Deprecated
     public List<ConsumerModel> lookupReferredServices(String serviceKey) {
         return consumers.get(serviceKey);
     }

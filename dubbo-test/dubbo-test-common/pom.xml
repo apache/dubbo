@@ -58,15 +58,9 @@
             <artifactId>dubbo-rpc-rest</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-test</artifactId>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 </project>

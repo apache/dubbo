@@ -14,8 +14,6 @@
 // limitations under the License.
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
-
 package org.apache.dubbo.triple;
 
 message TripleRequestWrapper {

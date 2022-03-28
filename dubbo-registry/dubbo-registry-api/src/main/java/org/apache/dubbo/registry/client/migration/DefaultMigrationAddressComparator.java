@@ -47,13 +47,13 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         if (!newInvoker.hasProxyInvokers()) {
             migrationData.put(OLD_ADDRESS_SIZE, getAddressSize(oldInvoker));
             migrationData.put(NEW_ADDRESS_SIZE, -1);
-            logger.info("No instance address available, stop compare.");
+            logger.info("No " + getInvokerType(newInvoker) + " address available, stop compare.");
             return false;
         }
         if (!oldInvoker.hasProxyInvokers()) {
             migrationData.put(OLD_ADDRESS_SIZE, -1);
             migrationData.put(NEW_ADDRESS_SIZE, getAddressSize(newInvoker));
-            logger.info("No interface address available, stop compare.");
+            logger.info("No " + getInvokerType(oldInvoker) + " address available, stop compare.");
             return true;
         }
 
@@ -64,9 +64,9 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         migrationData.put(NEW_ADDRESS_SIZE, newAddressSize);
 
         String rawThreshold = null;
-        Float configedThreshold = rule == null ? null : rule.getThreshold(oldInvoker.getUrl());
-        if (configedThreshold != null && configedThreshold >= 0) {
-            rawThreshold = String.valueOf(configedThreshold);
+        Float configuredThreshold = rule == null ? null : rule.getThreshold(oldInvoker.getUrl());
+        if (configuredThreshold != null && configuredThreshold >= 0) {
+            rawThreshold = String.valueOf(configuredThreshold);
         }
         rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getCachedDynamicProperty(newInvoker.getUrl().getScopeModel(), MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
         float threshold;
@@ -103,5 +103,13 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     public Map<String, Integer> getAddressSize(String displayServiceKey) {
         return serviceMigrationData.get(displayServiceKey);
     }
+
+    private String getInvokerType(ClusterInvoker<?> invoker) {
+        if (invoker.isServiceDiscovery()) {
+            return "instance";
+        }
+        return "interface";
+    }
+
 
 }

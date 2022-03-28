@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange.support;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
@@ -52,10 +53,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-future-timeout", true),
-            30,
-            TimeUnit.MILLISECONDS);
+    private static GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(
+        new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
+        () -> destroy());
 
     // invoke id.
     private final Long id;
@@ -91,7 +91,13 @@ public class DefaultFuture extends CompletableFuture<Object> {
      */
     private static void timeoutCheck(DefaultFuture future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
-        future.timeoutCheckTask = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+        future.timeoutCheckTask = TIME_OUT_TIMER.get().newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+    }
+
+    public static void destroy() {
+        TIME_OUT_TIMER.remove(timer-> timer.stop());
+        FUTURES.clear();
+        CHANNELS.clear();
     }
 
     /**
@@ -147,7 +153,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     disconnectResponse.setErrorMessage("Channel " +
                             channel +
                             " is inactive. Directly return the unFinished request : " +
-                            future.getRequest());
+                            (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
                     DefaultFuture.received(channel, disconnectResponse);
                 }
             }
@@ -188,6 +194,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.doReceived(errorResult);
         FUTURES.remove(id);
         CHANNELS.remove(id);
+        timeoutCheckTask.cancel();
         return true;
     }
 
@@ -251,15 +258,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + channel.getLocalAddress()
+                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : request.copyWithoutData()) + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
 
-    private Request getRequestWithoutData() {
-        Request newRequest = request.copy();
-        newRequest.setData(null);
-        return newRequest;
-    }
 
     private static class TimeoutCheckTask implements TimerTask {
 

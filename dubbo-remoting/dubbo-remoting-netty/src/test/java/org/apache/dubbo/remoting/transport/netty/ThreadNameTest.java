@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -51,8 +52,12 @@ public class ThreadNameTest {
     @BeforeEach
     public void before() throws Exception {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
-        serverURL = URL.valueOf("telnet://localhost?side=provider").setPort(port);
-        clientURL = URL.valueOf("telnet://localhost?side=consumer").setPort(port);
+        serverURL = URL.valueOf("telnet://localhost?side=provider&codec=telnet")
+            .setPort(port)
+            .setScopeModel(ApplicationModel.defaultModel());
+        clientURL = URL.valueOf("telnet://localhost?side=consumer&codec=telnet")
+            .setPort(port)
+            .setScopeModel(ApplicationModel.defaultModel());
 
         serverHandler = new ThreadNameVerifyHandler(serverRegex, false, serverLatch);
         clientHandler = new ThreadNameVerifyHandler(clientRegex, true, clientLatch);
@@ -122,26 +127,26 @@ public class ThreadNameTest {
 
         @Override
         public void disconnected(Channel channel) throws RemotingException {
+            // client: DubboClientHandler thread, server: DubboServerHandler or DubboSharedHandler thread.
             output("disconnected");
-            checkThreadName();
         }
 
         @Override
         public void sent(Channel channel, Object message) throws RemotingException {
+            // main thread.
             output("sent");
-            checkThreadName();
         }
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
+            // server: DubboServerHandler or DubboSharedHandler thread. 
             output("received");
-            checkThreadName();
         }
 
         @Override
         public void caught(Channel channel, Throwable exception) throws RemotingException {
+            // client: DubboClientHandler thread, server: ?
             output("caught");
-            checkThreadName();
         }
     }
 

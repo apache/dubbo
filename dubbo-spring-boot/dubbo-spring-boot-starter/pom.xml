@@ -37,6 +37,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
             <optional>true</optional>
+            <exclusions>
+                <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j2_version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

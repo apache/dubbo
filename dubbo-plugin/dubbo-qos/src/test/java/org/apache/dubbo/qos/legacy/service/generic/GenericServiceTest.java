@@ -28,7 +28,6 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
@@ -88,7 +87,7 @@ public class GenericServiceTest {
         bootstrap.start();
 
         try {
-            DemoService demoService = ReferenceConfigCache.getCache().get(reference);
+            DemoService demoService = bootstrap.getCache().get(reference);
             // say name
             Assertions.assertEquals("Generic Haha", demoService.sayName("Haha"));
             // get users
@@ -130,7 +129,7 @@ public class GenericServiceTest {
         bootstrap.start();
 
         try {
-            GenericService genericService = ReferenceConfigCache.getCache().get(reference);
+            GenericService genericService = bootstrap.getCache().get(reference);
 
             List<Map<String, Object>> users = new ArrayList<Map<String, Object>>();
             Map<String, Object> user = new HashMap<String, Object>();

@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings("unchecked")
 public class ForkingClusterInvokerTest {
 
-    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<Invoker<ForkingClusterInvokerTest>>();
+    private List<Invoker<ForkingClusterInvokerTest>> invokers = new ArrayList<>();
     private URL url = URL.valueOf("test://test:11/test?forks=2");
     private Invoker<ForkingClusterInvokerTest> invoker1 = mock(Invoker.class);
     private Invoker<ForkingClusterInvokerTest> invoker2 = mock(Invoker.class);
@@ -107,8 +107,7 @@ public class ForkingClusterInvokerTest {
     @Test
     public void testInvokeException() {
         resetInvokerToException();
-        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
-                dic);
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(dic);
 
         try {
             invoker.invoke(invocation);
@@ -122,8 +121,7 @@ public class ForkingClusterInvokerTest {
     @Test
     public void testClearRpcContext() {
         resetInvokerToException();
-        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
-                dic);
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(dic);
 
         String attachKey = "attach";
         String attachValue = "value";
@@ -143,13 +141,27 @@ public class ForkingClusterInvokerTest {
         Assertions.assertTrue(afterInvoke != null && afterInvoke.size() == 0, "clear attachment failed!");
     }
 
-    @Test()
+    @Test
     public void testInvokeNoException() {
 
         resetInvokerToNoException();
 
-        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<ForkingClusterInvokerTest>(
-                dic);
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(dic);
+        Result ret = invoker.invoke(invocation);
+        Assertions.assertSame(result, ret);
+    }
+
+    @Test
+    public void testInvokeWithIllegalForksParam() {
+        URL url = URL.valueOf("test://test:11/test?forks=-1");
+        given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
+        given(invoker1.invoke(invocation)).willReturn(result);
+        given(invoker1.getUrl()).willReturn(url);
+        given(invoker1.isAvailable()).willReturn(true);
+        given(invoker1.getInterface()).willReturn(ForkingClusterInvokerTest.class);
+
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(dic);
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);
     }

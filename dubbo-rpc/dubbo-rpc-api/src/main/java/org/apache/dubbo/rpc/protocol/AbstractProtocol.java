@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -37,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
 /**
  * abstract ProtocolSupport.
@@ -76,11 +80,20 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
         return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
     }
 
+    protected void loadServerProperties(ProtocolServer server) {
+        // read and hold config before destroy
+        int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel());
+        server.getAttributes().put(SHUTDOWN_WAIT_KEY, serverShutdownTimeout);
+    }
+
+    protected int getServerShutdownTimeout(ProtocolServer server) {
+        return (int) server.getAttributes().getOrDefault(SHUTDOWN_WAIT_KEY, DEFAULT_SERVER_SHUTDOWN_TIMEOUT);
+    }
+
     @Override
     public void destroy() {
         for (Invoker<?> invoker : invokers) {
             if (invoker != null) {
-                invokers.remove(invoker);
                 try {
                     if (logger.isInfoEnabled()) {
                         logger.info("Destroy reference: " + invoker.getUrl());
@@ -91,8 +104,9 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
                 }
             }
         }
-        for (String key : new ArrayList<>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
+        invokers.clear();
+
+        exporterMap.forEach((key, exporter)-> {
             if (exporter != null) {
                 try {
                     if (logger.isInfoEnabled()) {
@@ -103,7 +117,8 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
                     logger.warn(t.getMessage(), t);
                 }
             }
-        }
+        });
+        exporterMap.clear();
     }
 
     @Override

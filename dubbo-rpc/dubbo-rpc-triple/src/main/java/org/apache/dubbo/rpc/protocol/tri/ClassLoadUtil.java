@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
 public class ClassLoadUtil {
+
     public static void switchContextLoader(ClassLoader loader) {
         try {
             if (loader != null && loader != Thread.currentThread().getContextClassLoader()) {

@@ -18,6 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -79,7 +80,7 @@ public interface TypeUtils {
 
     static List<Class<?>> findActualTypeArguments(Type type, Class<?> interfaceClass) {
 
-        List<Class<?>> actualTypeArguments = new LinkedList<>();
+        List<Class<?>> actualTypeArguments = new ArrayList<>();
 
         getAllGenericTypes(type, t -> isAssignableFrom(interfaceClass, getRawClass(t)))
                 .forEach(parameterizedType -> {

@@ -34,9 +34,9 @@ public class MockClusterWrapper implements Cluster {
     }
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
         return new MockClusterInvoker<T>(directory,
-                this.cluster.join(directory));
+                this.cluster.join(directory, buildFilterChain));
     }
 
     public Cluster getCluster() {

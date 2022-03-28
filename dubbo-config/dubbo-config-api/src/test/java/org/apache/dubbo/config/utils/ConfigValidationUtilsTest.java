@@ -17,10 +17,11 @@
 package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.config.AbstractInterfaceConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.api.Greeting;
-
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -53,6 +54,31 @@ public class ConfigValidationUtilsTest {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock2.class.getName());
             ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+        });
+    }
+
+    @Test
+    public void testValidateMetadataConfig() {
+        MetadataReportConfig config = new MetadataReportConfig();
+        config.setAddress("protocol://ip:host");
+        try {
+            ConfigValidationUtils.validateMetadataConfig(config);
+        } catch (Exception e) {
+            Assertions.fail("valid config expected.");
+        }
+
+        config.setAddress("ip:host");
+        config.setProtocol("protocol");
+        try {
+            ConfigValidationUtils.validateMetadataConfig(config);
+        } catch (Exception e) {
+            Assertions.fail("valid config expected.");
+        }
+
+        config.setAddress("ip:host");
+        config.setProtocol(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ConfigValidationUtils.validateMetadataConfig(config);
         });
     }
 

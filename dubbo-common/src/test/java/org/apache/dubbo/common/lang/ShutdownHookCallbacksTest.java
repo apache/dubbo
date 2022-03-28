@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +36,7 @@ public class ShutdownHookCallbacksTest {
 
     @BeforeEach
     public void init() {
-        callbacks = new ShutdownHookCallbacks();
+        callbacks = new ShutdownHookCallbacks(ApplicationModel.defaultModel());
     }
 
     @Test

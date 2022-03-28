@@ -1330,6 +1330,19 @@ public final class ReflectUtils {
         return types;
     }
 
+    public static boolean checkZeroArgConstructor(Class clazz) {
+        try {
+            clazz.getDeclaredConstructor();
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    public static boolean isJdk(Class clazz) {
+        return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
+    }
+
     /**
      * Copy from org.springframework.util.ReflectionUtils.
      * Make the given method accessible, explicitly setting it accessible if
@@ -1368,4 +1381,16 @@ public final class ReflectUtils {
         return fieldNames;
     }
 
+    public static <T> T getFieldValue(Object obj, String fieldName) throws RuntimeException {
+        if (obj == null) {
+            throw new IllegalArgumentException("object is null");
+        }
+        try {
+            Field field = obj.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return (T) field.get(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }

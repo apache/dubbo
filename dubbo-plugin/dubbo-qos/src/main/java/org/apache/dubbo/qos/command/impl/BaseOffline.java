@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.registry.Registry;
@@ -32,15 +32,18 @@ import java.util.Collection;
 import java.util.List;
 
 public class BaseOffline implements BaseCommand {
-    private Logger logger = LoggerFactory.getLogger(OfflineInterface.class);
-    public static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    public static FrameworkServiceRepository serviceRepository = FrameworkModel.defaultModel().getServiceRepository();
+    private Logger logger = LoggerFactory.getLogger(BaseOffline.class);
+    public FrameworkServiceRepository serviceRepository;
+
+    public BaseOffline(FrameworkModel frameworkModel) {
+        this.serviceRepository = frameworkModel.getServiceRepository();
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         logger.info("receive offline command");
         String servicePattern = ".*";
-        if (args != null && args.length > 0) {
+        if (ArrayUtils.isNotEmpty(args)) {
             servicePattern = args[0];
         }
 
@@ -78,6 +81,8 @@ public class BaseOffline implements BaseCommand {
     }
 
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
         Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
         registry.unregister(statedURL.getProviderUrl());
         statedURL.setRegistered(false);

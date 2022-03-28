@@ -17,9 +17,9 @@
   -->
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
-       xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+       http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <bean id="propertyConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
         <property name="location">
@@ -30,7 +30,7 @@
     <dubbo:application name="demo-consumer">
     </dubbo:application>
 
-    <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
+    <!--    <dubbo:metadata-report address="${zookeeper.connection.address}"/>-->
 
     <dubbo:registry address="${dubbo.registry.address}"/>
 

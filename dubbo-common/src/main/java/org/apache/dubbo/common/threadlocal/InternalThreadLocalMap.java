@@ -32,7 +32,12 @@ public final class InternalThreadLocalMap {
 
     private static final AtomicInteger NEXT_INDEX = new AtomicInteger();
 
-    public static final Object UNSET = new Object();
+    static final Object UNSET = new Object();
+
+    // Reference: https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/tip/src/share/classes/java/util/ArrayList.java#l229
+    private static final int ARRAY_LIST_CAPACITY_MAX_SIZE = Integer.MAX_VALUE - 8;
+
+    private static final int ARRAY_LIST_CAPACITY_EXPAND_THRESHOLD = 1 << 30;
 
     public static InternalThreadLocalMap getIfSet() {
         Thread thread = Thread.currentThread();
@@ -65,8 +70,8 @@ public final class InternalThreadLocalMap {
 
     public static int nextVariableIndex() {
         int index = NEXT_INDEX.getAndIncrement();
-        if (index < 0) {
-            NEXT_INDEX.decrementAndGet();
+        if (index >= ARRAY_LIST_CAPACITY_MAX_SIZE || index < 0) {
+            NEXT_INDEX.set(ARRAY_LIST_CAPACITY_MAX_SIZE);
             throw new IllegalStateException("Too many thread-local indexed variables");
         }
         return index;
@@ -125,9 +130,27 @@ public final class InternalThreadLocalMap {
     }
 
     private static Object[] newIndexedVariableTable() {
-        Object[] array = new Object[32];
+        int variableIndex = NEXT_INDEX.get();
+        int newCapacity = variableIndex < 32 ? 32 : newCapacity(variableIndex);
+        Object[] array = new Object[newCapacity];
         Arrays.fill(array, UNSET);
         return array;
+    }
+
+    private static int newCapacity(int index) {
+        int newCapacity;
+        if (index < ARRAY_LIST_CAPACITY_EXPAND_THRESHOLD) {
+            newCapacity = index;
+            newCapacity |= newCapacity >>>  1;
+            newCapacity |= newCapacity >>>  2;
+            newCapacity |= newCapacity >>>  4;
+            newCapacity |= newCapacity >>>  8;
+            newCapacity |= newCapacity >>> 16;
+            newCapacity ++;
+        } else {
+            newCapacity = ARRAY_LIST_CAPACITY_MAX_SIZE;
+        }
+        return newCapacity;
     }
 
     private static InternalThreadLocalMap fastGet(InternalThread thread) {
@@ -151,14 +174,7 @@ public final class InternalThreadLocalMap {
     private void expandIndexedVariableTableAndSet(int index, Object value) {
         Object[] oldArray = indexedVariables;
         final int oldCapacity = oldArray.length;
-        int newCapacity = index;
-        newCapacity |= newCapacity >>> 1;
-        newCapacity |= newCapacity >>> 2;
-        newCapacity |= newCapacity >>> 4;
-        newCapacity |= newCapacity >>> 8;
-        newCapacity |= newCapacity >>> 16;
-        newCapacity++;
-
+        int newCapacity = newCapacity(index);
         Object[] newArray = Arrays.copyOf(oldArray, newCapacity);
         Arrays.fill(newArray, oldCapacity, newArray.length, UNSET);
         newArray[index] = value;

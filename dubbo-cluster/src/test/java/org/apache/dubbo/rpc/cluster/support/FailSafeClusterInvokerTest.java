@@ -89,7 +89,7 @@ public class FailSafeClusterInvokerTest {
         Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
     }
 
-    @Test()
+    @Test
     public void testInvokeNoExceptoin() {
 
         resetInvokerToNoException();
@@ -99,7 +99,7 @@ public class FailSafeClusterInvokerTest {
         Assertions.assertSame(result, ret);
     }
 
-    @Test()
+    @Test
     public void testNoInvoke() {
         dic = mock(Directory.class);
 

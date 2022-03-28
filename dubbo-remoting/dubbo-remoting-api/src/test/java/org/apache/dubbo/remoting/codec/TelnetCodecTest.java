@@ -59,7 +59,7 @@ public class TelnetCodecTest {
         return channel;
     }
 
-    protected AbstractMockChannel getCliendSideChannel(URL url) {
+    protected AbstractMockChannel getClientSideChannel(URL url) {
         url = url.addParameter(AbstractMockChannel.LOCAL_ADDRESS, "127.0.0.1:12345")
                 .addParameter(AbstractMockChannel.REMOTE_ADDRESS, url.getAddress());
         AbstractMockChannel channel = new AbstractMockChannel(url);
@@ -92,7 +92,7 @@ public class TelnetCodecTest {
                 throw new RuntimeException(e);
             }
         }
-        return (bytes);
+        return bytes;
     }
 
     protected Object byteToObject(byte[] objBytes) throws Exception {
@@ -110,7 +110,7 @@ public class TelnetCodecTest {
 
     protected void testDecode_assertEquals(byte[] request, Object ret, boolean isServerside) throws IOException {
         //init channel
-        Channel channel = isServerside ? getServerSideChannel(url) : getCliendSideChannel(url);
+        Channel channel = isServerside ? getServerSideChannel(url) : getClientSideChannel(url);
         //init request string
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(request);
 
@@ -122,7 +122,7 @@ public class TelnetCodecTest {
 
     protected void testEecode_assertEquals(Object request, byte[] ret, boolean isServerside) throws IOException {
         //init channel
-        Channel channel = isServerside ? getServerSideChannel(url) : getCliendSideChannel(url);
+        Channel channel = isServerside ? getServerSideChannel(url) : getClientSideChannel(url);
 
         ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(1024);
 
@@ -146,7 +146,7 @@ public class TelnetCodecTest {
         testDecode_assertEquals(null, request, ret, channelReceive);
     }
 
-    private void testDecode_assertEquals(AbstractMockChannel channel, Object request, Object expectret, Object channelReceive) throws IOException {
+    private void testDecode_assertEquals(AbstractMockChannel channel, Object request, Object expectRet, Object channelReceive) throws IOException {
         //init channel
         if (channel == null) {
             channel = getServerSideChannel(url);
@@ -157,21 +157,21 @@ public class TelnetCodecTest {
 
         //decode
         Object obj = codec.decode(channel, buffer);
-        Assertions.assertEquals(expectret, obj);
+        Assertions.assertEquals(expectRet, obj);
         Assertions.assertEquals(channelReceive, channel.getReceivedMessage());
     }
 
-    private void testDecode_PersonWithEnterByte(byte[] enterbytes, boolean isNeedmore) throws IOException {
+    private void testDecode_PersonWithEnterByte(byte[] enterBytes, boolean isNeedMore) throws IOException {
         //init channel
         Channel channel = getServerSideChannel(url);
         //init request string
         Person request = new Person();
-        byte[] newbuf = join(objectToByte(request), enterbytes);
-        ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(newbuf);
+        byte[] newBuf = join(objectToByte(request), enterBytes);
+        ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(newBuf);
 
         //decode
         Object obj = codec.decode(channel, buffer);
-        if (isNeedmore) {
+        if (isNeedMore) {
             Assertions.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, obj);
         } else {
             Assertions.assertTrue(obj instanceof String, "return must string ");
@@ -229,14 +229,14 @@ public class TelnetCodecTest {
 
     @Test
     public void testDecode_WithExitByte() throws IOException {
-        HashMap<byte[], Boolean> exitbytes = new HashMap<byte[], Boolean>();
-        exitbytes.put(new byte[]{3}, true); /* Windows Ctrl+C */
-        exitbytes.put(new byte[]{1, 3}, false); //must equal the bytes
-        exitbytes.put(new byte[]{-1, -12, -1, -3, 6}, true); /* Linux Ctrl+C */
-        exitbytes.put(new byte[]{1, -1, -12, -1, -3, 6}, false); //must equal the bytes
-        exitbytes.put(new byte[]{-1, -19, -1, -3, 6}, true);  /* Linux Pause */
+        HashMap<byte[], Boolean> exitBytes = new HashMap<byte[], Boolean>();
+        exitBytes.put(new byte[]{3}, true); /* Windows Ctrl+C */
+        exitBytes.put(new byte[]{1, 3}, false); //must equal the bytes
+        exitBytes.put(new byte[]{-1, -12, -1, -3, 6}, true); /* Linux Ctrl+C */
+        exitBytes.put(new byte[]{1, -1, -12, -1, -3, 6}, false); //must equal the bytes
+        exitBytes.put(new byte[]{-1, -19, -1, -3, 6}, true);  /* Linux Pause */
 
-        for (Map.Entry<byte[], Boolean> entry : exitbytes.entrySet()) {
+        for (Map.Entry<byte[], Boolean> entry : exitBytes.entrySet()) {
             testDecode_WithExitByte(entry.getKey(), entry.getValue());
         }
     }
@@ -263,7 +263,7 @@ public class TelnetCodecTest {
         });
     }
 
-    @Test()
+    @Test
     public void testDecode_History_UP() throws IOException {
         //init channel
         AbstractMockChannel channel = getServerSideChannel(url);
@@ -305,7 +305,7 @@ public class TelnetCodecTest {
         testEecode_assertEquals("aaa", "aaa\r\n".getBytes(), false);
     }
     
-    /*@Test()
+    /*@Test
     public void testDecode_History_UP_DOWN_MULTI() throws IOException{
         AbstractMockChannel channel = getServerSideChannel(url);
         

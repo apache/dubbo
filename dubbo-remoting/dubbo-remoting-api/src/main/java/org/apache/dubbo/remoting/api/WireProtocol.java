@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -27,9 +28,9 @@ public interface WireProtocol {
 
     ProtocolDetector detector();
 
-    void configServerPipeline(ChannelPipeline pipeline, SslContext sslContext);
+    void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
 
-    void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext);
+    void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
 
     void close();
 }

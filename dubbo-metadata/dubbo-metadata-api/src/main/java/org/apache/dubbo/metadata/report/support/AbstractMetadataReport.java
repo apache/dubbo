@@ -62,20 +62,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_TIMES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
-import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.CACHE;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
-import static org.apache.dubbo.metadata.report.support.Constants.RETRY_PERIOD_KEY;
-import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY;
-import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.DUBBO_METADATA;
+import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
-/**
- *
- */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected final static String DEFAULT_ROOT = "dubbo";
@@ -98,15 +100,17 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     File file;
     private AtomicBoolean initialized = new AtomicBoolean(false);
     public MetadataReportRetry metadataReportRetry;
+    private ScheduledExecutorService reportTimerScheduler;
+
+    private final boolean reportMetadata;
+    private final boolean reportDefinition;
 
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
-        String defaultFilename = System.getProperty("user.home") +
-                "/.dubbo/dubbo-metadata-" +
-                reportServerURL.getApplication() + "-" +
-                replace(reportServerURL.getAddress(), ":", "-") +
-                ".cache";
+        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
+            reportServerURL.getApplication() + "-" +
+            replace(reportServerURL.getAddress(), ":", "-") + CACHE;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
@@ -116,7 +120,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
-            // if this file exist, firstly delete it.
+            // if this file exists, firstly delete it.
             if (!initialized.getAndSet(true) && file.exists()) {
                 file.delete();
             }
@@ -125,12 +129,15 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         loadProperties();
         syncReport = reportServerURL.getParameter(SYNC_REPORT_KEY, false);
         metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(RETRY_TIMES_KEY, DEFAULT_METADATA_REPORT_RETRY_TIMES),
-                reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
+            reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
-            scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
+            reportTimerScheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
+            reportTimerScheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
         }
+
+        this.reportMetadata = reportServerURL.getParameter(REPORT_METADATA_KEY, false);
+        this.reportDefinition = reportServerURL.getParameter(REPORT_DEFINITION_KEY, true);
     }
 
     public URL getUrl() {
@@ -158,7 +165,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 lockfile.createNewFile();
             }
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                 FileChannel channel = raf.getChannel()) {
+                FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
                     throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
@@ -168,8 +175,24 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     if (!file.exists()) {
                         file.createNewFile();
                     }
+
+                    Properties tmpProperties;
+                    if (!syncReport) {
+                        // When syncReport = false, properties.setProperty and properties.store are called from the same
+                        // thread(reportCacheExecutor), so deep copy is not required
+                        tmpProperties = properties;
+                    } else {
+                        // Using store method and setProperty method of the this.properties will cause lock contention
+                        // under multi-threading, so deep copy a new container
+                        tmpProperties = new Properties();
+                        Set<Map.Entry<Object, Object>> entries = properties.entrySet();
+                        for (Map.Entry<Object, Object> entry : entries) {
+                            tmpProperties.setProperty((String) entry.getKey(), (String) entry.getValue());
+                        }
+                    }
+
                     try (FileOutputStream outputFile = new FileOutputStream(file)) {
-                        properties.store(outputFile, "Dubbo metadataReport Cache");
+                        tmpProperties.store(outputFile, "Dubbo metadataReport Cache");
                     }
                 } finally {
                     lock.release();
@@ -301,8 +324,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (reportCacheExecutor != null) {
             reportCacheExecutor.shutdown();
         }
+        if (reportTimerScheduler != null) {
+            reportTimerScheduler.shutdown();
+        }
         if (metadataReportRetry != null) {
             metadataReportRetry.destroy();
+            metadataReportRetry = null;
         }
     }
 
@@ -359,6 +386,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      */
     public boolean retry() {
         return doHandleMetadataCollection(failedReports);
+    }
+
+    @Override
+    public boolean shouldReportDefinition() {
+        return reportDefinition;
+    }
+
+    @Override
+    public boolean shouldReportMetadata() {
+        return reportMetadata;
     }
 
     private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap) {

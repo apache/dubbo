@@ -51,6 +51,7 @@ import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
+import javax.validation.ValidationException;
 import javax.validation.ValidatorFactory;
 import javax.validation.groups.Default;
 import java.lang.annotation.Annotation;
@@ -256,37 +257,42 @@ public class JValidator implements Validator {
 
     @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        List<Class<?>> groups = new ArrayList<>();
-        Class<?> methodClass = methodClass(methodName);
-        if (methodClass != null) {
-            groups.add(methodClass);
-        }
-        Set<ConstraintViolation<?>> violations = new HashSet<>();
-        Method method = clazz.getMethod(methodName, parameterTypes);
-        Class<?>[] methodClasses;
-        if (method.isAnnotationPresent(MethodValidated.class)){
-            methodClasses = method.getAnnotation(MethodValidated.class).value();
-            groups.addAll(Arrays.asList(methodClasses));
-        }
-        // add into default group
-        groups.add(0, Default.class);
-        groups.add(1, clazz);
+        try {
+            List<Class<?>> groups = new ArrayList<>();
+            Class<?> methodClass = methodClass(methodName);
+            if (methodClass != null) {
+                groups.add(methodClass);
+            }
+            Set<ConstraintViolation<?>> violations = new HashSet<>();
+            Method method = clazz.getMethod(methodName, parameterTypes);
+            Class<?>[] methodClasses;
+            if (method.isAnnotationPresent(MethodValidated.class)){
+                methodClasses = method.getAnnotation(MethodValidated.class).value();
+                groups.addAll(Arrays.asList(methodClasses));
+            }
+            // add into default group
+            groups.add(0, Default.class);
+            groups.add(1, clazz);
 
-        // convert list to array
-        Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
+            // convert list to array
+            Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
 
-        Object parameterBean = getMethodParameterBean(clazz, method, arguments);
-        if (parameterBean != null) {
-            violations.addAll(validator.validate(parameterBean, classgroups ));
-        }
+            Object parameterBean = getMethodParameterBean(clazz, method, arguments);
+            if (parameterBean != null) {
+                violations.addAll(validator.validate(parameterBean, classgroups ));
+            }
 
-        for (Object arg : arguments) {
-            validate(violations, arg, classgroups);
-        }
+            for (Object arg : arguments) {
+                validate(violations, arg, classgroups);
+            }
 
-        if (!violations.isEmpty()) {
-            logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
-            throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
+            if (!violations.isEmpty()) {
+                logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
+                throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
+            }
+        } catch (ValidationException e) {
+            // only use exception's message to avoid potential serialization issue
+            throw new ValidationException(e.getMessage());
         }
     }
 

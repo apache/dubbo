@@ -37,14 +37,12 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     /**
      * The lock for the acquisition process of the registry
      */
-    private static final ReentrantLock LOCK = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 
     /**
      * Registry Collection Map<metadataAddress, MetadataReport>
      */
-    private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<>();
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
+    private final Map<String, MetadataReport> serviceStoreMap = new ConcurrentHashMap<>();
 
     @Override
     public MetadataReport getMetadataReport(URL url) {
@@ -52,15 +50,15 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             .removeParameters(EXPORT_KEY, REFER_KEY);
         String key = url.toServiceString();
 
-        MetadataReport metadataReport = SERVICE_STORE_MAP.get(key);
+        MetadataReport metadataReport = serviceStoreMap.get(key);
         if (metadataReport != null) {
             return metadataReport;
         }
 
         // Lock the metadata access process to ensure a single instance of the metadata instance
-        LOCK.lock();
+        lock.lock();
         try {
-            metadataReport = SERVICE_STORE_MAP.get(key);
+            metadataReport = serviceStoreMap.get(key);
             if (metadataReport != null) {
                 return metadataReport;
             }
@@ -69,7 +67,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
                 metadataReport = createMetadataReport(url);
             } catch (Exception e) {
                 if (!check) {
-                    LOGGER.warn("The metadata reporter failed to initialize", e);
+                    logger.warn("The metadata reporter failed to initialize", e);
                 } else {
                     throw e;
                 }
@@ -79,19 +77,20 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
                 throw new IllegalStateException("Can not create metadata Report " + url);
             }
             if (metadataReport != null) {
-                SERVICE_STORE_MAP.put(key, metadataReport);
+                serviceStoreMap.put(key, metadataReport);
             }
             return metadataReport;
         } finally {
             // Release the lock
-            LOCK.unlock();
+            lock.unlock();
         }
     }
 
-    public static void destroy() {
-        LOCK.lock();
+    @Override
+    public void destroy() {
+        lock.lock();
         try {
-            for (MetadataReport metadataReport : SERVICE_STORE_MAP.values()) {
+            for (MetadataReport metadataReport : serviceStoreMap.values()) {
                 try{
                     metadataReport.destroy();
                 }catch (Throwable ignored){
@@ -99,11 +98,10 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
                     logger.warn(ignored.getMessage(),ignored);
                 }
             }
-            SERVICE_STORE_MAP.clear();
+            serviceStoreMap.clear();
         } finally {
-            LOCK.unlock();
+            lock.unlock();
         }
-
     }
 
     protected abstract MetadataReport createMetadataReport(URL url);

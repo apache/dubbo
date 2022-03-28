@@ -19,6 +19,7 @@ package org.apache.dubbo.registry;
 import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DELAY_NOTIFICATION_TIME;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
 
 /**
@@ -29,7 +30,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_N
  */
 public interface Registry extends Node, RegistryService {
     default int getDelay() {
-        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);
+        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, DEFAULT_DELAY_NOTIFICATION_TIME);
+    }
+
+    default boolean isServiceDiscovery() {
+        return false;
     }
 
     default void reExportRegister(URL url) {

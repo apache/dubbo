@@ -17,6 +17,12 @@
 
 package org.apache.dubbo.config;
 
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+
 /**
  *
  */
@@ -93,18 +99,29 @@ public interface Constants {
 
     String SCOPE_NONE = "none";
 
+    String ON_INVOKE_METHOD_PARAMETER_KEY = "oninvoke.method";
 
-    String ON_INVOKE_METHOD_KEY = "oninvoke.method";
+    String ON_RETURN_METHOD_PARAMETER_KEY = "onreturn.method";
 
-    String ON_RETURN_METHOD_KEY = "onreturn.method";
+    String ON_THROW_METHOD_PARAMETER_KEY = "onthrow.method";
 
-    String ON_THROW_METHOD_KEY = "onthrow.method";
+    String ON_INVOKE_INSTANCE_PARAMETER_KEY = "oninvoke.instance";
 
-    String ON_INVOKE_INSTANCE_KEY = "oninvoke.instance";
+    String ON_RETURN_INSTANCE_PARAMETER_KEY = "onreturn.instance";
 
-    String ON_RETURN_INSTANCE_KEY = "onreturn.instance";
+    String ON_THROW_INSTANCE_PARAMETER_KEY = "onthrow.instance";
 
-    String ON_THROW_INSTANCE_KEY = "onthrow.instance";
+    String ON_INVOKE_METHOD_ATTRIBUTE_KEY = "oninvoke-method";
+
+    String ON_RETURN_METHOD_ATTRIBUTE_KEY = "onreturn-method";
+
+    String ON_THROW_METHOD_ATTRIBUTE_KEY = "onthrow-method";
+
+    String ON_INVOKE_INSTANCE_ATTRIBUTE_KEY = "oninvoke-instance";
+
+    String ON_RETURN_INSTANCE_ATTRIBUTE_KEY = "onreturn-instance";
+
+    String ON_THROW_INSTANCE_ATTRIBUTE_KEY = "onthrow-instance";
 
 
     // FIXME: is this still useful?
@@ -122,7 +139,8 @@ public interface Constants {
 
     String MULTI_SERIALIZATION_KEY = "serialize.multiple";
 
-    String[] DOT_COMPATIBLE_KEYS = new String[]{"qos-enable", "qos-port", "qos-accept-foreign-ip"};
+    String[] DOT_COMPATIBLE_KEYS = new String[]{QOS_ENABLE_COMPATIBLE, QOS_HOST_COMPATIBLE, QOS_PORT_COMPATIBLE,
+        ACCEPT_FOREIGN_IP_COMPATIBLE, REGISTRY_TYPE_KEY};
 
     String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 

@@ -35,13 +35,14 @@ import org.mockito.stubbing.Answer;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -54,13 +55,15 @@ public class MetadataServiceNameMappingTest {
     private ConfigManager configManager;
     private MetadataReport metadataReport;
     private ApplicationModel applicationModel;
+    private Map<String, MetadataReport> metadataReportList = new HashMap<>();
 
     @BeforeEach
     public void setUp() {
         applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
         configManager = mock(ConfigManager.class);
         metadataReport = mock(MetadataReport.class);
-        mapping = new MetadataServiceNameMapping();
+        metadataReportList.put("default", metadataReport);
+        mapping = new MetadataServiceNameMapping(applicationModel);
         mapping.setApplicationModel(applicationModel);
         url = URL.valueOf("dubbo://127.0.0.1:20880/TestService?version=1.0.0");
     }
@@ -72,7 +75,7 @@ public class MetadataServiceNameMappingTest {
 
     @Test
     public void testMap() {
-        ApplicationModel mockedApplicationModel = spy(ApplicationModel.defaultModel());
+        ApplicationModel mockedApplicationModel = spy(applicationModel);
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
         Mockito.when(mockedApplicationModel.getApplicationConfigManager()).thenReturn(configManager);
@@ -85,7 +88,7 @@ public class MetadataServiceNameMappingTest {
 
         when(configManager.getMetadataConfigs()).thenReturn(Arrays.asList(new MetadataReportConfig()));
         MetadataReportInstance reportInstance = mock(MetadataReportInstance.class);
-        Mockito.when(reportInstance.getMetadataReport(any())).thenReturn(metadataReport);
+        Mockito.when(reportInstance.getMetadataReports(true)).thenReturn(metadataReportList);
         mapping.metadataReportInstance = reportInstance;
 
         when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(true);
@@ -113,14 +116,7 @@ public class MetadataServiceNameMappingTest {
         // metadata report using cas and retry, failed after 6 times retry
         when(metadataReport.registerServiceAppMapping(any(), any(), any(), any())).thenReturn(false);
         Exception exceptionExpected = null;
-        try {
-            mapping.map(url);
-        } catch (RuntimeException e) {
-            exceptionExpected = e;
-        }
-        if (exceptionExpected == null) {
-            fail();
-        }
+        assertFalse(mapping.map(url));
     }
 
     /**

@@ -36,6 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+
 /**
  * A {@link Timer} optimized for approximated I/O timeout scheduling.
  *
@@ -606,8 +609,8 @@ public class HashedWheelTimer implements Timer {
                 return false;
             }
             // If a task should be canceled we put this to another queue which will be processed on each tick.
-            // So this means that we will have a GC latency of max. 1 tick duration which is good enough. This way
-            // we can make again use of our MpscLinkedQueue and so minimize the locking / overhead as much as possible.
+            // So this means that we will have a GC latency of max. 1 tick duration which is good enough. This way we
+            // can make again use of our LinkedBlockingQueue and so minimize the locking / overhead as much as possible.
             timer.cancelledTimeouts.add(this);
             return true;
         }
@@ -806,7 +809,7 @@ public class HashedWheelTimer implements Timer {
         }
     }
     
-    private static final boolean IS_OS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.US).contains("win");
+    private static final boolean IS_OS_WINDOWS = System.getProperty(OS_NAME_KEY, "").toLowerCase(Locale.US).contains(OS_WIN_PREFIX);
     
     private boolean isWindows() {
         return IS_OS_WINDOWS;

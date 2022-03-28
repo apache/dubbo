@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WARNING_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
-
 
 public class ReferenceCountExchangeClientTest {
 
@@ -68,7 +68,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     public static Invoker<?> referInvoker(Class<?> type, URL url) {
-        return (Invoker<?>) DubboProtocol.getDubboProtocol().refer(type, url);
+        return DubboProtocol.getDubboProtocol().refer(type, url);
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
@@ -91,7 +91,7 @@ public class ReferenceCountExchangeClientTest {
         init(0, 1);
         Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertEquals(demoClient, helloClient);
-        destoy();
+        destroy();
     }
 
     /**
@@ -102,14 +102,14 @@ public class ReferenceCountExchangeClientTest {
         init(1, 1);
         Assertions.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertNotSame(demoClient, helloClient);
-        destoy();
+        destroy();
     }
 
     /**
      * test using multiple shared connections
      */
     @Test
-    public void test_mult_share_connect() {
+    public void test_multi_share_connect() {
         // here a three shared connection is established between a consumer process and a provider process.
         final int shareConnectionNum = 3;
 
@@ -127,14 +127,14 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertEquals(demoClient, helloClient);
 
-        destoy();
+        destroy();
     }
 
     /**
      * test counter won't count down incorrectly when invoker is destroyed for multiple times
      */
     @Test
-    public void test_multi_destory() {
+    public void test_multi_destroy() {
         init(0, 1);
         DubboAppender.doStart();
         DubboAppender.clear();
@@ -144,7 +144,7 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not  warning message");
         LogUtil.checkNoError();
         DubboAppender.doStop();
-        destoy();
+        destroy();
     }
 
     /**
@@ -164,7 +164,7 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals("hello", helloService.hello());
         Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not warning message");
 
-        // generally a client can only be closed once, here it is closed twice, counter is incorrect
+        // close twice, counter counts down from 1 to 0, no warning occurs
         client.close();
 
         // wait close done.
@@ -173,6 +173,11 @@ public class ReferenceCountExchangeClientTest {
         } catch (InterruptedException e) {
             Assertions.fail();
         }
+
+        // client has been replaced with lazy client, close status is false because a new lazy client's exchange client is null.
+        Assertions.assertFalse(client.isClosed(), "client status close");
+        // invoker status is available because the default value of associated lazy client's initial state is true.
+        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "invoker status unavailable");
 
         // due to the effect of LazyConnectExchangeClient, the client will be "revived" whenever there is a call.
         Assertions.assertEquals("hello", helloService.hello());
@@ -183,9 +188,6 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
 
         DubboAppender.doStop();
-
-        // status switch to available once invoke again
-        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "client status available");
 
         /**
          * This is the third time to close the same client. Under normal circumstances,
@@ -198,11 +200,15 @@ public class ReferenceCountExchangeClientTest {
          */
         client.close();
 
-        // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
-        // been invoked once, it's close status is false
+        // close status is false because the lazy client's exchange client is null again after close().
         Assertions.assertFalse(client.isClosed(), "client status close");
-        Assertions.assertFalse(helloServiceInvoker.isAvailable(), "client status close");
-        destoy();
+        // invoker status is available because the default value of associated lazy client's initial state is true.
+        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "invoker status unavailable");
+
+        // revive: initial the lazy client's exchange client again.  
+        Assertions.assertEquals("hello", helloService.hello());
+
+        destroy();
     }
 
     @SuppressWarnings("unchecked")
@@ -211,8 +217,11 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertTrue(shareConnections >= 1);
 
         int port = NetUtils.getAvailablePort();
-        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
-        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
+        String params = CONNECTIONS_KEY + "=" + connections
+                + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections
+                + "&" + LAZY_REQUEST_WITH_WARNING_KEY + "=" + "true";
+        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + params);
+        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + params);
 
         demoExporter = export(new DemoServiceImpl(), IDemoService.class, demoUrl);
         helloExporter = export(new HelloServiceImpl(), IHelloService.class, helloUrl);
@@ -229,7 +238,7 @@ public class ReferenceCountExchangeClientTest {
         helloClient = getClient(helloServiceInvoker);
     }
 
-    private void destoy() {
+    private void destroy() {
         demoServiceInvoker.destroy();
         helloServiceInvoker.destroy();
         demoExporter.getInvoker().destroy();

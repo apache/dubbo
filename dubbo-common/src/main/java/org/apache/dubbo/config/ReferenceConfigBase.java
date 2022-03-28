@@ -22,6 +22,8 @@ import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -77,7 +79,21 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
+    public ReferenceConfigBase(ModuleModel moduleModel) {
+        super(moduleModel);
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+    }
+
     public ReferenceConfigBase(Reference reference) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        appendAnnotation(Reference.class, reference);
+        setMethods(MethodConfig.constructMethodConfig(reference.methods()));
+    }
+
+    public ReferenceConfigBase(ModuleModel moduleModel, Reference reference) {
+        super(moduleModel);
         serviceMetadata = new ServiceMetadata();
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Reference.class, reference);
@@ -114,9 +130,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     protected void preProcessRefresh() {
         super.preProcessRefresh();
         if (consumer == null) {
-            consumer = getConfigManager()
+            consumer = getModuleConfigManager()
                     .getDefaultConsumer()
-                    .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
+                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
     }
 
@@ -201,7 +217,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             return GenericService.class;
         }
         try {
-            if (interfaceName != null && interfaceName.length() > 0) {
+            if (StringUtils.isNotEmpty(interfaceName)) {
                 return Class.forName(interfaceName, true, classLoader);
             }
         } catch (ClassNotFoundException t) {
@@ -211,21 +227,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
-    protected void postProcessAfterScopeModelChanged() {
-        super.postProcessAfterScopeModelChanged();
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
             this.consumer.setScopeModel(scopeModel);
         }
-    }
-
-    @Override
-    public String getInterface() {
-        return interfaceName;
-    }
-
-    @Override
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
     }
 
     public void setInterface(Class<?> interfaceClass) {
@@ -233,6 +239,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        this.interfaceClass = interfaceClass;
         setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
     }
 
@@ -309,11 +316,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
-        if (consumer != null) {
-            if (notHasSelfRegistryProperty()) {
-                setRegistries(consumer.getRegistries());
-                setRegistryIds(consumer.getRegistryIds());
-            }
+        if (consumer != null && notHasSelfRegistryProperty()) {
+            setRegistries(consumer.getRegistries());
+            setRegistryIds(consumer.getRegistryIds());
         }
         super.computeValidRegistryIds();
     }
@@ -344,7 +349,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public abstract T get();
 
-    public abstract void destroy();
-
+    public void destroy() {
+        getModuleConfigManager().removeConfig(this);
+    }
 
 }

@@ -17,26 +17,34 @@
 package org.apache.dubbo.common.utils;
 
 
+import org.apache.dubbo.common.convert.Converter;
+
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
+import static org.apache.dubbo.common.utils.CollectionUtils.flip;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 public class ClassUtils {
     /**
@@ -87,13 +95,12 @@ public class ClassUtils {
      * Map with primitive type name as key and corresponding primitive type as
      * value, for example: "int" -> "int.class".
      */
-    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
+    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<>(32);
     /**
      * Map with primitive wrapper type as key and corresponding primitive type
      * as value, for example: Integer.class -> int.class.
      */
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
-    private static final char PACKAGE_SEPARATOR_CHAR = '.';
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<>(16);
 
     static {
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Boolean.class, boolean.class);
@@ -114,6 +121,17 @@ public class ClassUtils {
             PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
         }
     }
+
+    /**
+     * Map with primitive type as key and corresponding primitive wrapper type
+     * as value, for example: int.class -> Integer.class.
+     */
+    private static final Map<Class<?>, Class<?>> WRAPPER_PRIMITIVE_TYPE_MAP = flip(PRIMITIVE_WRAPPER_TYPE_MAP);
+
+    /**
+     * Separator char for package
+     */
+    private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
     public static Class<?> forNameWithThreadContextClassLoader(String name)
             throws ClassNotFoundException {
@@ -137,20 +155,25 @@ public class ClassUtils {
      */
     public static ClassLoader getClassLoader(Class<?> clazz) {
         ClassLoader cl = null;
-        try {
-            cl = Thread.currentThread().getContextClassLoader();
-        } catch (Throwable ex) {
-            // Cannot access thread context ClassLoader - falling back to system class loader...
+        if (!clazz.getName().startsWith("org.apache.dubbo")) {
+            cl = clazz.getClassLoader();
         }
         if (cl == null) {
-            // No thread context class loader -> use class loader of this class.
-            cl = clazz.getClassLoader();
+            try {
+                cl = Thread.currentThread().getContextClassLoader();
+            } catch (Throwable ex) {
+                // Cannot access thread context ClassLoader - falling back to system class loader...
+            }
             if (cl == null) {
-                // getClassLoader() returning null indicates the bootstrap ClassLoader
-                try {
-                    cl = ClassLoader.getSystemClassLoader();
-                } catch (Throwable ex) {
-                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                // No thread context class loader -> use class loader of this class.
+                cl = clazz.getClassLoader();
+                if (cl == null) {
+                    // getClassLoader() returning null indicates the bootstrap ClassLoader
+                    try {
+                        cl = ClassLoader.getSystemClassLoader();
+                    } catch (Throwable ex) {
+                        // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                    }
                 }
             }
         }
@@ -301,31 +324,17 @@ public class ClassUtils {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        if (value == null) {
+        if (isEmpty(value)) {
             return null;
-        } else if (type == char.class || type == Character.class) {
-            return value.length() > 0 ? value.charAt(0) : '\0';
-        } else if (type == boolean.class || type == Boolean.class) {
-            return Boolean.valueOf(value);
         }
+        Class<?> wrapperType = WRAPPER_PRIMITIVE_TYPE_MAP.getOrDefault(type, type);
+        Object result = null;
         try {
-            if (type == byte.class || type == Byte.class) {
-                return Byte.valueOf(value);
-            } else if (type == short.class || type == Short.class) {
-                return Short.valueOf(value);
-            } else if (type == int.class || type == Integer.class) {
-                return Integer.valueOf(value);
-            } else if (type == long.class || type == Long.class) {
-                return Long.valueOf(value);
-            } else if (type == float.class || type == Float.class) {
-                return Float.valueOf(value);
-            } else if (type == double.class || type == Double.class) {
-                return Double.valueOf(value);
-            }
-        } catch (NumberFormatException e) {
-            return null;
+            result = Converter.convertIfPossible(value, wrapperType);
+        } catch (Exception e) {
+            // ignore exception
         }
-        return value;
+        return result;
     }
 
 
@@ -492,5 +501,75 @@ public class ClassUtils {
      */
     public static boolean isGenericClass(Class<?> type) {
         return type != null && !void.class.equals(type) && !Void.class.equals(type);
+    }
+
+    public static boolean hasMethods(Method[] methods) {
+        if (methods == null || methods.length == 0) {
+            return false;
+        }
+        for (Method m : methods) {
+            if (m.getDeclaringClass() != Object.class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
+
+    /**
+     * get method name array.
+     *
+     * @return method name array.
+     */
+    public static String[] getMethodNames(Class<?> tClass) {
+        if (tClass == Object.class) {
+            return OBJECT_METHODS;
+        }
+        Method[] methods = Arrays.stream(tClass.getMethods())
+            .collect(Collectors.toList())
+            .toArray(new Method[] {});
+        List<String> mns = new ArrayList<>(); // method names.
+        boolean hasMethod = hasMethods(methods);
+        if (hasMethod) {
+            for (Method m : methods) {
+                //ignore Object's method.
+                if (m.getDeclaringClass() == Object.class) {
+                    continue;
+                }
+                String mn = m.getName();
+                mns.add(mn);
+            }
+        }
+        return mns.toArray(new String[0]);
+    }
+
+    /**
+     * get method name array.
+     *
+     * @return method name array.
+     */
+    public static String[] getDeclaredMethodNames(Class<?> tClass) {
+        if (tClass == Object.class) {
+            return OBJECT_METHODS;
+        }
+        Method[] methods = Arrays.stream(tClass.getMethods())
+            .collect(Collectors.toList())
+            .toArray(new Method[] {});
+        List<String> dmns = new ArrayList<>(); // method names.
+        boolean hasMethod = hasMethods(methods);
+        if (hasMethod) {
+            for (Method m : methods) {
+                //ignore Object's method.
+                if (m.getDeclaringClass() == Object.class) {
+                    continue;
+                }
+                String mn = m.getName();
+                if (m.getDeclaringClass() == tClass) {
+                    dmns.add(mn);
+                }
+            }
+        }
+        return dmns.toArray(new String[0]);
     }
 }

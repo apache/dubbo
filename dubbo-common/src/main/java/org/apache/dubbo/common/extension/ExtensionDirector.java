@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.common.extension;
 
+import org.apache.dubbo.rpc.model.ScopeModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ExtensionDirector is a scoped extension loader manager.
@@ -31,13 +34,17 @@ import java.util.concurrent.ConcurrentMap;
 public class ExtensionDirector implements ExtensionAccessor {
 
     private final ConcurrentMap<Class<?>, ExtensionLoader<?>> extensionLoadersMap = new ConcurrentHashMap<>(64);
-    private ExtensionDirector parent;
+    private final ConcurrentMap<Class<?>, ExtensionScope> extensionScopeMap = new ConcurrentHashMap<>(64);
+    private final ExtensionDirector parent;
     private final ExtensionScope scope;
-    private List<ExtensionPostProcessor> extensionPostProcessors = new ArrayList<>();
+    private final List<ExtensionPostProcessor> extensionPostProcessors = new ArrayList<>();
+    private final ScopeModel scopeModel;
+    private final AtomicBoolean destroyed = new AtomicBoolean();
 
-    public ExtensionDirector(ExtensionDirector parent, ExtensionScope scope) {
+    public ExtensionDirector(ExtensionDirector parent, ExtensionScope scope, ScopeModel scopeModel) {
         this.parent = parent;
         this.scope = scope;
+        this.scopeModel = scopeModel;
     }
 
     public void addExtensionPostProcessor(ExtensionPostProcessor processor) {
@@ -57,6 +64,7 @@ public class ExtensionDirector implements ExtensionAccessor {
 
     @Override
     public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        checkDestroyed();
         if (type == null) {
             throw new IllegalArgumentException("Extension type == null");
         }
@@ -71,8 +79,12 @@ public class ExtensionDirector implements ExtensionAccessor {
         // 1. find in local cache
         ExtensionLoader<T> loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
 
-        final SPI annotation = type.getAnnotation(SPI.class);
-        ExtensionScope scope = annotation.scope();
+        ExtensionScope scope = extensionScopeMap.get(type);
+        if (scope == null) {
+            SPI annotation = type.getAnnotation(SPI.class);
+            scope = annotation.scope();
+            extensionScopeMap.put(type, scope);
+        }
 
         if (loader == null && scope == ExtensionScope.SELF) {
             // create an instance in self scope
@@ -106,8 +118,9 @@ public class ExtensionDirector implements ExtensionAccessor {
     }
 
     private <T> ExtensionLoader<T> createExtensionLoader0(Class<T> type) {
+        checkDestroyed();
         ExtensionLoader<T> loader;
-        extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this));
+        extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this, scopeModel));
         loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
         return loader;
     }
@@ -123,5 +136,24 @@ public class ExtensionDirector implements ExtensionAccessor {
 
     public ExtensionDirector getParent() {
         return parent;
+    }
+
+    public void removeAllCachedLoader() {
+        // extensionLoadersMap.clear();
+    }
+
+    public void destroy() {
+        if (destroyed.compareAndSet(false, true)) {
+            for (ExtensionLoader<?> extensionLoader : extensionLoadersMap.values()) {
+                extensionLoader.destroy();
+            }
+            extensionLoadersMap.clear();
+        }
+    }
+
+    private void checkDestroyed() {
+        if (destroyed.get()) {
+            throw new IllegalStateException("ExtensionDirector is destroyed");
+        }
     }
 }

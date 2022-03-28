@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TriplePathResolver implements PathResolver {
-    private static final Logger logger = LoggerFactory.getLogger(TriplePathResolver.class);
 
     private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> nativeStub = new ConcurrentHashMap<>();
 
     @Override
     public void add(String path, Invoker<?> invoker) {
@@ -35,6 +35,16 @@ public class TriplePathResolver implements PathResolver {
     @Override
     public Invoker<?> resolve(String path) {
         return path2Invoker.get(path);
+    }
+
+    @Override
+    public boolean hasNativeStub(String path) {
+        return nativeStub.containsKey(path);
+    }
+
+    @Override
+    public void addNativeStub(String path) {
+        nativeStub.put(path, 0);
     }
 
     @Override

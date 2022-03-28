@@ -43,7 +43,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +132,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         String desc = in.readUTF();
         setParameterTypesDesc(desc);
 
+        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
@@ -170,6 +171,32 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     if (methodDescriptor != null) {
                         pts = methodDescriptor.getParameterClasses();
                         this.setReturnTypes(methodDescriptor.getReturnTypes());
+
+                        // switch TCCL
+                        if (CollectionUtils.isNotEmpty(providerModels)) {
+                            if (providerModels.size() == 1) {
+                                Thread.currentThread().setContextClassLoader(providerModels.get(0).getClassLoader());
+                            } else {
+                                // try all providerModels' classLoader can load pts, use the first one
+                                for (ProviderModel providerModel : providerModels) {
+                                    ClassLoader classLoader = providerModel.getClassLoader();
+                                    boolean match = true;
+                                    for (Class<?> pt : pts) {
+                                        try {
+                                            if (!pt.equals(classLoader.loadClass(pt.getName()))) {
+                                                match = false;
+                                            }
+                                        } catch (ClassNotFoundException e) {
+                                            match = false;
+                                        }
+                                    }
+                                    if (match) {
+                                        Thread.currentThread().setContextClassLoader(classLoader);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -183,22 +210,16 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
                 args = new Object[pts.length];
                 for (int i = 0; i < args.length; i++) {
-                    try {
-                        args[i] = in.readObject(pts[i]);
-                    } catch (Exception e) {
-                        if (log.isWarnEnabled()) {
-                            log.warn("Decode argument failed: " + e.getMessage(), e);
-                        }
-                    }
+                    args[i] = in.readObject(pts[i]);
                 }
             }
             setParameterTypes(pts);
 
             Map<String, Object> map = in.readAttachments();
-            if (map != null && map.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(map)) {
                 Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new LinkedHashMap<>();
+                    attachment = new HashMap<>();
                 }
                 attachment.putAll(map);
                 setObjectAttachments(attachment);
@@ -210,13 +231,14 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
 
             setArguments(args);
-            String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
+            String targetServiceName = buildKey(getAttachment(PATH_KEY),
                 getAttachment(GROUP_KEY),
                 getAttachment(VERSION_KEY));
             setTargetServiceUniqueName(targetServiceName);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
+            Thread.currentThread().setContextClassLoader(originClassLoader);
             if (in instanceof Cleanable) {
                 ((Cleanable) in).cleanup();
             }

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -25,13 +23,16 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.Constants;
-import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
-import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
+import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.rpc.service.GenericService;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -174,7 +175,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         try {
             // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
-            applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
+            applicationContext.publishEvent(new DubboConfigInitEvent(applicationContext));
         } catch (Exception e) {
             // if spring version is less then 4.2, it does not support early application event
             logger.warn("publish early application event failed, please upgrade spring version to 4.2.x or later: " + e);

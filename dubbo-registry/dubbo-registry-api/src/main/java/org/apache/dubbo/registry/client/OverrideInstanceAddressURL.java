@@ -21,10 +21,16 @@ import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class OverrideInstanceAddressURL extends InstanceAddressURL {
@@ -262,6 +268,56 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
 
     public URLParam getOverrideParams() {
         return overrideParams;
+    }
+
+    @Override
+    public String getRemoteApplication() {
+        return originUrl.getRemoteApplication();
+    }
+
+    @Override
+    public String getSide() {
+        return originUrl.getSide();
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return originUrl.getScopeModel();
+    }
+
+    @Override
+    public FrameworkModel getOrDefaultFrameworkModel() {
+        return originUrl.getOrDefaultFrameworkModel();
+    }
+
+    @Override
+    public ApplicationModel getOrDefaultApplicationModel() {
+        return originUrl.getOrDefaultApplicationModel();
+    }
+
+    @Override
+    public ApplicationModel getApplicationModel() {
+        return originUrl.getApplicationModel();
+    }
+
+    @Override
+    public ModuleModel getOrDefaultModuleModel() {
+        return originUrl.getOrDefaultModuleModel();
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return originUrl.getServiceModel();
+    }
+
+    @Override
+    public Set<String> getProviderFirstParams() {
+        return originUrl.getProviderFirstParams();
+    }
+
+    @Override
+    public void setProviderFirstParams(Set<String> providerFirstParams) {
+        originUrl.setProviderFirstParams(providerFirstParams);
     }
 
     @Override

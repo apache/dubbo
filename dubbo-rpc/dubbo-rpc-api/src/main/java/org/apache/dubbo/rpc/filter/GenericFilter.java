@@ -22,7 +22,6 @@ import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
 import org.apache.dubbo.common.logger.Logger;
@@ -67,6 +66,8 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
     private final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
+
+    private static final Gson gson = new Gson();
 
     private ApplicationModel applicationModel;
 
@@ -116,7 +117,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
                     args = getGsonGenericArgs(args, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).getApplicationEnvironment().getConfiguration();
+                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).getModelEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
                         String notice = "Trigger the safety barrier! " +
                                 "Native Java Serializer is not allowed by default." +
@@ -131,7 +132,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
                             try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
-                                args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                args[i] = applicationModel.getExtensionLoader(Serialization.class)
                                         .getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
                                         .deserialize(null, is).readObject();
                             } catch (Exception e) {
@@ -166,7 +167,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     if (args.length == 1 && args[0] instanceof String) {
                         try (UnsafeByteArrayInputStream is =
                                      new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
-                            args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                            args[0] = applicationModel.getExtensionLoader(Serialization.class)
                                     .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                                     .deserialize(null, is).readObject(method.getParameterTypes()[0]);
                         } catch (Exception e) {
@@ -198,8 +199,10 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
     }
 
     private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
-        Gson gson = new Gson();
         return IntStream.range(0, args.length).mapToObj(i -> {
+            if (!(args[i] instanceof String)) {
+                throw new RpcException("When using GSON to deserialize generic dubbo request arguments, the arguments must be of type String");
+            }
             String str = args[i].toString();
             Type type = TypeToken.get(types[i]).getType();
             try {
@@ -236,7 +239,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
+                    applicationModel.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
                             .serialize(null, os).writeObject(appResponse.getValue());
                     appResponse.setValue(os.toByteArray());
                 } catch (IOException e) {
@@ -250,7 +253,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class)
+                    applicationModel.getExtensionLoader(Serialization.class)
                             .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                             .serialize(null, os).writeObject(appResponse.getValue());
                     appResponse.setValue(os.toString());

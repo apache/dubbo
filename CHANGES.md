@@ -1,5 +1,7 @@
 # Release Notes
 
+Please refer to https://github.com/apache/dubbo/releases for notes of future releases.
+
 ## 2.7.6 
 
 ### Features

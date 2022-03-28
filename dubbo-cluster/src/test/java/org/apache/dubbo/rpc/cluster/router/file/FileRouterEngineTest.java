@@ -22,14 +22,16 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,9 +39,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -53,16 +55,23 @@ public class FileRouterEngineTest {
     Invocation invocation;
     StaticDirectory<FileRouterEngineTest> dic;
     Result result = new AppResponse();
-    private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
+    private StateRouterFactory routerFactory = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getAdaptiveExtension();
 
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
+        System.setProperty(ENABLE_CONNECTIVITY_VALIDATION, "false");
     }
 
     @BeforeEach
     public void setUp() throws Exception {
         invokers.add(invoker1);
         invokers.add(invoker2);
+    }
+
+    @AfterEach
+    public void teardown() throws Exception {
+        System.clearProperty(ENABLE_CONNECTIVITY_VALIDATION);
+        RpcContext.removeContext();
     }
 
     @Test
@@ -163,7 +172,7 @@ public class FileRouterEngineTest {
         URL dicInitUrl = URL.valueOf("consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
         dic = new StaticDirectory<>(dicInitUrl, invokers);
         dic.buildRouterChain();
-        dic.getRouterChain().initWithRouters(Arrays.asList(routerFactory.getRouter(url)));
+        dic.getRouterChain().setHeadStateRouter(routerFactory.getRouter(FileRouterEngineTest.class, url));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

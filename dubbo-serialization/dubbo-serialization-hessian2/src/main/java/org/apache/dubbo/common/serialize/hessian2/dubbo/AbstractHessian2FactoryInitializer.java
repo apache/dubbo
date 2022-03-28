@@ -18,18 +18,38 @@ package org.apache.dubbo.common.serialize.hessian2.dubbo;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public abstract class AbstractHessian2FactoryInitializer implements Hessian2FactoryInitializer {
-    private static SerializerFactory SERIALIZER_FACTORY;
+    private static final Map<ClassLoader, SerializerFactory> CL_2_SERIALIZER_FACTORY = new ConcurrentHashMap<>();
+    private static volatile SerializerFactory SYSTEM_SERIALIZER_FACTORY;
 
     @Override
     public SerializerFactory getSerializerFactory() {
-        if (SERIALIZER_FACTORY != null) {
-            return SERIALIZER_FACTORY;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader == null) {
+            // system classloader
+            if (SYSTEM_SERIALIZER_FACTORY == null) {
+                synchronized (AbstractHessian2FactoryInitializer.class) {
+                    if (SYSTEM_SERIALIZER_FACTORY == null) {
+                        SYSTEM_SERIALIZER_FACTORY = createSerializerFactory();
+                    }
+                }
+            }
+            return SYSTEM_SERIALIZER_FACTORY;
         }
-        synchronized (this) {
-            SERIALIZER_FACTORY = createSerializerFactory();
+
+        if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
+            synchronized (AbstractHessian2FactoryInitializer.class) {
+                if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
+                    SerializerFactory serializerFactory = createSerializerFactory();
+                    CL_2_SERIALIZER_FACTORY.put(classLoader, serializerFactory);
+                    return serializerFactory;
+                }
+            }
         }
-        return SERIALIZER_FACTORY;
+        return CL_2_SERIALIZER_FACTORY.get(classLoader);
     }
 
     protected abstract SerializerFactory createSerializerFactory();

@@ -25,18 +25,16 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -50,18 +48,6 @@ public class JavaConfigBeanTest {
 
     private static final String MY_PROTOCOL_ID = "myProtocol";
     private static final String MY_REGISTRY_ID = "my-registry";
-    private static RegistryCenter singleRegistryCenter;
-
-    @BeforeAll
-    public static void beforeAll() {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        singleRegistryCenter.shutdown();
-    }
 
     @BeforeEach
     public void beforeEach() {
@@ -80,7 +66,7 @@ public class JavaConfigBeanTest {
         SysProps.setProperty("dubbo.application.qos-enable", "false");
         SysProps.setProperty("dubbo.protocol.name", "dubbo");
         SysProps.setProperty("dubbo.protocol.port", "2346");
-        String registryAddress = "zookeeper://127.0.0.1:2181";
+        String registryAddress = ZookeeperRegistryCenterConfig.getConnectionAddress();
         SysProps.setProperty("dubbo.registry.address", registryAddress);
         SysProps.setProperty("dubbo.provider.group", "test");
 
@@ -104,7 +90,9 @@ public class JavaConfigBeanTest {
             Assertions.assertEquals(2346, protocolConfig.getPort());
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
 
-            ConsumerConfig consumerConfig = configManager.getDefaultConsumer().get();
+            ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
+            ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
+            ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
             Assertions.assertEquals(1000, consumerConfig.getTimeout());
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(false, consumerConfig.isCheck());

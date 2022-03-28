@@ -16,15 +16,17 @@
  */
 package org.apache.dubbo.common.extension.director.impl;
 
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-public class BaseTestService implements ScopeModelAware {
+public class BaseTestService implements ScopeModelAware, Disposable {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
+    private volatile boolean destroyed;
 
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
@@ -51,5 +53,14 @@ public class BaseTestService implements ScopeModelAware {
 
     public ModuleModel getModuleModel() {
         return moduleModel;
+    }
+
+    @Override
+    public void destroy() {
+        this.destroyed = true;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
     }
 }

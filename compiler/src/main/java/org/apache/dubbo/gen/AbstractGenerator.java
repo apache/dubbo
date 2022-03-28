@@ -23,6 +23,7 @@ import com.google.protobuf.DescriptorProtos.FileOptions;
 import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.SourceCodeInfo.Location;
+import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.Feature;
 import com.google.protobuf.compiler.PluginProtos;
 import com.salesforce.jprotoc.Generator;
 import com.salesforce.jprotoc.GeneratorException;
@@ -30,6 +31,7 @@ import com.salesforce.jprotoc.ProtoTypeMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,16 +46,21 @@ public abstract class AbstractGenerator extends Generator {
 
     protected abstract String getClassSuffix();
 
-    protected String getSingleTemplateFileName () {
+    protected String getSingleTemplateFileName() {
         return getTemplateFileName();
     }
 
-    protected String getTemplateFileName () {
+    protected String getTemplateFileName() {
         return getClassPrefix() + getClassSuffix() + "Stub.mustache";
     }
 
-    protected String getInterfaceTemplateFileName () {
+    protected String getInterfaceTemplateFileName() {
         return getClassPrefix() + getClassSuffix() + "InterfaceStub.mustache";
+    }
+
+    @Override
+    protected List<Feature> supportedFeatures() {
+        return Collections.singletonList(Feature.FEATURE_PROTO3_OPTIONAL);
     }
 
     private String getServiceJavaDocPrefix() {
@@ -119,23 +126,23 @@ public abstract class AbstractGenerator extends Generator {
         serviceContext.fileName = getClassPrefix() + serviceProto.getName() + getClassSuffix() + ".java";
         serviceContext.className = getClassPrefix() + serviceProto.getName() + getClassSuffix();
 
-        serviceContext.interfaceFileName = serviceProto.getName()+ ".java";
+        serviceContext.interfaceFileName = serviceProto.getName() + ".java";
         serviceContext.interfaceClassName = serviceProto.getName();
         serviceContext.serviceName = serviceProto.getName();
         serviceContext.deprecated = serviceProto.getOptions() != null && serviceProto.getOptions().getDeprecated();
 
         List<Location> allLocationsForService = locations.stream()
-                .filter(location ->
-                    location.getPathCount() >= 2 &&
-                       location.getPath(0) == FileDescriptorProto.SERVICE_FIELD_NUMBER &&
-                       location.getPath(1) == serviceNumber
-                )
-                .collect(Collectors.toList());
+            .filter(location ->
+                location.getPathCount() >= 2 &&
+                    location.getPath(0) == FileDescriptorProto.SERVICE_FIELD_NUMBER &&
+                    location.getPath(1) == serviceNumber
+            )
+            .collect(Collectors.toList());
 
         Location serviceLocation = allLocationsForService.stream()
-                .filter(location -> location.getPathCount() == SERVICE_NUMBER_OF_PATHS)
-                .findFirst()
-                .orElseGet(Location::getDefaultInstance);
+            .filter(location -> location.getPathCount() == SERVICE_NUMBER_OF_PATHS)
+            .findFirst()
+            .orElseGet(Location::getDefaultInstance);
         serviceContext.javaDoc = getJavaDoc(getComments(serviceLocation), getServiceJavaDocPrefix());
 
         for (int methodNumber = 0; methodNumber < serviceProto.getMethodCount(); methodNumber++) {
@@ -155,6 +162,7 @@ public abstract class AbstractGenerator extends Generator {
 
     private MethodContext buildMethodContext(MethodDescriptorProto methodProto, ProtoTypeMap typeMap, List<Location> locations, int methodNumber) {
         MethodContext methodContext = new MethodContext();
+        methodContext.originMethodName = methodProto.getName();
         methodContext.methodName = lowerCaseFirst(methodProto.getName());
         methodContext.inputType = typeMap.toJavaTypeName(methodProto.getInputType());
         methodContext.outputType = typeMap.toJavaTypeName(methodProto.getOutputType());
@@ -164,12 +172,12 @@ public abstract class AbstractGenerator extends Generator {
         methodContext.methodNumber = methodNumber;
 
         Location methodLocation = locations.stream()
-                .filter(location ->
-                    location.getPathCount() == METHOD_NUMBER_OF_PATHS &&
-                        location.getPath(METHOD_NUMBER_OF_PATHS - 1) == methodNumber
-                )
-                .findFirst()
-                .orElseGet(Location::getDefaultInstance);
+            .filter(location ->
+                location.getPathCount() == METHOD_NUMBER_OF_PATHS &&
+                    location.getPath(METHOD_NUMBER_OF_PATHS - 1) == methodNumber
+            )
+            .findFirst()
+            .orElseGet(Location::getDefaultInstance);
         methodContext.javaDoc = getJavaDoc(getComments(methodLocation), getMethodJavaDocPrefix());
 
         if (!methodProto.getClientStreaming() && !methodProto.getServerStreaming()) {
@@ -204,10 +212,14 @@ public abstract class AbstractGenerator extends Generator {
         return allServiceFiles;
     }
 
+    protected boolean enableMultipleTemplateFiles(){
+        return false;
+    }
+
     private List<PluginProtos.CodeGeneratorResponse.File> buildFile(ServiceContext context) {
         List<PluginProtos.CodeGeneratorResponse.File> files = new ArrayList<>();
 
-        if (context.multipleFiles) {
+        if (context.multipleFiles && enableMultipleTemplateFiles()) {
             String content = applyTemplate(getTemplateFileName(), context);
             String dir = absoluteDir(context);
 
@@ -260,13 +272,13 @@ public abstract class AbstractGenerator extends Generator {
     private String getJavaDoc(String comments, String prefix) {
         if (!comments.isEmpty()) {
             StringBuilder builder = new StringBuilder("/**\n")
-                    .append(prefix).append(" * <pre>\n");
+                .append(prefix).append(" * <pre>\n");
             Arrays.stream(HtmlEscapers.htmlEscaper().escape(comments).split("\n"))
-                    .map(line -> line.replace("*/", "&#42;&#47;").replace("*", "&#42;"))
-                    .forEach(line -> builder.append(prefix).append(" * ").append(line).append("\n"));
+                .map(line -> line.replace("*/", "&#42;&#47;").replace("*", "&#42;"))
+                .forEach(line -> builder.append(prefix).append(" * ").append(line).append("\n"));
             builder
-                    .append(prefix).append(" * </pre>\n")
-                    .append(prefix).append(" */");
+                .append(prefix).append(" * </pre>\n")
+                .append(prefix).append(" */");
             return builder.toString();
         }
         return null;
@@ -307,6 +319,19 @@ public abstract class AbstractGenerator extends Generator {
         public List<MethodContext> biStreamingMethods() {
             return methods.stream().filter(m -> m.isManyInput).collect(Collectors.toList());
         }
+
+        public List<MethodContext> biStreamingWithoutClientStreamMethods() {
+            return methods.stream().filter(m->m.isManyInput&&m.isManyOutput).collect(Collectors.toList());
+        }
+
+        public List<MethodContext> clientStreamingMethods() {
+            return methods.stream().filter(m->m.isManyInput&&!m.isManyOutput).collect(Collectors.toList());
+        }
+
+        public List<MethodContext> methods() {
+            return methods;
+        }
+
     }
 
     /**
@@ -314,6 +339,7 @@ public abstract class AbstractGenerator extends Generator {
      */
     private class MethodContext {
         // CHECKSTYLE DISABLE VisibilityModifier FOR 10 LINES
+        public String originMethodName;
         public String methodName;
         public String inputType;
         public String outputType;

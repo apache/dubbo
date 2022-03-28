@@ -18,8 +18,8 @@ package org.apache.dubbo.spring.boot.beans.factory.config;
 
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.spring.ServiceBean;
-
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
@@ -29,7 +29,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -59,7 +59,7 @@ public class ServiceBeanIdConflictProcessor implements MergedBeanDefinitionPostP
     /**
      * Holds the bean names of {@link ServiceBean} or {@link ServiceConfig}.
      */
-    private Set<String> conflictedBeanNames = new LinkedHashSet<>();
+    private Set<String> conflictedBeanNames = new HashSet<>();
 
     @Override
     public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {

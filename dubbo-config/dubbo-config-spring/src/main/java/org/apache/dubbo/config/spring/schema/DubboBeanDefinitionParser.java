@@ -18,20 +18,26 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -49,6 +55,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
@@ -161,44 +168,42 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 parseArguments(beanName, element.getChildNodes(), beanDefinition, parserContext);
             } else {
                 String value = resolveAttribute(element, property, parserContext);
-                if (value != null) {
-                    value = value.trim();
-                    if (value.length() > 0) {
-                        if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
-                            RegistryConfig registryConfig = new RegistryConfig();
-                            registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
-                        } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
-                            /**
-                             * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
-                             * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
-                             * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
-                             * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
-                             */
-                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
+                if (StringUtils.isNotBlank(value)) {
+                    value=value.trim();
+                    if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
+                        RegistryConfig registryConfig = new RegistryConfig();
+                        registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
+                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                    } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
+                        /**
+                         * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
+                         * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
+                         * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
+                         * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
+                         */
+                        beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
+                    } else {
+                        Object reference;
+                        if (isPrimitive(type)) {
+                            value = getCompatibleDefaultValue(property, value);
+                            reference = value;
+                        } else if (ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
+                            int index = value.lastIndexOf(".");
+                            String ref = value.substring(0, index);
+                            String method = value.substring(index + 1);
+                            reference = new RuntimeBeanReference(ref);
+                            beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
                         } else {
-                            Object reference;
-                            if (isPrimitive(type)) {
-                                value = getCompatibleDefaultValue(property, value);
-                                reference = value;
-                            } else if (ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
-                                int index = value.lastIndexOf(".");
-                                String ref = value.substring(0, index);
-                                String method = value.substring(index + 1);
-                                reference = new RuntimeBeanReference(ref);
-                                beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
-                            } else {
-                                if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
-                                    BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
-                                    if (!refBean.isSingleton()) {
-                                        throw new IllegalStateException("The exported service ref " + value + " must be singleton! Please set the " + value + " bean scope to singleton, eg: <bean id=\"" + value + "\" scope=\"singleton\" ...>");
-                                    }
+                            if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
+                                BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
+                                if (!refBean.isSingleton()) {
+                                    throw new IllegalStateException("The exported service ref " + value + " must be singleton! Please set the " + value + " bean scope to singleton, eg: <bean id=\"" + value + "\" scope=\"singleton\" ...>");
                                 }
-                                reference = new RuntimeBeanReference(value);
                             }
-                            if (reference != null) {
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
-                            }
+                            reference = new RuntimeBeanReference(value);
+                        }
+                        if (reference != null) {
+                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
                         }
                     }
                 }
@@ -229,6 +234,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parseNested(element, parserContext, ReferenceBean.class, true, "reference", "consumer", beanName, beanDefinition);
         } else if (ReferenceBean.class.equals(beanClass)) {
             configReferenceBean(element, parserContext, beanDefinition, null);
+        } else if (MetricsConfig.class.equals(beanClass)) {
+            parseMetrics(element, parserContext, beanDefinition);
         }
 
         // register bean definition
@@ -240,6 +247,62 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parserContext.getRegistry().registerBeanDefinition(beanName, beanDefinition);
         }
         return beanDefinition;
+    }
+
+    private static void parseMetrics(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition) {
+        NodeList childNodes = element.getChildNodes();
+        PrometheusConfig prometheus = null;
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            if (!(childNodes.item(i) instanceof Element)) {
+                continue;
+            }
+
+            Element child = (Element) childNodes.item(i);
+            if ("aggregation".equals(child.getNodeName()) || "aggregation".equals(child.getLocalName())) {
+                AggregationConfig aggregation = new AggregationConfig();
+                assignProperties(aggregation, child, parserContext);
+                beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            } else if ("prometheus-exporter".equals(child.getNodeName()) || "prometheus-exporter".equals(child.getLocalName())) {
+                if (prometheus == null) {
+                    prometheus = new PrometheusConfig();
+                }
+
+                PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
+                assignProperties(exporter, child, parserContext);
+                prometheus.setExporter(exporter);
+            } else if ("prometheus-pushgateway".equals(child.getNodeName()) || "prometheus-pushgateway".equals(child.getLocalName())) {
+                if (prometheus == null) {
+                    prometheus = new PrometheusConfig();
+                }
+
+                PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
+                assignProperties(pushgateway, child, parserContext);
+                prometheus.setPushgateway(pushgateway);
+            }
+        }
+
+        if (prometheus != null) {
+            beanDefinition.getPropertyValues().addPropertyValue("prometheus", prometheus);
+        }
+    }
+
+    private static void assignProperties(Object obj, Element ele, ParserContext parserContext) {
+        Method[] methods = obj.getClass().getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.isSetter(method)) {
+                String beanProperty = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
+                String property = StringUtils.camelToSplitName(beanProperty, "-");
+                String value = resolveAttribute(ele, property, parserContext);
+                if (StringUtils.isNotEmpty(value)) {
+                    try {
+                        Object v = ClassUtils.convertPrimitive(method.getParameterTypes()[0], value);
+                        method.invoke(obj, v);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }
     }
 
     private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {

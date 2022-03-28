@@ -18,12 +18,15 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 
 /**
  * AbstractConsumerConfig
@@ -82,9 +85,19 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected String router;
 
     /**
-     * Weather the reference is refer asynchronously
+     * Weather the reference is referred asynchronously
+     * @deprecated
+     * @see ModuleConfig#referAsync
      */
+    @Deprecated
     private Boolean referAsync;
+
+    public AbstractReferenceConfig() {
+    }
+
+    public AbstractReferenceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     @Override
     protected void checkDefault() {
@@ -110,12 +123,18 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.init = init;
     }
 
+    /**
+     * @deprecated Replace to {@link AbstractReferenceConfig#getGeneric()}
+     */
     @Deprecated
     @Parameter(excluded = true, attribute = false)
     public Boolean isGeneric() {
         return this.generic != null ? ProtocolUtils.isGeneric(generic) : null;
     }
 
+    /**
+     * @deprecated Replace to {@link AbstractReferenceConfig#setGeneric(String)}
+     */
     @Deprecated
     public void setGeneric(Boolean generic) {
         if (generic != null) {
@@ -220,7 +239,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
 
 
-    @Parameter(key = "provided-by")
+    @Parameter(key = PROVIDED_BY)
     public String getProvidedBy() {
         return providedBy;
     }
@@ -229,7 +248,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.providedBy = providedBy;
     }
 
-    @Parameter(key = "router", append = true)
+    @Parameter(key = ROUTER_KEY, append = true)
     public String getRouter() {
         return router;
     }
@@ -238,11 +257,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.router = router;
     }
 
+    @Deprecated
     @Parameter(key = REFER_ASYNC_KEY)
     public Boolean getReferAsync() {
         return referAsync;
     }
 
+    @Deprecated
     public void setReferAsync(Boolean referAsync) {
         this.referAsync = referAsync;
     }

@@ -27,13 +27,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * ProviderModel is about published services
  */
 public class ProviderModel extends ServiceModel {
     private final List<RegisterStatedURL> urls;
-    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
+    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<>();
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
@@ -44,7 +45,7 @@ public class ProviderModel extends ServiceModel {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
 
-        this.urls = new ArrayList<>(1);
+        this.urls = new CopyOnWriteArrayList<>();
     }
 
     public ProviderModel(String serviceKey,
@@ -158,11 +159,7 @@ public class ProviderModel extends ServiceModel {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            List<ProviderMethodModel> methodModels = methods.get(method.getName());
-            if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>();
-                methods.put(method.getName(), methodModels);
-            }
+            List<ProviderMethodModel> methodModels = methods.computeIfAbsent(method.getName(), k -> new ArrayList<>());
             methodModels.add(new ProviderMethodModel(method));
         }
     }

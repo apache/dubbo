@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
+
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
@@ -39,7 +40,7 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
         // initialize dubbo beans
         DubboSpringInitializer.initialize(registry);
 
-        // Config beans creating from props have move to DubboBootstrap
+        // Config beans creating from props have move to ConfigManager
 //        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
 //                importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
 //

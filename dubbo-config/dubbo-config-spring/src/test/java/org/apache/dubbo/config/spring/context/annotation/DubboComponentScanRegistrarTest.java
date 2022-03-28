@@ -21,7 +21,6 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -72,9 +71,8 @@ public class DubboComponentScanRegistrarTest {
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
-        // reset ConfigManager of provider context
-        ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
 
+        // consumer app
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 
         consumerContext.register(ConsumerConfiguration.class);

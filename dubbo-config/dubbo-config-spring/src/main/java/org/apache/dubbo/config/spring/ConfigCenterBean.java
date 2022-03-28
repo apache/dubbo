@@ -19,7 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConfigCenterConfig;
-import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
@@ -43,10 +43,16 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
 
     private Boolean includeSpringEnv = false;
 
+    public ConfigCenterBean() {
+    }
+
+    public ConfigCenterBean(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        SpringExtensionInjector.addApplicationContext(applicationContext);
     }
 
     @Override

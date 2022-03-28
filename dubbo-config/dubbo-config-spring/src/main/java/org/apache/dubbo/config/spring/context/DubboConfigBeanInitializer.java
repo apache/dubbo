@@ -27,10 +27,11 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.context.AbstractConfigManager;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,8 +40,11 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -60,7 +64,13 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
+
+    @Autowired
     private ConfigManager configManager;
+
+    @Autowired
+    @Qualifier("org.apache.dubbo.rpc.model.ModuleModel")
+    private ModuleModel moduleModel;
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
@@ -74,7 +84,6 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     private void init() {
         if (initialized.compareAndSet(false, true)) {
-            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
             try {
                 prepareDubboConfigBeans();
@@ -92,22 +101,32 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         logger.info("loading dubbo config beans ...");
 
         //Make sure all these config beans are inited and registered to ConfigManager
-        loadConfigBeansOfType(ApplicationConfig.class);
-        loadConfigBeansOfType(ModuleConfig.class);
-        loadConfigBeansOfType(RegistryConfig.class);
-        loadConfigBeansOfType(ProtocolConfig.class);
-        loadConfigBeansOfType(MonitorConfig.class);
-        loadConfigBeansOfType(ProviderConfig.class);
-        loadConfigBeansOfType(ConsumerConfig.class);
-        loadConfigBeansOfType(ConfigCenterBean.class);
-        loadConfigBeansOfType(MetadataReportConfig.class);
-        loadConfigBeansOfType(MetricsConfig.class);
-        loadConfigBeansOfType(SslConfig.class);
+        // load application config beans
+        loadConfigBeansOfType(ApplicationConfig.class, configManager);
+        loadConfigBeansOfType(RegistryConfig.class, configManager);
+        loadConfigBeansOfType(ProtocolConfig.class, configManager);
+        loadConfigBeansOfType(MonitorConfig.class, configManager);
+        loadConfigBeansOfType(ConfigCenterBean.class, configManager);
+        loadConfigBeansOfType(MetadataReportConfig.class, configManager);
+        loadConfigBeansOfType(MetricsConfig.class, configManager);
+        loadConfigBeansOfType(SslConfig.class, configManager);
+
+        // load module config beans
+        loadConfigBeansOfType(ModuleConfig.class, moduleModel.getConfigManager());
+        loadConfigBeansOfType(ProviderConfig.class, moduleModel.getConfigManager());
+        loadConfigBeansOfType(ConsumerConfig.class, moduleModel.getConfigManager());
+
+        // load ConfigCenterBean from properties, fix https://github.com/apache/dubbo/issues/9207
+        List<ConfigCenterBean> configCenterBeans = configManager.loadConfigsOfTypeFromProps(ConfigCenterBean.class);
+        for (ConfigCenterBean configCenterBean : configCenterBeans) {
+            String beanName = configCenterBean.getId() != null ? configCenterBean.getId() : "configCenterBean";
+            beanFactory.initializeBean(configCenterBean, beanName);
+        }
 
         logger.info("dubbo config beans are loaded.");
     }
 
-    private void loadConfigBeansOfType(Class<? extends AbstractConfig> configClass) {
+    private void loadConfigBeansOfType(Class<? extends AbstractConfig> configClass, AbstractConfigManager configManager) {
         String[] beanNames = beanFactory.getBeanNamesForType(configClass, true, false);
         for (String beanName : beanNames) {
             AbstractConfig configBean = beanFactory.getBean(beanName, configClass);

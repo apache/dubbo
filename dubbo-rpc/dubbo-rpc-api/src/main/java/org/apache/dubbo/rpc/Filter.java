@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -34,7 +35,7 @@ import org.apache.dubbo.common.extension.SPI;
  *    remote call configured caching type's (e.g. Thread Local, JCache etc) implementation invoke method gets called.
  * </pre>
  *
- * Starting from 3.0, Filter on consumer side has been refactored. There're two different kinds of Filters working at different stages
+ * Starting from 3.0, Filter on consumer side has been refactored. There are two different kinds of Filters working at different stages
  * of an RPC request.
  * 1. Filter. Works at the instance level, each Filter is bond to one specific Provider instance(invoker).
  * 2. ClusterFilter. Newly introduced in 3.0, intercepts request before Loadbalancer picks one specific Filter(Invoker).
@@ -64,7 +65,7 @@ import org.apache.dubbo.common.extension.SPI;
  * @see org.apache.dubbo.rpc.filter.TokenFilter
  * @see org.apache.dubbo.rpc.filter.TpsLimitFilter
  */
-@SPI
+@SPI(scope = ExtensionScope.MODULE)
 public interface Filter extends BaseFilter {
 }
 

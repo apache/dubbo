@@ -61,7 +61,7 @@ public final class StringUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(StringUtils.class);
     private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)"); //key value pair pattern.
-    private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern NUM_PATTERN = Pattern.compile("^\\d+$");
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
     private static final Pattern PAIR_PARAMETERS_PATTERN = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
     private static final int PAD_LIMIT = 8192;
@@ -426,6 +426,16 @@ public final class StringUtils {
     }
 
     /**
+     * is not blank string.
+     *
+     * @param cs source string.
+     * @return is not blank.
+     */
+    public static boolean isNotBlank(CharSequence cs) {
+        return !isBlank(cs);
+    }
+
+    /**
      * Check the cs String whether contains non whitespace characters.
      * @param cs
      * @return
@@ -505,8 +515,10 @@ public final class StringUtils {
     }
 
     /**
-     * @param s1
-     * @param s2
+     * if s1 is null and s2 is null, then return true
+     *
+     * @param s1 str1
+     * @param s2 str2
      * @return equals
      */
     public static boolean isEquals(String s1, String s2) {
@@ -520,17 +532,33 @@ public final class StringUtils {
     }
 
     /**
-     * is integer string.
+     * is positive integer or zero string.
      *
-     * @param str
-     * @return is integer
+     * @param str a string
+     * @return is positive integer or zero
      */
-    public static boolean isInteger(String str) {
-        return isNotEmpty(str) && INT_PATTERN.matcher(str).matches();
+    public static boolean isNumber(String str) {
+        return isNotEmpty(str) && NUM_PATTERN.matcher(str).matches();
     }
 
+    /**
+     * parse str to Integer(if str is not number or n < 0, then return 0)
+     *
+     * @param str a number str
+     * @return positive integer or zero
+     */
     public static int parseInteger(String str) {
-        return isInteger(str) ? Integer.parseInt(str) : 0;
+        return isNumber(str) ? Integer.parseInt(str) : 0;
+    }
+
+    /**
+     * parse str to Long(if str is not number or n < 0, then return 0)
+     *
+     * @param str a number str
+     * @return positive long or zero
+     */
+    public static long parseLong(String str) {
+        return isNumber(str) ? Long.parseLong(str) : 0;
     }
 
     /**

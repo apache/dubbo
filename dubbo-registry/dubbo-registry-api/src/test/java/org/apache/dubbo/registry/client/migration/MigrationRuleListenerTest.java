@@ -79,8 +79,8 @@ public class MigrationRuleListenerTest {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
         ApplicationModel.reset();
-        ApplicationModel.defaultModel().getApplicationEnvironment().setDynamicConfiguration(dynamicConfiguration);
-        ApplicationModel.defaultModel().getApplicationEnvironment().setLocalMigrationRule(localRule);
+        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
@@ -92,11 +92,10 @@ public class MigrationRuleListenerTest {
         System.setProperty("dubbo.application.migration.delay", "1000");
         MigrationRuleHandler<?> handler = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
 
-        MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
+        MigrationRuleListener migrationRuleListener = new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
 
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
-        migrationRuleListener.setApplicationModel(ApplicationModel.defaultModel());
 
         Thread.sleep(2000);
         Mockito.verify(handler, Mockito.timeout(5000)).doMigrate(Mockito.any());
@@ -111,9 +110,9 @@ public class MigrationRuleListenerTest {
      * Test listener started without local rule and config center, INIT should be used and no scheduled task should be started.
      */
     @Test
-    public void testWithInitAndNoLocalRule() throws InterruptedException {
-        ApplicationModel.defaultModel().getApplicationEnvironment().setDynamicConfiguration(null);
-        ApplicationModel.defaultModel().getApplicationEnvironment().setLocalMigrationRule("");
+    public void testWithInitAndNoLocalRule() {
+        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(null);
+        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule("");
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
@@ -125,8 +124,7 @@ public class MigrationRuleListenerTest {
         System.setProperty("dubbo.application.migration.delay", "1000");
         MigrationRuleHandler<?> handler = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
 
-        MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
-        migrationRuleListener.setApplicationModel(ApplicationModel.defaultModel());
+        MigrationRuleListener migrationRuleListener = new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
         migrationRuleListener.onRefer(null, migrationInvoker, consumerURL, null);
@@ -151,8 +149,8 @@ public class MigrationRuleListenerTest {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
         Mockito.doReturn(remoteRule).when(dynamicConfiguration).getConfig(Mockito.anyString(), Mockito.anyString());
 
-        ApplicationModel.defaultModel().getApplicationEnvironment().setDynamicConfiguration(dynamicConfiguration);
-        ApplicationModel.defaultModel().getApplicationEnvironment().setLocalMigrationRule(localRule);
+        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
@@ -171,8 +169,7 @@ public class MigrationRuleListenerTest {
 
         // Both local rule and remote rule are here
         // Local rule with one delayed task started to apply
-        MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
-        migrationRuleListener.setApplicationModel(ApplicationModel.defaultModel());
+        MigrationRuleListener migrationRuleListener = new MigrationRuleListener(ApplicationModel.defaultModel().getDefaultModule());
         Assertions.assertNotNull(migrationRuleListener.localRuleMigrationFuture);
         Assertions.assertNull(migrationRuleListener.ruleMigrationFuture);
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);

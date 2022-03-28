@@ -22,7 +22,7 @@ import org.apache.dubbo.validation.support.jvalidation.mock.ValidationParameter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +47,7 @@ public class JValidatorTest {
 
     @Test
     public void testItWhenItViolatedConstraint() throws Exception {
-        Assertions.assertThrows(ConstraintViolationException.class, () -> {
+        Assertions.assertThrows(ValidationException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
             jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter()});

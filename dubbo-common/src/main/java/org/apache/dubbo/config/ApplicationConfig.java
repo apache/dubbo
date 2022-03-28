@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -41,16 +42,21 @@ import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -159,21 +165,25 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String metadataType;
 
+    /**
+     * Used to control whether register instance to registry or not. Set to 'false' only when instance is pure consumer.
+     */
     private Boolean registerConsumer;
 
     private String repository;
 
     private Boolean enableFileCache;
 
-    private Boolean publishInterface;
-
-    private Boolean publishInstance;
-
     /**
      * The preferred protocol(name) of this application
      * convenient for places where it's hard to determine which is the preferred protocol
      */
     private String protocol;
+
+    /**
+     * The protocol used for peer-to-peer metadata transmission
+     */
+    private String metadataServiceProtocol;
 
     /**
      * Metadata Service, used in Service Discovery
@@ -189,10 +199,23 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String startupProbe;
 
+    private String registerMode;
+
+    private Boolean enableEmptyProtection;
+
     public ApplicationConfig() {
     }
 
+    public ApplicationConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     public ApplicationConfig(String name) {
+        setName(name);
+    }
+
+    public ApplicationConfig(ApplicationModel applicationModel, String name) {
+        super(applicationModel);
         setName(name);
     }
 
@@ -219,7 +242,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setName(String name) {
         this.name = name;
-        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(key = APPLICATION_VERSION_KEY)
@@ -260,18 +282,16 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public void setEnvironment(String environment) {
-        if (environment != null) {
-            if (!(DEVELOPMENT_ENVIRONMENT.equals(environment)
-                || TEST_ENVIRONMENT.equals(environment)
-                || PRODUCTION_ENVIRONMENT.equals(environment))) {
+        if (environment != null && !(DEVELOPMENT_ENVIRONMENT.equals(environment)
+            || TEST_ENVIRONMENT.equals(environment)
+            || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
-                throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
-                    environment,
-                    DEVELOPMENT_ENVIRONMENT,
-                    TEST_ENVIRONMENT,
-                    PRODUCTION_ENVIRONMENT,
-                    PRODUCTION_ENVIRONMENT));
-            }
+            throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
+                environment,
+                DEVELOPMENT_ENVIRONMENT,
+                TEST_ENVIRONMENT,
+                PRODUCTION_ENVIRONMENT,
+                PRODUCTION_ENVIRONMENT));
         }
         this.environment = environment;
     }
@@ -331,7 +351,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setLogger(String logger) {
         this.logger = logger;
-        LoggerFactory.setLoggerAdapter(logger);
+        LoggerFactory.setLoggerAdapter(getApplicationModel().getFrameworkModel(), logger);
     }
 
     @Parameter(key = DUMP_DIRECTORY)
@@ -384,7 +404,7 @@ public class ApplicationConfig extends AbstractConfig {
      *
      * @return
      */
-    @Parameter(key = "qos-enable", excluded = true, attribute = false)
+    @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true, attribute = false)
     public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
@@ -393,7 +413,7 @@ public class ApplicationConfig extends AbstractConfig {
         setQosEnable(qosEnable);
     }
 
-    @Parameter(key = "qos-host", excluded = true, attribute = false)
+    @Parameter(key = QOS_HOST_COMPATIBLE, excluded = true, attribute = false)
     public String getQosHostCompatible() {
         return getQosHost();
     }
@@ -402,7 +422,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosHost(qosHost);
     }
 
-    @Parameter(key = "qos-port", excluded = true, attribute = false)
+    @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true, attribute = false)
     public Integer getQosPortCompatible() {
         return getQosPort();
     }
@@ -411,7 +431,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosPort(qosPort);
     }
 
-    @Parameter(key = "qos-accept-foreign-ip", excluded = true, attribute = false)
+    @Parameter(key = ACCEPT_FOREIGN_IP_COMPATIBLE, excluded = true, attribute = false)
     public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }
@@ -482,22 +502,22 @@ public class ApplicationConfig extends AbstractConfig {
         this.enableFileCache = enableFileCache;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
-    public Boolean getPublishInterface() {
-        return publishInterface;
+    @Parameter(key = REGISTER_MODE_KEY)
+    public String getRegisterMode() {
+        return registerMode;
     }
 
-    public void setPublishInterface(Boolean publishInterface) {
-        this.publishInterface = publishInterface;
+    public void setRegisterMode(String registerMode) {
+        this.registerMode = registerMode;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
-    public Boolean getPublishInstance() {
-        return publishInstance;
+    @Parameter(key = ENABLE_EMPTY_PROTECTION_KEY)
+    public Boolean getEnableEmptyProtection() {
+        return enableEmptyProtection;
     }
 
-    public void setPublishInstance(Boolean publishInstance) {
-        this.publishInstance = publishInstance;
+    public void setEnableEmptyProtection(Boolean enableEmptyProtection) {
+        this.enableEmptyProtection = enableEmptyProtection;
     }
 
     @Parameter(excluded = true, key = APPLICATION_PROTOCOL_KEY)
@@ -516,6 +536,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setMetadataServicePort(Integer metadataServicePort) {
         this.metadataServicePort = metadataServicePort;
+    }
+
+    @Parameter(key = METADATA_SERVICE_PROTOCOL_KEY)
+    public String getMetadataServiceProtocol() {
+        return metadataServiceProtocol;
+    }
+
+    public void setMetadataServiceProtocol(String metadataServiceProtocol) {
+        this.metadataServiceProtocol = metadataServiceProtocol;
     }
 
     @Parameter(key = LIVENESS_PROBE_KEY)

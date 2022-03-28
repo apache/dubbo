@@ -35,6 +35,7 @@ public class DubboExporter<T> extends AbstractExporter<T> {
         super(invoker);
         this.key = key;
         this.exporterMap = exporterMap;
+        exporterMap.put(key, this);
     }
 
     @Override

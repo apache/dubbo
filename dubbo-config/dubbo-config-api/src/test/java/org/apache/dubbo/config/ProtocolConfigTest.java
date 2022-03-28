@@ -20,6 +20,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +33,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.is;
 
 public class ProtocolConfigTest {
 
@@ -43,6 +47,11 @@ public class ProtocolConfigTest {
     @AfterEach
     public void afterEach() {
         SysProps.clear();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -245,6 +254,7 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocolConfig.getName());
             Assertions.assertEquals(port, protocolConfig.getPort());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -265,6 +275,7 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocolConfig.getName());
             Assertions.assertEquals(port, protocolConfig.getPort());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -287,6 +298,7 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocolConfig.getName());
             Assertions.assertEquals(port, protocolConfig.getPort());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -314,6 +326,7 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(port1, protocol.getPort());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -340,6 +353,7 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(port1, protocol.getPort());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -365,8 +379,6 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(port, protocol.getPort());
             Assertions.assertEquals(protocolId, protocol.getId());
-
-            ProtocolConfig protocolConfig = configManager.getProtocol(protocolId).get();
 
         } finally {
             DubboBootstrap.getInstance().stop();

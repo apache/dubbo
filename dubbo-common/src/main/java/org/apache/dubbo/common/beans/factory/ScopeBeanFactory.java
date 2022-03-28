@@ -21,14 +21,18 @@ import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,12 +42,15 @@ import java.util.stream.Collectors;
  */
 public class ScopeBeanFactory {
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeBeanFactory.class);
+
     private final ScopeBeanFactory parent;
     private ExtensionAccessor extensionAccessor;
     private List<ExtensionPostProcessor> extensionPostProcessors;
     private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
-    private List<BeanInfo> registeredBeanInfos = Collections.synchronizedList(new ArrayList<>());
+    private List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
+    private AtomicBoolean destroyed = new AtomicBoolean();
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -65,10 +72,15 @@ public class ScopeBeanFactory {
     }
 
     public <T> T registerBean(Class<T> bean) throws ScopeBeanException {
-        return this.registerBean(null, bean);
+        return this.getOrRegisterBean(null, bean);
     }
 
     public <T> T registerBean(String name, Class<T> clazz) throws ScopeBeanException {
+        return getOrRegisterBean(name, clazz);
+    }
+
+    private <T> T createAndRegisterBean(String name, Class<T> clazz) {
+        checkDestroyed();
         T instance = getBean(name, clazz);
         if (instance != null) {
             throw new ScopeBeanException("already exists bean with same name and type, name=" + name + ", type=" + clazz.getName());
@@ -76,7 +88,7 @@ public class ScopeBeanFactory {
         try {
             instance = instantiationStrategy.instantiate(clazz);
         } catch (Throwable e) {
-            throw new ScopeBeanException("create bean instance failed, type=" + clazz.getName());
+            throw new ScopeBeanException("create bean instance failed, type=" + clazz.getName(), e);
         }
         registerBean(name, instance);
         return instance;
@@ -87,6 +99,7 @@ public class ScopeBeanFactory {
     }
 
     public void registerBean(String name, Object bean) {
+        checkDestroyed();
         // avoid duplicated register same bean
         if (containsBean(name, bean)) {
             return;
@@ -101,28 +114,39 @@ public class ScopeBeanFactory {
         registeredBeanInfos.add(new BeanInfo(name, bean));
     }
 
-    public <T> T registerBeanIfAbsent(Class<T> type) {
-        return registerBeanIfAbsent(null, type);
+    public <T> T getOrRegisterBean(Class<T> type) {
+        return getOrRegisterBean(null, type);
     }
 
-    public <T> T registerBeanIfAbsent(String name, Class<T> type) {
+    public <T> T getOrRegisterBean(String name, Class<T> type) {
         T bean = getBean(name, type);
         if (bean == null) {
-            bean = registerBean(name, type);
+            // lock by type
+            synchronized (type) {
+                bean = getBean(name, type);
+                if (bean == null) {
+                    bean = createAndRegisterBean(name, type);
+                }
+            }
         }
         return bean;
     }
 
-    public <T> T registerBeanIfAbsent(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
-        return registerBeanIfAbsent(null, type, mappingFunction);
+    public <T> T getOrRegisterBean(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
+        return getOrRegisterBean(null, type, mappingFunction);
     }
 
-    public <T> T registerBeanIfAbsent(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
+    public <T> T getOrRegisterBean(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
         T bean = getBean(name, type);
         if (bean == null) {
-            //TODO add lock for type
-            bean = mappingFunction.apply(type);
-            registerBean(name, bean);
+            // lock by type
+            synchronized (type) {
+                bean = getBean(name, type);
+                if (bean == null) {
+                    bean = mappingFunction.apply(type);
+                    registerBean(name, bean);
+                }
+            }
         }
         return bean;
     }
@@ -133,6 +157,7 @@ public class ScopeBeanFactory {
     }
 
     private void initializeBean(String name, Object bean) {
+        checkDestroyed();
         try {
             if (bean instanceof ExtensionAccessorAware) {
                 ((ExtensionAccessorAware) bean).setExtensionAccessor(extensionAccessor);
@@ -172,21 +197,29 @@ public class ScopeBeanFactory {
     }
 
     private <T> T getBeanInternal(String name, Class<T> type) {
+        checkDestroyed();
         // All classes are derived from java.lang.Object, cannot filter bean by it
         if (type == Object.class) {
             return null;
         }
         List<BeanInfo> candidates = null;
+        BeanInfo firstCandidate = null;
         for (BeanInfo beanInfo : registeredBeanInfos) {
             // if required bean type is same class/superclass/interface of the registered bean
             if (type.isAssignableFrom(beanInfo.instance.getClass())) {
                 if (StringUtils.isEquals(beanInfo.name, name)) {
                     return (T) beanInfo.instance;
                 } else {
-                    if (candidates == null) {
-                        candidates = new ArrayList<>();
+                    // optimize for only one matched bean
+                    if (firstCandidate == null) {
+                        firstCandidate = beanInfo;
+                    } else {
+                        if (candidates == null) {
+                            candidates = new ArrayList<>();
+                            candidates.add(firstCandidate);
+                        }
+                        candidates.add(beanInfo);
                     }
-                    candidates.add(beanInfo);
                 }
             }
         }
@@ -199,8 +232,32 @@ public class ScopeBeanFactory {
                 List<String> candidateBeanNames = candidates.stream().map(beanInfo -> beanInfo.name).collect(Collectors.toList());
                 throw new ScopeBeanException("expected single matching bean but found " + candidates.size() + " candidates for type [" + type.getName() + "]: " + candidateBeanNames);
             }
+        } else if (firstCandidate != null) {
+            return (T) firstCandidate.instance;
         }
         return null;
+    }
+
+    public void destroy() {
+        if (destroyed.compareAndSet(false, true)){
+            for (BeanInfo beanInfo : registeredBeanInfos) {
+                if (beanInfo.instance instanceof Disposable) {
+                    try {
+                        Disposable beanInstance = (Disposable) beanInfo.instance;
+                        beanInstance.destroy();
+                    } catch (Throwable e) {
+                        LOGGER.error("An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
+                    }
+                }
+            }
+            registeredBeanInfos.clear();
+        }
+    }
+
+    private void checkDestroyed() {
+        if (destroyed.get()) {
+            throw new IllegalStateException("ScopeBeanFactory is destroyed");
+        }
     }
 
     static class BeanInfo {

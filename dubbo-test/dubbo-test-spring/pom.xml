@@ -148,6 +148,12 @@
             <!--<scope>test</scope>-->
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit_jupiter_version}</version>
+<!--            <scope>test</scope>-->
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito_version}</version>
@@ -164,6 +170,22 @@
             <artifactId>cglib-nodep</artifactId>
             <version>${cglib_version}</version>
             <!--<scope>test</scope>-->
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+<!--            <scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+<!--            <scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+<!--            <scope>test</scope>-->
         </dependency>
     </dependencies>
 

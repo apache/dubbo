@@ -19,10 +19,16 @@ package org.apache.dubbo.demo;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface GreeterService {
 
     /**
      * Sends a greeting
      */
     HelloReply sayHello(HelloRequest request);
+
+
+    CompletableFuture<String> sayHelloAsync(String request);
+
 }
