@@ -51,7 +51,7 @@ public class ConfigParserTest {
             Yaml yaml = new Yaml(new SafeConstructor());
             Map<String, Object> map = yaml.load(yamlStream);
             ConfiguratorConfig config = ConfiguratorConfig.parseFromMap(map);
-            System.out.println(config);
+            Assertions.assertNotNull(config);
         }
     }
 
@@ -62,8 +62,8 @@ public class ConfigParserTest {
             Assertions.assertNotNull(urls);
             Assertions.assertEquals(2, urls.size());
             URL url = urls.get(0);
-            Assertions.assertEquals(url.getAddress(), "127.0.0.1:20880");
-            Assertions.assertEquals(url.getParameter(WEIGHT_KEY, 0), 222);
+            Assertions.assertEquals("127.0.0.1:20880", url.getAddress());
+            Assertions.assertEquals(222, url.getParameter(WEIGHT_KEY, 0));
         }
     }
 
@@ -114,7 +114,7 @@ public class ConfigParserTest {
             Assertions.assertEquals("service1", url.getServiceInterface());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getApplication(), "demo-consumer");
+            Assertions.assertEquals("demo-consumer", url.getApplication());
         }
     }
 
@@ -130,7 +130,7 @@ public class ConfigParserTest {
             Assertions.assertEquals("*", url.getServiceInterface());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getApplication(), "demo-consumer");
+            Assertions.assertEquals("demo-consumer", url.getApplication());
         }
     }
 
@@ -145,7 +145,7 @@ public class ConfigParserTest {
             Assertions.assertEquals("*", url.getServiceInterface());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getApplication(), "demo-consumer");
+            Assertions.assertEquals("demo-consumer", url.getApplication());
         }
     }
 
@@ -161,7 +161,7 @@ public class ConfigParserTest {
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
             Assertions.assertEquals("127.0.0.1:20880", url.getParameter(OVERRIDE_PROVIDERS_KEY));
-            Assertions.assertEquals(url.getApplication(), "demo-consumer");
+            Assertions.assertEquals("demo-consumer", url.getApplication());
         }
     }
 
