@@ -17,9 +17,9 @@
 package org.apache.dubbo.remoting.transport.dispatcher;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ExecutorService;
 
@@ -110,7 +111,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         if (msg instanceof Response) {
             Response response = (Response) msg;
             DefaultFuture responseFuture = DefaultFuture.getFuture(response.getId());
-            // a typical scenario is the response returned after timeout, the timeout response may has completed the future
+            // a typical scenario is the response returned after timeout, the timeout response may have completed the future
             if (responseFuture == null) {
                 return getSharedExecutorService();
             } else {
@@ -131,8 +132,16 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
      * @return
      */
     public ExecutorService getSharedExecutorService() {
+        // Application may be destroyed before channel disconnected, avoid create new application model
+        // see https://github.com/apache/dubbo/issues/9127
+        if (url.getApplicationModel() == null || url.getApplicationModel().isDestroyed()) {
+            return GlobalResourcesRepository.getGlobalExecutorService();
+        }
+
+        // note: url.getOrDefaultApplicationModel() may create new application model
+        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
         ExecutorRepository executorRepository =
-                ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+                applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         ExecutorService executor = executorRepository.getExecutor(url);
         if (executor == null) {
             executor = executorRepository.createExecutorIfAbsent(url);

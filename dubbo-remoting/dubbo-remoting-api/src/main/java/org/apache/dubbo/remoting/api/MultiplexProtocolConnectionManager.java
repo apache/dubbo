@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +24,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 public class MultiplexProtocolConnectionManager implements ConnectionManager {
+    public static final String NAME = "multiple";
+
     private final ConcurrentMap<String, ConnectionManager> protocols = new ConcurrentHashMap<>();
 
     private FrameworkModel frameworkModel;
@@ -34,7 +35,7 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public Connection connect(URL url) throws RemotingException {
+    public Connection connect(URL url) {
         final ConnectionManager manager = protocols.computeIfAbsent(url.getProtocol(), this::createSingleProtocolConnectionManager);
         return manager.connect(url);
     }
@@ -45,6 +46,6 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
     }
 
     private ConnectionManager createSingleProtocolConnectionManager(String protocol) {
-        return frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension("single");
+        return frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
     }
 }

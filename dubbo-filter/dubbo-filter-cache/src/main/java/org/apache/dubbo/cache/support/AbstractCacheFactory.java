@@ -56,7 +56,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     @Override
     public Cache getCache(URL url, Invocation invocation) {
         url = url.addParameter(METHOD_KEY, invocation.getMethodName());
-        String key = url.toFullString();
+        String key = url.getServiceKey() + invocation.getMethodName();
         Cache cache = caches.get(key);
 
         // get from cache first.

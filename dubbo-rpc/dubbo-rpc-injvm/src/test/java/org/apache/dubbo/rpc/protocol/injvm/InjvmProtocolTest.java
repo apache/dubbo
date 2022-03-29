@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -100,26 +101,26 @@ public class InjvmProtocolTest {
         exporters.add(exporter);
 
         url = url.setProtocol("dubbo");
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = url.addParameter(GROUP_KEY, "*")
             .addParameter(VERSION_KEY, "*");
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(SCOPE_KEY, SCOPE_LOCAL);
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(LOCAL_PROTOCOL, true);
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(SCOPE_KEY, SCOPE_REMOTE);
-        assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertFalse(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(GENERIC_KEY, true);
-        assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertFalse(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter("cluster", "broadcast");
-        assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertFalse(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
     }
 
     @Test

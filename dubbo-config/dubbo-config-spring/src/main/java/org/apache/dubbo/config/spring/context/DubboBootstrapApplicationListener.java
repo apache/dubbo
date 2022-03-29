@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
+import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -41,6 +42,7 @@ import static org.springframework.util.ObjectUtils.nullSafeEquals;
  *
  * @since 2.7.5
  */
+@Deprecated
 public class DubboBootstrapApplicationListener implements ApplicationListener, ApplicationContextAware, Ordered {
 
     /**
@@ -55,6 +57,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     private ApplicationContext applicationContext;
     private DubboBootstrap bootstrap;
     private boolean shouldInitConfigBeans;
+    private ModuleModel moduleModel;
 
     public DubboBootstrapApplicationListener() {
     }
@@ -74,7 +77,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (isOriginalEventSource(event)) {
-            if (event instanceof DubboAnnotationInitedEvent) {
+            if (event instanceof DubboConfigInitEvent) {
                 // This event will be notified at AbstractApplicationContext.registerListeners(),
                 // init dubbo config beans before spring singleton beans
                 initDubboConfigBeans();
@@ -93,7 +96,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
         }
 
         // All infrastructure config beans are loaded, initialize dubbo here
-        bootstrap.initialize();
+        moduleModel.getDeployer().initialize();
     }
 
     private void onApplicationContextEvent(ApplicationContextEvent event) {
@@ -110,14 +113,15 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
         if (bootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
-            bootstrap.start();
+            moduleModel.getDeployer().start();
         }
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
         if (bootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
             // will call dubboBootstrap.stop() through shutdown callback.
-            bootstrap.getApplicationModel().getBeanFactory().getBean(DubboShutdownHook.class).run();
+            //bootstrap.getApplicationModel().getBeanFactory().getBean(DubboShutdownHook.class).run();
+            moduleModel.getDeployer().stop();
         }
     }
 
@@ -129,11 +133,6 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     private boolean isOriginalEventSource(ApplicationEvent event) {
 
         boolean originalEventSource = nullSafeEquals(getApplicationContext(), event.getSource());
-//        if (!originalEventSource) {
-//            if (log.isDebugEnabled()) {
-//                log.debug("The source of event[" + event.getSource() + "] is not original!");
-//            }
-//        }
         return originalEventSource;
     }
 
@@ -145,7 +144,8 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        this.setBootstrap(DubboBeanUtils.getBootstrap(applicationContext));
+        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        this.setBootstrap(DubboBootstrap.getInstance(moduleModel.getApplicationModel()));
         if (shouldInitConfigBeans) {
             checkCallStackAndInit();
         }

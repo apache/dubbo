@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +64,7 @@ public class MetadataInfoTest {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
+        metadataInfo.addService(url);
         MetadataInfo.ServiceInfo serviceInfo2 = metadataInfo.getServiceInfo(url.getProtocolServiceKey());
         assertNotNull(serviceInfo2);
         assertEquals(5, serviceInfo2.getParams().size());
@@ -80,31 +81,31 @@ public class MetadataInfoTest {
     public void testEqualsAndRevision() {
         // same metadata
         MetadataInfo metadataInfo = new MetadataInfo("demo");
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
+        metadataInfo.addService(url);
         MetadataInfo sameMetadataInfo = new MetadataInfo("demo");
-        sameMetadataInfo.addService(new MetadataInfo.ServiceInfo(url));
+        sameMetadataInfo.addService(url);
         assertEquals(metadataInfo, sameMetadataInfo);
         assertEquals(metadataInfo.calAndGetRevision(), sameMetadataInfo.calAndGetRevision());
 
         // url with different params that are not counted in ServiceInfo
         MetadataInfo metadataInfoWithDifferentParam1 = new MetadataInfo("demo");
-        metadataInfoWithDifferentParam1.addService(new MetadataInfo.ServiceInfo(url.addParameter("delay", 6000)));
+        metadataInfoWithDifferentParam1.addService(url.addParameter("delay", 6000));
         assertEquals(metadataInfo, metadataInfoWithDifferentParam1);
         assertEquals(metadataInfo.calAndGetRevision(), metadataInfoWithDifferentParam1.calAndGetRevision());
         // url with different params that are counted in ServiceInfo
         MetadataInfo metadataInfoWithDifferentParam2 = new MetadataInfo("demo");
-        metadataInfoWithDifferentParam2.addService(new MetadataInfo.ServiceInfo(url.addParameter(TIMEOUT_KEY, 6000)));
+        metadataInfoWithDifferentParam2.addService(url.addParameter(TIMEOUT_KEY, 6000));
         assertNotEquals(metadataInfo, metadataInfoWithDifferentParam2);
         assertNotEquals(metadataInfo.calAndGetRevision(), metadataInfoWithDifferentParam2.calAndGetRevision());
 
         MetadataInfo metadataInfoWithDifferentGroup = new MetadataInfo("demo");
-        metadataInfoWithDifferentGroup.addService(new MetadataInfo.ServiceInfo(url.addParameter(GROUP_KEY, "newGroup")));
+        metadataInfoWithDifferentGroup.addService(url.addParameter(GROUP_KEY, "newGroup"));
         assertNotEquals(metadataInfo, metadataInfoWithDifferentGroup);
         assertNotEquals(metadataInfo.calAndGetRevision(), metadataInfoWithDifferentGroup.calAndGetRevision());
 
         MetadataInfo metadataInfoWithDifferentServices = new MetadataInfo("demo");
-        metadataInfoWithDifferentServices.addService(new MetadataInfo.ServiceInfo(url));
-        metadataInfoWithDifferentServices.addService(new MetadataInfo.ServiceInfo(url2));
+        metadataInfoWithDifferentServices.addService(url);
+        metadataInfoWithDifferentServices.addService(url2);
         assertNotEquals(metadataInfo, metadataInfoWithDifferentServices);
         assertNotEquals(metadataInfo.calAndGetRevision(), metadataInfoWithDifferentServices.calAndGetRevision());
     }
@@ -112,12 +113,29 @@ public class MetadataInfoTest {
     @Test
     public void testChanged() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url2));
-        assertFalse(metadataInfo.hasReported());
-        metadataInfo.markReported();
-        assertTrue(metadataInfo.hasReported());
-        metadataInfo.removeService(new MetadataInfo.ServiceInfo(url2));
-        assertFalse(metadataInfo.hasReported());
+        metadataInfo.addService(url);
+        metadataInfo.addService(url2);
+        assertTrue(metadataInfo.updated);
+        metadataInfo.calAndGetRevision();
+        assertFalse(metadataInfo.updated);
+        metadataInfo.removeService(url2);
+        assertTrue(metadataInfo.updated);
+    }
+
+    @Test
+    public void testJsonFormat() {
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
+
+        // export normal url again
+        metadataInfo.addService(url);
+        Gson gson = new Gson();
+        System.out.println(gson.toJson(metadataInfo));
+
+        MetadataInfo metadataInfo2 = new MetadataInfo("demo");
+        // export normal url again
+        metadataInfo2.addService(url);
+        metadataInfo2.addService(url2);
+        System.out.println(gson.toJson(metadataInfo2));
+
     }
 }

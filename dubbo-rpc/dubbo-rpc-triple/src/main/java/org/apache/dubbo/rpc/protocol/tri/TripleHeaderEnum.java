@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -35,16 +36,15 @@ public enum TripleHeaderEnum {
     CONTENT_TYPE_KEY("content-type"),
     CONTENT_PROTO("application/grpc+proto"),
     APPLICATION_GRPC("application/grpc"),
-    TRICE_ID_KEY("tri-trace-traceid"),
-    RPC_ID_KEY("tri-trace-rpcid"),
+    GRPC_ENCODING("grpc-encoding"),
+    GRPC_ACCEPT_ENCODING("grpc-accept-encoding"),
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
-    UNIT_INFO_KEY("tri-unit-info"),
     SERVICE_VERSION("tri-service-version"),
     SERVICE_GROUP("tri-service-group");
 
-    static Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
+    static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
 
-    static Set<String> excludeAttachmentsSet = new HashSet<>();
+    static final Set<String> excludeAttachmentsSet = new HashSet<>();
 
     static {
         for (TripleHeaderEnum item : TripleHeaderEnum.values()) {
@@ -59,22 +59,14 @@ public enum TripleHeaderEnum {
         excludeAttachmentsSet.add(TripleConstant.TE_KEY);
     }
 
-    public static TripleHeaderEnum getEnum(String header) {
-        return enumMap.get(header);
-    }
-
-    public static boolean contains(String header) {
-        return enumMap.containsKey(header);
-    }
-
-    public static boolean containsExcludeAttachments(String key) {
-        return excludeAttachmentsSet.contains(key) || enumMap.containsKey(key);
-    }
-
     private final String header;
 
     TripleHeaderEnum(String header) {
         this.header = header;
+    }
+
+    public static boolean containsExcludeAttachments(String key) {
+        return excludeAttachmentsSet.contains(key) || enumMap.containsKey(key);
     }
 
     public String getHeader() {

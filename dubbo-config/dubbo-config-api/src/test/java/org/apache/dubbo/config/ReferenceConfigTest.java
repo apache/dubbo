@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
@@ -39,11 +32,11 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-import org.apache.dubbo.registrycenter.RegistryCenter;
-import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
+import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -51,17 +44,29 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
+
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.mockito.Mockito;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -89,9 +94,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
@@ -108,8 +112,6 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
@@ -117,27 +119,25 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 public class ReferenceConfigTest {
-    private String zkUrl1;
-    private String zkUrl2;
-    private String registryUrl1;
-    private RegistryCenter registryCenter1;
-    private RegistryCenter registryCenter2;
+    private static String zkUrl1;
+    private static String zkUrl2;
+    private static String registryUrl1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        int zkServerPort1 = 2181;
+        int zkServerPort2 = 2182;
+        zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
+        zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
+        registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
-        int zkServerPort1 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        registryCenter1 = new ZookeeperSingleRegistryCenter(zkServerPort1);
-        registryCenter1.startup();
-        int zkServerPort2 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        registryCenter2 = new ZookeeperSingleRegistryCenter(zkServerPort2);
-        registryCenter2.startup();
-        this.zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
-        this.zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
-        this.registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
-
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -145,10 +145,7 @@ public class ReferenceConfigTest {
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        registryCenter1.shutdown();
-        registryCenter2.shutdown();
         Mockito.framework().clearInlineMocks();
-
     }
 
     /**
@@ -180,10 +177,9 @@ public class ReferenceConfigTest {
         applicationConfig.setRegisterConsumer(false);
         applicationConfig.setRepository("repository1");
         applicationConfig.setEnableFileCache(false);
-        applicationConfig.setPublishInstance(false);
-        applicationConfig.setPublishInterface(false);
         applicationConfig.setProtocol("dubbo");
         applicationConfig.setMetadataServicePort(88888);
+        applicationConfig.setMetadataServiceProtocol("tri");
         applicationConfig.setLivenessProbe("livenessProbe");
         applicationConfig.setReadinessProbe("readinessProb");
         applicationConfig.setStartupProbe("startupProbe");
@@ -203,10 +199,6 @@ public class ReferenceConfigTest {
 
         MonitorConfig monitorConfig = new MonitorConfig();
         applicationConfig.setMonitor(monitorConfig);
-
-        MetricsConfig metricsConfig = new MetricsConfig();
-        metricsConfig.setProtocol("metricProtocol");
-        metricsConfig.setPort("55555");
 
         ModuleConfig moduleConfig = new ModuleConfig();
         moduleConfig.setMonitor("default");
@@ -256,7 +248,6 @@ public class ReferenceConfigTest {
         dubboBootstrap.application(applicationConfig)
             .reference(referenceConfig)
             .registry(registry)
-            .metrics(metricsConfig)
             .module(moduleConfig)
             .initialize();
 
@@ -281,10 +272,6 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(Version.getVersion(), serviceMetadata.getAttachments().get(RELEASE_KEY));
         Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(TIMESTAMP_KEY));
         Assertions.assertEquals(String.valueOf(ConfigUtils.getPid()), serviceMetadata.getAttachments().get(PID_KEY));
-
-        // verify additional metric config
-        Assertions.assertEquals(metricsConfig.getProtocol(), serviceMetadata.getAttachments().get(METRICS_PROTOCOL));
-        Assertions.assertEquals(metricsConfig.getPort(), serviceMetadata.getAttachments().get(METRICS_PORT));
 
         // verify additional application config
         Assertions.assertEquals(applicationConfig.getName(), serviceMetadata.getAttachments().get(APPLICATION_KEY));
@@ -326,13 +313,10 @@ public class ReferenceConfigTest {
             serviceMetadata.getAttachments().get("repository"));
         Assertions.assertEquals(applicationConfig.getEnableFileCache().toString(),
             serviceMetadata.getAttachments().get(REGISTRY_LOCAL_FILE_CACHE_ENABLED));
-        Assertions.assertEquals(applicationConfig.getPublishInstance().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_PUBLISH_INSTANCE_KEY));
-        Assertions.assertEquals(applicationConfig.getPublishInterface().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_PUBLISH_INTERFACE_KEY));
-        Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(REGISTRY_PUBLISH_INTERFACE_KEY));
         Assertions.assertEquals(applicationConfig.getMetadataServicePort().toString(),
             serviceMetadata.getAttachments().get(METADATA_SERVICE_PORT_KEY));
+        Assertions.assertEquals(applicationConfig.getMetadataServiceProtocol().toString(),
+            serviceMetadata.getAttachments().get(METADATA_SERVICE_PROTOCOL_KEY));
         Assertions.assertEquals(applicationConfig.getLivenessProbe(),
             serviceMetadata.getAttachments().get(LIVENESS_PROBE_KEY));
         Assertions.assertEquals(applicationConfig.getReadinessProbe(),
@@ -459,15 +443,15 @@ public class ReferenceConfigTest {
         URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
-        Exporter<?> exporter = InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
-        InjvmProtocol.getInjvmProtocol().getExporterMap().put(DemoService.class.getName(), exporter);
+        Exporter<?> exporter = InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
+        InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).getExporterMap().put(DemoService.class.getName(), exporter);
         Assertions.assertTrue(referenceConfig.shouldJvmRefer(parameters));
 
         // verify that if the service has been exposed, and the cluster is configured with broadcast, local reference should not be made
         parameters.put(CLUSTER_KEY, BROADCAST_CLUSTER);
         Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
         parameters.clear();
-        InjvmProtocol.getInjvmProtocol().destroy();
+        InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();
     }
 
     @Test
@@ -493,9 +477,11 @@ public class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ListenerInvokerWrapper);
-        Assertions.assertTrue(((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker() instanceof InjvmInvoker);
-        URL url = ((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker().getUrl();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Invoker<?> withFilter = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper);
+        Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+        URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
         Assertions.assertEquals("value2", url.getParameter("key2"));
@@ -545,6 +531,48 @@ public class ReferenceConfigTest {
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
 
         dubboBootstrap.destroy();
+    }
+
+
+    /**
+     * Verify that the remote url is directly configured for remote reference
+     */
+    @Test
+    public void testCreateInvokerWithRemoteUrlForRemoteRefer() {
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+
+        referenceConfig.setUrl("dubbo://127.0.0.1:20880");
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
+        dubboBootstrap.destroy();
+
     }
 
     /**
@@ -693,8 +721,6 @@ public class ReferenceConfigTest {
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(zkUrl1);
-        ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("injvm");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
@@ -717,14 +743,65 @@ public class ReferenceConfigTest {
             DemoService service = new DemoServiceImpl();
             URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
                 .addParameter(INTERFACE_KEY, DemoService.class.getName());
-            InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
+            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             // ignore
         } finally {
             rc.destroy();
-            InjvmProtocol.getInjvmProtocol().destroy();
+            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();
+            System.clearProperty("java.net.preferIPv4Stack");
+
+        }
+        Assertions.assertTrue(success);
+        Assertions.assertNotNull(demoService);
+
+    }
+
+    @Test
+    public void test2ReferenceRetry() {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("test-reference-retry2");
+        application.setEnableFileCache(false);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
+
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress(zkUrl1);
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("mockprotocol");
+
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
+        rc.setRegistry(registry);
+        rc.setInterface(DemoService.class.getName());
+
+        boolean success = false;
+        DemoService demoService = null;
+        try {
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            // ignore
+        }
+        Assertions.assertFalse(success);
+        Assertions.assertNull(demoService);
+
+        ServiceConfig<DemoService> sc = new ServiceConfig<>();
+        sc.setInterface(DemoService.class.getName());
+        sc.setRef(new DemoServiceImpl());
+        sc.setRegistry(registry);
+        sc.setProtocol(protocol);
+
+        try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+            sc.export();
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            // ignore
+        } finally {
+            rc.destroy();
+            sc.unexport();
             System.clearProperty("java.net.preferIPv4Stack");
 
         }
@@ -748,8 +825,8 @@ public class ReferenceConfigTest {
 
         metaData = config.getMetaData();
         Assertions.assertEquals(2, metaData.size());
-        Assertions.assertEquals("" + consumerConfig.getActives(), metaData.get("actives"));
-        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+        Assertions.assertEquals(String.valueOf(consumerConfig.getActives()), metaData.get("actives"));
+        Assertions.assertEquals(String.valueOf(config.isAsync()), metaData.get("async"));
 
     }
 
@@ -885,9 +962,10 @@ public class ReferenceConfigTest {
         serviceConfig.export();
 
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
-        TestClassLoader classLoader1 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
-        TestClassLoader classLoader2 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+        basePath = URLDecoder.decode(basePath, "UTF-8");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        TestClassLoader classLoader1 = new TestClassLoader(classLoader, basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(classLoader, basePath);
 
         Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
         Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
@@ -935,12 +1013,17 @@ public class ReferenceConfigTest {
         Assertions.assertNotEquals(result1.getClass(), result2.getClass());
 
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     @Test
+    @DisabledForJreRange(min = JRE.JAVA_16)
     public void testDifferentClassLoaderRequest() throws Exception {
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
         TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
@@ -993,6 +1076,9 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
@@ -1000,6 +1086,7 @@ public class ReferenceConfigTest {
         builder.setClassName(MultiClassLoaderServiceRequest.class.getName() + "A");
         builder.setSuperClassName(MultiClassLoaderServiceRequest.class.getName());
         CtClass cls = builder.build(classLoader);
+        // FIXME support JDK 17
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }
 
@@ -1019,6 +1106,7 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
+
     private static class TestClassLoader extends ClassLoader {
         private String basePath;
 

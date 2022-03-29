@@ -16,13 +16,11 @@
  */
 package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -30,7 +28,6 @@ import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
-import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -43,8 +40,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
@@ -61,48 +56,11 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     public static final String BEAN_NAME = "dubboConfigManager";
     public static final String DUBBO_CONFIG_MODE = ConfigKeys.DUBBO_CONFIG_MODE;
 
-    private ConfigMode configMode = ConfigMode.STRICT;
-
-    private ApplicationModel applicationModel;
-
-    private AtomicBoolean inited = new AtomicBoolean(false);
-
-    private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
-
-    static {
-        // init unique config types
-        uniqueConfigTypes.add(ApplicationConfig.class);
-        uniqueConfigTypes.add(ModuleConfig.class);
-        uniqueConfigTypes.add(MonitorConfig.class);
-        uniqueConfigTypes.add(MetricsConfig.class);
-        uniqueConfigTypes.add(SslConfig.class);
-    }
 
     public ConfigManager(ApplicationModel applicationModel) {
-        super(applicationModel, Arrays.asList(ApplicationConfig.class, ModuleConfig.class, MonitorConfig.class,
+        super(applicationModel, Arrays.asList(ApplicationConfig.class, MonitorConfig.class,
             MetricsConfig.class, SslConfig.class, ProtocolConfig.class, RegistryConfig.class, ConfigCenterConfig.class,
             MetadataReportConfig.class));
-        this.applicationModel = applicationModel;
-    }
-
-    @Override
-    public void initialize() throws IllegalStateException {
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
-        CompositeConfiguration configuration = applicationModel.getModelEnvironment().getConfiguration();
-        String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
-        try {
-            if (StringUtils.hasText(configModeStr)) {
-                this.configMode = ConfigMode.valueOf(configModeStr.toUpperCase());
-            }
-        } catch (Exception e) {
-            String msg = "Illegal '" + DUBBO_CONFIG_MODE + "' config value [" + configModeStr + "], available values " + Arrays.toString(ConfigMode.values());
-            logger.error(msg, e);
-            throw new IllegalArgumentException(msg, e);
-        }
-
-        logger.info("Config settings - config mode: " + configMode);
     }
 
 
@@ -136,17 +94,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
 
     public Optional<MonitorConfig> getMonitor() {
         return ofNullable(getSingleConfig(getTagName(MonitorConfig.class)));
-    }
-
-    // ModuleConfig correlative methods
-
-    @DisableInject
-    public void setModule(ModuleConfig module) {
-        addConfig(module);
-    }
-
-    public Optional<ModuleConfig> getModule() {
-        return ofNullable(getSingleConfig(getTagName(ModuleConfig.class)));
     }
 
     @DisableInject
@@ -235,6 +182,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getDefaultConfigs(ProtocolConfig.class);
     }
 
+    @Override
     public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
         return getDefaultConfigs(getConfigsMap(getTagName(cls)));
     }
@@ -269,11 +217,11 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
 
+    @Override
     public void refreshAll() {
-        // refresh all configs here,
+        // refresh all configs here
         getApplication().ifPresent(ApplicationConfig::refresh);
         getMonitor().ifPresent(MonitorConfig::refresh);
-        getModule().ifPresent(ModuleConfig::refresh);
         getMetrics().ifPresent(MetricsConfig::refresh);
         getSsl().ifPresent(SslConfig::refresh);
 
@@ -283,95 +231,16 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         getMetadataConfigs().forEach(MetadataReportConfig::refresh);
     }
 
-    private boolean isUniqueConfig(AbstractConfig config) {
-        if (uniqueConfigTypes.contains(config.getClass())) {
-            return true;
-        }
-        for (Class<? extends AbstractConfig> uniqueConfigType : uniqueConfigTypes) {
-            if (uniqueConfigType.isAssignableFrom(config.getClass())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected <C extends AbstractConfig> C getSingleConfig(String configType) throws IllegalStateException {
-        Map<String, AbstractConfig> configsMap = getConfigsMap(configType);
-        int size = configsMap.size();
-        if (size < 1) {
-//                throw new IllegalStateException("No such " + configType.getName() + " is found");
-            return null;
-        } else if (size > 1) {
-            throw new IllegalStateException("Expected single instance of " + configType + ", but found " + size +
-                " instances, please remove redundant configs. instances: " + configsMap.values());
-        }
-        return (C) configsMap.values().iterator().next();
-    }
-
-    @Override
-    protected <C extends AbstractConfig> Optional<C> findDuplicatedConfig(Map<String, C> configsMap, C config) {
-
-        // find by value
-        Optional<C> prevConfig = findConfigByValue(configsMap.values(), config);
-        if (prevConfig.isPresent()) {
-            if (prevConfig.get() == config) {
-                // the new one is same as existing one
-                return prevConfig;
-            }
-
-            // ignore duplicated equivalent config
-            if (logger.isInfoEnabled() && duplicatedConfigs.add(config)) {
-                logger.info("Ignore duplicated config: " + config);
-            }
-            return prevConfig;
-        }
-
-        // check unique config
-        if (configsMap.size() > 0 && isUniqueConfig(config)) {
-            C oldOne = configsMap.values().iterator().next();
-            String configName = oldOne.getClass().getSimpleName();
-            String msgPrefix = "Duplicate Configs found for " + configName + ", only one unique " + configName +
-                " is allowed for one application. previous: " + oldOne + ", later: " + config + ". According to config mode [" + configMode + "], ";
-            switch (configMode) {
-                case STRICT: {
-                    if (!isEquals(oldOne, config)) {
-                        throw new IllegalStateException(msgPrefix + "please remove redundant configs and keep only one.");
-                    }
-                    break;
-                }
-                case IGNORE: {
-                    // ignore later config
-                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "keep previous config and ignore later config");
-                    }
-                    return Optional.of(oldOne);
-                }
-                case OVERRIDE: {
-                    // clear previous config, add new config
-                    configsMap.clear();
-                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "override previous config with later config");
-                    }
-                    break;
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
     @Override
     public void loadConfigs() {
         // application config has load before starting config center
         // load dubbo.applications.xxx
         loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
-        // load dubbo.modules.xxx
-        loadConfigsOfTypeFromProps(ModuleConfig.class);
-
         // load dubbo.monitors.xxx
         loadConfigsOfTypeFromProps(MonitorConfig.class);
 
-        // load dubbo.metricses.xxx
+        // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
 
         // load multiple config types:
@@ -387,7 +256,14 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // config centers has bean loaded before starting config center
         //loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
+        refreshAll();
+
         checkConfigs();
+
+        // set model name
+        if (StringUtils.isBlank(applicationModel.getModelName())) {
+            applicationModel.setModelName(applicationModel.getApplicationName());
+        }
     }
 
     private void checkConfigs() {
@@ -398,7 +274,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             RegistryConfig.class,
             MetadataReportConfig.class,
             MonitorConfig.class,
-            ModuleConfig.class,
             MetricsConfig.class,
             SslConfig.class);
 
@@ -422,7 +297,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         }
     }
 
-    ConfigMode getConfigMode() {
+    public ConfigMode getConfigMode() {
         return configMode;
     }
 }

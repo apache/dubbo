@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 
 public class OrderedPropertiesConfiguration implements Configuration{
-    private Properties properties = new Properties();
+    private Properties properties;
     private ModuleModel moduleModel;
 
     public OrderedPropertiesConfiguration(ModuleModel moduleModel) {
@@ -35,9 +36,10 @@ public class OrderedPropertiesConfiguration implements Configuration{
     }
 
     public void refresh() {
+        properties = new Properties();
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
-        if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
+        if (CollectionUtils.isEmpty(propertiesProviderNames)) {
             return;
         }
         List<OrderedPropertiesProvider> orderedPropertiesProviders = new ArrayList<>();
@@ -46,14 +48,11 @@ public class OrderedPropertiesConfiguration implements Configuration{
         }
 
         //order the propertiesProvider according the priority descending
-        orderedPropertiesProviders.sort((OrderedPropertiesProvider a, OrderedPropertiesProvider b) -> {
-            return b.priority() - a.priority();
-        });
+        orderedPropertiesProviders.sort((a, b) -> b.priority() - a.priority());
 
 
         //override the properties.
-        for (OrderedPropertiesProvider orderedPropertiesProvider :
-            orderedPropertiesProviders) {
+        for (OrderedPropertiesProvider orderedPropertiesProvider : orderedPropertiesProviders) {
             properties.putAll(orderedPropertiesProvider.initProperties());
         }
 
@@ -77,6 +76,9 @@ public class OrderedPropertiesConfiguration implements Configuration{
         return (String) properties.remove(key);
     }
 
+    /**
+     * For ut only
+     */
     @Deprecated
     public void setProperties(Properties properties) {
         this.properties = properties;

@@ -33,13 +33,13 @@ public interface ZookeeperClient {
     List<String> addChildListener(String path, ChildListener listener);
 
     /**
-     * @param path:    directory. All of child of path will be listened.
+     * @param path:    directory. All child of path will be listened.
      * @param listener
      */
     void addDataListener(String path, DataListener listener);
 
     /**
-     * @param path:    directory. All of child of path will be listened.
+     * @param path:    directory. All child of path will be listened.
      * @param listener
      * @param executor another thread
      */

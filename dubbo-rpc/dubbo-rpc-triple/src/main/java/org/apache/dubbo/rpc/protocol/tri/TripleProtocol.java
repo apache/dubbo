@@ -14,43 +14,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
+import org.apache.dubbo.triple.TripleWrapper;
 
-import java.util.ArrayList;
+import com.google.protobuf.ByteString;
+import io.grpc.health.v1.HealthCheckResponse;
+import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
-/**
- *
- */
-public class TripleProtocol extends AbstractProtocol implements Protocol {
+public class TripleProtocol extends AbstractProtocol {
+
+
+    public static final String METHOD_ATTR_PACK = "pack";
+    private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
+    private static final URL THREAD_POOL_URL = new URL(CommonConstants.TRIPLE,
+        CommonConstants.LOCALHOST_VALUE, 50051)
+        .addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
+        .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
-    private final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class)
-            .getDefaultExtension();
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension();
+    private final PathResolver pathResolver;
+    private final TriBuiltinService triBuiltinService;
+    private final ConnectionManager connectionManager;
+    private final FrameworkModel frameworkModel;
+    private final String acceptEncodings;
+    private boolean versionChecked = false;
 
-    static {
-        TriBuiltinService.init();
+    public TripleProtocol(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+        this.triBuiltinService = new TriBuiltinService(frameworkModel);
+        this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
+            .getDefaultExtension();
+        Set<String> supported = frameworkModel.getExtensionLoader(DeCompressor.class)
+            .getSupportedExtensions();
+        this.acceptEncodings = String.join(",", supported);
+        this.connectionManager = frameworkModel.getExtensionLoader(ConnectionManager.class)
+            .getExtension("multiple");
     }
 
     @Override
@@ -61,12 +90,19 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         URL url = invoker.getUrl();
+        checkProtobufVersion(url);
         String key = serviceKey(url);
         final AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
                 pathResolver.remove(url.getServiceKey());
-                pathResolver.remove(url.getServiceInterface());
+                pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(),
+                    invoker);
+                // set service status
+                triBuiltinService.getHealthStatusManager()
+                    .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);
+                triBuiltinService.getHealthStatusManager()
+                    .setStatus(url.getServiceInterface(), ServingStatus.NOT_SERVING);
                 exporterMap.remove(key);
             }
         };
@@ -76,11 +112,13 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
         invokers.add(invoker);
 
         pathResolver.add(url.getServiceKey(), invoker);
-        pathResolver.add(url.getServiceInterface(), invoker);
+        pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
 
         // set service status
-        TriBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
-        TriBuiltinService.getHealthStatusManager().setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
+        triBuiltinService.getHealthStatusManager()
+            .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
+        triBuiltinService.getHealthStatusManager()
+            .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
@@ -88,17 +126,21 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        TripleInvoker<T> invoker;
-        try {
-            url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
-            url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
-            executorRepository.createExecutorIfAbsent(url);
-            invoker = new TripleInvoker<>(type, url, invokers);
-        } catch (RemotingException e) {
-            throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
-        }
+        ExecutorService streamExecutor = getOrCreateStreamExecutor(
+            url.getOrDefaultApplicationModel());
+        TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
+            connectionManager, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
+    }
+
+    private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel) {
+        ExecutorService executor = applicationModel.getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .createExecutorIfAbsent(THREAD_POOL_URL);
+        Objects.requireNonNull(executor,
+            String.format("No available executor found in %s", THREAD_POOL_URL));
+        return executor;
     }
 
     @Override
@@ -108,21 +150,42 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public void destroy() {
+        if (logger.isInfoEnabled()) {
+            logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
+        }
         PortUnificationExchanger.close();
         pathResolver.destroy();
-        for (String key : new ArrayList<>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
-            if (exporter != null) {
-                try {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Unexport service: " + exporter.getInvoker().getUrl());
-                    }
-                    exporter.unexport();
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
-                }
-            }
+        super.destroy();
+    }
+
+    private void checkProtobufVersion(URL url) {
+        if (versionChecked) {
+            return;
+        }
+        if (url.getServiceModel() == null) {
+            return;
+        }
+        ServiceDescriptor descriptor = url.getServiceModel().getServiceModel();
+        if (descriptor == null) {
+            return;
+        }
+        if (descriptor instanceof StubServiceDescriptor) {
+            return;
         }
 
+        TripleWrapper.TripleResponseWrapper responseWrapper = TripleWrapper.TripleResponseWrapper.newBuilder()
+            .setData(ByteString.copyFromUtf8("Test"))
+            .setSerializeType("Test")
+            .build();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            responseWrapper.writeTo(baos);
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                "Bad protobuf-java version detected! Please make sure the version of user's "
+                    + "classloader is " + "greater than 3.11.0 ", e);
+        }
+        this.versionChecked = true;
     }
 }

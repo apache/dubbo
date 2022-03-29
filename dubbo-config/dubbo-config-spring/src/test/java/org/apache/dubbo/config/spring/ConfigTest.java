@@ -43,8 +43,6 @@ import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.registry.MockRegistry;
 import org.apache.dubbo.config.spring.registry.MockRegistryFactory;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
@@ -53,10 +51,9 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.junit.jupiter.api.AfterAll;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -86,19 +83,6 @@ public class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
 
-    private static RegistryCenter singleRegistryCenter;
-
-    @BeforeAll
-    public static void beforeAll() {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        singleRegistryCenter.shutdown();
-    }
-
     @BeforeEach
     public void setUp() {
         SysProps.clear();
@@ -108,6 +92,7 @@ public class ConfigTest {
     @AfterEach
     public void tearDown() {
         SysProps.clear();
+        DubboBootstrap.reset();
     }
 
 
@@ -145,6 +130,7 @@ public class ConfigTest {
     @Test
     @Disabled("waiting-to-fix")
     public void testServiceAnnotation() {
+        DubboBootstrap consumerBootstrap = null;
         AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
         try {
             providerContext.register(ProviderConfiguration.class);
@@ -155,16 +141,19 @@ public class ConfigTest {
             reference.setInterface(HelloService.class);
             reference.setUrl("dubbo://127.0.0.1:12345");
 
-            DubboBootstrap bootstrap = DubboBootstrap.newInstance()
+            consumerBootstrap = DubboBootstrap.newInstance()
                     .application(new ApplicationConfig("consumer"))
                     .reference(reference)
                     .start();
-            HelloService helloService = bootstrap.getCache().get(reference);
+            HelloService helloService = consumerBootstrap.getCache().get(reference);
 
             String hello = helloService.sayHello("hello");
             assertEquals("Hello, hello", hello);
         } finally {
             providerContext.close();
+            if (consumerBootstrap != null) {
+                consumerBootstrap.stop();
+            }
         }
 
     }
@@ -443,14 +432,15 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://" + NetUtils.getLocalHost() + ":20880?" + DemoService.class.getName() + "?check=false");
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+
+        try {
+            DubboBootstrap.getInstance()
                 .application(application)
                 .provider(provider)
                 .service(service)
                 .reference(reference)
                 .start();
 
-        try {
             List<URL> urls = service.getExportedUrls();
             assertNotNull(urls);
             assertEquals(1, urls.size());
@@ -462,7 +452,7 @@ public class ConfigTest {
             assertEquals("classloader,monitor,accesslog,trace", urls.get(0).getParameter("reference.filter"));
 
         } finally {
-            bootstrap.stop();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -535,17 +525,25 @@ public class ConfigTest {
     // DUBBO-571 methods key in provider's URLONE doesn't contain the methods from inherited super interface
     @Test
     public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
+        List<URL> urls = null;
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/demo-provider-no-methods-interface.xml");
         try {
             ctx.start();
+
             ServiceBean bean = (ServiceBean) ctx.getBean("service");
-            List<URL> urls = bean.getExportedUrls();
+            urls = bean.getExportedUrls();
             assertEquals(1, urls.size());
             URL url = urls.get(0);
             assertEquals("sayName,getBox", url.getParameter("methods"));
         } finally {
             ctx.stop();
             ctx.close();
+            // Check if the port is closed
+            if (urls != null) {
+                for (URL url : urls) {
+                    Assertions.assertFalse(NetUtils.isPortInUsed(url.getPort()));
+                }
+            }
         }
     }
 
@@ -687,7 +685,8 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl("dubbo://127.0.0.1:13123");
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+        try {
+            DubboBootstrap.getInstance()
                 .application(application)
                 .registry(registry)
                 .protocol(protocol)
@@ -695,7 +694,6 @@ public class ConfigTest {
                 .reference(reference)
                 .start();
 
-        try {
             URL url = service.getExportedUrls().get(0);
             assertEquals("api-override-properties", url.getParameter("application"));
             assertEquals("world", url.getParameter("owner"));
@@ -704,7 +702,7 @@ public class ConfigTest {
             url = reference.getExportedUrls().get(0);
             assertEquals("2000", url.getParameter("timeout"));
         } finally {
-            bootstrap.stop();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -820,6 +818,7 @@ public class ConfigTest {
                     .service(service)
                     .reference(reference)
                     .start();
+
             // override retries
             assertEquals(Integer.valueOf(5), reference.getRetries());
             // set default value of check
@@ -830,6 +829,8 @@ public class ConfigTest {
             assertEquals(1234, defaultConsumer.getTimeout());
             assertEquals(false, defaultConsumer.isCheck());
         } finally {
+            // If we don't stop here, somewhere else will throw BeanCreationException of duplication.
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -841,24 +842,23 @@ public class ConfigTest {
         SysProps.setProperty("dubbo.registry.address", "N/A");
         SysProps.setProperty("dubbo.protocol.name", "dubbo");
         SysProps.setProperty("dubbo.protocol.port", "20834");
+
         try {
             ServiceConfig<DemoService> serviceConfig = new ServiceConfig<DemoService>();
             serviceConfig.setInterface(DemoService.class);
             serviceConfig.setRef(new DemoServiceImpl());
 
-            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
-                    .service(serviceConfig)
-                    .start();
-            try {
-                assertEquals("sysover", serviceConfig.getApplication().getName());
-                assertEquals("sysowner", serviceConfig.getApplication().getOwner());
-                assertEquals("N/A", serviceConfig.getRegistry().getAddress());
-                assertEquals("dubbo", serviceConfig.getProtocol().getName());
-                assertEquals(20834, serviceConfig.getProtocol().getPort().intValue());
-            } finally {
-                bootstrap.stop();
-            }
+            DubboBootstrap.getInstance()
+                .service(serviceConfig)
+                .start();
+
+            assertEquals("sysover", serviceConfig.getApplication().getName());
+            assertEquals("sysowner", serviceConfig.getApplication().getOwner());
+            assertEquals("N/A", serviceConfig.getRegistry().getAddress());
+            assertEquals("dubbo", serviceConfig.getProtocol().getName());
+            assertEquals(20834, serviceConfig.getProtocol().getPort().intValue());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -888,23 +888,20 @@ public class ConfigTest {
             service.setRegistry(registry);
             service.setProtocol(protocol);
 
-            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+            DubboBootstrap.getInstance()
                     .application(application)
                     .registry(registry)
                     .protocol(protocol)
                     .service(service)
                     .start();
 
-            try {
-                URL url = service.getExportedUrls().get(0);
-                assertEquals("sysover", url.getParameter("application"));
-                assertEquals("sysowner", url.getParameter("owner"));
-                assertEquals("dubbo", url.getProtocol());
-                assertEquals(20834, url.getPort());
-            } finally {
-                bootstrap.stop();
-            }
+            URL url = service.getExportedUrls().get(0);
+            assertEquals("sysover", url.getParameter("application"));
+            assertEquals("sysowner", url.getParameter("owner"));
+            assertEquals("dubbo", url.getProtocol());
+            assertEquals(20834, url.getPort());
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -930,26 +927,23 @@ public class ConfigTest {
             service.setRegistry(registry);
             service.setProtocol(protocol);
 
-            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+            DubboBootstrap.getInstance()
                     .application(application)
                     .registry(registry)
                     .protocol(protocol)
                     .service(service)
                     .start();
 
-            try {
-                URL url = service.getExportedUrls().get(0);
-                // from api
-                assertEquals("aaa", url.getParameter("application"));
-                // from dubbo-binder.properties
-                assertEquals("world", url.getParameter("owner"));
-                // from system property
-                assertEquals(1234, url.getPort());
-            } finally {
-                bootstrap.stop();
-            }
+            URL url = service.getExportedUrls().get(0);
+            // from api
+            assertEquals("aaa", url.getParameter("application"));
+            // from dubbo-binder.properties
+            assertEquals("world", url.getParameter("owner"));
+            // from system property
+            assertEquals(1234, url.getPort());
         } finally {
             System.clearProperty("dubbo.protocol.port");
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -1019,7 +1013,6 @@ public class ConfigTest {
         int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
         ServiceConfig<DemoService> service = null;
-        DubboBootstrap bootstrap = null;
         try {
             ApplicationConfig application = new ApplicationConfig();
             application.setName("dubbo-protocol-port-override");
@@ -1046,9 +1039,7 @@ public class ConfigTest {
 
             assertEquals(port, service.getExportedUrls().get(0).getPort());
         } finally {
-            if (bootstrap != null) {
-                bootstrap.stop();
-            }
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -1082,19 +1073,19 @@ public class ConfigTest {
         helloService.setRegistry(registry);
         helloService.setProtocol(protocol);
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+        try {
+            DubboBootstrap.getInstance()
                 .application(application)
                 .registry(registry)
                 .protocol(protocol)
                 .service(demoService)
-                .service(helloService);
-        try {
-            bootstrap.start();
+                .service(helloService)
+                .start();
 
             assertEquals(demoService.getExportedUrls().get(0).getPort(),
                     helloService.getExportedUrls().get(0).getPort());
         } finally {
-            bootstrap.stop();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -1113,17 +1104,17 @@ public class ConfigTest {
         ref.setRegistry(rc);
         ref.setInterface(DemoService.class.getName());
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+        try {
+            DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("test-refer-generic-export"))
                 .service(sc)
-                .reference(ref);
-        try {
-            bootstrap.start();
+                .reference(ref)
+                .start();
             fail();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            bootstrap.stop();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -1135,18 +1126,19 @@ public class ConfigTest {
         service.setGeneric(GENERIC_SERIALIZATION_BEAN);
         service.setRef((method, parameterTypes, args) -> null);
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+        try {
+            DubboBootstrap.getInstance()
                 .application(new ApplicationConfig("test"))
                 .service(service)
                 .start();
-        try {
+
             Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
             MockRegistry registry = (MockRegistry) collection.iterator().next();
             URL url = registry.getRegistered().get(0);
             assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
             MockRegistryFactory.cleanCachedRegistry();
-            bootstrap.stop();
+            DubboBootstrap.getInstance().stop();
         }
     }
 

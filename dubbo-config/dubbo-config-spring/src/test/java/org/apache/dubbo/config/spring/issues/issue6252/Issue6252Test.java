@@ -18,10 +18,9 @@ package org.apache.dubbo.config.spring.issues.issue6252;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -39,19 +38,14 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:/META-INF/issues/issue6252/config.properties")
 public class Issue6252Test {
 
-    private static RegistryCenter multipleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
-        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        multipleRegistryCenter.shutdown();
     }
 
     @DubboReference

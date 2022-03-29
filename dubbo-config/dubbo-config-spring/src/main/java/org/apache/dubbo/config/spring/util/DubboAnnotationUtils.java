@@ -22,10 +22,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,7 +77,6 @@ public class DubboAnnotationUtils {
      * @throws IllegalStateException if interface name was not found
      */
     public static String resolveInterfaceName(Map<String, Object> attributes, Class<?> defaultInterfaceClass) {
-        Boolean generic = getAttribute(attributes, "generic");
         // 1. get from DubboService.interfaceName()
         String interfaceClassName = getAttribute(attributes, "interfaceName");
         if (StringUtils.hasText(interfaceClassName)) {
@@ -132,8 +133,8 @@ public class DubboAnnotationUtils {
     /**
      * Resolve the parameters of {@link org.apache.dubbo.config.annotation.DubboService}
      * and {@link org.apache.dubbo.config.annotation.DubboReference} from the specified.
-     * It iterate elements in order.The former element plays as key or key&value role, it would be
-     * spilt if it contain specific string, for instance, ":" and "=". As for later element can't
+     * It iterates elements in order.The former element plays as key or key&value role, it would be
+     * spilt if it contains specific string, for instance, ":" and "=". As for later element can't
      * be split in anytime.It will throw IllegalArgumentException If converted array length isn't
      * even number.
      * The convert cases below work in right way,which are best practice.
@@ -153,7 +154,7 @@ public class DubboAnnotationUtils {
      */
     public static Map<String, String> convertParameters(String[] parameters) {
         if (ArrayUtils.isEmpty(parameters)) {
-            return null;
+            return Collections.emptyMap();
         }
 
         List<String> compatibleParameterArray = Arrays.stream(parameters)

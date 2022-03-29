@@ -19,9 +19,11 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -183,8 +185,8 @@ public class AbstractConfigTest {
         // secret is excluded for url parameters, but keep for attributes
         Assertions.assertEquals(config.getSecret(), attributes.get("secret"));
         Assertions.assertEquals(config.getName(), attributes.get("name"));
-        Assertions.assertEquals(""+config.getNumber(), attributes.get("number"));
-        Assertions.assertEquals(""+config.getAge(), attributes.get("age"));
+        Assertions.assertEquals(String.valueOf(config.getNumber()), attributes.get("number"));
+        Assertions.assertEquals(String.valueOf(config.getAge()), attributes.get("age"));
         Assertions.assertEquals(StringUtils.encodeParameters(config.getParameters()), attributes.get("parameters"));
     }
 
@@ -347,7 +349,6 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("system", overrideConfig.getKey2());
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -372,7 +373,6 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
             Assertions.assertEquals("system", overrideConfig.getKey());
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -395,6 +395,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://127.0.0.1:2181", overrideConfig.getAddress());
             Assertions.assertEquals("override-config", overrideConfig.getProtocol());
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
+            Assertions.assertEquals("properties", overrideConfig.getKey2());
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
@@ -497,7 +498,6 @@ public class AbstractConfigTest {
             Assertions.assertEquals("value6", overrideConfig.getParameters().get("key3"));
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -510,7 +510,6 @@ public class AbstractConfigTest {
             overrideConfig.refresh();
             assertEquals("value00", overrideConfig.getParameters().get("key00"));
         } finally {
-            SysProps.clear();
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
@@ -937,7 +936,75 @@ public class AbstractConfigTest {
             AbstractConfig config = configClass.newInstance();
             Map<String, String> metaData = config.getMetaData();
             Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
-            System.out.println(configClass.getSimpleName()+" metadata is checked.");
+            System.out.println(configClass.getSimpleName() + " metadata is checked.");
+        }
+    }
+
+    @Test
+    public void testRefreshNested() {
+        try {
+            OuterConfig outerConfig = new OuterConfig();
+
+            Map<String, String> external = new HashMap<>();
+            external.put("dubbo.outer.a1", "1");
+            external.put("dubbo.outer.b.b1", "11");
+            external.put("dubbo.outer.b.b2", "12");
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
+
+            // refresh config
+            outerConfig.refresh();
+
+            Assertions.assertEquals(1, outerConfig.getA1());
+            Assertions.assertEquals(11, outerConfig.getB().getB1());
+            Assertions.assertEquals(12, outerConfig.getB().getB2());
+        } finally {
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
+        }
+    }
+
+    private static class OuterConfig extends AbstractConfig {
+        private Integer a1;
+
+        @Nested
+        private InnerConfig b;
+
+        public Integer getA1() {
+            return a1;
+        }
+
+        public void setA1(Integer a1) {
+            this.a1 = a1;
+        }
+
+        public InnerConfig getB() {
+            return b;
+        }
+
+        public void setB(InnerConfig b) {
+            this.b = b;
+        }
+    }
+
+    public static class InnerConfig {
+        private Integer b1;
+
+        private Integer b2;
+
+        public Integer getB1() {
+            return b1;
+        }
+
+        public void setB1(Integer b1) {
+            this.b1 = b1;
+        }
+
+        public Integer getB2() {
+            return b2;
+        }
+
+        public void setB2(Integer b2) {
+            this.b2 = b2;
         }
     }
 }

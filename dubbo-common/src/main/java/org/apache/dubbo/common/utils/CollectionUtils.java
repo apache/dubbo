@@ -26,6 +26,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
@@ -76,6 +78,27 @@ public class CollectionUtils {
             Collections.sort(list, SIMPLE_NAME_COMPARATOR);
         }
         return list;
+    }
+
+    /**
+     * Flip the specified {@link Map}
+     *
+     * @param map The specified {@link Map},Its value must be unique
+     * @param <K> The key type of specified {@link Map}
+     * @param <V> The value type of specified {@link Map}
+     * @return {@link Map}
+     */
+    public static <K, V> Map<V, K> flip(Map<K, V> map) {
+        if (isEmptyMap(map)) {
+            return (Map<V, K>) map;
+        }
+        Set<V> set = map.values().stream().collect(Collectors.toSet());
+        if (set.size() != map.size()) {
+            throw new IllegalArgumentException("The map value must be unique.");
+        }
+        return map.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 
     public static Map<String, Map<String, String>> splitAll(Map<String, List<String>> list, String separator) {
@@ -371,6 +394,16 @@ public class CollectionUtils {
         } else {
             return values.iterator().next();
         }
+    }
+
+    public static <T> Set<T> toTreeSet(Set<T> set) {
+        if (isEmpty(set)) {
+            return set;
+        }
+        if (!(set instanceof TreeSet)) {
+            set = new TreeSet<>(set);
+        }
+        return set;
     }
 
 }

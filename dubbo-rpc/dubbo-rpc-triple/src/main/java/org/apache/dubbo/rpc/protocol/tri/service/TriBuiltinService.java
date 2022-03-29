@@ -18,78 +18,58 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.protocol.tri.PathResolver;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import grpc.health.v1.Health;
+import io.grpc.health.v1.DubboHealthTriple;
+import io.grpc.health.v1.Health;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
 
 /**
- * tri internal  service like grpc internal service
+ * tri internal service like grpc internal service
  **/
 public class TriBuiltinService {
 
-    private static final ProxyFactory PROXY_FACTORY =
-        ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final ProxyFactory proxyFactory;
 
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
-        .getDefaultExtension();
+    private final PathResolver pathResolver;
 
-    private static final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final Health healthService;
 
-    private static final Map<Class<?>, Object> TRI_SERVICES = new HashMap<>();
+    private final HealthStatusManager healthStatusManager;
 
-    private static final HealthStatusManager HEALTH_STATUS_MANAGER;
+    private final AtomicBoolean init = new AtomicBoolean();
 
-    private static final AtomicBoolean init = new AtomicBoolean();
-
-    static {
-        HEALTH_STATUS_MANAGER = new HealthStatusManager(new TriHealthImpl());
-        TRI_SERVICES.put(Health.class, HEALTH_STATUS_MANAGER.getHealthService());
+    public TriBuiltinService(FrameworkModel frameworkModel) {
+        healthStatusManager = new HealthStatusManager(new TriHealthImpl());
+        healthService = healthStatusManager.getHealthService();
+        proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        init();
     }
 
-    public static void init() {
+    public void init() {
         if (init.compareAndSet(false, true)) {
-            TRI_SERVICES.forEach((clz, impl) -> {
-                ServiceDescriptor serviceDescriptor = repository.registerService(clz);
-                ServiceMetadata serviceMetadata = new ServiceMetadata();
-                serviceMetadata.setServiceType(clz);
-                serviceMetadata.setTarget(impl);
-                serviceMetadata.setServiceInterfaceName(clz.getName());
-                serviceMetadata.generateServiceKey();
-                ProviderModel providerModel = new ProviderModel(
-                    clz.getName(),
-                    impl,
-                    serviceDescriptor,
-                    null,
-                    serviceMetadata);
-                repository.registerProvider(providerModel);
-                int port = 0;
-                URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
-                    null, ANYHOST_VALUE, port, clz.getName());
-                url.setServiceModel(providerModel);
-                url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
-                Invoker<?> invoker = PROXY_FACTORY.getInvoker(impl, (Class) clz, url);
-                PATH_RESOLVER.add(url.getServiceKey(), invoker);
-                PATH_RESOLVER.add(url.getServiceInterface(), invoker);
-            });
+            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
+                DubboHealthTriple.SERVICE_NAME)
+                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
+                .setScopeModel(ApplicationModel.defaultModel().getInternalModule());
+            Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
+            pathResolver.add(DubboHealthTriple.SERVICE_NAME, invoker);
+            ApplicationModel.defaultModel().getInternalModule()
+                .addDestroyListener(scopeModel -> pathResolver.remove(DubboHealthTriple.SERVICE_NAME));
         }
     }
 
-    public static HealthStatusManager getHealthStatusManager() {
-        return HEALTH_STATUS_MANAGER;
+    public HealthStatusManager getHealthStatusManager() {
+        return healthStatusManager;
     }
 }

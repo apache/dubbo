@@ -19,9 +19,8 @@ package org.apache.dubbo.config.spring.schema;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,19 +41,14 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer-without-interface.xml")
 public class GenericServiceWithoutInterfaceTest {
 
-    private static RegistryCenter singleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        singleRegistryCenter.shutdown();
     }
 
     @Autowired

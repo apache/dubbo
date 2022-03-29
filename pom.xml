@@ -88,14 +88,14 @@
 
     <properties>
         <!-- Test libs -->
-        <junit_jupiter_version>5.6.0</junit_jupiter_version>
+        <junit_jupiter_version>5.8.1</junit_jupiter_version>
         <hazelcast_version>3.11.1</hazelcast_version>
         <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
         <el_api_version>2.2.4</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
-        <mockito_version>3.8.0</mockito_version>
+        <mockito_version>3.12.4</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m
@@ -112,14 +112,15 @@
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.2.0</maven_jar_version>
-        <maven_surefire_version>2.22.2</maven_surefire_version>
+        <maven_surefire_version>3.0.0-M5</maven_surefire_version>
+        <maven_failsafe_version>3.0.0-M5</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.8.1</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
         <maven_javadoc_version>3.2.0</maven_javadoc_version>
         <maven_jetty_version>9.4.38.v20210224</maven_jetty_version>
         <maven_checkstyle_version>3.1.2</maven_checkstyle_version>
-        <maven_jacoco_version>0.8.6</maven_jacoco_version>
+        <maven_jacoco_version>0.8.7</maven_jacoco_version>
         <maven_flatten_version>1.2.5</maven_flatten_version>
         <maven_enforce_version>3.0.0-M3</maven_enforce_version>
         <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
@@ -128,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.0.3-SNAPSHOT</revision>
+        <revision>3.0.7-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -150,10 +151,12 @@
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
+        <module>dubbo-metrics</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>
         <module>dubbo-test</module>
+        <module>dubbo-native-plugin</module>
     </modules>
 
     <dependencyManagement>
@@ -173,6 +176,12 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit_jupiter_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
             <version>${junit_jupiter_version}</version>
             <scope>test</scope>
         </dependency>
@@ -343,6 +352,7 @@
                                     </resourceExcludes>
                                     <resourceExcludes>
                                         **/generated/**/*
+                                        **/generated-sources/**/*
                                     </resourceExcludes>
                                 </configuration>
                                 <goals>
@@ -376,7 +386,7 @@
         <profile>
             <id>release</id>
             <properties>
-                <log4j2_version>2.11.1</log4j2_version>
+                <log4j2_version>2.17.2</log4j2_version>
                 <jacoco.skip>false</jacoco.skip>
             </properties>
             <build>
@@ -481,6 +491,33 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk15ge</id>
+            <activation>
+                <jdk>[15,</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <useSystemClassLoader>true</useSystemClassLoader>
+                            <forkMode>once</forkMode>
+                            <argLine>${argline} ${jacocoArgLine}
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-opens java.base/java.util=ALL-UNNAMED
+                            </argLine>
+                            <systemProperties>
+                                <!-- common shared -->
+                            </systemProperties>
+                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -648,6 +685,7 @@
                         <exclude>**/generated/**</exclude>
                         <!-- exclude mockito extensions spi files -->
                         <exclude>**/mockito-extensions/*</exclude>
+                        <exclude>**/*.dubbo.cache</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -697,11 +735,15 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven_surefire_version}</version>
+                    <configuration>
+                        <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                    </configuration>
                 </plugin>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>${maven_failsafe_version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>

@@ -46,10 +46,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
@@ -115,7 +117,7 @@ public class RegistryProtocolTest {
         moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
-        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
             .thenReturn(registryProtocolListeners);
         url = url.setScopeModel(moduleModel);
 
@@ -130,8 +132,8 @@ public class RegistryProtocolTest {
         URL consumerUrl = ((MigrationInvoker<?>) invoker).getConsumerUrl();
         Assertions.assertTrue((consumerUrl != null));
 
-        // verify that the default is dubbo protocol
-        Assertions.assertEquals("dubbo", consumerUrl.getProtocol());
+        // verify that the protocol header of consumerUrl is set to "consumer"
+        Assertions.assertEquals("consumer", consumerUrl.getProtocol());
         Assertions.assertEquals(parameters.get(REGISTER_IP_KEY), consumerUrl.getHost());
         Assertions.assertFalse(consumerUrl.getAttributes().containsKey(REFER_KEY));
         Assertions.assertEquals("value1", consumerUrl.getAttribute("key1"));
@@ -182,7 +184,7 @@ public class RegistryProtocolTest {
         moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
-        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
             .thenReturn(registryProtocolListeners);
         url = url.setScopeModel(moduleModel);
 
@@ -251,7 +253,7 @@ public class RegistryProtocolTest {
         moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
-        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
             .thenReturn(registryProtocolListeners);
         Mockito.when(moduleModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
         Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
@@ -313,7 +315,7 @@ public class RegistryProtocolTest {
         moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
-        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
             .thenReturn(registryProtocolListeners);
         Mockito.when(moduleModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
         Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
@@ -387,11 +389,11 @@ public class RegistryProtocolTest {
         moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
-        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
             .thenReturn(registryProtocolListeners);
         url = url.setScopeModel(moduleModel);
 
-        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
+        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl);
         verify(migrationRuleListener, times(1)).onRefer(registryProtocol, clusterInvoker, consumerUrl, url);
     }
 
@@ -418,7 +420,7 @@ public class RegistryProtocolTest {
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
         parameters.put("register", "false");
-        parameters.put("registry.protocol.listener", "count");
+        parameters.put(REGISTRY_PROTOCOL_LISTENER_KEY, "count");
 
         Map<String, Object> attributes = new HashMap<>();
         ServiceConfigURL serviceConfigURL = new ServiceConfigURL(
@@ -453,11 +455,11 @@ public class RegistryProtocolTest {
         moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
         Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
-        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY))
             .thenReturn(registryProtocolListeners);
         url = url.setScopeModel(moduleModel);
 
-        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
+        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl);
 
         Assertions.assertEquals(1, CountRegistryProtocolListener.getReferCounter().get());
     }
@@ -519,7 +521,7 @@ public class RegistryProtocolTest {
 
         Map<String, String> urlParameters = consumerUrl.getParameters();
         URL urlToRegistry = new ServiceConfigURL(
-            urlParameters.get(PROTOCOL_KEY) == null ? DUBBO : urlParameters.get(PROTOCOL_KEY),
+            urlParameters.get(PROTOCOL_KEY) == null ? CONSUMER : urlParameters.get(PROTOCOL_KEY),
             urlParameters.remove(REGISTER_IP_KEY), 0, consumerUrl.getPath(), urlParameters);
 
         URL registeredConsumerUrl = urlToRegistry.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY,

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
 /**
@@ -76,14 +77,14 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, String> extraParameters;
-    protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new HashMap<>();
+    protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new ConcurrentHashMap<>();
 
     public CacheableFailbackRegistry(URL url) {
         super(url);
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
 
-        cacheRemovalScheduler = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension().nextScheduledExecutor();
+        cacheRemovalScheduler = url.getOrDefaultFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class).nextScheduledExecutor();
         cacheRemovalTaskIntervalInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
         cacheClearWaitingThresholdInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
     }
@@ -133,7 +134,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         Map<String, ServiceAddressURL> newURLs;
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
         if (oldURLs == null) {
-            newURLs = new HashMap<>();
+            newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
@@ -144,7 +145,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 newURLs.put(rawProvider, cachedURL);
             }
         } else {
-            newURLs = new HashMap<>((int) (oldURLs.size() / .75 + 1));
+            newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
             // maybe only default , or "env" + default
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
@@ -185,11 +186,16 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = URLBuilder.from(consumer)
+            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+                if (PROVIDERS_CATEGORY.equals(category)) {
+                    logger.warn("Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
+                }
+                URL empty = URLBuilder.from(consumer)
                     .setProtocol(EMPTY_PROTOCOL)
                     .addParameter(CATEGORY_KEY, category)
                     .build();
-            urls.add(empty);
+                urls.add(empty);
+            }
         }
 
         return urls;
@@ -199,7 +205,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         boolean encoded = true;
         // use encoded value directly to avoid URLDecoder.decode allocation.
         int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
-        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not shown, mark as not encoded.
+        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not show, mark as not encoded.
             encoded = false;
         }
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);

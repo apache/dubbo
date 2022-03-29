@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -46,6 +43,10 @@ import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -65,6 +66,8 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
     private final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
+
+    private static final Gson gson = new Gson();
 
     private ApplicationModel applicationModel;
 
@@ -196,8 +199,10 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
     }
 
     private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
-        Gson gson = new Gson();
         return IntStream.range(0, args.length).mapToObj(i -> {
+            if (!(args[i] instanceof String)) {
+                throw new RpcException("When using GSON to deserialize generic dubbo request arguments, the arguments must be of type String");
+            }
             String str = args[i].toString();
             Type type = TypeToken.get(types[i]).getType();
             try {

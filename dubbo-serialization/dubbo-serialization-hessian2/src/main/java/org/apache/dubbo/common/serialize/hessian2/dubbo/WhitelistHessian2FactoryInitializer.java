@@ -47,7 +47,7 @@ public class WhitelistHessian2FactoryInitializer extends AbstractHessian2Factory
                 }
             }
         }
-        serializerFactory.getClassFactory().allow(RuntimeException.class.getName());
+        serializerFactory.setAllowNonSerializable(Boolean.parseBoolean(System.getProperty("dubbo.hessian.allowNonSerializable", "false")));
         serializerFactory.getClassFactory().allow("org.apache.dubbo.*");
         return serializerFactory;
     }

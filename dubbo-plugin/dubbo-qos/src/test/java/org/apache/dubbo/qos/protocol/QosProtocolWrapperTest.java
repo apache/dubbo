@@ -21,6 +21,7 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +43,8 @@ public class QosProtocolWrapperTest {
     private URL url = Mockito.mock(URL.class);
     private Invoker invoker = mock(Invoker.class);
     private Protocol protocol = mock(Protocol.class);
-    private QosProtocolWrapper wrapper = new QosProtocolWrapper(protocol);
-    private Server server = Server.getInstance();
+    private QosProtocolWrapper wrapper;
+    private Server server;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -53,6 +54,9 @@ public class QosProtocolWrapperTest {
         when(url.getParameter(ACCEPT_FOREIGN_IP, true)).thenReturn(false);
         when(invoker.getUrl()).thenReturn(url);
         when(url.getProtocol()).thenReturn(REGISTRY_PROTOCOL);
+        server = FrameworkModel.defaultModel().getBeanFactory().getBean(Server.class);
+        wrapper = new QosProtocolWrapper(protocol);
+        wrapper.setFrameworkModel(FrameworkModel.defaultModel());
     }
 
     @AfterEach
@@ -60,6 +64,7 @@ public class QosProtocolWrapperTest {
         if (server.isStarted()) {
             server.stop();
         }
+        FrameworkModel.defaultModel().destroy();
     }
 
     @Test

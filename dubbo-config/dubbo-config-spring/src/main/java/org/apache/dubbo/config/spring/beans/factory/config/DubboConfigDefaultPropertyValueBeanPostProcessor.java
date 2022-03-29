@@ -17,9 +17,9 @@
 package org.apache.dubbo.config.spring.beans.factory.config;
 
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.Constants;
 
 import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
-import org.apache.dubbo.config.Constants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -91,7 +91,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
             Method setterMethod = propertyDescriptor.getWriteMethod();
             if (setterMethod != null) { // the getter and setter methods are present
                 if (Arrays.equals(of(String.class), setterMethod.getParameterTypes())) { // the param type is String
-                    // set bean name to the value of the the property
+                    // set bean name to the value of the property
                     invokeMethod(setterMethod, bean, beanName);
                 }
             }

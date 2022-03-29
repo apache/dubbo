@@ -17,16 +17,18 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 public class HelpTest {
     @Test
     public void testMainHelp() throws Exception {
-        Help help = new Help();
+        Help help = new Help(FrameworkModel.defaultModel());
         String output = help.execute(Mockito.mock(CommandContext.class), null);
         assertThat(output, containsString("greeting"));
         assertThat(output, containsString("help"));
@@ -38,7 +40,7 @@ public class HelpTest {
 
     @Test
     public void testGreeting() throws Exception {
-        Help help = new Help();
+        Help help = new Help(FrameworkModel.defaultModel());
         String output = help.execute(Mockito.mock(CommandContext.class), new String[]{"greeting"});
         assertThat(output, containsString("COMMAND NAME"));
         assertThat(output, containsString("greeting"));

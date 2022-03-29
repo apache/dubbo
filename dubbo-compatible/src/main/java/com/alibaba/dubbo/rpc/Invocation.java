@@ -61,6 +61,7 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         setObjectAttachmentIfAbsent(key, value);
     }
 
+
     @Override
     default String getServiceName() {
         return null;
@@ -137,6 +138,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         @Override
         public String getMethodName() {
             return delegate.getMethodName();
+        }
+
+        @Override
+        public String getServiceName() {
+            return null;
         }
 
         @Override

@@ -35,7 +35,7 @@ public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor
         // Only the visible and only matching scope model can be injected, that is, module -> application -> framework.
         // The converse is a one-to-many relationship and cannot be injected.
         // One framework may have multiple applications, and one application may have multiple modules.
-        // So, the spi extension/bean of application scope can be injected it's application model and framework model,
+        // So, the spi extension/bean of application scope can be injected its application model and framework model,
         // but the spi extension/bean of framework scope cannot be injected an application or module model.
 
         if (scopeModel instanceof FrameworkModel) {
@@ -68,18 +68,22 @@ public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor
         return instance;
     }
 
+    @Override
     public ScopeModel getScopeModel() {
         return scopeModel;
     }
 
+    @Override
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
     }
 
+    @Override
     public ApplicationModel getApplicationModel() {
         return applicationModel;
     }
 
+    @Override
     public ModuleModel getModuleModel() {
         return moduleModel;
     }

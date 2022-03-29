@@ -45,7 +45,7 @@ public interface Cluster {
      * @throws RpcException
      */
     @Adaptive
-    <T> Invoker<T> join(Directory<T> directory) throws RpcException;
+    <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException;
 
     static Cluster getCluster(ScopeModel scopeModel, String name) {
         return getCluster(scopeModel, name, true);

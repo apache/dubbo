@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.context.ModuleExt;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -26,9 +28,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
@@ -36,22 +36,37 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ModuleModel extends ScopeModel {
     private static final Logger logger = LoggerFactory.getLogger(ModuleModel.class);
 
-    private static final AtomicLong index = new AtomicLong(0);
     public static final String NAME = "ModuleModel";
 
     private final ApplicationModel applicationModel;
     private ModuleEnvironment moduleEnvironment;
     private ModuleServiceRepository serviceRepository;
     private ModuleConfigManager moduleConfigManager;
-
+    private ModuleDeployer deployer;
 
     public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, ExtensionScope.MODULE);
+        this(applicationModel, false);
+    }
+
+    public ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
+        super(applicationModel, ExtensionScope.MODULE, isInternal);
         Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
+        applicationModel.addModule(this, isInternal);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
+        }
+
         initialize();
-        Assert.notNull(applicationModel, "ApplicationModel can not be null");
+        Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
+        Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");
+        Assert.assertTrue(moduleConfigManager.isInitialized(), "ModuleConfigManager can not be initialized");
+
+        // notify application check state
+        ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+        if (applicationDeployer != null) {
+            applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
+        }
     }
 
     @Override
@@ -78,46 +93,40 @@ public class ModuleModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
+        // 1. remove from applicationModel
+        applicationModel.removeModule(this);
+
+        // 2. set stopping
+        if (deployer != null) {
+            deployer.preDestroy();
+        }
+
+        // 3. release services
+        if (deployer != null) {
+            deployer.postDestroy();
+        }
+
+        // destroy other resources
+        notifyDestroy();
+
         if (serviceRepository != null) {
-            List<ConsumerModel> consumerModels = serviceRepository.getReferredServices();
-
-            for (ConsumerModel consumerModel : consumerModels) {
-                try {
-                    if (consumerModel.getReferenceConfig() != null) {
-                        consumerModel.getReferenceConfig().destroy();
-                    } else if (consumerModel.getDestroyCaller() != null) {
-                        consumerModel.getDestroyCaller().call();
-                    }
-                } catch (Throwable t) {
-                    logger.error("Unable to destroy consumerModel.", t);
-                }
-            }
-
-            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
-            for (ProviderModel providerModel : exportedServices) {
-                try {
-                    if (providerModel.getServiceConfig() != null) {
-                        providerModel.getServiceConfig().unexport();
-                    } else if (providerModel.getDestroyCaller() != null) {
-                        providerModel.getDestroyCaller().call();
-                    }
-                } catch (Throwable t) {
-                    logger.error("Unable to destroy providerModel.", t);
-                }
-            }
-
             serviceRepository.destroy();
             serviceRepository = null;
         }
 
-        notifyDestroy();
         if (moduleEnvironment != null) {
             moduleEnvironment.destroy();
             moduleEnvironment = null;
         }
 
-        applicationModel.removeModule(this);
+        if (moduleConfigManager != null) {
+            moduleConfigManager.destroy();
+            moduleConfigManager = null;
+        }
+
+        // destroy application if none pub module
+        applicationModel.tryDestroy();
     }
 
     public ApplicationModel getApplicationModel() {
@@ -126,6 +135,14 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+    @Override
+    public void addClassLoader(ClassLoader classLoader) {
+        super.addClassLoader(classLoader);
+        if (moduleEnvironment != null) {
+            moduleEnvironment.refreshClassLoaders();
+        }
     }
 
     @Override
@@ -142,11 +159,18 @@ public class ModuleModel extends ScopeModel {
     }
 
     public ModuleDeployer getDeployer() {
-        return getAttribute(ModelConstants.DEPLOYER, ModuleDeployer.class);
+        return deployer;
     }
 
     public void setDeployer(ModuleDeployer deployer) {
-        setAttribute(ModelConstants.DEPLOYER, deployer);
+        this.deployer = deployer;
     }
 
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public void setModuleEnvironment(ModuleEnvironment moduleEnvironment) {
+        this.moduleEnvironment = moduleEnvironment;
+    }
 }

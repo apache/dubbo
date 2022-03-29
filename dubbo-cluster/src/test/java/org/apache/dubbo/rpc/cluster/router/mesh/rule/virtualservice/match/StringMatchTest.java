@@ -30,9 +30,9 @@ public class StringMatchTest {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setExact("qinliujie");
 
-        assertTrue(StringMatch.isMatch(stringMatch, "qinliujie"));
-        assertFalse(StringMatch.isMatch(stringMatch, "other"));
-        assertFalse(StringMatch.isMatch(stringMatch, null));
+        assertTrue(stringMatch.isMatch("qinliujie"));
+        assertFalse(stringMatch.isMatch("other"));
+        assertFalse(stringMatch.isMatch(null));
     }
 
 
@@ -41,9 +41,9 @@ public class StringMatchTest {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setPrefix("org.apache.dubbo.rpc.cluster.router.mesh");
 
-        assertTrue(StringMatch.isMatch(stringMatch, "org.apache.dubbo.rpc.cluster.router.mesh.test"));
-        assertFalse(StringMatch.isMatch(stringMatch, "com.alibaba.hsf"));
-        assertFalse(StringMatch.isMatch(stringMatch, null));
+        assertTrue(stringMatch.isMatch("org.apache.dubbo.rpc.cluster.router.mesh.test"));
+        assertFalse(stringMatch.isMatch("com.alibaba.hsf"));
+        assertFalse(stringMatch.isMatch(null));
     }
 
 
@@ -52,10 +52,10 @@ public class StringMatchTest {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setRegex("org.apache.dubbo.rpc.cluster.router.mesh.*");
 
-        assertTrue(StringMatch.isMatch(stringMatch, "org.apache.dubbo.rpc.cluster.router.mesh"));
-        assertTrue(StringMatch.isMatch(stringMatch, "org.apache.dubbo.rpc.cluster.router.mesh.test"));
-        assertFalse(StringMatch.isMatch(stringMatch, "com.alibaba.hsf"));
-        assertFalse(StringMatch.isMatch(stringMatch, "com.taobao"));
+        assertTrue(stringMatch.isMatch("org.apache.dubbo.rpc.cluster.router.mesh"));
+        assertTrue(stringMatch.isMatch("org.apache.dubbo.rpc.cluster.router.mesh.test"));
+        assertFalse(stringMatch.isMatch("com.alibaba.hsf"));
+        assertFalse(stringMatch.isMatch("com.taobao"));
     }
 
 
@@ -64,9 +64,9 @@ public class StringMatchTest {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setEmpty("empty");
 
-        assertFalse(StringMatch.isMatch(stringMatch, "com.alibaba.hsf"));
-        assertTrue(StringMatch.isMatch(stringMatch, ""));
-        assertTrue(StringMatch.isMatch(stringMatch, null));
+        assertFalse(stringMatch.isMatch("com.alibaba.hsf"));
+        assertTrue(stringMatch.isMatch(""));
+        assertTrue(stringMatch.isMatch(null));
     }
 
     @Test
@@ -74,8 +74,8 @@ public class StringMatchTest {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setNoempty("noempty");
 
-        assertTrue(StringMatch.isMatch(stringMatch, "com.alibaba.hsf"));
-        assertFalse(StringMatch.isMatch(stringMatch, ""));
-        assertFalse(StringMatch.isMatch(stringMatch, null));
+        assertTrue(stringMatch.isMatch("com.alibaba.hsf"));
+        assertFalse(stringMatch.isMatch(""));
+        assertFalse(stringMatch.isMatch(null));
     }
 }

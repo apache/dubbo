@@ -17,15 +17,14 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "onlineAPp", summary = "offline app addresses", example = {
-        "offlineApp dubbo",
-        "offlineApp xx.xx.xxx.service"
+@Cmd(name = "onlineApp", summary = "online app addresses", example = {
+        "onlineApp dubbo",
+        "onlineApp xx.xx.xxx.service"
 })
 public class Online extends BaseOnline {
-    @Override
-    protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-        super.doExport(statedURL);
+    public Online(FrameworkModel frameworkModel) {
+        super(frameworkModel);
     }
 }

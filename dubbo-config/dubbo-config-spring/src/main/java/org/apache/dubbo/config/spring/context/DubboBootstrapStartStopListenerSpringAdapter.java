@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @scene 2.7.9
  */
+@Deprecated
 public class DubboBootstrapStartStopListenerSpringAdapter implements DubboBootstrapStartStopListener {
 
     static ApplicationContext applicationContext;

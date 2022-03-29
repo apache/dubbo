@@ -21,8 +21,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,10 +32,11 @@ import org.junit.jupiter.api.Test;
 
 public class TriplePathResolverTest {
 
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
+    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(
+            PathResolver.class)
         .getDefaultExtension();
 
-    private static Invoker<Object> INVOKER = new Invoker<Object>() {
+    private static final Invoker<Object> INVOKER = new Invoker<Object>() {
         @Override
         public URL getUrl() {
             return null;
@@ -81,6 +84,14 @@ public class TriplePathResolverTest {
         Assertions.assertEquals(INVOKER, getInvokerByPath("/abc"));
         PATH_RESOLVER.remove("/abc");
         Assertions.assertNull(getInvokerByPath("/abc"));
+    }
+
+    @Test
+    public void testNative() {
+        String path = "path";
+        Assertions.assertFalse(PATH_RESOLVER.hasNativeStub(path));
+        PATH_RESOLVER.addNativeStub(path);
+        Assertions.assertTrue(PATH_RESOLVER.hasNativeStub(path));
     }
 
     @Test

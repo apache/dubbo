@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -23,7 +24,7 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
@@ -41,23 +42,29 @@ import java.util.Set;
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 
 @Cmd(name = "invoke", summary = "Invoke the service method.", example = {
-    "invoke IHelloService.sayHello(\"xxxx\")"
+    "invoke IHelloService.sayHello(\"xxxx\")",
+    "invoke sayHello(\"xxxx\")"
 })
 public class InvokeTelnet implements BaseCommand {
     public static final AttributeKey<String> INVOKE_MESSAGE_KEY = AttributeKey.valueOf("telnet.invoke.method.message");
     public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY = AttributeKey.valueOf("telnet.invoke.method.list");
     public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY = AttributeKey.valueOf("telnet.invoke.method.provider");
 
+    private FrameworkModel frameworkModel;
+
+    public InvokeTelnet(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        if (args == null || args.length == 0) {
+        if (ArrayUtils.isEmpty(args)) {
             return "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
                 "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
                 "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";
         }
         Channel channel = commandContext.getRemote();
-        String service = channel.attr(ChangeTelnet.SERVICE_KEY).get();
+        String service = channel.attr(ChangeTelnet.SERVICE_KEY) != null ? channel.attr(ChangeTelnet.SERVICE_KEY).get() : null;
 
         String message = args[0];
         int i = message.indexOf("(");
@@ -74,6 +81,11 @@ public class InvokeTelnet implements BaseCommand {
             method = method.substring(i + 1).trim();
         }
 
+        if (StringUtils.isEmpty(service)) {
+            return "If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first," +
+                " or you can execute it like [invoke IHelloService.sayHello(\"xxxx\")]";
+        }
+
         List<Object> list;
         try {
             list = JSON.parseArray("[" + param + "]", Object.class);
@@ -87,7 +99,7 @@ public class InvokeTelnet implements BaseCommand {
             selectedProvider = channel.attr(INVOKE_METHOD_PROVIDER_KEY).get();
             invokeMethod = channel.attr(SelectTelnet.SELECT_METHOD_KEY).get();
         } else {
-            for (ProviderModel provider : ApplicationModel.defaultModel().allProviderModels()) {
+            for (ProviderModel provider : frameworkModel.getServiceRepository().allProviderModels()) {
                 if (!isServiceMatch(service, provider)) {
                     continue;
                 }

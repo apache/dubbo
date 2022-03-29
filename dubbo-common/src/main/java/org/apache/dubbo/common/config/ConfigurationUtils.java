@@ -21,10 +21,10 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -36,9 +36,9 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -49,7 +49,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
  */
 public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
-    private static Map<String, String> CACHED_DYNAMIC_PROPERTIES = new ConcurrentHashMap<>();
     private static final List<String> securityKey;
 
     static {
@@ -68,7 +67,7 @@ public class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -78,7 +77,7 @@ public class ConfigurationUtils {
      */
 
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -90,21 +89,26 @@ public class ConfigurationUtils {
      */
 
     public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getModuleModel(scopeModel).getModelEnvironment().getDynamicGlobalConfiguration();
+        return scopeModel.getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
     // FIXME
+
+    /**
+     * Server shutdown wait timeout mills
+     * @return
+     */
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout(ScopeModel scopeModel) {
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
         Configuration configuration = getGlobalConfiguration(scopeModel);
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
 
-        if (value != null && value.length() > 0) {
+        if (StringUtils.isNotEmpty(value)) {
             try {
                 timeout = Integer.parseInt(value);
             } catch (Exception e) {
@@ -112,7 +116,7 @@ public class ConfigurationUtils {
             }
         } else {
             value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_SECONDS_KEY));
-            if (value != null && value.length() > 0) {
+            if (StringUtils.isNotEmpty(value)) {
                 try {
                     timeout = Integer.parseInt(value) * 1000;
                 } catch (Exception e) {
@@ -123,9 +127,18 @@ public class ConfigurationUtils {
         return timeout;
     }
 
-    public static String getCachedDynamicProperty(ScopeModel scopeModel, String key, String defaultValue) {
-        String value = CACHED_DYNAMIC_PROPERTIES.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, key, ""));
+    public static String getCachedDynamicProperty(ScopeModel realScopeModel, String key, String defaultValue) {
+        ScopeModel scopeModel = getScopeModelOrDefaultApplicationModel(realScopeModel);
+        ConfigurationCache configurationCache = scopeModel.getBeanFactory().getBean(ConfigurationCache.class);
+        String value = configurationCache.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    private static ScopeModel getScopeModelOrDefaultApplicationModel(ScopeModel realScopeModel) {
+        if (realScopeModel == null) {
+            return ApplicationModel.defaultModel();
+        }
+        return realScopeModel;
     }
 
     public static String getDynamicProperty(ScopeModel scopeModel, String property) {
@@ -151,7 +164,7 @@ public class ConfigurationUtils {
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {
-            logger.warn("You specified the config center, but there's not even one single config item in it.");
+            logger.warn("Config center was specified, but no config item found.");
         } else {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
@@ -217,7 +230,7 @@ public class ConfigurationUtils {
             resultMap = new LinkedHashMap<>();
         }
 
-        if (null != configMap) {
+        if (CollectionUtils.isNotEmptyMap(configMap)) {
             for(Map.Entry<String, V> entry : configMap.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
@@ -227,8 +240,11 @@ public class ConfigurationUtils {
 
                     String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
-                    k = StringUtils.convertToSplitName(k, "-");
-                    resultMap.putIfAbsent(k, val);
+                    String newK = StringUtils.convertToSplitName(k, "-");
+                    resultMap.putIfAbsent(newK, val);
+                    if (!Objects.equals(k, newK)) {
+                        resultMap.putIfAbsent(k, val);
+                    }
                 }
             }
         }
@@ -321,52 +337,89 @@ public class ConfigurationUtils {
 
     /**
      * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getSystemConfiguration(ScopeModel)}
      */
     @Deprecated
     public static Configuration getSystemConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getEnvConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getEnvConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getGlobalConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getGlobalConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicGlobalConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
         return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getCachedDynamicProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getCachedDynamicProperty(String key, String defaultValue) {
         return getCachedDynamicProperty(ApplicationModel.defaultModel(), key, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String)}
+     */
     @Deprecated
     public static String getDynamicProperty(String property) {
         return getDynamicProperty(ApplicationModel.defaultModel(), property);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getDynamicProperty(String property, String defaultValue) {
         return getDynamicProperty(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String)}
+     */
     @Deprecated
     public static String getProperty(String property) {
         return getProperty(ApplicationModel.defaultModel(), property);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getProperty(String property, String defaultValue) {
         return getProperty(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#get(ScopeModel, String, int)}
+     */
     @Deprecated
     public static int get(String property, int defaultValue) {
         return get(ApplicationModel.defaultModel(), property, defaultValue);

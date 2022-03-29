@@ -113,6 +113,7 @@ public abstract class Mixin {
             }
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{Object[].class}, code.toString());
 
+            Class<?> neighbor = null;
             // impl methods.
             Set<String> worked = new HashSet<String>();
             for (int i = 0; i < ics.length; i++) {
@@ -120,6 +121,7 @@ public abstract class Mixin {
                     String npkg = ics[i].getPackage().getName();
                     if (pkg == null) {
                         pkg = npkg;
+                        neighbor = ics[i];
                     } else {
                         if (!pkg.equals(npkg)) {
                             throw new IllegalArgumentException("non-public delegate class from different packages");
@@ -159,12 +161,13 @@ public abstract class Mixin {
 
             if (pkg == null) {
                 pkg = PACKAGE_NAME;
+                neighbor = Mixin.class;
             }
 
             // create MixinInstance class.
             String micn = pkg + ".mixin" + id;
             ccp.setClassName(micn);
-            ccp.toClass();
+            ccp.toClass(neighbor);
 
             // create Mixin class.
             String fcn = Mixin.class.getName() + id;
@@ -173,7 +176,7 @@ public abstract class Mixin {
             ccm.addDefaultConstructor();
             ccm.setSuperClass(Mixin.class.getName());
             ccm.addMethod("public Object newInstance(Object[] delegates){ return new " + micn + "($1); }");
-            Class<?> mixin = ccm.toClass();
+            Class<?> mixin = ccm.toClass(Mixin.class);
             return (Mixin) mixin.getDeclaredConstructor().newInstance();
         } catch (RuntimeException e) {
             throw e;

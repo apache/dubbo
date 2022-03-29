@@ -18,9 +18,9 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;

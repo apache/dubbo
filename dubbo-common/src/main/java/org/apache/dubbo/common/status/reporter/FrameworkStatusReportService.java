@@ -27,9 +27,6 @@ import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.Set;
 
-/**
- *
- */
 public class FrameworkStatusReportService implements ScopeModelAware {
 
     private static final Logger logger = LoggerFactory.getLogger(FrameworkStatusReporter.class);
@@ -67,8 +64,9 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         // TODO, report asynchronously
         try {
             if (CollectionUtils.isNotEmpty(reporters)) {
-                FrameworkStatusReporter reporter = reporters.iterator().next();
-                reporter.report(type, obj);
+                for (FrameworkStatusReporter reporter : reporters) {
+                    reporter.report(type, obj);
+                }
             }
         } catch (Exception e) {
             logger.info("Report " + type + " status failed because of " + e.getMessage());
@@ -76,11 +74,10 @@ public class FrameworkStatusReportService implements ScopeModelAware {
     }
 
     public String createRegistrationReport(String status) {
-        return "{\"application\":\"" +
-            applicationModel.getApplicationName() +
-            "\",\"status\":\"" +
-            status +
-            "\"}";
+        HashMap<String, String> registration = new HashMap<>();
+        registration.put("application", applicationModel.getApplicationName());
+        registration.put("status", status);
+        return gson.toJson(registration);
     }
 
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {

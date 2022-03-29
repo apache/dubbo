@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -24,6 +24,8 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
@@ -65,7 +67,8 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         this.path = path;
         this.latch = latch;
         this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getUrl(), zookeeperServiceDiscovery.getDelay(),
-            ScopeModelUtil.getApplicationModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getApplicationExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
+            ScopeModelUtil.getFrameworkModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getServiceDiscoveryAddressNotificationExecutor()) {
             @Override
             protected void doNotify(Object rawAddresses) {
                 listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent) rawAddresses));

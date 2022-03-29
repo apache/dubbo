@@ -57,8 +57,8 @@ public class ThreadPoolStatusChecker implements StatusChecker {
                     msg.append(';');
                 }
                 msg.append("Pool status:").append(lvl).append(", max:").append(tp.getMaximumPoolSize()).append(", core:")
-                        .append(tp.getCorePoolSize()).append(", largest:").append(tp.getLargestPoolSize()).append(", active:")
-                        .append(tp.getActiveCount()).append(", task:").append(tp.getTaskCount()).append(", service port: ").append(port);
+                    .append(tp.getCorePoolSize()).append(", largest:").append(tp.getLargestPoolSize()).append(", active:")
+                    .append(tp.getActiveCount()).append(", task:").append(tp.getTaskCount()).append(", service port: ").append(port);
             }
         }
         return msg.length() == 0 ? new Status(Status.Level.UNKNOWN) : new Status(level, msg.toString());

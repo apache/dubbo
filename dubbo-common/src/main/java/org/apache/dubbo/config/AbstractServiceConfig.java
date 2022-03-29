@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_K
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -9026290350363878309L;
 
     /**
      * The service version
@@ -100,7 +101,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     protected String protocolIds;
 
-    // max allowed execute times
+    /**
+     * Max allowed executing times
+     */
     private Integer executes;
 
     /**
@@ -120,8 +123,18 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     /**
      * Weather the service is export asynchronously
+     * @deprecated
+     * @see ModuleConfig#exportAsync
      */
+    @Deprecated
     private Boolean exportAsync;
+
+    public AbstractServiceConfig() {
+    }
+
+    public AbstractServiceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     @Override
     protected void checkDefault() {
@@ -310,11 +323,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
+    @Deprecated
     @Parameter(key = EXPORT_ASYNC_KEY)
     public Boolean getExportAsync() {
         return exportAsync;
     }
 
+    @Deprecated
     public void setExportAsync(Boolean exportAsync) {
         this.exportAsync = exportAsync;
     }

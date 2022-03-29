@@ -44,7 +44,7 @@ import static org.apache.dubbo.rpc.Constants.ACTIVES_KEY;
 @Activate(group = CONSUMER, value = ACTIVES_KEY)
 public class ActiveLimitFilter implements Filter, Filter.Listener {
 
-    private static final String ACTIVELIMIT_FILTER_START_TIME = "activelimit_filter_start_time";
+    private static final String ACTIVE_LIMIT_FILTER_START_TIME = "active_limit_filter_start_time";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -76,7 +76,7 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
             }
         }
 
-        invocation.put(ACTIVELIMIT_FILTER_START_TIME, System.currentTimeMillis());
+        invocation.put(ACTIVE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
 
         return invoker.invoke(invocation);
     }
@@ -108,7 +108,7 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
     }
 
     private long getElapsed(Invocation invocation) {
-        Object beginTime = invocation.get(ACTIVELIMIT_FILTER_START_TIME);
+        Object beginTime = invocation.get(ACTIVE_LIMIT_FILTER_START_TIME);
         return beginTime != null ? System.currentTimeMillis() - (Long) beginTime : 0;
     }
 

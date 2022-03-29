@@ -16,13 +16,16 @@
  */
 package org.apache.dubbo.rpc.cluster.support.registry;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.ZoneDetector;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
@@ -37,7 +40,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_
 import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
 
 /**
- * When there're more than one registry for subscription.
+ * When there are more than one registry for subscription.
  * <p>
  * This extension provides a strategy to decide how to distribute traffics among them:
  * 1. registry marked as 'preferred=true' has the highest priority.
@@ -49,8 +52,14 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ZoneAwareClusterInvoker.class);
 
+    private ZoneDetector zoneDetector;
+
     public ZoneAwareClusterInvoker(Directory<T> directory) {
         super(directory);
+        ExtensionLoader<ZoneDetector> loader = directory.getConsumerUrl().getOrDefaultApplicationModel().getExtensionLoader(ZoneDetector.class);
+        if (loader.hasExtension("default")) {
+            zoneDetector = loader.getExtension("default");
+        }
     }
 
     @Override
@@ -65,8 +74,15 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
 
+        RpcContext rpcContext = RpcContext.getClientAttachment();
+        String zone = rpcContext.getAttachment(REGISTRY_ZONE);
+        String force = rpcContext.getAttachment(REGISTRY_ZONE_FORCE);
+        if (StringUtils.isEmpty(zone) && zoneDetector != null) {
+            zone = zoneDetector.getZoneOfCurrentRequest(invocation);
+            force = zoneDetector.isZoneForcingEnabled(invocation, zone);
+        }
+
         // providers in the registry with the same zone
-        String zone = invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
                 ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
@@ -74,7 +90,6 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     return clusterInvoker.invoke(invocation);
                 }
             }
-            String force = invocation.getAttachment(REGISTRY_ZONE_FORCE);
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone

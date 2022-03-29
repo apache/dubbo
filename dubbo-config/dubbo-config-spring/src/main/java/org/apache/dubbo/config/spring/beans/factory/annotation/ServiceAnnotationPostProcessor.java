@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +29,8 @@ import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefin
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
+
+import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -244,7 +245,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     }
 
     /**
-     * It'd better to use BeanNameGenerator instance that should reference
+     * It'd be better to use BeanNameGenerator instance that should reference
      * {@link ConfigurationClassPostProcessor#componentScanBeanNameGenerator},
      * thus it maybe a potential problem on bean name generation.
      *
@@ -470,11 +471,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             addPropertyReference(builder, "monitor", monitorConfigId);
         }
 
-        // application reference
-        String applicationConfigId = (String) serviceAnnotationAttributes.get("application");
-        if (StringUtils.hasText(applicationConfigId)) {
-            addPropertyReference(builder, "application", applicationConfigId);
-        }
+        // deprecate application reference
+//        String applicationConfigId = (String) serviceAnnotationAttributes.get("application");
+//        if (StringUtils.hasText(applicationConfigId)) {
+//            addPropertyReference(builder, "application", applicationConfigId);
+//        }
 
         // module reference
         String moduleConfigId = (String) serviceAnnotationAttributes.get("module");

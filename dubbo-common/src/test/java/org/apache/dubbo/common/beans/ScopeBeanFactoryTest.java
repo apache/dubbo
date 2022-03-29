@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beans.model.FooBeanWithApplicationModel;
 import org.apache.dubbo.common.beans.model.FooBeanWithFrameworkModel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -44,5 +45,13 @@ public class ScopeBeanFactoryTest {
 
         Object objectBean = applicationModel.getBeanFactory().getBean(Object.class);
         Assertions.assertNull(objectBean);
+
+        Assertions.assertFalse(beanWithApplicationModel.isDestroyed());
+        Assertions.assertFalse(beanWithFrameworkModel.isDestroyed());
+
+        // destroy
+        frameworkModel.destroy();
+        Assertions.assertTrue(beanWithApplicationModel.isDestroyed());
+        Assertions.assertTrue(beanWithFrameworkModel.isDestroyed());
     }
 }

@@ -17,16 +17,32 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExecutorRepositoryTest {
-    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    private ApplicationModel applicationModel;
+    private ExecutorRepository executorRepository;
+
+    @BeforeEach
+    public void setup() {
+        applicationModel = FrameworkModel.defaultModel().newApplication();
+        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    }
+
+    @AfterEach
+    public void teardown() {
+        applicationModel.destroy();
+    }
 
     @Test
     public void testGetExecutor() {
@@ -72,7 +88,57 @@ public class ExecutorRepositoryTest {
 
         executorService.setCorePoolSize(5);
         executorRepository.updateThreadpool(url, executorService);
+    }
 
+    @Test
+    public void testSharedExecutor() throws Exception {
+        ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
+        MockTask task1 = new MockTask(2000);
+        MockTask task2 = new MockTask(100);
+        MockTask task3 = new MockTask(200);
+        sharedExecutor.execute(task1);
+        sharedExecutor.execute(task2);
+        sharedExecutor.submit(task3);
 
+        Thread.sleep(150);
+        Assertions.assertTrue(task1.isRunning());
+        Assertions.assertFalse(task1.isDone());
+        Assertions.assertTrue(task2.isRunning());
+        Assertions.assertTrue(task2.isDone());
+        Assertions.assertTrue(task3.isRunning());
+        Assertions.assertFalse(task3.isDone());
+
+        Thread.sleep(200);
+        Assertions.assertTrue(task3.isDone());
+        Assertions.assertFalse(task1.isDone());
+    }
+
+    private static class MockTask implements Runnable {
+        private long waitTimeMS;
+        private AtomicBoolean running = new AtomicBoolean();
+        private AtomicBoolean done = new AtomicBoolean();
+
+        public MockTask(long waitTimeMS) {
+            this.waitTimeMS = waitTimeMS;
+        }
+
+        @Override
+        public void run() {
+            running.set(true);
+            try {
+                Thread.sleep(waitTimeMS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            done.set(true);
+        }
+
+        public boolean isDone() {
+            return done.get();
+        }
+
+        public boolean isRunning() {
+            return running.get();
+        }
     }
 }

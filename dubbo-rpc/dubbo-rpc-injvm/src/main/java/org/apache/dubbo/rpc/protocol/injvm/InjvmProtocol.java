@@ -17,13 +17,13 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -40,22 +40,14 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 /**
  * InjvmProtocol
  */
-public class InjvmProtocol extends AbstractProtocol implements Protocol {
+public class InjvmProtocol extends AbstractProtocol {
 
     public static final String NAME = LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
-    private static InjvmProtocol INSTANCE;
 
-    public InjvmProtocol() {
-        INSTANCE = this;
-    }
-
-    public static InjvmProtocol getInjvmProtocol() {
-        if (INSTANCE == null) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME); // load
-        }
-        return INSTANCE;
+    public static InjvmProtocol getInjvmProtocol(ScopeModel scopeModel) {
+        return (InjvmProtocol) scopeModel.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME, false);
     }
 
     static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {

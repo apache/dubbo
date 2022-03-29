@@ -218,7 +218,7 @@ final class NettyChannel extends AbstractChannel {
 
     @Override
     public void setAttribute(String key, Object value) {
-        // The null value is unallowed in the ConcurrentHashMap.
+        // The null value is not allowed in the ConcurrentHashMap.
         if (value == null) {
             attributes.remove(key);
         } else {

@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
@@ -40,7 +39,7 @@ public class MockServiceInstancesChangedListener extends ServiceInstancesChanged
         return super.getAddresses(serviceProtocolKey, consumerURL);
     }
 
-    public Map<String, NotifyListener> getServiceListeners () {
-       return listeners;
+    public Map<String, Set<NotifyListenerWithKey>> getServiceListeners() {
+        return listeners;
     }
 }

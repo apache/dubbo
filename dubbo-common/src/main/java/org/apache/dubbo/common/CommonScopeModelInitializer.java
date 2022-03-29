@@ -17,8 +17,10 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.config.ConfigurationCache;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -27,7 +29,8 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 public class CommonScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        beanFactory.registerBean(FrameworkExecutorRepository.class);
     }
 
     @Override
@@ -35,10 +38,12 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.registerBean(ShutdownHookCallbacks.class);
         beanFactory.registerBean(FrameworkStatusReportService.class);
+        beanFactory.registerBean(new ConfigurationCache());
     }
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {
-
+        ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
+        beanFactory.registerBean(new ConfigurationCache());
     }
 }

@@ -17,9 +17,11 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.ArgumentConfig;
+import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -29,6 +31,10 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.reference.ReferenceCreator;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
+import com.alibaba.spring.util.AnnotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -65,6 +71,11 @@ import static org.springframework.util.ReflectionUtils.findField;
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class ReferenceCreatorTest {
 
+    private static final String MODULE_CONFIG_ID = "mymodule";
+    private static final String CONSUMER_CONFIG_ID = "myconsumer";
+    private static final String MONITOR_CONFIG_ID = "mymonitor";
+    private static final String REGISTRY_CONFIG_ID = "myregistry";
+
     @DubboReference(
             //interfaceClass = HelloService.class,
             version = "1.0.0", group = "TEST_GROUP", url = "dubbo://localhost:12345",
@@ -79,7 +90,7 @@ public class ReferenceCreatorTest {
             timeout = 3, cache = "cache", filter = {"echo", "generic", "accesslog"},
             listener = {"deprecated"}, parameters = {"n1=v1  ", "n2 = v2 ", "  n3 =   v3  "},
             application = "application",
-            module = "module", consumer = "consumer", monitor = "monitor", registry = {"myregistry"},
+            module = MODULE_CONFIG_ID, consumer = CONSUMER_CONFIG_ID, monitor = MONITOR_CONFIG_ID, registry = {REGISTRY_CONFIG_ID},
             // @since 2.7.3
             id = "reference",
             // @since 2.7.8
@@ -156,7 +167,7 @@ public class ReferenceCreatorTest {
         Assertions.assertEquals("reference", referenceBean.getId());
         Assertions.assertEquals(ofSet("service1", "service2", "service3"), referenceBean.getSubscribedServices());
         Assertions.assertEquals("service1,service2,service3", referenceBean.getProvidedBy());
-        Assertions.assertEquals("myregistry", referenceBean.getRegistryIds());
+        Assertions.assertEquals(REGISTRY_CONFIG_ID, referenceBean.getRegistryIds());
 
         // parameters
         Map<String, String> parameters = new HashMap<String, String>();
@@ -195,9 +206,9 @@ public class ReferenceCreatorTest {
 
         // Asserts Null fields
         Assertions.assertThrows(IllegalStateException.class, () -> referenceBean.getApplication());
-        Assertions.assertNull(referenceBean.getModule());
-        Assertions.assertNull(referenceBean.getConsumer());
-        Assertions.assertNull(referenceBean.getMonitor());
+        Assertions.assertNotNull(referenceBean.getModule());
+        Assertions.assertNotNull(referenceBean.getConsumer());
+        Assertions.assertNotNull(referenceBean.getMonitor());
     }
 
 
@@ -207,6 +218,26 @@ public class ReferenceCreatorTest {
         @Bean
         public NotifyService notifyService() {
             return new NotifyService();
+        }
+
+        @Bean("org.apache.dubbo.rpc.model.ModuleModel")
+        public ModuleModel moduleModel() {
+            return ApplicationModel.defaultModel().getDefaultModule();
+        }
+
+        @Bean(CONSUMER_CONFIG_ID)
+        public ConsumerConfig consumerConfig() {
+            return new ConsumerConfig();
+        }
+
+        @Bean(MONITOR_CONFIG_ID)
+        public MonitorConfig monitorConfig(){
+            return new MonitorConfig();
+        }
+
+        @Bean(MODULE_CONFIG_ID)
+        public ModuleConfig moduleConfig(){
+            return new ModuleConfig();
         }
 
     }

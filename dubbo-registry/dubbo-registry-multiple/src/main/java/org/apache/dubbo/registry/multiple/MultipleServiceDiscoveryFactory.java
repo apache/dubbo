@@ -23,6 +23,6 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 public class MultipleServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return new MultipleServiceDiscovery();
+        return new MultipleServiceDiscovery(registryURL);
     }
 }

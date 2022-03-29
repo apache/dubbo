@@ -18,1390 +18,367 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRuleSpec;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.Subset;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboMatchRequest;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRoute;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRouteDetail;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceSpec;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboDestination;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboRouteDestination;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboMethodMatch;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.ArrayList;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
 public class MeshRuleRouterTest {
+    private final static String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: DestinationRule\n" +
+        "metadata: { name: demo-route }\n" +
+        "spec:\n" +
+        "  host: demo\n" +
+        "  subsets:\n" +
+        "    - labels: { env-sign: xxx, tag1: hello }\n" +
+        "      name: isolation\n" +
+        "    - labels: { env-sign: yyy }\n" +
+        "      name: testing-trunk\n" +
+        "    - labels: { env-sign: zzz }\n" +
+        "      name: testing\n" +
+        "  trafficPolicy:\n" +
+        "    loadBalancer: { simple: ROUND_ROBIN }\n" +
+        "\n";
+    private final static String rule2 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route }\n" +
+        "spec:\n" +
+        "  dubbo:\n" +
+        "    - routedetail:\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
+        "          name: xxx-project\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: isolation}\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
+        "          name: testing-trunk\n" +
+        "          route:\n" +
+        "            - destination:\n" +
+        "                host: demo\n" +
+        "                subset: testing-trunk\n" +
+        "                fallback:\n" +
+        "                  host: demo\n" +
+        "                  subset: testing\n" +
+        "        - name: testing\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: testing}\n" +
+        "      services:\n" +
+        "        - {regex: ccc}\n" +
+        "  hosts: [demo]\n";
+    private final static String rule3 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route }\n" +
+        "spec:\n" +
+        "  dubbo:\n" +
+        "    - routedetail:\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
+        "          name: xxx-project\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: isolation}\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
+        "          name: testing-trunk\n" +
+        "          route:\n" +
+        "            - destination:\n" +
+        "                host: demo\n" +
+        "                subset: testing-trunk\n" +
+        "                fallback:\n" +
+        "                  host: demo\n" +
+        "                  subset: testing\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing}}\n" +
+        "          name: testing\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: testing}\n" +
+        "  hosts: [demo]\n";
+    private final static String rule4 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route }\n" +
+        "spec:\n" +
+        "  dubbo:\n" +
+        "    - routedetail:\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
+        "          name: xxx-project\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: isolation}\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
+        "          name: testing-trunk\n" +
+        "          route:\n" +
+        "            - destination:\n" +
+        "                host: demo\n" +
+        "                subset: testing-trunk\n" +
+        "                fallback:\n" +
+        "                  destination:\n" +
+        "                    host: demo\n" +
+        "                    subset: testing\n" +
+        "            - weight: 10\n" +
+        "              destination:\n" +
+        "                host: demo\n" +
+        "                subset: isolation\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing}}\n" +
+        "          name: testing\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: testing}\n" +
+        "  hosts: [demo]\n";
 
-    @Test
-    public void containMapKeyValue() {
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
+    private ModuleModel originModel;
+    private ModuleModel moduleModel;
+    private MeshRuleManager meshRuleManager;
+    private Set<TracingContextProvider> tracingContextProviders;
+    private URL url;
 
-        Map<String, String> originMap = new HashMap<>();
+    @BeforeEach
+    public void setup() {
+        originModel = ApplicationModel.defaultModel().getDefaultModule();
+        moduleModel = Mockito.spy(originModel);
 
-        originMap.put("key1", "value1");
-        originMap.put("key2", "value2");
-        originMap.put("key3", "value3");
+        ScopeBeanFactory originBeanFactory = originModel.getBeanFactory();
+        ScopeBeanFactory beanFactory = Mockito.spy(originBeanFactory);
+        when(moduleModel.getBeanFactory()).thenReturn(beanFactory);
 
-        Map<String, String> inputMap = new HashMap<>();
+        meshRuleManager = Mockito.mock(MeshRuleManager.class);
+        when(beanFactory.getBean(MeshRuleManager.class)).thenReturn(meshRuleManager);
 
-        inputMap.put("key1", "value1");
-        inputMap.put("key2", "value2");
+        ExtensionLoader<TracingContextProvider> extensionLoader = Mockito.mock(ExtensionLoader.class);
+        tracingContextProviders = new HashSet<>();
+        when(extensionLoader.getSupportedExtensionInstances()).thenReturn(tracingContextProviders);
+        when(moduleModel.getExtensionLoader(TracingContextProvider.class)).thenReturn(extensionLoader);
 
-        assertTrue(meshRuleRouter.containMapKeyValue(originMap, inputMap));
-
-        inputMap.put("key4", "value4");
-        assertFalse(meshRuleRouter.containMapKeyValue(originMap, inputMap));
-
-
-        assertTrue(meshRuleRouter.containMapKeyValue(originMap, null));
-        assertTrue(meshRuleRouter.containMapKeyValue(originMap, new HashMap<>()));
-
+        url = URL.valueOf("test://localhost/DemoInterface").setScopeModel(moduleModel);
     }
 
-    @Test
-    public void computeSubsetMap() {
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
-
-        List<Invoker<?>> invokers = new ArrayList<>();
-
-        //--
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test1");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test2");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test3");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        //--
-
-        List<DestinationRule> destinationRules = new ArrayList<>();
-
-        //--
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test1");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test1");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test2");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test2");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test4");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test4");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-
-        //--
-
-
-        Map<String, List<Invoker<?>>> result = meshRuleRouter.computeSubsetMap(invokers, destinationRules);
-
-        assertTrue(result.size() == 3);
-        assertTrue(result.containsKey("test1"));
-        assertTrue(result.containsKey("test2"));
-        assertTrue(result.containsKey("test4"));
-
-        assertTrue(result.get("test1").size() == 1);
-        assertTrue(result.get("test2").size() == 1);
-        assertTrue(result.get("test4").size() == 0);
-
+    @AfterEach
+    public void teardown() {
+        originModel.destroy();
     }
 
-    @Test
-    public void computeSubset() {
-
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
-
-
-        meshRuleRouter.setInvokerList(null);
-        meshRuleRouter.computeSubset();
-
-        assertNull(meshRuleRouter.getSubsetMap());
-
-        List<Invoker<?>> invokers = new ArrayList<>();
-
-        //--
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test1");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test2");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test3");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        meshRuleRouter.setInvokerList(invokers);
-
-        meshRuleRouter.computeSubset();
-
-        assertNull(meshRuleRouter.getSubsetMap());
-
-
-        VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
-
-        List<DestinationRule> destinationRules = new ArrayList<>();
-
-        //--
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test1");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test1");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test2");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test2");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test4");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test4");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-
-        vsDestinationGroup.setDestinationRuleList(destinationRules);
-
-        meshRuleRouter.setVsDestinationGroup(vsDestinationGroup);
-
-
-        meshRuleRouter.computeSubset();
-
-        assertNotNull(meshRuleRouter.getSubsetMap());
-        assertTrue(meshRuleRouter.getSubsetMap().size() == 3);
+    private Invoker<Object> createInvoker(String app) {
+        URL url = URL.valueOf("dubbo://localhost/DemoInterface?" + (StringUtils.isEmpty(app) ? "" : "remote.application=" + app));
+        Invoker invoker = Mockito.mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+        return invoker;
     }
 
-    @Test
-    public void findMatchDubboRouteDetail() {
-
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
-
-        Invocation invocation = mock(Invocation.class);
-        when(invocation.getMethodName()).thenReturn("sayHello");
-        when(invocation.getArguments()).thenReturn(new Object[]{"qinliujie"});
-        when(invocation.getCompatibleParamSignatures()).thenReturn(new String[]{String.class.getName()});
-
-        assertNull(meshRuleRouter.findMatchDubboRouteDetail(new ArrayList<>(), invocation));
-
-        //--
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-
-            DubboRouteDetail result = meshRuleRouter.findMatchDubboRouteDetail(dubboRouteDetailList, invocation);
-            assertNotNull(result);
-            assertEquals("test", result.getName());
-        }
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHi");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-
-            DubboRouteDetail result = meshRuleRouter.findMatchDubboRouteDetail(dubboRouteDetailList, invocation);
-            assertNull(result);
-        }
-
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            {
-                DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-                dubboRouteDetail.setName("test");
-
-                List<DubboMatchRequest> match = new ArrayList<>();
-
-                DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-                DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-                StringMatch stringMatch = new StringMatch();
-                stringMatch.setExact("sayHi");
-                dubboMethodMatch.setName_match(stringMatch);
-
-                dubboMatchRequest.setMethod(dubboMethodMatch);
-                match.add(dubboMatchRequest);
-
-                dubboRouteDetail.setMatch(match);
-
-                dubboRouteDetailList.add(dubboRouteDetail);
-            }
-
-
-            {
-                DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-                dubboRouteDetail.setName("test2");
-
-                List<DubboMatchRequest> match = new ArrayList<>();
-
-                DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-                DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-                StringMatch stringMatch = new StringMatch();
-                stringMatch.setExact("sayHello");
-                dubboMethodMatch.setName_match(stringMatch);
-
-                dubboMatchRequest.setMethod(dubboMethodMatch);
-                match.add(dubboMatchRequest);
-
-                dubboRouteDetail.setMatch(match);
-
-                dubboRouteDetailList.add(dubboRouteDetail);
-            }
-
-            DubboRouteDetail result = meshRuleRouter.findMatchDubboRouteDetail(dubboRouteDetailList, invocation);
-            assertNotNull(result);
-            assertEquals("test2", result.getName());
-        }
-
+    private Invoker<Object> createInvoker(Map<String, String> parameters) {
+        URL url = URL.valueOf("dubbo://localhost/DemoInterface?remote.application=app1").addParameters(parameters);
+        Invoker invoker = Mockito.mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+        return invoker;
     }
 
-    @Test
-    public void getDubboRouteDestination() {
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
-
-        Invocation invocation = mock(Invocation.class);
-        when(invocation.getMethodName()).thenReturn("sayHello");
-        when(invocation.getArguments()).thenReturn(new Object[]{"qinliujie"});
-        when(invocation.getCompatibleParamSignatures()).thenReturn(new String[]{String.class.getName()});
-
-        DubboRoute dubboRoute = new DubboRoute();
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHi");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            assertNull(meshRuleRouter.getDubboRouteDestination(dubboRoute, invocation));
-        }
-
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            assertNotNull(meshRuleRouter.getDubboRouteDestination(dubboRoute, invocation));
-        }
-    }
-
-    @Test
-    public void getDubboRoute() {
-
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
-
-        Invocation invocation = mock(Invocation.class);
-        when(invocation.getMethodName()).thenReturn("sayHello");
-        when(invocation.getArguments()).thenReturn(new Object[]{"qinliujie"});
-        when(invocation.getCompatibleParamSignatures()).thenReturn(new String[]{String.class.getName()});
-        when(invocation.getServiceName()).thenReturn("demoService");
-
-        DubboRoute dubboRoute = new DubboRoute();
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-
-
-            dubboRoute.setServices(new ArrayList<>());
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-
-            virtualServiceRule.setSpec(spec);
-            DubboRoute result = meshRuleRouter.getDubboRoute(virtualServiceRule, invocation);
-
-            assertNotNull(result);
-        }
-
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setExact("otherService");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-
-            DubboRoute result = meshRuleRouter.getDubboRoute(virtualServiceRule, invocation);
-
-            assertNull(result);
-        }
-
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setRegex(".*");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-            DubboRoute result = meshRuleRouter.getDubboRoute(virtualServiceRule, invocation);
-
-            assertNotNull(result);
-        }
-
-        {
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHi");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setRegex(".*");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-            DubboRoute result = meshRuleRouter.getDubboRoute(virtualServiceRule, invocation);
-
-            assertNotNull(result);
-        }
-
-
-    }
 
     @Test
     public void testNotify() {
+        StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
+        meshRuleRouter.notify(null);
+        assertEquals(0, meshRuleRouter.getRemoteAppName().size());
 
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
+        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
 
+        meshRuleRouter.notify(invokers);
 
-        meshRuleRouter.setInvokerList(null);
-        meshRuleRouter.computeSubset();
+        assertEquals(1, meshRuleRouter.getRemoteAppName().size());
+        assertTrue(meshRuleRouter.getRemoteAppName().contains("app1"));
+        assertEquals(invokers, meshRuleRouter.getInvokerList());
 
-        assertNull(meshRuleRouter.getSubsetMap());
+        verify(meshRuleManager, times(1)).register("app1", meshRuleRouter);
 
-        List<Invoker<?>> invokers = new ArrayList<>();
+        invokers = new BitList<>(Arrays.asList(createInvoker("unknown"), createInvoker("app2")));
+        meshRuleRouter.notify(invokers);
+        verify(meshRuleManager, times(1)).register("app2", meshRuleRouter);
+        verify(meshRuleManager, times(1)).unregister("app1", meshRuleRouter);
+        assertEquals(invokers, meshRuleRouter.getInvokerList());
 
-        //--
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test1");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test2");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test3");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-        VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
-
-        List<DestinationRule> destinationRules = new ArrayList<>();
-
-        //--
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test1");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test1");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test2");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test2");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test4");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test4");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-
-        vsDestinationGroup.setDestinationRuleList(destinationRules);
-
-        meshRuleRouter.setVsDestinationGroup(vsDestinationGroup);
-
-        meshRuleRouter.notify((List) invokers);
-
-        assertNotNull(meshRuleRouter.getSubsetMap());
-
+        meshRuleRouter.stop();
+        verify(meshRuleManager, times(1)).unregister("app2", meshRuleRouter);
     }
 
     @Test
-    public void route() {
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
-
-        List<Invoker<?>> inputInvokers = new ArrayList<>();
-
-        URL inputURL = mock(URL.class);
-
-        Invocation invocation = mock(Invocation.class);
-        when(invocation.getMethodName()).thenReturn("sayHello");
-        when(invocation.getArguments()).thenReturn(new Object[]{"qinliujie"});
-        when(invocation.getCompatibleParamSignatures()).thenReturn(new String[]{String.class.getName()});
-        when(invocation.getServiceName()).thenReturn("demoService");
-
-
-        List<Invoker<?>> invokers = new ArrayList<>();
-
-        //--
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test1");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test2");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test3");
-
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        meshRuleRouter.setInvokerList(invokers);
-
-
-        VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
-
-        List<DestinationRule> destinationRules = new ArrayList<>();
-
-        //--
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test1");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test1");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test2");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test2");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        vsDestinationGroup.setDestinationRuleList(destinationRules);
-
-        meshRuleRouter.setVsDestinationGroup(vsDestinationGroup);
-
-
-        {
-            DubboRoute dubboRoute = new DubboRoute();
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            dubboRouteDestinations.add(new DubboRouteDestination());
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setExact("otherService");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-
-            List<VirtualServiceRule> virtualServiceRuleList = new ArrayList<>();
-            virtualServiceRuleList.add(virtualServiceRule);
-            vsDestinationGroup.setVirtualServiceRuleList(virtualServiceRuleList);
-            meshRuleRouter.computeSubset();
-            assertEquals(inputInvokers, meshRuleRouter.route((List) inputInvokers, inputURL, invocation));
-        }
-
-
-        {
-            DubboRoute dubboRoute = new DubboRoute();
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            DubboRouteDestination dubboRouteDestination = new DubboRouteDestination();
-            DubboDestination destination = new DubboDestination();
-            destination.setSubset("test1");
-            dubboRouteDestination.setDestination(destination);
-            dubboRouteDestinations.add(dubboRouteDestination);
-
-
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setRegex(".*");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-
-            List<VirtualServiceRule> virtualServiceRuleList = new ArrayList<>();
-            virtualServiceRuleList.add(virtualServiceRule);
-            vsDestinationGroup.setVirtualServiceRuleList(virtualServiceRuleList);
-            meshRuleRouter.computeSubset();
-            assertNotEquals(inputInvokers, meshRuleRouter.route((List) inputInvokers, inputURL, invocation));
-            assertEquals(1, meshRuleRouter.route((List) inputInvokers, inputURL, invocation).size());
-
-            Map<String, String> invokerParameterMap = new HashMap<>();
-            invokerParameterMap.put("env", "test1");
-
-            assertEquals(invokerParameterMap, ((Invoker) meshRuleRouter.route((List) inputInvokers, inputURL, invocation).get(0)).getUrl().getParameters());
-        }
+    public void testRuleChange() {
+        StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
+
+        Yaml yaml = new Yaml(new SafeConstructor());
+        List<Map<String, Object>> rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+
+        meshRuleRouter.onRuleChange("app1", rules);
+        assertEquals(0, meshRuleRouter.getMeshRuleCache().getAppToVDGroup().size());
+
+        rules.add(yaml.load(rule2));
+        meshRuleRouter.onRuleChange("app1", rules);
+        assertEquals(1, meshRuleRouter.getMeshRuleCache().getAppToVDGroup().size());
+        assertTrue(meshRuleRouter.getMeshRuleCache().getAppToVDGroup().containsKey("app1"));
+
+        meshRuleRouter.onRuleChange("app2", rules);
+        assertEquals(2, meshRuleRouter.getMeshRuleCache().getAppToVDGroup().size());
+        assertTrue(meshRuleRouter.getMeshRuleCache().getAppToVDGroup().containsKey("app1"));
+        assertTrue(meshRuleRouter.getMeshRuleCache().getAppToVDGroup().containsKey("app2"));
+
+        meshRuleRouter.clearRule("app1");
+        assertEquals(1, meshRuleRouter.getMeshRuleCache().getAppToVDGroup().size());
+        assertTrue(meshRuleRouter.getMeshRuleCache().getAppToVDGroup().containsKey("app2"));
     }
 
+    @Test
+    public void testRoute1() {
+        StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
+        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
+        assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, null, false, null));
+        Holder<String> message = new Holder<>();
+        meshRuleRouter.doRoute(invokers.clone(), null, null, true, null, message);
+        assertEquals("MeshRuleCache has not been built. Skip route.", message.get());
+    }
 
     @Test
-    public void routeFallback() {
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("test");
-        MeshRuleRouter meshRuleRouter = new MeshRuleRouter(url);
+    public void testRoute2() {
+        StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
 
-        List<Invoker<?>> inputInvokers = new ArrayList<>();
+        Yaml yaml = new Yaml(new SafeConstructor());
+        List<Map<String, Object>> rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(rule2));
+        meshRuleRouter.onRuleChange("app1", rules);
 
-        URL inputURL = mock(URL.class);
+        Invoker<Object> isolation = createInvoker(new HashMap<String, String>() {{
+            put("env-sign", "xxx");
+            put("tag1", "hello");
+        }});
+        Invoker<Object> testingTrunk = createInvoker(Collections.singletonMap("env-sign", "yyy"));
+        Invoker<Object> testing = createInvoker(Collections.singletonMap("env-sign", "zzz"));
 
-        Invocation invocation = mock(Invocation.class);
-        when(invocation.getMethodName()).thenReturn("sayHello");
-        when(invocation.getArguments()).thenReturn(new Object[]{"qinliujie"});
-        when(invocation.getCompatibleParamSignatures()).thenReturn(new String[]{String.class.getName()});
-        when(invocation.getServiceName()).thenReturn("demoService");
+        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing));
+        meshRuleRouter.notify(invokers);
 
+        RpcInvocation rpcInvocation = new RpcInvocation();
 
-        List<Invoker<?>> invokers = new ArrayList<>();
+        rpcInvocation.setServiceName("ccc");
+        rpcInvocation.setAttachment("trafficLabel", "xxx");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+        Holder<String> message = new Holder<>();
+        meshRuleRouter.doRoute(invokers.clone(), null, rpcInvocation, true, null, message);
+        assertEquals("Match App: app1 Subset: isolation ", message.get());
 
-        //--
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test1");
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testingTrunk, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
+        rpcInvocation.setAttachment("trafficLabel", null);
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
 
-            invokers.add(invoker1);
+        rpcInvocation.setServiceName("aaa");
+        assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
+        message = new Holder<>();
+        meshRuleRouter.doRoute(invokers.clone(), null, rpcInvocation, true, null, message);
+        assertEquals("Empty protection after routed.", message.get());
+
+        rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(rule3));
+        meshRuleRouter.onRuleChange("app1", rules);
+
+        rpcInvocation.setServiceName("ccc");
+        rpcInvocation.setAttachment("trafficLabel", "xxx");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(isolation, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testingTrunk, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+
+        rpcInvocation.setAttachment("trafficLabel", "testing");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+
+        rpcInvocation.setServiceName("aaa");
+        assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+        assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
+
+        rpcInvocation.setAttachment("trafficLabel",null);
+        assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
+
+        rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(rule4));
+        meshRuleRouter.onRuleChange("app1", rules);
+
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+
+        int testingCount = 0;
+        int isolationCount = 0;
+        for (int i = 0; i < 1000; i++) {
+            BitList<Invoker<Object>> result = meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null);
+            assertEquals(1, result.size());
+            if (result.contains(testing)) {
+                testingCount++;
+            } else {
+                isolationCount++;
+            }
+        }
+        assertTrue(isolationCount > testingCount * 10);
+
+        invokers.removeAll(Arrays.asList(isolation, testingTrunk));
+        for (int i = 0; i < 1000; i++) {
+            assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+            assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
         }
 
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test2");
+        meshRuleRouter.notify(invokers);
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
+        for (int i = 0; i < 1000; i++) {
+            assertEquals(1, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).size());
+            assertEquals(testing, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null).get(0));
         }
 
+        Invoker<Object> mock = createInvoker(Collections.singletonMap("env-sign", "mock"));
+        invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing, mock));
 
-        {
-            Invoker<?> invoker1 = mock(Invoker.class);
-            URL invoker1URL = mock(URL.class);
-            Map<String, String> invoker1Map = new HashMap<>();
-            invoker1Map.put("env", "test3");
+        meshRuleRouter.notify(invokers);
+        invokers.removeAll(Arrays.asList(isolation, testingTrunk, testing));
+        assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, rpcInvocation, false, null));
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
-            when(invoker1.getUrl()).thenReturn(invoker1URL);
-
-            invokers.add(invoker1);
-        }
-
-
-        meshRuleRouter.setInvokerList(invokers);
-
-
-        VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
-
-        List<DestinationRule> destinationRules = new ArrayList<>();
-
-        //--
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test1");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test1");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        {
-            DestinationRule destinationRule1 = new DestinationRule();
-
-            DestinationRuleSpec destinationRuleSpec = new DestinationRuleSpec();
-            destinationRuleSpec.setHost("test1");
-
-            List<Subset> subsetList = new ArrayList<>();
-
-            Subset subset = new Subset();
-            subset.setName("test2");
-
-            Map<String, String> subsetTest1Lables = new HashMap<>();
-            subsetTest1Lables.put("env", "test2");
-            subset.setLabels(subsetTest1Lables);
-
-            subsetList.add(subset);
-
-            destinationRuleSpec.setSubsets(subsetList);
-
-            destinationRule1.setSpec(destinationRuleSpec);
-            destinationRules.add(destinationRule1);
-        }
-
-        vsDestinationGroup.setDestinationRuleList(destinationRules);
-
-        meshRuleRouter.setVsDestinationGroup(vsDestinationGroup);
-
-
-        {
-            DubboRoute dubboRoute = new DubboRoute();
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            DubboRouteDestination dubboRouteDestination = new DubboRouteDestination();
-            DubboDestination destination = new DubboDestination();
-            destination.setSubset("test5");
-
-
-            DubboRouteDestination fallbackDubboRouteDestination = new DubboRouteDestination();
-            DubboDestination fallbackDestination = new DubboDestination();
-            fallbackDestination.setSubset("test1");
-            fallbackDubboRouteDestination.setDestination(fallbackDestination);
-
-
-            destination.setFallback(fallbackDubboRouteDestination);
-
-
-            dubboRouteDestination.setDestination(destination);
-            dubboRouteDestinations.add(dubboRouteDestination);
-
-
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setRegex(".*");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-
-            List<VirtualServiceRule> virtualServiceRuleList = new ArrayList<>();
-            virtualServiceRuleList.add(virtualServiceRule);
-            vsDestinationGroup.setVirtualServiceRuleList(virtualServiceRuleList);
-            meshRuleRouter.computeSubset();
-            assertNotEquals(inputInvokers, meshRuleRouter.route((List) inputInvokers, inputURL, invocation));
-            assertEquals(1, meshRuleRouter.route((List) inputInvokers, inputURL, invocation).size());
-
-            Map<String, String> invokerParameterMap = new HashMap<>();
-            invokerParameterMap.put("env", "test1");
-
-            assertEquals(invokerParameterMap, ((Invoker) meshRuleRouter.route((List) inputInvokers, inputURL, invocation).get(0)).getUrl().getParameters());
-        }
-
-        {
-            DubboRoute dubboRoute = new DubboRoute();
-            List<DubboRouteDetail> dubboRouteDetailList = new ArrayList<>();
-            DubboRouteDetail dubboRouteDetail = new DubboRouteDetail();
-            dubboRouteDetail.setName("test");
-
-            List<DubboMatchRequest> match = new ArrayList<>();
-
-            DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
-            DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
-            StringMatch stringMatch = new StringMatch();
-            stringMatch.setExact("sayHello");
-            dubboMethodMatch.setName_match(stringMatch);
-
-            dubboMatchRequest.setMethod(dubboMethodMatch);
-
-            match.add(dubboMatchRequest);
-
-            dubboRouteDetail.setMatch(match);
-
-            List<DubboRouteDestination> dubboRouteDestinations = new ArrayList<>();
-            DubboRouteDestination dubboRouteDestination = new DubboRouteDestination();
-            DubboDestination destination = new DubboDestination();
-            destination.setSubset("test5");
-
-
-            DubboRouteDestination fallbackDubboRouteDestination = new DubboRouteDestination();
-            DubboDestination fallbackDestination = new DubboDestination();
-            fallbackDestination.setSubset("test11");
-            fallbackDubboRouteDestination.setDestination(fallbackDestination);
-
-
-            destination.setFallback(fallbackDubboRouteDestination);
-
-
-            dubboRouteDestination.setDestination(destination);
-            dubboRouteDestinations.add(dubboRouteDestination);
-
-
-            dubboRouteDetail.setRoute(dubboRouteDestinations);
-
-            dubboRouteDetailList.add(dubboRouteDetail);
-            dubboRoute.setRoutedetail(dubboRouteDetailList);
-            List<StringMatch> serviceMatchList = new ArrayList<>();
-            StringMatch serviceNameMatch = new StringMatch();
-            serviceNameMatch.setRegex(".*");
-
-            serviceMatchList.add(serviceNameMatch);
-
-            dubboRoute.setServices(serviceMatchList);
-
-            VirtualServiceRule virtualServiceRule = new VirtualServiceRule();
-            //virtualServiceRule.
-
-
-            VirtualServiceSpec spec = new VirtualServiceSpec();
-            List<DubboRoute> dubbo = new ArrayList<>();
-            dubbo.add(dubboRoute);
-
-            spec.setDubbo(dubbo);
-            virtualServiceRule.setSpec(spec);
-
-            List<VirtualServiceRule> virtualServiceRuleList = new ArrayList<>();
-            virtualServiceRuleList.add(virtualServiceRule);
-            vsDestinationGroup.setVirtualServiceRuleList(virtualServiceRuleList);
-            meshRuleRouter.computeSubset();
-
-            assertNull(meshRuleRouter.route((List) inputInvokers, inputURL, invocation));
-
-            meshRuleRouter.setSubsetMap(null);
-            assertNotNull(meshRuleRouter.route((List) inputInvokers, inputURL, invocation));
-        }
     }
 }

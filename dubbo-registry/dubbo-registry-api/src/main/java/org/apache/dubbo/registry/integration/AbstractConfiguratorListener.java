@@ -92,6 +92,7 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             configurators.clear();
         } else {
+            // ADDED or MODIFIED
             if (!genConfiguratorsFromRawRule(event.getContent())) {
                 return;
             }
@@ -101,21 +102,21 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     }
 
     private boolean genConfiguratorsFromRawRule(String rawConfig) {
-        boolean parseSuccess = true;
+        List<URL> urls;
         try {
             // parseConfigurators will recognize app/service config automatically.
-            List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
-            List<URL> safeUrls = urls.stream()
-                .map(url -> url.removeParameters(securityKey))
-                .map(url -> url.setScopeModel(moduleModel))
-                .collect(Collectors.toList());
-            configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
+            urls = ConfigParser.parseConfigurators(rawConfig);
         } catch (Exception e) {
-            logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
-                    rawConfig, e);
-            parseSuccess = false;
+            logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: "
+                    + rawConfig + ", cause: " + e.getMessage());
+            return false;
         }
-        return parseSuccess;
+        List<URL> safeUrls = urls.stream()
+            .map(url -> url.removeParameters(securityKey))
+            .map(url -> url.setScopeModel(moduleModel))
+            .collect(Collectors.toList());
+        configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
+        return true;
     }
 
     protected abstract void notifyOverrides();

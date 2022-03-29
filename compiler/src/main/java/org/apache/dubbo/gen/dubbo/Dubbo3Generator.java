@@ -55,4 +55,9 @@ public class Dubbo3Generator extends AbstractGenerator {
     protected String getSingleTemplateFileName() {
         return "DubboStub.mustache";// compatible with 2.7 or before
     }
+
+    @Override
+    protected boolean enableMultipleTemplateFiles() {
+        return true;
+    }
 }

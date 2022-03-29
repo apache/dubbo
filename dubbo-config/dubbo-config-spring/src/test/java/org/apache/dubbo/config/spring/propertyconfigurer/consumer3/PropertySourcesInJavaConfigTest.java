@@ -20,8 +20,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,25 +36,22 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 public class PropertySourcesInJavaConfigTest {
 
     private static final String SCAN_PACKAGE_NAME = "org.apache.dubbo.config.spring.propertyconfigurer.consumer3.notexist";
     private static final String PACKAGE_PATH = "/org/apache/dubbo/config/spring/propertyconfigurer/consumer3";
     private static final String PROVIDER_CONFIG_PATH = "org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml";
-    private RegistryCenter singleRegistryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        singleRegistryCenter.shutdown();
     }
 
     @BeforeEach
@@ -81,7 +77,7 @@ public class PropertySourcesInJavaConfigTest {
                 HelloService service = (HelloService) context.getBean("demoService");
                 String result = service.sayHello("world");
                 System.out.println("result: " + result);
-                Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+                Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
             } finally {
                 context.close();
             }
@@ -109,7 +105,7 @@ public class PropertySourcesInJavaConfigTest {
                 HelloService service = (HelloService) context.getBean("demoService");
                 String result = service.sayHello("world");
                 System.out.println("result: " + result);
-                Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+                Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
             } finally {
                 context.close();
             }

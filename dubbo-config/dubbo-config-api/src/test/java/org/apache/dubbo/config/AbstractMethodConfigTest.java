@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -28,6 +31,12 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.sameInstance;
 
 public class AbstractMethodConfigTest {
+
+    @AfterAll
+    public static void afterAll() {
+        DubboBootstrap.reset();
+    }
+
     @Test
     public void testTimeout() throws Exception {
         MethodConfig methodConfig = new MethodConfig();

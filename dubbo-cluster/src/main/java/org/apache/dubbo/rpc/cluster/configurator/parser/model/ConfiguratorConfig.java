@@ -26,7 +26,11 @@ import java.util.stream.Collectors;
 public class ConfiguratorConfig {
     public static final String SCOPE_SERVICE = "service";
     public static final String SCOPE_APPLICATION = "application";
-
+    public static final String CONFIG_VERSION_KEY = "configVersion";
+    public static final String SCOPE_KEY = "scope";
+    public static final String CONFIG_KEY = "key";
+    public static final String ENABLED_KEY = "enabled";
+    public static final String CONFIGS_KEY = "configs";
     private String configVersion;
     private String scope;
     private String key;
@@ -36,16 +40,16 @@ public class ConfiguratorConfig {
     @SuppressWarnings("unchecked")
     public static ConfiguratorConfig parseFromMap(Map<String, Object> map) {
         ConfiguratorConfig configuratorConfig = new ConfiguratorConfig();
-        configuratorConfig.setConfigVersion((String) map.get("configVersion"));
-        configuratorConfig.setScope((String) map.get("scope"));
-        configuratorConfig.setKey((String) map.get("key"));
+        configuratorConfig.setConfigVersion((String) map.get(CONFIG_VERSION_KEY));
+        configuratorConfig.setScope((String) map.get(SCOPE_KEY));
+        configuratorConfig.setKey((String) map.get(CONFIG_KEY));
 
-        Object enabled = map.get("enabled");
+        Object enabled = map.get(ENABLED_KEY);
         if (enabled != null) {
             configuratorConfig.setEnabled(Boolean.parseBoolean(enabled.toString()));
         }
 
-        Object configs = map.get("configs");
+        Object configs = map.get(CONFIGS_KEY);
         if (configs != null && List.class.isAssignableFrom(configs.getClass())) {
             configuratorConfig.setConfigs(((List<Map<String, Object>>) configs).stream()
                     .map(ConfigItem::parseFromMap).collect(Collectors.toList()));

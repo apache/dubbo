@@ -23,7 +23,7 @@ import java.util.Map;
 public class BaseRule {
     private String apiVersion;
     private String kind;
-    private Map<String,String> metadata;
+    private Map<String, String> metadata;
 
     public String getApiVersion() {
         return apiVersion;
@@ -52,9 +52,9 @@ public class BaseRule {
     @Override
     public String toString() {
         return "BaseRule{" +
-                "apiVersion='" + apiVersion + '\'' +
-                ", kind='" + kind + '\'' +
-                ", metadata=" + metadata +
-                '}';
+            "apiVersion='" + apiVersion + '\'' +
+            ", kind='" + kind + '\'' +
+            ", metadata=" + metadata +
+            '}';
     }
 }

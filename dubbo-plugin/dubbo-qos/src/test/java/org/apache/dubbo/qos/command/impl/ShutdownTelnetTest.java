@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import io.netty.channel.Channel;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import io.netty.channel.Channel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,12 +33,13 @@ import static org.mockito.Mockito.reset;
 
 public class ShutdownTelnetTest {
 
-    private static final BaseCommand shutdown = new ShutdownTelnet();
+    private BaseCommand shutdown;
     private Channel mockChannel;
     private CommandContext mockCommandContext;
 
     @BeforeEach
     public void setUp() {
+        shutdown = new ShutdownTelnet(FrameworkModel.defaultModel());
         mockCommandContext = mock(CommandContext.class);
         mockChannel = mock(Channel.class);
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
@@ -45,7 +47,7 @@ public class ShutdownTelnetTest {
 
     @AfterEach
     public void after() {
-        ProtocolUtils.closeAll();
+        FrameworkModel.destroyAll();
         reset(mockChannel, mockCommandContext);
     }
 

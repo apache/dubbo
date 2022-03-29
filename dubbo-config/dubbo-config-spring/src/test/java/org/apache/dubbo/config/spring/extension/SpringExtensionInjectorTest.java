@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
-import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.Protocol;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +34,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@EnableDubbo(scanBasePackages = "")
 @Configuration
 public class SpringExtensionInjectorTest {
 
@@ -52,9 +55,6 @@ public class SpringExtensionInjectorTest {
             context.setDisplayName("Context1");
             context.register(getClass());
             context.refresh();
-
-            // mock dubbo spring initialize
-            DubboSpringInitializer.initialize(context);
 
             SpringExtensionInjector springExtensionInjector = SpringExtensionInjector.get(DubboBeanUtils.getApplicationModel(context));
             Protocol protocol = springExtensionInjector.getInstance(Protocol.class, "protocol");
@@ -82,5 +82,10 @@ public class SpringExtensionInjectorTest {
     @Bean("hello")
     public HelloService helloService() {
         return new HelloServiceImpl();
+    }
+
+    @Bean
+    public ApplicationConfig applicationConfig() {
+        return new ApplicationConfig("test-app");
     }
 }

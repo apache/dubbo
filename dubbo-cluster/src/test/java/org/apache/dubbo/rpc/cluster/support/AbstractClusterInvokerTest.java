@@ -33,6 +33,8 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -48,7 +50,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -83,14 +86,19 @@ public class AbstractClusterInvokerTest {
     Invoker<IHelloService> invoker5;
     Invoker<IHelloService> mockedInvoker1;
 
-
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
+        System.setProperty(ENABLE_CONNECTIVITY_VALIDATION, "false");
     }
 
     @AfterEach
     public void teardown() throws Exception {
         RpcContext.removeContext();
+    }
+
+    @AfterAll
+    public static void afterClass() {
+        System.clearProperty(ENABLE_CONNECTIVITY_VALIDATION);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -254,7 +262,7 @@ public class AbstractClusterInvokerTest {
     private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
         String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
         String path = queryMap.get(PATH_KEY);
-        String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY);
+        String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? CONSUMER : queryMap.get(PROTOCOL_KEY);
 
         URL consumerUrlFrom = this.url
                 .setHost(host)
@@ -487,10 +495,11 @@ public class AbstractClusterInvokerTest {
     }
 
     private void initDic() {
+        dic.notify(invokers);
         dic.buildRouterChain();
     }
 
-    @Test()
+    @Test
     public void testTimeoutExceptionCode() {
         List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
         invokers.add(new Invoker<DemoService>() {

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.common.URL;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Notice, this class currently has no usage inside Dubbo.
  *
  * data related to service level such as name, version, classloader of business service,
- * security info, etc. Also with a AttributeMap for extension.
+ * security info, etc. Also, with a AttributeMap for extension.
  */
 public class ServiceMetadata extends BaseServiceMetadata {
 
@@ -35,23 +34,28 @@ public class ServiceMetadata extends BaseServiceMetadata {
 
     private Object target;
 
-    /* will be transferred to remote side */
-    private final Map<String, Object> attachments = new ConcurrentHashMap<String, Object>();
-    /* used locally*/
-    private final Map<String, Object> attributeMap = new ConcurrentHashMap<String, Object>();
+    /**
+     * will be transferred to remote side
+     */
+    private final Map<String, Object> attachments = new ConcurrentHashMap<>();
+    /**
+     * used locally
+     */
+    private final Map<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     public ServiceMetadata(String serviceInterfaceName, String group, String version, Class<?> serviceType) {
         this.serviceInterfaceName = serviceInterfaceName;
         this.defaultGroup = group;
         this.group = group;
         this.version = version;
-        this.serviceKey = URL.buildKey(serviceInterfaceName, group, version);
+        this.serviceKey = buildServiceKey(serviceInterfaceName, group, version);
         this.serviceType = serviceType;
     }
 
     public ServiceMetadata() {
     }
 
+    @Override
     public String getServiceKey() {
         return serviceKey;
     }

@@ -21,10 +21,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.ProtocolServer;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class DubboProtocolServer implements ProtocolServer {
 
     private RemotingServer server;
     private String address;
+    private Map<String, Object> attributes = new ConcurrentHashMap<>();
 
     public DubboProtocolServer(RemotingServer server) {
         this.server = server;
@@ -58,5 +62,10 @@ public class DubboProtocolServer implements ProtocolServer {
     @Override
     public void close() {
         server.close();
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 }

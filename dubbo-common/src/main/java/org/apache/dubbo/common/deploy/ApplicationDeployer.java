@@ -17,32 +17,75 @@
 package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.concurrent.Future;
 
 /**
  * initialize and start application instance
  */
-public interface ApplicationDeployer extends Lifecycle {
+public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
-    void initialize();
+    /**
+     * Initialize the component
+     */
+    void initialize() throws IllegalStateException;
 
-    void start();
+    /**
+     * Starts the component.
+     * @return
+     */
+    Future start() throws IllegalStateException;
 
+    /**
+     * Stops the component.
+     */
+    void stop() throws IllegalStateException;
+
+    Future getStartFuture();
+
+    /**
+     * Register application instance and start internal services
+     */
     void prepareApplicationInstance();
 
-    void destroy();
+    /**
+     * Register application instance and start internal services
+     */
+    void prepareInternalModule();
 
+    /**
+     * Pre-processing before destroy model
+     */
+    void preDestroy();
+
+    /**
+     * Post-processing after destroy model
+     */
+    void postDestroy();
+
+    /**
+     * Indicates that the Application is initialized or not.
+     */
     boolean isInitialized();
-
-    boolean isStarted();
-
-    boolean isStartup();
-
-    boolean isShutdown();
 
     ApplicationModel getApplicationModel();
 
     ReferenceCache getReferenceCache();
 
+    /**
+     * Whether start in background, do not await finish
+     */
+    boolean isBackground();
+
+    /**
+     * check all module state and update application state
+     */
+    void checkState(ModuleModel moduleModel, DeployState moduleState);
+
+    /**
+     * module state changed callbacks
+     */
+    void notifyModuleChanged(ModuleModel moduleModel, DeployState state);
 }

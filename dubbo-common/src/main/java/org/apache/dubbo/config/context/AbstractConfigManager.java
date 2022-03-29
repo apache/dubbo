@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
@@ -26,7 +27,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -34,16 +38,21 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -58,6 +67,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     private static final String CONFIG_NAME_READ_METHOD = "getName";
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractConfigManager.class);
+    private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
     final Map<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
 
@@ -70,12 +80,61 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     private final Collection<Class<? extends AbstractConfig>> supportedConfigTypes;
     private final Environment environment;
     private ConfigValidator configValidator;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    protected ConfigMode configMode = ConfigMode.STRICT;
+    protected boolean ignoreDuplicatedInterface = false;
+
+    static {
+        // init unique config types
+        // unique config in application
+        uniqueConfigTypes.add(ApplicationConfig.class);
+        uniqueConfigTypes.add(MonitorConfig.class);
+        uniqueConfigTypes.add(MetricsConfig.class);
+        uniqueConfigTypes.add(SslConfig.class);
+
+        // unique config in each module
+        uniqueConfigTypes.add(ModuleConfig.class);
+    }
+
 
     public AbstractConfigManager(ScopeModel scopeModel, Collection<Class<? extends AbstractConfig>> supportedConfigTypes) {
         this.scopeModel = scopeModel;
         this.applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
         this.supportedConfigTypes = supportedConfigTypes;
         environment = scopeModel.getModelEnvironment();
+    }
+
+    @Override
+    public void initialize() throws IllegalStateException {
+        if (!initialized.compareAndSet(false, true)) {
+            return;
+        }
+        CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
+
+        // dubbo.config.mode
+        String configModeStr = (String) configuration.getProperty(ConfigKeys.DUBBO_CONFIG_MODE);
+        try {
+            if (StringUtils.hasText(configModeStr)) {
+                this.configMode = ConfigMode.valueOf(configModeStr.toUpperCase());
+            }
+        } catch (Exception e) {
+            String msg = "Illegal '" + ConfigKeys.DUBBO_CONFIG_MODE + "' config value [" + configModeStr + "], available values " + Arrays.toString(ConfigMode.values());
+            logger.error(msg, e);
+            throw new IllegalArgumentException(msg, e);
+        }
+
+        // dubbo.config.ignore-duplicated-interface
+        String ignoreDuplicatedInterfaceStr = (String) configuration
+            .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);
+        if (ignoreDuplicatedInterfaceStr != null) {
+            this.ignoreDuplicatedInterface = Boolean.parseBoolean(ignoreDuplicatedInterfaceStr);
+        }
+
+        // print
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put(ConfigKeys.DUBBO_CONFIG_MODE, configMode);
+        map.put(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE, this.ignoreDuplicatedInterface);
+        logger.info("Config settings: " + map);
     }
 
     /**
@@ -164,7 +223,34 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return config;
     }
 
+    protected boolean isUniqueConfig(AbstractConfig config) {
+        if (uniqueConfigTypes.contains(config.getClass())) {
+            return true;
+        }
+        for (Class<? extends AbstractConfig> uniqueConfigType : uniqueConfigTypes) {
+            if (uniqueConfigType.isAssignableFrom(config.getClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected <C extends AbstractConfig> C getSingleConfig(String configType) throws IllegalStateException {
+        Map<String, AbstractConfig> configsMap = getConfigsMap(configType);
+        int size = configsMap.size();
+        if (size < 1) {
+//                throw new IllegalStateException("No such " + configType.getName() + " is found");
+            return null;
+        } else if (size > 1) {
+            throw new IllegalStateException("Expected single instance of " + configType + ", but found " + size +
+                " instances, please remove redundant configs. instances: " + configsMap.values());
+        }
+        return (C) configsMap.values().iterator().next();
+    }
+
     protected <C extends AbstractConfig> Optional<C> findDuplicatedConfig(Map<String, C> configsMap, C config) {
+
+        // find by value
         Optional<C> prevConfig = findConfigByValue(configsMap.values(), config);
         if (prevConfig.isPresent()) {
             if (prevConfig.get() == config) {
@@ -178,7 +264,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             }
             return prevConfig;
         }
-        return Optional.empty();
+
+        // check unique config
+        return checkUniqueConfig(configsMap, config);
     }
 
     public <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<C> cls) {
@@ -235,7 +323,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (configsMap.isEmpty()) {
             return null;
         }
-        // try find config by name
+        // try to find config by name
         if (ReflectUtils.hasMethod(cls, CONFIG_NAME_READ_METHOD)) {
             List<C> list = configsMap.values().stream()
                 .filter(cfg -> name.equals(getConfigName(cfg)))
@@ -252,7 +340,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     private <C extends AbstractConfig> String getConfigName(C config) {
         try {
-            return (String) ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
+            return ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
         } catch (Exception e) {
             return null;
         }
@@ -328,16 +416,66 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         // exclude isDefault() == false
     }
 
+    protected <C extends AbstractConfig> Optional<C> checkUniqueConfig(Map<String, C> configsMap, C config) {
+        if (configsMap.size() > 0 && isUniqueConfig(config)) {
+            C oldOne = configsMap.values().iterator().next();
+            String configName = oldOne.getClass().getSimpleName();
+            String msgPrefix = "Duplicate Configs found for " + configName + ", only one unique " + configName +
+                " is allowed for one application. previous: " + oldOne + ", later: " + config + ". According to config mode [" + configMode + "], ";
+            switch (configMode) {
+                case STRICT: {
+                    if (!isEquals(oldOne, config)) {
+                        throw new IllegalStateException(msgPrefix + "please remove redundant configs and keep only one.");
+                    }
+                    break;
+                }
+                case IGNORE: {
+                    // ignore later config
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "keep previous config and ignore later config");
+                    }
+                    return Optional.of(oldOne);
+                }
+                case OVERRIDE: {
+                    // clear previous config, add new config
+                    configsMap.clear();
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "override previous config with later config");
+                    }
+                    break;
+                }
+                case OVERRIDE_ALL: {
+                    // override old one's properties with the new one
+                    oldOne.overrideWithConfig(config, true);
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "override previous config with later config");
+                    }
+                    return Optional.of(oldOne);
+                }
+                case OVERRIDE_IF_ABSENT: {
+                    // override old one's properties with the new one
+                    oldOne.overrideWithConfig(config, false);
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "override previous config with later config");
+                    }
+                    return Optional.of(oldOne);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     public abstract void loadConfigs();
 
-    public <T extends AbstractConfig> void loadConfigsOfTypeFromProps(Class<T> cls) {
+    public <T extends AbstractConfig> List<T> loadConfigsOfTypeFromProps(Class<T> cls) {
+        List<T> tmpConfigs = new ArrayList<>();
         PropertiesConfiguration properties = environment.getPropertiesConfiguration();
 
         // load multiple configs with id
         Set<String> configIds = this.getConfigIdsFromProps(cls);
         configIds.forEach(id -> {
             if (!this.getConfig(cls, id).isPresent()) {
-                T config = null;
+                T config;
                 try {
                     config = createConfig(cls, scopeModel);
                     config.setId(id);
@@ -357,6 +495,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
                     config.refresh();
                     this.addConfig(config);
+                    tmpConfigs.add(config);
                 } catch (Exception e) {
                     logger.error("load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
@@ -373,7 +512,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             // load single config
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
             if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
-                T config = null;
+                T config;
                 try {
                     config = createConfig(cls, scopeModel);
                     config.refresh();
@@ -382,9 +521,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 }
 
                 this.addConfig(config);
+                tmpConfigs.add(config);
             }
         }
 
+        return tmpConfigs;
     }
 
     private <T extends AbstractConfig> T createConfig(Class<T> cls, ScopeModel scopeModel) throws ReflectiveOperationException {
@@ -431,10 +572,12 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             throw new IllegalStateException("Add default config failed: " + configType.getSimpleName(), e);
         }
 
-        //validate configs
+        // validate configs
         Collection<T> configs = this.getConfigs(configType);
-        for (T config : configs) {
-            getConfigValidator().validate(config);
+        if (getConfigValidator() != null) {
+            for (T config : configs) {
+                getConfigValidator().validate(config);
+            }
         }
 
         // check required default
@@ -475,7 +618,6 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (clazz == RegistryConfig.class ||
             clazz == MetadataReportConfig.class ||
             clazz == MonitorConfig.class ||
-            clazz == ModuleConfig.class ||
             clazz == MetricsConfig.class) {
             return false;
         }
@@ -523,5 +665,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         this.configsCache.clear();
         this.configIdIndexes.clear();
         this.duplicatedConfigs.clear();
+    }
+
+    public boolean isInitialized() {
+        return initialized.get();
     }
 }

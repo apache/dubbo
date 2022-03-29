@@ -22,10 +22,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.RpcContext;
-import org.junit.jupiter.api.AfterAll;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,6 +36,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
@@ -49,18 +48,9 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallMultipleReferenceAnnotationsTest {
 
-    private static RegistryCenter registryCenter;
-
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
-        registryCenter = new ZookeeperSingleRegistryCenter();
-        registryCenter.startup();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        registryCenter.shutdown();
     }
 
     @Autowired
@@ -77,10 +67,10 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+        Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
 
         String demoResult = demoHelloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", demoResult);
+        Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), demoResult);
 
         Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class);
         Assertions.assertEquals(2, referenceBeanMap.size());

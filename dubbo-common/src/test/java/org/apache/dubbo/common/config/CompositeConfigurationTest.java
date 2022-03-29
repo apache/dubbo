@@ -16,8 +16,27 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 /**
- *
+ * {@link CompositeConfiguration}
  */
 public class CompositeConfigurationTest {
+
+    @Test
+    public void test() {
+        InmemoryConfiguration inmemoryConfiguration1 = new InmemoryConfiguration();
+        InmemoryConfiguration inmemoryConfiguration2 = new InmemoryConfiguration();
+        InmemoryConfiguration inmemoryConfiguration3 = new InmemoryConfiguration();
+        CompositeConfiguration configuration = new CompositeConfiguration(new Configuration[]{inmemoryConfiguration1});
+        configuration.addConfiguration(inmemoryConfiguration2);
+        configuration.addConfigurationFirst(inmemoryConfiguration3);
+
+        inmemoryConfiguration1.addProperty("k", "v1");
+        inmemoryConfiguration2.addProperty("k", "v2");
+        inmemoryConfiguration3.addProperty("k", "v3");
+
+        Assertions.assertEquals(configuration.getInternalProperty("k"), "v3");
+    }
 }

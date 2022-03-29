@@ -16,11 +16,14 @@
  */
 package com.apache.dubbo.demo.graalvm.consumer;
 
-import org.apace.dubbo.graalvm.demo.DemoService;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+
+import org.apace.dubbo.graalvm.demo.DemoService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +32,7 @@ public class Application {
 
     public static void main(String[] args) {
         System.setProperty("dubbo.application.logger", "log4j");
+        System.setProperty("native", "true");
         if (isClassic(args)) {
             runWithRefer();
         } else {
@@ -46,17 +50,18 @@ public class Application {
         reference.setGeneric("false");
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        ApplicationConfig applicationConfig =  new ApplicationConfig("dubbo-demo-api-consumer");
+        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-consumer");
         applicationConfig.setQosEnable(false);
         applicationConfig.setCompiler("jdk");
-        Map<String,String> m = new HashMap<>(1);
-        m.put("proxy","jdk");
+        Map<String, String> m = new HashMap<>(1);
+        m.put("proxy", "jdk");
         applicationConfig.setParameters(m);
 
         bootstrap.application(applicationConfig)
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .reference(reference)
-                .start();
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+            .reference(reference)
+            .start();
 
         DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("Native");
