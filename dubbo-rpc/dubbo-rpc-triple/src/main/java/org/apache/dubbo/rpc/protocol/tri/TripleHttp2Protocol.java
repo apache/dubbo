@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -65,8 +66,10 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
     private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
+    private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
-    private ApplicationModel applicationModel;
+    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
+        ApplicationModel.defaultModel());
 
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
@@ -75,7 +78,8 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+        this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
+        this.filtersLoader = applicationModel.getExtensionLoader(HeaderFilter.class);
     }
 
     @Override
@@ -85,10 +89,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-        final List<HeaderFilter> filters = url.getOrDefaultApplicationModel()
-            .getExtensionLoader(HeaderFilter.class)
-            .getActivateExtension(url, HEADER_FILTER_KEY);
-        final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
+        List<HeaderFilter> headFilters = filtersLoader.getActivateExtension(url, HEADER_FILTER_KEY);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
@@ -109,7 +110,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                     final ChannelPipeline p = ch.pipeline();
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
-                        filters));
+                        headFilters));
                 }
             });
         pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
@@ -130,8 +131,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-
-        final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
