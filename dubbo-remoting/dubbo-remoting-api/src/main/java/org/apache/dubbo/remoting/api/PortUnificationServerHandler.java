@@ -17,25 +17,34 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.io.Bytes;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
+import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
+import java.util.Set;
 
 public class PortUnificationServerHandler extends ByteToMessageDecoder {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        PortUnificationServerHandler.class);
 
     private final SslContext sslCtx;
     private final URL url;
     private final List<WireProtocol> protocols;
-    private final DefaultChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private final DefaultChannelGroup channels = new DefaultChannelGroup(
+        GlobalEventExecutor.INSTANCE);
 
     public PortUnificationServerHandler(URL url, List<WireProtocol> protocols) {
-        this(url, null,protocols);
+        this(url, null, protocols);
     }
 
     public PortUnificationServerHandler(URL url, SslContext sslCtx, List<WireProtocol> protocols) {
@@ -46,7 +55,7 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
+        LOGGER.error("Unexpected exception from downstream before protocol detected.", cause);
     }
 
     public DefaultChannelGroup getChannels() {
@@ -66,7 +75,8 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
+        throws Exception {
         // Will use the first five bytes to detect a protocol.
         if (in.readableBytes() < 5) {
             return;
@@ -88,9 +98,18 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
                     return;
             }
         }
+        byte[] preface = new byte[in.readableBytes()];
+        in.readBytes(preface);
+        Set<String> supported = url.getApplicationModel()
+            .getExtensionLoader(WireProtocol.class)
+            .getSupportedExtensions();
+        LOGGER.error(String.format("Can not recognize protocol from downstream . "
+            + "preface=%s protocols=%s", Bytes.bytes2hex(preface), supported));
+
         // Unknown protocol; discard everything and close the connection.
         in.clear();
         ctx.close();
+        ReferenceCountUtil.release(in);
     }
 
 }
