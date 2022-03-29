@@ -175,8 +175,8 @@ public class PortUnificationServer {
                 long quietPeriod = Math.min(2000L, timeout);
                 Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
                 Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
-                bossGroupShutdownFuture.syncUninterruptibly();
-                workerGroupShutdownFuture.syncUninterruptibly();
+                bossGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
+                workerGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
             }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
