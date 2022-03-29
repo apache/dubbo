@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.config;
 
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
@@ -44,14 +51,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
-
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -847,6 +847,22 @@ public class ReferenceConfigTest {
         System.out.println("ReferenceConfig get prefixes cost: " + (end - start));
 
     }
+
+    @Test
+    public void testGenericAndInterfaceConflicts() {
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.setGeneric("true");
+
+        DubboBootstrap.getInstance()
+            .application("demo app")
+            .reference(referenceConfig)
+            .initialize();
+
+        Assertions.assertEquals(GenericService.class, referenceConfig.getInterfaceClass());
+    }
+
 
     @Test
     public void testLargeReferences() throws InterruptedException {
