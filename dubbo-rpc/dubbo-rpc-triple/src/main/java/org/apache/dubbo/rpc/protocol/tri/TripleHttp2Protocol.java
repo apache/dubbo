@@ -43,6 +43,7 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.ssl.SslContext;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -89,7 +90,13 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-        List<HeaderFilter> headFilters = filtersLoader.getActivateExtension(url, HEADER_FILTER_KEY);
+        final List<HeaderFilter> headFilters;
+        if (filtersLoader != null) {
+            headFilters = filtersLoader.getActivateExtension(url,
+                HEADER_FILTER_KEY);
+        } else {
+            headFilters = Collections.emptyList();
+        }
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
