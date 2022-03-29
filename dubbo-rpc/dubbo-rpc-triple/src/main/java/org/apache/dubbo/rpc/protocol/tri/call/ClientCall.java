@@ -194,6 +194,9 @@ public class ClientCall {
         @Override
         public void complete(TriRpcStatus status, Map<String, Object> attachments,
             Map<String, String> excludeHeaders) {
+            if (done) {
+                return;
+            }
             done = true;
             final TriRpcStatus detailStatus;
             final TriRpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);

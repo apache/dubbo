@@ -20,8 +20,10 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,7 +41,10 @@ public class WriteQueue {
         scheduled = new AtomicBoolean(false);
     }
 
-    public ChannelPromise enqueue(QueuedCommand command) {
+    public ChannelFuture enqueue(QueuedCommand command) {
+        if (!channel.isActive()) {
+            return channel.newFailedFuture(new IOException("channel is closed"));
+        }
         ChannelPromise promise = command.promise();
         if (promise == null) {
             promise = channel.newPromise();

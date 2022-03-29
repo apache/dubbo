@@ -87,6 +87,7 @@ public class ClientStream extends AbstractStream implements Stream {
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
+        parent.closeFuture().addListener(f -> transportException(f.cause()));
         return new WriteQueue(channel);
     }
 
@@ -121,14 +122,19 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     public void writeMessage(byte[] message, int compressed) {
-        try {
-            final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,
-                compressed);
-            this.writeQueue.enqueue(cmd);
-        } catch (Throwable t) {
-            cancelByLocal(
-                TriRpcStatus.INTERNAL.withDescription("Client write message failed").withCause(t));
-        }
+        final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,
+            compressed);
+        this.writeQueue.enqueue(cmd)
+            .addListener(future -> {
+                    if (!future.isSuccess()) {
+                        cancelByLocal(
+                            TriRpcStatus.INTERNAL.withDescription("Client write message failed")
+                                .withCause(future.cause())
+                        );
+                        transportException(future.cause());
+                    }
+                }
+            );
     }
 
     @Override

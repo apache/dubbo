@@ -75,8 +75,10 @@ public class Connection extends AbstractReferenceCounted {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         this.url = url;
-        this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
-        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
+        this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class)
+            .getExtension(url.getProtocol());
+        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY,
+            Constants.DEFAULT_CONNECT_TIMEOUT);
         this.remote = getConnectAddress();
         this.bootstrap = create();
     }
@@ -92,11 +94,11 @@ public class Connection extends AbstractReferenceCounted {
     private Bootstrap create() {
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .remoteAddress(remote)
-                .channel(socketChannelClass());
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.TCP_NODELAY, true)
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            .remoteAddress(remote)
+            .channel(socketChannelClass());
 
         final ConnectionHandler connectionHandler = new ConnectionHandler(this);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
@@ -124,7 +126,8 @@ public class Connection extends AbstractReferenceCounted {
     public ChannelFuture connect() {
         if (isClosed()) {
             if (logger.isDebugEnabled()) {
-                logger.debug(String.format("%s aborted to reconnect cause connection closed. ", Connection.this));
+                logger.debug(String.format("%s aborted to reconnect cause connection closed. ",
+                    Connection.this));
             }
             return null;
         }
@@ -151,7 +154,7 @@ public class Connection extends AbstractReferenceCounted {
     @Override
     public String toString() {
         return super.toString() + " (Ref=" + ReferenceCountUtil.refCnt(this) + ",local=" +
-                (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
+            (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
     }
 
     public void onGoaway(Channel channel) {
@@ -172,7 +175,7 @@ public class Connection extends AbstractReferenceCounted {
         }
         this.channel.set(channel);
         // This indicates that the connection is available.
-        if (this.connectingPromise != null) {
+        if (this.connectingPromise != null && !connectingPromise.isDone()) {
             this.connectingPromise.setSuccess(CONNECTED_OBJECT);
         }
         channel.attr(CONNECTION).set(this);
@@ -214,7 +217,8 @@ public class Connection extends AbstractReferenceCounted {
     public ChannelFuture write(Object request) throws RemotingException {
         if (!isAvailable()) {
             throw new RemotingException(null, null,
-                    "Failed to send request " + request + ", cause: The channel to " + remote + " is closed!");
+                "Failed to send request " + request + ", cause: The channel to " + remote
+                    + " is closed!");
         }
         return getChannel().writeAndFlush(request);
     }
@@ -248,7 +252,8 @@ public class Connection extends AbstractReferenceCounted {
     }
 
     private InetSocketAddress getConnectAddress() {
-        return new InetSocketAddress(NetUtils.filterLocalHost(getUrl().getHost()), getUrl().getPort());
+        return new InetSocketAddress(NetUtils.filterLocalHost(getUrl().getHost()),
+            getUrl().getPort());
     }
 
     /**
@@ -270,12 +275,14 @@ public class Connection extends AbstractReferenceCounted {
             final Connection conn = Connection.this;
             if (conn.isClosed() || conn.refCnt() == 0) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("%s aborted to reconnect. %s", conn, future.cause().getMessage()));
+                    logger.debug(String.format("%s aborted to reconnect. %s", conn,
+                        future.cause().getMessage()));
                 }
                 return;
             }
             if (logger.isDebugEnabled()) {
-                logger.debug(String.format("%s is reconnecting, attempt=%d cause=%s", conn, 0, future.cause().getMessage()));
+                logger.debug(String.format("%s is reconnecting, attempt=%d cause=%s", conn, 0,
+                    future.cause().getMessage()));
             }
             final EventLoop loop = future.channel().eventLoop();
             loop.schedule((Runnable) conn::connect, 1L, TimeUnit.SECONDS);
