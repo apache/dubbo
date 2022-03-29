@@ -100,7 +100,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         // load balance among all registries, with registry weight count in.
         Invoker<T> balancedInvoker = select(loadbalance, invocation, invokers, null);
-        if (balancedInvoker.isAvailable()) {
+        if (balancedInvoker!=null && balancedInvoker.isAvailable()) {
             return balancedInvoker.invoke(invocation);
         }
 
