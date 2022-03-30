@@ -122,7 +122,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
         final CancelQueueCommand cmd = CancelQueueCommand.createCommand(Http2Error.CANCEL);
-        return this.writeQueue.enqueue(cmd);
+        return this.writeQueue.enqueue(cmd, true);
     }
 
     @Override
@@ -176,7 +176,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         private Http2Headers trailers;
 
         void handleH2TransportError(TriRpcStatus status) {
-            writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.NO_ERROR));
+            writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.NO_ERROR), true);
             finishProcess(status, null);
         }
 
@@ -309,7 +309,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             executor.execute(() -> {
                 if (endStream) {
                     if (!halfClosed) {
-                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL));
+                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL),
+                            true);
                     }
                     onTrailersReceived(headers);
                 } else {

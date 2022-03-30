@@ -23,6 +23,10 @@ import io.netty.util.concurrent.Future;
 
 import java.util.Map;
 
+/**
+ * ServerStream is used to send response to client and receive requests from client. {@link
+ * Listener} is used to receive requests from client.
+ */
 public interface ServerStream extends Stream {
 
     interface Listener extends Stream.Listener {
@@ -34,11 +38,28 @@ public interface ServerStream extends Stream {
          */
         void onHeader(Map<String, Object> headers);
 
+        /**
+         * Callback when no more data from client side
+         */
         void onComplete();
     }
 
+    /**
+     * Complete the stream, send response to client
+     *
+     * @param status      response status
+     * @param attachments response attachments
+     * @return a future that indicates the completion of send trailers
+     */
     Future<?> complete(TriRpcStatus status, Map<String, Object> attachments);
 
+    /**
+     * Send message to client
+     *
+     * @param message      raw message
+     * @param compressFlag whether to compress the message
+     * @return a future that indicates the completion of send message
+     */
     Future<?> sendMessage(byte[] message, int compressFlag);
 
 }

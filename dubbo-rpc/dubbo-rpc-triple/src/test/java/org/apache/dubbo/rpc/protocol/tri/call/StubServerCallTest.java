@@ -64,8 +64,7 @@ class StubServerCallTest {
         StubServerCall call = new StubServerCall(invoker, tripleServerStream,
             new FrameworkModel(), "",
             service, method,
-            ImmediateEventExecutor.INSTANCE, n -> {
-        });
+            ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());
         call.onMessage(new byte[0]);
         call.onComplete();

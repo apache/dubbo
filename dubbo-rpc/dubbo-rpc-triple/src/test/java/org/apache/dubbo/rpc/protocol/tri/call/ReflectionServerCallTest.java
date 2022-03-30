@@ -61,8 +61,7 @@ class ReflectionServerCallTest {
                 new FrameworkModel(), "",
                 service, methodName,
                 Collections.emptyList(),
-                ImmediateEventExecutor.INSTANCE, n -> {
-            });
+                ImmediateEventExecutor.INSTANCE);
             fail();
         } catch (Exception e) {
             // pass
@@ -87,8 +86,7 @@ class ReflectionServerCallTest {
             new FrameworkModel(), "",
             service, methodName,
             Collections.emptyList(),
-            ImmediateEventExecutor.INSTANCE, n -> {
-        });
+            ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
         call2.onMessage(new byte[0]);
         call2.onComplete();

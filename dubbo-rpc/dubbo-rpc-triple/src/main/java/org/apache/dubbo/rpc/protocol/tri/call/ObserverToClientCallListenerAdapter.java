@@ -35,7 +35,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     public void onMessage(Object message) {
         delegate.onNext(message);
         if (call.isAutoRequestN()) {
-            call.requestN(1);
+            call.request(1);
         }
     }
 
@@ -52,7 +52,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     public void onStart(ClientCall call) {
         this.call = call;
         if (call.isAutoRequestN()) {
-            call.requestN(1);
+            call.request(1);
         }
     }
 }

@@ -33,6 +33,10 @@ public abstract class QueuedCommand {
         this.promise = promise;
     }
 
+    public void cancel() {
+        promise.tryFailure(new IllegalStateException("Canceled"));
+    }
+
     public void run(Channel channel) {
         if (channel.isActive()) {
             channel.write(this, promise);

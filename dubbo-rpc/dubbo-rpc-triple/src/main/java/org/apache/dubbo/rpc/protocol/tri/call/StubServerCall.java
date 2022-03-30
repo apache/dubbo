@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.io.IOException;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 public class StubServerCall extends ServerCallBase {
 
@@ -37,11 +36,10 @@ public class StubServerCall extends ServerCallBase {
         String acceptEncoding,
         String serviceName,
         String methodName,
-        Executor executor,
-        Consumer<Integer> requestN) {
+        Executor executor) {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl(), serviceName),
-            acceptEncoding, serviceName, methodName, executor, requestN);
+            acceptEncoding, serviceName, methodName, executor);
         this.methodDescriptor = serviceDescriptor.getMethods(methodName)
             .get(0);
         this.packableMethod = (StubMethodDescriptor) methodDescriptor;

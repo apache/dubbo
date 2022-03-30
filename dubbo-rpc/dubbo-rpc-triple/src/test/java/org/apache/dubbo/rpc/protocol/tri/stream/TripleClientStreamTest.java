@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -92,8 +93,8 @@ class TripleClientStreamTest {
         verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
         stream.cancelByLocal(TriRpcStatus.CANCELLED);
-        verify(writeQueue).enqueue(any(CancelQueueCommand.class));
-        verify(writeQueue, times(4)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue, times(1)).enqueue(any(CancelQueueCommand.class), anyBoolean());
+        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();

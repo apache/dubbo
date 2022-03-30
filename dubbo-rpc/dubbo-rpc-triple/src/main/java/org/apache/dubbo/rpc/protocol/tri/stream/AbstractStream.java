@@ -22,6 +22,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.Executor;
 
+/**
+ * An abstract stream implementation.
+ */
 public abstract class AbstractStream implements Stream {
 
     protected final Executor executor;

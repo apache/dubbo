@@ -28,7 +28,7 @@ import java.net.SocketAddress;
 /**
  * Stream is a bi-directional channel that manipulates the data flow between peers. Inbound data
  * from remote peer is acquired by {@link Listener}. Outbound data to remote peer is sent directly
- * by {@link Stream}.
+ * by {@link Stream}. Backpressure is supported by {@link #request(int)}.
  */
 public interface Stream {
 
@@ -70,6 +70,18 @@ public interface Stream {
      */
     Future<?> cancelByLocal(TriRpcStatus status);
 
+    /**
+     * Get remote peer address.
+     *
+     * @return socket address of remote peer
+     */
     SocketAddress remoteAddress();
+
+    /**
+     * Request n message from remote peer.
+     *
+     * @param n number of message
+     */
+    void request(int n);
 
 }

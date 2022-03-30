@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 public class ReflectionServerCall extends ServerCallBase {
 
@@ -54,12 +53,11 @@ public class ReflectionServerCall extends ServerCallBase {
         String serviceName,
         String methodName,
         List<HeaderFilter> headerFilters,
-        Executor executor,
-        Consumer<Integer> requestN) {
+        Executor executor) {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl()),
             acceptEncoding, serviceName, methodName,
-            executor, requestN);
+            executor);
         this.headerFilters = headerFilters;
     }
 

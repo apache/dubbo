@@ -46,7 +46,7 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onError(Throwable throwable) {
-        call.cancel(null, throwable);
+        call.cancelByLocal(throwable);
         this.terminated = true;
     }
 
@@ -61,7 +61,7 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void cancel(Throwable throwable) {
-        call.cancel("Canceled by app ", throwable);
+        call.cancelByLocal(throwable);
         this.terminated = true;
     }
 
@@ -72,7 +72,7 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void request(int count) {
-        call.requestN(count);
+        call.request(count);
     }
 
     @Override

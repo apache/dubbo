@@ -23,10 +23,17 @@ import io.netty.util.concurrent.Future;
 
 import java.util.Map;
 
+/**
+ * ClientStream is used to send request to server and receive response from server. Response is
+ * received by {@link ClientStream.Listener} Requests are sent by {@link ClientStream} directly.
+ */
 public interface ClientStream extends Stream {
 
     interface Listener extends Stream.Listener {
 
+        /**
+         * Callback when stream started.
+         */
         void onStart();
 
         /**
@@ -34,8 +41,16 @@ public interface ClientStream extends Stream {
          *
          * @param attachments received from remote peer
          */
-        void onComplete(TriRpcStatus status, Map<String, Object> attachments);
+        default void onComplete(TriRpcStatus status, Map<String, Object> attachments) {
+        }
 
+        /**
+         * Callback when request completed.
+         *
+         * @param status      response status
+         * @param attachments attachments received from remote peer
+         * @param reserved    triple protocol reserved data
+         */
         default void onComplete(TriRpcStatus status, Map<String, Object> attachments,
             Map<String, String> reserved) {
             onComplete(status, attachments);
@@ -52,7 +67,11 @@ public interface ClientStream extends Stream {
      */
     Future<?> sendMessage(byte[] message, int compressFlag, boolean eos);
 
+    /**
+     * No more data will be sent, half close this stream to wait server response.
+     *
+     * @return a future of send result
+     */
     Future<?> halfClose();
 
-    void request(int n);
 }

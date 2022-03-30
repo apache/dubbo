@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 public abstract class ServerCallBase implements ServerCall, ServerStream.Listener {
 
@@ -75,7 +74,6 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
     protected MethodDescriptor methodDescriptor;
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
-    private final Consumer<Integer> requestN;
 
     ServerCallBase(Invoker<?> invoker,
         ServerStream stream,
@@ -84,10 +82,10 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
         String acceptEncoding,
         String serviceName,
         String methodName,
-        Executor executor,
-        Consumer<Integer> requestN
+        Executor executor
     ) {
-        Objects.requireNonNull(serviceDescriptor, "No service descriptor found for " + invoker.getUrl());
+        Objects.requireNonNull(serviceDescriptor,
+            "No service descriptor found for " + invoker.getUrl());
         this.invoker = invoker;
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
@@ -96,7 +94,6 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
         this.methodName = methodName;
         this.stream = stream;
         this.acceptEncoding = acceptEncoding;
-        this.requestN = requestN;
     }
 
 
@@ -119,7 +116,7 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
 
     @Override
     public final void request(int numMessages) {
-        requestN.accept(numMessages);
+        stream.request(numMessages);
     }
 
     @Override
@@ -197,6 +194,7 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
     @Override
     public final void onCancelByRemote(TriRpcStatus status) {
         closed = true;
+        cancellationContext.cancel(status.cause);
         listener.onCancel(status);
     }
     // stream listener end

@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
+import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
 import io.netty.channel.Channel;
@@ -34,6 +35,7 @@ public class WriteQueue {
     private final Channel channel;
     private final Queue<QueuedCommand> queue;
     private final AtomicBoolean scheduled;
+    private volatile boolean rst;
 
     public WriteQueue(Channel channel) {
         this.channel = channel;
@@ -41,16 +43,28 @@ public class WriteQueue {
         scheduled = new AtomicBoolean(false);
     }
 
-    public ChannelFuture success(){
+    public ChannelFuture success() {
         return channel.newSucceededFuture();
     }
+
     public ChannelFuture failure(Throwable cause) {
         return channel.newFailedFuture(cause);
+    }
+
+    public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
+        ChannelFuture future = enqueue(command);
+        if (rst) {
+            this.rst = true;
+        }
+        return future;
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {
         if (!channel.isActive()) {
             return channel.newFailedFuture(new IOException("channel is closed"));
+        }
+        if (rst) {
+            return channel.newFailedFuture(new IOException("channel is reset by remote"));
         }
         ChannelPromise promise = command.promise();
         if (promise == null) {
@@ -78,6 +92,12 @@ public class WriteQueue {
             int i = 0;
             boolean flushedOnce = false;
             while ((cmd = queue.poll()) != null) {
+                if (rst) {
+                    if (!(cmd instanceof CancelQueueCommand)) {
+                        cmd.cancel();
+                        continue;
+                    }
+                }
                 cmd.run(channel);
                 i++;
                 if (i == DEQUE_CHUNK_SIZE) {

@@ -51,7 +51,8 @@ public class UnaryClientCallListener implements ClientCall.Listener {
 
     @Override
     public void onStart(ClientCall call) {
-        future.addTimeoutListener(() -> call.cancel("client timeout", null));
-        call.requestN(2);
+        future.addTimeoutListener(
+            () -> call.cancelByLocal(new IllegalStateException("client timeout")));
+        call.request(2);
     }
 }

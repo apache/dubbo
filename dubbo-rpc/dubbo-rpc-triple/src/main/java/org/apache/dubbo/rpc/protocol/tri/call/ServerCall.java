@@ -28,19 +28,49 @@ import java.util.Map;
  */
 public interface ServerCall {
 
+    /**
+     * A listener to receive request messages.
+     */
     interface Listener {
 
+        /**
+         * Callback when a request message is received.
+         *
+         * @param message message received
+         */
         void onMessage(Object message);
 
+        /**
+         * @param status when the call is canceled.
+         */
         void onCancel(TriRpcStatus status);
 
+        /**
+         * Request completed.
+         */
         void onComplete();
     }
 
+    /**
+     * Send message to client
+     *
+     * @param message message to send
+     */
     void sendMessage(Object message);
 
+    /**
+     * Request more request data from the client.
+     *
+     * @param numMessages max number of messages
+     */
     void request(int numMessages);
 
+    /**
+     * Close the call.
+     *
+     * @param status        status of the call to send to the client
+     * @param responseAttrs response attachments
+     */
     void close(TriRpcStatus status, Map<String, Object> responseAttrs);
 
 }

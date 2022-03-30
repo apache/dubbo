@@ -77,7 +77,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private final String acceptEncoding;
     private boolean headerSent;
     private boolean trailersSent;
-    private boolean reset;
+    private volatile boolean reset;
     private ServerStream.Listener listener;
     private final InetSocketAddress remoteAddress;
     private final Channel channel;
@@ -103,8 +103,13 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         return remoteAddress;
     }
 
+    @Override
+    public void request(int n) {
+        deframer.request(n);
+    }
+
     public ChannelFuture reset(Http2Error cause) {
-        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause));
+        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause), true);
     }
 
     @Override
@@ -380,12 +385,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
                 listener = new StubServerCall(invoker, TripleServerStream.this, frameworkModel,
-                    acceptEncoding, serviceName, originalMethodName, executor, deframer::request);
+                    acceptEncoding, serviceName, originalMethodName, executor);
             } else {
                 listener = new ReflectionServerCall(invoker, TripleServerStream.this,
-                    frameworkModel,
-                    acceptEncoding, serviceName, originalMethodName, filters, executor,
-                    deframer::request);
+                    frameworkModel, acceptEncoding, serviceName, originalMethodName, filters,
+                    executor);
             }
             listener.onHeader(requestMetadata);
             if (listener == null) {
@@ -412,8 +416,14 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         @Override
         public void cancelByRemote(long errorCode) {
             TripleServerStream.this.reset = true;
-            executor.execute(() -> listener.onCancelByRemote(TriRpcStatus.CANCELLED
-                .withDescription("Canceled by client ,errorCode=" + errorCode)));
+            if (!trailersSent) {
+                // send rst if stream not closed
+                reset(Http2Error.valueOf(errorCode));
+            }
+            executor.execute(() -> {
+                listener.onCancelByRemote(TriRpcStatus.CANCELLED
+                    .withDescription("Canceled by client ,errorCode=" + errorCode));
+            });
         }
 
         private class ServerDecoderListener implements TriDecoder.Listener {
@@ -431,6 +441,5 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             }
         }
     }
-
 
 }
