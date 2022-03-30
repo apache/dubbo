@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.stream;
+package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
 

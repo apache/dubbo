@@ -37,7 +37,6 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerCall;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
@@ -88,6 +87,7 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
         Executor executor,
         Consumer<Integer> requestN
     ) {
+        Objects.requireNonNull(serviceDescriptor, "No service descriptor found for " + invoker.getUrl());
         this.invoker = invoker;
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
@@ -301,14 +301,14 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
 
 
     public void close(TriRpcStatus status, Map<String, Object> attachments) {
-        if (closed) {
-            return;
-        }
-        closed = true;
         executor.execute(() -> doClose(status, attachments));
     }
 
     private void doClose(TriRpcStatus status, Map<String, Object> attachments) {
+        if (closed) {
+            return;
+        }
+        closed = true;
         stream.complete(status, attachments);
     }
 

@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import java.lang.reflect.Method;
 import java.util.Collections;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -55,13 +56,17 @@ class ReflectionServerCallTest {
 
         String service = "testService";
         String methodName = "method";
-        ReflectionServerCall call = new ReflectionServerCall(invoker, serverStream,
-            new FrameworkModel(), "",
-            service, methodName,
-            Collections.emptyList(),
-            ImmediateEventExecutor.INSTANCE, n -> {
-        });
-        call.startCall();
+        try {
+            ReflectionServerCall call = new ReflectionServerCall(invoker, serverStream,
+                new FrameworkModel(), "",
+                service, methodName,
+                Collections.emptyList(),
+                ImmediateEventExecutor.INSTANCE, n -> {
+            });
+            fail();
+        } catch (Exception e) {
+            // pass
+        }
 
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
         when(providerModel.getServiceModel())
@@ -84,7 +89,7 @@ class ReflectionServerCallTest {
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE, n -> {
         });
-        call2.startCall();
+        call2.onHeader(Collections.emptyMap());
         call2.onMessage(new byte[0]);
         call2.onComplete();
     }

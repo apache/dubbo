@@ -66,7 +66,7 @@ class StubServerCallTest {
             service, method,
             ImmediateEventExecutor.INSTANCE, n -> {
         });
-        call.startCall();
+        call.onHeader(Collections.emptyMap());
         call.onMessage(new byte[0]);
         call.onComplete();
     }

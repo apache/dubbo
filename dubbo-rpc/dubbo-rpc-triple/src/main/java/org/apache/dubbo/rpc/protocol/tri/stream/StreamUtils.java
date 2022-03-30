@@ -27,6 +27,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -52,6 +53,9 @@ public class StreamUtils {
     }
 
     public static Map<String, Object> toAttachments(Map<String, Object> origin) {
+        if (origin == null || origin.isEmpty()) {
+            return Collections.emptyMap();
+        }
         Map<String, Object> res = new HashMap<>(origin.size());
         origin.forEach((k, v) -> {
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(k)) {
