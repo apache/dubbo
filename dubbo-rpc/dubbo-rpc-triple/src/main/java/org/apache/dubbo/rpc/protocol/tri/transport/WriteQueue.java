@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
 import io.netty.channel.Channel;
@@ -64,7 +63,7 @@ public class WriteQueue {
             return channel.newFailedFuture(new IOException("channel is closed"));
         }
         if (rst) {
-            return channel.newFailedFuture(new IOException("channel is reset by remote"));
+            return channel.newFailedFuture(new IOException("channel has reset"));
         }
         ChannelPromise promise = command.promise();
         if (promise == null) {
@@ -92,12 +91,6 @@ public class WriteQueue {
             int i = 0;
             boolean flushedOnce = false;
             while ((cmd = queue.poll()) != null) {
-                if (rst) {
-                    if (!(cmd instanceof CancelQueueCommand)) {
-                        cmd.cancel();
-                        continue;
-                    }
-                }
                 cmd.run(channel);
                 i++;
                 if (i == DEQUE_CHUNK_SIZE) {
