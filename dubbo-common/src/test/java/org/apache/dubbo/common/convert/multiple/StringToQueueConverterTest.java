@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +56,7 @@ public class StringToQueueConverterTest {
 
     @BeforeEach
     public void init() {
-        converter = new StringToQueueConverter();
+        converter = new StringToQueueConverter(FrameworkModel.defaultModel());
     }
 
     @Test

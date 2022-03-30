@@ -26,6 +26,7 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -253,7 +254,7 @@ public class MethodConfig extends AbstractMethodConfig {
                         String value = StringUtils.trim(subPropsConfiguration.getString(kebabPropertyName));
                         if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             value = environment.resolvePlaceholders(value);
-                            method.invoke(argument, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
+                            method.invoke(argument, ClassUtils.convertPrimitive(ScopeModelUtil.getFrameworkModel(getScopeModel()), method.getParameterTypes()[0], value));
                         }
                     } catch (Exception e) {
                         logger.info("Failed to override the property " + method.getName() + " in " +

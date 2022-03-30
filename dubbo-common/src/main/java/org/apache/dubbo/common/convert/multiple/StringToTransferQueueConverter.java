@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.convert.multiple;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TransferQueue;
 
@@ -25,6 +27,9 @@ import java.util.concurrent.TransferQueue;
  * @since 2.7.6
  */
 public class StringToTransferQueueConverter extends StringToIterableConverter<TransferQueue> {
+    public StringToTransferQueueConverter(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     protected TransferQueue createMultiValue(int size, Class<?> multiValueType) {
