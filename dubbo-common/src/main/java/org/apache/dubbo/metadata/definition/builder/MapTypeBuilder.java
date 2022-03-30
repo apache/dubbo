@@ -22,8 +22,6 @@ import org.apache.dubbo.metadata.definition.util.ClassUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.TypeUtils.getRawClass;
@@ -52,12 +50,6 @@ public class MapTypeBuilder implements TypeBuilder {
         ParameterizedType parameterizedType = (ParameterizedType) type;
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
         int actualTypeArgsLength = actualTypeArgs == null ? 0 : actualTypeArgs.length;
-
-        if (actualTypeArgsLength != 2) {
-            throw new IllegalArgumentException(MessageFormat.format(
-                    "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]."
-                            + Arrays.toString(actualTypeArgs), type, actualTypeArgs));
-        }
 
         String mapType = ClassUtils.getCanonicalNameForParameterizedType(parameterizedType);
 
