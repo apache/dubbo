@@ -24,8 +24,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Test;
@@ -33,7 +32,6 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,7 +42,7 @@ class StubServerCallTest {
     @Test
     void doStartCall() throws IOException, ClassNotFoundException {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
-        ServerStream serverStream = Mockito.mock(ServerStream.class);
+        TripleServerStream tripleServerStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
         StubMethodDescriptor methodDescriptor = Mockito.mock(StubMethodDescriptor.class);
@@ -63,11 +61,13 @@ class StubServerCallTest {
             .thenReturn("test");
         String service = "testService";
         String method = "method";
-        StubServerCall call = new StubServerCall(invoker, serverStream, new FrameworkModel(), "",
+        StubServerCall call = new StubServerCall(invoker, tripleServerStream,
+            new FrameworkModel(), "",
             service, method,
-            ImmediateEventExecutor.INSTANCE);
-        ServerStreamListener serverStreamListener = call.startCall(new HashMap<>());
-        serverStreamListener.onMessage(new byte[0]);
-        serverStreamListener.complete();
+            ImmediateEventExecutor.INSTANCE, n -> {
+        });
+        call.startCall();
+        call.onMessage(new byte[0]);
+        call.onComplete();
     }
 }

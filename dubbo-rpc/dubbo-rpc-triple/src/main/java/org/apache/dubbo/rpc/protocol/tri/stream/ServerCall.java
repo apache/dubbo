@@ -17,8 +17,30 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-public interface StreamListener {
+import org.apache.dubbo.rpc.TriRpcStatus;
 
-    void onMessage(byte[] message);
+import java.util.Map;
+
+/**
+ * ServerCall manipulates server details of a RPC call. Request messages are acquired by {@link
+ * Listener}. Backpressure is supported by {@link #request(int)}.Response messages are sent by
+ * {@link ServerCall#sendMessage(Object)}.
+ */
+public interface ServerCall {
+
+    interface Listener {
+
+        void onMessage(Object message);
+
+        void onCancel(TriRpcStatus status);
+
+        void onComplete();
+    }
+
+    void sendMessage(Object message);
+
+    void request(int numMessages);
+
+    void close(TriRpcStatus status, Map<String, Object> responseAttrs);
 
 }

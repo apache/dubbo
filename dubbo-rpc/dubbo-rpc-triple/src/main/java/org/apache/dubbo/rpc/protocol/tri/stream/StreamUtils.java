@@ -99,9 +99,8 @@ public class StreamUtils {
      */
     private static void convertSingleAttachment(DefaultHttp2Headers headers, String key, Object v) {
         try {
-            // todo Support boolean/ numbers
-            if (v instanceof String) {
-                String str = (String) v;
+            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
+                String str = v.toString();
                 headers.set(key, str);
             } else if (v instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) v);

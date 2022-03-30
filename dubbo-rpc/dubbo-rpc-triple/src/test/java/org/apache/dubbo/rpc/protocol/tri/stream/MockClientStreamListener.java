@@ -21,7 +21,8 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
 
-public class MockClientStreamListener implements ClientStreamListener {
+public class MockClientStreamListener implements ClientStream.Listener {
+
     public TriRpcStatus status;
     public byte[] message;
     public boolean started;
@@ -32,12 +33,18 @@ public class MockClientStreamListener implements ClientStreamListener {
     }
 
     @Override
-    public void complete(TriRpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
-        this.status = rpcStatus;
+    public void onComplete(TriRpcStatus status,
+        Map<String, Object> attachments) {
+        this.status = status;
     }
 
     @Override
     public void onMessage(byte[] message) {
         this.message = message;
+    }
+
+    @Override
+    public void onCancelByRemote(TriRpcStatus status) {
+
     }
 }

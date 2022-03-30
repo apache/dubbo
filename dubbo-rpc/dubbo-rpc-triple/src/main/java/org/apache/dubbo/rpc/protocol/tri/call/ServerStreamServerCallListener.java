@@ -41,11 +41,11 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
         invocation.setArguments(new Object[]{message, responseObserver});
     }
 
-
     @Override
-    public void onCancel(String errorInfo) {
-        responseObserver.cancel(TriRpcStatus.CANCELLED.withDescription(errorInfo).asException());
+    public void onCancel(TriRpcStatus status) {
+        responseObserver.onError(status.asException());
     }
+
 
 
     @Override

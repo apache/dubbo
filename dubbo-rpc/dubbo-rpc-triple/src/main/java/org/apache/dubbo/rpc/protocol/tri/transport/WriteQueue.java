@@ -41,6 +41,13 @@ public class WriteQueue {
         scheduled = new AtomicBoolean(false);
     }
 
+    public ChannelFuture success(){
+        return channel.newSucceededFuture();
+    }
+    public ChannelFuture failure(Throwable cause) {
+        return channel.newFailedFuture(cause);
+    }
+
     public ChannelFuture enqueue(QueuedCommand command) {
         if (!channel.isActive()) {
             return channel.newFailedFuture(new IOException("channel is closed"));

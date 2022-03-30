@@ -32,7 +32,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     @Override
     public void onReturn(Object value) {
         responseObserver.onNext(value);
-        responseObserver.onCompleted(TriRpcStatus.OK);
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -44,11 +44,11 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         }
     }
 
-
     @Override
-    public void onCancel(String errorInfo) {
+    public void onCancel(TriRpcStatus status) {
         // ignored
     }
+
 
     @Override
     public void onComplete() {

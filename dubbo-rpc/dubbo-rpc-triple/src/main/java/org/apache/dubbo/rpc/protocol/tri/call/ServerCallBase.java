@@ -37,31 +37,30 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.stream.ServerCall;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.concurrent.Future;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-public abstract class ServerCall {
+public abstract class ServerCallBase implements ServerCall, ServerStream.Listener {
 
     public static final String REMOTE_ADDRESS_KEY = "tri.remote.address";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerCallBase.class);
 
     public final Invoker<?> invoker;
     public final FrameworkModel frameworkModel;
-    public final ServerStream serverStream;
+    public final ServerStream stream;
     public final Executor executor;
     public final String methodName;
     public final String serviceName;
@@ -73,37 +72,146 @@ public abstract class ServerCall {
     private Compressor compressor;
     private boolean headerSent;
     private boolean closed;
+    CancellationContext cancellationContext;
+    protected MethodDescriptor methodDescriptor;
     protected PackableMethod packableMethod;
+    protected Map<String, Object> requestMetadata;
+    private final Consumer<Integer> requestN;
 
-
-    ServerCall(Invoker<?> invoker,
-        ServerStream serverStream,
+    ServerCallBase(Invoker<?> invoker,
+        ServerStream stream,
         FrameworkModel frameworkModel,
         ServiceDescriptor serviceDescriptor,
         String acceptEncoding,
         String serviceName,
         String methodName,
-        Executor executor) {
+        Executor executor,
+        Consumer<Integer> requestN
+    ) {
         this.invoker = invoker;
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
         this.serviceDescriptor = serviceDescriptor;
         this.serviceName = serviceName;
         this.methodName = methodName;
-        this.serverStream = serverStream;
+        this.stream = stream;
         this.acceptEncoding = acceptEncoding;
+        this.requestN = requestN;
     }
 
-    protected abstract ServerStreamListener doStartCall(Map<String, Object> metadata);
+
+    // stream listener start
+    @Override
+    public void onHeader(Map<String, Object> requestMetadata) {
+        this.requestMetadata = requestMetadata;
+        if (serviceDescriptor == null) {
+            responseErr(
+                TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
+            return;
+        }
+        startCall();
+    }
+
+    protected void startCall() {
+        RpcInvocation invocation = buildInvocation(methodDescriptor);
+        listener = startInternalCall(invocation, methodDescriptor, invoker);
+    }
+
+    @Override
+    public final void request(int numMessages) {
+        requestN.accept(numMessages);
+    }
+
+    @Override
+    public final void sendMessage(Object message) {
+        if (closed) {
+            throw new IllegalStateException("Stream has already canceled");
+        }
+        final Runnable sendMessage = () -> doSendMessage(message);
+        executor.execute(sendMessage);
+    }
+
+    private void doSendMessage(Object message) {
+        if (closed) {
+            return;
+        }
+        if (!headerSent) {
+            sendHeader();
+        }
+        final byte[] data;
+        try {
+            data = packableMethod.packResponse(message);
+        } catch (IOException e) {
+            close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
+                .withCause(e), null);
+            return;
+        }
+        if (data == null) {
+            close(TriRpcStatus.INTERNAL.withDescription("Missing response"), null);
+            return;
+        }
+        Future<?> future;
+        if (compressor != null) {
+            int compressedFlag =
+                Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
+            final byte[] compressed = compressor.compress(data);
+            future = stream.sendMessage(compressed, compressedFlag);
+        } else {
+            future = stream.sendMessage(data, 0);
+        }
+        future.addListener(f -> {
+            if (!f.isSuccess()) {
+                cancelDual(TriRpcStatus.CANCELLED
+                    .withDescription("Send message failed")
+                    .withCause(f.cause()));
+            }
+        });
+    }
+
+    @Override
+    public final void onComplete() {
+        listener.onComplete();
+    }
+
+    @Override
+    public final void onMessage(byte[] message) {
+        ClassLoader tccl = Thread.currentThread()
+            .getContextClassLoader();
+        try {
+            Object instance = parseSingleMessage(message);
+            listener.onMessage(instance);
+        } catch (Throwable t) {
+            final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
+                .withCause(t);
+            close(status, null);
+            LOGGER.error("Process request failed. service=" + serviceName +
+                " method=" + methodName, t);
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
+        }
+    }
+
+    protected abstract Object parseSingleMessage(byte[] data)
+        throws IOException, ClassNotFoundException;
+
+    @Override
+    public final void onCancelByRemote(TriRpcStatus status) {
+        closed = true;
+        listener.onCancel(status);
+    }
+    // stream listener end
+
+
+    public final boolean isClosed() {
+        return closed;
+    }
 
     /**
      * Build the RpcInvocation with metadata and execute headerFilter
      *
-     * @param headers request header
      * @return RpcInvocation
      */
-    protected RpcInvocation buildInvocation(Map<String, Object> headers,
-        MethodDescriptor methodDescriptor) {
+    protected RpcInvocation buildInvocation(MethodDescriptor methodDescriptor) {
         final URL url = invoker.getUrl();
         RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
             methodDescriptor.getMethodName(),
@@ -112,24 +220,10 @@ public abstract class ServerCall {
             new Object[0]);
         inv.setTargetServiceUniqueName(url.getServiceKey());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
-        inv.setObjectAttachments(StreamUtils.toAttachments(headers));
-        inv.put(REMOTE_ADDRESS_KEY, serverStream.remoteAddress());
-        if (null != headers.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader())) {
-            inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY,
-                headers.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader()));
-        }
-        return inv;
-    }
-
-    public ServerStreamListener startCall(Map<String, Object> metadata) {
-        if (serviceDescriptor == null) {
-            responseErr(
-                TriRpcStatus.UNIMPLEMENTED.withDescription("Service not found:" + serviceName));
-            return null;
-        }
-
+        inv.setObjectAttachments(StreamUtils.toAttachments(requestMetadata));
+        inv.put(REMOTE_ADDRESS_KEY, stream.remoteAddress());
         // handle timeout
-        String timeout = (String) metadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
+        String timeout = (String) requestMetadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
         try {
             if (Objects.nonNull(timeout)) {
                 this.timeout = parseTimeoutToMills(timeout);
@@ -138,10 +232,18 @@ public abstract class ServerCall {
             LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s "
                 + "method=%s", timeout, serviceDescriptor.getInterfaceName(), methodName));
         }
-        return doStartCall(metadata);
+        if (null != requestMetadata.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader())) {
+            inv.put(TripleHeaderEnum.CONSUMER_APP_NAME_KEY,
+                requestMetadata.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader()));
+        }
+        return inv;
     }
 
+
     private void sendHeader() {
+        if (closed) {
+            return;
+        }
         if (headerSent) {
             throw new IllegalStateException("Header has already sent");
         }
@@ -156,11 +258,28 @@ public abstract class ServerCall {
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());
         }
-        serverStream.sendHeader(headers);
+        // send header failed will reset stream and close request observer cause no more data will be sent
+        stream.sendHeader(headers)
+            .addListener(f -> {
+                if (!f.isSuccess()) {
+                    cancelDual(TriRpcStatus.INTERNAL.withCause(f.cause()));
+                }
+            });
     }
 
-    public void requestN(int n) {
-        serverStream.requestN(n);
+    private void cancelDual(TriRpcStatus status) {
+        closed = true;
+        listener.onCancel(status);
+        cancellationContext.cancel(status.asException());
+    }
+
+    public void cancelByLocal(Throwable throwable) {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        cancellationContext.cancel(throwable);
+        stream.cancelByLocal(TriRpcStatus.CANCELLED.withCause(throwable));
     }
 
 
@@ -180,42 +299,17 @@ public abstract class ServerCall {
         return autoRequestN;
     }
 
-    public void writeMessage(Object message) {
-        final Runnable writeMessage = () -> doWriteMessage(message);
-        executor.execute(writeMessage);
-    }
 
-    private void doWriteMessage(Object message) {
+    public void close(TriRpcStatus status, Map<String, Object> attachments) {
         if (closed) {
             return;
         }
-        if (!headerSent) {
-            sendHeader();
-        }
-        final byte[] data;
-        try {
-            data = packableMethod.packResponse(message);
-        } catch (IOException e) {
-            close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
-                .withCause(e), null);
-            return;
-        }
-        if (data == null) {
-            close(TriRpcStatus.INTERNAL.withDescription("Missing response"), null);
-            return;
-        }
-        if (compressor != null) {
-            int compressedFlag =
-                Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
-            final byte[] compressed = compressor.compress(data);
-            serverStream.writeMessage(compressed, compressedFlag);
-        } else {
-            serverStream.writeMessage(data, 0);
-        }
+        closed = true;
+        executor.execute(() -> doClose(status, attachments));
     }
 
-    public void close(TriRpcStatus status, Map<String, Object> trailers) {
-        executor.execute(() -> serverStream.close(status, trailers));
+    private void doClose(TriRpcStatus status, Map<String, Object> attachments) {
+        stream.complete(status, attachments);
     }
 
     protected Long parseTimeoutToMills(String timeoutVal) {
@@ -253,58 +347,17 @@ public abstract class ServerCall {
             return;
         }
         closed = true;
-        Http2Headers trailers = new DefaultHttp2Headers().status(OK.codeAsText())
-            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
-        serverStream.sendHeaderWithEos(trailers);
+        stream.complete(status, null);
         LOGGER.error("Triple request error: service=" + serviceName + " method" + methodName,
             status.asException());
     }
 
-    interface Listener {
-
-        void onMessage(Object message);
-
-        void onCancel(String errorInfo);
-
-        void onComplete();
-    }
-
-    abstract class ServerStreamListenerBase implements ServerStreamListener {
-
-        protected boolean closed;
-
-        @Override
-        public void onMessage(byte[] message) {
-            if (closed) {
-                return;
-            }
-            ClassLoader tccl = Thread.currentThread()
-                .getContextClassLoader();
-            try {
-                doOnMessage(message);
-            } catch (Throwable t) {
-                final TriRpcStatus status = TriRpcStatus.INTERNAL.withDescription("Server error")
-                    .withCause(t);
-                close(status, null);
-                LOGGER.error(
-                    "Process request failed. service=" + serviceName + " method=" + methodName, t);
-            } finally {
-                ClassLoadUtil.switchContextLoader(tccl);
-            }
-        }
-
-        protected abstract void doOnMessage(byte[] message)
-            throws IOException, ClassNotFoundException;
-
-    }
 
     protected ServerCall.Listener startInternalCall(
         RpcInvocation invocation,
         MethodDescriptor methodDescriptor,
         Invoker<?> invoker) {
-        CancellationContext cancellationContext = RpcContext.getCancellationContext();
+        this.cancellationContext = RpcContext.getCancellationContext();
         ServerCallToObserverAdapter<Object> responseObserver =
             new ServerCallToObserverAdapter<>(this, cancellationContext);
         try {
@@ -312,18 +365,18 @@ public abstract class ServerCall {
             switch (methodDescriptor.getRpcType()) {
                 case UNARY:
                     listener = new UnaryServerCallListener(invocation, invoker, responseObserver);
-                    requestN(2);
+                    request(2);
                     break;
                 case SERVER_STREAM:
                     listener = new ServerStreamServerCallListener(invocation, invoker,
                         responseObserver);
-                    requestN(2);
+                    request(2);
                     break;
                 case BI_STREAM:
                 case CLIENT_STREAM:
                     listener = new BiStreamServerCallListener(invocation, invoker,
                         responseObserver);
-                    requestN(1);
+                    request(1);
                     break;
                 default:
                     throw new IllegalStateException("Can not reach here");
@@ -331,9 +384,8 @@ public abstract class ServerCall {
             return listener;
         } catch (Throwable t) {
             LOGGER.error("Create triple stream failed", t);
-            responseObserver.onError(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
-                .withCause(t)
-                .asException());
+            responseErr(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
+                .withCause(t));
         }
         return null;
     }

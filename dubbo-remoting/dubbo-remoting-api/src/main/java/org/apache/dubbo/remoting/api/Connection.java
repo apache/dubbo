@@ -175,8 +175,8 @@ public class Connection extends AbstractReferenceCounted {
         }
         this.channel.set(channel);
         // This indicates that the connection is available.
-        if (this.connectingPromise != null && !connectingPromise.isDone()) {
-            this.connectingPromise.setSuccess(CONNECTED_OBJECT);
+        if (this.connectingPromise != null ) {
+            this.connectingPromise.trySuccess(CONNECTED_OBJECT);
         }
         channel.attr(CONNECTION).set(this);
         if (logger.isDebugEnabled()) {

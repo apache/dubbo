@@ -26,18 +26,14 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorService;
 import org.apache.dubbo.rpc.protocol.tri.HelloReply;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -45,11 +41,12 @@ import static org.mockito.Mockito.when;
 class ReflectionServerCallTest {
 
     @Test
-    void doStartCall() throws IOException, ClassNotFoundException, NoSuchMethodException {
+    void doStartCall() throws NoSuchMethodException {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
-        ServerStream serverStream = Mockito.mock(ServerStream.class);
+        TripleServerStream serverStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
-        ReflectionMethodDescriptor methodDescriptor = Mockito.mock(ReflectionMethodDescriptor.class);
+        ReflectionMethodDescriptor methodDescriptor = Mockito.mock(
+            ReflectionMethodDescriptor.class);
         URL url = Mockito.mock(URL.class);
         when(invoker.getUrl())
             .thenReturn(url);
@@ -58,13 +55,13 @@ class ReflectionServerCallTest {
 
         String service = "testService";
         String methodName = "method";
-        ReflectionServerCall call = new ReflectionServerCall(invoker, serverStream, new FrameworkModel(), "",
-            service,methodName,
+        ReflectionServerCall call = new ReflectionServerCall(invoker, serverStream,
+            new FrameworkModel(), "",
+            service, methodName,
             Collections.emptyList(),
-            ImmediateEventExecutor.INSTANCE);
-        ServerStreamListener serverStreamListener = call.startCall(new HashMap<>());
-        Assertions.assertNull(serverStreamListener);
-
+            ImmediateEventExecutor.INSTANCE, n -> {
+        });
+        call.startCall();
 
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
         when(providerModel.getServiceModel())
@@ -79,14 +76,16 @@ class ReflectionServerCallTest {
         when(methodDescriptor.getParameterClasses())
             .thenReturn(method.getParameterTypes());
         when(methodDescriptor.getReturnClass())
-            .thenAnswer(invocation->method.getReturnType());
-        
-        ReflectionServerCall call2 = new ReflectionServerCall(invoker, serverStream, new FrameworkModel(), "",
+            .thenAnswer(invocation -> method.getReturnType());
+
+        ReflectionServerCall call2 = new ReflectionServerCall(invoker, serverStream,
+            new FrameworkModel(), "",
             service, methodName,
             Collections.emptyList(),
-            ImmediateEventExecutor.INSTANCE);
-        serverStreamListener = call2.startCall(new HashMap<>());
-        serverStreamListener.onMessage(new byte[0]);
-        serverStreamListener.complete();
+            ImmediateEventExecutor.INSTANCE, n -> {
+        });
+        call2.startCall();
+        call2.onMessage(new byte[0]);
+        call2.onComplete();
     }
 }

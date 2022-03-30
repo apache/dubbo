@@ -32,8 +32,8 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -80,7 +80,7 @@ public class ClientCall {
                 Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding())
                     ? 0 : 1;
             final byte[] compress = requestMetadata.compressor.compress(data);
-            stream.writeMessage(compress, compressed);
+            stream.sendMessage(compress, compressed, false);
         } catch (Throwable t) {
             LOGGER.error(String.format("Serialize triple request failed, service=%s method=%s",
                 requestMetadata.service,
@@ -93,7 +93,7 @@ public class ClientCall {
 
 
     public void requestN(int n) {
-        stream.requestN(n);
+        stream.request(n);
     }
 
     public void halfClose() {
@@ -103,7 +103,13 @@ public class ClientCall {
         if (canceled) {
             return;
         }
-        stream.halfClose();
+        stream.halfClose()
+            .addListener(f -> {
+                if (!f.isSuccess()) {
+                    listener.onClose(TriRpcStatus.INTERNAL.withDescription("Half close failed")
+                        .withCause(f.cause()), null);
+                }
+            });
     }
 
     public void setCompression(String compression) {
@@ -114,7 +120,7 @@ public class ClientCall {
         ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
-        this.stream = new ClientStream(frameworkModel, executor, connection.getChannel(),
+        this.stream = new TripleClientStream(frameworkModel, executor, connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, metadata.packableMethod));
         return new ClientCallToObserverAdapter<>(this);
     }
@@ -157,7 +163,7 @@ public class ClientCall {
         void onClose(TriRpcStatus status, Map<String, Object> trailers);
     }
 
-    class ClientStreamListenerImpl implements ClientStreamListener {
+    class ClientStreamListenerImpl implements ClientStream.Listener {
 
         private final Listener listener;
         private final PackableMethod packableMethod;
@@ -166,11 +172,6 @@ public class ClientCall {
         ClientStreamListenerImpl(Listener listener, PackableMethod packableMethod) {
             this.listener = listener;
             this.packableMethod = packableMethod;
-        }
-
-        @Override
-        public void onStart() {
-            listener.onStart(ClientCall.this);
         }
 
         @Override
@@ -192,7 +193,12 @@ public class ClientCall {
         }
 
         @Override
-        public void complete(TriRpcStatus status, Map<String, Object> attachments,
+        public void onCancelByRemote(TriRpcStatus status) {
+
+        }
+
+        @Override
+        public void onComplete(TriRpcStatus status, Map<String, Object> attachments,
             Map<String, String> excludeHeaders) {
             if (done) {
                 return;
@@ -268,6 +274,17 @@ public class ClientCall {
                 LOGGER.error("tran from grpc-status-details error", t);
             }
             return map;
+        }
+
+        @Override
+        public void onStart() {
+            listener.onStart(ClientCall.this);
+        }
+
+        @Override
+        public void onComplete(TriRpcStatus status,
+            Map<String, Object> attachments) {
+
         }
     }
 }
