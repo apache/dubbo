@@ -171,7 +171,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
         private TriRpcStatus transportError;
         private DeCompressor decompressor;
-        private boolean remoteClosed;
+        private boolean halfClosed;
         private boolean headerReceived;
         private Http2Headers trailers;
 
@@ -181,10 +181,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         }
 
         void finishProcess(TriRpcStatus status, Http2Headers trailers) {
-            if (remoteClosed) {
+            if (halfClosed) {
                 return;
             }
-            remoteClosed = true;
+            halfClosed = true;
 
             final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers);
@@ -308,8 +308,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         public void onHeader(Http2Headers headers, boolean endStream) {
             executor.execute(() -> {
                 if (endStream) {
-                    if (!remoteClosed) {
-                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.NO_ERROR));
+                    if (!halfClosed) {
+                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL));
                     }
                     onTrailersReceived(headers);
                 } else {

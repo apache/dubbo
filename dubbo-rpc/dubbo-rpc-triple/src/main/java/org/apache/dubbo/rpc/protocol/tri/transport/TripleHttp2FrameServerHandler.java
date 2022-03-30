@@ -93,7 +93,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (tripleServerStream != null) {
             tripleServerStream.transportObserver.cancelByRemote(frame.errorCode());
         }
-        ctx.close();
     }
 
     @Override
@@ -117,7 +116,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        TripleServerStream tripleServerStream = new TripleServerStream(ctx.channel(), frameworkModel, executor,
+        TripleServerStream tripleServerStream = new TripleServerStream(ctx.channel(),
+            frameworkModel, executor,
             pathResolver, acceptEncoding, filters);
         ctx.channel().attr(SERVER_STREAM_KEY).set(tripleServerStream);
         tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
