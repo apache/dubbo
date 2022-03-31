@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationCache;
+import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -31,6 +32,7 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(FrameworkExecutorRepository.class);
+        beanFactory.registerBean(ConverterUtil.class);
     }
 
     @Override

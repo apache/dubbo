@@ -17,7 +17,8 @@
 package org.apache.dubbo.common.utils;
 
 
-import org.apache.dubbo.common.convert.Converter;
+import org.apache.dubbo.common.convert.ConverterUtil;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -324,13 +325,17 @@ public class ClassUtils {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
+        return convertPrimitive(FrameworkModel.defaultModel(), type, value);
+    }
+
+    public static Object convertPrimitive(FrameworkModel frameworkModel, Class<?> type, String value) {
         if (isEmpty(value)) {
             return null;
         }
         Class<?> wrapperType = WRAPPER_PRIMITIVE_TYPE_MAP.getOrDefault(type, type);
         Object result = null;
         try {
-            result = Converter.convertIfPossible(value, wrapperType);
+            result = frameworkModel.getBeanFactory().getBean(ConverterUtil.class).convertIfPossible(value, wrapperType);
         } catch (Exception e) {
             // ignore exception
         }
