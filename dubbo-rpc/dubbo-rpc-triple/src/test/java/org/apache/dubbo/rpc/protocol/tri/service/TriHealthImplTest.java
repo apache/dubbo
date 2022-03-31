@@ -55,12 +55,12 @@ public class TriHealthImplTest {
 
         // test watch
         triHealth.watch(request, streamObserver);
-        MockStreamObserver mockStreamObserver = (MockStreamObserver) streamObserver;
         Assertions.assertNotNull(RpcContext.getCancellationContext().getListeners());
         HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watches = getWatches(triHealth);
         Assertions.assertTrue(watches.containsKey(request.getService()));
         Assertions.assertTrue(watches.get(request.getService()).containsKey(streamObserver));
         Assertions.assertTrue(watches.get(request.getService()).get(streamObserver));
+        MockStreamObserver mockStreamObserver = (MockStreamObserver) streamObserver;
         Assertions.assertEquals(mockStreamObserver.getCount(), 1);
         Assertions.assertEquals(mockStreamObserver.getResponse().getStatus(), HealthCheckResponse.ServingStatus.SERVING);
 

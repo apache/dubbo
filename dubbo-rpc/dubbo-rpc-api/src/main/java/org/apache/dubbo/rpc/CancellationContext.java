@@ -25,7 +25,7 @@ import java.util.concurrent.Executor;
 
 public class CancellationContext implements Closeable {
 
-    private ArrayList<ExecutableListener> listeners;
+    private volatile ArrayList<ExecutableListener> listeners;
     private Throwable cancellationCause;
     private boolean cancelled;
 
