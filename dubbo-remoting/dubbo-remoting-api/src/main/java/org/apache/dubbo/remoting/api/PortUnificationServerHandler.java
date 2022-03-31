@@ -102,8 +102,9 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         Set<String> supported = url.getApplicationModel()
             .getExtensionLoader(WireProtocol.class)
             .getSupportedExtensions();
-        LOGGER.error(String.format("Can not recognize protocol from downstream . "
-            + "preface=%s protocols=%s", Bytes.bytes2hex(preface), supported));
+        LOGGER.error(String.format("Can not recognize protocol from downstream=%s . "
+                + "preface=%s protocols=%s", ctx.channel().remoteAddress(), Bytes.bytes2hex(preface),
+            supported));
 
         // Unknown protocol; discard everything and close the connection.
         in.clear();
