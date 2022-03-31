@@ -193,6 +193,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
             methodDescriptor.getMethodName(), getUrl().getAddress(), timeout, callbackExecutor);
+
+        RequestMetadata request = createRequest(methodDescriptor, invocation, timeout);
+
         final Object pureArgument;
         if (methodDescriptor.getParameterClasses().length == 2
             && methodDescriptor.getParameterClasses()[1].isAssignableFrom(
@@ -224,7 +227,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             FutureContext.getContext().setCompatibleFuture(future);
         }
         ClientCall.Listener callListener = new UnaryClientCallListener(future);
-        RequestMetadata request = createRequest(methodDescriptor, invocation, timeout);
+
         final StreamObserver<Object> requestObserver = call.start(request, callListener);
         requestObserver.onNext(pureArgument);
         requestObserver.onCompleted();
