@@ -18,18 +18,70 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 
-import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
+import org.apache.dubbo.rpc.TriRpcStatus;
+
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.concurrent.Future;
+
+import java.net.SocketAddress;
 
 /**
- * Stream is a bi-directional intermediate layer for processing streaming data. It serializes
- * business object instance to byte[] then send to remote, and deserializes byte[] to object
- * instance from remote. {@link H2TransportListener} to receive data from remote and {@link
- * WriteQueue} to write data.
+ * Stream is a bi-directional channel that manipulates the data flow between peers. Inbound data
+ * from remote peer is acquired by {@link Listener}. Outbound data to remote peer is sent directly
+ * by {@link Stream}. Backpressure is supported by {@link #request(int)}.
  */
 public interface Stream {
 
-    void writeMessage(byte[] message, int compressed);
+    /**
+     * Register a {@link Listener} to receive inbound data from remote peer.
+     */
+    interface Listener {
 
-    void requestN(int n);
+        /**
+         * Callback when receive message. Note this method may be called many times if is a
+         * streaming .
+         *
+         * @param message message received from remote peer
+         */
+        void onMessage(byte[] message);
+
+        /**
+         * Callback when receive cancel signal.
+         *
+         * @param status the cancel status
+         */
+        void onCancelByRemote(TriRpcStatus status);
+
+    }
+
+    /**
+     * Send headers to remote peer.
+     *
+     * @param headers headers to send to remote peer
+     * @return future to callback when send headers is done
+     */
+    Future<?> sendHeader(Http2Headers headers);
+
+    /**
+     * Cancel by this peer.
+     *
+     * @param status cancel status to send to remote peer
+     * @return future to callback when cancel is done
+     */
+    Future<?> cancelByLocal(TriRpcStatus status);
+
+    /**
+     * Get remote peer address.
+     *
+     * @return socket address of remote peer
+     */
+    SocketAddress remoteAddress();
+
+    /**
+     * Request n message from remote peer.
+     *
+     * @param n number of message
+     */
+    void request(int n);
+
 }

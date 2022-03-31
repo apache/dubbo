@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
+import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
@@ -54,7 +55,7 @@ class TripleInvokerTest {
             .getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
             .createExecutorIfAbsent(url);
-        ClientCall call = Mockito.mock(ClientCall.class);
+        TripleClientCall call = Mockito.mock(TripleClientCall.class);
         StreamObserver streamObserver = Mockito.mock(StreamObserver.class);
         when(call.start(any(RequestMetadata.class), any(ClientCall.Listener.class)))
             .thenReturn(streamObserver);

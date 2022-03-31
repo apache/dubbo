@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.ObserverToClientCallListenerAdapter;
+import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -115,7 +116,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(
             invocation.getMethodName(),
             invocation.getParameterTypes());
-        ClientCall call = new ClientCall(connection, streamExecutor,
+        ClientCall call = new TripleClientCall(connection, streamExecutor,
             getUrl().getOrDefaultFrameworkModel());
 
         AsyncRpcResult result;
@@ -140,7 +141,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 .withDescription("Call aborted cause client exception");
             RpcException e = status.asException();
             try {
-                call.cancel("Canceled by error", e);
+                call.cancelByLocal(e);
             } catch (Throwable t1) {
                 LOGGER.error("Cancel triple request failed", t1);
             }
@@ -177,7 +178,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (responseObserver instanceof CancelableStreamObserver) {
             final CancellationContext context = new CancellationContext();
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
-            context.addListener(context1 -> call.cancel("Canceled by app", null));
+            context.addListener(context1 -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
         }
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
             responseObserver);
@@ -247,6 +248,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config
         meta.compressor = Compressor.NONE;
+        meta.cancellationContext = RpcContext.getCancellationContext();
         meta.address = url.getAddress();
         meta.service = url.getPath();
         meta.group = url.getGroup();

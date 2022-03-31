@@ -19,24 +19,18 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
-public class StubServerCall extends ServerCall {
+public class StubAbstractServerCall extends AbstractServerCall {
 
-    private final StubMethodDescriptor methodDescriptor;
-
-    public StubServerCall(Invoker<?> invoker,
+    public StubAbstractServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
         String acceptEncoding,
@@ -46,9 +40,9 @@ public class StubServerCall extends ServerCall {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl(), serviceName),
             acceptEncoding, serviceName, methodName, executor);
-        this.methodDescriptor = (StubMethodDescriptor) serviceDescriptor.getMethods(methodName)
+        this.methodDescriptor = serviceDescriptor.getMethods(methodName)
             .get(0);
-        this.packableMethod = methodDescriptor;
+        this.packableMethod = (StubMethodDescriptor) methodDescriptor;
     }
 
     private static ServiceDescriptor getServiceDescriptor(URL url, String serviceName) {
@@ -64,31 +58,8 @@ public class StubServerCall extends ServerCall {
     }
 
     @Override
-    public ServerStreamListener doStartCall(Map<String, Object> metadata) {
-        RpcInvocation invocation = buildInvocation(metadata, methodDescriptor);
-        listener = startInternalCall(invocation, methodDescriptor, invoker);
-        if (listener == null) {
-            return null;
-        }
-        return new ServerStreamListenerImpl();
+    protected Object parseSingleMessage(byte[] data) throws IOException, ClassNotFoundException {
+        return packableMethod.parseRequest(data);
     }
 
-    class ServerStreamListenerImpl extends ServerCall.ServerStreamListenerBase {
-
-        @Override
-        public void complete() {
-            listener.onComplete();
-        }
-
-        @Override
-        public void cancel(TriRpcStatus status) {
-            listener.onCancel(status.description);
-        }
-
-        @Override
-        protected void doOnMessage(byte[] message) throws IOException, ClassNotFoundException {
-            Object request = methodDescriptor.parseRequest(message);
-            listener.onMessage(request);
-        }
-    }
 }

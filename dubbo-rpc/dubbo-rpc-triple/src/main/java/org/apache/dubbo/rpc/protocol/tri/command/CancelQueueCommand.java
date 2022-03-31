@@ -23,14 +23,19 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 
 public class CancelQueueCommand extends QueuedCommand {
+    private final Http2Error error;
 
-    public static CancelQueueCommand createCommand() {
-        return new CancelQueueCommand();
+    public CancelQueueCommand(Http2Error error) {
+        this.error = error;
+    }
+
+    public static CancelQueueCommand createCommand(Http2Error error) {
+        return new CancelQueueCommand(error);
     }
 
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2ResetFrame(Http2Error.CANCEL), promise);
+        ctx.write(new DefaultHttp2ResetFrame(error), promise);
     }
 }

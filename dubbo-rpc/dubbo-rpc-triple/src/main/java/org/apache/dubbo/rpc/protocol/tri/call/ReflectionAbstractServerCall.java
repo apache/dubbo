@@ -32,24 +32,21 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
-public class ReflectionServerCall extends ServerCall {
+public class ReflectionAbstractServerCall extends AbstractServerCall {
 
     private final List<HeaderFilter> headerFilters;
-    private MethodDescriptor methodDescriptor;
     private List<MethodDescriptor> methodDescriptors;
     private RpcInvocation invocation;
 
-    public ReflectionServerCall(Invoker<?> invoker,
+    public ReflectionAbstractServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
         String acceptEncoding,
@@ -82,8 +79,7 @@ public class ReflectionServerCall extends ServerCall {
     }
 
     @Override
-    public ServerStreamListener doStartCall(Map<String, Object> metadata) {
-
+    public void startCall() {
         if (isGeneric(methodName)) {
             // There should be one and only one
             methodDescriptor = ServiceDescriptorInternalCache.genericService()
@@ -103,7 +99,7 @@ public class ReflectionServerCall extends ServerCall {
             if (CollectionUtils.isEmpty(methodDescriptors)) {
                 responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription(
                     "Method : " + methodName + " not found of service:" + serviceName));
-                return null;
+                return;
             }
             // In most cases there is only one method
             if (methodDescriptors.size() == 1) {
@@ -123,102 +119,76 @@ public class ReflectionServerCall extends ServerCall {
         if (methodDescriptor != null) {
             packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
         }
-        ServerStreamListenerImpl listener = new ServerStreamListenerImpl();
-        listener.startCall(metadata);
-        return listener;
+        trySetListener();
+        if (listener == null) {
+            // wrap request , need one message
+            request(1);
+        }
     }
 
-    class ServerStreamListenerImpl extends ServerCall.ServerStreamListenerBase {
-
-        private Map<String, Object> metadata;
-
-        void startCall(Map<String, Object> metadata) {
-            this.metadata = metadata;
-            trySetListener();
-            if (listener == null) {
-                // wrap request , need one message
-                requestN(1);
-            }
+    private void trySetListener() {
+        if (listener != null) {
+            return;
         }
-
-        @Override
-        public void complete() {
-            if (listener != null) {
-                listener.onComplete();
-            }
+        if (methodDescriptor == null) {
+            return;
         }
-
-        @Override
-        public void cancel(TriRpcStatus status) {
-            listener.onCancel(status.description);
+        if (isClosed()) {
+            return;
         }
-
-        @Override
-        protected void doOnMessage(byte[] message) throws IOException, ClassNotFoundException {
-            trySetMethodDescriptor(message);
-            trySetListener();
-            if (closed) {
-                return;
-            }
-            if (serviceDescriptor != null) {
-                ClassLoadUtil.switchContextLoader(
-                    serviceDescriptor.getServiceInterfaceClass().getClassLoader());
-            }
-            final Object obj = packableMethod.getRequestUnpack().unpack(message);
-            listener.onMessage(obj);
+        invocation = buildInvocation(methodDescriptor);
+        if (isClosed()) {
+            return;
         }
-
-        private void trySetMethodDescriptor(byte[] data) throws IOException {
-            if (methodDescriptor != null) {
-                return;
-            }
-            final TripleWrapper.TripleRequestWrapper request;
-            request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
-
-            final String[] paramTypes = request.getArgTypesList()
-                .toArray(new String[request.getArgsCount()]);
-            // wrapper mode the method can overload so maybe list
-            for (MethodDescriptor descriptor : methodDescriptors) {
-                // params type is array
-                if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
-                    methodDescriptor = descriptor;
-                    break;
-                }
-            }
-            if (methodDescriptor == null) {
-                close(TriRpcStatus.UNIMPLEMENTED.withDescription(
-                    "Method :" + methodName + "[" + Arrays.toString(
-                        paramTypes) + "] " + "not found of service:"
-                        + serviceDescriptor.getInterfaceName()), null);
-                return;
-            }
-            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+        headerFilters.forEach(f -> f.invoke(invoker, invocation));
+        if (isClosed()) {
+            return;
         }
-
-        private void trySetListener() {
-            if (listener != null) {
-                return;
-            }
-            if (methodDescriptor == null) {
-                return;
-            }
-            if (closed) {
-                return;
-            }
-            invocation = buildInvocation(metadata, methodDescriptor);
-            if (closed) {
-                return;
-            }
-            headerFilters.forEach(f -> f.invoke(invoker, invocation));
-            if (closed) {
-                return;
-            }
-            listener = ReflectionServerCall.this.startInternalCall(invocation,
-                methodDescriptor, invoker);
-            if (listener == null) {
-                closed = true;
-            }
-        }
-
+        listener = ReflectionAbstractServerCall.this.startInternalCall(invocation,
+            methodDescriptor, invoker);
     }
+
+    @Override
+    protected Object parseSingleMessage(byte[] data)
+        throws IOException, ClassNotFoundException {
+        trySetMethodDescriptor(data);
+        trySetListener();
+        if (isClosed()) {
+            return null;
+        }
+        if (serviceDescriptor != null) {
+            ClassLoadUtil.switchContextLoader(
+                serviceDescriptor.getServiceInterfaceClass().getClassLoader());
+        }
+        return packableMethod.getRequestUnpack().unpack(data);
+    }
+
+
+    private void trySetMethodDescriptor(byte[] data) throws IOException {
+        if (methodDescriptor != null) {
+            return;
+        }
+        final TripleWrapper.TripleRequestWrapper request;
+        request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
+
+        final String[] paramTypes = request.getArgTypesList()
+            .toArray(new String[request.getArgsCount()]);
+        // wrapper mode the method can overload so maybe list
+        for (MethodDescriptor descriptor : methodDescriptors) {
+            // params type is array
+            if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
+                methodDescriptor = descriptor;
+                break;
+            }
+        }
+        if (methodDescriptor == null) {
+            ReflectionAbstractServerCall.this.close(TriRpcStatus.UNIMPLEMENTED.withDescription(
+                "Method :" + methodName + "[" + Arrays.toString(
+                    paramTypes) + "] " + "not found of service:"
+                    + serviceDescriptor.getInterfaceName()), null);
+            return;
+        }
+        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+    }
+
 }

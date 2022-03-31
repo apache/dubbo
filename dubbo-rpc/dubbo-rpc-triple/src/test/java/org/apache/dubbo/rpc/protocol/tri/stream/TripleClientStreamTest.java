@@ -47,25 +47,30 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ClientStreamTest {
+class TripleClientStreamTest {
+
     @Test
     public void progress() {
         final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
-        final ModuleServiceRepository repo = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        final ModuleServiceRepository repo = ApplicationModel.defaultModel().getDefaultModule()
+            .getServiceRepository();
         repo.registerService(IGreeter.class);
         final ServiceDescriptor serviceDescriptor = repo.getService(IGreeter.class.getName());
-        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo", new Class<?>[]{String.class});
+        final MethodDescriptor methodDescriptor = serviceDescriptor.getMethod("echo",
+            new Class<?>[]{String.class});
 
         MockClientStreamListener listener = new MockClientStreamListener();
         WriteQueue writeQueue = mock(WriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
-        ClientStream stream = new ClientStream(url.getOrDefaultFrameworkModel(), ImmediateEventExecutor.INSTANCE, writeQueue, listener);
+        TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
+            ImmediateEventExecutor.INSTANCE, writeQueue, listener);
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
@@ -80,7 +85,7 @@ class ClientStreamTest {
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
-        stream.writeMessage(new byte[0], 0);
+        stream.sendMessage(new byte[0], 0, false);
         verify(writeQueue).enqueue(any(DataQueueCommand.class));
         verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
         stream.halfClose();
@@ -88,18 +93,19 @@ class ClientStreamTest {
         verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
         stream.cancelByLocal(TriRpcStatus.CANCELLED);
-        verify(writeQueue).enqueue(any(CancelQueueCommand.class));
-        verify(writeQueue, times(4)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue, times(1)).enqueue(any(CancelQueueCommand.class), anyBoolean());
+        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.scheme(HttpScheme.HTTP.name())
-                .status(HttpResponseStatus.OK.codeAsText());
+            .status(HttpResponseStatus.OK.codeAsText());
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
-        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleHeaderEnum.CONTENT_PROTO.getHeader());
+        headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(),
+            TripleHeaderEnum.CONTENT_PROTO.getHeader());
         transportListener.onHeader(headers, false);
         Assertions.assertTrue(listener.started);
-        stream.requestN(2);
+        stream.request(2);
         byte[] data = new byte[]{0, 0, 0, 0, 1, 1};
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
         transportListener.onData(buf, false);

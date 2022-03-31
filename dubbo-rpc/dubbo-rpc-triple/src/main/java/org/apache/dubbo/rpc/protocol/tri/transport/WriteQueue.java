@@ -20,8 +20,10 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPromise;
 
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,6 +34,7 @@ public class WriteQueue {
     private final Channel channel;
     private final Queue<QueuedCommand> queue;
     private final AtomicBoolean scheduled;
+    private volatile boolean rst;
 
     public WriteQueue(Channel channel) {
         this.channel = channel;
@@ -39,7 +42,29 @@ public class WriteQueue {
         scheduled = new AtomicBoolean(false);
     }
 
-    public ChannelPromise enqueue(QueuedCommand command) {
+    public ChannelFuture success() {
+        return channel.newSucceededFuture();
+    }
+
+    public ChannelFuture failure(Throwable cause) {
+        return channel.newFailedFuture(cause);
+    }
+
+    public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
+        ChannelFuture future = enqueue(command);
+        if (rst) {
+            this.rst = true;
+        }
+        return future;
+    }
+
+    public ChannelFuture enqueue(QueuedCommand command) {
+        if (!channel.isActive()) {
+            return channel.newFailedFuture(new IOException("channel is closed"));
+        }
+        if (rst) {
+            return channel.newFailedFuture(new IOException("channel has reset"));
+        }
         ChannelPromise promise = command.promise();
         if (promise == null) {
             promise = channel.newPromise();

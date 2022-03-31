@@ -27,6 +27,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -52,6 +53,9 @@ public class StreamUtils {
     }
 
     public static Map<String, Object> toAttachments(Map<String, Object> origin) {
+        if (origin == null || origin.isEmpty()) {
+            return Collections.emptyMap();
+        }
         Map<String, Object> res = new HashMap<>(origin.size());
         origin.forEach((k, v) -> {
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(k)) {
@@ -99,9 +103,8 @@ public class StreamUtils {
      */
     private static void convertSingleAttachment(DefaultHttp2Headers headers, String key, Object v) {
         try {
-            // todo Support boolean/ numbers
-            if (v instanceof String) {
-                String str = (String) v;
+            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
+                String str = v.toString();
                 headers.set(key, str);
             } else if (v instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) v);

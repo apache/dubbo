@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.rpc.TriRpcStatus;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http2.Http2Headers;
 
@@ -45,6 +43,6 @@ public interface H2TransportListener {
     void onData(ByteBuf data, boolean endStream);
 
 
-    void cancelByRemote(TriRpcStatus status);
+    void cancelByRemote(long errorCode);
 
 }
