@@ -57,6 +57,7 @@ public class TriHealthImplTest {
         triHealth.setStatus(request.getService(), ServingStatus.SERVING);
         StreamObserver<HealthCheckResponse> streamObserver = new MockStreamObserver();
 
+        RpcContext.removeCancellationContext();
         // test watch
         triHealth.watch(request, streamObserver);
         Assertions.assertNotNull(RpcContext.getCancellationContext().getListeners());
