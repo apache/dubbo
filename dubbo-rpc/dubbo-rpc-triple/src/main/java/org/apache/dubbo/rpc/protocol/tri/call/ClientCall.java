@@ -88,14 +88,14 @@ public interface ClientCall {
     /**
      * @return true if this call is auto request
      */
-    boolean isAutoRequestN();
+    boolean isAutoRequest();
 
     /**
      * Set auto request for this call
      *
-     * @param autoRequestN whether auto request is enabled
+     * @param autoRequest whether auto request is enabled
      */
-    void setAutoRequestN(boolean autoRequestN);
+    void setAutoRequest(boolean autoRequest);
 
 
     /**

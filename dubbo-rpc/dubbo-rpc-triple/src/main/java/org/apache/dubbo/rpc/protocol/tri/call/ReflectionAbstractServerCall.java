@@ -40,13 +40,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class ReflectionServerCall extends ServerCallBase {
+public class ReflectionAbstractServerCall extends AbstractServerCall {
 
     private final List<HeaderFilter> headerFilters;
     private List<MethodDescriptor> methodDescriptors;
     private RpcInvocation invocation;
 
-    public ReflectionServerCall(Invoker<?> invoker,
+    public ReflectionAbstractServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
         String acceptEncoding,
@@ -144,7 +144,7 @@ public class ReflectionServerCall extends ServerCallBase {
         if (isClosed()) {
             return;
         }
-        listener = ReflectionServerCall.this.startInternalCall(invocation,
+        listener = ReflectionAbstractServerCall.this.startInternalCall(invocation,
             methodDescriptor, invoker);
     }
 
@@ -182,7 +182,7 @@ public class ReflectionServerCall extends ServerCallBase {
             }
         }
         if (methodDescriptor == null) {
-            ReflectionServerCall.this.close(TriRpcStatus.UNIMPLEMENTED.withDescription(
+            ReflectionAbstractServerCall.this.close(TriRpcStatus.UNIMPLEMENTED.withDescription(
                 "Method :" + methodName + "[" + Arrays.toString(
                     paramTypes) + "] " + "not found of service:"
                     + serviceDescriptor.getInterfaceName()), null);

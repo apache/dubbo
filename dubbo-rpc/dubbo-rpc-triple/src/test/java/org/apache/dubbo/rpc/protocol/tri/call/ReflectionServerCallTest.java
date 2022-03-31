@@ -57,7 +57,7 @@ class ReflectionServerCallTest {
         String service = "testService";
         String methodName = "method";
         try {
-            ReflectionServerCall call = new ReflectionServerCall(invoker, serverStream,
+            ReflectionAbstractServerCall call = new ReflectionAbstractServerCall(invoker, serverStream,
                 new FrameworkModel(), "",
                 service, methodName,
                 Collections.emptyList(),
@@ -82,7 +82,7 @@ class ReflectionServerCallTest {
         when(methodDescriptor.getReturnClass())
             .thenAnswer(invocation -> method.getReturnType());
 
-        ReflectionServerCall call2 = new ReflectionServerCall(invoker, serverStream,
+        ReflectionAbstractServerCall call2 = new ReflectionAbstractServerCall(invoker, serverStream,
             new FrameworkModel(), "",
             service, methodName,
             Collections.emptyList(),

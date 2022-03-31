@@ -32,7 +32,7 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     }
 
     public boolean isAutoRequestEnabled() {
-        return call.isAutoRequestN();
+        return call.isAutoRequest();
     }
 
     @Override
@@ -77,6 +77,6 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void disableAutoRequest() {
-        call.setAutoRequestN(false);
+        call.setAutoRequest(false);
     }
 }

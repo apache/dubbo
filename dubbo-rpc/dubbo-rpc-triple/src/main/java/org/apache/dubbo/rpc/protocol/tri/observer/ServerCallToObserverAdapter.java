@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.call.ServerCallBase;
+import org.apache.dubbo.rpc.protocol.tri.call.AbstractServerCall;
 
 import java.util.Map;
 
@@ -32,11 +32,11 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     public final CancellationContext cancellationContext;
-    private final ServerCallBase call;
+    private final AbstractServerCall call;
     private Map<String, Object> attachments;
     private boolean terminated = false;
 
-    public ServerCallToObserverAdapter(ServerCallBase call,
+    public ServerCallToObserverAdapter(AbstractServerCall call,
         CancellationContext cancellationContext) {
         this.call = call;
         this.cancellationContext = cancellationContext;

@@ -29,8 +29,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.call.ReflectionServerCall;
-import org.apache.dubbo.rpc.protocol.tri.call.StubServerCall;
+import org.apache.dubbo.rpc.protocol.tri.call.ReflectionAbstractServerCall;
+import org.apache.dubbo.rpc.protocol.tri.call.StubAbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
@@ -384,10 +384,10 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             Map<String, Object> requestMetadata = headersToMap(headers);
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
-                listener = new StubServerCall(invoker, TripleServerStream.this, frameworkModel,
+                listener = new StubAbstractServerCall(invoker, TripleServerStream.this, frameworkModel,
                     acceptEncoding, serviceName, originalMethodName, executor);
             } else {
-                listener = new ReflectionServerCall(invoker, TripleServerStream.this,
+                listener = new ReflectionAbstractServerCall(invoker, TripleServerStream.this,
                     frameworkModel, acceptEncoding, serviceName, originalMethodName, filters,
                     executor);
             }

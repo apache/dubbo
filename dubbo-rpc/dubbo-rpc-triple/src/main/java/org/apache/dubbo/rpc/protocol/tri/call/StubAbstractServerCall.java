@@ -28,9 +28,9 @@ import org.apache.dubbo.rpc.stub.StubSuppliers;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 
-public class StubServerCall extends ServerCallBase {
+public class StubAbstractServerCall extends AbstractServerCall {
 
-    public StubServerCall(Invoker<?> invoker,
+    public StubAbstractServerCall(Invoker<?> invoker,
         ServerStream serverStream,
         FrameworkModel frameworkModel,
         String acceptEncoding,

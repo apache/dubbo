@@ -61,7 +61,7 @@ class StubServerCallTest {
             .thenReturn("test");
         String service = "testService";
         String method = "method";
-        StubServerCall call = new StubServerCall(invoker, tripleServerStream,
+        StubAbstractServerCall call = new StubAbstractServerCall(invoker, tripleServerStream,
             new FrameworkModel(), "",
             service, method,
             ImmediateEventExecutor.INSTANCE);

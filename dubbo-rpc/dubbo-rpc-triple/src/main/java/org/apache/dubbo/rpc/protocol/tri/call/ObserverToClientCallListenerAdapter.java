@@ -34,7 +34,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     @Override
     public void onMessage(Object message) {
         delegate.onNext(message);
-        if (call.isAutoRequestN()) {
+        if (call.isAutoRequest()) {
             call.request(1);
         }
     }
@@ -51,7 +51,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     @Override
     public void onStart(ClientCall call) {
         this.call = call;
-        if (call.isAutoRequestN()) {
+        if (call.isAutoRequest()) {
             call.request(1);
         }
     }

@@ -56,7 +56,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private ClientCall.Listener listener;
     private boolean canceled;
     private boolean headerSent;
-    private boolean autoRequestN = true;
+    private boolean autoRequest = true;
     private boolean done;
 
     public TripleClientCall(Connection connection, Executor executor,
@@ -273,13 +273,13 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     }
 
     @Override
-    public boolean isAutoRequestN() {
-        return autoRequestN;
+    public boolean isAutoRequest() {
+        return autoRequest;
     }
 
     @Override
-    public void setAutoRequestN(boolean autoRequestN) {
-        this.autoRequestN = autoRequestN;
+    public void setAutoRequest(boolean autoRequest) {
+        this.autoRequest = autoRequest;
     }
 
 }

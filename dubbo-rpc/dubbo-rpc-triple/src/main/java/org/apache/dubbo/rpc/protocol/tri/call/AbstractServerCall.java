@@ -51,10 +51,10 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
-public abstract class ServerCallBase implements ServerCall, ServerStream.Listener {
+public abstract class AbstractServerCall implements ServerCall, ServerStream.Listener {
 
     public static final String REMOTE_ADDRESS_KEY = "tri.remote.address";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerCallBase.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCall.class);
 
     public final Invoker<?> invoker;
     public final FrameworkModel frameworkModel;
@@ -75,7 +75,7 @@ public abstract class ServerCallBase implements ServerCall, ServerStream.Listene
     protected PackableMethod packableMethod;
     protected Map<String, Object> requestMetadata;
 
-    ServerCallBase(Invoker<?> invoker,
+    AbstractServerCall(Invoker<?> invoker,
         ServerStream stream,
         FrameworkModel frameworkModel,
         ServiceDescriptor serviceDescriptor,
