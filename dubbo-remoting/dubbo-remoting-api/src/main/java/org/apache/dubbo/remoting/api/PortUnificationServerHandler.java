@@ -26,7 +26,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
-import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
@@ -109,7 +108,6 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         // Unknown protocol; discard everything and close the connection.
         in.clear();
         ctx.close();
-        ReferenceCountUtil.release(in);
     }
 
 }
