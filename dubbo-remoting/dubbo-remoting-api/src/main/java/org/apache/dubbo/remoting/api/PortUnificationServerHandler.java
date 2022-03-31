@@ -109,7 +109,6 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         // Unknown protocol; discard everything and close the connection.
         in.clear();
         ctx.close();
-        ReferenceCountUtil.release(in);
     }
 
 }
