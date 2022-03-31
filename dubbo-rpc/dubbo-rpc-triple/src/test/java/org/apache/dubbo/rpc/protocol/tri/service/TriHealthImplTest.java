@@ -55,7 +55,7 @@ public class TriHealthImplTest {
 
         // test watch
         triHealth.watch(request, streamObserver);
-        Assertions.assertNotNull(RpcContext.getCancellationContext().getListeners());
+//        Assertions.assertNotNull(RpcContext.getCancellationContext().getListeners());
         HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>> watches = getWatches(triHealth);
         Assertions.assertTrue(watches.containsKey(request.getService()));
         Assertions.assertTrue(watches.get(request.getService()).containsKey(streamObserver));
