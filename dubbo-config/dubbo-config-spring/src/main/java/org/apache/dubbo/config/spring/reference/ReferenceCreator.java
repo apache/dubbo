@@ -63,7 +63,7 @@ public class ReferenceCreator {
     private static final String ONINVOKE = "oninvoke";
 
     private static final String ISRETURN = "isReturn";
-    
+
     private static final String METHOD = "Method";
 
     protected final Log logger = LogFactory.getLog(getClass());
@@ -220,7 +220,7 @@ public class ReferenceCreator {
     }
 
     private MethodConfig createMethodConfig(Map<String, Object> methodAttributes, DefaultConversionService conversionService) {
-        String[] callbacks = new String[]{ONINVOKE, ONRETURN, ONTHROW, ISRETURN};
+        String[] callbacks = new String[]{ONINVOKE, ONRETURN, ONTHROW};
         for (String callbackName : callbacks) {
             Object value = methodAttributes.get(callbackName);
             if (value instanceof String) {
@@ -231,9 +231,7 @@ public class ReferenceCreator {
                     String beanName = strValue.substring(0, index);
                     String methodName = strValue.substring(index + 1);
                     methodAttributes.put(callbackName, applicationContext.getBean(beanName));
-                    if (!callbackName.equals(ISRETURN)) {
-                        methodAttributes.put(callbackName + METHOD, methodName);
-                    }
+                    methodAttributes.put(callbackName + METHOD, methodName);
                 } else {
                     methodAttributes.put(callbackName, applicationContext.getBean(strValue));
                 }
@@ -242,6 +240,7 @@ public class ReferenceCreator {
 
         MethodConfig methodConfig = new MethodConfig();
         DataBinder mcDataBinder = new DataBinder(methodConfig);
+        methodConfig.setReturn((Boolean) methodAttributes.get(ISRETURN));
         mcDataBinder.setConversionService(conversionService);
         AnnotationPropertyValuesAdapter propertyValues = new AnnotationPropertyValuesAdapter(methodAttributes, applicationContext.getEnvironment());
         mcDataBinder.bind(propertyValues);
