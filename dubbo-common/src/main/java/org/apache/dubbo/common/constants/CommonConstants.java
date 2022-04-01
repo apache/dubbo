@@ -130,6 +130,8 @@ public interface CommonConstants {
 
     String KEEP_ALIVE_KEY = "keep.alive";
 
+    String CONNECTIONS = "connections";
+
     int DEFAULT_QUEUES = 0;
 
     int DEFAULT_ALIVE = 60 * 1000;
