@@ -572,8 +572,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         "because the 'generic' attribute has higher priority than 'interfaceClass', so change 'interfaceClass' to '%s'. " +
                         "Note: it will make this reference bean as a candidate bean of type '%s' instead of '%s' when resolving dependency in Spring.",
                     interfaceClass.getName(), generic, GenericService.class.getName(), GenericService.class.getName(), interfaceClass.getName()));
-                interfaceClass = GenericService.class;
             }
+            interfaceClass = GenericService.class;
         } else {
             try {
                 if (getInterfaceClassLoader() != null && (interfaceClass == null || interfaceClass.getClassLoader() != getInterfaceClassLoader())) {
