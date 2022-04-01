@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.convert;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
-import static org.apache.dubbo.common.convert.Converter.getConverter;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -31,19 +33,31 @@ import static org.junit.jupiter.api.Assertions.assertSame;
  */
 public class ConverterTest {
 
+    private ConverterUtil converterUtil;
+
+    @BeforeEach
+    public void setup() {
+        converterUtil = FrameworkModel.defaultModel().getBeanFactory().getBean(ConverterUtil.class);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        FrameworkModel.destroyAll();
+    }
+
     @Test
     public void testGetConverter() {
         getExtensionLoader(Converter.class)
                 .getSupportedExtensionInstances()
                 .forEach(converter -> {
-                    assertSame(converter, getConverter(converter.getSourceType(), converter.getTargetType()));
+                    assertSame(converter, converterUtil.getConverter(converter.getSourceType(), converter.getTargetType()));
                 });
     }
 
     @Test
     public void testConvertIfPossible() {
-        assertEquals(Integer.valueOf(2), convertIfPossible("2", Integer.class));
-        assertEquals(Boolean.FALSE, convertIfPossible("false", Boolean.class));
-        assertEquals(Double.valueOf(1), convertIfPossible("1", Double.class));
+        assertEquals(Integer.valueOf(2), converterUtil.convertIfPossible("2", Integer.class));
+        assertEquals(Boolean.FALSE, converterUtil.convertIfPossible("false", Boolean.class));
+        assertEquals(Double.valueOf(1), converterUtil.convertIfPossible("1", Double.class));
     }
 }

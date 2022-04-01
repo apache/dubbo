@@ -32,8 +32,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.mockito.ArgumentMatchers.any;
-
 /**
  * {@link TripleHttp2ClientResponseHandler }
  */
@@ -78,7 +76,7 @@ public class TripleHttp2ClientResponseHandlerTest {
     public void testExceptionCaught() {
         RuntimeException exception = new RuntimeException();
         handler.exceptionCaught(ctx, exception);
-        Mockito.verify(ctx, Mockito.times(1)).close();
-        Mockito.verify(transportListener, Mockito.times(1)).cancelByRemote(any());
+        Mockito.verify(ctx).close();
+        Mockito.verify(transportListener).cancelByRemote(Http2Error.INTERNAL_ERROR.code());
     }
 }

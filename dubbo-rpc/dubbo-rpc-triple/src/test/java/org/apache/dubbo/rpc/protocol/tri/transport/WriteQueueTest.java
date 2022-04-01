@@ -29,6 +29,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Error;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +76,7 @@ public class WriteQueueTest {
         TriRpcStatus status = TriRpcStatus.UNKNOWN
                 .withCause(new RpcException())
                 .withDescription("Encode Response data error");
-        writeQueue.enqueue(CancelQueueCommand.createCommand());
+        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL));
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
 
         while (writeMethodCalledTimes.get() != 4) {

@@ -28,7 +28,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     private StreamObserver<Object> requestObserver;
 
     public BiStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
-                                      ServerCallToObserverAdapter<Object> responseObserver) {
+        ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
         invoke();
@@ -51,11 +51,8 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onCancel(String errorInfo) {
-        requestObserver.onError(TriRpcStatus.CANCELLED
-                .withDescription(errorInfo).asException());
-        responseObserver.cancel(
-                TriRpcStatus.CANCELLED.withDescription("Cancel by client:" + errorInfo).asException());
+    public void onCancel(TriRpcStatus status) {
+        responseObserver.onError(status.asException());
     }
 
 

@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
@@ -70,7 +71,7 @@ public final class TripleHttp2ClientResponseHandler extends
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
         LOGGER.warn("Triple Client received remote reset errorCode=" + resetFrame.errorCode());
-        transportListener.cancelByRemote(TriRpcStatus.CANCELLED);
+        transportListener.cancelByRemote(resetFrame.errorCode());
         ctx.close();
     }
 
@@ -80,7 +81,7 @@ public final class TripleHttp2ClientResponseHandler extends
             .withCause(cause);
         LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code,
             cause);
-        transportListener.cancelByRemote(status);
+        transportListener.cancelByRemote(Http2Error.INTERNAL_ERROR.code());
         ctx.close();
     }
 

@@ -37,6 +37,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -726,7 +727,7 @@ public abstract class AbstractConfig implements Serializable {
                         && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
                         && !isIgnoredAttribute(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
-                        method.invoke(obj, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
+                        method.invoke(obj, ClassUtils.convertPrimitive(ScopeModelUtil.getFrameworkModel(getScopeModel()), method.getParameterTypes()[0], value));
                     }
                 } catch (Exception e) {
                     logger.info("Failed to override the property " + method.getName() + " in " +

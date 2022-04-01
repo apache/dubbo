@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
-import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
+import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -40,7 +40,7 @@ import java.util.concurrent.Executor;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
-    private static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
+    private static final AttributeKey<TripleServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
         "tri_server_stream");
 
 
@@ -87,14 +87,12 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
-        final ServerStream serverStream = ctx.channel().attr(SERVER_STREAM_KEY)
+        final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
             .get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
-        if (serverStream != null) {
-            serverStream.transportObserver.cancelByRemote(TriRpcStatus.CANCELLED
-                .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
+        if (tripleServerStream != null) {
+            tripleServerStream.transportObserver.cancelByRemote(frame.errorCode());
         }
-        ctx.close();
     }
 
     @Override
@@ -104,24 +102,25 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
         TriRpcStatus status = TriRpcStatus.getStatus(cause,
             "Provider's error:\n" + cause.getMessage());
-        final ServerStream serverStream = ctx.channel().attr(SERVER_STREAM_KEY)
+        final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
             .get();
-        if (serverStream != null) {
-            serverStream.close(status, null);
+        if (tripleServerStream != null) {
+            tripleServerStream.cancelByLocal(status);
         }
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-        final ServerStream serverStream = ctx.channel().attr(SERVER_STREAM_KEY)
+        final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
             .get();
-        serverStream.transportObserver.onData(msg.content(), msg.isEndStream());
+        tripleServerStream.transportObserver.onData(msg.content(), msg.isEndStream());
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        ServerStream serverStream = new ServerStream(ctx.channel(), frameworkModel, executor,
+        TripleServerStream tripleServerStream = new TripleServerStream(ctx.channel(),
+            frameworkModel, executor,
             pathResolver, acceptEncoding, filters);
-        ctx.channel().attr(SERVER_STREAM_KEY).set(serverStream);
-        serverStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
+        ctx.channel().attr(SERVER_STREAM_KEY).set(tripleServerStream);
+        tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }
 
 }

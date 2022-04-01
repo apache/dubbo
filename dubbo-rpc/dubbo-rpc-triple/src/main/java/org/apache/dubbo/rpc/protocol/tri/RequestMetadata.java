@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -42,6 +43,7 @@ public class RequestMetadata {
     public String acceptEncoding;
     public String timeout;
     public Compressor compressor;
+    public CancellationContext cancellationContext;
     public MethodDescriptor method;
     public PackableMethod packableMethod;
     public Map<String, Object> attachments;

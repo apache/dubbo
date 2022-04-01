@@ -20,6 +20,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.convert.ConverterUtil;
 import org.apache.dubbo.common.url.component.PathURLAddress;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLAddress;
@@ -76,7 +77,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
-import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
@@ -590,7 +590,7 @@ class URL implements Serializable {
         String value = getParameter(key);
         T result = null;
         if (!isBlank(value)) {
-            result = convertIfPossible(value, valueType);
+            result = getOrDefaultFrameworkModel().getBeanFactory().getBean(ConverterUtil.class).convertIfPossible(value, valueType);
         }
         if (result == null) {
             result = defaultValue;

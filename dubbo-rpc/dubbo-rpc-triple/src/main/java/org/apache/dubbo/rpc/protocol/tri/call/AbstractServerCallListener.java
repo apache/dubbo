@@ -30,7 +30,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 import java.net.InetSocketAddress;
 
-public abstract class AbstractServerCallListener implements ServerCall.Listener {
+public abstract class AbstractServerCallListener implements AbstractServerCall.Listener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
     public final CancellationContext cancellationContext;
@@ -49,7 +49,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     public void invoke() {
         RpcContext.restoreCancellationContext(cancellationContext);
         InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
-            .remove(ServerCall.REMOTE_ADDRESS_KEY);
+            .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
         RpcContext.getServerContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes()
             .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
