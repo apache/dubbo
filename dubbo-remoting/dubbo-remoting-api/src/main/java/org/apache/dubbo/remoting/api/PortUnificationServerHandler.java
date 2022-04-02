@@ -23,9 +23,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
@@ -38,18 +40,21 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     private final SslContext sslCtx;
     private final URL url;
+    private final boolean detectSsl;
     private final List<WireProtocol> protocols;
     private final DefaultChannelGroup channels = new DefaultChannelGroup(
         GlobalEventExecutor.INSTANCE);
 
     public PortUnificationServerHandler(URL url, List<WireProtocol> protocols) {
-        this(url, null, protocols);
+        this(url, null, false, protocols);
     }
 
-    public PortUnificationServerHandler(URL url, SslContext sslCtx, List<WireProtocol> protocols) {
+    public PortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
+        List<WireProtocol> protocols) {
         this.url = url;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
+        this.detectSsl = detectSsl;
     }
 
     @Override
@@ -81,34 +86,54 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
             return;
         }
 
-        for (final WireProtocol protocol : protocols) {
-            in.markReaderIndex();
-            final ProtocolDetector.Result result = protocol.detector().detect(ctx, in);
-            in.resetReaderIndex();
-            switch (result) {
-                case UNRECOGNIZED:
-                    continue;
-                case RECOGNIZED:
-                    protocol.configServerPipeline(url, ctx.pipeline(), sslCtx);
-                    ctx.pipeline().remove(this);
-                case NEED_MORE_DATA:
-                    return;
-                default:
-                    return;
+        if (isSsl(in)) {
+            enableSsl(ctx);
+        } else {
+            for (final WireProtocol protocol : protocols) {
+                in.markReaderIndex();
+                final ProtocolDetector.Result result = protocol.detector().detect(ctx, in);
+                in.resetReaderIndex();
+                switch (result) {
+                    case UNRECOGNIZED:
+                        continue;
+                    case RECOGNIZED:
+                        protocol.configServerPipeline(url, ctx.pipeline(), sslCtx);
+                        ctx.pipeline().remove(this);
+                    case NEED_MORE_DATA:
+                        return;
+                    default:
+                        return;
+                }
             }
-        }
-        byte[] preface = new byte[in.readableBytes()];
-        in.readBytes(preface);
-        Set<String> supported = url.getApplicationModel()
-            .getExtensionLoader(WireProtocol.class)
-            .getSupportedExtensions();
-        LOGGER.error(String.format("Can not recognize protocol from downstream=%s . "
-                + "preface=%s protocols=%s", ctx.channel().remoteAddress(), Bytes.bytes2hex(preface),
-            supported));
+            byte[] preface = new byte[in.readableBytes()];
+            in.readBytes(preface);
+            Set<String> supported = url.getApplicationModel()
+                .getExtensionLoader(WireProtocol.class)
+                .getSupportedExtensions();
+            LOGGER.error(String.format("Can not recognize protocol from downstream=%s . "
+                    + "preface=%s protocols=%s", ctx.channel().remoteAddress(),
+                Bytes.bytes2hex(preface),
+                supported));
 
-        // Unknown protocol; discard everything and close the connection.
-        in.clear();
-        ctx.close();
+            // Unknown protocol; discard everything and close the connection.
+            in.clear();
+            ctx.close();
+        }
     }
+
+    private void enableSsl(ChannelHandlerContext ctx) {
+        ChannelPipeline p = ctx.pipeline();
+        p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        p.addLast("unificationA", new PortUnificationServerHandler(url, sslCtx, false, protocols));
+        p.remove(this);
+    }
+
+    private boolean isSsl(ByteBuf buf) {
+        if (detectSsl) {
+            return SslHandler.isEncrypted(buf);
+        }
+        return false;
+    }
+
 
 }

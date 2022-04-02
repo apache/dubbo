@@ -384,7 +384,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             Map<String, Object> requestMetadata = headersToMap(headers);
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
-                listener = new StubAbstractServerCall(invoker, TripleServerStream.this, frameworkModel,
+                listener = new StubAbstractServerCall(invoker, TripleServerStream.this,
+                    frameworkModel,
                     acceptEncoding, serviceName, originalMethodName, executor);
             } else {
                 listener = new ReflectionAbstractServerCall(invoker, TripleServerStream.this,
@@ -407,6 +408,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
 
         private void doOnData(ByteBuf data, boolean endStream) {
+            if (deframer == null) {
+                return;
+            }
             deframer.deframe(data);
             if (endStream) {
                 deframer.close();
