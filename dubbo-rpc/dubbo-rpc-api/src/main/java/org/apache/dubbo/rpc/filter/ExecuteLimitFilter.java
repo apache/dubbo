@@ -25,7 +25,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.service.GenericService;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 
 
@@ -46,9 +49,9 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
             throw new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,
-                    "Failed to invoke method " + invocation.getMethodName() + " in provider " +
-                            url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
-                            "\" /> limited.");
+                "Failed to invoke method " + invocation.getMethodName() + " in provider " +
+                    url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
+                    "\" /> limited.");
         }
 
         invocation.put(EXECUTE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
@@ -65,7 +68,7 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
+        RpcStatus.endCount(invoker.getUrl(), getRealMethodName(invoker, invocation), getElapsed(invocation), true);
     }
 
     @Override
@@ -76,7 +79,17 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
                 return;
             }
         }
-        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
+        RpcStatus.endCount(invoker.getUrl(), getRealMethodName(invoker, invocation), getElapsed(invocation), false);
+    }
+
+    private String getRealMethodName(Invoker<?> invoker, Invocation invocation) {
+        if ((invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
+            && invocation.getArguments() != null
+            && invocation.getArguments().length == 3
+            && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+            return ((String) invocation.getArguments()[0]).trim();
+        }
+        return invocation.getMethodName();
     }
 
     private long getElapsed(Invocation invocation) {
