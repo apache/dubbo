@@ -76,9 +76,11 @@ public class PortUnificationServer {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
         this.url = ExecutorUtil.setThreadName(url, "DubboPUServerHandler");
-        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class).getActivateExtension(url, new String[0]);
+        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class)
+            .getActivateExtension(url, new String[0]);
         // read config before destroy
-        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
+        serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(
+            getUrl().getOrDefaultModuleModel());
     }
 
     public URL getUrl() {
@@ -122,12 +124,16 @@ public class PortUnificationServer {
 //                        p.addLast(new LoggingHandler(LogLevel.DEBUG));
 
                     final boolean enableSsl = getUrl().getParameter(SSL_ENABLED_KEY, false);
+                    final PortUnificationServerHandler puHandler;
                     if (enableSsl) {
-                        p.addLast("negotiation-ssl", new SslServerTlsHandler(getUrl()));
+                        puHandler = new PortUnificationServerHandler(url,
+                            SslContexts.buildServerSslContext(url), true, protocols);
+                    } else {
+                        puHandler = new PortUnificationServerHandler(url, null, false, protocols);
                     }
 
-                    final PortUnificationServerHandler puHandler = new PortUnificationServerHandler(url, protocols);
-                    p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
+                    p.addLast("server-idle-handler",
+                        new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                     p.addLast("negotiation-protocol", puHandler);
                     channelGroup = puHandler.getChannels();
                 }
@@ -173,8 +179,10 @@ public class PortUnificationServer {
             if (bootstrap != null) {
                 long timeout = serverShutdownTimeoutMills;
                 long quietPeriod = Math.min(2000L, timeout);
-                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
-                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod, timeout, MILLISECONDS);
+                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(quietPeriod,
+                    timeout, MILLISECONDS);
+                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(quietPeriod,
+                    timeout, MILLISECONDS);
                 bossGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
                 workerGroupShutdownFuture.awaitUninterruptibly(timeout, MILLISECONDS);
             }
