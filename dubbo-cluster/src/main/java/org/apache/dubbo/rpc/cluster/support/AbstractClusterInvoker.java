@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RESELECT_COUNT;
@@ -71,7 +72,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    private volatile Invoker<T> stickyInvoker = null;
+    private volatile AtomicReference<Invoker<T>> stickyInvoker = null;
 
     public AbstractClusterInvoker() {
     }
@@ -110,9 +111,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public boolean isAvailable() {
-        Invoker<T> invoker = stickyInvoker;
+        AtomicReference<Invoker<T>> invoker = stickyInvoker;
         if (invoker != null) {
-            return invoker.isAvailable();
+            return invoker.get().isAvailable();
         }
         return getDirectory().isAvailable();
     }
@@ -167,15 +168,16 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         }
         //ignore concurrency problem
         if (sticky && stickyInvoker != null && (selected == null || !selected.contains(stickyInvoker))) {
-            if (availableCheck && stickyInvoker.isAvailable()) {
-                return stickyInvoker;
+            if (availableCheck && stickyInvoker.get().isAvailable()) {
+                return stickyInvoker.get();
             }
         }
 
         Invoker<T> invoker = doSelect(loadbalance, invocation, invokers, selected);
 
         if (sticky) {
-            stickyInvoker = invoker;
+            stickyInvoker = new AtomicReference<Invoker<T>>();
+            stickyInvoker.set(invoker);
         }
 
         return invoker;
