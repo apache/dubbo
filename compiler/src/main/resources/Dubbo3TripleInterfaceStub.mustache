@@ -12,8 +12,8 @@ import java.util.concurrent.CompletableFuture;
 
 public interface {{interfaceClassName}} {
 
-    static final String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
-    static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+    String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+    String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
 
 {{#unaryMethods}}
     {{#javaDoc}}

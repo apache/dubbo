@@ -35,14 +35,15 @@ public final class {{className}} {
     private static final StubServiceDescriptor serviceDescriptor = new StubServiceDescriptor(SERVICE_NAME,{{interfaceClassName}}.class);
 
     static {
-        StubSuppliers.addSupplier(SERVICE_NAME, i -> newStub((Invoker<{{interfaceClassName}}>) i));
-        StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME, i -> newStub((Invoker<{{interfaceClassName}}>) i));
+        StubSuppliers.addSupplier(SERVICE_NAME, {{className}}::newStub);
+        StubSuppliers.addSupplier({{interfaceClassName}}.JAVA_SERVICE_NAME,  {{className}}::newStub);
         StubSuppliers.addDescriptor(SERVICE_NAME, serviceDescriptor);
         StubSuppliers.addDescriptor({{interfaceClassName}}.JAVA_SERVICE_NAME, serviceDescriptor);
     }
 
-    public static {{interfaceClassName}} newStub(Invoker<{{interfaceClassName}}> invoker) {
-        return new {{interfaceClassName}}Stub(invoker);
+    @SuppressWarnings("all")
+    public static {{interfaceClassName}} newStub(Invoker<?> invoker) {
+        return new {{interfaceClassName}}Stub((Invoker<{{interfaceClassName}}>)invoker);
     }
 
 {{#unaryMethods}}
