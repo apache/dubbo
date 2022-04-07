@@ -186,14 +186,13 @@ jobs:
         with:
           repository: 'apache/dubbo-samples'
           ref: master
-# ignore cache, see https://github.com/actions/toolkit/pull/1015
-#      - name: "Cache local Maven repository"
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.m2/repository
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
+      - name: "Cache local Maven repository"
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
         uses: actions/cache@v2
         with:
