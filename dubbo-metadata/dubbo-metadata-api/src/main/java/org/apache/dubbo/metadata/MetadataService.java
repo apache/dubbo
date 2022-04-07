@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -190,4 +191,39 @@ public interface MetadataService {
         return interfaceName != null && interfaceName.equals(MetadataService.class.getName());
     }
 
+    /**
+     * Export Metadata in Service Instance of Service Discovery
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @param instanceMetadata {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    void exportInstanceMetadata(String instanceMetadata);
+
+    /**
+     * Get all Metadata listener from local
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @return {@link Map} of {@link InstanceMetadataChangedListener}
+     * @since 3.0
+     */
+    Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap();
+
+    /**
+     * 1. Fetch Metadata in Service Instance of Service Discovery
+     * 2. Add a metadata change listener
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @param consumerId consumerId
+     * @param listener   {@link InstanceMetadataChangedListener} used to notify event
+     * @return {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener);
 }
