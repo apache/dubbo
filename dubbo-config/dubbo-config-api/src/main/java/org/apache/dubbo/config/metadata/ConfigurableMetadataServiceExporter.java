@@ -162,7 +162,10 @@ public class ConfigurableMetadataServiceExporter {
         ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setScopeModel(applicationModel.getInternalModule());
         serviceConfig.setApplication(applicationConfig);
-        serviceConfig.setRegistry(new RegistryConfig("N/A"));
+        RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setId("internal-metadata-registry");
+        serviceConfig.setRegistry(registryConfig);
+        serviceConfig.setRegister(false);
         serviceConfig.setProtocol(generateMetadataProtocol());
         serviceConfig.setInterface(MetadataService.class);
         serviceConfig.setDelay(0);
