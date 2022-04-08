@@ -378,8 +378,6 @@ public interface CommonConstants {
 
     int DEFAULT_FAILBACK_TIMES = 3;
 
-    String REGISTER_KEY = "register";
-
     String INTERFACES = "interfaces";
 
     String SSL_ENABLED_KEY = "ssl-enabled";
