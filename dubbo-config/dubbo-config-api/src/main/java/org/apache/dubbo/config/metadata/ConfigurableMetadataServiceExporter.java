@@ -22,6 +22,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ArgumentConfig;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -30,6 +32,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -172,11 +175,33 @@ public class ConfigurableMetadataServiceExporter {
         serviceConfig.setRef(metadataService);
         serviceConfig.setGroup(applicationConfig.getName());
         serviceConfig.setVersion(MetadataService.VERSION);
-//            serviceConfig.setMethods(generateMethodConfig());
+        serviceConfig.setMethods(generateMethodConfig());
         serviceConfig.setConnections(1); // separate connection
         serviceConfig.setExecutes(100); // max tasks running at the same time
 
         return serviceConfig;
+    }
+
+    /**
+     * Generate Method Config for Service Discovery Metadata <p/>
+     * <p>
+     * Make {@link MetadataService} support argument callback,
+     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
+     * metadata change event
+     *
+     * @since 3.0
+     */
+    private List<MethodConfig> generateMethodConfig() {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("getAndListenInstanceMetadata");
+
+        ArgumentConfig argumentConfig = new ArgumentConfig();
+        argumentConfig.setIndex(1);
+        argumentConfig.setCallback(true);
+
+        methodConfig.setArguments(Collections.singletonList(argumentConfig));
+
+        return Collections.singletonList(methodConfig);
     }
 
     // for unit test

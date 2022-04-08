@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -36,8 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
@@ -52,8 +53,10 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     Logger logger = LoggerFactory.getLogger(getClass());
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
-    private final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
     private URL url;
+    // works only for DNS service discovery
+    private String instanceMetadata;
 
     public MetadataServiceDelegation(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -156,12 +159,12 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
     @Override
     public String getServiceDefinition(String interfaceName, String version, String group) {
-        return serviceDefinitions.get(URL.buildKey(interfaceName, group, version));
+        return "";
     }
 
     @Override
     public String getServiceDefinition(String serviceKey) {
-        return serviceDefinitions.get(serviceKey);
+        return "";
     }
 
     @Override
@@ -190,6 +193,22 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
             metadataInfos.add(sd.getLocalMetadata());
         }
         return metadataInfos;
+    }
+
+    @Override
+    public void exportInstanceMetadata(String instanceMetadata) {
+        this.instanceMetadata = instanceMetadata;
+    }
+
+    @Override
+    public Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
+        return instanceMetadataChangedListenerMap;
+    }
+
+    @Override
+    public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
+        instanceMetadataChangedListenerMap.put(consumerId, listener);
+        return instanceMetadata;
     }
 
     private SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
