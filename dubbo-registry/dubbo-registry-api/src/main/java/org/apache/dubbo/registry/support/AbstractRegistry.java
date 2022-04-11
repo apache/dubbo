@@ -243,7 +243,7 @@ public abstract class AbstractRegistry implements Registry {
         } finally {
             if (lockfile != null) {
                 if(!lockfile.delete()) {
-                    logger.warn("Failed to delete lock file");
+                    logger.warn(String.format("Failed to delete lock file [%s]", lockfile.getName()));
                 }
             }
         }
