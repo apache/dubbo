@@ -242,7 +242,9 @@ public abstract class AbstractRegistry implements Registry {
             logger.warn("Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
         } finally {
             if (lockfile != null) {
-                lockfile.delete();
+                if(!lockfile.delete()) {
+                    logger.warn(String.format("Failed to delete lock file [%s]", lockfile.getName()));
+                }
             }
         }
     }
