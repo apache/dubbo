@@ -78,8 +78,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private boolean headerSent;
     private boolean trailersSent;
     private volatile boolean reset;
-    // no listener or stream closed
-    private volatile boolean remoteCancelAllowed = true;
     private ServerStream.Listener listener;
     private final InetSocketAddress remoteAddress;
     private final Channel channel;
@@ -400,7 +398,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             }
             listener.onHeader(requestMetadata);
             if (listener == null) {
-                remoteCancelAllowed = false;
                 deframer.close();
             }
         }
@@ -428,7 +425,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 // send rst if stream not closed
                 reset(Http2Error.valueOf(errorCode));
             }
-            if (!remoteCancelAllowed) {
+            if (listener == null) {
                 return;
             }
             executor.execute(() -> {
