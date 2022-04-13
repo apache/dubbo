@@ -424,6 +424,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 // send rst if stream not closed
                 reset(Http2Error.valueOf(errorCode));
             }
+            if (listener == null) {
+                return;
+            }
             executor.execute(() -> {
                 listener.onCancelByRemote(TriRpcStatus.CANCELLED
                     .withDescription("Canceled by client ,errorCode=" + errorCode));
