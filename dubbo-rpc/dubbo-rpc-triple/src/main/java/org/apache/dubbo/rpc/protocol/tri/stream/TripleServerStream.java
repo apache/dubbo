@@ -334,13 +334,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 return;
             }
 
-            if (path.charAt(0) != '/') {
-                responseErr(
-                    TriRpcStatus.UNIMPLEMENTED.withDescription(
-                        "Path must start with '/'. Request path: " + path));
-                return;
-            }
-
             String[] parts = path.split("/");
             if (parts.length != 3) {
                 responseErr(TriRpcStatus.UNIMPLEMENTED.withDescription("Bad path format:" + path));
