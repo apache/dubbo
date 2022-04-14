@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
@@ -143,7 +144,7 @@ public class MetadataReportConfig extends AbstractConfig {
         if (isEmpty(address)) {
             throw new IllegalArgumentException("The address of metadata report is invalid.");
         }
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         URL url = URL.valueOf(address, getScopeModel());
         // Issue : https://github.com/apache/dubbo/issues/6491
         // Append the parameters from address
@@ -153,10 +154,10 @@ public class MetadataReportConfig extends AbstractConfig {
         // Normalize the parameters
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
-        map.put("metadata", isEmpty(url.getProtocol()) ? map.get(PROTOCOL_KEY) : url.getProtocol());
-        return new ServiceConfigURL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
-                url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
-
+        map.put(METADATA, isEmpty(url.getProtocol()) ? map.get(PROTOCOL_KEY) : url.getProtocol());
+        return new ServiceConfigURL(METADATA, StringUtils.isBlank(url.getUsername()) ? this.getUsername() : url.getUsername(),
+            StringUtils.isBlank(url.getPassword()) ? this.getPassword() : url.getPassword(), url.getHost(),
+            url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
     }
 
     public String getProtocol() {
@@ -191,7 +192,8 @@ public class MetadataReportConfig extends AbstractConfig {
                 updateParameters(params);
             } catch (Exception ignored) {
             }
-        }    }
+        }
+    }
 
     public Integer getPort() {
         return port;

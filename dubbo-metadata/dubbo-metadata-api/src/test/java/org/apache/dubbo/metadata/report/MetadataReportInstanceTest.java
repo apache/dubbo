@@ -41,7 +41,7 @@ class MetadataReportInstanceTest {
     private MetadataReportConfig metadataReportConfig;
     private ConfigManager configManager;
 
-    private String registryId = "9103";
+    private final String registryId = "9103";
 
     @BeforeEach
     public void setUp() {
@@ -52,6 +52,9 @@ class MetadataReportInstanceTest {
 
         URL url = URL.valueOf("metadata://127.0.0.1:20880/TestService?version=1.0.0&metadata=JTest");
         metadataReportConfig = mock(MetadataReportConfig.class);
+        when(metadataReportConfig.getUsername()).thenReturn("username");
+        when(metadataReportConfig.getPassword()).thenReturn("password");
+
         when(metadataReportConfig.getApplicationModel()).thenReturn(applicationModel);
         when(metadataReportConfig.toUrl()).thenReturn(url);
         when(metadataReportConfig.getScopeModel()).thenReturn(applicationModel);
@@ -65,8 +68,7 @@ class MetadataReportInstanceTest {
 
     @Test
     public void test() {
-        Assertions.assertNull(metadataReportInstance.getMetadataReport(registryId),
-            "the metadata report was not initialized.");
+        Assertions.assertNull(metadataReportInstance.getMetadataReport(registryId), "the metadata report was not initialized.");
         assertThat(metadataReportInstance.getMetadataReports(true), Matchers.anEmptyMap());
 
         metadataReportInstance.init(Arrays.asList(metadataReportConfig));
@@ -79,6 +81,9 @@ class MetadataReportInstanceTest {
         Map<String, MetadataReport> metadataReports = metadataReportInstance.getMetadataReports(true);
         Assertions.assertEquals(metadataReports.size(), 1);
         Assertions.assertEquals(metadataReports.get(registryId), metadataReport);
+
+        Assertions.assertEquals(metadataReportConfig.getUsername(), "username");
+        Assertions.assertEquals(metadataReportConfig.getPassword(), "password");
     }
 
 }
