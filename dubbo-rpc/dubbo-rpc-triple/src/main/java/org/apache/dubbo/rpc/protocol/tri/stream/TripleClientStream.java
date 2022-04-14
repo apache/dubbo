@@ -93,7 +93,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
-        parent.closeFuture().addListener(f -> transportException(f.cause()));
+        channel.closeFuture()
+            .addListener(f -> transportException(f.cause()));
         return new WriteQueue(channel);
     }
 
