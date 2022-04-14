@@ -84,11 +84,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private Deframer deframer;
 
     public TripleServerStream(Channel channel,
-        FrameworkModel frameworkModel,
-        Executor executor,
-        PathResolver pathResolver,
-        String acceptEncoding,
-        List<HeaderFilter> filters) {
+                              FrameworkModel frameworkModel,
+                              Executor executor,
+                              PathResolver pathResolver,
+                              String acceptEncoding,
+                              List<HeaderFilter> filters) {
         super(executor, frameworkModel);
         this.channel = channel;
         this.pathResolver = pathResolver;
@@ -349,6 +349,10 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 return;
             }
 
+            if (endStream) {
+                return;
+            }
+
             DeCompressor deCompressor = DeCompressor.NONE;
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
             if (null != messageEncoding) {
@@ -389,9 +393,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             if (listener == null) {
                 deframer.close();
             }
-            if (endStream) {
-                deframer.close();
-            }
         }
 
 
@@ -416,6 +417,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             if (!trailersSent) {
                 // send rst if stream not closed
                 reset(Http2Error.valueOf(errorCode));
+            }
+            if (listener == null) {
+                return;
             }
             executor.execute(() -> {
                 listener.onCancelByRemote(TriRpcStatus.CANCELLED
