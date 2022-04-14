@@ -110,36 +110,29 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             ((RpcInvocation) copiedInvocation).setInvokeMode(InvokeMode.ASYNC);
             // use consumer executor
             ExecutorService executor = executorRepository.createExecutorIfAbsent(getUrl());
-            CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
-                Result result = invoker.invoke(copiedInvocation);
-                if (result.hasException()) {
-                    AppResponse appResponse = new AppResponse(result.getException());
-                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                    return appResponse;
-                } else {
-                    rebuildValue(invocation, desc, result);
-                    AppResponse appResponse = new AppResponse(result.getValue());
-                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                    return appResponse;
-                }
-            }, executor);
+            CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() ->
+                invokeAndRecreate(invocation, invoker, desc, copiedInvocation), executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(appResponseFuture);
             AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, copiedInvocation);
             result.setExecutor(executor);
             return result;
         } else {
-            Result result = invoker.invoke(copiedInvocation);
-            if (result.hasException()) {
-                AppResponse appResponse = new AppResponse(result.getException());
-                appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                return appResponse;
-            } else {
-                rebuildValue(invocation, desc, result);
-                AppResponse appResponse = new AppResponse(result.getValue());
-                appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                return appResponse;
-            }
+            return invokeAndRecreate(invocation, invoker, desc, copiedInvocation);
+        }
+    }
+
+    private AppResponse invokeAndRecreate(Invocation invocation, Invoker<?> invoker, String desc, Invocation copiedInvocation) {
+        Result result = invoker.invoke(copiedInvocation);
+        if (result.hasException()) {
+            AppResponse appResponse = new AppResponse(result.getException());
+            appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+            return appResponse;
+        } else {
+            rebuildValue(invocation, desc, result);
+            AppResponse appResponse = new AppResponse(result.getValue());
+            appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+            return appResponse;
         }
     }
 
