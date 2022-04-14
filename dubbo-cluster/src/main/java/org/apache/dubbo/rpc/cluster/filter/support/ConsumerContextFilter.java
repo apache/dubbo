@@ -131,8 +131,8 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
         if (invocation instanceof RpcInvocation) {
             RpcInvocation rpcInvocation = (RpcInvocation) invocation;
             if (rpcInvocation.getInvokeMode() != null) {
-                // in sync mode, recover
-                if (rpcInvocation.getInvokeMode() != InvokeMode.SYNC) {
+                // clear service context if not in sync mode
+                if (rpcInvocation.getInvokeMode() == InvokeMode.ASYNC || rpcInvocation.getInvokeMode() == InvokeMode.FUTURE) {
                     RpcContext.removeServiceContext();
                 }
             }
