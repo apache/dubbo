@@ -113,10 +113,14 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
                 Result result = invoker.invoke(copiedInvocation);
                 if (result.hasException()) {
-                    return new AppResponse(result.getException());
+                    AppResponse appResponse = new AppResponse(result.getException());
+                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                    return appResponse;
                 } else {
                     rebuildValue(invocation, desc, result);
-                    return new AppResponse(result.getValue());
+                    AppResponse appResponse = new AppResponse(result.getValue());
+                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                    return appResponse;
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
@@ -127,10 +131,14 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         } else {
             Result result = invoker.invoke(copiedInvocation);
             if (result.hasException()) {
-                return result;
+                AppResponse appResponse = new AppResponse(result.getException());
+                appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                return appResponse;
             } else {
                 rebuildValue(invocation, desc, result);
-                return result;
+                AppResponse appResponse = new AppResponse(result.getValue());
+                appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                return appResponse;
             }
         }
     }
