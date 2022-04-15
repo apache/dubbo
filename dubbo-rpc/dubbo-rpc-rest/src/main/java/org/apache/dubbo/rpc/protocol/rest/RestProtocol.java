@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -73,7 +74,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     private final RestServerFactory serverFactory = new RestServerFactory();
 
     // TODO in the future maybe we can just use a single rest client and connection manager
-    private final List<ResteasyClient> clients = Collections.synchronizedList(new LinkedList<>());
+    private final Map<URL, ResteasyClient> clients = new ConcurrentHashMap<>();
 
     private volatile ConnectionMonitor connectionMonitor;
 
@@ -147,7 +148,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             connectionMonitor = new ConnectionMonitor();
             connectionMonitor.start();
         }
-        connectionMonitor.addConnectionManager(connectionManager);
+        connectionMonitor.addConnectionManager(url, connectionManager);
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(url.getParameter(CONNECT_TIMEOUT_KEY, DEFAULT_CONNECT_TIMEOUT))
                 .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
@@ -179,7 +180,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
 
         ResteasyClient client = new ResteasyClientBuilder().httpEngine(engine).build();
-        clients.add(client);
+        clients.put(url, client);
 
         client.register(RpcContextFilter.class);
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
@@ -201,6 +202,19 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected int getErrorCode(Throwable e) {
         // TODO
         return super.getErrorCode(e);
+    }
+
+    @Override
+    protected void destroyInternal(URL url) {
+        try {
+            ResteasyClient client = clients.remove(url);
+            if (client != null && !client.isClosed()) {
+                client.close();
+            }
+            connectionMonitor.destroy(url);
+        } catch (Exception e) {
+            logger.warn("Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
+        }
     }
 
     @Override
@@ -229,7 +243,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Closing rest clients");
         }
-        for (ResteasyClient client : clients) {
+        for (ResteasyClient client : clients.values()) {
             try {
                 client.close();
             } catch (Throwable t) {
@@ -263,10 +277,10 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     protected class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
-        private final List<PoolingHttpClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<>());
+        private final Map<URL, PoolingHttpClientConnectionManager> connectionManagers = new ConcurrentHashMap<>();
 
-        public void addConnectionManager(PoolingHttpClientConnectionManager connectionManager) {
-            connectionManagers.add(connectionManager);
+        public void addConnectionManager(URL url, PoolingHttpClientConnectionManager connectionManager) {
+            connectionManagers.put(url, connectionManager);
         }
 
         @Override
@@ -275,7 +289,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 while (!shutdown) {
                     synchronized (this) {
                         wait(HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS);
-                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers) {
+                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers.values()) {
                             connectionManager.closeExpiredConnections();
                             connectionManager.closeIdleConnections(HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S, TimeUnit.SECONDS);
                         }
@@ -285,7 +299,13 @@ public class RestProtocol extends AbstractProxyProtocol {
                 shutdown();
             }
         }
-
+        // destroy unused connectionManager
+        private void destroy(URL url) {
+            PoolingHttpClientConnectionManager connectionManager = connectionManagers.remove(url);
+            if (connectionManager != null) {
+                connectionManager.close();
+            }
+        }
         public void shutdown() {
             shutdown = true;
             connectionManagers.clear();
