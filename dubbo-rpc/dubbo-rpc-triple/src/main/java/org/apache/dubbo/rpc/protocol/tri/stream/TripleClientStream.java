@@ -330,7 +330,6 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                     ReferenceCountUtil.release(data);
                     if (transportError.description.length() > 512 || endStream) {
                         handleH2TransportError(transportError);
-
                     }
                     return;
                 }
