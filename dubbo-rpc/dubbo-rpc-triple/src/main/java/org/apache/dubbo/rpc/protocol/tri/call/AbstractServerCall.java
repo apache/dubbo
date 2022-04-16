@@ -138,9 +138,11 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         final byte[] data;
         try {
             data = packableMethod.packResponse(message);
-        } catch (IOException e) {
+        } catch (Throwable e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
+            LOGGER.error(String.format("Serialize triple response failed, service=%s method=%s",
+                serviceName, methodName), e);
             return;
         }
         if (data == null) {

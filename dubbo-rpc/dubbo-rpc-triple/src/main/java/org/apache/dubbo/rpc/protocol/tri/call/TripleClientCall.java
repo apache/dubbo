@@ -80,9 +80,11 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         try {
             final Object unpacked = requestMetadata.packableMethod.parseResponse(message);
             listener.onMessage(unpacked);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (Throwable t) {
             cancelByLocal(TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
-                .withCause(e).asException());
+                .withCause(t).asException());
+            LOGGER.error(String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
+                connection ,requestMetadata.service, requestMetadata.method.getMethodName()),t);
         }
     }
 
