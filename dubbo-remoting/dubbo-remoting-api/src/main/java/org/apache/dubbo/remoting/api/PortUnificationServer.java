@@ -34,11 +34,11 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -59,6 +59,10 @@ public class PortUnificationServer {
     private static final Logger logger = LoggerFactory.getLogger(PortUnificationServer.class);
     private final List<WireProtocol> protocols;
     private final URL url;
+
+    private final DefaultChannelGroup channels = new DefaultChannelGroup(
+        GlobalEventExecutor.INSTANCE);
+
     private final int serverShutdownTimeoutMills;
     /**
      * netty server bootstrap.
@@ -68,7 +72,6 @@ public class PortUnificationServer {
      * the boss channel that receive connections and dispatch these to worker channel.
      */
     private Channel channel;
-    private DefaultChannelGroup channelGroup;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
@@ -127,15 +130,15 @@ public class PortUnificationServer {
                     final PortUnificationServerHandler puHandler;
                     if (enableSsl) {
                         puHandler = new PortUnificationServerHandler(url,
-                            SslContexts.buildServerSslContext(url), true, protocols);
+                            SslContexts.buildServerSslContext(url), true, protocols, channels);
                     } else {
-                        puHandler = new PortUnificationServerHandler(url, null, false, protocols);
+                        puHandler = new PortUnificationServerHandler(url, null, false, protocols,
+                            channels);
                     }
 
                     p.addLast("server-idle-handler",
                         new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                     p.addLast("negotiation-protocol", puHandler);
-                    channelGroup = puHandler.getChannels();
                 }
             });
         // bind
@@ -161,10 +164,7 @@ public class PortUnificationServer {
                 channel = null;
             }
 
-            if (channelGroup != null) {
-                ChannelGroupFuture closeFuture = channelGroup.close();
-                closeFuture.await(serverShutdownTimeoutMills);
-            }
+            channels.close().await(serverShutdownTimeoutMills);
             final long cost = System.currentTimeMillis() - st;
             logger.info("Port unification server closed. cost:" + cost);
         } catch (InterruptedException e) {
