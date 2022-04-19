@@ -76,6 +76,12 @@ public final class TripleHttp2ClientResponseHandler extends
     }
 
     @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        transportListener.cancelByRemote(0L);
+        ctx.close();
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         final TriRpcStatus status = TriRpcStatus.INTERNAL
             .withCause(cause);
