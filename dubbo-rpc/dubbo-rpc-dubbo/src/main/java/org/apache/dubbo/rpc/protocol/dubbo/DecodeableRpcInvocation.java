@@ -219,7 +219,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (CollectionUtils.isNotEmptyMap(map)) {
                 Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<>();
+                    attachment = new HashMap<>(map.size());
                 }
                 attachment.putAll(map);
                 setObjectAttachments(attachment);

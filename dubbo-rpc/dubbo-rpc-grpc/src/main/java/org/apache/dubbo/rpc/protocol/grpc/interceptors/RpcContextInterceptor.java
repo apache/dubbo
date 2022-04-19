@@ -69,7 +69,7 @@ public class RpcContextInterceptor implements ClientInterceptor, ServerIntercept
     @Override
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         Set<String> keys = headers.keys();
-        Map<String, Object> attachments = new HashMap<>();
+        Map<String, Object> attachments = new HashMap<>(keys.size());
         // filter out all dubbo attachments and save in map
         if (keys != null) {
             keys.stream().filter(k -> k.toUpperCase().startsWith(DUBBO)).forEach(k ->

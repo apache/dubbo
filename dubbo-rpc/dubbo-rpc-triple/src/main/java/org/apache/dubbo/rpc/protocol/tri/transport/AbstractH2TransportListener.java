@@ -43,7 +43,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         if (trailers == null) {
             return Collections.emptyMap();
         }
-        Map<String, Object> attachments = new HashMap<>();
+        Map<String, Object> attachments = new HashMap<>(trailers.size());
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
             if (key.endsWith(TripleConstant.HEADER_BIN_SUFFIX)
@@ -68,7 +68,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         if (trailers == null) {
             return Collections.emptyMap();
         }
-        Map<String, String> excludeHeaders = new HashMap<>();
+        Map<String, String> excludeHeaders = new HashMap<>(trailers.size());
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {

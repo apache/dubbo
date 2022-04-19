@@ -145,7 +145,7 @@ public class AppResponse implements Result {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<>();
+            this.attachments = new HashMap<>(map.size());
         }
         this.attachments.putAll(map);
     }
@@ -156,7 +156,7 @@ public class AppResponse implements Result {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<>();
+            this.attachments = new HashMap<>(map.size());
         }
         this.attachments.putAll(map);
     }
