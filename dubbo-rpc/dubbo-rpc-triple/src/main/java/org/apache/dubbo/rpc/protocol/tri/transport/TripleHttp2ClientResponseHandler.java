@@ -76,8 +76,8 @@ public final class TripleHttp2ClientResponseHandler extends
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        transportListener.cancelByRemote(0L);
+    public void channelInactive(ChannelHandlerContext ctx) {
+        transportListener.cancelByRemote(Http2Error.NO_ERROR.code());
         ctx.close();
     }
 
