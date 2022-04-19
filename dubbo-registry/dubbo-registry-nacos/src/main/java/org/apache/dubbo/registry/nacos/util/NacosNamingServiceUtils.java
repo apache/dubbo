@@ -37,7 +37,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
+import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
@@ -150,7 +152,12 @@ public class NacosNamingServiceUtils {
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
         // Put all parameters
         properties.putAll(parameters);
-
+        if (StringUtils.isNotEmpty(url.getUsername())){
+            properties.put(USERNAME, url.getUsername());
+        }
+        if (StringUtils.isNotEmpty(url.getPassword())){
+            properties.put(PASSWORD, url.getPassword());
+        }
         putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
