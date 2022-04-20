@@ -24,11 +24,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
-import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
 import java.util.Set;
@@ -38,23 +37,20 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         PortUnificationServerHandler.class);
 
+    private final ChannelGroup channels;
+
     private final SslContext sslCtx;
     private final URL url;
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
-    private final DefaultChannelGroup channels = new DefaultChannelGroup(
-        GlobalEventExecutor.INSTANCE);
-
-    public PortUnificationServerHandler(URL url, List<WireProtocol> protocols) {
-        this(url, null, false, protocols);
-    }
 
     public PortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
-        List<WireProtocol> protocols) {
+        List<WireProtocol> protocols, ChannelGroup channels) {
         this.url = url;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
         this.detectSsl = detectSsl;
+        this.channels = channels;
     }
 
     @Override
@@ -62,20 +58,10 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         LOGGER.error("Unexpected exception from downstream before protocol detected.", cause);
     }
 
-    public DefaultChannelGroup getChannels() {
-        return channels;
-    }
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
         channels.add(ctx.channel());
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-        channels.remove(ctx.channel());
     }
 
     @Override
@@ -124,7 +110,8 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
         p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
-        p.addLast("unificationA", new PortUnificationServerHandler(url, sslCtx, false, protocols));
+        p.addLast("unificationA",
+            new PortUnificationServerHandler(url, sslCtx, false, protocols, channels));
         p.remove(this);
     }
 

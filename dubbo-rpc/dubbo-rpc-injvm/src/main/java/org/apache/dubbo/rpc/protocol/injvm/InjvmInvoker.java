@@ -114,10 +114,14 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
                 Result result = invoker.invoke(copiedInvocation);
                 if (result.hasException()) {
-                    return new AppResponse(result.getException());
+                    AppResponse appResponse = new AppResponse(result.getException());
+                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                    return appResponse;
                 } else {
                     rebuildValue(invocation, desc, result);
-                    return new AppResponse(result.getValue());
+                    AppResponse appResponse = new AppResponse(result.getValue());
+                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                    return appResponse;
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
@@ -134,10 +138,16 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             } finally {
                 InternalThreadLocalMap.set(originTL);
             }
-            if (!result.hasException()) {
+            if (result.hasException()) {
+                AsyncRpcResult rpcResult = AsyncRpcResult.newDefaultAsyncResult(result.getException(), copiedInvocation);
+                rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                return rpcResult;
+            } else {
                 rebuildValue(invocation, desc, result);
+                AsyncRpcResult rpcResult = AsyncRpcResult.newDefaultAsyncResult(result.getValue(), copiedInvocation);
+                rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                return rpcResult;
             }
-            return result;
         }
     }
 
@@ -170,7 +180,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                 providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                 invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
-                invocation.getInvoker(), new HashMap<>());
+                invocation.getInvoker(), new HashMap<>(),
+                invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
             copiedInvocation.setInvoker(invoker);
             return copiedInvocation;
         }
@@ -199,7 +210,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                     providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
-                    invocation.getInvoker(), new HashMap<>());
+                    invocation.getInvoker(), new HashMap<>(),
+                    invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
                 copiedInvocation.setInvoker(invoker);
                 return copiedInvocation;
             } finally {

@@ -184,11 +184,10 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     }
                 }
 
-                RpcInvocation rpcInvocation =
-                        new RpcInvocation(invoker.getUrl().getServiceModel(), method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args,
-                                inv.getObjectAttachments(), inv.getAttributes());
-                rpcInvocation.setInvoker(inv.getInvoker());
-                rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
+                RpcInvocation rpcInvocation = new RpcInvocation(inv.getTargetServiceUniqueName(),
+                    invoker.getUrl().getServiceModel(), method.getName(), invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(),
+                    method.getParameterTypes(), args, inv.getObjectAttachments(),
+                    inv.getInvoker(), inv.getAttributes(), inv instanceof RpcInvocation ? ((RpcInvocation) inv).getInvokeMode() : null);
 
                 return invoker.invoke(rpcInvocation);
             } catch (NoSuchMethodException | ClassNotFoundException e) {

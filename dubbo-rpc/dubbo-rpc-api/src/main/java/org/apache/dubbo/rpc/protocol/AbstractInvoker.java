@@ -119,7 +119,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (ArrayUtils.isEmpty(keys)) {
             return null;
         }
-        Map<String, Object> attachment = new HashMap<>();
+        Map<String, Object> attachment = new HashMap<>(keys.length);
         for (String key : keys) {
             String value = url.getParameter(key);
             if (value != null && value.length() > 0) {

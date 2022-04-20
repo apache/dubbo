@@ -161,7 +161,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     }
 
     private Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
-        Map<Class<?>, Object> map = new HashMap<>();
+        Map<Class<?>, Object> map = new HashMap<>(detailList.size());
         try {
             for (Any any : detailList) {
                 if (any.is(ErrorInfo.class)) {

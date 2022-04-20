@@ -1,1 +1,2 @@
 gzip=org.apache.dubbo.rpc.protocol.tri.compressor.Gzip
+snappy=org.apache.dubbo.rpc.protocol.tri.compressor.Snappy
