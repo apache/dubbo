@@ -65,6 +65,10 @@
             <version>2.2.21</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <extensions>
