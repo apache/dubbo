@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.RpcException;
@@ -21,7 +22,7 @@ import org.apache.dubbo.rpc.RpcException;
 import java.io.IOException;
 
 /**
- * snappy compressor
+ * snappy compressor, Provide high-speed compression speed and reasonable compression ratio
  *
  * @link https://github.com/google/snappy
  */
