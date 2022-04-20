@@ -176,6 +176,10 @@ public class RpcContext {
         return SERVICE_CONTEXT.get();
     }
 
+    public static RpcServiceContext getCurrentServiceContext() {
+        return SERVICE_CONTEXT.getWithoutInitialize();
+    }
+
     public static void removeServiceContext() {
         SERVICE_CONTEXT.remove();
     }
@@ -801,6 +805,16 @@ public class RpcContext {
         return new RestoreContext();
     }
 
+    public static RestoreServiceContext storeServiceContext() {
+        return new RestoreServiceContext();
+    }
+
+    public static void restoreServiceContext(RestoreServiceContext restoreServiceContext) {
+        if (restoreServiceContext != null) {
+            restoreServiceContext.restore();
+        }
+    }
+
     protected static void restoreContext(RestoreContext restoreContext) {
         if (restoreContext != null) {
             restoreContext.restore();
@@ -843,6 +857,27 @@ public class RpcContext {
                 SERVER_LOCAL.set(serverLocal);
             } else {
                 removeServerContext();
+            }
+        }
+    }
+
+    public static class RestoreServiceContext {
+        private final RpcServiceContext serviceContext;
+
+        public RestoreServiceContext() {
+            RpcServiceContext originContext = getCurrentServiceContext();
+            if (originContext == null) {
+                this.serviceContext = null;
+            } else {
+                this.serviceContext = originContext.copyOf(true);
+            }
+        }
+
+        protected void restore() {
+            if (serviceContext != null) {
+                SERVICE_CONTEXT.set(serviceContext);
+            } else {
+                removeServiceContext();
             }
         }
     }
