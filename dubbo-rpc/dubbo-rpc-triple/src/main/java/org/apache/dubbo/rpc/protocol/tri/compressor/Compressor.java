@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
- * compress payload for grpc request， and decompress response payload Configure it in files,
+ * compress payload for grpc request, and decompress response payload Configure it in files,
  * pictures or other configurations that exist in the system properties Configure {@link
  * Constants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the
  * system property

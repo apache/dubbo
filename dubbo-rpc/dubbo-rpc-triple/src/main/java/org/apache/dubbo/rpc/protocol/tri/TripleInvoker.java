@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -27,6 +28,7 @@ import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,6 +37,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
@@ -82,11 +85,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final String acceptEncodings;
 
     public TripleInvoker(Class<T> serviceType,
-        URL url,
-        String acceptEncodings,
-        ConnectionManager connectionManager,
-        Set<Invoker<?>> invokers,
-        ExecutorService streamExecutor) {
+                         URL url,
+                         String acceptEncodings,
+                         ConnectionManager connectionManager,
+                         Set<Invoker<?>> invokers,
+                         ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connection = connectionManager.connect(url);
@@ -152,7 +155,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                                      ClientCall call) {
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[1];
         final StreamObserver<Object> requestObserver = streamCall(call, request, responseObserver);
@@ -162,7 +165,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeBiOrClientStream(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                                          ClientCall call) {
         final AsyncRpcResult result;
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[0];
@@ -173,8 +176,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     StreamObserver<Object> streamCall(ClientCall call,
-        RequestMetadata metadata,
-        StreamObserver<Object> responseObserver) {
+                                      RequestMetadata metadata,
+                                      StreamObserver<Object> responseObserver) {
         if (responseObserver instanceof CancelableStreamObserver) {
             final CancellationContext context = new CancellationContext();
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
@@ -186,7 +189,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                               ClientCall call) {
         ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
         invocation.setAttachment(TIMEOUT_KEY, timeout);
@@ -235,7 +238,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     RequestMetadata createRequest(MethodDescriptor methodDescriptor, Invocation invocation,
-        Integer timeout) {
+                                  Integer timeout) {
         final String methodName = RpcUtils.getMethodName(invocation);
         Objects.requireNonNull(methodDescriptor,
             "MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(
@@ -249,8 +252,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
-        // TODO read compressor from config
-        meta.compressor = Compressor.NONE;
+        meta.compressor = getCompressor() == null ? Compressor.NONE : getCompressor();
         meta.cancellationContext = RpcContext.getCancellationContext();
         meta.address = url.getAddress();
         meta.service = url.getPath();
@@ -331,4 +333,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         return timeout;
     }
 
+    private Compressor getCompressor() {
+        PropertiesConfiguration propertiesConfiguration = ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration();
+        String compressorStr = propertiesConfiguration.getString(Constants.COMPRESSOR_KEY);
+        return Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compressorStr);
+    }
 }
