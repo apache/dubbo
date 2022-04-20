@@ -137,7 +137,6 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                 }
             }
         }
-        RpcContext.removeServiceContext();
         // server context must not be removed because user might use it on callback.
         // So the clear of is delayed til the start of the next rpc call, see RpcContext.removeServerContext(); in invoke() above
         // RpcContext.removeServerContext();
