@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -125,13 +126,18 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             result.setExecutor(executor);
             return result;
         } else {
-            Result result = invoker.invoke(copiedInvocation);
-            if (result.hasException()) {
-                return result;
-            } else {
-                rebuildValue(invocation, desc, result);
-                return result;
+            Result result;
+            // clear thread local before child invocation, prevent context pollution
+            InternalThreadLocalMap originTL = InternalThreadLocalMap.getAndRemove();
+            try {
+                result = invoker.invoke(copiedInvocation);
+            } finally {
+                InternalThreadLocalMap.set(originTL);
             }
+            if (!result.hasException()) {
+                rebuildValue(invocation, desc, result);
+            }
+            return result;
         }
     }
 

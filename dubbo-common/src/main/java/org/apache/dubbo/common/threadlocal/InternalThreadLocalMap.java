@@ -55,6 +55,26 @@ public final class InternalThreadLocalMap {
         return slowGet();
     }
 
+    public static InternalThreadLocalMap getAndRemove() {
+        try {
+            Thread thread = Thread.currentThread();
+            if (thread instanceof InternalThread) {
+                return ((InternalThread) thread).threadLocalMap();
+            }
+            return slowThreadLocalMap.get();
+        } finally {
+            remove();
+        }
+    }
+
+    public static void set(InternalThreadLocalMap internalThreadLocalMap) {
+        Thread thread = Thread.currentThread();
+        if (thread instanceof InternalThread) {
+            ((InternalThread) thread).setThreadLocalMap(internalThreadLocalMap);
+        }
+        slowThreadLocalMap.set(internalThreadLocalMap);
+    }
+
     public static void remove() {
         Thread thread = Thread.currentThread();
         if (thread instanceof InternalThread) {
