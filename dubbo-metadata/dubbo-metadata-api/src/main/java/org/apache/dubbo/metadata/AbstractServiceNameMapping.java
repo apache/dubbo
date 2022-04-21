@@ -25,11 +25,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -54,7 +50,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
-    private volatile boolean initiated;
+    private final Map<String, Boolean> mappingInitiated = new HashMap<>();
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -86,12 +82,10 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
 
     @Override
     public synchronized void initInterfaceAppMapping(URL subscribedURL) {
-        if (initiated) {
-            return;
-        }
-        initiated = true;
-        Set<String> subscribedServices = new TreeSet<>();
         String key = ServiceNameMapping.buildMappingKey(subscribedURL);
+        if (hasInitiated(key)) return;
+
+        Set<String> subscribedServices = new TreeSet<>();
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
 
         if (StringUtils.isNotEmpty(serviceNames)) {
@@ -222,6 +216,21 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
                 lock.unlock();
             }
         }
+    }
+
+    private boolean hasInitiated(String key) {
+        Lock lock = getMappingLock(key);
+        try {
+            lock.lock();
+            boolean initiated = mappingInitiated.computeIfAbsent(key, _k -> Boolean.FALSE);
+            if (initiated) {
+                return true;
+            }
+            mappingInitiated.put(key, Boolean.TRUE);
+        } finally {
+            lock.unlock();
+        }
+        return false;
     }
 
     @Override
