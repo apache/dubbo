@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -36,6 +37,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
@@ -113,8 +115,12 @@ public class Connection extends AbstractReferenceCounted {
                 }
 
                 //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                // TODO support IDLE
-//                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+
+                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+                pipeline.addLast("idleStateHandler", new IdleStateHandler(heartbeatInterval,
+                    0, 0, TimeUnit.SECONDS));
+                pipeline.addLast(new HeartbeatServerHandler());
+
                 pipeline.addLast(connectionHandler);
                 protocol.configClientPipeline(url, pipeline, sslContext);
                 // TODO support Socks5
@@ -175,7 +181,7 @@ public class Connection extends AbstractReferenceCounted {
         }
         this.channel.set(channel);
         // This indicates that the connection is available.
-        if (this.connectingPromise != null ) {
+        if (this.connectingPromise != null) {
             this.connectingPromise.trySuccess(CONNECTED_OBJECT);
         }
         channel.attr(CONNECTION).set(this);
