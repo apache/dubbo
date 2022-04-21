@@ -126,6 +126,16 @@ public class InternalThreadLocal<V> extends ThreadLocal<V> {
         return initialize(threadLocalMap);
     }
 
+    public final V getWithoutInitialize() {
+        InternalThreadLocalMap threadLocalMap = InternalThreadLocalMap.get();
+        Object v = threadLocalMap.indexedVariable(index);
+        if (v != InternalThreadLocalMap.UNSET) {
+            return (V) v;
+        }
+
+        return null;
+    }
+
     private V initialize(InternalThreadLocalMap threadLocalMap) {
         V v = null;
         try {

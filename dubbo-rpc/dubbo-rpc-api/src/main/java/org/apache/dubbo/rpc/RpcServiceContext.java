@@ -625,10 +625,21 @@ public class RpcServiceContext extends RpcContext {
     public RpcServiceContext copyOf(boolean needCopy) {
         if (needCopy) {
             RpcServiceContext copy = new RpcServiceContext();
+            copy.arguments = this.arguments;
             copy.consumerUrl = this.consumerUrl;
-            copy.localAddress = this.localAddress;
-            copy.remoteAddress = this.remoteAddress;
             copy.invocation = this.invocation;
+            copy.invokers = this.invokers;
+            copy.invoker = this.invoker;
+            copy.localAddress = this.localAddress;
+            copy.methodName = this.methodName;
+            copy.needPrintRouterSnapshot = this.needPrintRouterSnapshot;
+            copy.parameterTypes = this.parameterTypes;
+            copy.remoteAddress = this.remoteAddress;
+            copy.remoteApplicationName = this.remoteApplicationName;
+            copy.request = this.request;
+            copy.response = this.response;
+            copy.url = this.url;
+            copy.urls = this.urls;
             return copy;
         } else {
             return this;

@@ -162,6 +162,7 @@
         <hessian_lite_version>3.2.12</hessian_lite_version>
         <swagger_version>1.5.24</swagger_version>
 
+        <snappy_java_version>1.1.8.4</snappy_java_version>
         <bouncycastle-bcprov_version>1.68</bouncycastle-bcprov_version>
         <metrics_version>2.0.1</metrics_version>
         <sofa_registry_version>5.2.0</sofa_registry_version>
@@ -170,6 +171,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
+        <commons_compress_version>1.21</commons_compress_version>
         <revision>3.0.8-SNAPSHOT</revision>
     </properties>
 
@@ -734,6 +736,18 @@
                 <artifactId>kubernetes-server-mock</artifactId>
                 <scope>test</scope>
                 <version>${fabric8_kubernetes_version}</version>
+            </dependency>
+            <!-- tri compress support-->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons_compress_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>${snappy_java_version}</version>
+                <optional>true</optional>
             </dependency>
         </dependencies>
     </dependencyManagement>

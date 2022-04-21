@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -113,10 +114,14 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
                 Result result = invoker.invoke(copiedInvocation);
                 if (result.hasException()) {
-                    return new AppResponse(result.getException());
+                    AppResponse appResponse = new AppResponse(result.getException());
+                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                    return appResponse;
                 } else {
                     rebuildValue(invocation, desc, result);
-                    return new AppResponse(result.getValue());
+                    AppResponse appResponse = new AppResponse(result.getValue());
+                    appResponse.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                    return appResponse;
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
@@ -125,12 +130,23 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             result.setExecutor(executor);
             return result;
         } else {
-            Result result = invoker.invoke(copiedInvocation);
+            Result result;
+            // clear thread local before child invocation, prevent context pollution
+            InternalThreadLocalMap originTL = InternalThreadLocalMap.getAndRemove();
+            try {
+                result = invoker.invoke(copiedInvocation);
+            } finally {
+                InternalThreadLocalMap.set(originTL);
+            }
             if (result.hasException()) {
-                return result;
+                AsyncRpcResult rpcResult = AsyncRpcResult.newDefaultAsyncResult(result.getException(), copiedInvocation);
+                rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                return rpcResult;
             } else {
                 rebuildValue(invocation, desc, result);
-                return result;
+                AsyncRpcResult rpcResult = AsyncRpcResult.newDefaultAsyncResult(result.getValue(), copiedInvocation);
+                rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
+                return rpcResult;
             }
         }
     }
@@ -164,7 +180,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                 providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                 invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
-                invocation.getInvoker(), new HashMap<>());
+                invocation.getInvoker(), new HashMap<>(),
+                invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
             copiedInvocation.setInvoker(invoker);
             return copiedInvocation;
         }
@@ -193,7 +210,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                     providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
-                    invocation.getInvoker(), new HashMap<>());
+                    invocation.getInvoker(), new HashMap<>(),
+                    invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
                 copiedInvocation.setInvoker(invoker);
                 return copiedInvocation;
             } finally {
