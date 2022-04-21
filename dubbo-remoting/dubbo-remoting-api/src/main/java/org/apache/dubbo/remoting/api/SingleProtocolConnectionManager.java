@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import io.netty.util.internal.PlatformDependent;
 
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
 
 public class SingleProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "single";

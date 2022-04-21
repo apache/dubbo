@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-import java.util.function.Consumer;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ConnectionManager {

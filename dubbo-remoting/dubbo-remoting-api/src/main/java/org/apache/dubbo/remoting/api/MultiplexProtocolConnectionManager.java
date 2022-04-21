@@ -21,7 +21,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Consumer;
 
 public class MultiplexProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "multiple";
