@@ -120,10 +120,15 @@ public class SslContexts {
      */
     private static SslProvider findSslProvider() {
         if (OpenSsl.isAvailable()) {
-            logger.debug("Using OPENSSL provider.");
+            if(logger.isDebugEnabled()) {
+                logger.debug("Using OPENSSL provider.");
+            }
             return SslProvider.OPENSSL;
-        } else if (checkJdkProvider()) {
-            logger.debug("Using JDK provider.");
+        }
+        if (checkJdkProvider()) {
+            if(logger.isDebugEnabled()) {
+                logger.debug("Using JDK provider.");
+            }
             return SslProvider.JDK;
         }
         throw new IllegalStateException(
