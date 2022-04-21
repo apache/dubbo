@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.URL;
+
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ConnectionManager {
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface ConnectionPool {
 
-    Connection connect(URL url);
+    Connection acquire();
 
-//    void forEachConnection(Consumer<Connection> connectionConsumer);
+    void release(Connection connection);
+
+   default void close(){
+       closeAsync().join();
+   }
+
+    CompletableFuture<Void> closeAsync();
+
+
 
 }

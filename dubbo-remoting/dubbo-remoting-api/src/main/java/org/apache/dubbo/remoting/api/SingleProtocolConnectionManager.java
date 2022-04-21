@@ -26,27 +26,27 @@ import java.util.function.Consumer;
 public class SingleProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "single";
 
-    private final ConcurrentMap<String, Connection> connections = PlatformDependent.newConcurrentHashMap();
+    private final ConcurrentMap<String, ConnectionPool> connections = PlatformDependent.newConcurrentHashMap();
 
     @Override
     public Connection connect(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        return connections.compute(url.getAddress(), (address, conn) -> {
-            if (conn == null) {
-                final Connection created = new Connection(url);
-                created.getClosePromise().addListener(future -> connections.remove(address, created));
-                return created;
-            } else {
-                conn.retain();
-                return conn;
-            }
-        });
+        String address = url.getAddress();
+        ConnectionPool pool = connections.get(address);
+        if (pool == null) {
+            pool = new DefaultConnectionPool(url);
+            connections.put(address, pool);
+            pool.closeAsync().thenAccept(connections::remove);
+        }
+        Connection connection = pool.acquire();
+        connection.retain();
+        return connection;
     }
 
-    @Override
-    public void forEachConnection(Consumer<Connection> connectionConsumer) {
-        connections.values().forEach(connectionConsumer);
-    }
+//    @Override
+//    public void forEachConnection(Consumer<Connection> connectionConsumer) {
+//        connections.values().forEach(connectionConsumer);
+//    }
 }

@@ -40,10 +40,10 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
         return manager.connect(url);
     }
 
-    @Override
-    public void forEachConnection(Consumer<Connection> connectionConsumer) {
-        protocols.values().forEach(p -> p.forEachConnection(connectionConsumer));
-    }
+//    @Override
+//    public void forEachConnection(Consumer<Connection> connectionConsumer) {
+//        protocols.values().forEach(p -> p.forEachConnection(connectionConsumer));
+//    }
 
     private ConnectionManager createSingleProtocolConnectionManager(String protocol) {
         return frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
