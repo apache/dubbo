@@ -63,6 +63,7 @@ public class ExtensionDirector implements ExtensionAccessor {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         checkDestroyed();
         if (type == null) {
@@ -111,12 +112,11 @@ public class ExtensionDirector implements ExtensionAccessor {
         if (isScopeMatched(type)) {
             // if scope is matched, just create it
             loader = createExtensionLoader0(type);
-        } else {
-            // if scope is not matched, ignore it
         }
         return loader;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> ExtensionLoader<T> createExtensionLoader0(Class<T> type) {
         checkDestroyed();
         ExtensionLoader<T> loader;
@@ -139,7 +139,6 @@ public class ExtensionDirector implements ExtensionAccessor {
     }
 
     public void removeAllCachedLoader() {
-        // extensionLoadersMap.clear();
     }
 
     public void destroy() {
