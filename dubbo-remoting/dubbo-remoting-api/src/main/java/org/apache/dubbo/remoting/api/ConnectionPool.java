@@ -34,6 +34,8 @@ public interface ConnectionPool {
        closeAsync().join();
    }
 
+   CompletableFuture<Void> getCloseFuture();
+
     CompletableFuture<Void> closeAsync();
 
 

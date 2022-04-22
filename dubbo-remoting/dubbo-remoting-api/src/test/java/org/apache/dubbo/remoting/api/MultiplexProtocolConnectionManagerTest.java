@@ -66,7 +66,7 @@ public class MultiplexProtocolConnectionManagerTest {
             }
         };
 
-        connectionManager.forEachConnection(consumer);
+//        connectionManager.forEachConnection(consumer);
 
         // close connections to avoid impacts on other test cases.
         connect1.close();

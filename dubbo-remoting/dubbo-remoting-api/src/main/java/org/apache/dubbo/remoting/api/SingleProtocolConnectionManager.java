@@ -37,7 +37,7 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         if (pool == null) {
             pool = new DefaultConnectionPool(url);
             connections.put(address, pool);
-            pool.closeAsync().thenAccept(connections::remove);
+            pool.getCloseFuture().thenAccept(connections::remove);
         }
         Connection connection = pool.acquire();
         connection.retain();

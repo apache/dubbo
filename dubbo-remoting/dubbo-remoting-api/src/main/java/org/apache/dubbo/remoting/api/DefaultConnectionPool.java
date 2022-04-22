@@ -83,6 +83,11 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
     @Override
+    public CompletableFuture<Void> getCloseFuture() {
+        return closeFuture;
+    }
+
+    @Override
     public CompletableFuture<Void> closeAsync() {
         if (!isPoolActive()) {
             return closeFuture;
