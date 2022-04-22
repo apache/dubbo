@@ -117,8 +117,8 @@ public class Connection extends AbstractReferenceCounted {
                 //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
 
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
-                pipeline.addLast("idleStateHandler", new IdleStateHandler(heartbeatInterval,
-                    0, 0, TimeUnit.SECONDS));
+                pipeline.addLast("idleStateHandler", new IdleStateHandler(0,
+                    heartbeatInterval, 0, TimeUnit.SECONDS));
                 pipeline.addLast(new HeartbeatServerHandler());
 
                 pipeline.addLast(connectionHandler);
