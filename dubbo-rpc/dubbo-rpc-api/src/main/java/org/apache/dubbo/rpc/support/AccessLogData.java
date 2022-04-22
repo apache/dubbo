@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.support;
 
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -239,7 +240,7 @@ public final class AccessLogData {
 
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
-            sn.append(JSON.toJSONString(args));
+            sn.append(JSON.toJSONString(args, SerializerFeature.IgnoreErrorGetter));
         }
 
         return sn.toString();
