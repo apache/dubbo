@@ -48,6 +48,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     private static final long serialVersionUID = -5864351140409987595L;
 
+    private static final String ORIGIN_CONFIG = "ORIGIN_CONFIG";
+
     /**
      * The interface class of the reference service
      */
@@ -76,18 +78,18 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
-        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        serviceMetadata.addAttribute(ORIGIN_CONFIG, this);
     }
 
     public ReferenceConfigBase(ModuleModel moduleModel) {
         super(moduleModel);
         serviceMetadata = new ServiceMetadata();
-        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        serviceMetadata.addAttribute(ORIGIN_CONFIG, this);
     }
 
     public ReferenceConfigBase(Reference reference) {
         serviceMetadata = new ServiceMetadata();
-        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        serviceMetadata.addAttribute(ORIGIN_CONFIG, this);
         appendAnnotation(Reference.class, reference);
         setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
@@ -95,7 +97,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     public ReferenceConfigBase(ModuleModel moduleModel, Reference reference) {
         super(moduleModel);
         serviceMetadata = new ServiceMetadata();
-        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        serviceMetadata.addAttribute(ORIGIN_CONFIG, this);
         appendAnnotation(Reference.class, reference);
         setMethods(MethodConfig.constructMethodConfig(reference.methods()));
     }
