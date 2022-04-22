@@ -36,7 +36,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
@@ -121,11 +120,8 @@ public class PortUnificationServer {
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    // FIXME: should we use getTimeout()?
-                    int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
+                    // Do not add idle state handler here, because it should be added in the protocol handler.
                     final ChannelPipeline p = ch.pipeline();
-//                        p.addLast(new LoggingHandler(LogLevel.DEBUG));
-
                     final boolean enableSsl = getUrl().getParameter(SSL_ENABLED_KEY, false);
                     final PortUnificationServerHandler puHandler;
                     if (enableSsl) {
@@ -135,9 +131,6 @@ public class PortUnificationServer {
                         puHandler = new PortUnificationServerHandler(url, null, false, protocols,
                             channels);
                     }
-
-                    p.addLast("server-idle-handler",
-                        new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
