@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.service.EchoService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -199,6 +200,7 @@ public class DubboProtocolTest {
     }
 
     @Test
+    @Disabled
     public void testNonSerializedParameter() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
@@ -214,6 +216,7 @@ public class DubboProtocolTest {
     }
 
     @Test
+    @Disabled
     public void testReturnNonSerialized() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
