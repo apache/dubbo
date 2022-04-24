@@ -1,1 +1,1 @@
-fastjson2=java.org.apache.dubbo.common.serialize.fastjson.FastJson2Serialization
+fastjson2=org.apache.dubbo.common.serialize.fastjson2.FastJson2Serialization

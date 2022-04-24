@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package java.org.apache.dubbo.common.serialize.fastjson;
+package org.apache.dubbo.common.serialize.fastjson2;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 
@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-import static java.org.apache.dubbo.common.serialize.fastjson.FastJson2Serialization.setCreator;
+import static org.apache.dubbo.common.serialize.fastjson2.FastJson2Serialization.setCreator;
 
 /**
  * FastJson object input implementation
