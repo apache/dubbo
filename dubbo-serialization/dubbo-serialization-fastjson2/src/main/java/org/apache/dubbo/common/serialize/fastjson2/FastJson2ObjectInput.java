@@ -110,7 +110,7 @@ public class FastJson2ObjectInput implements ObjectInput {
             if (read != length) {
                 throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
             }
-            return JSONB.parseObject(bytes, cls, JSONReader.Feature.SupportAutoType,
+            return (T)JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } finally {
@@ -133,7 +133,7 @@ public class FastJson2ObjectInput implements ObjectInput {
             if (read != length) {
                 throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
             }
-            return JSONB.parseObject(bytes, type, JSONReader.Feature.SupportAutoType,
+            return (T)JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
                 JSONReader.Feature.UseNativeObject,
                 JSONReader.Feature.FieldBased);
         } finally {

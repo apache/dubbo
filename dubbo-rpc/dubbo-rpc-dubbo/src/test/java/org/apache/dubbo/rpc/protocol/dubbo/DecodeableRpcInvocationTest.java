@@ -61,7 +61,7 @@ public class DecodeableRpcInvocationTest {
         inv.setObjectAttachment("k2", "v2");
         inv.setTargetServiceUniqueName(url.getServiceKey());
         // Write the data of inv to the buffer
-        Byte proto = CodecSupport.getIDByName("hessian2");
+        Byte proto = CodecSupport.getIDByName("fastjson2");
         ChannelBuffer buffer = writeBuffer(url, inv, proto);
 
         FrameworkModel frameworkModel = new FrameworkModel();

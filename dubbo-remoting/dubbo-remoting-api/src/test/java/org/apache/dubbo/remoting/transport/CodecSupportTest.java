@@ -31,7 +31,7 @@ public class CodecSupportTest {
 
     @Test
     public void testHeartbeat() throws Exception {
-        Byte proto = CodecSupport.getIDByName("hessian2");
+        Byte proto = CodecSupport.getIDByName("fastjson2");
         Serialization serialization = CodecSupport.getSerializationById(proto);
         byte[] nullBytes = CodecSupport.getNullBytesOf(serialization);
 

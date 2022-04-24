@@ -79,7 +79,7 @@ public interface Constants {
 
     String SERIALIZATION_KEY = "serialization";
 
-    String DEFAULT_REMOTING_SERIALIZATION = "hessian2";
+    String DEFAULT_REMOTING_SERIALIZATION = "fastjson2";
 
     String CODEC_KEY = "codec";
 
