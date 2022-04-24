@@ -116,9 +116,13 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
     private void destroy0(Connection connection) {
+        destroy1(connection);
+        connection.close();
+    }
+
+    private void destroy1(Connection connection) {
         objectCount.decrementAndGet();
         all.remove(connection);
-        connection.close();
     }
 
 
@@ -126,6 +130,9 @@ public class DefaultConnectionPool implements ConnectionPool {
         try {
             long creations = objectsInCreationCount.incrementAndGet();
             Connection connection = new Connection(url);
+            connection.getClosePromise().addListener(future -> {
+                destroy1(connection);
+            });
             if (isPoolActive()) {
                 objectCount.incrementAndGet();
                 all.add(connection);
