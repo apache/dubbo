@@ -200,7 +200,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 if (pts != null && args != null && pts.length == args.length) {
                     realArgument = new Object[pts.length];
                     for (int i = 0; i < pts.length; i++) {
-                        realArgument[i] = paramDeepCopyUtil.copy(getUrl(), args[i], pts[i]);
+                        realArgument[i] = paramDeepCopyUtil.copy(invoker.getUrl(), args[i], pts[i]);
                     }
                 }
                 if (realArgument == null) {
