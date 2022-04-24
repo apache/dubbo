@@ -33,7 +33,7 @@ import java.io.OutputStream;
  *     e.g. &lt;dubbo:protocol serialization="xxx" /&gt;
  * </pre>
  */
-@SPI(value = "hessian2", scope = ExtensionScope.FRAMEWORK)
+@SPI(value = "fastjson2", scope = ExtensionScope.FRAMEWORK)
 public interface Serialization {
 
     /**

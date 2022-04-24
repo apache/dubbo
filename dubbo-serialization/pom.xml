@@ -33,6 +33,7 @@
         <module>dubbo-serialization-api</module>
         <module>dubbo-serialization-hessian2</module>
         <module>dubbo-serialization-jdk</module>
+        <module>dubbo-serialization-fastjson2</module>
     </modules>
 
     <dependencies>
