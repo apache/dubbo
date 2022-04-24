@@ -31,7 +31,7 @@ import io.netty.handler.timeout.IdleStateEvent;
  */
 public class HeartbeatServerHandler extends ChannelDuplexHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(HeartbeatServerHandler.class);
 
     private int lossConnectCount = 0;
 
