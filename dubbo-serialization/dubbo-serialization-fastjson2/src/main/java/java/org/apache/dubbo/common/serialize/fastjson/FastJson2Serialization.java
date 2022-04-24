@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import com.alibaba.fastjson2.JSONFactory;
 import com.alibaba.fastjson2.reader.ObjectReaderCreatorASM;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATION_ID;
@@ -58,13 +60,19 @@ public class FastJson2Serialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        ClassLoader classLoader = url.getServiceModel().getClassLoader();
+        ClassLoader classLoader = Optional.ofNullable(url)
+            .map(URL::getServiceModel)
+            .map(ServiceModel::getClassLoader)
+            .orElse(Thread.currentThread().getContextClassLoader());
         return new FastJson2ObjectOutput(classLoader, output);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        ClassLoader classLoader = url.getServiceModel().getClassLoader();
+        ClassLoader classLoader = Optional.ofNullable(url)
+            .map(URL::getServiceModel)
+            .map(ServiceModel::getClassLoader)
+            .orElse(Thread.currentThread().getContextClassLoader());
         return new FastJson2ObjectInput(classLoader, input);
     }
 
