@@ -106,17 +106,17 @@ public class ActivateComparator implements Comparator<Class<?>> {
         for (Class<?> intf : clazz.getInterfaces()) {
             if (intf.isAnnotationPresent(SPI.class)) {
                 return intf;
-            } else {
-                Class<?> result = findSpi(intf);
-                if (result != null) {
-                    return result;
-                }
+            }
+            Class<?> result = findSpi(intf);
+            if (result != null) {
+                return result;
             }
         }
 
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     private ActivateInfo parseActivate(Class<?> clazz) {
         ActivateInfo info = activateInfoMap.get(clazz);
         if (info != null) {

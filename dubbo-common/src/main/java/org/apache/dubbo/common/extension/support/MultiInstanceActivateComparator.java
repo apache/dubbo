@@ -121,11 +121,10 @@ public class MultiInstanceActivateComparator implements Comparator<Class<?>> {
         for (Class<?> intf : clazz.getInterfaces()) {
             if (intf.isAnnotationPresent(SPI.class)) {
                 return intf;
-            } else {
-                Class<?> result = findSpi(intf);
-                if (result != null) {
-                    return result;
-                }
+            }
+            Class<?> result = findSpi(intf);
+            if (result != null) {
+                return result;
             }
         }
 
