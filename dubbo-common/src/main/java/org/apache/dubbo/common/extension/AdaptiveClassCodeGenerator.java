@@ -39,7 +39,7 @@ public class AdaptiveClassCodeGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveClassCodeGenerator.class);
 
-    private static final String CLASSNAME_INVOCATION = "org.apache.dubbo.rpc.Invocation";
+    private static final String CLASS_NAME_INVOCATION = "org.apache.dubbo.rpc.Invocation";
 
     private static final String CODE_PACKAGE = "package %s;\n";
 
@@ -260,7 +260,7 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * generate extName assigment code
+     * generate extName assignment code
      */
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
         // TODO: refactor it
@@ -333,7 +333,7 @@ public class AdaptiveClassCodeGenerator {
      */
     private boolean hasInvocationArgument(Method method) {
         Class<?>[] pts = method.getParameterTypes();
-        return Arrays.stream(pts).anyMatch(p -> CLASSNAME_INVOCATION.equals(p.getName()));
+        return Arrays.stream(pts).anyMatch(p -> CLASS_NAME_INVOCATION.equals(p.getName()));
     }
 
     /**
@@ -341,7 +341,7 @@ public class AdaptiveClassCodeGenerator {
      */
     private String generateInvocationArgumentNullCheck(Method method) {
         Class<?>[] pts = method.getParameterTypes();
-        return IntStream.range(0, pts.length).filter(i -> CLASSNAME_INVOCATION.equals(pts[i].getName()))
+        return IntStream.range(0, pts.length).filter(i -> CLASS_NAME_INVOCATION.equals(pts[i].getName()))
                         .mapToObj(i -> String.format(CODE_INVOCATION_ARGUMENT_NULL_CHECK, i, i))
                         .findFirst().orElse("");
     }
