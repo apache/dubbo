@@ -39,6 +39,12 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
         return manager.connect(url);
     }
 
+    @Override
+    public ConnectionPool getConnectionPool(URL url) {
+        final ConnectionManager manager = protocols.computeIfAbsent(url.getProtocol(), this::createSingleProtocolConnectionManager);
+        return manager.getConnectionPool(url);
+    }
+
 //    @Override
 //    public void forEachConnection(Consumer<Connection> connectionConsumer) {
 //        protocols.values().forEach(p -> p.forEachConnection(connectionConsumer));
