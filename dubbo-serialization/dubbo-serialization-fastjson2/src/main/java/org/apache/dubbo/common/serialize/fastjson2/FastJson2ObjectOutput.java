@@ -106,12 +106,22 @@ public class FastJson2ObjectOutput implements ObjectOutput {
                 JSONWriter.Feature.NotWriteDefaultValue,
                 JSONWriter.Feature.NotWriteHashMapArrayListClassName,
                 JSONWriter.Feature.WriteNameAsSymbol);
-            os.write(bytes.length);
+            writeLength(bytes.length);
             os.write(bytes);
             os.flush();
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
+    }
+
+    private void writeLength(int value) throws IOException {
+        byte[] bytes = new byte[Integer.BYTES];
+        int length = bytes.length;
+        for (int i = 0; i < length; i++) {
+            bytes[length - i - 1] = (byte) (value & 0xFF);
+            value >>= 8;
+        }
+        os.write(bytes);
     }
 
     @Override

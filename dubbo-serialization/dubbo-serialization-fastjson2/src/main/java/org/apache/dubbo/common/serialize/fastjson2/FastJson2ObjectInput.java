@@ -104,7 +104,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                 Thread.currentThread().setContextClassLoader(classLoader);
                 setCreator(classLoader);
             }
-            int length = is.read();
+            int length = readLength();
             byte[] bytes = new byte[length];
             int read = is.read(bytes, 0, length);
             if (read != length) {
@@ -127,7 +127,7 @@ public class FastJson2ObjectInput implements ObjectInput {
                 Thread.currentThread().setContextClassLoader(classLoader);
                 setCreator(classLoader);
             }
-            int length = is.read();
+            int length = readLength();
             byte[] bytes = new byte[length];
             int read = is.read(bytes, 0, length);
             if (read != length) {
@@ -139,5 +139,18 @@ public class FastJson2ObjectInput implements ObjectInput {
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
+    }
+
+    private int readLength() throws IOException {
+        byte[] bytes = new byte[Integer.BYTES];
+        int read = is.read(bytes, 0, Integer.BYTES);
+        if (read != Integer.BYTES) {
+            throw new IllegalArgumentException("deserialize failed. expected read length: " + Integer.BYTES + " but actual read: " + read);
+        }
+        int value = 0;
+        for (byte b : bytes) {
+            value = (value << 8) + (b & 0xFF);
+        }
+        return value;
     }
 }
