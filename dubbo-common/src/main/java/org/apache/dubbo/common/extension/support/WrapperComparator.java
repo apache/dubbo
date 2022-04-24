@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.Wrapper;
 import java.util.Comparator;
 
 /**
- * OrderComparator  
+ * OrderComparator
  * Derived from {@link ActivateComparator}
  */
 public class WrapperComparator implements Comparator<Object> {
@@ -46,7 +46,7 @@ public class WrapperComparator implements Comparator<Object> {
 
         Class clazz1 = (Class) o1;
         Class clazz2 = (Class) o2;
-        
+
         OrderInfo a1 = parseOrder(clazz1);
         OrderInfo a2 = parseOrder(clazz2);
 
@@ -56,6 +56,7 @@ public class WrapperComparator implements Comparator<Object> {
         return n1 > n2 ? 1 : -1;
     }
 
+    @SuppressWarnings("deprecation")
     private OrderInfo parseOrder(Class<?> clazz) {
         OrderInfo info = new OrderInfo();
         if (clazz.isAnnotationPresent(Activate.class)) {

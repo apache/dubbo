@@ -22,9 +22,10 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * AdaptiveExtensionInjector
@@ -47,22 +48,18 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
     @Override
     public void initialize() throws IllegalStateException {
         ExtensionLoader<ExtensionInjector> loader = extensionAccessor.getExtensionLoader(ExtensionInjector.class);
-        List<ExtensionInjector> list = new ArrayList<ExtensionInjector>();
-        for (String name : loader.getSupportedExtensions()) {
-            list.add(loader.getExtension(name));
-        }
-        injectors = Collections.unmodifiableList(list);
+        injectors = loader.getSupportedExtensions().stream()
+            .map(loader::getExtension)
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     @Override
     public <T> T getInstance(Class<T> type, String name) {
-        for (ExtensionInjector injector : injectors) {
-            T extension = injector.getInstance(type, name);
-            if (extension != null) {
-                return extension;
-            }
-        }
-        return null;
+        return injectors.stream()
+            .map(injector -> injector.getInstance(type, name))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
     }
 
     @Override
