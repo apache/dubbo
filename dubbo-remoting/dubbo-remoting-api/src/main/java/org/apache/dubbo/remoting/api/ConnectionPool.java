@@ -30,14 +30,13 @@ public interface ConnectionPool {
 
     void release(Connection connection);
 
-   default void close(){
-       closeAsync().join();
-   }
+    default void close() {
+        closeAsync().join();
+    }
 
-   CompletableFuture<Void> getCloseFuture();
+    CompletableFuture<Void> getCloseFuture();
 
     CompletableFuture<Void> closeAsync();
-
 
 
 }
