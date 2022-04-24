@@ -18,7 +18,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.PropertiesConfiguration;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -334,8 +335,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     private Compressor getCompressor() {
-        PropertiesConfiguration propertiesConfiguration = ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration();
-        String compressorStr = propertiesConfiguration.getString(Constants.COMPRESSOR_KEY);
+        Configuration globalConfiguration = ConfigurationUtils.getGlobalConfiguration(ApplicationModel.defaultModel());
+        String compressorStr = globalConfiguration.getString(Constants.COMPRESSOR_KEY);
         return Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compressorStr);
     }
 }
