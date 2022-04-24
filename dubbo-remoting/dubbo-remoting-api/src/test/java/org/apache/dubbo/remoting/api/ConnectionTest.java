@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 class ConnectionTest {
 
@@ -87,5 +89,44 @@ class ConnectionTest {
         }
 
 
+    }
+
+    @Test
+    public void testMultiConnect() {
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
+        PortUnificationServer server = null;
+        try {
+            server = new PortUnificationServer(url);
+            server.bind();
+
+            Connection connection = new Connection(url);
+            ExecutorService service = Executors.newFixedThreadPool(10);
+            final CountDownLatch latch = new CountDownLatch(10);
+            for (int i = 0; i < 10; i++) {
+                Runnable runnable = () -> {
+                    try {
+                        Assertions.assertTrue(connection.isAvailable());
+                        latch.countDown();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                };
+                service.execute(runnable);
+            }
+
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        } finally {
+            try {
+                server.close();
+            } catch (Throwable e) {
+                // ignored
+            }
+        }
     }
 }
