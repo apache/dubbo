@@ -137,7 +137,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
     }
 
     @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext, int heartbeatInterval) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
@@ -153,7 +153,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
             .frameLogger(CLIENT_LOGGER)
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
-            new TripleClientHandler(frameworkModel));
+            new TripleClientHandler(frameworkModel, codec, heartbeatInterval));
         pipeline.addLast(codec, handler, new TripleTailHandler());
     }
 }

@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.apache.dubbo.rpc.protocol.tri.transport.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
+import static org.apache.dubbo.rpc.protocol.tri.transport.TripleClientHandler.CLIENT_SCHEDULE_PING;
 
 public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(TripleServerConnectionHandler.class);
@@ -58,6 +59,9 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
                 } else {
                     gracefulShutdown.secondGoAwayAndClose(ctx);
                 }
+            } else if (((Http2PingFrame) msg).content() == CLIENT_SCHEDULE_PING
+                && ((Http2PingFrame) msg).ack()) {
+                ctx.writeAndFlush(msg);
             }
         } else if (msg instanceof Http2GoAwayFrame) {
             ReferenceCountUtil.release(msg);

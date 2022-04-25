@@ -33,7 +33,7 @@ public class EmptyProtocol implements WireProtocol {
     }
 
     @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext, int heartbeatInterval) {
 
     }
 

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -114,9 +115,9 @@ public class Connection extends AbstractReferenceCounted {
 
                 //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                 // TODO support IDLE
-//                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
+                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast(connectionHandler);
-                protocol.configClientPipeline(url, pipeline, sslContext);
+                protocol.configClientPipeline(url, pipeline, sslContext, heartbeatInterval);
                 // TODO support Socks5
             }
         });

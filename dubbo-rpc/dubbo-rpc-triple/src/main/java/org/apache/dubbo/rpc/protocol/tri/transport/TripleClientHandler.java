@@ -22,23 +22,60 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http2.DefaultHttp2PingFrame;
+import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.util.ReferenceCountUtil;
+
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
+    static final long CLIENT_SCHEDULE_PING = 0x1141a85a98L;
+
     private final FrameworkModel frameworkModel;
 
-    public TripleClientHandler(FrameworkModel frameworkModel) {
+    private Http2FrameCodec codec;
+
+    private ScheduledExecutorService pingExecutor;
+
+    private int heartbeatInterval;
+
+    private int lossConnectCount = 0;
+
+    public TripleClientHandler(FrameworkModel frameworkModel, Http2FrameCodec codec,
+                               int heartbeatInterval) {
         this.frameworkModel = frameworkModel;
+        this.codec = codec;
+        this.heartbeatInterval = heartbeatInterval;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        lossConnectCount = 0;
         if (msg instanceof Http2GoAwayFrame) {
             final ConnectionHandler connectionHandler = ctx.pipeline().get(ConnectionHandler.class);
             connectionHandler.onGoAway(ctx.channel());
         }
         ReferenceCountUtil.release(msg);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+
+        pingExecutor.schedule(() -> {
+            if (codec.connection().numActiveStreams() <= 0 && lossConnectCount > 2) {
+                ctx.channel().close();
+                pingExecutor.shutdown();
+                return;
+            }
+            if (codec.connection().numActiveStreams() <= 0) {
+                lossConnectCount++;
+                Http2PingFrame pingFrame = new DefaultHttp2PingFrame(CLIENT_SCHEDULE_PING, true);
+                ctx.write(pingFrame);
+            }
+        }, heartbeatInterval, TimeUnit.SECONDS);
     }
 }

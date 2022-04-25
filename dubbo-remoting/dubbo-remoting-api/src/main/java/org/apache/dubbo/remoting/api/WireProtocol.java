@@ -30,7 +30,7 @@ public interface WireProtocol {
 
     void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
 
-    void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
+    void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext, int heartbeatInterval);
 
     void close();
 }
