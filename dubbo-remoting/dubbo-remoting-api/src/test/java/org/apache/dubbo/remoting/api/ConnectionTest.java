@@ -92,13 +92,13 @@ class ConnectionTest {
     }
 
     @Test
-    public void testMultiConnect() {
+    public void testMultiConnect() throws Throwable {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         PortUnificationServer server = null;
         try {
             server = new PortUnificationServer(url);
-            server.bind();
+            server.close();
 
             Connection connection = new Connection(url);
             ExecutorService service = Executors.newFixedThreadPool(10);
@@ -114,13 +114,6 @@ class ConnectionTest {
                 };
                 service.execute(runnable);
             }
-
-            try {
-                latch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
         } finally {
             try {
                 server.close();
