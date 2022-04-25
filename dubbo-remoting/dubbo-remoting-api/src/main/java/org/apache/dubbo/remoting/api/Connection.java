@@ -114,7 +114,6 @@ public class Connection extends AbstractReferenceCounted {
                 }
 
                 //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                // TODO support IDLE
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast(connectionHandler);
                 protocol.configClientPipeline(url, pipeline, sslContext, heartbeatInterval);
