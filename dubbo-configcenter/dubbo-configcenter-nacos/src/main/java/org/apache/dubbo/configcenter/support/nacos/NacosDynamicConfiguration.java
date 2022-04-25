@@ -52,7 +52,9 @@ import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
+import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
+import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
@@ -147,6 +149,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
         // Put all parameters
         properties.putAll(parameters);
+        if (StringUtils.isNotEmpty(url.getUsername())){
+            properties.put(USERNAME, url.getUsername());
+        }
+        if (StringUtils.isNotEmpty(url.getPassword())){
+            properties.put(PASSWORD, url.getPassword());
+        }
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
