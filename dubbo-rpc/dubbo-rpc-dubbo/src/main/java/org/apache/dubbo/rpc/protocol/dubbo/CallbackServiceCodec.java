@@ -108,7 +108,7 @@ public class CallbackServiceCodec {
      * @throws IOException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private String exportOrUnexportCallbackService(Channel channel, RpcInvocation inv, URL url, Class clazz, Object inst, Boolean export) throws IOException {
+    private String exportOrUnexportCallbackService(Channel channel, RpcInvocation inv, URL url, Class clazz, Object inst, boolean export) throws IOException {
         int instid = System.identityHashCode(inst);
 
         Map<String, String> params = new HashMap<>(3);
