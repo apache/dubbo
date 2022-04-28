@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class TripleInvokerTest {
@@ -53,7 +54,7 @@ class TripleInvokerTest {
         when(connection.getChannel())
             .thenReturn(channel);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
-        ConnectionPool pool = new DefaultConnectionPool(url);
+        ConnectionPool pool = mock(DefaultConnectionPool.class);
         when(pool.acquire())
             .thenReturn(connection);
         when(connectionManager.getConnectionPool(url))
