@@ -75,14 +75,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleInvoker.class);
 
-    private final Connection connection;
-
     private final ConnectionPool connectionPool;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
+
+    private Connection connection;
+
 
     public TripleInvoker(Class<T> serviceType,
                          URL url,
@@ -93,7 +94,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connectionPool = connectionManager.getConnectionPool(url);
-        this.connection = connectionPool.acquire();
         this.acceptEncodings = acceptEncodings;
         this.streamExecutor = streamExecutor;
     }
@@ -105,6 +105,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
+        this.connection = connectionPool.acquire();
         if (!connection.isAvailable()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE.withDescription(
