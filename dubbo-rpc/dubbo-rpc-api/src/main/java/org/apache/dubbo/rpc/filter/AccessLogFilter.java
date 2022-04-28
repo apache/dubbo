@@ -141,6 +141,7 @@ public class AccessLogFilter implements Filter {
                 processWithAccessKeyLogger(logQueue, file);
             }
         } catch (Exception e) {
+            logQueue.poll();
             logger.error(e.getMessage(), e);
         }
     }
