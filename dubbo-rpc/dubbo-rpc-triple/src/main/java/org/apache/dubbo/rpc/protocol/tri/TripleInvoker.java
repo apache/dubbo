@@ -285,7 +285,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        return connection.isAvailable();
+        try {
+            connection = connectionPool.acquire();
+            return connection.isAvailable();
+        } finally {
+            connectionPool.release(connection);
+        }
+
     }
 
     @Override
