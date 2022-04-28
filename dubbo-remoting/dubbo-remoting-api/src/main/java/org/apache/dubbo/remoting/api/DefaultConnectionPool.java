@@ -67,6 +67,7 @@ public class DefaultConnectionPool implements ConnectionPool {
             }
             throw new RuntimeException("No connection available");
         }
+        idleCount.decrementAndGet();
         return connection;
     }
 
