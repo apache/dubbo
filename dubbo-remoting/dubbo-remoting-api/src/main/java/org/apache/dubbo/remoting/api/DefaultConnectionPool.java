@@ -65,7 +65,9 @@ public class DefaultConnectionPool implements ConnectionPool {
             if (getActualMaxTotal() > objects) {
                 return createConnection();
             }
-            throw new RuntimeException("No connection available");
+            connection = all.peek();
+            connection.usedCount.incrementAndGet();
+            return connection;
         }
         idleCount.decrementAndGet();
         return connection;
@@ -74,6 +76,9 @@ public class DefaultConnectionPool implements ConnectionPool {
     @Override
     public void release(Connection connection) {
         if (!all.contains(connection)) {
+            return;
+        }
+        if (connection.usedCount.decrementAndGet() > 0) {
             return;
         }
         if (idleCount.get() >= getActualMaxIdle()) {

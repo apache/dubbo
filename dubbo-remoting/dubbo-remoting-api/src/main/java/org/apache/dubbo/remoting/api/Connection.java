@@ -47,6 +47,7 @@ import io.netty.util.concurrent.Promise;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
@@ -70,6 +71,8 @@ public class Connection extends AbstractReferenceCounted {
     private final Bootstrap bootstrap;
     private final ConnectionListener connectionListener = new ConnectionListener();
     private volatile Promise<Object> connectingPromise;
+
+    public final AtomicInteger usedCount = new AtomicInteger(0);
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
