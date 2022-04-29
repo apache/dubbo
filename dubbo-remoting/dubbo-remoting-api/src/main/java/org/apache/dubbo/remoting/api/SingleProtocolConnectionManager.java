@@ -25,29 +25,31 @@ import java.util.concurrent.ConcurrentMap;
 public class SingleProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "single";
 
-    private final ConcurrentMap<String, ConnectionPool> connections = PlatformDependent.newConcurrentHashMap();
+    private final ConcurrentMap<String, ConnectionPool> connectionPools = PlatformDependent.newConcurrentHashMap();
+
+    private final ConcurrentMap<String, Connection> connections = PlatformDependent.newConcurrentHashMap();
 
     @Override
     public Connection connect(URL url) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        String address = url.getAddress();
-        ConnectionPool pool = connections.get(address);
-        if (pool == null) {
-            pool = new DefaultConnectionPool(url);
-            connections.put(address, pool);
-            pool.getCloseFuture().thenAccept(connections::remove);
-        }
-        Connection connection = pool.acquire();
-        connection.retain();
-        return connection;
+        return connections.compute(url.getAddress(), (address, conn) -> {
+            if (conn == null) {
+                final Connection created = new Connection(url);
+                created.getClosePromise().addListener(future -> connections.remove(address, created));
+                return created;
+            } else {
+                conn.retain();
+                return conn;
+            }
+        });
     }
 
     @Override
     public ConnectionPool getConnectionPool(URL url) {
         String address = url.getAddress();
-        return connections.computeIfAbsent(address, key -> new DefaultConnectionPool(url));
+        return connectionPools.computeIfAbsent(address, key -> new DefaultConnectionPool(url));
     }
 
 //    @Override
