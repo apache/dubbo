@@ -21,8 +21,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -93,20 +97,38 @@ public class DefaultConnectionPool implements ConnectionPool {
         return closeFuture;
     }
 
+
+    private CompletableFuture<Void> clearAsync() {
+
+        List<CompletableFuture<Void>> futures = new ArrayList<>(all.size());
+
+        Connection cached;
+        while ((cached = cache.poll()) != null) {
+            idleCount.decrementAndGet();
+            objectCount.decrementAndGet();
+            all.remove(cached);
+            futures.add(CompletableFuture.runAsync(cached::close));
+        }
+        return allOf(futures);
+    }
+
     @Override
     public CompletableFuture<Void> closeAsync() {
         if (!isPoolActive()) {
             return closeFuture;
         }
         state = State.TERMINATING;
-        Connection cached;
-        while ((cached = cache.poll()) != null) {
-            idleCount.decrementAndGet();
-            objectCount.decrementAndGet();
-            all.remove(cached);
-            cached.close();
-        }
+        CompletableFuture<Void> clear = clearAsync();
         state = State.TERMINATED;
+
+        clear.whenComplete((aVoid, throwable) -> {
+
+            if (throwable != null) {
+                closeFuture.completeExceptionally(throwable);
+            } else {
+                closeFuture.complete(aVoid);
+            }
+        });
         return closeFuture;
     }
 
@@ -213,5 +235,15 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     enum State {
         ACTIVE, TERMINATING, TERMINATED;
+    }
+
+
+    private CompletableFuture<Void> allOf(Collection<? extends CompletionStage<?>> stages) {
+        CompletableFuture<?>[] futures = new CompletableFuture[stages.size()];
+        int index = 0;
+        for (CompletionStage<?> stage : stages) {
+            futures[index++] = stage.toCompletableFuture();
+        }
+        return CompletableFuture.allOf(futures);
     }
 }
