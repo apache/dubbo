@@ -141,7 +141,6 @@ public class AccessLogFilter implements Filter {
                 processWithAccessKeyLogger(logQueue, file);
             }
         } catch (Exception e) {
-            logQueue.poll();
             logger.error(e.getMessage(), e);
         }
     }
@@ -157,22 +156,21 @@ public class AccessLogFilter implements Filter {
     }
 
     private void processWithAccessKeyLogger(Queue<AccessLogData> logQueue, File file) throws IOException {
-        try (FileWriter writer = new FileWriter(file, true)) {
-            for (Iterator<AccessLogData> iterator = logQueue.iterator();
-                 iterator.hasNext();
-                 iterator.remove()) {
-                writer.write(iterator.next().getLogMessage());
+        FileWriter writer = new FileWriter(file, true);
+        try  {
+            while (!logQueue.isEmpty()) {
+                writer.write(logQueue.poll().getLogMessage());
                 writer.write(System.getProperty(LINE_SEPARATOR));
             }
+        }finally {
             writer.flush();
+            writer.close();
         }
     }
 
     private void processWithServiceLogger(Queue<AccessLogData> logQueue) {
-        for (Iterator<AccessLogData> iterator = logQueue.iterator();
-             iterator.hasNext();
-             iterator.remove()) {
-            AccessLogData logData = iterator.next();
+        while (!logQueue.isEmpty()) {
+            AccessLogData logData = logQueue.poll();
             LoggerFactory.getLogger(LOG_KEY + "." + logData.getServiceName()).info(logData.getLogMessage());
         }
     }
