@@ -37,7 +37,7 @@ public class SerializeClassCheckerTest {
     }
 
     @AfterAll
-    public void tearDown() {
+    public static void tearDown() {
         SerializeClassChecker.clearInstance();
     }
 
