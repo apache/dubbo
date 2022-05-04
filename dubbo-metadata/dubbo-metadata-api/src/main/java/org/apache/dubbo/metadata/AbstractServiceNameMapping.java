@@ -199,6 +199,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     }
 
     @Override
+    public Set<String> getRemoteMapping(URL consumerURL) {
+        return get(consumerURL);
+    }
+
+    @Override
     public Set<String> removeCachedMapping(String serviceKey) {
         return mappingCacheManager.remove(serviceKey);
     }

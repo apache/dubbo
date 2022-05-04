@@ -114,6 +114,8 @@ public interface ServiceNameMapping extends Destroyable {
 
     Set<String> getCachedMapping(URL consumerURL);
 
+    Set<String> getRemoteMapping(URL consumerURL);
+
     Map<String, Set<String>> getCachedMapping();
 
     Set<String> removeCachedMapping(String serviceKey);
