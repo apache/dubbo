@@ -49,6 +49,7 @@ public class ReferenceCountManagedChannel extends ManagedChannel {
         if (referenceCount.decrementAndGet() <= 0) {
             return grpcChannel.shutdown();
         }
+
         return grpcChannel;
     }
 

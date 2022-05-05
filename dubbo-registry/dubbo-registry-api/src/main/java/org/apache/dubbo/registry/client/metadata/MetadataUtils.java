@@ -54,7 +54,7 @@ public class MetadataUtils {
 
     public static void publishServiceDefinition(URL url, ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).size() == 0) {
-            String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
+            String msg = "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
             logger.warn(msg);
         }
 
