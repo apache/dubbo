@@ -37,9 +37,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
@@ -132,7 +129,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             // pre-route and build cache, notice that route cache should build on original Invoker list.
             // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
             routerChain.setInvokers(newInvokers);
-            this.invokers = toMergeInvokerList(newInvokers);
+            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -212,14 +209,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
-        if(null == this.invokers || this.invokers.size() == 0){
-            return invokers;
-        }
-        List<Invoker<T>> list = Stream.of(this.invokers, invokers)
-                .flatMap(Collection::stream)
-                .distinct()
-                .collect(Collectors.toList());
-        return list;
+        return invokers;
     }
 
     /**

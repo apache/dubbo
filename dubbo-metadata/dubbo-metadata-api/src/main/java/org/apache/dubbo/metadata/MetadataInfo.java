@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 
 public class MetadataInfo implements Serializable {
     private String app;
@@ -261,9 +260,6 @@ public class MetadataInfo implements Serializable {
             matchKey = getServiceKey();
             if (StringUtils.isNotEmpty(protocol)) {
                 matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol;
-            }
-            if(StringUtils.isNoneEmpty(this.params.get(TAG_KEY))){
-                matchKey = matchKey + GROUP_CHAR_SEPARATOR + this.params.get(TAG_KEY);
             }
             return matchKey;
         }

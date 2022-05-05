@@ -181,13 +181,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.notifyAddressChanged();
     }
 
-    public synchronized void addListenerAndNotify(Set<String> serviceKey, NotifyListener listener) {
-        List<URL> urls = new ArrayList<>();
-        for(String str : serviceKey){
-            this.listeners.put(str, listener);
-            urls.addAll(this.serviceUrls.get(str));
-        }
-        if(CollectionUtils.isNotEmpty(urls)){
+    public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
+        this.listeners.put(serviceKey, listener);
+        List<URL> urls = this.serviceUrls.get(serviceKey);
+        if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
     }
@@ -210,10 +207,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      */
     public final Set<String> getServiceNames() {
         return serviceNames;
-    }
-
-    public Map<String, List<URL>> getServiceUrl(){
-        return serviceUrls;
     }
 
     public void setUrl(URL url) {
