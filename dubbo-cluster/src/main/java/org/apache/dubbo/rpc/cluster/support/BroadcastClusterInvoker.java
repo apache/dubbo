@@ -24,10 +24,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
+
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
  * BroadcastClusterInvoker
@@ -66,7 +69,10 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         int failIndex = 0;
         for (Invoker<T> invoker : invokers) {
             try {
-                result = invokeWithContext(invoker, invocation);
+                // fix #9962
+                RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
+                subInvocation.setAttachment(ASYNC_KEY, "true");
+                result = invokeWithContext(invoker, subInvocation);
                 if (null != result && result.hasException()) {
                     Throwable resultException = result.getException();
                     if (null != resultException) {
