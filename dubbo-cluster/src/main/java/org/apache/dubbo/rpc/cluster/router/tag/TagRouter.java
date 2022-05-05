@@ -117,7 +117,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
             }
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
-            if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation)) {
+            if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation,invokers)) {
                 return result;
             }
             // FAILOVER: return all Providers without any tags.
@@ -168,7 +168,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         // Tag request
         if (!StringUtils.isEmpty(tag)) {
             result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
-            if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation)) {
+            if (CollectionUtils.isEmpty(result) && !isForceUseTag(invocation,invokers)) {
                 result = filterInvoker(invokers, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
@@ -188,8 +188,10 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         return tagRouterRule != null && tagRouterRule.isForce();
     }
 
-    private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+    private <T>boolean isForceUseTag(Invocation invocation,List<Invoker<T>> invokers) {
+
+        boolean providerForceUseTag = invokers.stream().filter(invoker -> "true".equals((invoker.getUrl().getParameter(FORCE_USE_TAG)))).findAny().isPresent();
+        return providerForceUseTag ? providerForceUseTag : Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
