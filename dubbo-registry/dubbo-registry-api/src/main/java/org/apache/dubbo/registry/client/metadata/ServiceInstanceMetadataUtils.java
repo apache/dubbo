@@ -45,6 +45,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_HEARTBEAT;
+import static org.apache.dubbo.remoting.Constants.HEARTBEAT_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
@@ -113,6 +115,7 @@ public class ServiceInstanceMetadataUtils {
         setDefaultParams(params, providerURL);
         params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
         params.put(PROTOCOL_KEY, providerURL.getProtocol());
+        params.put(HEARTBEAT_KEY, String.valueOf(providerURL.getParameter(HEARTBEAT_KEY, DEFAULT_HEARTBEAT)));
         return params;
     }
 
