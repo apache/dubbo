@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.migration.model;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 
 import org.yaml.snakeyaml.Yaml;
@@ -180,11 +181,19 @@ public class MigrationRule {
             // initial step : APPLICATION_FIRST
             step = MigrationStep.APPLICATION_FIRST;
             step = Enum.valueOf(MigrationStep.class,
-                consumerURL.getParameter(MIGRATION_STEP_KEY,
-                    ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
+                consumerURL.getParameter(MIGRATION_STEP_KEY, getDefaultStep(consumerURL, step.name())));
         }
 
         return step;
+    }
+
+    private String getDefaultStep(URL consumerURL, String defaultStep) {
+        String globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, null);
+        if (StringUtils.isEmpty(globalDefaultStep)) {
+            // check 'dubbo.application.service-discovery.step' for compatibility
+            globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), "dubbo.application.service-discovery.step", defaultStep);
+        }
+        return globalDefaultStep;
     }
 
     public MigrationStep getStep() {
