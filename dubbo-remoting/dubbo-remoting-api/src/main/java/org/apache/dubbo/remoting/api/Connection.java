@@ -17,11 +17,13 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 
@@ -35,6 +37,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
@@ -55,6 +58,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
 public class Connection extends AbstractReferenceCounted {
+
+    private static final String SOCKS_PROXY_HOST = "socksProxyHost";
+
+    private static final String SOCKS_PROXY_PORT = "socksProxyPort";
+
+    private static final String DEFAULT_SOCKS_PROXY_PORT = "1081";
 
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
@@ -117,7 +126,14 @@ public class Connection extends AbstractReferenceCounted {
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast(connectionHandler);
                 protocol.configClientPipeline(url, pipeline, sslContext);
-                // TODO support Socks5
+                // Support Socks5
+                String socksProxyHost = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
+                if(socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
+                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(),
+                        SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
+                    Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
+                    pipeline.addFirst(socks5ProxyHandler);
+                }
             }
         });
         return bootstrap;
@@ -145,6 +161,11 @@ public class Connection extends AbstractReferenceCounted {
                 }
             }
         }
+    }
+
+    private boolean isFilteredAddress(String host) {
+        // filter local address
+        return StringUtils.isEquals(NetUtils.getLocalHost(), host) || NetUtils.isLocalHost(host);
     }
 
     public Channel getChannel() {
