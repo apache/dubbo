@@ -24,7 +24,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-@Activate
+@Activate(order = 3) // Will take effect after ExcludedParamsFilter
 public class CustomizedParamsFilter implements MetadataParamsFilter {
 
     @Override
@@ -32,11 +32,21 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
         return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
     }
 
+    @Override
+    public String[] serviceParamsExcluded() {
+        return new String[0];
+    }
+
     /**
      * Not included in this test
      */
     @Override
     public String[] instanceParamsIncluded() {
+        return new String[0];
+    }
+
+    @Override
+    public String[] instanceParamsExcluded() {
         return new String[0];
     }
 }

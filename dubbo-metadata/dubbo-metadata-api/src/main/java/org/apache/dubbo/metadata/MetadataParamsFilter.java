@@ -18,6 +18,17 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.extension.SPI;
 
+/**
+ * This filter applies an either 'include' or 'exclude' policy with 'include' having higher priority.
+ * That means if 'include' is specified then params specified in 'exclude' will be ignored
+ *
+ * If multiple Filter extensions are provided, then,
+ * 1. All params specified as should be included within different Filter extension instances will determine the params that will finally be used.
+ * 2. If none of the Filter extensions specified any params as should be included, then the final effective params would be those left after removed all the params specified as should be excluded.
+ *
+ * It is recommended for most users to use 'exclude' policy for service params and 'include' policy for instance params.
+ * Please use 'params-filter=-default, -filterName1, filterName2' to activate or deactivate filter extensions.
+ */
 @SPI
 public interface MetadataParamsFilter {
 
@@ -28,10 +39,24 @@ public interface MetadataParamsFilter {
     */
    String[] serviceParamsIncluded();
 
+    /**
+     * params that need to be excluded before sending to metadata center
+     *
+     * @return arrays of keys
+     */
+    String[] serviceParamsExcluded();
+
    /**
     * params that need to be sent to registry center
     *
     * @return arrays of keys
     */
    String[] instanceParamsIncluded();
+
+    /**
+     * params that need to be excluded before sending to registry center
+     *
+     * @return arrays of keys
+     */
+    String[] instanceParamsExcluded();
 }

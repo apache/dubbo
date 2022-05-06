@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata.store;
+package org.apache.dubbo.metadata.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
-@Activate
-public class CustomizedParamsFilter implements MetadataParamsFilter {
+@Activate(order = 2) // Will take effect before ExcludedParamsFilter
+public class ExcludedParamsFilter2 implements MetadataParamsFilter {
 
     @Override
     public String[] serviceParamsIncluded() {
-        return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
+        return new String[0];
     }
 
     @Override
     public String[] serviceParamsExcluded() {
-        return new String[0];
+        return new String[]{DEPRECATED_KEY, SIDE_KEY};
     }
 
     /**
@@ -43,7 +42,7 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
      */
     @Override
     public String[] instanceParamsIncluded() {
-        return new String[]{SIDE_KEY};
+        return new String[0];
     }
 
     @Override

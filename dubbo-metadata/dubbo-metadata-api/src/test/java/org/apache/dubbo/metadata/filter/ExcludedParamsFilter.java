@@ -19,14 +19,21 @@ package org.apache.dubbo.metadata.filter;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
-@Activate
+@Activate(order = 1) // Will take effect before ExcludedParamsFilter
 public class ExcludedParamsFilter implements MetadataParamsFilter {
 
     @Override
     public String[] serviceParamsIncluded() {
-        return new String[]{INTERFACE_KEY};
+        return new String[0];
+    }
+
+    @Override
+    public String[] serviceParamsExcluded() {
+        return new String[]{TIMEOUT_KEY, GROUP_KEY, "delay"};
     }
 
     /**
@@ -34,6 +41,11 @@ public class ExcludedParamsFilter implements MetadataParamsFilter {
      */
     @Override
     public String[] instanceParamsIncluded() {
+        return new String[0];
+    }
+
+    @Override
+    public String[] instanceParamsExcluded() {
         return new String[0];
     }
 }
