@@ -20,7 +20,6 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 
 @Activate
 public class ExcludedParamsFilter2 implements MetadataParamsFilter {

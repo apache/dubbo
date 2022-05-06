@@ -19,9 +19,7 @@ package org.apache.dubbo.metadata.filter;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 @Activate(order = 2) // Will take effect before ExcludedParamsFilter
