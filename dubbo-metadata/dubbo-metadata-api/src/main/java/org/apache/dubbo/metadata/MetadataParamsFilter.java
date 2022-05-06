@@ -37,26 +37,34 @@ public interface MetadataParamsFilter {
     *
     * @return arrays of keys
     */
-   String[] serviceParamsIncluded();
+   default String[] serviceParamsIncluded() {
+       return new String[0];
+   }
 
     /**
      * params that need to be excluded before sending to metadata center
      *
      * @return arrays of keys
      */
-    String[] serviceParamsExcluded();
+    default String[] serviceParamsExcluded() {
+        return new String[0];
+    }
 
-   /**
-    * params that need to be sent to registry center
-    *
-    * @return arrays of keys
-    */
-   String[] instanceParamsIncluded();
+    /**
+     * params that need to be sent to registry center
+     *
+     * @return arrays of keys
+     */
+    default String[] instanceParamsIncluded() {
+        return new String[0];
+    }
 
     /**
      * params that need to be excluded before sending to registry center
      *
      * @return arrays of keys
      */
-    String[] instanceParamsExcluded();
+    default String[] instanceParamsExcluded() {
+        return new String[0];
+    }
 }

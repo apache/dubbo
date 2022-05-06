@@ -47,18 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
-import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
-import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 public class MetadataInfo implements Serializable {
     public static final MetadataInfo EMPTY = new MetadataInfo();
@@ -466,9 +455,6 @@ public class MetadataInfo implements Serializable {
 
         private transient URL url;
 
-        private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
-            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
-
         public ServiceInfo() {}
 
         public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
@@ -494,12 +480,6 @@ public class MetadataInfo implements Serializable {
 
         private Map<String, String> extractServiceParams(URL url, List<MetadataParamsFilter> filters) {
             Map<String, String> params = new HashMap<>();
-            if (filters.size() == 0) {
-                params.putAll(url.getParameters());
-                for (String key : KEYS_TO_REMOVE) {
-                    params.remove(key);
-                }
-            }
 
             String[] included, excluded;
             if (filters.size() == 1) {
