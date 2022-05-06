@@ -25,7 +25,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -50,7 +55,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
-    private final Map<String, Boolean> mappingInitiated = new HashMap<>();
+    private final Map<String, Boolean> mappingInitStatus = new HashMap<>();
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -83,7 +88,10 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     @Override
     public synchronized void initInterfaceAppMapping(URL subscribedURL) {
         String key = ServiceNameMapping.buildMappingKey(subscribedURL);
-        if (hasInitiated(key)) return;
+        if (hasInitiated(key)) {
+            return;
+        }
+        mappingInitStatus.put(key, Boolean.TRUE);
 
         Set<String> subscribedServices = new TreeSet<>();
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
@@ -222,15 +230,10 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         Lock lock = getMappingLock(key);
         try {
             lock.lock();
-            boolean initiated = mappingInitiated.computeIfAbsent(key, _k -> Boolean.FALSE);
-            if (initiated) {
-                return true;
-            }
-            mappingInitiated.put(key, Boolean.TRUE);
+            return mappingInitStatus.computeIfAbsent(key, _k -> Boolean.FALSE);
         } finally {
             lock.unlock();
         }
-        return false;
     }
 
     @Override
