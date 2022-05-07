@@ -43,10 +43,8 @@ import org.jboss.resteasy.util.GetRestful;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -72,8 +70,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
-    // TODO in the future maybe we can just use a single rest client and connection manager
-    private final List<ResteasyClient> clients = Collections.synchronizedList(new LinkedList<>());
+    private final Map<String, ResteasyClient> clients = new ConcurrentHashMap<>();
 
     private volatile ConnectionMonitor connectionMonitor;
 
@@ -136,29 +133,29 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
+        ResteasyClient client = clients.computeIfAbsent(url.getAddress(), key -> {
+            // TODO more configs to add
+            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+            // 20 is the default maxTotal of current PoolingClientConnectionManager
+            connectionManager.setMaxTotal(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
+            connectionManager.setDefaultMaxPerRoute(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
+            if (connectionMonitor == null) {
+                connectionMonitor = new ConnectionMonitor();
+                connectionMonitor.start();
+            }
+            connectionMonitor.addConnectionManager(url.getAddress(), connectionManager);
 
-        // TODO more configs to add
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        // 20 is the default maxTotal of current PoolingClientConnectionManager
-        connectionManager.setMaxTotal(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
-        connectionManager.setDefaultMaxPerRoute(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
-
-        if (connectionMonitor == null) {
-            connectionMonitor = new ConnectionMonitor();
-            connectionMonitor.start();
-        }
-        connectionMonitor.addConnectionManager(connectionManager);
-        RequestConfig requestConfig = RequestConfig.custom()
+            RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(url.getParameter(CONNECT_TIMEOUT_KEY, DEFAULT_CONNECT_TIMEOUT))
                 .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
                 .build();
 
-        SocketConfig socketConfig = SocketConfig.custom()
+            SocketConfig socketConfig = SocketConfig.custom()
                 .setSoKeepAlive(true)
                 .setTcpNoDelay(true)
                 .build();
 
-        CloseableHttpClient httpClient = HttpClientBuilder.create()
+            CloseableHttpClient httpClient = HttpClientBuilder.create()
                 .setConnectionManager(connectionManager)
                 .setKeepAliveStrategy((response, context) -> {
                     HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
@@ -176,12 +173,13 @@ public class RestProtocol extends AbstractProxyProtocol {
                 .setDefaultSocketConfig(socketConfig)
                 .build();
 
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
+            ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
 
-        ResteasyClient client = new ResteasyClientBuilder().httpEngine(engine).build();
-        clients.add(client);
+            ResteasyClient resteasyClient = new ResteasyClientBuilder().httpEngine(engine).build();
+            resteasyClient.register(RpcContextFilter.class);
+            return resteasyClient;
+        });
 
-        client.register(RpcContextFilter.class);
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
             if (!StringUtils.isEmpty(clazz)) {
                 try {
@@ -193,7 +191,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
 
         // TODO protocol
-        ResteasyWebTarget target = client.target("http://" + url.getHost() + ":" + url.getPort() + "/" + getContextPath(url));
+        ResteasyWebTarget target = client.target("http://" + url.getAddress() + "/" + getContextPath(url));
         return target.proxy(serviceType);
     }
 
@@ -229,7 +227,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Closing rest clients");
         }
-        for (ResteasyClient client : clients) {
+        for (ResteasyClient client : clients.values()) {
             try {
                 client.close();
             } catch (Throwable t) {
@@ -240,9 +238,9 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     /**
-     *  getPath() will return: [contextpath + "/" +] path
-     *  1. contextpath is empty if user does not set through ProtocolConfig or ProviderConfig
-     *  2. path will never be empty, it's default value is the interface name.
+     * getPath() will return: [contextpath + "/" +] path
+     * 1. contextpath is empty if user does not set through ProtocolConfig or ProviderConfig
+     * 2. path will never be empty, its default value is the interface name.
      *
      * @return return path only if user has explicitly gave then a value.
      */
@@ -261,12 +259,27 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
     }
 
+    @Override
+    protected void destroyInternal(URL url) {
+        try {
+
+            ResteasyClient client = clients.get(url.getAddress());
+            if (client.)
+                if (client != null && !client.isClosed()) {
+                    client.close();
+                }
+            connectionMonitor.destroyManager(url);
+        } catch (Exception e) {
+            logger.warn("Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
+        }
+    }
+
     protected class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
-        private final List<PoolingHttpClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<>());
+        private final Map<String, PoolingHttpClientConnectionManager> connectionManagers = new ConcurrentHashMap<>();
 
-        public void addConnectionManager(PoolingHttpClientConnectionManager connectionManager) {
-            connectionManagers.add(connectionManager);
+        public void addConnectionManager(String address, PoolingHttpClientConnectionManager connectionManager) {
+            connectionManagers.putIfAbsent(address, connectionManager);
         }
 
         @Override
@@ -275,7 +288,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 while (!shutdown) {
                     synchronized (this) {
                         wait(HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS);
-                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers) {
+                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers.values()) {
                             connectionManager.closeExpiredConnections();
                             connectionManager.closeIdleConnections(HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S, TimeUnit.SECONDS);
                         }
@@ -291,6 +304,14 @@ public class RestProtocol extends AbstractProxyProtocol {
             connectionManagers.clear();
             synchronized (this) {
                 notifyAll();
+            }
+        }
+
+        // destroy unused connectionManager
+        private void destroyManager(URL url) {
+            PoolingHttpClientConnectionManager connectionManager = connectionManagers.remove(url.getAddress());
+            if (connectionManager != null) {
+                connectionManager.close();
             }
         }
     }
