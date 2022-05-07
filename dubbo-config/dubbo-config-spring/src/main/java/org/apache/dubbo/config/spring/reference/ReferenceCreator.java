@@ -57,8 +57,13 @@ public class ReferenceCreator {
     static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
 
     private static final String ONRETURN = "onreturn";
+
     private static final String ONTHROW = "onthrow";
+
     private static final String ONINVOKE = "oninvoke";
+
+    private static final String ISRETURN = "isReturn";
+
     private static final String METHOD = "Method";
 
     protected final Log logger = LogFactory.getLog(getClass());
@@ -78,7 +83,7 @@ public class ReferenceCreator {
         this.attributes = attributes;
         this.applicationContext = applicationContext;
         this.classLoader = applicationContext.getClassLoader() != null ?
-                applicationContext.getClassLoader() : Thread.currentThread().getContextClassLoader();
+            applicationContext.getClassLoader() : Thread.currentThread().getContextClassLoader();
         moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
         Assert.notNull(moduleModel, "ModuleModel not found in Spring ApplicationContext");
     }
@@ -145,7 +150,7 @@ public class ReferenceCreator {
             } else if (consumer instanceof ConsumerConfig) {
                 consumerConfig = (ConsumerConfig) consumer;
             } else {
-                throw new IllegalArgumentException("Unexpected 'consumer' attribute value: "+consumer);
+                throw new IllegalArgumentException("Unexpected 'consumer' attribute value: " + consumer);
             }
             referenceBean.setConsumer(consumerConfig);
         }
@@ -226,7 +231,7 @@ public class ReferenceCreator {
                     String beanName = strValue.substring(0, index);
                     String methodName = strValue.substring(index + 1);
                     methodAttributes.put(callbackName, applicationContext.getBean(beanName));
-                    methodAttributes.put(callbackName+METHOD, methodName);
+                    methodAttributes.put(callbackName + METHOD, methodName);
                 } else {
                     methodAttributes.put(callbackName, applicationContext.getBean(strValue));
                 }
@@ -235,6 +240,7 @@ public class ReferenceCreator {
 
         MethodConfig methodConfig = new MethodConfig();
         DataBinder mcDataBinder = new DataBinder(methodConfig);
+        methodConfig.setReturn((Boolean) methodAttributes.get(ISRETURN));
         mcDataBinder.setConversionService(conversionService);
         AnnotationPropertyValuesAdapter propertyValues = new AnnotationPropertyValuesAdapter(methodAttributes, applicationContext.getEnvironment());
         mcDataBinder.bind(propertyValues);
