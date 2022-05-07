@@ -107,14 +107,12 @@ public class SimpleReferenceCache implements ReferenceCache {
     public <T> T get(ReferenceConfigBase<T> rc) {
         String key = generator.generateKey(rc);
         Class<?> type = rc.getInterfaceClass();
-        Object proxy = rc.get();
-
-        references.computeIfAbsent(rc, _rc -> {
+        Object proxy = references.computeIfAbsent(rc, _rc -> {
             List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.computeIfAbsent(type, _t -> Collections.synchronizedList(new ArrayList<>()));
             referencesOfType.add(rc);
             List<ReferenceConfigBase<?>> referenceConfigList = referenceKeyMap.computeIfAbsent(key, _k -> Collections.synchronizedList(new ArrayList<>()));
             referenceConfigList.add(rc);
-            return proxy;
+            return _rc.get();
         });
 
         return (T) proxy;
