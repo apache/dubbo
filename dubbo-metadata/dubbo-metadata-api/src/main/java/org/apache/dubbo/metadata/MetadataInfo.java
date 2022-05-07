@@ -171,10 +171,9 @@ public class MetadataInfo implements Serializable {
     }
 
     /**
-     * Calculation of this instance's status and modification of the instance must be synchronized among different threads.
+     * Calculation of this instance's status like revision and modification of the same instance must be synchronized among different threads.
      * <p>
-     * Usage of this method is strictly restricted at certain point of registration, always try using {@link this#getRevision()}
-     * instead of this method.
+     * Usage of this method is strictly restricted to certain points such as when during registration. Always try to use {@link this#getRevision()} instead.
      */
     public synchronized String calAndGetRevision() {
         if (revision != null && !updated) {
