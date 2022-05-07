@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -54,7 +55,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
-    private volatile boolean initiated;
+    // TODO, check how should this be cleared once a reference or interface is destroyed to avoid key accumulation
+    private final Map<String, Boolean> mappingInitStatus = new HashMap<>();
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -86,12 +88,13 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
 
     @Override
     public synchronized void initInterfaceAppMapping(URL subscribedURL) {
-        if (initiated) {
+        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
+        if (hasInitiated(key)) {
             return;
         }
-        initiated = true;
+        mappingInitStatus.put(key, Boolean.TRUE);
+
         Set<String> subscribedServices = new TreeSet<>();
-        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
 
         if (StringUtils.isNotEmpty(serviceNames)) {
@@ -224,11 +227,22 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         }
     }
 
+    private boolean hasInitiated(String key) {
+        Lock lock = getMappingLock(key);
+        try {
+            lock.lock();
+            return mappingInitStatus.computeIfAbsent(key, _k -> Boolean.FALSE);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     @Override
     public void $destroy() {
         mappingCacheManager.destroy();
         mappingListeners.clear();
         mappingLocks.clear();
+        mappingInitStatus.clear();
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {
