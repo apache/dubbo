@@ -191,7 +191,7 @@ public class MigrationRule {
         String globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, null);
         if (StringUtils.isEmpty(globalDefaultStep)) {
             // check 'dubbo.application.service-discovery.step' for compatibility
-            globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), "dubbo.application.service-discovery.step", defaultStep);
+            globalDefaultStep = ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), "dubbo.application.service-discovery.migration", defaultStep);
         }
         return globalDefaultStep;
     }
