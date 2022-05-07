@@ -55,6 +55,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
+    // TODO, check how should this be cleared once a reference or interface is destroyed to avoid key accumulation
     private final Map<String, Boolean> mappingInitStatus = new HashMap<>();
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
@@ -241,6 +242,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         mappingCacheManager.destroy();
         mappingListeners.clear();
         mappingLocks.clear();
+        mappingInitStatus.clear();
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {
