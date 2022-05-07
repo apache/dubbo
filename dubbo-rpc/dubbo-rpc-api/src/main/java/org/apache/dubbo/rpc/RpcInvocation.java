@@ -513,7 +513,7 @@ public class RpcInvocation implements Invocation, Serializable {
                 return strValue;
             }
         }
-        return null;
+        return defaultValue;
     }
 
     @Deprecated
