@@ -91,8 +91,7 @@ public class MetadataInfoTest {
         metadataInfo.addService(url3);
         MetadataInfo.ServiceInfo serviceInfo3 = metadataInfo.getServiceInfo(url3.getProtocolServiceKey());
         assertNotNull(serviceInfo3);
-        // '5 + 1' because 'sayHello.timeout' will also be excluded
-        assertEquals(url3.getAllParameters().size() - (5 + 1), serviceInfo3.getParams().size());
+        assertEquals(14, serviceInfo3.getParams().size());
         assertNotNull(serviceInfo3.getParams().get(INTERFACE_KEY));
         assertNotNull(serviceInfo3.getParams().get(APPLICATION_KEY));
         assertNotNull(serviceInfo3.getParams().get(VERSION_KEY));

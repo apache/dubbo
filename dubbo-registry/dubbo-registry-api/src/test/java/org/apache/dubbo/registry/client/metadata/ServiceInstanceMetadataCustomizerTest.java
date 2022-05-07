@@ -46,7 +46,7 @@ public class ServiceInstanceMetadataCustomizerTest {
 
 
     /**
-     * Only 'include' specified in Customized Filter will take effect
+     * Only 'include' policy spicified in Customized Filter will take effect
      */
     @Test
     public void testCustomizeWithIncludeFilters() {
@@ -66,7 +66,7 @@ public class ServiceInstanceMetadataCustomizerTest {
     }
 
     /**
-     * Only 'include' specified in Customized Filter will take effect
+     * Only 'exclude' policies specified in Exclude Filters will take effect
      */
     @Test
     public void testCustomizeWithExcludeFilters() {
@@ -76,7 +76,7 @@ public class ServiceInstanceMetadataCustomizerTest {
 
         DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("ServiceInstanceMetadataCustomizerTest", applicationModel);
         MetadataInfo metadataInfo = new MetadataInfo();
-        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService?application=ServiceInstanceMetadataCustomizerTest&env=test&side=provider&group=test&params-filter=-customized"));
+        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService?application=ServiceInstanceMetadataCustomizerTest&env=test&side=provider&group=test&params-filter=-customized,-dubbo"));
         serviceInstance1.setServiceMetadata(metadataInfo);
         serviceInstanceMetadataCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals(2, serviceInstance1.getMetadata().size());
