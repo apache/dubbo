@@ -187,7 +187,15 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     protected String tag;
 
-    private  Boolean auth;
+    private Boolean auth;
+
+    /*Indicates to create separate instances or not for services/references that have the same serviceKey.
+     * By default, all services/references that have the same serviceKey will share the same instance and process.
+     *
+     * This key currently can only work when using ReferenceConfig and SimpleReferenceCache together.
+     * Call ReferenceConfig.get() directly will not check this attribute.
+     */
+    private Boolean singleton;
 
     public AbstractInterfaceConfig() {
     }
@@ -855,14 +863,22 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public SslConfig getSslConfig() {
         return getConfigManager().getSsl().orElse(null);
     }
-    
+
+    public Boolean getSingleton() {
+        return singleton;
+    }
+
+    public void setSingleton(Boolean singleton) {
+        this.singleton = singleton;
+    }
+
     protected void initServiceMetadata(AbstractInterfaceConfig interfaceConfig) {
         serviceMetadata.setVersion(getVersion(interfaceConfig));
         serviceMetadata.setGroup(getGroup(interfaceConfig));
         serviceMetadata.setDefaultGroup(getGroup(interfaceConfig));
         serviceMetadata.setServiceInterfaceName(getInterface());
     }
-    
+
     public String getGroup(AbstractInterfaceConfig interfaceConfig) {
         return StringUtils.isEmpty(getGroup()) ? (interfaceConfig != null ? interfaceConfig.getGroup() : getGroup()) : getGroup();
     }
