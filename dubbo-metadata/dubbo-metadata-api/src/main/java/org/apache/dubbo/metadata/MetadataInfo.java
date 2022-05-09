@@ -481,6 +481,12 @@ public class MetadataInfo implements Serializable {
         private Map<String, String> extractServiceParams(URL url, List<MetadataParamsFilter> filters) {
             Map<String, String> params = new HashMap<>();
 
+            if (CollectionUtils.isEmpty(filters)) {
+                params.putAll(url.getParameters());
+                this.params = params;
+                return params;
+            }
+
             String[] included, excluded;
             if (filters.size() == 1) {
                 included = filters.get(0).serviceParamsIncluded();
