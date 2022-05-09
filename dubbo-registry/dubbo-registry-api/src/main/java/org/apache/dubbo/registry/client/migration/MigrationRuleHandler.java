@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
 public class MigrationRuleHandler<T> {
-    public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
+    public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.migration.step";
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
 
     private MigrationClusterInvoker<T> migrationInvoker;
