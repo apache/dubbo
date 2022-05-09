@@ -18,6 +18,8 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
@@ -40,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * You can implement and use your own {@link ReferenceConfigBase} cache if you need use complicate strategy.
  */
 public class SimpleReferenceCache implements ReferenceCache {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleReferenceCache.class);
     public static final String DEFAULT_NAME = "_DEFAULT_";
     /**
      * Create the key with the <b>Group</b>, <b>Interface</b> and <b>version</b> attribute of {@link ReferenceConfigBase}.
@@ -108,12 +111,25 @@ public class SimpleReferenceCache implements ReferenceCache {
         String key = generator.generateKey(rc);
         Class<?> type = rc.getInterfaceClass();
 
+        boolean singleton = rc.getSingleton() == null || rc.getSingleton();
+        T proxy = null;
         // Check existing proxy of the same 'key' and 'type' first.
-        if (rc.getSingleton() != null && !rc.getSingleton()) {
-            return get(key, (Class<T>) type);
+        if (singleton) {
+            proxy = get(key, (Class<T>) type);
+        } else {
+            logger.warn("Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
+                "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
         }
 
-        return rc.get();
+        if (proxy == null) {
+            List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.computeIfAbsent(type, _t -> Collections.synchronizedList(new ArrayList<>()));
+            referencesOfType.add(rc);
+            List<ReferenceConfigBase<?>> referenceConfigList = referenceKeyMap.computeIfAbsent(key, _k -> Collections.synchronizedList(new ArrayList<>()));
+            referenceConfigList.add(rc);
+            proxy = rc.get();
+        }
+
+        return proxy;
     }
 
     /**
