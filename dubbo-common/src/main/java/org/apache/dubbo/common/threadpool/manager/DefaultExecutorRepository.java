@@ -122,11 +122,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executor = null;
             logger.info("Executor for " + url + " is shutdown.");
         }
-        if (executor == null) {
-            return frameworkExecutorRepository.getSharedExecutor();
-        } else {
-            return executor;
-        }
+        return executor;
     }
 
     @Override
