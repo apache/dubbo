@@ -126,14 +126,9 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
 
     private Executor lookupExecutor(URL url) {
-        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
+        return url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension();
-        Executor urlExecutor = executorRepository.getExecutor(url);
-        if (urlExecutor == null) {
-            urlExecutor = executorRepository.createExecutorIfAbsent(url);
-        }
-        return urlExecutor;
+            .getDefaultExtension().getExecutor(url);
     }
 
     @Override

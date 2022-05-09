@@ -120,6 +120,10 @@ public class TripleProtocol extends AbstractProtocol {
         triBuiltinService.getHealthStatusManager()
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
+        // init
+        url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .createExecutorIfAbsent(url);
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
     }

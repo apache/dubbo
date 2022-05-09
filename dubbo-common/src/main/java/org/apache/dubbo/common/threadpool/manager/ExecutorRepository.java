@@ -38,16 +38,15 @@ public interface ExecutorRepository {
      */
     ExecutorService createExecutorIfAbsent(URL url);
 
+    /**
+     * getOrDefaultExecutor
+     *
+     * @param url
+     * @return
+     */
     ExecutorService getExecutor(URL url);
 
 
-    default ExecutorService getOrDefaultExecutor(URL url, ExecutorService defaultExecutor) {
-        ExecutorService executor = getExecutor(url);
-        if (executor == null) {
-            return defaultExecutor;
-        }
-        return executor;
-    }
 
     /**
      * Modify some of the threadpool's properties according to the url, for example, coreSize, maxSize, ...
