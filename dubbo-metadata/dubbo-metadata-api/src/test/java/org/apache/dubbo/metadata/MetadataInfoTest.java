@@ -97,7 +97,7 @@ public class MetadataInfoTest {
         assertNotNull(serviceInfo3.getParams().get(VERSION_KEY));
         assertNull(serviceInfo3.getParams().get(GROUP_KEY));
         assertNull(serviceInfo3.getParams().get(TIMEOUT_KEY));
-        assertNull(serviceInfo3.getParams().get("delay"));
+        assertNull(serviceInfo3.getParams().get("anyhost"));
         assertEquals("1000", serviceInfo3.getMethodParameter("sayHello", TIMEOUT_KEY, "1000"));
     }
 
