@@ -56,12 +56,8 @@ public class ExecutorRepositoryTest {
     }
 
     private void testGet(URL url) {
-        ExecutorService executorService = executorRepository.getExecutor(url);
-        Assertions.assertNull(executorService);
-
-        executorService = executorRepository.createExecutorIfAbsent(url);
+        ExecutorService executorService = executorRepository.createExecutorIfAbsent(url);
         executorService.shutdown();
-
         executorService = executorRepository.createExecutorIfAbsent(url);
         Assertions.assertFalse(executorService.isShutdown());
 
