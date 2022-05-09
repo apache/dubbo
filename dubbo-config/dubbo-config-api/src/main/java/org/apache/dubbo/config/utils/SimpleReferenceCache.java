@@ -107,15 +107,13 @@ public class SimpleReferenceCache implements ReferenceCache {
     public <T> T get(ReferenceConfigBase<T> rc) {
         String key = generator.generateKey(rc);
         Class<?> type = rc.getInterfaceClass();
-        Object proxy = references.computeIfAbsent(rc, _rc -> {
-            List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.computeIfAbsent(type, _t -> Collections.synchronizedList(new ArrayList<>()));
-            referencesOfType.add(rc);
-            List<ReferenceConfigBase<?>> referenceConfigList = referenceKeyMap.computeIfAbsent(key, _k -> Collections.synchronizedList(new ArrayList<>()));
-            referenceConfigList.add(rc);
-            return _rc.get();
-        });
 
-        return (T) proxy;
+        // Check existing proxy of the same 'key' and 'type' first.
+        if (rc.getSingleton() != null && !rc.getSingleton()) {
+            return get(key, (Class<T>) type);
+        }
+
+        return rc.get();
     }
 
     /**
@@ -138,6 +136,13 @@ public class SimpleReferenceCache implements ReferenceCache {
         return null;
     }
 
+    /**
+     * Check and return existing ReferenceConfig and its corresponding proxy instance.
+     *
+     * @param key ServiceKey
+     * @param <T> service interface type
+     * @return the existing proxy instance of the same service key
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String key) {
@@ -162,6 +167,13 @@ public class SimpleReferenceCache implements ReferenceCache {
         return Collections.unmodifiableList(proxiesOfType);
     }
 
+    /**
+     * Check and return existing ReferenceConfig and its corresponding proxy instance.
+     *
+     * @param type service interface class
+     * @param <T>  service interface type
+     * @return the existing proxy instance of the same interface definition
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T get(Class<T> type) {
