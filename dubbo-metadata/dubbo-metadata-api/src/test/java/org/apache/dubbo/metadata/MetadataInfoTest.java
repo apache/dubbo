@@ -51,6 +51,12 @@ public class MetadataInfoTest {
         "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
         "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=customized,-excluded");
 
+    private static URL url3 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
+        "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
+        "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
+        "&metadata-type=remote&methods=sayHello&sayHello.timeout=7000&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
+        "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded");
+
     @Test
     public void testEmptyRevision() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
@@ -60,7 +66,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testParamsFiltered() {
+    public void testParamsFilterIncluded() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -75,6 +81,24 @@ public class MetadataInfoTest {
         assertNotNull(serviceInfo2.getParams().get(GROUP_KEY));
         assertNotNull(serviceInfo2.getParams().get(TIMEOUT_KEY));
         assertEquals("7000", serviceInfo2.getMethodParameter("sayHello", TIMEOUT_KEY, "1000"));
+    }
+
+    @Test
+    public void testParamsFilterExcluded() {
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
+
+        // export normal url again
+        metadataInfo.addService(url3);
+        MetadataInfo.ServiceInfo serviceInfo3 = metadataInfo.getServiceInfo(url3.getProtocolServiceKey());
+        assertNotNull(serviceInfo3);
+        assertEquals(14, serviceInfo3.getParams().size());
+        assertNotNull(serviceInfo3.getParams().get(INTERFACE_KEY));
+        assertNotNull(serviceInfo3.getParams().get(APPLICATION_KEY));
+        assertNotNull(serviceInfo3.getParams().get(VERSION_KEY));
+        assertNull(serviceInfo3.getParams().get(GROUP_KEY));
+        assertNull(serviceInfo3.getParams().get(TIMEOUT_KEY));
+        assertNull(serviceInfo3.getParams().get("anyhost"));
+        assertEquals("1000", serviceInfo3.getMethodParameter("sayHello", TIMEOUT_KEY, "1000"));
     }
 
     @Test

@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -46,18 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
-import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
-import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
-import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 public class MetadataInfo implements Serializable {
     public static final MetadataInfo EMPTY = new MetadataInfo();
@@ -367,23 +357,45 @@ public class MetadataInfo implements Serializable {
             return;
         }
 
-        filters.forEach(filter -> {
-            String[] included = filter.instanceParamsIncluded();
-            if (ArrayUtils.isEmpty(included)) {
-                /*
-                 * Does not put any parameter in instance if not specified.
-                 * It will bring no functional suppression as long as all params will appear in service metadata.
-                 */
-            } else {
-                for (String p : included) {
-                    String value = url.getParameter(p);
-                    if (value != null) {
-                        String oldValue = instanceParams.put(p, value);
-                        if (oldValue != null && !oldValue.equals(value)) {
-                            throw new IllegalStateException(String.format("Inconsistent instance metadata found in different services: %s, %s", oldValue, value));
-                        }
-                    }
+        String[] included, excluded;
+        if (filters.size() == 1) {
+            MetadataParamsFilter filter = filters.get(0);
+            included = filter.instanceParamsIncluded();
+            excluded = filter.instanceParamsExcluded();
+        } else {
+            Set<String> includedList = new HashSet<>();
+            Set<String> excludedList = new HashSet<>();
+            filters.forEach(filter -> {
+                if (ArrayUtils.isNotEmpty(filter.instanceParamsIncluded())) {
+                    includedList.addAll(Arrays.asList(filter.instanceParamsIncluded()));
                 }
+                if (ArrayUtils.isNotEmpty(filter.instanceParamsExcluded())) {
+                    excludedList.addAll(Arrays.asList(filter.instanceParamsExcluded()));
+                }
+            });
+            included = includedList.toArray(new String[0]);
+            excluded = excludedList.toArray(new String[0]);
+        }
+
+        Map<String, String> tmpInstanceParams = new HashMap<>();
+        if (ArrayUtils.isNotEmpty(included)) {
+            for (String p : included) {
+                String value = url.getParameter(p);
+                if (value != null) {
+                    tmpInstanceParams.put(p, value);
+                }
+            }
+        } else if (ArrayUtils.isNotEmpty(excluded)) {
+            tmpInstanceParams.putAll(url.getParameters());
+            for (String p : excluded) {
+                tmpInstanceParams.remove(p);
+            }
+        }
+
+        tmpInstanceParams.forEach((key, value) -> {
+            String oldValue = instanceParams.put(key, value);
+            if (oldValue != null && !oldValue.equals(value)) {
+                throw new IllegalStateException(String.format("Inconsistent instance metadata found in different services: %s, %s", oldValue, value));
             }
         });
     }
@@ -442,42 +454,12 @@ public class MetadataInfo implements Serializable {
 
         private transient URL url;
 
-        private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
-            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
-
         public ServiceInfo() {}
 
         public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
             this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
             this.url = url;
-            Map<String, String> params = new HashMap<>();
-            if (filters.size() == 0) {
-                params.putAll(url.getParameters());
-                for (String key : KEYS_TO_REMOVE) {
-                    params.remove(key);
-                }
-            }
-            for (MetadataParamsFilter filter : filters) {
-                String[] paramsIncluded = filter.serviceParamsIncluded();
-                if (ArrayUtils.isNotEmpty(paramsIncluded)) {
-                    for (String p : paramsIncluded) {
-                        String value = url.getParameter(p);
-                        if (StringUtils.isNotEmpty(value) && params.get(p) == null) {
-                            params.put(p, value);
-                        }
-                        String[] methods = url.getParameter(METHODS_KEY, (String[]) null);
-                        if (methods != null) {
-                            for (String method : methods) {
-                                String mValue = url.getMethodParameterStrict(method, p);
-                                if (StringUtils.isNotEmpty(mValue)) {
-                                    params.put(method + DOT_SEPARATOR + p, mValue);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            this.params = params;
+            Map<String, String> params = extractServiceParams(url, filters);
             // initialize method params caches.
             this.methodParams = URLParam.initMethodParameters(params);
             this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
@@ -493,6 +475,75 @@ public class MetadataInfo implements Serializable {
 
             this.serviceKey = buildServiceKey(name, group, version);
             this.matchKey = buildMatchKey();
+        }
+
+        private Map<String, String> extractServiceParams(URL url, List<MetadataParamsFilter> filters) {
+            Map<String, String> params = new HashMap<>();
+
+            if (CollectionUtils.isEmpty(filters)) {
+                params.putAll(url.getParameters());
+                this.params = params;
+                return params;
+            }
+
+            String[] included, excluded;
+            if (filters.size() == 1) {
+                included = filters.get(0).serviceParamsIncluded();
+                excluded = filters.get(0).serviceParamsExcluded();
+            } else {
+                Set<String> includedList = new HashSet<>();
+                Set<String> excludedList = new HashSet<>();
+                for (MetadataParamsFilter filter : filters) {
+                    if (ArrayUtils.isNotEmpty(filter.serviceParamsIncluded())) {
+                        includedList.addAll(Arrays.asList(filter.serviceParamsIncluded()));
+                    }
+                    if (ArrayUtils.isNotEmpty(filter.serviceParamsExcluded())) {
+                        excludedList.addAll(Arrays.asList(filter.serviceParamsExcluded()));
+                    }
+                }
+                included = includedList.toArray(new String[0]);
+                excluded = excludedList.toArray(new String[0]);
+            }
+
+            if (ArrayUtils.isNotEmpty(included)) {
+                String[] methods = url.getParameter(METHODS_KEY, (String[]) null);
+                for (String p : included) {
+                    String value = url.getParameter(p);
+                    if (StringUtils.isNotEmpty(value) && params.get(p) == null) {
+                        params.put(p, value);
+                    }
+                    appendMethodParams(url, params, methods, p);
+                }
+            } else if (ArrayUtils.isNotEmpty(excluded)) {
+                for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
+                    boolean shouldAdd = true;
+                    for (String excludeKey : excluded) {
+                        if (key.equalsIgnoreCase(excludeKey) || key.contains("." + excludeKey)) {
+                            shouldAdd = false;
+                            break;
+                        }
+                    }
+                    if (shouldAdd) {
+                        params.put(key, value);
+                    }
+                }
+            }
+
+            this.params = params;
+            return params;
+        }
+
+        private void appendMethodParams(URL url, Map<String, String> params, String[] methods, String p) {
+            if (methods != null) {
+                for (String method : methods) {
+                    String mValue = url.getMethodParameterStrict(method, p);
+                    if (StringUtils.isNotEmpty(mValue)) {
+                        params.put(method + DOT_SEPARATOR + p, mValue);
+                    }
+                }
+            }
         }
 
         /**

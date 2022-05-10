@@ -90,8 +90,6 @@ public class ServiceInstanceMetadataUtils {
 
     public static final String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
 
-    public static final String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
-
     public static final Gson gson = new Gson();
 
     public static String getMetadataServiceParameter(URL url) {

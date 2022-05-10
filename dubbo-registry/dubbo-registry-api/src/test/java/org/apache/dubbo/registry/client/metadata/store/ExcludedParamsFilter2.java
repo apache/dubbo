@@ -19,18 +19,14 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 @Activate
-public class CustomizedParamsFilter implements MetadataParamsFilter {
+public class ExcludedParamsFilter2 implements MetadataParamsFilter {
 
     @Override
     public String[] serviceParamsIncluded() {
-        return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
+        return new String[0];
     }
 
     @Override
@@ -43,11 +39,11 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
      */
     @Override
     public String[] instanceParamsIncluded() {
-        return new String[]{SIDE_KEY};
+        return new String[0];
     }
 
     @Override
     public String[] instanceParamsExcluded() {
-        return new String[0];
+        return new String[]{GROUP_KEY, "params-filter"};
     }
 }
