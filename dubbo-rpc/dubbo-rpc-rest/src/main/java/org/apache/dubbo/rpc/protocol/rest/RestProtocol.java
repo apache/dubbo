@@ -70,7 +70,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
-    private final Map<String, ResteasyClient> clients = new ConcurrentHashMap<>();
+    private final Map<String, ReferenceCountedClient> clients = new ConcurrentHashMap<>();
 
     private volatile ConnectionMonitor connectionMonitor;
 
@@ -133,7 +133,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        ResteasyClient client = clients.computeIfAbsent(url.getAddress(), key -> {
+        ReferenceCountedClient referenceCountedClient = clients.computeIfAbsent(url.getAddress(), key -> {
             // TODO more configs to add
             PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
             // 20 is the default maxTotal of current PoolingClientConnectionManager
@@ -177,13 +177,15 @@ public class RestProtocol extends AbstractProxyProtocol {
 
             ResteasyClient resteasyClient = new ResteasyClientBuilder().httpEngine(engine).build();
             resteasyClient.register(RpcContextFilter.class);
-            return resteasyClient;
+            return new ReferenceCountedClient(resteasyClient);
         });
+
+        referenceCountedClient.retain();
 
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
             if (!StringUtils.isEmpty(clazz)) {
                 try {
-                    client.register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
+                    referenceCountedClient.getClient().register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
                 } catch (ClassNotFoundException e) {
                     throw new RpcException("Error loading JAX-RS extension class: " + clazz.trim(), e);
                 }
@@ -191,7 +193,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
 
         // TODO protocol
-        ResteasyWebTarget target = client.target("http://" + url.getAddress() + "/" + getContextPath(url));
+        ResteasyWebTarget target = referenceCountedClient.getClient().target("http://" + url.getAddress() + "/" + getContextPath(url));
         return target.proxy(serviceType);
     }
 
@@ -227,9 +229,10 @@ public class RestProtocol extends AbstractProxyProtocol {
         if (logger.isInfoEnabled()) {
             logger.info("Closing rest clients");
         }
-        for (ResteasyClient client : clients.values()) {
+        for (ReferenceCountedClient client : clients.values()) {
             try {
-                client.close();
+                // destroy directly regardless of the current reference count.
+                client.destroy();
             } catch (Throwable t) {
                 logger.warn("Error closing rest client", t);
             }
@@ -262,13 +265,10 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected void destroyInternal(URL url) {
         try {
-
-            ResteasyClient client = clients.get(url.getAddress());
-            if (client.)
-                if (client != null && !client.isClosed()) {
-                    client.close();
-                }
-            connectionMonitor.destroyManager(url);
+            ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
+            if (referenceCountedClient != null && referenceCountedClient.release()) {
+                connectionMonitor.destroyManager(url);
+            }
         } catch (Exception e) {
             logger.warn("Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
         }
@@ -276,6 +276,9 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     protected class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
+        /**
+         * The lifecycle of {@code PoolingHttpClientConnectionManager} instance is bond with ReferenceCountedClient
+         */
         private final Map<String, PoolingHttpClientConnectionManager> connectionManagers = new ConcurrentHashMap<>();
 
         public void addConnectionManager(String address, PoolingHttpClientConnectionManager connectionManager) {
@@ -307,7 +310,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             }
         }
 
-        // destroy unused connectionManager
+        // destroy the connection manager of a specific address when ReferenceCountedClient is destroyed.
         private void destroyManager(URL url) {
             PoolingHttpClientConnectionManager connectionManager = connectionManagers.remove(url.getAddress());
             if (connectionManager != null) {
