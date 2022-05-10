@@ -133,59 +133,22 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        ReferenceCountedClient referenceCountedClient = clients.computeIfAbsent(url.getAddress(), key -> {
+        ReferenceCountedClient referenceCountedClient = clients.computeIfAbsent(url.getAddress(), _key -> {
             // TODO more configs to add
-            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-            // 20 is the default maxTotal of current PoolingClientConnectionManager
-            connectionManager.setMaxTotal(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
-            connectionManager.setDefaultMaxPerRoute(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
-            if (connectionMonitor == null) {
-                connectionMonitor = new ConnectionMonitor();
-                connectionMonitor.start();
-            }
-            connectionMonitor.addConnectionManager(url.getAddress(), connectionManager);
-
-            RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(url.getParameter(CONNECT_TIMEOUT_KEY, DEFAULT_CONNECT_TIMEOUT))
-                .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
-                .build();
-
-            SocketConfig socketConfig = SocketConfig.custom()
-                .setSoKeepAlive(true)
-                .setTcpNoDelay(true)
-                .build();
-
-            CloseableHttpClient httpClient = HttpClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setKeepAliveStrategy((response, context) -> {
-                    HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                    while (it.hasNext()) {
-                        HeaderElement he = it.nextElement();
-                        String param = he.getName();
-                        String value = he.getValue();
-                        if (value != null && param.equalsIgnoreCase(TIMEOUT_KEY)) {
-                            return Long.parseLong(value) * 1000;
-                        }
-                    }
-                    return HTTPCLIENT_KEEPALIVEDURATION;
-                })
-                .setDefaultRequestConfig(requestConfig)
-                .setDefaultSocketConfig(socketConfig)
-                .build();
-
-            ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
-
-            ResteasyClient resteasyClient = new ResteasyClientBuilder().httpEngine(engine).build();
-            resteasyClient.register(RpcContextFilter.class);
-            return new ReferenceCountedClient(resteasyClient);
+            return createReferenceCountedClient(url);
         });
 
+        if (referenceCountedClient.isDestroyed()) {
+            referenceCountedClient = createReferenceCountedClient(url);
+            clients.put(url.getAddress(), referenceCountedClient);
+        }
         referenceCountedClient.retain();
 
+        ResteasyClient resteasyClient = referenceCountedClient.getClient();
         for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
             if (!StringUtils.isEmpty(clazz)) {
                 try {
-                    referenceCountedClient.getClient().register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
+                    resteasyClient.register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
                 } catch (ClassNotFoundException e) {
                     throw new RpcException("Error loading JAX-RS extension class: " + clazz.trim(), e);
                 }
@@ -193,8 +156,54 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
 
         // TODO protocol
-        ResteasyWebTarget target = referenceCountedClient.getClient().target("http://" + url.getAddress() + "/" + getContextPath(url));
+        ResteasyWebTarget target = resteasyClient.target("http://" + url.getAddress() + "/" + getContextPath(url));
         return target.proxy(serviceType);
+    }
+
+    private ReferenceCountedClient createReferenceCountedClient(URL url) {
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+        // 20 is the default maxTotal of current PoolingClientConnectionManager
+        connectionManager.setMaxTotal(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
+        connectionManager.setDefaultMaxPerRoute(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
+        if (connectionMonitor == null) {
+            connectionMonitor = new ConnectionMonitor();
+            connectionMonitor.start();
+        }
+        connectionMonitor.addConnectionManager(url.getAddress(), connectionManager);
+
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(url.getParameter(CONNECT_TIMEOUT_KEY, DEFAULT_CONNECT_TIMEOUT))
+            .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
+            .build();
+
+        SocketConfig socketConfig = SocketConfig.custom()
+            .setSoKeepAlive(true)
+            .setTcpNoDelay(true)
+            .build();
+
+        CloseableHttpClient httpClient = HttpClientBuilder.create()
+            .setConnectionManager(connectionManager)
+            .setKeepAliveStrategy((response, context) -> {
+                HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+                while (it.hasNext()) {
+                    HeaderElement he = it.nextElement();
+                    String param = he.getName();
+                    String value = he.getValue();
+                    if (value != null && param.equalsIgnoreCase(TIMEOUT_KEY)) {
+                        return Long.parseLong(value) * 1000;
+                    }
+                }
+                return HTTPCLIENT_KEEPALIVEDURATION;
+            })
+            .setDefaultRequestConfig(requestConfig)
+            .setDefaultSocketConfig(socketConfig)
+            .build();
+
+        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
+
+        ResteasyClient resteasyClient = new ResteasyClientBuilder().httpEngine(engine).build();
+        resteasyClient.register(RpcContextFilter.class);
+        return new ReferenceCountedClient(resteasyClient);
     }
 
     @Override
@@ -267,6 +276,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         try {
             ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
             if (referenceCountedClient != null && referenceCountedClient.release()) {
+                clients.remove(url.getAddress());
                 connectionMonitor.destroyManager(url);
             }
         } catch (Exception e) {

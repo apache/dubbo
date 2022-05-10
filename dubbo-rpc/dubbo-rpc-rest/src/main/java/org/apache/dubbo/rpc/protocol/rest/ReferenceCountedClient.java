@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.reference.ReferenceCountedResource;
 
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 
 public class ReferenceCountedClient extends ReferenceCountedResource {
+    private static final Logger logger = LoggerFactory.getLogger(ReferenceCountedClient.class);
 
     private final ResteasyClient resteasyClient;
 
@@ -32,8 +35,16 @@ public class ReferenceCountedClient extends ReferenceCountedResource {
         return resteasyClient;
     }
 
+    public boolean isDestroyed() {
+        return resteasyClient.isClosed();
+    }
+
     @Override
     protected void destroy() {
-
+        try {
+            resteasyClient.close();
+        } catch (Exception e) {
+            logger.error("Close resteasy client error", e);
+        }
     }
 }

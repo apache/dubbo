@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 /**
- *
+ * inspired by Netty
  */
 public abstract class ReferenceCountedResource implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ReferenceCountedResource.class);
