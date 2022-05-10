@@ -39,7 +39,7 @@ public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
     public DefaultMetadataParamsFilter() {
         this.includedInstanceParams = new String[]{HEARTBEAT_TIMEOUT_KEY, TIMESTAMP_KEY};
         this.excludedServiceParams = new String[]{MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
-            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
+            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY, HEARTBEAT_TIMEOUT_KEY};
     }
 
     @Override
