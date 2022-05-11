@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -112,7 +113,8 @@ public class RpcInvocation implements Invocation, Serializable {
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getTargetServiceUniqueName(), invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(),
             invocation.getProtocolServiceKey(), invocation.getParameterTypes(), invocation.getArguments(),
-            new HashMap<>(invocation.getObjectAttachments()), invocation.getInvoker(), invocation.getAttributes(),
+            new HashMap<>(CollectionUtils.isEmptyMap(invocation.getObjectAttachments()) ? new HashMap<>() : invocation.getObjectAttachments()),
+            invocation.getInvoker(), invocation.getAttributes(),
             invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
         if (invoker != null) {
             URL url = invoker.getUrl();
