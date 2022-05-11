@@ -19,8 +19,8 @@ package org.apache.dubbo.registry.nacos.util;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
+import com.alibaba.nacos.shaded.com.google.common.collect.Maps;
 
 import java.util.List;
 import java.util.Map;
