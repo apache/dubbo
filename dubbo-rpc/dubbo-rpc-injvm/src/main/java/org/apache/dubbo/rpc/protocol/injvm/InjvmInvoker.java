@@ -34,9 +34,11 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -44,10 +46,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
@@ -99,8 +105,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-
-        invocation.setAttachment(TIMEOUT_KEY, invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT));
+        invocation.setAttachment(TIMEOUT_KEY, calculateTimeout(invocation, invocation.getMethodName()));
 
         String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
 
@@ -264,6 +269,22 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             return localUrl.getParameter(ASYNC_KEY, false);
         }
         return remoteUrl.getParameter(ASYNC_KEY, false);
+    }
+
+    private int calculateTimeout(Invocation invocation, String methodName) {
+        Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
+        int timeout;
+        if (countdown == null) {
+            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
+            if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+                invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
+            }
+        } else {
+            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
+            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
+            invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
+        }
+        return timeout;
     }
 
 }
