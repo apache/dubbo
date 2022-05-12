@@ -87,7 +87,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             Thread.currentThread().setContextClassLoader(invocation.getServiceModel().getClassLoader());
         }
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-                .deserialize(channel.getUrl(), input);
+                .deserialize(null, input);
 
         byte flag = in.readByte();
         switch (flag) {
