@@ -208,6 +208,9 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 }
 //                }
 
+                in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
+                    .deserialize(null, input);
+
                 args = new Object[pts.length];
                 for (int i = 0; i < args.length; i++) {
                     args[i] = in.readObject(pts[i]);
