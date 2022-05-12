@@ -57,6 +57,9 @@ public class DubboShutdownHook extends Thread {
         this.applicationModel = applicationModel;
         Assert.notNull(this.applicationModel, "ApplicationModel is null");
         ignoreListenShutdownHook = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK));
+        if (ignoreListenShutdownHook) {
+            logger.info("dubbo.shutdownHook.listenIgnore configured, will ignore add shutdown hook to jvm.");
+        }
     }
 
     @Override
