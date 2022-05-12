@@ -110,10 +110,16 @@ public class FastJson2ObjectInput implements ObjectInput {
             if (read != length) {
                 throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
             }
-            return (T)JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
-                JSONReader.Feature.UseDefaultConstructorAsPossible,
-                JSONReader.Feature.UseNativeObject,
-                JSONReader.Feature.FieldBased);
+            try {
+                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+                    JSONReader.Feature.UseDefaultConstructorAsPossible,
+                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.FieldBased);
+            } catch (Throwable t) {
+                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.FieldBased);
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
@@ -134,10 +140,16 @@ public class FastJson2ObjectInput implements ObjectInput {
             if (read != length) {
                 throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
             }
-            return (T)JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
-                JSONReader.Feature.UseDefaultConstructorAsPossible,
-                JSONReader.Feature.UseNativeObject,
-                JSONReader.Feature.FieldBased);
+            try {
+                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+                    JSONReader.Feature.UseDefaultConstructorAsPossible,
+                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.FieldBased);
+            } catch (Throwable t) {
+                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+                    JSONReader.Feature.UseNativeObject,
+                    JSONReader.Feature.FieldBased);
+            }
         } finally {
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
