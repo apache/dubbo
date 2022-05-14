@@ -107,25 +107,22 @@ public class MulticastRegistry extends FailbackRegistry {
             multicastPort = url.getPort() <= 0 ? DEFAULT_MULTICAST_PORT : url.getPort();
             multicastSocket = new MulticastSocket(multicastPort);
             NetUtils.joinMulticastGroup(multicastSocket, multicastAddress);
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    byte[] buf = new byte[2048];
-                    DatagramPacket recv = new DatagramPacket(buf, buf.length);
-                    while (!multicastSocket.isClosed()) {
-                        try {
-                            multicastSocket.receive(recv);
-                            String msg = new String(recv.getData()).trim();
-                            int i = msg.indexOf('\n');
-                            if (i > 0) {
-                                msg = msg.substring(0, i).trim();
-                            }
-                            MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
-                            Arrays.fill(buf, (byte) 0);
-                        } catch (Throwable e) {
-                            if (!multicastSocket.isClosed()) {
-                                logger.error(e.getMessage(), e);
-                            }
+            Thread thread = new Thread(() -> {
+                byte[] buf = new byte[2048];
+                DatagramPacket recv = new DatagramPacket(buf, buf.length);
+                while (!multicastSocket.isClosed()) {
+                    try {
+                        multicastSocket.receive(recv);
+                        String msg = new String(recv.getData()).trim();
+                        int i = msg.indexOf('\n');
+                        if (i > 0) {
+                            msg = msg.substring(0, i).trim();
+                        }
+                        MulticastRegistry.this.receive(msg, (InetSocketAddress) recv.getSocketAddress());
+                        Arrays.fill(buf, (byte) 0);
+                    } catch (Throwable e) {
+                        if (!multicastSocket.isClosed()) {
+                            logger.error(e.getMessage(), e);
                         }
                     }
                 }
