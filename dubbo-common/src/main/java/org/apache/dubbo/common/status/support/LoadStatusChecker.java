@@ -27,12 +27,10 @@ import org.apache.dubbo.common.system.OperatingSystemBeanManager;
 @Activate
 public class LoadStatusChecker implements StatusChecker {
 
-    private static final double NA_VAL = -1d;
-
     @Override
     public Status check() {
         double load = OperatingSystemBeanManager.getOperatingSystemBean().getSystemLoadAverage();
-        if (load == NA_VAL) {
+        if (load == -1) {
             load = OperatingSystemBeanManager.getSystemCpuUsage();
         }
 
