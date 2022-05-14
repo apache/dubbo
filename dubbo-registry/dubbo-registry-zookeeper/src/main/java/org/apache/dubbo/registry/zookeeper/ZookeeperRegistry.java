@@ -57,9 +57,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
  */
 public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
-    private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 
