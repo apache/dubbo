@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -72,7 +73,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
 
     private static final class ConsistentHashSelector<T> {
 
-        private final TreeMap<Long, Invoker<T>> virtualInvokers;
+        private final TreeMap<Long, String> virtualInvokers;
         private final int replicaNumber;
         private final int identityHashCode;
 
@@ -101,8 +102,14 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
          */
         private static final double OVERLOAD_RATIO_THREAD = 1.5F;
 
+        /**
+         * A set of mappings between addresses and invokers
+         */
+        private  final Map<String, Invoker<T>> invokerMap;
+
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
-            this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
+            this.virtualInvokers = new TreeMap<>();
+            invokerMap = new HashMap<>(invokers.size());
             this.identityHashCode = identityHashCode;
             URL url = invokers.get(0).getUrl();
             this.replicaNumber = url.getMethodParameter(methodName, HASH_NODES, 160);
@@ -113,11 +120,12 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             }
             for (Invoker<T> invoker : invokers) {
                 String address = invoker.getUrl().getAddress();
+                invokerMap.put(address, invoker);
                 for (int i = 0; i < replicaNumber / 4; i++) {
                     byte[] digest = Bytes.getMD5(address + i);
                     for (int h = 0; h < 4; h++) {
                         long m = hash(digest, h);
-                        virtualInvokers.put(m, invoker);
+                        virtualInvokers.put(m, address);
                     }
                 }
             }
@@ -142,13 +150,12 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             return buf.toString();
         }
         private Invoker<T> selectForKey(long hash) {
-            Map.Entry<Long, Invoker<T>> entry = virtualInvokers.ceilingEntry(hash);
+            Map.Entry<Long, String> entry = virtualInvokers.ceilingEntry(hash);
             if (entry == null) {
                 entry = virtualInvokers.firstEntry();
             }
 
-            String serverAddress = entry.getValue().getUrl().getAddress();
-
+            String serverAddress = entry.getValue();
             /**
              * The following part of codes aims to select suitable invoker.
              * This part is not complete thread safety.
@@ -176,7 +183,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                  * If server node is not valid, get next node
                  */
                 entry = getNextInvokerNode(virtualInvokers, entry);
-                serverAddress = entry.getValue().getUrl().getAddress();
+                serverAddress = entry.getValue();
             }
             if (!serverRequestCountMap.containsKey(serverAddress)) {
                 serverRequestCountMap.put(serverAddress, new AtomicLong(1));
@@ -184,12 +191,14 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 serverRequestCountMap.get(serverAddress).incrementAndGet();
             }
             totalRequestCount.incrementAndGet();
-
-            return entry.getValue();
+            /**
+             * get the invoker from the map collection
+             */
+            return invokerMap.get(serverAddress);
         }
 
-        private Map.Entry<Long, Invoker<T>> getNextInvokerNode(TreeMap<Long, Invoker<T>> virtualInvokers, Map.Entry<Long, Invoker<T>> entry){
-            Map.Entry<Long, Invoker<T>> nextEntry = virtualInvokers.higherEntry(entry.getKey());
+        private Map.Entry<Long, String> getNextInvokerNode(TreeMap<Long, String> virtualInvokers, Map.Entry<Long, String> entry){
+            Map.Entry<Long, String> nextEntry = virtualInvokers.higherEntry(entry.getKey());
             if(nextEntry == null){
                 return virtualInvokers.firstEntry();
             }
