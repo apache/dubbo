@@ -175,7 +175,7 @@ public class Connection extends AbstractReferenceCounted {
         }
         this.channel.set(channel);
         // This indicates that the connection is available.
-        if (this.connectingPromise != null ) {
+        if (this.connectingPromise != null) {
             this.connectingPromise.trySuccess(CONNECTED_OBJECT);
         }
         channel.attr(CONNECTION).set(this);
@@ -192,10 +192,8 @@ public class Connection extends AbstractReferenceCounted {
         if (channel != null && channel.isActive()) {
             return true;
         }
-        synchronized (this) {
-            if (init.compareAndSet(false, true)) {
-                connect();
-            }
+        if (init.compareAndSet(false, true)) {
+            connect();
         }
 
         this.createConnectingPromise();
