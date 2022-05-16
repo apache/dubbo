@@ -200,6 +200,8 @@ public class AsyncRpcResult implements Result {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
             return RpcContext.getClientAttachment().getFuture();
+        } else if (InvokeMode.ASYNC == rpcInvocation.getInvokeMode()) {
+            return createDefaultValue(invocation).recreate();
         }
 
         return getAppResponse().recreate();

@@ -535,4 +535,6 @@ public interface CommonConstants {
     String NATIVE_STUB = "nativestub";
 
     String METADATA = "metadata";
+
+    String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
 }
