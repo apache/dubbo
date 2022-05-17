@@ -418,7 +418,7 @@ public class ServiceInstancesChangedListener {
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {
         if (urls == null) {
-            urls = Collections.emptyList();
+            urls = new ArrayList<>();
         }
         boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
