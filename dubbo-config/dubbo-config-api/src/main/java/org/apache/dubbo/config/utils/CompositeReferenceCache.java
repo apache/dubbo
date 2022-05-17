@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.config.utils;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -28,7 +31,10 @@ import java.util.List;
  * A impl of ReferenceCache for Application
  */
 public class CompositeReferenceCache implements ReferenceCache {
-    private ApplicationModel applicationModel;
+
+    private static final Logger logger = LoggerFactory.getLogger(CompositeReferenceCache.class);
+
+    private final ApplicationModel applicationModel;
 
     public CompositeReferenceCache(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -36,7 +42,22 @@ public class CompositeReferenceCache implements ReferenceCache {
 
     @Override
     public <T> T get(ReferenceConfigBase<T> referenceConfig) {
-        return referenceConfig.get();
+
+        Class<?> type = referenceConfig.getInterfaceClass();
+        String key = BaseServiceMetadata.buildServiceKey(type.getName(), referenceConfig.getGroup(), referenceConfig.getVersion());
+
+        boolean singleton = referenceConfig.getSingleton() == null || referenceConfig.getSingleton();
+        T proxy = null;
+        if (singleton) {
+            proxy = get(key, (Class<T>) type);
+        } else {
+            logger.warn("Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
+                "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
+        }
+        if (proxy == null) {
+            proxy = referenceConfig.get();
+        }
+        return proxy;
     }
 
     @Override
