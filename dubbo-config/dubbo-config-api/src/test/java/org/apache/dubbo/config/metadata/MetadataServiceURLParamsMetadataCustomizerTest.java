@@ -25,6 +25,7 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.gson.Gson;
@@ -51,7 +52,7 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
-    private URL metadataServiceURL = URL.valueOf("dubbo://10.225.12.124:20880/org.apache.dubbo.metadata.MetadataService" +
+    private URL metadataServiceURL = URL.valueOf("dubbo://10.225.12.124:2002/org.apache.dubbo.metadata.MetadataService" +
         "?application=MetadataServiceURLParamsMetadataCustomizerTest&group=MetadataServiceURLParamsMetadataCustomizerTest" +
         "&interface=org.apache.dubbo.metadata.MetadataService&side=provider&timestamp=1637573430740&version=1.0.0");
 
