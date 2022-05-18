@@ -36,6 +36,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -416,10 +417,13 @@ public class ServiceInstancesChangedListener {
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {
-        if (urls == null) {
-            urls = new ArrayList<>();
-        }
         boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+        if (!emptyProtectionEnabled && urls == null) {
+            urls = new ArrayList<>();
+        } else if (emptyProtectionEnabled && urls == null) {
+            urls = Collections.emptyList();
+        }
+
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
             // notice that the service of this.url may not be the same as notify listener.
             URL empty = URLBuilder.from(this.url)
