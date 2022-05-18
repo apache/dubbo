@@ -67,7 +67,7 @@ public class OfflineMetadata implements BaseCommand {
                     logger.error("Wrong delay param", e);
                     return "offlineMetadata failed! Wrong delay param!";
                 }
-                stringBuilder.append("offline task submitted, will publish in ").append(args[0])
+                stringBuilder.append("offline task submitted, will offline in ").append(args[0])
                     .append(" seconds. App:").append(applicationModel.getApplicationName()).append("\n");
             }
         }

@@ -66,7 +66,7 @@ public class OnlineMetadata implements BaseCommand {
                     logger.error("Wrong delay param", e);
                     return "onlineMetadata failed! Wrong delay param!";
                 }
-                stringBuilder.append("online task submitted, will publish in ").append(args[0])
+                stringBuilder.append("online task submitted, will online in ").append(args[0])
                     .append(" seconds. App:").append(applicationModel.getApplicationName()).append("\n");
             }
         }
