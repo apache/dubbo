@@ -260,7 +260,9 @@ public class SimpleReferenceCache implements ReferenceCache {
 
     private void destroyReference(ReferenceConfigBase<?> rc) {
         Destroyable proxy = (Destroyable) rc.get();
-        proxy.$destroy();
+        if (proxy != null){
+            proxy.$destroy();
+        }
         rc.destroy();
     }
 
