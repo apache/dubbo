@@ -114,7 +114,7 @@ public class NacosRegistryTest {
         }
 
         registered = nacosRegistry.getRegistered();
-        Assertions.assertEquals(registered.size(), 1);
+        Assertions.assertEquals(1, registered.size());
     }
 
     @Test
@@ -150,11 +150,11 @@ public class NacosRegistryTest {
         Set<URL> registered = nacosRegistry.getRegistered();
 
         assertThat(registered.contains(serviceUrl), is(true));
-        Assertions.assertEquals(registered.size(), 1);
+        Assertions.assertEquals(1, registered.size());
 
         nacosRegistry.unregister(serviceUrl);
         Assertions.assertFalse(registered.contains(serviceUrl));
-        Assertions.assertEquals(registered.size(), 0);
+        Assertions.assertEquals(0, registered.size());
     }
 
     @Test
@@ -190,8 +190,8 @@ public class NacosRegistryTest {
         nacosRegistry.subscribe(serviceUrl, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
-        Assertions.assertEquals(subscribed.size(), 1);
-        Assertions.assertEquals(subscribed.get(serviceUrl).size(), 1);
+        Assertions.assertEquals(1, subscribed.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrl).size());
     }
 
     @Test
@@ -229,13 +229,13 @@ public class NacosRegistryTest {
         nacosRegistry.subscribe(serviceUrl, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
-        Assertions.assertEquals(subscribed.size(), 1);
-        Assertions.assertEquals(subscribed.get(serviceUrl).size(), 1);
+        Assertions.assertEquals(1, subscribed.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrl).size());
 
         nacosRegistry.unsubscribe(serviceUrl, listener);
         subscribed = nacosRegistry.getSubscribed();
-        Assertions.assertEquals(subscribed.size(), 1);
-        Assertions.assertEquals(subscribed.get(serviceUrl).size(), 0);
+        Assertions.assertEquals(1, subscribed.size());
+        Assertions.assertEquals(0, subscribed.get(serviceUrl).size());
     }
 
 
@@ -285,7 +285,7 @@ public class NacosRegistryTest {
         registered = nacosRegistry.getRegistered();
         Assertions.assertTrue(registered.contains(serviceUrl));
         Assertions.assertTrue(registered.contains(serviceUrlWithoutCategory));
-        Assertions.assertEquals(registered.size(), 2);
+        Assertions.assertEquals(2, registered.size());
 
         URL serviceUrlWithWildcard = URL.valueOf("nacos://127.0.0.1:3333/" +
             serviceInterface +
@@ -303,10 +303,10 @@ public class NacosRegistryTest {
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
 
-        Assertions.assertEquals(registered.size(), 2);
-        Assertions.assertEquals(subscribed.get(serviceUrlWithOutWildcard).size(), 1);
+        Assertions.assertEquals(2, registered.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrlWithOutWildcard).size());
 
-        Assertions.assertEquals(registered.size(), 2);
-        Assertions.assertEquals(subscribed.get(serviceUrlWithWildcard).size(), 1);
+        Assertions.assertEquals(2, registered.size());
+        Assertions.assertEquals(1, subscribed.get(serviceUrlWithWildcard).size());
     }
 }
