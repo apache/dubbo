@@ -181,6 +181,11 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     private Map<String, String> parameters;
 
     /**
+     * load seq
+     */
+    private int seq;
+
+    /**
      * If it's default
      */
     private Boolean isDefault;
@@ -375,6 +380,11 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         return getThis();
     }
 
+    public ProtocolBuilder seq(int seq) {
+        this.seq = seq;
+        return getThis();
+    }
+
     public ProtocolBuilder isDefault(Boolean isDefault) {
         this.isDefault = isDefault;
         return getThis();
@@ -416,6 +426,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         protocolConfig.setThreadpool(threadpool);
         protocolConfig.setThreads(threads);
         protocolConfig.setTransporter(transporter);
+        protocolConfig.setSeq(seq);
 
         return protocolConfig;
     }

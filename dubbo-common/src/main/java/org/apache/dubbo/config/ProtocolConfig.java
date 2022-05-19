@@ -200,6 +200,11 @@ public class ProtocolConfig extends AbstractConfig {
 
     private Boolean sslEnabled;
 
+    /**
+     * load seq
+     */
+    private int seq;
+
     public ProtocolConfig() {
     }
 
@@ -566,4 +571,11 @@ public class ProtocolConfig extends AbstractConfig {
         return StringUtils.isNotEmpty(name);
     }
 
+    public int getSeq() {
+        return seq;
+    }
+
+    public void setSeq(int seq) {
+        this.seq = seq;
+    }
 }

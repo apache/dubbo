@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -286,6 +287,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (protocolConfigs.isEmpty()) {
                     throw new IllegalStateException("The default protocol has not been initialized.");
                 }
+                protocolConfigs.sort(Comparator.comparing(ProtocolConfig::getSeq));
                 setProtocols(protocolConfigs);
             }
         } else {

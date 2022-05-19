@@ -152,4 +152,12 @@ public class ProtocolConfigTest {
         protocol.setExtension("extension");
         assertThat(protocol.getExtension(), equalTo("extension"));
     }
+
+    @Test
+    public void testSeq() throws Exception {
+        int setValue = 7615;
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setSeq(setValue);
+        assertThat(protocol.getSeq(), equalTo(setValue));
+    }
 }
