@@ -82,7 +82,7 @@ public class MigrationRuleTest {
         Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
         Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
 
-        assertEquals(migrationRule.getInterfaces().size(), 2);
+        assertEquals(2, migrationRule.getInterfaces().size());
 
         assertEquals(0.5f, migrationRule.getThreshold(url));
         assertEquals(30, migrationRule.getProportion(url));

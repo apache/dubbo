@@ -417,10 +417,13 @@ public class ServiceInstancesChangedListener {
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {
-        if (urls == null) {
+        boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+        if (!emptyProtectionEnabled && urls == null) {
+            urls = new ArrayList<>();
+        } else if (emptyProtectionEnabled && urls == null) {
             urls = Collections.emptyList();
         }
-        boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
             // notice that the service of this.url may not be the same as notify listener.
             URL empty = URLBuilder.from(this.url)
