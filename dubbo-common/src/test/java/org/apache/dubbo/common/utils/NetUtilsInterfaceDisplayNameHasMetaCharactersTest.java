@@ -29,7 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IG
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
-    private static final String IGNORED_DISPLAY_NAME_HAS_METACHARACTERS = "Mock(R) ^$*+?.|-[0-9] Adapter";
+    private static final String IGNORED_DISPLAY_NAME_HAS_METACHARACTERS = "Mock(R) ^$*+[?].|-[0-9] Adapter";
     private static final String SELECTED_DISPLAY_NAME = "Selected Adapter";
     private static final String SELECTED_HOST_ADDR = "192.168.0.1";
 
