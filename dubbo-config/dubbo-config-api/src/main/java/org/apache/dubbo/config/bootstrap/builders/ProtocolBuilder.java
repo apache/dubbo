@@ -183,7 +183,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
     /**
      * load seq
      */
-    private int seq;
+    private Integer seq;
 
     /**
      * If it's default
@@ -380,7 +380,7 @@ public class ProtocolBuilder extends AbstractBuilder<ProtocolConfig, ProtocolBui
         return getThis();
     }
 
-    public ProtocolBuilder seq(int seq) {
+    public ProtocolBuilder seq(Integer seq) {
         this.seq = seq;
         return getThis();
     }

@@ -203,7 +203,7 @@ public class ProtocolConfig extends AbstractConfig {
     /**
      * load seq
      */
-    private int seq;
+    private Integer seq;
 
     public ProtocolConfig() {
     }
@@ -571,11 +571,11 @@ public class ProtocolConfig extends AbstractConfig {
         return StringUtils.isNotEmpty(name);
     }
 
-    public int getSeq() {
+    public Integer getSeq() {
         return seq;
     }
 
-    public void setSeq(int seq) {
+    public void setSeq(Integer seq) {
         this.seq = seq;
     }
 }

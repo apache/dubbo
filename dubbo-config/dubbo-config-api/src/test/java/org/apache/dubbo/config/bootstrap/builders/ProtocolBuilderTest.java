@@ -284,6 +284,13 @@ class ProtocolBuilderTest {
     }
 
     @Test
+    void seq() {
+        ProtocolBuilder builder = new ProtocolBuilder();
+        builder.seq(7615);
+        Assertions.assertEquals(7615, builder.build().getSeq());
+    }
+
+    @Test
     void build() {
         ProtocolBuilder builder = new ProtocolBuilder();
         builder.name("name").host("host").port(8080).contextpath("contextpath").threadpool("mockthreadpool")
@@ -293,7 +300,7 @@ class ProtocolBuilderTest {
                 .dispatcher("mockdispatcher").networker("networker").server("server").client("client")
                 .telnet("mocktelnethandler").prompt("prompt").status("mockstatuschecker").register(true).keepAlive(false)
                 .optimizer("optimizer").extension("extension").isDefault(true)
-                .appendParameter("default.num", "one").id("id");
+                .appendParameter("default.num", "one").id("id").seq(7615);
 
         ProtocolConfig config = builder.build();
         ProtocolConfig config2 = builder.build();
@@ -333,5 +340,6 @@ class ProtocolBuilderTest {
         Assertions.assertEquals("one", config.getParameters().get("default.num"));
         Assertions.assertEquals("id", config.getId());
         Assertions.assertNotSame(config, config2);
+        Assertions.assertEquals(7615, config.getSeq());
     }
 }

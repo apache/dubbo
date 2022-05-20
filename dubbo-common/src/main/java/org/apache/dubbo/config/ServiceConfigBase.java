@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -287,7 +288,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (protocolConfigs.isEmpty()) {
                     throw new IllegalStateException("The default protocol has not been initialized.");
                 }
-                protocolConfigs.sort(Comparator.comparing(ProtocolConfig::getSeq));
+                protocolConfigs.sort(Comparator.comparing(item-> Objects.isNull(item.getSeq()) ? 0 : item.getSeq()));
                 setProtocols(protocolConfigs);
             }
         } else {
