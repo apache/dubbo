@@ -225,7 +225,12 @@ public abstract class AbstractRegistry implements Registry {
         } catch (Throwable e) {
             savePropertiesRetryTimes.incrementAndGet();
             if (savePropertiesRetryTimes.get() >= MAX_RETRY_TIMES_SAVE_PROPERTIES) {
-                logger.warn("Failed to save registry cache file after retrying " + MAX_RETRY_TIMES_SAVE_PROPERTIES + " times, cause: " + e.getMessage(), e);
+                if (e instanceof OverlappingFileLockException) {
+                    // fix #9341, ignore OverlappingFileLockException
+                    logger.info("Failed to save registry cache file for file overlapping lock exception, file name " + file.getName());
+                } else {
+                    logger.warn("Failed to save registry cache file after retrying " + MAX_RETRY_TIMES_SAVE_PROPERTIES + " times, cause: " + e.getMessage(), e);
+                }
                 savePropertiesRetryTimes.set(0);
                 return;
             }
