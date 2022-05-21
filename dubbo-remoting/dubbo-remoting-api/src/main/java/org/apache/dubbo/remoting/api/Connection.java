@@ -48,6 +48,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
@@ -72,7 +73,25 @@ public class Connection extends AbstractReferenceCounted {
     private final ConnectionListener connectionListener = new ConnectionListener();
     private volatile Promise<Object> connectingPromise;
 
-    public final AtomicInteger usedCount = new AtomicInteger(0);
+    private final AtomicInteger reusedCount = new AtomicInteger();
+
+    public AtomicInteger getReusedCount() {
+        return reusedCount;
+    }
+
+    private volatile int state = STATE_NOT_IN_USE;
+
+    public static final int STATE_NOT_IN_USE = 0;
+    public static final int STATE_IN_USE = 1;
+
+    public static final int STATE_RELEASING = -1;
+
+
+    private static final AtomicIntegerFieldUpdater<Connection> stateUpdater;
+
+    static {
+        stateUpdater = AtomicIntegerFieldUpdater.newUpdater(Connection.class, "state");
+    }
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
@@ -84,6 +103,21 @@ public class Connection extends AbstractReferenceCounted {
             Constants.DEFAULT_CONNECT_TIMEOUT);
         this.remote = getConnectAddress();
         this.bootstrap = create();
+    }
+
+    public int getState()
+    {
+        return stateUpdater.get(this);
+    }
+
+    public boolean compareAndSet(int expect, int update)
+    {
+        return stateUpdater.compareAndSet(this, expect, update);
+    }
+
+    public void setState(int update)
+    {
+        stateUpdater.set(this, update);
     }
 
     public static Connection getConnectionFromChannel(Channel channel) {
@@ -178,7 +212,7 @@ public class Connection extends AbstractReferenceCounted {
         }
         this.channel.set(channel);
         // This indicates that the connection is available.
-        if (this.connectingPromise != null ) {
+        if (this.connectingPromise != null) {
             this.connectingPromise.trySuccess(CONNECTED_OBJECT);
         }
         channel.attr(CONNECTION).set(this);

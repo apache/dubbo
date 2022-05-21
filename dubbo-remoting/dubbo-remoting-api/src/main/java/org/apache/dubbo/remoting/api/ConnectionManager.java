@@ -29,6 +29,4 @@ public interface ConnectionManager {
 
     ConnectionPool getConnectionPool(URL url);
 
-//    void forEachConnection(Consumer<Connection> connectionConsumer);
-
 }

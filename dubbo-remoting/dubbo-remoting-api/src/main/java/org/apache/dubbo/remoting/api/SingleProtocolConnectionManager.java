@@ -51,9 +51,4 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         String address = url.getAddress();
         return connectionPools.computeIfAbsent(address, key -> new DefaultConnectionPool(url));
     }
-
-//    @Override
-//    public void forEachConnection(Consumer<Connection> connectionConsumer) {
-//        connections.values().forEach(connectionConsumer);
-//    }
 }

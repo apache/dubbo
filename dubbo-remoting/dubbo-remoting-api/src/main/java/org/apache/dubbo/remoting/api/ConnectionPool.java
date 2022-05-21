@@ -23,7 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 
 import java.util.concurrent.CompletableFuture;
 
-@SPI(scope = ExtensionScope.APPLICATION)
+@SPI(value = "single", scope = ExtensionScope.APPLICATION)
 public interface ConnectionPool {
 
     Connection acquire();

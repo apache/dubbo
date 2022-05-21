@@ -69,22 +69,35 @@ public class DefaultConnectionPool implements ConnectionPool {
             if (getActualMaxTotal() > objects) {
                 return createConnection();
             }
-            connection = all.peek();
-            connection.usedCount.incrementAndGet();
-            return connection;
+            connection = all.poll();
+            if (connection.compareAndSet(Connection.STATE_NOT_IN_USE, Connection.STATE_IN_USE)) {
+                connection.getReusedCount().incrementAndGet();
+                try {
+                    return connection;
+                } finally {
+                    all.add(connection);
+                }
+            }
+            return acquire();
         }
         idleCount.decrementAndGet();
+        connection.setState(Connection.STATE_IN_USE);
         return connection;
     }
 
     @Override
     public void release(Connection connection) {
-        if (!all.contains(connection)) {
+        if (connection.getReusedCount().decrementAndGet() > 0) {
             return;
         }
-        if (connection.usedCount.decrementAndGet() > 0) {
-            return;
-        }
+        connection.setState(Connection.STATE_RELEASING);
+        release0(connection);
+        connection.getReusedCount().set(0);
+        connection.setState(Connection.STATE_NOT_IN_USE);
+    }
+
+
+    private void release0(Connection connection) {
         if (idleCount.get() >= getActualMaxIdle()) {
             destroy0(connection);
             return;
