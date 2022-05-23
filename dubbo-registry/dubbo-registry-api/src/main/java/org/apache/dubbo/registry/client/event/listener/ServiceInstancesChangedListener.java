@@ -396,19 +396,14 @@ public class ServiceInstancesChangedListener {
                     logger.info("Notify service " + serviceKey + " with urls " + urls.size());
                     notifyListener.notify(urls);
                 } else {
-                    List<URL> urls = new ArrayList<>();
-                    NotifyListener notifyListener = null;
                     for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                        NotifyListener notifyListener;
                         String protocolServiceKey = listenerWithKey.getProtocolServiceKey();
                         notifyListener = listenerWithKey.getNotifyListener();
-                        List<URL> tmpUrls = getAddresses(protocolServiceKey, notifyListener.getConsumerUrl());
-                        if (CollectionUtils.isNotEmpty(tmpUrls)) {
-                            urls.addAll(tmpUrls);
-                        }
-                    }
-                    if (notifyListener != null) {
-                        logger.info("Notify service " + serviceKey + " with urls " + urls.size());
-                        urls = toUrlsWithEmpty(urls);
+                        List<URL> urls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
+                        logger.info("Notify service " + serviceKey + "@" +
+                            Integer.toHexString(System.identityHashCode(notifyListener.getConsumerUrl().getServiceModel())) +
+                            " with urls " + urls.size());
                         notifyListener.notify(urls);
                     }
                 }

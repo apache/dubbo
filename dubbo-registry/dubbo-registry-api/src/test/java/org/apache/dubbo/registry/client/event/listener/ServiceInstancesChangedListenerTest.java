@@ -367,9 +367,82 @@ public class ServiceInstancesChangedListenerTest {
         Mockito.verify(demoService3Listener, Mockito.times(1)).notify(Mockito.anyList());
     }
 
-    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    // 正常场景。检查instance listener -> service listener(Directory)地址推送流程
     @Test
     @Order(6)
+    public void testMultiServiceListenerNotification() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        serviceNames.add("app2");
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        NotifyListener demoServiceListener1 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener1.getConsumerUrl()).thenReturn(consumerURL);
+        NotifyListener demoServiceListener2 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener2.getConsumerUrl()).thenReturn(consumerURL);
+        NotifyListener demoService2Listener1 = Mockito.mock(NotifyListener.class);
+        when(demoService2Listener1.getConsumerUrl()).thenReturn(consumerURL2);
+        NotifyListener demoService2Listener2 = Mockito.mock(NotifyListener.class);
+        when(demoService2Listener2.getConsumerUrl()).thenReturn(consumerURL2);
+        listener.addListenerAndNotify(consumerURL.getProtocolServiceKey(), demoServiceListener1);
+        listener.addListenerAndNotify(consumerURL.getProtocolServiceKey(), demoServiceListener2);
+        listener.addListenerAndNotify(consumerURL2.getProtocolServiceKey(), demoService2Listener1);
+        listener.addListenerAndNotify(consumerURL2.getProtocolServiceKey(), demoService2Listener2);
+        // notify app1 instance change
+        ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1Instances);
+        listener.onEvent(app1_event);
+
+        // check
+        ArgumentCaptor<List<URL>> captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener1, Mockito.times(1)).notify(captor.capture());
+        List<URL> notifiedUrls = captor.getValue();
+        Assertions.assertEquals(3, notifiedUrls.size());
+        captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener1, Mockito.times(1)).notify(captor.capture());
+        notifiedUrls = captor.getValue();
+        Assertions.assertEquals(3, notifiedUrls.size());
+
+        ArgumentCaptor<List<URL>> captor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoService2Listener1, Mockito.times(1)).notify(captor2.capture());
+        List<URL> notifiedUrls2 = captor2.getValue();
+        Assertions.assertEquals(0, notifiedUrls2.size());
+        captor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoService2Listener2, Mockito.times(1)).notify(captor2.capture());
+        notifiedUrls2 = captor2.getValue();
+        Assertions.assertEquals(0, notifiedUrls2.size());
+
+        // notify app2 instance change
+        ServiceInstancesChangedEvent app2_event = new ServiceInstancesChangedEvent("app2", app2Instances);
+        listener.onEvent(app2_event);
+
+        // check
+        ArgumentCaptor<List<URL>> app2_captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener1, Mockito.times(2)).notify(app2_captor.capture());
+        List<URL> app2_notifiedUrls = app2_captor.getValue();
+        Assertions.assertEquals(7, app2_notifiedUrls.size());
+        app2_captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener2, Mockito.times(2)).notify(app2_captor.capture());
+        app2_notifiedUrls = app2_captor.getValue();
+        Assertions.assertEquals(7, app2_notifiedUrls.size());
+
+        ArgumentCaptor<List<URL>> app2_captor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoService2Listener1, Mockito.times(2)).notify(app2_captor2.capture());
+        List<URL> app2_notifiedUrls2 = app2_captor2.getValue();
+        Assertions.assertEquals(4, app2_notifiedUrls2.size());
+        app2_captor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoService2Listener2, Mockito.times(2)).notify(app2_captor2.capture());
+        app2_notifiedUrls2 = app2_captor2.getValue();
+        Assertions.assertEquals(4, app2_notifiedUrls2.size());
+
+        // test service listener still get notified when added after instance notification.
+        NotifyListener demoService3Listener = Mockito.mock(NotifyListener.class);
+        when(demoService3Listener.getConsumerUrl()).thenReturn(consumerURL3);
+        listener.addListenerAndNotify(consumerURL3.getProtocolServiceKey(), demoService3Listener);
+        Mockito.verify(demoService3Listener, Mockito.times(1)).notify(Mockito.anyList());
+    }
+
+    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    @Test
+    @Order(7)
     public void testRevisionFailureOnStartup() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -387,7 +460,7 @@ public class ServiceInstancesChangedListenerTest {
 
     // revision 异常场景。运行中地址通知，拿不到revision就用老版本revision
     @Test
-    @Order(7)
+    @Order(8)
     public void testRevisionFailureOnNotification() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
