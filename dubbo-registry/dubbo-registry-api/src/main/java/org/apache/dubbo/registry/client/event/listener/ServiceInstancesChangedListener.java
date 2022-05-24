@@ -204,33 +204,30 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        Set<String> protocolServiceKeys = getProtocolServiceKeyList(serviceKey, listener);
-        for (String protocolServiceKey : protocolServiceKeys) {
-            // Add to global listeners
-            if (!this.listeners.containsKey(serviceKey)) {
-                // synchronized method, no need to use DCL
-                this.listeners.put(serviceKey, new ConcurrentHashSet<>());
-            }
-            Set<NotifyListenerWithKey> notifyListeners = this.listeners.get(serviceKey);
-            notifyListeners.add(new NotifyListenerWithKey(protocolServiceKey, listener));
-        }
+        Set<NotifyListenerWithKey> notifyListeners = this.listeners.computeIfAbsent(serviceKey, _k -> new ConcurrentHashSet<>());
+        // {@code protocolServiceKeysToConsume} are specific protocols configured in reference config or default protocols supported by framework.
+        Set<String> protocolServiceKeysToConsume = getProtocolServiceKeyList(serviceKey, listener);
+        // Add current listener to serviceKey set, there will have more than one listener when multiple references of one same service is configured.
+        NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, protocolServiceKeysToConsume, listener);
+        notifyListeners.add(listenerWithKey);
 
+        // Aggregate address and notify on subscription.
         List<URL> urls;
-        if (protocolServiceKeys.size() > 1) {
+        if (protocolServiceKeysToConsume.size() > 1) {
             urls = new ArrayList<>();
-            for (NotifyListenerWithKey notifyListenerWithKey : this.listeners.get(serviceKey)) {
-                String protocolKey = notifyListenerWithKey.getProtocolServiceKey();
-                List<URL> urlsOfProtocol = getAddresses(protocolKey, listener.getConsumerUrl());
+            for (String protocolServiceKey : protocolServiceKeysToConsume) {
+                List<URL> urlsOfProtocol = getAddresses(protocolServiceKey, listener.getConsumerUrl());
                 if (CollectionUtils.isNotEmpty(urlsOfProtocol)) {
+                    logger.info(String.format("Found %s urls of protocol service key %s ", urlsOfProtocol.size(), protocolServiceKey));
                     urls.addAll(urlsOfProtocol);
                 }
             }
         } else {
-            String protocolKey = this.listeners.get(serviceKey).iterator().next().getProtocolServiceKey();
-            urls = getAddresses(protocolKey, listener.getConsumerUrl());
+            urls = getAddresses(protocolServiceKeysToConsume.iterator().next(), listener.getConsumerUrl());
         }
 
         if (CollectionUtils.isNotEmpty(urls)) {
+            logger.info(String.format("Notify serviceKey: %s, listener: %s with %s urls on subscription", serviceKey, listener, urls.size()));
             listener.notify(urls);
         }
     }
@@ -240,20 +237,8 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        for (String protocolServiceKey : getProtocolServiceKeyList(serviceKey, notifyListener)) {
-            // synchronized method, no need to use DCL
-            Set<NotifyListenerWithKey> notifyListeners = this.listeners.get(serviceKey);
-            if (notifyListeners != null) {
-                NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, notifyListener);
-                // Remove from global listeners
-                notifyListeners.remove(listenerWithKey);
-
-                // ServiceKey has no listener, remove set
-                if (notifyListeners.size() == 0) {
-                    this.listeners.remove(serviceKey);
-                }
-            }
-        }
+        // remove subscription information of serviceKey directly.
+        this.listeners.remove(serviceKey);
     }
 
     public boolean hasListeners() {
@@ -385,29 +370,31 @@ public class ServiceInstancesChangedListener {
      * race condition is protected by onEvent/doOnEvent
      */
     protected void notifyAddressChanged() {
+        // 1 different services
         listeners.forEach((serviceKey, listenerSet) -> {
-            if (listenerSet != null) {
-                if (listenerSet.size() == 1) {
-                    NotifyListenerWithKey listenerWithKey = listenerSet.iterator().next();
-                    String protocolServiceKey = listenerWithKey.getProtocolServiceKey();
+            // 2 multiple subscription listener of the same service
+            for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                if (listenerWithKey.getProtocolServiceKeys().size() == 1) {// 2.1 if one specific protocol is specified
+                    String protocolServiceKey = listenerWithKey.getProtocolServiceKeys().iterator().next();
                     NotifyListener notifyListener = listenerWithKey.getNotifyListener();
                     //FIXME, group wildcard match
                     List<URL> urls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
-                    logger.info("Notify service " + serviceKey + " with urls " + urls.size());
+                    logger.info("Notify service " + protocolServiceKey + " with urls " + urls.size());
                     notifyListener.notify(urls);
-                } else {
+                } else {// 2.2 multiple protocols or no protocol(using default protocols) set
                     List<URL> urls = new ArrayList<>();
                     NotifyListener notifyListener = null;
-                    for (NotifyListenerWithKey listenerWithKey : listenerSet) {
-                        String protocolServiceKey = listenerWithKey.getProtocolServiceKey();
+                    for (String protocolServiceKey : listenerWithKey.getProtocolServiceKeys()) {
                         notifyListener = listenerWithKey.getNotifyListener();
                         List<URL> tmpUrls = getAddresses(protocolServiceKey, notifyListener.getConsumerUrl());
                         if (CollectionUtils.isNotEmpty(tmpUrls)) {
+                            logger.info("Found  " + urls.size() + " urls of protocol service key " + protocolServiceKey);
                             urls.addAll(tmpUrls);
                         }
                     }
                     if (notifyListener != null) {
-                        logger.info("Notify service " + serviceKey + " with urls " + urls.size());
+                        logger.info("Notify service " + serviceKey + " with " + urls.size() + " urls from "
+                            + listenerWithKey.getProtocolServiceKeys().size() + " different protocols");
                         urls = toUrlsWithEmpty(urls);
                         notifyListener.notify(urls);
                     }
@@ -477,7 +464,7 @@ public class ServiceInstancesChangedListener {
      * Calculate the protocol list that the consumer cares about.
      *
      * @param serviceKey possible input serviceKey includes
-     *                   1. {group}/{interface}:{version}:consumer
+     *                   1. {group}/{interface}:{version}, if protocol is not specified
      *                   2. {group}/{interface}:{version}:{user specified protocols}
      * @param listener   listener also contains the user specified protocols
      * @return protocol list with the format {group}/{interface}:{version}:{protocol}
@@ -530,16 +517,26 @@ public class ServiceInstancesChangedListener {
     }
 
     public static class NotifyListenerWithKey {
-        private final String protocolServiceKey;
+        private final String serviceKey;
+        private final Set<String> protocolServiceKeys;
         private final NotifyListener notifyListener;
 
-        public NotifyListenerWithKey(String protocolServiceKey, NotifyListener notifyListener) {
-            this.protocolServiceKey = protocolServiceKey;
+        public NotifyListenerWithKey(String protocolServiceKey, Set<String> protocolServiceKeys, NotifyListener notifyListener) {
+            this.serviceKey = protocolServiceKey;
+            this.protocolServiceKeys = (protocolServiceKeys == null ? new ConcurrentHashSet<>() : protocolServiceKeys);
             this.notifyListener = notifyListener;
         }
 
-        public String getProtocolServiceKey() {
-            return protocolServiceKey;
+        public NotifyListenerWithKey(String protocolServiceKey, NotifyListener notifyListener) {
+            this(protocolServiceKey, null, notifyListener);
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
+        }
+
+        public Set<String> getProtocolServiceKeys() {
+            return protocolServiceKeys;
         }
 
         public NotifyListener getNotifyListener() {
@@ -555,12 +552,12 @@ public class ServiceInstancesChangedListener {
                 return false;
             }
             NotifyListenerWithKey that = (NotifyListenerWithKey) o;
-            return Objects.equals(protocolServiceKey, that.protocolServiceKey) && Objects.equals(notifyListener, that.notifyListener);
+            return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(notifyListener, that.notifyListener);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(protocolServiceKey, notifyListener);
+            return Objects.hash(serviceKey, notifyListener);
         }
     }
 }

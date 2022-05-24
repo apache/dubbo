@@ -82,6 +82,7 @@ public class ServiceInstancesChangedListenerTest {
     static List<ServiceInstance> app1FailedInstances;
     static List<ServiceInstance> app1FailedInstances2;
     static List<ServiceInstance> app1InstancesWithNoRevision;
+    static List<ServiceInstance> app1InstancesMultipleProtocols;
 
     static String metadata_111 = "{\"app\":\"app1\",\"revision\":\"111\",\"services\":{"
         + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
@@ -99,6 +100,10 @@ public class ServiceInstancesChangedListenerTest {
     static String metadata_444 = "{\"app\":\"app1\",\"revision\":\"444\",\"services\":{"
         + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
         + "}}";
+    // only triple protocol enabled
+    static String metadata_555_triple = "{\"app\":\"app1\",\"revision\":\"555\",\"services\":{"
+        + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"tri\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
+        + "}}";
 
     static String service1 = "org.apache.dubbo.demo.DemoService";
     static String service2 = "org.apache.dubbo.demo.DemoService2";
@@ -107,12 +112,16 @@ public class ServiceInstancesChangedListenerTest {
     static URL consumerURL = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo&registry_cluster=default");
     static URL consumerURL2 = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService2?interface=org.apache.dubbo.demo.DemoService2&protocol=dubbo&registry_cluster=default");
     static URL consumerURL3 = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService3?interface=org.apache.dubbo.demo.DemoService3&protocol=dubbo&registry_cluster=default");
+    static URL multipleProtocolsConsumerURL = URL.valueOf("dubbo,tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo,tri&registry_cluster=default");
+    static URL noProtocolConsumerURL = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&registry_cluster=default");
+    static URL singleProtocolsConsumerURL = URL.valueOf("tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=tri&registry_cluster=default");
     static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
     static MetadataInfo metadataInfo_222;
     static MetadataInfo metadataInfo_333;
     static MetadataInfo metadataInfo_444;
+    static MetadataInfo metadataInfo_555_tri;
 
     static MetadataService metadataService;
 
@@ -149,16 +158,22 @@ public class ServiceInstancesChangedListenerTest {
         List<Object> urlsWithoutRevision = new ArrayList<>();
         urlsWithoutRevision.add("30.10.0.1:20880");
 
+        List<Object> urlsMultipleProtocols = new ArrayList<>();
+        urlsMultipleProtocols.add("30.10.0.1:20880?revision=555");//triple
+        urlsMultipleProtocols.addAll(urlsSameRevision);// dubbo
+
         app1Instances = buildInstances(urlsSameRevision);
         app2Instances = buildInstances(urlsDifferentRevision);
         app1FailedInstances = buildInstances(urlsFailedRevision);
         app1FailedInstances2 = buildInstances(urlsFailedRevision2);
         app1InstancesWithNoRevision = buildInstances(urlsWithoutRevision);
+        app1InstancesMultipleProtocols = buildInstances(urlsMultipleProtocols);
 
         metadataInfo_111 = gson.fromJson(metadata_111, MetadataInfo.class);
         metadataInfo_222 = gson.fromJson(metadata_222, MetadataInfo.class);
         metadataInfo_333 = gson.fromJson(metadata_333, MetadataInfo.class);
         metadataInfo_444 = gson.fromJson(metadata_444, MetadataInfo.class);
+        metadataInfo_555_tri = gson.fromJson(metadata_555_triple, MetadataInfo.class);
 
         serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
         when(serviceDiscovery.getUrl()).thenReturn(registryURL);
@@ -167,6 +182,7 @@ public class ServiceInstancesChangedListenerTest {
         when(serviceDiscovery.getRemoteMetadata(eq("222"), anyList())).thenReturn(metadataInfo_222);
         when(serviceDiscovery.getRemoteMetadata(eq("333"), anyList())).thenReturn(metadataInfo_333);
         when(serviceDiscovery.getRemoteMetadata(eq("444"), anyList())).thenReturn(MetadataInfo.EMPTY);
+        when(serviceDiscovery.getRemoteMetadata(eq("555"), anyList())).thenReturn(metadataInfo_555_tri);
     }
 
 
@@ -367,9 +383,103 @@ public class ServiceInstancesChangedListenerTest {
         Mockito.verify(demoService3Listener, Mockito.times(1)).notify(Mockito.anyList());
     }
 
-    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
     @Test
     @Order(6)
+    public void testMultiServiceListenerNotification() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        serviceNames.add("app2");
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        NotifyListener demoServiceListener1 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener1.getConsumerUrl()).thenReturn(consumerURL);
+        NotifyListener demoServiceListener2 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener2.getConsumerUrl()).thenReturn(consumerURL);
+        NotifyListener demoService2Listener1 = Mockito.mock(NotifyListener.class);
+        when(demoService2Listener1.getConsumerUrl()).thenReturn(consumerURL2);
+        NotifyListener demoService2Listener2 = Mockito.mock(NotifyListener.class);
+        when(demoService2Listener2.getConsumerUrl()).thenReturn(consumerURL2);
+        listener.addListenerAndNotify(consumerURL.getProtocolServiceKey(), demoServiceListener1);
+        listener.addListenerAndNotify(consumerURL.getProtocolServiceKey(), demoServiceListener2);
+        listener.addListenerAndNotify(consumerURL2.getProtocolServiceKey(), demoService2Listener1);
+        listener.addListenerAndNotify(consumerURL2.getProtocolServiceKey(), demoService2Listener2);
+        // notify app1 instance change
+        ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1Instances);
+        listener.onEvent(app1_event);
+
+        // check
+        ArgumentCaptor<List<URL>> captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener1, Mockito.times(1)).notify(captor.capture());
+        List<URL> notifiedUrls = captor.getValue();
+        Assertions.assertEquals(3, notifiedUrls.size());
+        ArgumentCaptor<List<URL>> captor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoService2Listener1, Mockito.times(1)).notify(captor2.capture());
+        List<URL> notifiedUrls2 = captor2.getValue();
+        Assertions.assertEquals(0, notifiedUrls2.size());
+
+        // notify app2 instance change
+        ServiceInstancesChangedEvent app2_event = new ServiceInstancesChangedEvent("app2", app2Instances);
+        listener.onEvent(app2_event);
+
+        // check
+        ArgumentCaptor<List<URL>> app2_captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener1, Mockito.times(2)).notify(app2_captor.capture());
+        List<URL> app2_notifiedUrls = app2_captor.getValue();
+        Assertions.assertEquals(7, app2_notifiedUrls.size());
+        ArgumentCaptor<List<URL>> app2_captor2 = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoService2Listener1, Mockito.times(2)).notify(app2_captor2.capture());
+        List<URL> app2_notifiedUrls2 = app2_captor2.getValue();
+        Assertions.assertEquals(4, app2_notifiedUrls2.size());
+
+        // test service listener still get notified when added after instance notification.
+        NotifyListener demoService3Listener = Mockito.mock(NotifyListener.class);
+        when(demoService3Listener.getConsumerUrl()).thenReturn(consumerURL3);
+        listener.addListenerAndNotify(consumerURL3.getProtocolServiceKey(), demoService3Listener);
+        Mockito.verify(demoService3Listener, Mockito.times(1)).notify(Mockito.anyList());
+    }
+
+    /**
+     * Test subscribe multiple protocols
+     */
+    @Test
+    @Order(7)
+    public void testSubscribeMultipleProtocols() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        // no protocol specified, consume all instances
+        NotifyListener demoServiceListener1 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener1.getConsumerUrl()).thenReturn(noProtocolConsumerURL);
+        listener.addListenerAndNotify(noProtocolConsumerURL.getProtocolServiceKey(), demoServiceListener1);
+        // multiple protocols specified
+        NotifyListener demoServiceListener2 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener2.getConsumerUrl()).thenReturn(multipleProtocolsConsumerURL);
+        listener.addListenerAndNotify(multipleProtocolsConsumerURL.getProtocolServiceKey(), demoServiceListener2);
+        // one protocols specified
+        NotifyListener demoServiceListener3 = Mockito.mock(NotifyListener.class);
+        when(demoServiceListener3.getConsumerUrl()).thenReturn(singleProtocolsConsumerURL);
+        listener.addListenerAndNotify(singleProtocolsConsumerURL.getProtocolServiceKey(), demoServiceListener3);
+        // notify app1 instance change
+        ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1InstancesMultipleProtocols);
+        listener.onEvent(app1_event);
+
+        // check
+        ArgumentCaptor<List<URL>> default_protocol_captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener1, Mockito.times(1)).notify(default_protocol_captor.capture());
+        List<URL> default_protocol_notifiedUrls = default_protocol_captor.getValue();
+        Assertions.assertEquals(4, default_protocol_notifiedUrls.size());
+        ArgumentCaptor<List<URL>> multi_protocols_captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener2, Mockito.times(1)).notify(multi_protocols_captor.capture());
+        List<URL> multi_protocol_notifiedUrls = multi_protocols_captor.getValue();
+        Assertions.assertEquals(4, multi_protocol_notifiedUrls.size());
+        ArgumentCaptor<List<URL>> single_protocols_captor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(demoServiceListener3, Mockito.times(1)).notify(single_protocols_captor.capture());
+        List<URL> single_protocol_notifiedUrls = single_protocols_captor.getValue();
+        Assertions.assertEquals(1, single_protocol_notifiedUrls.size());
+    }
+
+    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    @Test
+    @Order(8)
     public void testRevisionFailureOnStartup() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -387,7 +497,7 @@ public class ServiceInstancesChangedListenerTest {
 
     // revision 异常场景。运行中地址通知，拿不到revision就用老版本revision
     @Test
-    @Order(7)
+    @Order(9)
     public void testRevisionFailureOnNotification() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -431,10 +541,9 @@ public class ServiceInstancesChangedListenerTest {
 
     }
 
-
     // Abnormal case. Instance does not have revision
     @Test
-    @Order(9)
+    @Order(10)
     public void testInstanceWithoutRevision() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -448,6 +557,9 @@ public class ServiceInstancesChangedListenerTest {
         assertTrue(true);
     }
 
+    /**
+     * Test calculation of subscription protocols
+     */
     @Test
     public void testGetProtocolServiceKeyList() {
         NotifyListener listener = Mockito.mock(NotifyListener.class);
