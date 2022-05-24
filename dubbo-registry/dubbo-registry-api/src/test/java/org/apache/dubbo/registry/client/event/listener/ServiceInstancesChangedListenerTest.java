@@ -454,23 +454,26 @@ public class ServiceInstancesChangedListenerTest {
         NotifyListener demoServiceListener2 = Mockito.mock(NotifyListener.class);
         when(demoServiceListener2.getConsumerUrl()).thenReturn(multipleProtocolsConsumerURL);
         listener.addListenerAndNotify(multipleProtocolsConsumerURL.getProtocolServiceKey(), demoServiceListener2);
-        // one protocols specified
+        // one protocol specified
         NotifyListener demoServiceListener3 = Mockito.mock(NotifyListener.class);
         when(demoServiceListener3.getConsumerUrl()).thenReturn(singleProtocolsConsumerURL);
         listener.addListenerAndNotify(singleProtocolsConsumerURL.getProtocolServiceKey(), demoServiceListener3);
+
         // notify app1 instance change
         ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1InstancesMultipleProtocols);
         listener.onEvent(app1_event);
 
-        // check
+        // check instances expose framework supported default protocols(currently dubbo, triple and rest) are notified
         ArgumentCaptor<List<URL>> default_protocol_captor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(demoServiceListener1, Mockito.times(1)).notify(default_protocol_captor.capture());
         List<URL> default_protocol_notifiedUrls = default_protocol_captor.getValue();
         Assertions.assertEquals(4, default_protocol_notifiedUrls.size());
+        // check instances expose protocols in consuming list(dubbo and triple) are notified
         ArgumentCaptor<List<URL>> multi_protocols_captor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(demoServiceListener2, Mockito.times(1)).notify(multi_protocols_captor.capture());
         List<URL> multi_protocol_notifiedUrls = multi_protocols_captor.getValue();
         Assertions.assertEquals(4, multi_protocol_notifiedUrls.size());
+        // check instances expose protocols in consuming list(only triple) are notified
         ArgumentCaptor<List<URL>> single_protocols_captor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(demoServiceListener3, Mockito.times(1)).notify(single_protocols_captor.capture());
         List<URL> single_protocol_notifiedUrls = single_protocols_captor.getValue();
