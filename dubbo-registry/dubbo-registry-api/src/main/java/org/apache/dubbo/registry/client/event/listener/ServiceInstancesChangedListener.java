@@ -374,30 +374,28 @@ public class ServiceInstancesChangedListener {
         listeners.forEach((serviceKey, listenerSet) -> {
             // 2 multiple subscription listener of the same service
             for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                NotifyListener notifyListener = listenerWithKey.getNotifyListener();
                 if (listenerWithKey.getProtocolServiceKeys().size() == 1) {// 2.1 if one specific protocol is specified
                     String protocolServiceKey = listenerWithKey.getProtocolServiceKeys().iterator().next();
-                    NotifyListener notifyListener = listenerWithKey.getNotifyListener();
                     //FIXME, group wildcard match
                     List<URL> urls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
                     logger.info("Notify service " + protocolServiceKey + " with urls " + urls.size());
                     notifyListener.notify(urls);
                 } else {// 2.2 multiple protocols or no protocol(using default protocols) set
                     List<URL> urls = new ArrayList<>();
-                    NotifyListener notifyListener = null;
+                    int effectiveProtocolNum = 0;
                     for (String protocolServiceKey : listenerWithKey.getProtocolServiceKeys()) {
-                        notifyListener = listenerWithKey.getNotifyListener();
                         List<URL> tmpUrls = getAddresses(protocolServiceKey, notifyListener.getConsumerUrl());
                         if (CollectionUtils.isNotEmpty(tmpUrls)) {
                             logger.info("Found  " + urls.size() + " urls of protocol service key " + protocolServiceKey);
+                            effectiveProtocolNum++;
                             urls.addAll(tmpUrls);
                         }
                     }
-                    if (notifyListener != null) {
-                        logger.info("Notify service " + serviceKey + " with " + urls.size() + " urls from "
-                            + listenerWithKey.getProtocolServiceKeys().size() + " different protocols");
-                        urls = toUrlsWithEmpty(urls);
-                        notifyListener.notify(urls);
-                    }
+
+                    logger.info("Notify service " + serviceKey + " with " + urls.size() + " urls from " + effectiveProtocolNum + " different protocols");
+                    urls = toUrlsWithEmpty(urls);
+                    notifyListener.notify(urls);
                 }
             }
         });
