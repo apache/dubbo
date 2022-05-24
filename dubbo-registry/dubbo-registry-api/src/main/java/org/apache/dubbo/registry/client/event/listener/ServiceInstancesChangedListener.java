@@ -237,8 +237,18 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        // remove subscription information of serviceKey directly.
-        this.listeners.remove(serviceKey);
+        // synchronized method, no need to use DCL
+        Set<NotifyListenerWithKey> notifyListeners = this.listeners.get(serviceKey);
+        if (notifyListeners != null) {
+            NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, notifyListener);
+            // Remove from global listeners
+            notifyListeners.remove(listenerWithKey);
+
+            // ServiceKey has no listener, remove set
+            if (notifyListeners.size() == 0) {
+                this.listeners.remove(serviceKey);
+            }
+        }
     }
 
     public boolean hasListeners() {
