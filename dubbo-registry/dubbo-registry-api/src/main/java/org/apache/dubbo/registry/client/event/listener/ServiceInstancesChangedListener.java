@@ -205,7 +205,7 @@ public class ServiceInstancesChangedListener {
         }
 
         Set<NotifyListenerWithKey> notifyListeners = this.listeners.computeIfAbsent(serviceKey, _k -> new ConcurrentHashSet<>());
-        // {@code protocolServiceKeysToConsume} are specific protocols configured in reference config or default protocols supported by framework.
+        // {@code protocolServiceKeysToConsume} will be specific protocols configured in reference config or default protocols supported by framework.
         Set<String> protocolServiceKeysToConsume = getProtocolServiceKeyList(serviceKey, listener);
         // Add current listener to serviceKey set, there will have more than one listener when multiple references of one same service is configured.
         NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, protocolServiceKeysToConsume, listener);
