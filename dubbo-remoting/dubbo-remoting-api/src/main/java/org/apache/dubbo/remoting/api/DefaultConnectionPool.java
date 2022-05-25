@@ -169,6 +169,7 @@ public class DefaultConnectionPool implements ConnectionPool {
     private void destroy1(PoolEntry connection) {
         objectCount.decrementAndGet();
         all.remove(connection);
+        connections.remove(connection.getConnection());
     }
 
 
