@@ -15,29 +15,40 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.connection;
 
-
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.api.connection.ConnectionPoolEntry;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.Connection;
 
 import java.util.concurrent.CompletableFuture;
 
-@SPI(value = "single", scope = ExtensionScope.APPLICATION)
-public interface ConnectionPool {
+public class SingleConnectionPoolEntry implements ConnectionPoolEntry {
 
-    ConnectionPoolEntry acquire();
+    private final Connection connection;
 
-    void release(ConnectionPoolEntry connection);
+    private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    default void close() {
-        closeAsync().join();
+    public SingleConnectionPoolEntry(URL url) {
+        this.connection = new Connection(url);
     }
 
-    CompletableFuture<Void> getCloseFuture();
+    @Override
+    public Connection getConnection() {
+        return connection;
+    }
 
-    CompletableFuture<Void> closeAsync();
+    @Override
+    public Connection createConnection() {
+        return connection;
+    }
 
+    @Override
+    public void close() {
 
+    }
+
+    @Override
+    public CompletableFuture<Void> getCloseFuture() {
+        return closeFuture;
+    }
 }

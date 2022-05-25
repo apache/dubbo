@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.connection.DefaultConnectionPool;
 
 import io.netty.util.internal.PlatformDependent;
 

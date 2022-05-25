@@ -22,7 +22,7 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.api.ConnectionPool;
-import org.apache.dubbo.remoting.api.DefaultConnectionPool;
+import org.apache.dubbo.remoting.api.connection.DefaultConnectionPool;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;

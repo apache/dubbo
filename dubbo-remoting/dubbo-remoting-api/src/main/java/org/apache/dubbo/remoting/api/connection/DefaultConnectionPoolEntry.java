@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.Connection;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class PoolEntry {
+public class DefaultConnectionPoolEntry implements ConnectionPoolEntry {
 
     private final URL url;
 
@@ -34,7 +35,7 @@ public class PoolEntry {
 
     private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    public PoolEntry(URL url) {
+    public DefaultConnectionPoolEntry(URL url) {
         this.url = url;
     }
 

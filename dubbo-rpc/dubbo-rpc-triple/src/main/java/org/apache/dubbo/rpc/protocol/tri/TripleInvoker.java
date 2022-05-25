@@ -25,6 +25,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.api.ConnectionPool;
+import org.apache.dubbo.remoting.api.connection.ConnectionPoolEntry;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -105,7 +106,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) {
-        this.connection = connectionPool.acquire();
+        ConnectionPoolEntry poolEntry = connectionPool.acquire();
+        this.connection = poolEntry.getConnection();
         if (!connection.isAvailable()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE.withDescription(
@@ -154,7 +156,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             future.completeExceptionally(e);
             return new AsyncRpcResult(future, invocation);
         } finally {
-            connectionPool.release(connection);
+            connectionPool.release(poolEntry);
         }
     }
 
@@ -285,11 +287,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
+        ConnectionPoolEntry poolEntry = connectionPool.acquire();
         try {
-            connection = connectionPool.acquire();
+            connection = poolEntry.getConnection();
             return connection.isAvailable();
         } finally {
-            connectionPool.release(connection);
+            connectionPool.release(poolEntry);
         }
 
     }

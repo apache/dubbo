@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.api.ConnectionPool;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -49,11 +49,9 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    private final Queue<PoolEntry> cache = new ConcurrentLinkedQueue<>();
+    private final Queue<DefaultConnectionPoolEntry> cache = new ConcurrentLinkedQueue<>();
 
-    private final Queue<PoolEntry> all = new ConcurrentLinkedQueue<>();
-
-    private final Map<Connection, PoolEntry> connections = new HashMap<>();
+    private final Queue<DefaultConnectionPoolEntry> all = new ConcurrentLinkedQueue<>();
 
     private final AtomicInteger objectCount = new AtomicInteger();
 
@@ -66,33 +64,30 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
     @Override
-    public Connection acquire() {
-        PoolEntry connection = cache.poll();
+    public ConnectionPoolEntry acquire() {
+        DefaultConnectionPoolEntry connection = cache.poll();
         if (connection == null) {
             long objects = getObjectCount() + getCreationInProgress();
             if (getActualMaxTotal() > objects) {
-                return createConnection().getConnection();
+                return createConnection();
             }
             connection = all.poll();
             synchronized (connection.getReusedLock()) {
                 connection.getReusedCount().incrementAndGet();
             }
             try {
-                return connection.getConnection();
+                return connection;
             } finally {
                 all.add(connection);
             }
         }
         idleCount.decrementAndGet();
-        return connection.getConnection();
+        return connection;
     }
 
     @Override
-    public void release(Connection connection) {
-        PoolEntry entry = connections.get(connection);
-        if (entry == null) {
-            return;
-        }
+    public void release(ConnectionPoolEntry poolEntry) {
+        DefaultConnectionPoolEntry entry = (DefaultConnectionPoolEntry) poolEntry;
         if (entry.getReusedCount().decrementAndGet() > 0) {
             return;
         }
@@ -102,7 +97,7 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
 
-    private void release0(PoolEntry connection) {
+    private void release0(DefaultConnectionPoolEntry connection) {
         if (idleCount.get() >= getActualMaxIdle()) {
             destroy0(connection);
             return;
@@ -120,7 +115,7 @@ public class DefaultConnectionPool implements ConnectionPool {
 
         List<CompletableFuture<Void>> futures = new ArrayList<>(all.size());
 
-        PoolEntry cached;
+        DefaultConnectionPoolEntry cached;
         while ((cached = cache.poll()) != null) {
             idleCount.decrementAndGet();
             objectCount.decrementAndGet();
@@ -151,7 +146,7 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
 
-    private void return0(PoolEntry connection) {
+    private void return0(DefaultConnectionPoolEntry connection) {
         int idleCount = this.idleCount.incrementAndGet();
         if (idleCount > getActualMaxIdle()) {
             this.idleCount.decrementAndGet();
@@ -161,34 +156,33 @@ public class DefaultConnectionPool implements ConnectionPool {
         cache.add(connection);
     }
 
-    private void destroy0(PoolEntry entry) {
+    private void destroy0(DefaultConnectionPoolEntry entry) {
         destroy1(entry);
         entry.close();
     }
 
-    private void destroy1(PoolEntry connection) {
+    private void destroy1(DefaultConnectionPoolEntry connection) {
         objectCount.decrementAndGet();
         all.remove(connection);
-        connections.remove(connection.getConnection());
     }
 
 
-    private PoolEntry createConnection() {
+    private DefaultConnectionPoolEntry createConnection() {
         try {
             long creations = objectsInCreationCount.incrementAndGet();
-            PoolEntry poolEntry = new PoolEntry(url);
-            poolEntry.getCloseFuture()
+            DefaultConnectionPoolEntry connectionPoolEntry = new DefaultConnectionPoolEntry(url);
+            connectionPoolEntry.getCloseFuture()
                 .whenComplete((aVoid, throwable) -> {
                     if (throwable != null) {
                         LOGGER.error("Failed to create connection", throwable);
                     }
-                    destroy1(poolEntry);
+                    destroy1(connectionPoolEntry);
                 });
             if (isPoolActive()) {
-                createConnection0(poolEntry);
+                createConnection0(connectionPoolEntry);
                 objectCount.incrementAndGet();
-                all.add(poolEntry);
-                return poolEntry;
+                all.add(connectionPoolEntry);
+                return connectionPoolEntry;
             }
         } catch (Throwable t) {
             LOGGER.error("Failed to create connection", t);
@@ -200,9 +194,8 @@ public class DefaultConnectionPool implements ConnectionPool {
         throw new RuntimeException("No connection available");
     }
 
-    private void createConnection0(PoolEntry poolEntry) {
-        Connection connection = poolEntry.createConnection();
-        connections.put(connection, poolEntry);
+    private void createConnection0(DefaultConnectionPoolEntry connectionPoolEntry) {
+        Connection connection = connectionPoolEntry.createConnection();
     }
 
     public int getMinIdle() {
