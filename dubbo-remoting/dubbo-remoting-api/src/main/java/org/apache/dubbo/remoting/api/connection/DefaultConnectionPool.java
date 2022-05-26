@@ -32,7 +32,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DefaultConnectionPool implements ConnectionPool {
+public class DefaultConnectionPool implements ConnectionPool<DefaultConnectionPoolEntry> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultConnectionPool.class);
 
@@ -56,13 +56,12 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     private final AtomicInteger idleCount = new AtomicInteger();
 
-    private URL url;
+    private final URL url;
 
-    @Override
-    public ConnectionPool createPool(URL url) {
+    public DefaultConnectionPool(URL url) {
         this.url = url;
-        return this;
     }
+
 
     @Override
     public ConnectionPoolEntry acquire() {
@@ -87,13 +86,12 @@ public class DefaultConnectionPool implements ConnectionPool {
     }
 
     @Override
-    public void release(ConnectionPoolEntry poolEntry) {
-        DefaultConnectionPoolEntry entry = (DefaultConnectionPoolEntry) poolEntry;
-        if (entry.getReusedCount().decrementAndGet() > 0) {
+    public void release(DefaultConnectionPoolEntry poolEntry) {
+        if (poolEntry.getReusedCount().decrementAndGet() > 0) {
             return;
         }
-        synchronized (entry.getReusedLock()) {
-            release0(entry);
+        synchronized (poolEntry.getReusedLock()) {
+            release0(poolEntry);
         }
     }
 

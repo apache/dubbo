@@ -1,2 +1,0 @@
-single=org.apache.dubbo.remoting.api.SingleConnectionPool
-default=org.apache.dubbo.remoting.api.DefaultConnectionPool

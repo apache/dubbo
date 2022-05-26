@@ -22,17 +22,15 @@ import org.apache.dubbo.remoting.api.ConnectionPool;
 
 import java.util.concurrent.CompletableFuture;
 
-public class SingleConnectionPool implements ConnectionPool {
+public class SingleConnectionPool implements ConnectionPool<SingleConnectionPoolEntry> {
 
     private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    private ConnectionPoolEntry poolEntry;
+    private final ConnectionPoolEntry poolEntry;
 
-    @Override
-    public ConnectionPool createPool(URL url) {
+    public SingleConnectionPool(URL url) {
         this.poolEntry = new SingleConnectionPoolEntry(url);
         this.poolEntry.createConnection();
-        return this;
     }
 
     @Override
@@ -41,7 +39,7 @@ public class SingleConnectionPool implements ConnectionPool {
     }
 
     @Override
-    public void release(ConnectionPoolEntry connection) {
+    public void release(SingleConnectionPoolEntry connection) {
         // do nothing
     }
 

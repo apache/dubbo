@@ -17,23 +17,15 @@
 
 package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.api.connection.ConnectionPoolEntry;
 
 import java.util.concurrent.CompletableFuture;
 
-@SPI(value = "single", scope = ExtensionScope.APPLICATION)
-public interface ConnectionPool {
-
-    @Adaptive(value = "connectionPool")
-    ConnectionPool createPool(URL url);
+public interface ConnectionPool<T extends ConnectionPoolEntry> {
 
     ConnectionPoolEntry acquire();
 
-    void release(ConnectionPoolEntry connection);
+    void release(T connection);
 
     default void close() {
         closeAsync().join();
