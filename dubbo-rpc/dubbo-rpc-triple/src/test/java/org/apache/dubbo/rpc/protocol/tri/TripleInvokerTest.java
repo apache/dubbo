@@ -22,6 +22,7 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.api.ConnectionPool;
+import org.apache.dubbo.remoting.api.connection.ConnectionPoolEntry;
 import org.apache.dubbo.remoting.api.connection.DefaultConnectionPool;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -48,6 +49,8 @@ class TripleInvokerTest {
     public void testNewCall() throws NoSuchMethodException {
         Channel channel = Mockito.mock(Channel.class);
         Connection connection = Mockito.mock(Connection.class);
+        ConnectionPoolEntry poolEntry = Mockito.mock(ConnectionPoolEntry.class);
+        when(poolEntry.getConnection()).thenReturn(connection);
         ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);
         when(connectionManager.connect(any(URL.class)))
             .thenReturn(connection);
@@ -56,7 +59,7 @@ class TripleInvokerTest {
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
         ConnectionPool pool = mock(DefaultConnectionPool.class);
         when(pool.acquire())
-            .thenReturn(connection);
+            .thenReturn(poolEntry);
         when(connectionManager.getConnectionPool(url))
             .thenReturn(pool);
 
