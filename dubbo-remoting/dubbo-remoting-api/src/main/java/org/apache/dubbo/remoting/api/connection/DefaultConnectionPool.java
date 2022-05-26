@@ -44,9 +44,6 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     private final int minIdle = 0;
 
-    private final URL url;
-
-
     private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
     private final Queue<DefaultConnectionPoolEntry> cache = new ConcurrentLinkedQueue<>();
@@ -59,8 +56,12 @@ public class DefaultConnectionPool implements ConnectionPool {
 
     private final AtomicInteger idleCount = new AtomicInteger();
 
-    public DefaultConnectionPool(URL url) {
+    private URL url;
+
+    @Override
+    public ConnectionPool createPool(URL url) {
         this.url = url;
+        return this;
     }
 
     @Override

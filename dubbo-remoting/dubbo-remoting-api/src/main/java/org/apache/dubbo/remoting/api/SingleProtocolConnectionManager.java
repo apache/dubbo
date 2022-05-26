@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.connection.DefaultConnectionPool;
 
 import io.netty.util.internal.PlatformDependent;
 
@@ -50,6 +49,11 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
     @Override
     public ConnectionPool getConnectionPool(URL url) {
         String address = url.getAddress();
-        return connectionPools.computeIfAbsent(address, key -> new DefaultConnectionPool(url));
+        return connectionPools.computeIfAbsent(address, key -> {
+            return url.getOrDefaultApplicationModel()
+                .getExtensionLoader(ConnectionPool.class)
+                .getAdaptiveExtension()
+                .createPool(url);
+        });
     }
 }

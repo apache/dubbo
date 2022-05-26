@@ -26,11 +26,13 @@ public class SingleConnectionPool implements ConnectionPool {
 
     private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    private final ConnectionPoolEntry poolEntry;
+    private ConnectionPoolEntry poolEntry;
 
-    public SingleConnectionPool(URL url) {
+    @Override
+    public ConnectionPool createPool(URL url) {
         this.poolEntry = new SingleConnectionPoolEntry(url);
         this.poolEntry.createConnection();
+        return this;
     }
 
     @Override
