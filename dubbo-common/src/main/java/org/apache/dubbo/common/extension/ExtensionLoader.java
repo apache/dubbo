@@ -1051,7 +1051,6 @@ public class ExtensionLoader<T> {
                 }
                 line = line.trim();
                 if (line.length() > 0) {
-                    newContentList.add(line);
                     try {
                         String name = null;
                         int i = line.indexOf('=');
