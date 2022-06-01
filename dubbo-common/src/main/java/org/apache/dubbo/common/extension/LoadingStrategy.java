@@ -76,4 +76,8 @@ public interface LoadingStrategy extends Prioritized {
     default boolean overridden() {
         return false;
     }
+
+    default String getName() {
+        return this.getClass().getSimpleName();
+    }
 }

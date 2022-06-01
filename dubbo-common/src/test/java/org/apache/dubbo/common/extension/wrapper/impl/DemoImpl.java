@@ -23,4 +23,10 @@ public class DemoImpl implements Demo {
     public String echo(String msg) {
         return msg;
     }
+
+    public DemoImpl() {
+    }
+
+    public DemoImpl(String test) {
+    }
 }

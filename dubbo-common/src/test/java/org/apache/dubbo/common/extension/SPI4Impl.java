@@ -16,30 +16,10 @@
  */
 package org.apache.dubbo.common.extension;
 
-/**
- * Services {@link LoadingStrategy}
- *
- * @since 2.7.7
- */
-public class ServicesLoadingStrategy implements LoadingStrategy {
-
+@Activate
+public class SPI4Impl implements SPI4{
     @Override
-    public String directory() {
-        return "META-INF/services/";
-    }
-
-    @Override
-    public boolean overridden() {
-        return true;
-    }
-
-    @Override
-    public int getPriority() {
-        return MIN_PRIORITY;
-    }
-
-    @Override
-    public String getName() {
-        return "SERVICES";
+    public String sayHello() {
+        return null;
     }
 }

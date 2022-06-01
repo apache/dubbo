@@ -28,6 +28,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassLoaderResourceLoader;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -42,7 +43,10 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -58,6 +62,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
@@ -97,6 +102,7 @@ public class ExtensionLoader<T> {
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
+    private static final String INTERNAL_SPI_PROPERTIES = "internal_spi.properties";
 
     private final ConcurrentMap<Class<?>, Object> extensionInstances = new ConcurrentHashMap<>(64);
 
@@ -122,6 +128,10 @@ public class ExtensionLoader<T> {
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
 
     private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
+
+    private static Map<String,String> onlyLoadByDubboInternalSPI = getOnlyLoadByDubboInternalSPI();
+
+    private static Map<java.net.URL,List<String>> urlListMap = new ConcurrentHashMap<>();
 
     /**
      * Record all unacceptable exceptions when using SPI
@@ -150,6 +160,18 @@ public class ExtensionLoader<T> {
         return stream(load(LoadingStrategy.class).spliterator(), false)
             .sorted()
             .toArray(LoadingStrategy[]::new);
+    }
+
+    /**
+     * some spi are implements by dubbo framework only and scan multi classloaders resources may cause
+     * application startup very slow
+     * @return
+     */
+    private static Map<String, String> getOnlyLoadByDubboInternalSPI() {
+        Map map = new ConcurrentHashMap<>();
+        Properties properties = loadProperties(ExtensionLoader.class.getClassLoader(), INTERNAL_SPI_PROPERTIES);
+        map.putAll(properties);
+        return map;
     }
 
     /**
@@ -917,11 +939,18 @@ public class ExtensionLoader<T> {
     }
 
     private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy, String type) {
-        loadDirectory(extensionClasses, strategy.directory(), type, strategy.preferExtensionClassLoader(),
-            strategy.overridden(), strategy.includedPackages(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
-        String oldType = type.replace("org.apache", "com.alibaba");
-        loadDirectory(extensionClasses, strategy.directory(), oldType, strategy.preferExtensionClassLoader(),
-            strategy.overridden(), strategy.includedPackagesInCompatibleType(), strategy.excludedPackages(), strategy.onlyExtensionClassLoaderPackages());
+        loadDirectoryInternal(extensionClasses, strategy, type);
+        try {
+            String oldType = type.replace("org.apache", "com.alibaba");
+            if (oldType.equals(type)) {
+                return;
+            }
+            //if class not found,skip try to load resources
+            ClassUtils.forName(oldType);
+            loadDirectoryInternal(extensionClasses, strategy, oldType);
+        } catch (ClassNotFoundException classNotFoundException) {
+
+        }
     }
 
     /**
@@ -946,38 +975,54 @@ public class ExtensionLoader<T> {
         }
     }
 
-    private void loadDirectory(Map<String, Class<?>> extensionClasses, String dir, String type,
-                               boolean extensionLoaderClassLoaderFirst, boolean overridden, String[] includedPackages,
-                               String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
-        String fileName = dir + type;
+    private void loadDirectoryInternal(Map<String, Class<?>> extensionClasses, LoadingStrategy loadingStrategy, String type) {
+        String fileName = loadingStrategy.directory() + type;
         try {
             List<ClassLoader> classLoadersToLoad = new LinkedList<>();
 
             // try to load from ExtensionLoader's ClassLoader first
-            if (extensionLoaderClassLoaderFirst) {
+            if (loadingStrategy.preferExtensionClassLoader()) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
                 if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
                     classLoadersToLoad.add(extensionLoaderClassLoader);
                 }
             }
 
-            // load from scope model
-            Set<ClassLoader> classLoaders = scopeModel.getClassLoaders();
-
-            if (CollectionUtils.isEmpty(classLoaders)) {
-                Enumeration<java.net.URL> resources = ClassLoader.getSystemResources(fileName);
-                if (resources != null) {
-                    while (resources.hasMoreElements()) {
-                        loadResource(extensionClasses, null, resources.nextElement(), overridden, includedPackages, excludedPackages, onlyExtensionClassLoaderPackages);
-                    }
+            if (onlyLoadByDubboInternalSPI.containsKey(type)){
+                String internalDirectoryType = onlyLoadByDubboInternalSPI.get(type);
+                //skip to load spi when name don't match
+                if (!"ALL".equals(internalDirectoryType)
+                    && !internalDirectoryType.equals(loadingStrategy.getName())){
+                    return;
                 }
-            } else {
-                classLoadersToLoad.addAll(classLoaders);
+                classLoadersToLoad.clear();
+                classLoadersToLoad.add(ExtensionLoader.class.getClassLoader());
+            }else {
+                // load from scope model
+                Set<ClassLoader> classLoaders = scopeModel.getClassLoaders();
+
+                if (CollectionUtils.isEmpty(classLoaders)) {
+                    Enumeration<java.net.URL> resources = ClassLoader.getSystemResources(fileName);
+                    if (resources != null) {
+                        while (resources.hasMoreElements()) {
+                            loadResource(extensionClasses, null, resources.nextElement(), loadingStrategy.overridden(),
+                                loadingStrategy.includedPackages(),
+                                loadingStrategy.excludedPackages(),
+                                loadingStrategy.onlyExtensionClassLoaderPackages());
+                        }
+                    }
+                } else {
+                    classLoadersToLoad.addAll(classLoaders);
+                }
             }
 
             Map<ClassLoader, Set<java.net.URL>> resources = ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad);
-            resources.forEach(((classLoader, urls) ->
-                loadFromClass(extensionClasses, overridden, urls, classLoader, includedPackages, excludedPackages, onlyExtensionClassLoaderPackages)));
+            resources.forEach(((classLoader, urls) -> {
+                loadFromClass(extensionClasses, loadingStrategy.overridden(), urls, classLoader,
+                    loadingStrategy.includedPackages(),
+                    loadingStrategy.excludedPackages(),
+                    loadingStrategy.onlyExtensionClassLoaderPackages());
+            }));
         } catch (Throwable t) {
             logger.error("Exception occurred when loading extension class (interface: " +
                 type + ", description file: " + fileName + ").", t);
@@ -996,10 +1041,10 @@ public class ExtensionLoader<T> {
     private void loadResource(Map<String, Class<?>> extensionClasses, ClassLoader classLoader,
                               java.net.URL resourceURL, boolean overridden, String[] includedPackages, String[] excludedPackages, String[] onlyExtensionClassLoaderPackages) {
         try {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
-                String line;
+            if (urlListMap.get(resourceURL) != null) {
                 String clazz;
-                while ((line = reader.readLine()) != null) {
+                List<String> contentList = urlListMap.get(resourceURL);
+                for (String line : contentList) {
                     final int ci = line.indexOf('#');
                     if (ci >= 0) {
                         line = line.substring(0, ci);
@@ -1026,7 +1071,46 @@ public class ExtensionLoader<T> {
                         }
                     }
                 }
+
+                return;
             }
+
+            List<String> newContentList = new ArrayList<>();
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
+                String line;
+                String clazz;
+                while ((line = reader.readLine()) != null) {
+                    final int ci = line.indexOf('#');
+                    if (ci >= 0) {
+                        line = line.substring(0, ci);
+                    }
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        newContentList.add(line);
+                        try {
+                            String name = null;
+                            int i = line.indexOf('=');
+                            if (i > 0) {
+                                name = line.substring(0, i).trim();
+                                clazz = line.substring(i + 1).trim();
+                            } else {
+                                clazz = line;
+                            }
+                            if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages) && isIncluded(clazz, includedPackages)
+                                && !isExcludedByClassLoader(clazz, classLoader, onlyExtensionClassLoaderPackages)) {
+                                loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
+                            }
+                        } catch (Throwable t) {
+                            IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type +
+                                ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
+                            exceptions.put(line, e);
+                        }
+                    }
+                }
+            }
+
+            urlListMap.put(resourceURL, newContentList);
         } catch (Throwable t) {
             logger.error("Exception occurred when loading extension class (interface: " +
                 type + ", class file: " + resourceURL + ") in " + resourceURL, t);
@@ -1175,13 +1259,14 @@ public class ExtensionLoader<T> {
      * <p>
      * which has Constructor with given class type as its only argument
      */
-    private boolean isWrapperClass(Class<?> clazz) {
-        try {
-            clazz.getConstructor(type);
-            return true;
-        } catch (NoSuchMethodException e) {
-            return false;
+    protected boolean isWrapperClass(Class<?> clazz) {
+        Constructor<?>[] constructors = clazz.getConstructors();
+        for (Constructor<?> constructor : constructors) {
+            if (constructor.getParameterTypes().length == 1 && constructor.getParameterTypes()[0] == type) {
+                return true;
+            }
         }
+        return false;
     }
 
     @SuppressWarnings("deprecation")
@@ -1239,6 +1324,50 @@ public class ExtensionLoader<T> {
     @Override
     public String toString() {
         return this.getClass().getName() + "[" + type.getName() + "]";
+    }
+
+    public static Properties loadProperties(ClassLoader classLoader, String resourceName) {
+        Properties properties = new Properties();
+        if (classLoader != null) {
+            try {
+                Enumeration<java.net.URL> resources = classLoader.getResources(resourceName);
+                while (resources.hasMoreElements()) {
+                    java.net.URL url = resources.nextElement();
+                    Properties props = loadFromUrl(url);
+                    for (Map.Entry<Object, Object> entry : props.entrySet()) {
+                        String key = entry.getKey().toString();
+                        if (properties.containsKey(key)) {
+                            continue;
+                        }
+                        properties.put(key, entry.getValue().toString());
+                    }
+                }
+            } catch (IOException ex) {
+                logger.error("load properties failed.", ex);
+            }
+        }
+
+        return properties;
+    }
+
+    private static Properties loadFromUrl(java.net.URL url) {
+        Properties properties = new Properties();
+        InputStream is = null;
+        try {
+            is = url.openStream();
+            properties.load(is);
+        } catch (IOException e) {
+            // ignore
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+        return properties;
     }
 
 }
