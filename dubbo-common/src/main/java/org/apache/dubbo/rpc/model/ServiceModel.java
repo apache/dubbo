@@ -17,9 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.config.AbstractInterfaceConfig;
-import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.Objects;
 import java.util.Set;
@@ -30,32 +27,31 @@ public class ServiceModel {
     private Object proxyObject;
     private Callable<Void> destroyCaller;
     private ClassLoader classLoader;
+
+    private ClassLoader interfaceClassLoader;
+
     private final ModuleModel moduleModel;
     private final ServiceDescriptor serviceModel;
-    private final AbstractInterfaceConfig config;
 
     private ServiceMetadata serviceMetadata;
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config) {
-        this(proxyObject, serviceKey, serviceModel, config, null);
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, ClassLoader interfaceClassLoader) {
+        this(proxyObject, serviceKey, serviceModel, moduleModel, null, interfaceClassLoader);
     }
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
-        this(proxyObject, serviceKey, serviceModel, config, ScopeModelUtil.getModuleModel(config != null ? config.getScopeModel() : null), serviceMetadata);
-    }
-
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ModuleModel moduleModel, ServiceMetadata serviceMetadata) {
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, ServiceMetadata serviceMetadata,
+                        ClassLoader interfaceClassLoader) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
         this.serviceModel = serviceModel;
-        this.moduleModel = moduleModel;
-        this.config = config;
+        this.moduleModel = ScopeModelUtil.getModuleModel(moduleModel);
         this.serviceMetadata = serviceMetadata;
+        this.interfaceClassLoader = interfaceClassLoader;
         if (serviceMetadata != null) {
             serviceMetadata.setServiceModel(this);
         }
-        if (config != null) {
-            this.classLoader = config.getInterfaceClassLoader();
+        if (interfaceClassLoader != null) {
+            this.classLoader = interfaceClassLoader;
         }
         if (this.classLoader == null) {
             this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -99,32 +95,6 @@ public class ServiceModel {
         return serviceModel.getServiceInterfaceClass();
     }
 
-    public AbstractInterfaceConfig getConfig() {
-        return config;
-    }
-
-    public ReferenceConfigBase<?> getReferenceConfig() {
-        if (config == null) {
-            return null;
-        }
-        if (config instanceof ReferenceConfigBase) {
-            return (ReferenceConfigBase<?>) config;
-        } else {
-            throw new IllegalArgumentException("Current ServiceModel is not a ConsumerModel");
-        }
-    }
-
-    public ServiceConfigBase<?> getServiceConfig() {
-        if (config == null) {
-            return null;
-        }
-        if (config instanceof ServiceConfigBase) {
-            return (ServiceConfigBase<?>) config;
-        } else {
-            throw new IllegalArgumentException("Current ServiceModel is not a ProviderModel");
-        }
-    }
-
     public void setServiceKey(String serviceKey) {
         this.serviceKey = serviceKey;
         if (serviceMetadata != null) {
@@ -156,6 +126,10 @@ public class ServiceModel {
         this.destroyCaller = destroyCaller;
     }
 
+    public ClassLoader getInterfaceClassLoader() {
+        return interfaceClassLoader;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -165,11 +139,11 @@ public class ServiceModel {
             return false;
         }
         ServiceModel that = (ServiceModel) o;
-        return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(proxyObject, that.proxyObject) && Objects.equals(moduleModel, that.moduleModel) && Objects.equals(serviceModel, that.serviceModel) && Objects.equals(config, that.config) && Objects.equals(serviceMetadata, that.serviceMetadata);
+        return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(proxyObject, that.proxyObject) && Objects.equals(destroyCaller, that.destroyCaller) && Objects.equals(classLoader, that.classLoader) && Objects.equals(interfaceClassLoader, that.interfaceClassLoader) && Objects.equals(moduleModel, that.moduleModel) && Objects.equals(serviceModel, that.serviceModel) && Objects.equals(serviceMetadata, that.serviceMetadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceKey, proxyObject, moduleModel, serviceModel, config, serviceMetadata);
+        return Objects.hash(serviceKey, proxyObject, destroyCaller, classLoader, interfaceClassLoader, moduleModel, serviceModel, serviceMetadata);
     }
 }

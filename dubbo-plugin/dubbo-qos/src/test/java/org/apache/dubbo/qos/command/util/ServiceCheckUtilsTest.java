@@ -20,6 +20,7 @@ package org.apache.dubbo.qos.command.util;
 import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.qos.DemoService;
 import org.apache.dubbo.qos.DemoServiceImpl;
@@ -65,8 +66,7 @@ public class ServiceCheckUtilsTest {
             url.getServiceKey(),
             demoServiceImpl,
             serviceDescriptor,
-            null,
-            new ServiceMetadata());
+            new ServiceMetadata(), ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
 
         boolean registered = ServiceCheckUtils.isRegistered(providerModel);

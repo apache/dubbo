@@ -71,8 +71,12 @@ public class ModuleServiceRepository {
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-            serviceMetadata, null);
+        ClassLoader classLoader = null;
+        if (rc != null) {
+            classLoader = rc.getInterfaceClassLoader();
+        }
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor,
+            serviceMetadata, null, classLoader);
         this.registerConsumer(consumerModel);
     }
 
@@ -89,8 +93,14 @@ public class ModuleServiceRepository {
                                  ServiceDescriptor serviceModel,
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
+        ClassLoader classLoader = null;
+        Class<?> cla = null;
+        if (serviceConfig != null) {
+            classLoader = serviceConfig.getInterfaceClassLoader();
+            cla = serviceConfig.getInterfaceClass();
+        }
         ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel,
-            serviceConfig, serviceMetadata);
+            serviceMetadata, classLoader);
         this.registerProvider(providerModel);
     }
 
@@ -100,14 +110,15 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor registerService(ServiceDescriptor serviceDescriptor) {
-        return registerService(serviceDescriptor.getServiceInterfaceClass(),serviceDescriptor);
+        return registerService(serviceDescriptor.getServiceInterfaceClass(), serviceDescriptor);
     }
 
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
         ServiceDescriptor serviceDescriptor = new ReflectionServiceDescriptor(interfaceClazz);
-        return registerService(interfaceClazz,serviceDescriptor);
+        return registerService(interfaceClazz, serviceDescriptor);
     }
-    public ServiceDescriptor registerService(Class<?> interfaceClazz,ServiceDescriptor serviceDescriptor) {
+
+    public ServiceDescriptor registerService(Class<?> interfaceClazz, ServiceDescriptor serviceDescriptor) {
         List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
             k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {

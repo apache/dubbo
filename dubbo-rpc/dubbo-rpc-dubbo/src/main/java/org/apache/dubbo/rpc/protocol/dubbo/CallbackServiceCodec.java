@@ -158,7 +158,7 @@ public class CallbackServiceCodec {
                     ServiceDescriptor serviceDescriptor = moduleModel.getServiceRepository().registerService(clazz);
                     ServiceMetadata serviceMetadata = new ServiceMetadata(clazz.getName() + "." + instid, exportUrl.getGroup(), exportUrl.getVersion(), clazz);
                     String serviceKey = BaseServiceMetadata.buildServiceKey(exportUrl.getPath(), group, exportUrl.getVersion());
-                    ProviderModel providerModel = new ProviderModel(serviceKey, inst, serviceDescriptor, null, moduleModel, serviceMetadata);
+                    ProviderModel providerModel = new ProviderModel(serviceKey, inst, serviceDescriptor, moduleModel, serviceMetadata, ClassUtils.getClassLoader(clazz));
                     moduleModel.getServiceRepository().registerProvider(providerModel);
 
                     exportUrl = exportUrl.setScopeModel(moduleModel);

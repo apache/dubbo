@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
 
@@ -63,17 +64,16 @@ public class ServiceRepositoryTest {
 
         // registerConsumer
         ConsumerModel consumerModel = new ConsumerModel(
-            serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor, null,
-            moduleModel, serviceMetadata, null);
+            serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor,
+            moduleModel, serviceMetadata, null, ClassUtils.getClassLoader(DemoService.class));
         repository.registerConsumer(consumerModel);
 
         // registerProvider
         ProviderModel providerModel = new ProviderModel(DemoService.class.getName(),
             new DemoServiceImpl(),
             serviceDescriptor,
-            null,
             moduleModel,
-            serviceMetadata);
+            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
 
         // verify allProviderModels, allConsumerModels

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -34,8 +35,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.HashMap;
@@ -45,6 +50,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROXY_CLASS_REF;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
@@ -122,16 +128,46 @@ public class MetadataUtils {
         List<URL> urls = builder.build(instance);
         if (CollectionUtils.isEmpty(urls)) {
             throw new IllegalStateException("Introspection service discovery mode is enabled "
-                    + instance + ", but no metadata service can build from it.");
+                + instance + ", but no metadata service can build from it.");
         }
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
         ScopeModel scopeModel = instance.getApplicationModel();
         Protocol protocol = scopeModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
+
+        URL url = urls.get(0);
+
+        ModuleModel moduleModel = instance.getApplicationModel().getInternalModule();
+        ModuleServiceRepository moduleServiceRepository = moduleModel.getServiceRepository();
+        ServiceDescriptor serviceDescriptor = moduleServiceRepository.registerService(MetadataService.class);
+
+        String serviceKey = URL.buildKey(MetadataService.class.getName(), url.getGroup(), url.getVersion());
+        List<ConsumerModel> consumers = moduleServiceRepository.lookupReferredServices(serviceKey);
+
+        ConsumerModel consumerModel;
+        if (consumers.size() > 0) {
+            consumerModel = consumers.get(0);
+        } else {
+            ServiceMetadata serviceMetadata = new ServiceMetadata();
+            serviceMetadata.setServiceType(MetadataService.class);
+            serviceMetadata.setServiceKey(serviceKey);
+            consumerModel = new ConsumerModel(serviceKey, null, serviceDescriptor,
+                moduleModel, serviceMetadata, new HashMap<>(0), ClassUtils.getClassLoader(MetadataService.class));
+        }
+
+        url = url.setServiceModel(consumerModel);
+
+        Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
 
         ProxyFactory proxyFactory = scopeModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        return proxyFactory.getProxy(invoker);
+        MetadataService metadataService = proxyFactory.getProxy(invoker);
+
+        consumerModel.getServiceMetadata().setTarget(metadataService);
+        consumerModel.getServiceMetadata().addAttribute(PROXY_CLASS_REF, metadataService);
+        consumerModel.setProxyObject(metadataService);
+        consumerModel.initMethodModels();
+
+        return metadataService;
     }
 
     public static MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances, MetadataReport metadataReport) {
@@ -152,7 +188,7 @@ public class MetadataUtils {
                     metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
                 } finally {
                     if (metadataServiceProxy instanceof Destroyable) {
-                        ((Destroyable)metadataServiceProxy).$destroy();
+                        ((Destroyable) metadataServiceProxy).$destroy();
                     }
                 }
             }

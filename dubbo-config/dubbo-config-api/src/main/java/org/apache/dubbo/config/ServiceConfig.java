@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -93,7 +94,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
-public class ServiceConfig<T> extends ServiceConfigBase<T> {
+public class ServiceConfig<T> extends ServiceConfigBase<T> implements Callable<Void> {
 
     private static final long serialVersionUID = 7868244018230856253L;
 
@@ -277,7 +278,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // init some null configuration.
         List<ConfigInitializer> configInitializers = this.getExtensionLoader(ConfigInitializer.class)
-                .getActivateExtension(URL.valueOf("configInitializer://", getScopeModel()), (String[]) null);
+            .getActivateExtension(URL.valueOf("configInitializer://", getScopeModel()), (String[]) null);
         configInitializers.forEach(e -> e.initServiceConfig(this));
 
         // if protocol is not injvm checkRegistry
@@ -367,34 +368,36 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor;
         final boolean serverService = ref instanceof ServerService;
-        if(serverService){
-            serviceDescriptor=((ServerService) ref).getServiceDescriptor();
+        if (serverService) {
+            serviceDescriptor = ((ServerService) ref).getServiceDescriptor();
             repository.registerService(serviceDescriptor);
-        }else{
+        } else {
             serviceDescriptor = repository.registerService(getInterfaceClass());
         }
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
             serviceDescriptor,
-            this,
             getScopeModel(),
-            serviceMetadata);
+            serviceMetadata, interfaceClassLoader);
 
+        providerModel.setDestroyCaller(this);
         repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
-                    .map(p -> p + "/" + path)
-                    .orElse(path), group, version);
+                .map(p -> p + "/" + path)
+                .orElse(path), group, version);
             // stub service will use generated service name
-            if(!serverService) {
+            if (!serverService) {
                 // In case user specified path, register service one more time to map it to path.
                 repository.registerService(pathKey, interfaceClass);
             }
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
+
+        providerModel.setServiceUrls(urls);
     }
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
@@ -464,7 +467,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
-        if(ref instanceof ServerService){
+        if (ref instanceof ServerService) {
             map.put(PROXY_KEY, CommonConstants.NATIVE_STUB);
         }
 
@@ -554,9 +557,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // You can customize Configurator to append extra parameters
         if (this.getExtensionLoader(ConfiguratorFactory.class)
-                .hasExtension(url.getProtocol())) {
+            .hasExtension(url.getProtocol())) {
             url = this.getExtensionLoader(ConfiguratorFactory.class)
-                    .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
+                .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
         url = url.setScopeModel(getScopeModel());
         url = url.setServiceModel(providerModel);
@@ -648,10 +651,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private void exportLocal(URL url) {
         URL local = URLBuilder.from(url)
-                .setProtocol(LOCAL_PROTOCOL)
-                .setHost(LOCALHOST_VALUE)
-                .setPort(0)
-                .build();
+            .setProtocol(LOCAL_PROTOCOL)
+            .setHost(LOCALHOST_VALUE)
+            .setPort(0)
+            .build();
         local = local.setScopeModel(getScopeModel())
             .setServiceModel(providerModel);
         doExportUrl(local, false);
@@ -665,12 +668,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private boolean isOnlyInJvm() {
         return getProtocols().size() == 1
-                && LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
+            && LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
+            .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }
 
@@ -753,7 +756,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private static synchronized Integer findConfiguredPort(ProtocolConfig protocolConfig,
                                                            ProviderConfig provider,
                                                            ExtensionLoader<Protocol> extensionLoader,
-                                                           String name,Map<String, String> map) {
+                                                           String name, Map<String, String> map) {
         Integer portToBind;
 
         // parse bind port from environment
@@ -830,4 +833,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
+    @Override
+    public Void call() throws Exception {
+        this.unexport();
+        return null;
+    }
 }

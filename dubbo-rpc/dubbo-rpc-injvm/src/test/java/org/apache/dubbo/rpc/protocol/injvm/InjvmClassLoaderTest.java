@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.injvm;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
 import org.apache.dubbo.common.compiler.support.JavassistCompiler;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -105,8 +106,8 @@ public class InjvmClassLoaderTest {
 
         // refer consumer
         ServiceDescriptor consumerServiceDescriptor = moduleModel.getServiceRepository().registerService(clazz2);
-        ConsumerModel consumerModel = new ConsumerModel(clazz2.getName(), null, consumerServiceDescriptor, null,
-            ApplicationModel.defaultModel().getDefaultModule(), null, null);
+        ConsumerModel consumerModel = new ConsumerModel(clazz2.getName(), null, consumerServiceDescriptor,
+            ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(clazz2));
         consumerModel.setClassLoader(classLoader3);
         URL consumerUrl = url.setScopeModel(moduleModel).setServiceModel(consumerModel);
 

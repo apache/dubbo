@@ -74,8 +74,8 @@ public class GrpcProtocolTest {
         serviceMetadata.setServiceKey(URL.buildKey(DubboGreeterGrpc.IGreeter.class.getName(), null, null));
 
         Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), null, serviceDescriptor, mockReferenceConfig,
-            serviceMetadata, methodConfigs);
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), null, serviceDescriptor,
+            serviceMetadata, methodConfigs, mockReferenceConfig.getInterfaceClassLoader());
 
         ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerConsumer(consumerModel);
 

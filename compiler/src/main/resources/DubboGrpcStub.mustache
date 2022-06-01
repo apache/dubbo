@@ -103,8 +103,8 @@ stub = {{serviceName}}Grpc.newStub(channel).build(channel, callOptions);
 {{/biStreamingMethods}}
 }
 
-public static Dubbo{{serviceName}}Stub getDubboStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url, ReferenceConfigBase<?> referenceConfig) {
-return new Dubbo{{serviceName}}Stub(channel, callOptions, url, referenceConfig);
+public static Dubbo{{serviceName}}Stub getDubboStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url) {
+return new Dubbo{{serviceName}}Stub(channel, callOptions, url);
 }
 
 public interface I{{serviceName}} {

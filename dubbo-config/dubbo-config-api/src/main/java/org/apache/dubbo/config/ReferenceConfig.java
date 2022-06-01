@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -89,7 +90,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  * Please avoid using this class for any new application,
  * use {@link ReferenceConfigBase} instead.
  */
-public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
+public class ReferenceConfig<T> extends ReferenceConfigBase<T> implements Callable<Void> {
 
     public static final Logger logger = LoggerFactory.getLogger(ReferenceConfig.class);
 
@@ -275,8 +276,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         } else {
             serviceDescriptor = repository.registerService(interfaceClass);
         }
-        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
-            getScopeModel(), serviceMetadata, createAsyncMethodInfo());
+        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor,
+            getScopeModel(), serviceMetadata, createAsyncMethodInfo(), interfaceClassLoader);
 
         repository.registerConsumer(consumerModel);
 
@@ -287,6 +288,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
+        consumerModel.setDestroyCaller(this);
         consumerModel.setProxyObject(ref);
         consumerModel.initMethodModels();
 
@@ -649,5 +651,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @Deprecated
     public Invoker<?> getInvoker() {
         return invoker;
+    }
+
+    @Override
+    public Void call() throws Exception {
+        this.destroy();
+        return null;
     }
 }

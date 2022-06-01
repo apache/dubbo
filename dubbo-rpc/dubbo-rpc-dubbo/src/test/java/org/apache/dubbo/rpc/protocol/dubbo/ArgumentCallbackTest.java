@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
@@ -87,8 +88,8 @@ public class ArgumentCallbackTest {
                 + "&retries=0"
                 + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks)
             .setScopeModel(ApplicationModel.defaultModel().getDefaultModule())
-            .setServiceModel(new ConsumerModel(IDemoService.class.getName(), null, null, null,
-            ApplicationModel.defaultModel().getDefaultModule(), null, null));
+            .setServiceModel(new ConsumerModel(IDemoService.class.getName(), null, null,
+                ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(IDemoService.class)));
 
         //      uncomment is unblock invoking
 //        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
@@ -111,13 +112,13 @@ public class ArgumentCallbackTest {
         } catch (Exception e) {
         }
     }
-    
+
     @Test
     public void TestCallbackNormalWithBindPort() throws Exception {
         initOrResetUrl(1, 10000000);
-        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY,"7653");
+        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY, "7653");
         initOrResetService();
-       
+
         final AtomicInteger count = new AtomicInteger(0);
 
         demoProxy.xxx(new IDemoCallback() {
