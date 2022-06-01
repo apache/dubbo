@@ -992,7 +992,7 @@ public class ExtensionLoader<T> {
             if (onlyLoadByDubboInternalSPI.containsKey(type)){
                 String internalDirectoryType = onlyLoadByDubboInternalSPI.get(type);
                 //skip to load spi when name don't match
-                if (!"ALL".equals(internalDirectoryType)
+                if (!LoadingStrategy.ALL.equals(internalDirectoryType)
                     && !internalDirectoryType.equals(loadingStrategy.getName())){
                     return;
                 }

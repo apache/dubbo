@@ -80,4 +80,9 @@ public interface LoadingStrategy extends Prioritized {
     default String getName() {
         return this.getClass().getSimpleName();
     }
+
+    /**
+     * when spi is loaded by dubbo framework classloader only, it indicates all LoadingStrategy should load this spi
+     */
+    String ALL = "ALL";
 }
