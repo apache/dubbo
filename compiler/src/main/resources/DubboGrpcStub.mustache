@@ -33,9 +33,8 @@ protected {{serviceName}}Grpc.{{serviceName}}BlockingStub blockingStub;
 protected {{serviceName}}Grpc.{{serviceName}}FutureStub futureStub;
 protected {{serviceName}}Grpc.{{serviceName}}Stub stub;
 
-public Dubbo{{serviceName}}Stub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url, ReferenceConfigBase<?> referenceConfig) {
+public Dubbo{{serviceName}}Stub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url) {
 this.url = url;
-this.referenceConfig = referenceConfig;
 
 blockingStub = {{serviceName}}Grpc.newBlockingStub(channel).build(channel, callOptions);
 futureStub = {{serviceName}}Grpc.newFutureStub(channel).build(channel, callOptions);
