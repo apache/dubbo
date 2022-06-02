@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -62,8 +63,7 @@ public class TripleProtocolTest {
             providerUrl.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
-            null,
-            new ServiceMetadata());
+            new ServiceMetadata(), ClassUtils.getClassLoader(IGreeter.class));
         serviceRepository.registerProvider(providerModel);
         providerUrl = providerUrl.setServiceModel(providerModel);
 

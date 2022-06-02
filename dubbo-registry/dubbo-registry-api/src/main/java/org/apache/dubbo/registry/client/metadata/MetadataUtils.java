@@ -145,7 +145,7 @@ public class MetadataUtils {
         List<ConsumerModel> consumers = moduleServiceRepository.lookupReferredServices(serviceKey);
 
         ConsumerModel consumerModel;
-        if (consumers.size() > 0) {
+        if (CollectionUtils.isNotEmpty(consumers)) {
             consumerModel = consumers.get(0);
         } else {
             ServiceMetadata serviceMetadata = new ServiceMetadata();
@@ -166,6 +166,10 @@ public class MetadataUtils {
         consumerModel.getServiceMetadata().addAttribute(PROXY_CLASS_REF, metadataService);
         consumerModel.setProxyObject(metadataService);
         consumerModel.initMethodModels();
+
+        if (CollectionUtils.isEmpty(consumers)) {
+            moduleServiceRepository.registerConsumer(consumerModel);
+        }
 
         return metadataService;
     }
