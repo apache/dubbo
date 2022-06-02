@@ -145,6 +145,7 @@ public class MetadataUtils {
         List<ConsumerModel> consumers = moduleServiceRepository.lookupReferredServices(serviceKey);
 
         ConsumerModel consumerModel;
+
         if (CollectionUtils.isNotEmpty(consumers)) {
             consumerModel = consumers.get(0);
         } else {
