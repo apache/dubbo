@@ -23,7 +23,6 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Determine incoming bytes belong to the specific protocol.
  *
- * @author guohaoice@gmail.com
  */
 public interface ProtocolDetector {
 
