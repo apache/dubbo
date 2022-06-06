@@ -29,6 +29,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -389,5 +390,22 @@ public class MigrationRule {
         Constructor constructor = new Constructor(MigrationRule.class);
         Yaml yaml = new Yaml(constructor);
         return yaml.dump(rule);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MigrationRule that = (MigrationRule) o;
+        return Objects.equals(key, that.key) && step == that.step && Objects.equals(threshold, that.threshold) && Objects.equals(proportion, that.proportion) && Objects.equals(delay, that.delay) && Objects.equals(force, that.force) && Objects.equals(interfaces, that.interfaces) && Objects.equals(applications, that.applications) && Objects.equals(interfaceRules, that.interfaceRules) && Objects.equals(applicationRules, that.applicationRules);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, step, threshold, proportion, delay, force, interfaces, applications, interfaceRules, applicationRules);
     }
 }
