@@ -56,7 +56,7 @@ public class XdsServiceDiscovery extends ReflectionBasedServiceDiscovery {
     @Override
     public void doDestroy() {
         try {
-            exchanger = PilotExchanger.initialize(registryURL);
+            exchanger.destroy();
         } catch (Throwable t) {
             logger.error(t);
         }
