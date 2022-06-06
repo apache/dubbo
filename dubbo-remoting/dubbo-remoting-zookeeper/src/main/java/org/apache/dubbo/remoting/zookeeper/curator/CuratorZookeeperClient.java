@@ -30,6 +30,8 @@ import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
+import org.apache.curator.framework.listen.Listenable;
+import org.apache.curator.framework.listen.ListenerContainer;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.curator.framework.recipes.cache.NodeCacheListener;
@@ -291,10 +293,13 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (nodeCacheMap.putIfAbsent(path, nodeCache) != null) {
                 return;
             }
+
+            // avoid version compilation conflict
+            Listenable<NodeCacheListener> listenable = nodeCache.getListenable();
             if (executor == null) {
-                nodeCache.getListenable().addListener(nodeCacheListener);
+                listenable.addListener(nodeCacheListener);
             } else {
-                nodeCache.getListenable().addListener(nodeCacheListener, executor);
+                listenable.addListener(nodeCacheListener, executor);
             }
 
             nodeCache.start();
@@ -307,7 +312,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     protected void removeTargetDataListener(String path, CuratorZookeeperClient.NodeCacheListenerImpl nodeCacheListener) {
         NodeCache nodeCache = nodeCacheMap.get(path);
         if (nodeCache != null) {
-            nodeCache.getListenable().removeListener(nodeCacheListener);
+            Listenable<NodeCacheListener> listenable = nodeCache.getListenable();
+            listenable.removeListener(nodeCacheListener);
         }
         nodeCacheListener.dataListener = null;
     }
