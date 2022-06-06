@@ -103,7 +103,7 @@ public class ExtensionLoader<T> {
     private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
-    private static final String INTERNAL_SPI_PROPERTIES = "internal_spi.properties";
+    private static final String SPECIAL_SPI_PROPERTIES = "special_spi.properties";
 
     private final ConcurrentMap<Class<?>, Object> extensionInstances = new ConcurrentHashMap<>(64);
 
@@ -130,7 +130,7 @@ public class ExtensionLoader<T> {
 
     private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
 
-    private static Map<String,String> onlyLoadByDubboInternalSPI = getOnlyLoadByDubboInternalSPI();
+    private static Map<String,String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
 
     private static SoftReference<Map<java.net.URL,List<String>>> urlListMapCache = new SoftReference<>(new ConcurrentHashMap<>());
 
@@ -168,9 +168,9 @@ public class ExtensionLoader<T> {
      * application startup very slow
      * @return
      */
-    private static Map<String, String> getOnlyLoadByDubboInternalSPI() {
+    private static Map<String, String> getSpecialSPILoadingStrategyMap() {
         Map map = new ConcurrentHashMap<>();
-        Properties properties = loadProperties(ExtensionLoader.class.getClassLoader(), INTERNAL_SPI_PROPERTIES);
+        Properties properties = loadProperties(ExtensionLoader.class.getClassLoader(), SPECIAL_SPI_PROPERTIES);
         map.putAll(properties);
         return map;
     }
@@ -989,8 +989,8 @@ public class ExtensionLoader<T> {
                 }
             }
 
-            if (onlyLoadByDubboInternalSPI.containsKey(type)){
-                String internalDirectoryType = onlyLoadByDubboInternalSPI.get(type);
+            if (specialSPILoadingStrategyMap.containsKey(type)){
+                String internalDirectoryType = specialSPILoadingStrategyMap.get(type);
                 //skip to load spi when name don't match
                 if (!LoadingStrategy.ALL.equals(internalDirectoryType)
                     && !internalDirectoryType.equals(loadingStrategy.getName())){
@@ -1321,7 +1321,7 @@ public class ExtensionLoader<T> {
         return this.getClass().getName() + "[" + type.getName() + "]";
     }
 
-    public static Properties loadProperties(ClassLoader classLoader, String resourceName) {
+    private static Properties loadProperties(ClassLoader classLoader, String resourceName) {
         Properties properties = new Properties();
         if (classLoader != null) {
             try {
