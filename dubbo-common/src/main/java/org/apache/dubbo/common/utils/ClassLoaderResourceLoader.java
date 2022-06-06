@@ -35,7 +35,7 @@ import java.util.concurrent.CountDownLatch;
 
 public class ClassLoaderResourceLoader {
 
-    private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = new SoftReference<>(new ConcurrentHashMap<>());
+    private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
     static {
         // register resources destroy listener
@@ -61,9 +61,9 @@ public class ClassLoaderResourceLoader {
 
     public static Set<URL> loadResources(String fileName, ClassLoader currentClassLoader) {
         Map<ClassLoader, Map<String, Set<URL>>> classLoaderCache;
-        if ((classLoaderCache = classLoaderResourcesCache.get()) == null) {
+        if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
             synchronized (ClassLoaderResourceLoader.class) {
-                if ((classLoaderCache = classLoaderResourcesCache.get()) == null) {
+                if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
                     classLoaderCache = new ConcurrentHashMap<>();
                     classLoaderResourcesCache = new SoftReference<>(classLoaderCache);
                 }
