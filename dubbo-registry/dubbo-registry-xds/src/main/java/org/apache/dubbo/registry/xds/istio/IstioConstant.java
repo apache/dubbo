@@ -18,17 +18,23 @@ package org.apache.dubbo.registry.xds.istio;
 
 public class IstioConstant {
     /**
-     * spiffe证书提供程序的地址。默认为discoveryAddress
+     * Address of the spiffe certificate provider. Defaults to discoveryAddress
      */
     public final static String CA_ADDR_KEY = "CA_ADDR";
 
+    /**
+     * CA and xDS services
+     */
     public final static String DEFAULT_CA_ADDR = "istiod.istio-system.svc:15012";
 
     /**
-     * 在身份验证策略中启用mTLS时，跳过验证对等方是否来自同一信任域
+     * The trust domain for spiffe certificates
      */
     public final static String TRUST_DOMAIN_KEY = "TRUST_DOMAIN";
 
+    /**
+     * The trust domain for spiffe certificates value
+     */
     public final static String DEFAULT_TRUST_DOMAIN = "cluster.local";
 
     public final static String WORKLOAD_NAMESPACE_KEY = "WORKLOAD_NAMESPACE";
@@ -40,32 +46,35 @@ public class IstioConstant {
      */
     public final static String KUBERNETES_SA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 
-    /**
-     * 加密的size
-     */
     public final static String RSA_KEY_SIZE_KEY = "RSA_KEY_SIZE";
 
     public final static String DEFAULT_RSA_KEY_SIZE = "2048";
 
     /**
-     * 生成私钥时要使用的ECC签名算法的类型
+     * The type of ECC signature algorithm to use when generating private keys
      */
     public final static String ECC_SIG_ALG_KEY = "ECC_SIGNATURE_ALGORITHM";
 
     public final static String DEFAULT_ECC_SIG_ALG = "ECDSA";
 
     /**
-     * 失效时间
+     * The cert lifetime requested by istio agent
      */
     public final static String SECRET_TTL_KEY = "SECRET_TTL";
 
+    /**
+     * The cert lifetime default value 24h0m0s
+     */
     public final static String DEFAULT_SECRET_TTL = "86400"; //24 * 60 * 60
 
     /**
-     * 证书轮换的宽限期比率
+     * The grace period ratio for the cert rotation
      */
     public final static String SECRET_GRACE_PERIOD_RATIO_KEY = "SECRET_GRACE_PERIOD_RATIO";
 
+    /**
+     * The grace period ratio for the cert rotation, by default 0.5
+     */
     public final static String DEFAULT_SECRET_GRACE_PERIOD_RATIO = "0.5";
 
     public final static String ISTIO_META_CLUSTER_ID_KEY = "ISTIO_META_CLUSTER_ID";

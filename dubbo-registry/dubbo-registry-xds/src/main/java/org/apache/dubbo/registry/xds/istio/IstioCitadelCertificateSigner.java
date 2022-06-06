@@ -86,7 +86,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 }
             }
         }
-        // todo 独立线程定期监测是否还在有效期，类似看门狗机制？
         return certPairCache;
     }
 
@@ -128,7 +127,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         }
 
         String csr = generateCsr(publicKey, signer);
-        // 请求istio的CA服务器
         ManagedChannel channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
             .sslContext(GrpcSslContexts.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
@@ -140,9 +138,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         header.put(key, "Bearer " + istioEnv.getServiceAccount());
 
         key = Metadata.Key.of("ClusterID", Metadata.ASCII_STRING_MARSHALLER);
-        header.put(key, istioEnv.getIstioMetaClusterId());
 
-        // todo triple
         IstioCertificateServiceGrpc.IstioCertificateServiceStub stub = IstioCertificateServiceGrpc.newStub(channel);
 
         stub = MetadataUtils.attachHeaders(stub, header);
@@ -150,7 +146,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         StringBuffer publicKeyBuilder = new StringBuffer();
         AtomicBoolean failed = new AtomicBoolean(false);
-        // 发起请求
         stub.createCertificate(generateRequest(csr),
             generateResponseObserver(countDownLatch, publicKeyBuilder, failed));
 
