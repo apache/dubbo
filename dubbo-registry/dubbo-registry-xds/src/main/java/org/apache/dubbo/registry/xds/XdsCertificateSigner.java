@@ -23,7 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface XdsCertificateSigner {
 
-    @Adaptive(value = "Signer")
+    @Adaptive(value = "signer")
     CertPair request(URL url);
 
     class CertPair {
@@ -45,6 +45,10 @@ public interface XdsCertificateSigner {
 
         public String getPublicKey() {
             return publicKey;
+        }
+
+        public long getCreateTime() {
+            return createTime;
         }
 
         public boolean isExpire() {

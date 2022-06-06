@@ -38,25 +38,28 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 public class XdsChannel {
-    private final ManagedChannel channel;
+
     private static final Logger logger = LoggerFactory.getLogger(XdsChannel.class);
 
+    private final ManagedChannel channel;
+
     protected XdsChannel(URL url) {
-        ManagedChannel channel1 = null;
+        ManagedChannel managedChannel = null;
         try {
-            XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class).getExtension(url.getParameter("Signer", "istio"));
+            XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
+                .getExtension(url.getParameter("signer", "istio"));
             XdsCertificateSigner.CertPair certPair = signer.request(url);
             SslContext context = GrpcSslContexts.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)), new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
+                    new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                 .build();
-            channel1 = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
-                .sslContext(context)
+            managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
                 .build();
         } catch (SSLException e) {
             logger.error("Error occurred when creating gRPC channel to control panel.", e);
         }
-        channel = channel1;
+        channel = managedChannel;
     }
 
     public StreamObserver<DeltaDiscoveryRequest> observeDeltaDiscoveryRequest(StreamObserver<DeltaDiscoveryResponse> observer) {

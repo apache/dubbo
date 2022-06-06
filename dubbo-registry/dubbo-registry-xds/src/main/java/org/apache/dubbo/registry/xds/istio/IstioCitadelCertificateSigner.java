@@ -79,7 +79,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         synchronized (this) {
             if (certPairCache == null || certPairCache.isExpire()) {
                 try {
-                    certPairCache = createCert(url);
+                    certPairCache = createCert();
                 } catch (IOException e) {
                     logger.error("Generate Cert from Istio failed.", e);
                     throw new RpcException("Generate Cert from Istio failed.", e);
@@ -89,7 +89,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         return certPairCache;
     }
 
-    public CertPair createCert(URL url) throws IOException {
+    public CertPair createCert() throws IOException {
         PublicKey publicKey = null;
         PrivateKey privateKey = null;
         ContentSigner signer = null;
@@ -102,12 +102,10 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 KeyPair keypair = g.generateKeyPair();
                 publicKey = keypair.getPublic();
                 privateKey = keypair.getPrivate();
-
                 signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
-
             } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-                logger.error("Generate Key with secp256r1 algorithm failed. Please check if your system support. " +
-                    "Will attempt to generate with RSA2048.", e);
+                logger.error("Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+                    + "Will attempt to generate with RSA2048.", e);
             }
         }
 
@@ -119,7 +117,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 publicKey = keypair.getPublic();
                 privateKey = keypair.getPrivate();
                 signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keypair.getPrivate());
-
             } catch (NoSuchAlgorithmException | OperatorCreationException e) {
                 logger.error("Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.", e);
                 throw new RpcException(e);
@@ -128,16 +125,14 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
         String csr = generateCsr(publicKey, signer);
         ManagedChannel channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
-            .sslContext(GrpcSslContexts.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .build())
-            .build();
+            .sslContext(GrpcSslContexts.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build()).build();
 
         Metadata header = new Metadata();
         Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
         header.put(key, "Bearer " + istioEnv.getServiceAccount());
 
         key = Metadata.Key.of("ClusterID", Metadata.ASCII_STRING_MARSHALLER);
+        header.put(key, istioEnv.getIstioMetaClusterId());
 
         IstioCertificateServiceGrpc.IstioCertificateServiceStub stub = IstioCertificateServiceGrpc.newStub(channel);
 
@@ -146,8 +141,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         StringBuffer publicKeyBuilder = new StringBuffer();
         AtomicBoolean failed = new AtomicBoolean(false);
-        stub.createCertificate(generateRequest(csr),
-            generateResponseObserver(countDownLatch, publicKeyBuilder, failed));
+        stub.createCertificate(generateRequest(csr), generateResponseObserver(countDownLatch, publicKeyBuilder, failed));
 
         long expireTime = System.currentTimeMillis() + (long) (istioEnv.getSecretTTL() * istioEnv.getSecretGracePeriodRatio());
 
@@ -169,15 +163,12 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
     }
 
     private IstioCertificateRequest generateRequest(String csr) {
-        return IstioCertificateRequest
-            .newBuilder()
-            .setCsr(csr)
-            .setValidityDuration(istioEnv.getSecretTTL())
-            .build();
+        return IstioCertificateRequest.newBuilder().setCsr(csr).setValidityDuration(istioEnv.getSecretTTL()).build();
     }
 
     private StreamObserver<IstioCertificateResponse> generateResponseObserver(CountDownLatch countDownLatch,
-                                                                              StringBuffer publicKeyBuilder, AtomicBoolean failed) {
+                                                                              StringBuffer publicKeyBuilder,
+                                                                              AtomicBoolean failed) {
         return new StreamObserver<IstioCertificateResponse>() {
             @Override
             public void onNext(IstioCertificateResponse istioCertificateResponse) {
@@ -223,19 +214,14 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
     }
 
     private String generateCsr(PublicKey publicKey, ContentSigner signer) throws IOException {
-        GeneralNames subjectAltNames = new GeneralNames(
-            new GeneralName[]{
-                new GeneralName(6, istioEnv.getCsrHost())
-            });
+        GeneralNames subjectAltNames = new GeneralNames(new GeneralName[]{new GeneralName(6, istioEnv.getCsrHost())});
 
         ExtensionsGenerator extGen = new ExtensionsGenerator();
         extGen.addExtension(Extension.subjectAlternativeName, true, subjectAltNames);
 
-        PKCS10CertificationRequest request =
-            new JcaPKCS10CertificationRequestBuilder(
-                new X500Name("O=" + istioEnv.getTrustDomain()), publicKey)
-                .addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extGen.generate())
-                .build(signer);
+        PKCS10CertificationRequest request = new JcaPKCS10CertificationRequestBuilder(
+            new X500Name("O=" + istioEnv.getTrustDomain()), publicKey).addAttribute(
+            PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extGen.generate()).build(signer);
 
         String csr = generatePemKey("CERTIFICATE REQUEST", request.getEncoded());
 
