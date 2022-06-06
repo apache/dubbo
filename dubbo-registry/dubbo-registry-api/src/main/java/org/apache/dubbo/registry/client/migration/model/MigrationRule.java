@@ -75,7 +75,6 @@ import static org.apache.dubbo.registry.client.migration.MigrationRuleHandler.DU
  *    step: FORCE_INTERFACE
  */
 public class MigrationRule {
-    public static final MigrationRule INIT = new MigrationRule();
 
     private String key;
     private MigrationStep step;
@@ -88,6 +87,10 @@ public class MigrationRule {
 
     private transient Map<String, SubMigrationRule> interfaceRules;
     private transient Map<String, SubMigrationRule> applicationRules;
+
+    public static MigrationRule getInitRule() {
+        return new MigrationRule();
+    }
 
     @SuppressWarnings("unchecked")
     private static MigrationRule parseFromMap(Map<String, Object> map) {
