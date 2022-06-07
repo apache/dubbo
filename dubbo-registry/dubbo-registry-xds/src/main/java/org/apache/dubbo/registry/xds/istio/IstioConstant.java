@@ -33,7 +33,7 @@ public class IstioConstant {
     public final static String TRUST_DOMAIN_KEY = "TRUST_DOMAIN";
 
     /**
-     * The trust domain for spiffe certificates value
+     * The trust domain for spiffe certificates default value
      */
     public final static String DEFAULT_TRUST_DOMAIN = "cluster.local";
 
@@ -80,4 +80,10 @@ public class IstioConstant {
     public final static String ISTIO_META_CLUSTER_ID_KEY = "ISTIO_META_CLUSTER_ID";
 
     public final static String DEFAULT_ISTIO_META_CLUSTER_ID = "kubernetes";
+
+    public final static String SPIFFE = "spiffe://";
+
+    public final static String NS = "/ns/";
+
+    public final static String SA = "/sa/";
 }

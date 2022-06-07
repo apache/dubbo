@@ -27,6 +27,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import static org.apache.dubbo.registry.xds.istio.IstioConstant.NS;
+import static org.apache.dubbo.registry.xds.istio.IstioConstant.SA;
+import static org.apache.dubbo.registry.xds.istio.IstioConstant.SPIFFE;
+
 public class IstioEnv implements XdsEnv {
     private static final Logger logger = LoggerFactory.getLogger(IstioEnv.class);
 
@@ -51,14 +55,15 @@ public class IstioEnv implements XdsEnv {
     private String istioMetaClusterId;
 
     public IstioEnv() {
-        // sava CertPair in KUBERNETES_SA_PATH
+        // read k8s jwt token
         File saFile = new File(IstioConstant.KUBERNETES_SA_PATH);
         if (saFile.canRead()) {
             try {
                 serviceAccount = FileUtils.readFileToString(saFile, StandardCharsets.UTF_8);
                 trustDomain = Optional.ofNullable(System.getenv(IstioConstant.TRUST_DOMAIN_KEY)).orElse(IstioConstant.DEFAULT_TRUST_DOMAIN);
                 workloadNameSpace = Optional.ofNullable(System.getenv(IstioConstant.WORKLOAD_NAMESPACE_KEY)).orElse(IstioConstant.DEFAULT_WORKLOAD_NAMESPACE);
-                csrHost = "spiffe://" + trustDomain + "/ns/" + workloadNameSpace + "/sa/" + serviceAccount;
+                // spiffe://<trust_domain>/ns/<namespace>/sa/<service_account>
+                csrHost = SPIFFE + trustDomain + NS + workloadNameSpace + SA + serviceAccount;
                 caAddr = Optional.ofNullable(System.getenv(IstioConstant.CA_ADDR_KEY)).orElse(IstioConstant.DEFAULT_CA_ADDR);
                 rasKeySize = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.RSA_KEY_SIZE_KEY)).orElse(IstioConstant.DEFAULT_RSA_KEY_SIZE));
                 eccSigAlg = Optional.ofNullable(System.getenv(IstioConstant.ECC_SIG_ALG_KEY)).orElse(IstioConstant.DEFAULT_ECC_SIG_ALG);
