@@ -18,6 +18,7 @@ package org.apache.dubbo.common.url.component.param;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -100,7 +101,7 @@ public final class DynamicParamTable {
         ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
                 .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
 
-        List<Pair<String, ParamValue>> resultList = new CopyOnWriteArrayList<>();
+        List<Pair<String, ParamValue>> resultList = new ArrayList<>();
 
         for (int i = 0; i < keys.size(); i++) {
             if (!resultList.contains(new Pair<>(keys.get(i), null))) {
