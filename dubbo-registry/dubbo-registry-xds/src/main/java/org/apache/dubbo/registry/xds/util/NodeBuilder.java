@@ -19,11 +19,22 @@ package org.apache.dubbo.registry.xds.util;
 import io.envoyproxy.envoy.config.core.v3.Node;
 
 public class NodeBuilder {
+
+    private final static String SVC_CLUSTER_LOCAL = ".svc.cluster.local";
+
     public static Node build() {
-        // TODO: fetch data from environment
+//        String podName = System.getenv("metadata.name");
+//        String podNamespace = System.getenv("metadata.namespace");
+
+        String podName = System.getenv("POD_NAME");
+        String podNamespace = System.getenv("NAMESPACE_NAME");
+        String svcName = System.getenv("SVC_NAME");
+
+        // id -> {POD_NAME}~{NAMESPACE_NAME}.svc.cluster.local
+        // cluster -> {SVC_NAME}
         return Node.newBuilder()
-            .setId("sidecar~127.0.0.1~ratings-v1-7dc98c7588-lwvqd.default~default.svc.cluster.local")
-            .setCluster("ratings.default")
+            .setId(podName + "~" + podNamespace + SVC_CLUSTER_LOCAL)
+            .setCluster(svcName)
             .build();
     }
 }
