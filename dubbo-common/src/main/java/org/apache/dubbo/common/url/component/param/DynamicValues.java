@@ -58,11 +58,17 @@ public class DynamicValues implements ParamValue {
 
     @Override
     public String getN(int n) {
+        if (n == -1) {
+            return null;
+        }
         return index2Value[n];
     }
 
     @Override
     public int getIndex(String value) {
+        if (value == null) {
+            return -1;
+        }
         Integer index = value2Index.get(value);
         if (index == null) {
             return add(value);
