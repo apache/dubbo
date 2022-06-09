@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -31,7 +32,6 @@ import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.registry.client.support.MockServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -75,7 +75,6 @@ import static org.mockito.Mockito.when;
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ServiceInstancesChangedListenerTest {
-    private static Gson gson = new Gson();
 
     static List<ServiceInstance> app1Instances;
     static List<ServiceInstance> app2Instances;
@@ -169,11 +168,11 @@ public class ServiceInstancesChangedListenerTest {
         app1InstancesWithNoRevision = buildInstances(urlsWithoutRevision);
         app1InstancesMultipleProtocols = buildInstances(urlsMultipleProtocols);
 
-        metadataInfo_111 = gson.fromJson(metadata_111, MetadataInfo.class);
-        metadataInfo_222 = gson.fromJson(metadata_222, MetadataInfo.class);
-        metadataInfo_333 = gson.fromJson(metadata_333, MetadataInfo.class);
-        metadataInfo_444 = gson.fromJson(metadata_444, MetadataInfo.class);
-        metadataInfo_555_tri = gson.fromJson(metadata_555_triple, MetadataInfo.class);
+        metadataInfo_111 = JsonUtils.getJson().toJavaObject(metadata_111, MetadataInfo.class);
+        metadataInfo_222 = JsonUtils.getJson().toJavaObject(metadata_222, MetadataInfo.class);
+        metadataInfo_333 = JsonUtils.getJson().toJavaObject(metadata_333, MetadataInfo.class);
+        metadataInfo_444 = JsonUtils.getJson().toJavaObject(metadata_444, MetadataInfo.class);
+        metadataInfo_555_tri = JsonUtils.getJson().toJavaObject(metadata_555_triple, MetadataInfo.class);
 
         serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
         when(serviceDiscovery.getUrl()).thenReturn(registryURL);

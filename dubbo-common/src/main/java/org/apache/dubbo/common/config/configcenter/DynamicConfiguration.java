@@ -177,18 +177,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
-     * Get the config keys by the specified group
-     *
-     * @param group the specified group
-     * @return the read-only non-null sorted {@link Set set} of config keys
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.5
-     */
-    default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        return Collections.emptySortedSet();
-    }
-
-    /**
      * Get the default group for the operations
      *
      * @return The default value is {@link #DEFAULT_GROUP "dubbo"}

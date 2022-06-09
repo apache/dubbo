@@ -18,6 +18,7 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MappingListener;
@@ -29,7 +30,6 @@ import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -237,18 +237,15 @@ public class AbstractMetadataReportTest {
         assertEquals(3, abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        Gson gson = new Gson();
-        FullServiceDefinition data = gson.fromJson(v, FullServiceDefinition.class);
+        FullServiceDefinition data = JsonUtils.getJson().toJavaObject(v, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version);
 
         String v2 = abstractMetadataReport.store.get(providerMetadataIdentifier2.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        gson = new Gson();
-        data = gson.fromJson(v2, FullServiceDefinition.class);
+        data = JsonUtils.getJson().toJavaObject(v2, FullServiceDefinition.class);
         checkParam(data.getParameters(), application, version + "_2");
 
         String v3 = abstractMetadataReport.store.get(consumerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
-        gson = new Gson();
-        Map v3Map = gson.fromJson(v3, Map.class);
+        Map v3Map = JsonUtils.getJson().toJavaObject(v3, Map.class);
         checkParam(v3Map, application, version + "_3");
     }
 

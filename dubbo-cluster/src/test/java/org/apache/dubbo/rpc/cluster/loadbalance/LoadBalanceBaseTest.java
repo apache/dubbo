@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -201,7 +202,7 @@ public class LoadBalanceBaseTest {
 
         @Override
         public String toString() {
-            return JSON.toJSONString(this);
+            return JsonUtils.getJson().toJson(this);
         }
     }
 

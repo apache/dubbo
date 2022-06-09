@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.alibaba.fastjson.JSON;
 
 import java.beans.Transient;
 import java.util.ArrayList;
@@ -235,7 +234,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public List<Endpoint> getEndpoints() {
         if (endpoints == null) {
-            endpoints = new LinkedList<>(JSON.parseArray(metadata.get(ENDPOINTS), Endpoint.class));
+            endpoints = new LinkedList<>(JsonUtils.getJson().toJavaList(metadata.get(ENDPOINTS), Endpoint.class));
         }
         return endpoints;
     }
@@ -302,8 +301,8 @@ public class DefaultServiceInstance implements ServiceInstance {
         }
         DefaultServiceInstance that = (DefaultServiceInstance) o;
         boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
-                Objects.equals(getHost(), that.getHost()) &&
-                Objects.equals(getPort(), that.getPort());
+            Objects.equals(getHost(), that.getHost()) &&
+            Objects.equals(getPort(), that.getPort());
         for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
             if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
@@ -337,13 +336,13 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public String toFullString() {
         return "DefaultServiceInstance{" +
-                "serviceName='" + serviceName + '\'' +
-                ", host='" + host + '\'' +
-                ", port=" + port +
-                ", enabled=" + enabled +
-                ", healthy=" + healthy +
-                ", metadata=" + metadata +
-                '}';
+            "serviceName='" + serviceName + '\'' +
+            ", host='" + host + '\'' +
+            ", port=" + port +
+            ", enabled=" + enabled +
+            ", healthy=" + healthy +
+            ", metadata=" + metadata +
+            '}';
     }
 
     public static class Endpoint {

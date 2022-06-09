@@ -108,13 +108,6 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
         doRemoveListener(pathKey, listener);
     }
 
-    @Override
-    public final SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        String groupPath = buildGroupPath(group);
-        Collection<String> configKeys = doGetConfigKeys(groupPath);
-        return isEmpty(configKeys) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(configKeys));
-    }
-
     protected abstract boolean doPublishConfig(String pathKey, String content) throws Exception;
 
     protected abstract String doGetConfig(String pathKey) throws Exception;

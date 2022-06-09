@@ -64,14 +64,6 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
         return true;
     }
 
-    /**
-     * @since 2.7.5
-     */
-    @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        return emptySortedSet();
-    }
-
     @Override
     public void close() throws Exception {
         // no-op

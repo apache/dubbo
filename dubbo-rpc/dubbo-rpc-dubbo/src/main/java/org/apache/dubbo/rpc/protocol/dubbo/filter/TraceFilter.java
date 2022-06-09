@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
@@ -31,8 +32,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-
-import com.alibaba.fastjson.JSON;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -103,11 +102,11 @@ public class TraceFilter implements Filter {
                             if (count < max) {
                                 String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
                                 channel.send("\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
-                                        + invoker.getInterface().getName()
-                                        + "." + invocation.getMethodName()
-                                        + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(result.getValue())
-                                        + "\r\nelapsed: " + (end - start) + " ms."
-                                        + "\r\n\r\n" + prompt);
+                                    + invoker.getInterface().getName()
+                                    + "." + invocation.getMethodName()
+                                    + "(" + JsonUtils.getJson().toJson(invocation.getArguments()) + ")" + " -> " + JsonUtils.getJson().toJson(result.getValue())
+                                    + "\r\nelapsed: " + (end - start) + " ms."
+                                    + "\r\n\r\n" + prompt);
                             }
                             if (count >= max - 1) {
                                 channels.remove(channel);

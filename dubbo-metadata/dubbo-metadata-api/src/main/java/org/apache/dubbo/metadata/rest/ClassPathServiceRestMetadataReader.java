@@ -16,13 +16,10 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import org.apache.dubbo.common.utils.IOUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -60,20 +57,11 @@ public class ClassPathServiceRestMetadataReader implements ServiceRestMetadataRe
 
         execute(() -> {
             Enumeration<URL> resources = classLoader.getResources(serviceRestMetadataJsonResourcePath);
-            Gson gson = new Gson();
             while (resources.hasMoreElements()) {
                 URL resource = resources.nextElement();
                 InputStream inputStream = resource.openStream();
-                JsonParser parser = new JsonParser();
-                JsonElement jsonElement = parser.parse(new InputStreamReader(inputStream, METADATA_ENCODING));
-                if (jsonElement.isJsonArray()) {
-                    JsonArray jsonArray = jsonElement.getAsJsonArray();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        JsonElement childJsonElement = jsonArray.get(i);
-                        ServiceRestMetadata serviceRestMetadata = gson.fromJson(childJsonElement, ServiceRestMetadata.class);
-                        serviceRestMetadataList.add(serviceRestMetadata);
-                    }
-                }
+                String json = IOUtils.read(inputStream, METADATA_ENCODING);
+                serviceRestMetadataList.addAll(JsonUtils.getJson().toJavaList(json, ServiceRestMetadata.class));
             }
         });
 

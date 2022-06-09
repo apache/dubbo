@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
-import com.google.gson.Gson;
+import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.json.impl.FastJsonImpl;
 
 public class JsonUtils {
-    private static final Gson gson = new Gson();
-
-    public static Gson getGson() {
-        return gson;
+    public static JSON getJson() {
+        return new FastJsonImpl();
     }
 }
