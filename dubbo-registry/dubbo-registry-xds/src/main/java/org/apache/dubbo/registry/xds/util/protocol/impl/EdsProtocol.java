@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
 
-    private static final Logger logger = LoggerFactory.getLogger(org.apache.dubbo.registry.xds.util.protocol.impl.LdsProtocol.class);
+    private static final Logger logger = LoggerFactory.getLogger(EdsProtocol.class);
 
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);

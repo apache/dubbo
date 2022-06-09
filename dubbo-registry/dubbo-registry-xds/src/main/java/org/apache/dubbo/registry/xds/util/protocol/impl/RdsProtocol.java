@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 
 public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractProtocol.class);
+    private static final Logger logger = LoggerFactory.getLogger(RdsProtocol.class);
 
     public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);
