@@ -19,10 +19,6 @@ package org.apache.dubbo.common.config.configcenter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.SortedSet;
-
 
 /**
  * Dynamic Configuration
@@ -98,6 +94,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     /**
      * get configItem which contains content and stat info.
+     *
      * @param key
      * @param group
      * @return
@@ -165,6 +162,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     /**
      * publish config mapped to this given key and given group with stat.
+     *
      * @param key
      * @param group
      * @param content

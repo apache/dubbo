@@ -21,14 +21,9 @@ import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigu
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
-import static java.util.Collections.emptySortedSet;
-import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.common.utils.PathUtils.normalize;
 
