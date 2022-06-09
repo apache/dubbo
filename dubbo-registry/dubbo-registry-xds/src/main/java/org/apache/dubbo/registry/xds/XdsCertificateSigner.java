@@ -24,7 +24,7 @@ import org.apache.dubbo.common.extension.SPI;
 public interface XdsCertificateSigner {
 
     @Adaptive(value = "signer")
-    CertPair request(URL url);
+    CertPair GenerateCert(URL url);
 
     class CertPair {
         private final String privateKey;

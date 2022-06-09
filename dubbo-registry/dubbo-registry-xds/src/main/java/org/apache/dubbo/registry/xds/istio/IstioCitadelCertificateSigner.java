@@ -57,6 +57,9 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
@@ -65,28 +68,42 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
     private final IstioEnv istioEnv;
 
-    private CertPair certPairCache;
+    private CertPair certPair;
 
     public IstioCitadelCertificateSigner() {
+        ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
+        scheduledThreadPool.scheduleAtFixedRate(new GenerateCertTask(), 0, 30, TimeUnit.SECONDS);
         istioEnv = new IstioEnv();
     }
 
     @Override
-    public CertPair request(URL url) {
-        if (certPairCache != null && !certPairCache.isExpire()) {
-            return certPairCache;
+    public CertPair GenerateCert(URL url) {
+
+        if (certPair != null && !certPair.isExpire()) {
+            return certPair;
         }
+        return doGenerateCert();
+    }
+
+    private class GenerateCertTask implements Runnable {
+        @Override
+        public void run() {
+            doGenerateCert();
+        }
+    }
+
+    private CertPair doGenerateCert() {
         synchronized (this) {
-            if (certPairCache == null || certPairCache.isExpire()) {
+            if (certPair == null || certPair.isExpire()) {
                 try {
-                    certPairCache = createCert();
+                    certPair = createCert();
                 } catch (IOException e) {
                     logger.error("Generate Cert from Istio failed.", e);
                     throw new RpcException("Generate Cert from Istio failed.", e);
                 }
             }
         }
-        return certPairCache;
+        return certPair;
     }
 
     public CertPair createCert() throws IOException {

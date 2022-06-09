@@ -48,7 +48,7 @@ public class XdsChannel {
         try {
             XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
                 .getExtension(url.getParameter("signer", "istio"));
-            XdsCertificateSigner.CertPair certPair = signer.request(url);
+            XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
             SslContext context = GrpcSslContexts.forClient()
                 .trustManager(InsecureTrustManagerFactory.INSTANCE)
                 .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
