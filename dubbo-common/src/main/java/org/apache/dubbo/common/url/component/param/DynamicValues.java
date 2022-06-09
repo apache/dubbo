@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DynamicValues implements ParamValue {
-    private final Map<Integer, String> index2Value = new ConcurrentHashMap<>();
+    private volatile String[] index2Value = new String[1];
     private final Map<String, Integer> value2Index = new ConcurrentHashMap<>();
     private int indexSeq = 0;
 
@@ -40,8 +40,15 @@ public class DynamicValues implements ParamValue {
             synchronized (this) {
                 // thread safe
                 if (!value2Index.containsKey(value)) {
+                    if (indexSeq == Integer.MAX_VALUE) {
+                        throw new IllegalStateException("URL Param Cache is full.");
+                    }
+                    // copy on write, only support append now
+                    String[] newValues = new String[indexSeq + 1];
+                    System.arraycopy(index2Value, 0, newValues, 0, indexSeq);
+                    newValues[indexSeq] = value;
+                    index2Value = newValues;
                     value2Index.put(value, indexSeq);
-                    index2Value.put(indexSeq, value);
                     indexSeq += 1;
                 }
             }
@@ -50,21 +57,16 @@ public class DynamicValues implements ParamValue {
     }
 
     @Override
-    public String getN(Integer n) {
-        return index2Value.get(n);
+    public String getN(int n) {
+        return index2Value[n];
     }
 
     @Override
-    public Integer getIndex(String value) {
+    public int getIndex(String value) {
         Integer index = value2Index.get(value);
         if (index == null) {
             return add(value);
         }
         return index;
-    }
-
-    @Override
-    public String defaultVal() {
-        return getN(0);
     }
 }

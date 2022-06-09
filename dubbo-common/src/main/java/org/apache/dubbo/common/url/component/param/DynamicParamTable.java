@@ -18,14 +18,13 @@ package org.apache.dubbo.common.url.component.param;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * Global Param Cache Table
@@ -51,9 +50,9 @@ public final class DynamicParamTable {
         init();
     }
 
-    public static Integer getKeyIndex(boolean enabled, String key) {
+    public static int getKeyIndex(boolean enabled, String key) {
         if (!enabled) {
-            return null;
+            return -1;
         }
         // assume key is in constant pool
         int identityHashCode = System.identityHashCode(key);
@@ -61,12 +60,14 @@ public final class DynamicParamTable {
         if (index >= 0) {
             return index;
         }
-        return KEY2INDEX.get(key);
+        // fallback to key2index map
+        Integer indexFromMap = KEY2INDEX.get(key);
+        return indexFromMap == null ? -1 : indexFromMap;
     }
 
-    public static Integer getValueIndex(String key, String value) {
-        Integer idx = getKeyIndex(true, key);
-        if (idx == null) {
+    public static int getValueIndex(String key, String value) {
+        int idx = getKeyIndex(true, key);
+        if (idx < 0) {
             throw new IllegalArgumentException("Cannot found key in url param:" + key);
         }
         ParamValue paramValue = VALUES[idx];
@@ -77,16 +78,8 @@ public final class DynamicParamTable {
         return ORIGIN_KEYS[offset];
     }
 
-    public static boolean isDefaultValue(String key, String value) {
-        return Objects.equals(value, VALUES[getKeyIndex(true, key)].defaultVal());
-    }
-
-    public static String getValue(int vi, Integer offset) {
+    public static String getValue(int vi, int offset) {
         return VALUES[vi].getN(offset);
-    }
-
-    public static String getDefaultValue(int vi) {
-        return VALUES[vi].defaultVal();
     }
 
     private static void init() {
@@ -97,68 +90,27 @@ public final class DynamicParamTable {
         values.add(new DynamicValues(null));
 
         ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
-                .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
+            .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
 
-        List<Pair<String, ParamValue>> resultList = new ArrayList<>();
-
+        TreeMap<String, ParamValue> resultMap = new TreeMap<>(Comparator.comparingInt(System::identityHashCode));
         for (int i = 0; i < keys.size(); i++) {
-            if (!resultList.contains(new Pair<>(keys.get(i), null))) {
-                resultList.add(new Pair<>(keys.get(i), values.get(i)));
-            }
+            resultMap.put(keys.get(i), values.get(i));
         }
 
         // assume key is in constant pool, store identity hashCode as index
-        resultList.sort(Comparator.comparingInt(a -> System.identityHashCode(a.getKey())));
-        KEYS = resultList.stream()
-            .map(Pair::getKey)
+        KEYS = resultMap.keySet()
+            .stream()
             .map(System::identityHashCode)
             .mapToInt(x -> x)
             .toArray();
 
-        ORIGIN_KEYS = resultList.stream()
-            .map(Pair::getKey)
-            .toArray(String[]::new);
+        ORIGIN_KEYS = resultMap.keySet().toArray(new String[0]);
 
-        VALUES = resultList.stream()
-            .map(Pair::getValue)
-            .toArray(ParamValue[]::new);
+        VALUES = resultMap.values().toArray(new ParamValue[0]);
 
-        for (int i = 0; i < resultList.size(); i++) {
-            if (!resultList.get(i).getKey().isEmpty()) {
-                key2Index.put(resultList.get(i).getKey(), i);
-            }
+        for (int i = 0; i < ORIGIN_KEYS.length; i++) {
+            key2Index.put(ORIGIN_KEYS[i], i);
         }
         KEY2INDEX.putAll(key2Index);
-    }
-
-    private static class Pair<K, V> {
-        private final K key;
-        private final V value;
-
-        public Pair(K key, V value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public K getKey() {
-            return key;
-        }
-
-        public V getValue() {
-            return value;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Pair<?, ?> pair = (Pair<?, ?>) o;
-            return Objects.equals(key, pair.key);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(key);
-        }
     }
 }
