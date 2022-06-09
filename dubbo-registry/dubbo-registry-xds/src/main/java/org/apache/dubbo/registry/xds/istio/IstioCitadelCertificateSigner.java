@@ -66,14 +66,15 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
     private static final Logger logger = LoggerFactory.getLogger(IstioCitadelCertificateSigner.class);
 
-    private final IstioEnv istioEnv;
+    private final org.apache.dubbo.registry.xds.istio.IstioEnv istioEnv;
 
     private CertPair certPair;
 
     public IstioCitadelCertificateSigner() {
+        // watch cert, Refresh every 30s
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
         scheduledThreadPool.scheduleAtFixedRate(new GenerateCertTask(), 0, 30, TimeUnit.SECONDS);
-        istioEnv = new IstioEnv();
+        istioEnv = new org.apache.dubbo.registry.xds.istio.IstioEnv();
     }
 
     @Override
