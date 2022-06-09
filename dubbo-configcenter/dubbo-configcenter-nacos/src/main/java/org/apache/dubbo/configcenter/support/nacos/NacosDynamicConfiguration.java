@@ -33,9 +33,7 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.client.config.http.HttpAgent;
 
-import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
