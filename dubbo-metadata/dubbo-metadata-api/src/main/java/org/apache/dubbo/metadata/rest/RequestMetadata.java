@@ -182,7 +182,7 @@ public class RequestMetadata implements Serializable {
         if (headers != null && !headers.isEmpty()) {
             Map<String, List<String>> httpHeaders = new LinkedHashMap<>();
             // Add all headers
-            addAll(headers, httpHeaders);
+            addAll(httpHeaders, headers);
             // Handles "Content-Type" and "Accept" headers if present
 //            mediaTypes(httpHeaders, HttpHeaders.CONTENT_TYPE, this.consumes);
 //            mediaTypes(httpHeaders, HttpHeaders.ACCEPT, this.produces);
