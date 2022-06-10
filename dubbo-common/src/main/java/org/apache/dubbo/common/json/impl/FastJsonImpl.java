@@ -44,7 +44,7 @@ public class FastJsonImpl implements JSON {
 
     @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return (List<T>) com.alibaba.fastjson.JSON.parseArray(json, new Type[]{clazz});
+        return (List<T>) com.alibaba.fastjson.JSON.parseArray(json, clazz);
     }
 
     @Override
