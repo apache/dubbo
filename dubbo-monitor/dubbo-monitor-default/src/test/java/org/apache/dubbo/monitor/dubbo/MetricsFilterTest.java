@@ -17,7 +17,6 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.monitor.dubbo.service.DemoService;
@@ -37,6 +36,8 @@ import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
 import com.alibaba.metrics.MetricName;
 import com.alibaba.metrics.common.MetricObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -247,7 +248,7 @@ public class MetricsFilterTest {
             }
         }
         Protocol protocol = new DubboProtocol();
-        // using host name might cause connection failure because multiple addresses might be configured to the same name!  
+        // using host name might cause connection failure because multiple addresses might be configured to the same name!
         url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
         invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
@@ -257,7 +258,9 @@ public class MetricsFilterTest {
             // ignore
         }
         String resStr = invoker.invoke(invocation).getValue().toString();
-        List<MetricObject> metricObjectList = JsonUtils.getJson().toJavaList(resStr, MetricObject.class);
+        // MetricObject do not have setter, should use gson to parse
+        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>() {
+        }.getType());
         Map<String, Object> metricMap = new HashMap<>();
         for (int i = 0; i < metricObjectList.size(); i++) {
             MetricObject object = metricObjectList.get(i);
@@ -314,7 +317,8 @@ public class MetricsFilterTest {
             // ignore
         }
         String resStr = invoker.invoke(invocation).getValue().toString();
-        List<MetricObject> metricObjectList = JsonUtils.getJson().toJavaObject(resStr, MetricObject.class);
+        List<MetricObject> metricObjectList = new Gson().fromJson(resStr, new TypeToken<List<MetricObject>>() {
+        }.getType());
         Map<String, Map<String, Object>> methodMetricMap = new HashMap<>();
         for (int i = 0; i < metricObjectList.size(); i++) {
             MetricObject object = metricObjectList.get(i);
