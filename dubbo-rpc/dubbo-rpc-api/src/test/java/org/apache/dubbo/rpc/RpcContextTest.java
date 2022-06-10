@@ -108,8 +108,13 @@ public class RpcContextTest {
         Assertions.assertNull(context.getAttachment("_33"));
         Assertions.assertEquals("3333", context.getAttachment(".33"));
 
+        context.getAttachments().put("44", "4444");
+        Assertions.assertEquals(context.getAttachment("44"), "4444");
+
         context.clearAttachments();
         Assertions.assertNull(context.getAttachment("_11"));
+
+
     }
 
     @Test

@@ -130,6 +130,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                 .clearParameters()
                 .addParameters(queryMap)
                 .removeParameter(MONITOR_KEY)
+                .addMethodParameters(URL.toMethodParameters(queryMap)) // reset method parameters
                 .build();
     }
 

@@ -803,6 +803,7 @@ public class DubboBootstrap {
         metadataReportConfig.setUsername(registryConfig.getUsername());
         metadataReportConfig.setPassword(registryConfig.getPassword());
         metadataReportConfig.setTimeout(registryConfig.getTimeout());
+        metadataReportConfig.setRegistry(registryConfig.getId());
         return metadataReportConfig;
     }
 

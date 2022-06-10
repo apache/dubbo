@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import java.util.HashMap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -354,8 +356,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
 
+        // fix issue#9922
+        Map<String, String> providerSideParameters = new HashMap<>(providerUrl.getParameters());
+        providerSideParameters.remove(CommonConstants.TAG_KEY);
         // The combination of directoryUrl and override is at the end of notify, which can't be handled here
-//        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
+        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerSideParameters); // Merge the provider side parameters
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
