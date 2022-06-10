@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+@Cmd(name = "switchLogger", summary = "Switch logger", example = {
+    "switchLogger slf4j"
+})
+public class SwitchLogger implements BaseCommand {
+    private FrameworkModel frameworkModel;
 
-/**
- * Determine incoming bytes belong to the specific protocol.
- *
- */
-public interface ProtocolDetector {
-
-    Result detect(final ChannelHandlerContext ctx, final ByteBuf in);
-
-    enum Result {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    @Override
+    public String execute(CommandContext commandContext, String[] args) {
+        if (args.length != 1) {
+            return "Unexpected argument length.";
+        }
+        LoggerFactory.setLoggerAdapter(frameworkModel, args[0]);
+        return "OK";
     }
 }

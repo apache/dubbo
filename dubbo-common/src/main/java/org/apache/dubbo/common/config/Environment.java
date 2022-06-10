@@ -89,15 +89,23 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         }
     }
 
+    /**
+     * @deprecated MigrationRule will be removed in 3.1
+     */
+    @Deprecated
     private void loadMigrationRule() {
-        String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
-        if (StringUtils.isEmpty(path)) {
-            path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
+        if (Boolean.parseBoolean(System.getProperty(CommonConstants.DUBBO_MIGRATION_FILE_ENABLE, "false"))) {
+            String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
             if (StringUtils.isEmpty(path)) {
-                path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
+                path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
+                if (StringUtils.isEmpty(path)) {
+                    path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
+                }
             }
+            this.localMigrationRule = ConfigUtils.loadMigrationRule(scopeModel.getClassLoaders(), path);
+        } else {
+            this.localMigrationRule = null;
         }
-        this.localMigrationRule = ConfigUtils.loadMigrationRule(scopeModel.getClassLoaders(), path);
     }
 
     /**
