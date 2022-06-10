@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -140,11 +141,11 @@ public class RequestMetadata implements Serializable {
     }
 
     public Set<String> getParamNames() {
-        return params.keySet();
+        return new HashSet<>(params.keySet());
     }
 
     public Set<String> getHeaderNames() {
-        return headers.keySet();
+        return new HashSet<>(headers.keySet());
     }
 
 //    public List<MediaType> getConsumeMediaTypes() {
