@@ -203,7 +203,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
-        String r = JsonUtils.getJson().toJson(Arrays.asList(url));
+        String r = JsonUtils.getJson().toJson(Arrays.asList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));
@@ -223,7 +223,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
-        String r = JsonUtils.getJson().toJson(Arrays.asList(url));
+        String r = JsonUtils.getJson().toJson(Arrays.asList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));
