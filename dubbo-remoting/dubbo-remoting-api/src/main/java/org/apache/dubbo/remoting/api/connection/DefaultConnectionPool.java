@@ -72,6 +72,9 @@ public class DefaultConnectionPool implements ConnectionPool<DefaultConnectionPo
                 return createConnection();
             }
             connection = all.poll();
+            if (connection == null) {
+                return createConnection();
+            }
             synchronized (connection.getReusedLock()) {
                 connection.getReusedCount().incrementAndGet();
             }
