@@ -131,19 +131,19 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
-            url.getOrDefaultApplicationModel());
+            url.getOrDefaultApplicationModel(), url);
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
             connectionManager, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
     }
 
-    private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel) {
+    private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
         ExecutorService executor = applicationModel.getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
-            .createExecutorIfAbsent(THREAD_POOL_URL);
+            .createExecutorIfAbsent(url);
         Objects.requireNonNull(executor,
-            String.format("No available executor found in %s", THREAD_POOL_URL));
+            String.format("No available executor found in %s", url));
         return executor;
     }
 
