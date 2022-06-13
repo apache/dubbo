@@ -55,7 +55,6 @@ public interface Constants {
 
     boolean DEFAULT_LAZY_REQUEST_WITH_WARNING = false;
 
-    String OPTIMIZER_KEY = "optimizer";
 
     String ON_CONNECT_KEY = "onconnect";
 
