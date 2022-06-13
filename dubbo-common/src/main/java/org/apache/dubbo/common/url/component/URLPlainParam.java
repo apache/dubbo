@@ -31,14 +31,14 @@ public class URLPlainParam extends URLParam implements Serializable {
 
     private static final long serialVersionUID = 4722019979665434393L;
 
-    protected URLPlainParam(BitSet key, BitSet defaultKey, Integer[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
-        super(key, defaultKey, value, extraParams, methodParameters, rawParam);
+    protected URLPlainParam(BitSet key, int[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
+        super(key, value, extraParams, methodParameters, rawParam);
         this.enableCompressed = false;
     }
 
     public static URLPlainParam toURLPlainParam(URLParam urlParam) {
         Map<String, String> params = Collections.unmodifiableMap(new HashMap<>(urlParam.getParameters()));
-        return new URLPlainParam(new BitSet(), new BitSet(), new Integer[0], params, urlParam.getMethodParameters(), urlParam.getRawParam());
+        return new URLPlainParam(new BitSet(), new int[0], params, urlParam.getMethodParameters(), urlParam.getRawParam());
     }
 
 }

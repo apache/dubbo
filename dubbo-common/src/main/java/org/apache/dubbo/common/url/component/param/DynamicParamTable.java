@@ -18,20 +18,28 @@ package org.apache.dubbo.common.url.component.param;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.TreeMap;
 
 /**
  * Global Param Cache Table
  * Not support method parameters
  */
 public final class DynamicParamTable {
-    private static final List<String> KEYS = new CopyOnWriteArrayList<>();
-    private static final List<ParamValue> VALUES = new CopyOnWriteArrayList<>();
+    /**
+     * Keys array, value is key's identity hashcode ( assume key is in constant pool )
+     */
+    private static int[] KEYS;
+    /**
+     * Keys array, value is string
+     */
+    private static String[] ORIGIN_KEYS;
+    private static ParamValue[] VALUES;
     private static final Map<String, Integer> KEY2INDEX = new HashMap<>(64);
 
     private DynamicParamTable() {
@@ -42,36 +50,36 @@ public final class DynamicParamTable {
         init();
     }
 
-    public static Integer getKeyIndex(boolean enabled, String key) {
+    public static int getKeyIndex(boolean enabled, String key) {
         if (!enabled) {
-            return null;
+            return -1;
         }
-        return KEY2INDEX.get(key);
+        // assume key is in constant pool
+        int identityHashCode = System.identityHashCode(key);
+        int index = Arrays.binarySearch(KEYS, identityHashCode);
+        if (index >= 0) {
+            return index;
+        }
+        // fallback to key2index map
+        Integer indexFromMap = KEY2INDEX.get(key);
+        return indexFromMap == null ? -1 : indexFromMap;
     }
 
-    public static Integer getValueIndex(String key, String value) {
-        Integer idx = getKeyIndex(true, key);
-        if (idx == null) {
+    public static int getValueIndex(String key, String value) {
+        int idx = getKeyIndex(true, key);
+        if (idx < 0) {
             throw new IllegalArgumentException("Cannot found key in url param:" + key);
         }
-        ParamValue paramValue = VALUES.get(idx);
+        ParamValue paramValue = VALUES[idx];
         return paramValue.getIndex(value);
     }
 
     public static String getKey(int offset) {
-        return KEYS.get(offset);
+        return ORIGIN_KEYS[offset];
     }
 
-    public static boolean isDefaultValue(String key, String value) {
-        return Objects.equals(value, VALUES.get(getKeyIndex(true, key)).defaultVal());
-    }
-
-    public static String getValue(int vi, Integer offset) {
-        return VALUES.get(vi).getN(offset);
-    }
-
-    public static String getDefaultValue(int vi) {
-        return VALUES.get(vi).defaultVal();
+    public static String getValue(int vi, int offset) {
+        return VALUES[vi].getN(offset);
     }
 
     private static void init() {
@@ -82,19 +90,26 @@ public final class DynamicParamTable {
         values.add(new DynamicValues(null));
 
         ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
-                .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
+            .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
 
+        TreeMap<String, ParamValue> resultMap = new TreeMap<>(Comparator.comparingInt(System::identityHashCode));
         for (int i = 0; i < keys.size(); i++) {
-            if (!KEYS.contains(keys.get(i))) {
-                KEYS.add(keys.get(i));
-                VALUES.add(values.get(i));
-            }
+            resultMap.put(keys.get(i), values.get(i));
         }
 
-        for (int i = 0; i < KEYS.size(); i++) {
-            if (!KEYS.get(i).isEmpty()) {
-                key2Index.put(KEYS.get(i), i);
-            }
+        // assume key is in constant pool, store identity hashCode as index
+        KEYS = resultMap.keySet()
+            .stream()
+            .map(System::identityHashCode)
+            .mapToInt(x -> x)
+            .toArray();
+
+        ORIGIN_KEYS = resultMap.keySet().toArray(new String[0]);
+
+        VALUES = resultMap.values().toArray(new ParamValue[0]);
+
+        for (int i = 0; i < ORIGIN_KEYS.length; i++) {
+            key2Index.put(ORIGIN_KEYS[i], i);
         }
         KEY2INDEX.putAll(key2Index);
     }
