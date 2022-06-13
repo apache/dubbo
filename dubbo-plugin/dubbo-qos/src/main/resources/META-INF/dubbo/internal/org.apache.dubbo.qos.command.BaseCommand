@@ -29,3 +29,6 @@ getEnabledRouterSnapshot=org.apache.dubbo.qos.command.impl.GetEnabledRouterSnaps
 enableRouterSnapshot=org.apache.dubbo.qos.command.impl.EnableRouterSnapshot
 disableRouterSnapshot=org.apache.dubbo.qos.command.impl.DisableRouterSnapshot
 getRecentRouterSnapshot=org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot
+loggerInfo=org.apache.dubbo.qos.command.impl.LoggerInfo
+switchLogger=org.apache.dubbo.qos.command.impl.SwitchLogger
+switchLogLevel=org.apache.dubbo.qos.command.impl.SwitchLogLevel

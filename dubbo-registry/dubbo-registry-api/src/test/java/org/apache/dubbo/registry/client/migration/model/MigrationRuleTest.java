@@ -82,7 +82,7 @@ public class MigrationRuleTest {
         Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
         Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
 
-        assertEquals(migrationRule.getInterfaces().size(), 2);
+        assertEquals(2, migrationRule.getInterfaces().size());
 
         assertEquals(0.5f, migrationRule.getThreshold(url));
         assertEquals(30, migrationRule.getProportion(url));
@@ -99,7 +99,7 @@ public class MigrationRuleTest {
 
         Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
         Mockito.when(url.getServiceInterface()).thenReturn("GreetingService");
-        when(mapping.getCachedMapping(any(URL.class))).thenReturn(Collections.singleton("TestApplication"));
+        when(mapping.getRemoteMapping(any(URL.class))).thenReturn(Collections.singleton("TestApplication"));
 
         Set<String> services = new HashSet<>();
         services.add("TestApplication");
