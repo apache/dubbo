@@ -210,7 +210,7 @@ jobs:
       - name: "Init Candidate Versions"
         run: |
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
-          CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
+          CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;dubbo.compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
         run: |
