@@ -38,5 +38,8 @@ public class DubboLoadingStrategy implements LoadingStrategy {
         return NORMAL_PRIORITY;
     }
 
-
+    @Override
+    public String getName() {
+        return "DUBBO";
+    }
 }

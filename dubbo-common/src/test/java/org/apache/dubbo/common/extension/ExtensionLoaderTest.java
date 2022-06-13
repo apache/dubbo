@@ -43,7 +43,12 @@ import org.apache.dubbo.common.extension.ext11_no_adaptive.NoAdaptiveExtImpl;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.*;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl1;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl3;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper1;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper2;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper3;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper4;
 import org.apache.dubbo.common.extension.ext7.InitErrorExt;
 import org.apache.dubbo.common.extension.ext8_add.AddExt1;
 import org.apache.dubbo.common.extension.ext8_add.AddExt2;
@@ -60,7 +65,10 @@ import org.apache.dubbo.common.extension.ext9_empty.Ext9Empty;
 import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
+import org.apache.dubbo.common.extension.wrapper.Demo;
 import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -82,6 +90,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -735,6 +744,39 @@ public class ExtensionLoaderTest {
         assertEquals("DuplicatedOverriddenExt1", duplicatedOverriddenExt.echo());
         //recover the loading strategies
         ExtensionLoader.setLoadingStrategies(loadingStrategies.toArray(new LoadingStrategy[loadingStrategies.size()]));
+    }
+
+    @Test
+    public void testLoadByDubboInternalSPI() {
+        ExtensionLoader<SPI1> extensionLoader = getExtensionLoader(SPI1.class);
+        SPI1 spi1 = extensionLoader.getExtension("1",true);
+        assertNotNull(spi1);
+
+        ExtensionLoader<SPI2> extensionLoader2 = getExtensionLoader(SPI2.class);
+        SPI2 spi2 = extensionLoader2.getExtension("2",true);
+        assertNotNull(spi2);
+
+        try {
+            ExtensionLoader<SPI3> extensionLoader3 = getExtensionLoader(SPI3.class);
+            SPI3 spi3 = extensionLoader3.getExtension("3",true);
+            assertNotNull(spi3);
+        }catch (IllegalStateException illegalStateException){
+            if (!illegalStateException.getMessage().contains("No such extension")) {
+                fail();
+            }
+        }
+
+        ExtensionLoader<SPI4> extensionLoader4 = getExtensionLoader(SPI4.class);
+        SPI4 spi4 = extensionLoader4.getExtension("4",true);
+        assertNotNull(spi4);
+
+    }
+
+    @Test
+    void isWrapperClass() {
+        assertFalse(getExtensionLoader(Demo.class).isWrapperClass(DemoImpl.class));
+        assertTrue(getExtensionLoader(Demo.class).isWrapperClass(DemoWrapper.class));
+        assertTrue(getExtensionLoader(Demo.class).isWrapperClass(DemoWrapper2.class));
     }
 
     /**
