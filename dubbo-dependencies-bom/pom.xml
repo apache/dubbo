@@ -98,7 +98,7 @@
         <grizzly_version>2.4.4</grizzly_version>
         <httpclient_version>4.5.13</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
-        <fastjson_version>1.2.70</fastjson_version>
+        <fastjson_version>1.2.83</fastjson_version>
         <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.2.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
@@ -130,10 +130,10 @@
         <envoy_api_version>0.1.23</envoy_api_version>
 
         <rs_api_version>2.0</rs_api_version>
-        <resteasy_version>3.14.0.Final</resteasy_version>
+        <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.69</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
-        <nacos_version>2.0.4</nacos_version>
+        <nacos_version>2.1.0</nacos_version>
         <grpc.version>1.31.1</grpc.version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
@@ -166,13 +166,13 @@
         <bouncycastle-bcprov_version>1.68</bouncycastle-bcprov_version>
         <metrics_version>2.0.1</metrics_version>
         <sofa_registry_version>5.2.0</sofa_registry_version>
-        <gson_version>2.8.5</gson_version>
+        <gson_version>2.8.9</gson_version>
         <jsonrpc_version>1.2.0</jsonrpc_version>
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.21</commons_compress_version>
-        <revision>3.0.8-SNAPSHOT</revision>
+        <revision>3.0.9-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>

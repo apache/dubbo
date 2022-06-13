@@ -18,6 +18,7 @@ package org.apache.dubbo.config.annotation;
 
 
 import org.apache.dubbo.common.constants.ClusterRules;
+import org.apache.dubbo.common.constants.LoadbalanceRules;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -205,7 +206,7 @@ public @interface DubboService {
      *
      * you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default ClusterRules.EMPTY;
+    String loadbalance() default LoadbalanceRules.EMPTY;
 
     /**
      * Whether to enable async invocation, default value is false

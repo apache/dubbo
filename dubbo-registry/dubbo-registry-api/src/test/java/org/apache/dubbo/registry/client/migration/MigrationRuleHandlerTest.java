@@ -38,8 +38,9 @@ public class MigrationRuleHandlerTest {
         Mockito.when(invoker.migrateToForceApplicationInvoker(Mockito.any())).thenReturn(true);
         Mockito.when(invoker.migrateToForceInterfaceInvoker(Mockito.any())).thenReturn(true);
 
-        handler.doMigrate(MigrationRule.INIT);
-        Mockito.verify(invoker, Mockito.times(1)).migrateToApplicationFirstInvoker(MigrationRule.INIT);
+        MigrationRule initRule = MigrationRule.getInitRule();
+        handler.doMigrate(initRule);
+        Mockito.verify(invoker, Mockito.times(1)).migrateToApplicationFirstInvoker(initRule);
 
         MigrationRule rule = Mockito.mock(MigrationRule.class);
         Mockito.when(rule.getStep(url)).thenReturn(MigrationStep.FORCE_APPLICATION);

@@ -108,8 +108,8 @@ public abstract class AbstractRegistry implements Registry {
         if (localCacheEnabled) {
             // Start file save timer
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
-            String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY +
-                url.getApplication() + "-" + url.getAddress().replaceAll(":", "-") + CACHE;
+            String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + url.getApplication() +
+                "-" + url.getAddress().replaceAll(":", "-") + CACHE;
             String filename = url.getParameter(FILE_KEY, defaultFilename);
             File file = null;
             if (ConfigUtils.isNotEmpty(filename)) {
@@ -188,10 +188,11 @@ public abstract class AbstractRegistry implements Registry {
                 lockfile.createNewFile();
             }
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                FileChannel channel = raf.getChannel()) {
+                 FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
-                    throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
+                    throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", " +
+                        "ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
                 }
                 // Save
                 try {
@@ -239,10 +240,12 @@ public abstract class AbstractRegistry implements Registry {
             } else {
                 registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
-            logger.warn("Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
+            if (!(e instanceof OverlappingFileLockException)) {
+                logger.warn("Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
+            }
         } finally {
             if (lockfile != null) {
-                if(!lockfile.delete()) {
+                if (!lockfile.delete()) {
                     logger.warn(String.format("Failed to delete lock file [%s]", lockfile.getName()));
                 }
             }
@@ -276,9 +279,8 @@ public abstract class AbstractRegistry implements Registry {
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
-            if (StringUtils.isNotEmpty(key) && key.equals(url.getServiceKey())
-                && (Character.isLetter(key.charAt(0)) || key.charAt(0) == '_')
-                && StringUtils.isNotEmpty(value)) {
+            if (StringUtils.isNotEmpty(key) && key.equals(url.getServiceKey()) && (Character.isLetter(key.charAt(0))
+                || key.charAt(0) == '_') && StringUtils.isNotEmpty(value)) {
                 String[] arr = value.trim().split(URL_SPLIT);
                 List<URL> urls = new ArrayList<>();
                 for (String u : arr) {
@@ -444,8 +446,7 @@ public abstract class AbstractRegistry implements Registry {
         if (listener == null) {
             throw new IllegalArgumentException("notify listener == null");
         }
-        if ((CollectionUtils.isEmpty(urls))
-            && !ANY_VALUE.equals(url.getServiceInterface())) {
+        if ((CollectionUtils.isEmpty(urls)) && !ANY_VALUE.equals(url.getServiceInterface())) {
             logger.warn("Ignore empty notify urls for subscribe url " + url);
             return;
         }

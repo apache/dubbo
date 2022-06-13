@@ -215,9 +215,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     private MigrationRule parseRule(String rawRule) {
-        MigrationRule tmpRule = rule == null ? MigrationRule.INIT : rule;
+        MigrationRule tmpRule = rule == null ? MigrationRule.getInitRule() : rule;
         if (INIT.equals(rawRule)) {
-            tmpRule = MigrationRule.INIT;
+            tmpRule = MigrationRule.getInitRule();
         } else {
             try {
                 tmpRule = MigrationRule.parse(rawRule);

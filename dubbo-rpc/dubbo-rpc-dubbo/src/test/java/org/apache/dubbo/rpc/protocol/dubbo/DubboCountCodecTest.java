@@ -61,7 +61,7 @@ public class DubboCountCodecTest {
         }
 
         MultiMessage multiMessage = (MultiMessage) dubboCountCodec.decode(channel, buffer);
-        Assertions.assertEquals(multiMessage.size(), 20);
+        Assertions.assertEquals(multiMessage.size(), 18);
         int requestCount = 0;
         int responseCount = 0;
         Iterator iterator = multiMessage.iterator();
@@ -78,7 +78,7 @@ public class DubboCountCodecTest {
             }
         }
         Assertions.assertEquals(requestCount, 10);
-        Assertions.assertEquals(responseCount, 10);
+        Assertions.assertEquals(responseCount, 8);
     }
 
 }

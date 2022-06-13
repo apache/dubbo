@@ -273,10 +273,12 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.metadata = metadata;
     }
 
+    @Override
     public MetadataInfo getServiceMetadata() {
         return serviceMetadata;
     }
 
+    @Override
     public void setServiceMetadata(MetadataInfo serviceMetadata) {
         this.serviceMetadata = serviceMetadata;
         this.instanceAddressURL = null;

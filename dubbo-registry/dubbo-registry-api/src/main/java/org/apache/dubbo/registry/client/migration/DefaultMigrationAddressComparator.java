@@ -100,6 +100,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         return CollectionUtils.isNotEmpty(invokers) ? invokers.size() : 0;
     }
 
+    @Override
     public Map<String, Integer> getAddressSize(String displayServiceKey) {
         return serviceMigrationData.get(displayServiceKey);
     }

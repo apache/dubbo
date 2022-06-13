@@ -251,7 +251,7 @@ public class MultipleRegistry extends AbstractRegistry {
         return effectReferenceRegistryURLs;
     }
 
-    static protected class MultipleNotifyListenerWrapper implements NotifyListener {
+    protected static class MultipleNotifyListenerWrapper implements NotifyListener {
 
         Map<URL, SingleNotifyListener> registryMap = new ConcurrentHashMap<URL, SingleNotifyListener>(4);
         NotifyListener sourceNotifyListener;
@@ -311,7 +311,7 @@ public class MultipleRegistry extends AbstractRegistry {
         }
     }
 
-    static protected class SingleNotifyListener implements NotifyListener {
+    protected static class SingleNotifyListener implements NotifyListener {
 
         MultipleNotifyListenerWrapper multipleNotifyListenerWrapper;
         Registry registry;

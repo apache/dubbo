@@ -61,6 +61,8 @@ public interface CommonConstants {
 
     String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
 
+    String DUBBO_MIGRATION_FILE_ENABLE = "dubbo.migration-file.enable";
+
     String DEFAULT_DUBBO_MIGRATION_FILE = "dubbo-migration.yaml";
 
     String ANY_VALUE = "*";
@@ -535,4 +537,6 @@ public interface CommonConstants {
     String NATIVE_STUB = "nativestub";
 
     String METADATA = "metadata";
+
+    String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
 }

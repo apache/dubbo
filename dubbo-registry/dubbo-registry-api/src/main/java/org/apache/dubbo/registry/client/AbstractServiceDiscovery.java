@@ -86,6 +86,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
 
+    @Override
     public synchronized void register() throws RuntimeException {
         this.serviceInstance = createServiceInstance(this.metadataInfo);
         if (!isValidInstance(this.serviceInstance)) {

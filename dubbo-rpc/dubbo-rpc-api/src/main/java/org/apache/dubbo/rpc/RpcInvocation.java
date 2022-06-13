@@ -113,8 +113,12 @@ public class RpcInvocation implements Invocation, Serializable {
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getTargetServiceUniqueName(), invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(),
             invocation.getProtocolServiceKey(), invocation.getParameterTypes(), invocation.getArguments(),
+<<<<<<< fix-#9962
             new HashMap<>(CollectionUtils.isEmptyMap(invocation.getObjectAttachments()) ? new HashMap<>() : invocation.getObjectAttachments()),
             invocation.getInvoker(), invocation.getAttributes(),
+=======
+            Collections.synchronizedMap(invocation.getObjectAttachments()), invocation.getInvoker(), invocation.getAttributes(),
+>>>>>>> 3.0
             invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -242,7 +246,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.protocolServiceKey = protocolServiceKey;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
-        this.attachments = attachments == null ? new HashMap<>() : attachments;
+        this.attachments = attachments == null ? Collections.synchronizedMap(new HashMap<>()) : attachments;
         this.attributes = attributes == null ? Collections.synchronizedMap(new HashMap<>()) : attributes;
         this.invoker = invoker;
         initParameterDesc();
@@ -383,7 +387,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public void setObjectAttachments(Map<String, Object> attachments) {
-        this.attachments = attachments == null ? new HashMap<>() : attachments;
+        this.attachments = attachments == null ? Collections.synchronizedMap(new HashMap<>()) : attachments;
     }
 
     @Override
@@ -399,7 +403,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     @Deprecated
     public void setAttachments(Map<String, String> attachments) {
-        this.attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
+        this.attachments = attachments == null ? Collections.synchronizedMap(new HashMap<>()) : new HashMap<>(attachments);
     }
 
     @Override
@@ -410,7 +414,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public void setObjectAttachment(String key, Object value) {
         if (attachments == null) {
-            attachments = new HashMap<>();
+            attachments = Collections.synchronizedMap(new HashMap<>());
         }
         attachments.put(key, value);
     }
@@ -428,7 +432,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public void setObjectAttachmentIfAbsent(String key, Object value) {
         if (attachments == null) {
-            attachments = new HashMap<>();
+            attachments = Collections.synchronizedMap(new HashMap<>());
         }
         if (!attachments.containsKey(key)) {
             attachments.put(key, value);
@@ -441,7 +445,7 @@ public class RpcInvocation implements Invocation, Serializable {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<>();
+            this.attachments = Collections.synchronizedMap(new HashMap<>());
         }
         this.attachments.putAll(attachments);
     }
@@ -451,7 +455,7 @@ public class RpcInvocation implements Invocation, Serializable {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<>();
+            this.attachments = Collections.synchronizedMap(new HashMap<>());
         }
         this.attachments.putAll(attachments);
     }
