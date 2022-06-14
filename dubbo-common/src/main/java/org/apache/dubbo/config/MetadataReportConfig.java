@@ -123,9 +123,13 @@ public class MetadataReportConfig extends AbstractConfig {
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
         map.put("metadata", url.getProtocol());
-        return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
-                url.getPort(), url.getPath(), map);
-
+        return new URL("metadata",
+            StringUtils.isBlank(url.getUsername()) ? this.getUsername() : url.getUsername(),
+            StringUtils.isBlank(url.getPassword()) ? this.getPassword() : url.getPassword(),
+            url.getHost(),
+            // address port is priority
+            this.getPort() == null ? url.getPort() : url.getPort(this.getPort()),
+            url.getPath(), map);
     }
 
     public String getProtocol() {
