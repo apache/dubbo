@@ -76,4 +76,13 @@ public interface LoadingStrategy extends Prioritized {
     default boolean overridden() {
         return false;
     }
+
+    default String getName() {
+        return this.getClass().getSimpleName();
+    }
+
+    /**
+     * when spi is loaded by dubbo framework classloader only, it indicates all LoadingStrategy should load this spi
+     */
+    String ALL = "ALL";
 }

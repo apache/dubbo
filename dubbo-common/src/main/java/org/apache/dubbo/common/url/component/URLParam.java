@@ -49,10 +49,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
  * <br/>
  * URLParam should operate as Copy-On-Write, each modify actions will return a new Object
  * <br/>
- *
+ * <p>
  * NOTE: URLParam is not support serialization! {@link DynamicParamTable} is related with
  * current running environment. If you want to make URL as a parameter, please call
  * {@link URL#toSerializableURL()} to create {@link URLPlainParam} instead.
+ *
  * @since 3.0
  */
 public class URLParam {
@@ -77,14 +78,9 @@ public class URLParam {
     private final BitSet KEY;
 
     /**
-     * using bit to save if value is default value (reduce VALUE size)
+     * an array which contains value-offset
      */
-    private final BitSet DEFAULT_KEY;
-
-    /**
-     * a compressed (those key not exist or value is default value are bring removed in this array) array which contains value-offset
-     */
-    private final Integer[] VALUE;
+    private final int[] VALUE;
 
     /**
      * store extra parameters which key not match in {@link DynamicParamTable}
@@ -115,7 +111,6 @@ public class URLParam {
     protected URLParam() {
         this.rawParam = null;
         this.KEY = null;
-        this.DEFAULT_KEY = null;
         this.VALUE = null;
         this.EXTRA_PARAMS = null;
         this.METHOD_PARAMETERS = null;
@@ -124,18 +119,14 @@ public class URLParam {
 
     protected URLParam(BitSet key, Map<Integer, Integer> value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
         this.KEY = key;
-        this.DEFAULT_KEY = new BitSet(KEY.size());
-        this.VALUE = new Integer[value.size()];
-
-        // compress VALUE
+        this.VALUE = new int[value.size()];
         for (int i = key.nextSetBit(0), offset = 0; i >= 0; i = key.nextSetBit(i + 1)) {
             if (value.containsKey(i)) {
                 VALUE[offset++] = value.get(i);
             } else {
-                DEFAULT_KEY.set(i);
+                throw new IllegalArgumentException();
             }
         }
-
         this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
         this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
@@ -144,16 +135,12 @@ public class URLParam {
         this.enableCompressed = true;
     }
 
-    protected URLParam(BitSet key, BitSet defaultKey, Integer[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
+    protected URLParam(BitSet key, int[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
         this.KEY = key;
-        this.DEFAULT_KEY = defaultKey;
-
         this.VALUE = value;
-
         this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
         this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
-
         this.timestamp = System.currentTimeMillis();
         this.enableCompressed = true;
     }
@@ -387,12 +374,8 @@ public class URLParam {
             Set<String> set = new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
             for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
                 String value;
-                if (urlParam.DEFAULT_KEY.get(i)) {
-                    value = DynamicParamTable.getDefaultValue(i);
-                } else {
-                    Integer offset = urlParam.keyIndexToOffset(i);
-                    value = DynamicParamTable.getValue(i, offset);
-                }
+                int offset = urlParam.keyIndexToOffset(i);
+                value = DynamicParamTable.getValue(i, offset);
                 set.add(value);
             }
 
@@ -407,12 +390,8 @@ public class URLParam {
             Set<Entry<String, String>> set = new LinkedHashSet<>((int) ((urlParam.KEY.cardinality() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
             for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
                 String value;
-                if (urlParam.DEFAULT_KEY.get(i)) {
-                    value = DynamicParamTable.getDefaultValue(i);
-                } else {
-                    Integer offset = urlParam.keyIndexToOffset(i);
-                    value = DynamicParamTable.getValue(i, offset);
-                }
+                int offset = urlParam.keyIndexToOffset(i);
+                value = DynamicParamTable.getValue(i, offset);
                 set.add(new Node(DynamicParamTable.getKey(i), value));
             }
 
@@ -561,8 +540,7 @@ public class URLParam {
     private URLParam doAddParameters(Map<String, String> parameters, boolean skipIfPresent) {
         // lazy init, null if no modify
         BitSet newKey = null;
-        BitSet defaultKey = null;
-        Integer[] newValueArray = null;
+        int[] newValueArray = null;
         Map<Integer, Integer> newValueMap = null;
         Map<String, String> newExtraParams = null;
         Map<String, Map<String, String>> newMethodParams = null;
@@ -573,8 +551,8 @@ public class URLParam {
             if (entry.getKey() == null || entry.getValue() == null) {
                 continue;
             }
-            Integer keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, entry.getKey());
-            if (keyIndex == null) {
+            int keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, entry.getKey());
+            if (keyIndex < 0) {
                 // entry key is not present in DynamicParamTable, add it to EXTRA_PARAMS
                 if (newExtraParams == null) {
                     newExtraParams = new HashMap<>(EXTRA_PARAMS);
@@ -594,29 +572,11 @@ public class URLParam {
                     if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
                         // recover VALUE back to Map, use map to replace key pair
                         if (newValueMap == null) {
-                            newValueMap = recoverCompressedValue();
+                            newValueMap = recoverValue();
                         }
                         newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
-                    } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
-                        // new value is not the default key
-                        if (DEFAULT_KEY.get(keyIndex)) {
-                            // old value is the default value
-                            // value is default value, add to defaultKey directly
-                            if (defaultKey == null) {
-                                defaultKey = (BitSet) DEFAULT_KEY.clone();
-                            }
-                            defaultKey.set(keyIndex, false);
-                            newValueArray = addByMove(VALUE, keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
-                        } else {
-                            // old value is not the default key, replace offset in VALUE array
-                            newValueArray = replaceOffset(VALUE, keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
-                        }
                     } else {
-                        // value is default value, add to defaultKey directly
-                        if (defaultKey == null) {
-                            defaultKey = (BitSet) DEFAULT_KEY.clone();
-                        }
-                        defaultKey.set(keyIndex);
+                        newValueArray = replaceOffset(VALUE, keyIndexToIndex(KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     }
                 } else {
                     // key is absent, add it
@@ -628,27 +588,18 @@ public class URLParam {
                     if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
                         // recover VALUE back to Map
                         if (newValueMap == null) {
-                            newValueMap = recoverCompressedValue();
+                            newValueMap = recoverValue();
                         }
                         newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
-                    } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
-                        // add parameter by moving array, only support for adding once
-                        newValueArray = addByMove(VALUE, keyIndexToCompressIndex(newKey, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     } else {
-                        // value is default value, add to defaultKey directly
-                        if (defaultKey == null) {
-                            defaultKey = (BitSet) DEFAULT_KEY.clone();
-                        }
-                        defaultKey.set(keyIndex);
+                        // add parameter by moving array, only support for adding once
+                        newValueArray = addByMove(VALUE, keyIndexToIndex(newKey, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                     }
                 }
             }
         }
         if (newKey == null) {
             newKey = KEY;
-        }
-        if (defaultKey == null) {
-            defaultKey = DEFAULT_KEY;
         }
         if (newValueArray == null && newValueMap == null) {
             newValueArray = VALUE;
@@ -660,28 +611,26 @@ public class URLParam {
             newMethodParams = METHOD_PARAMETERS;
         }
         if (newValueMap == null) {
-            return new URLParam(newKey, defaultKey, newValueArray, newExtraParams, newMethodParams, null);
+            return new URLParam(newKey, newValueArray, newExtraParams, newMethodParams, null);
         } else {
             return new URLParam(newKey, newValueMap, newExtraParams, newMethodParams, null);
         }
     }
 
-    private Map<Integer, Integer> recoverCompressedValue() {
+    private Map<Integer, Integer> recoverValue() {
         Map<Integer, Integer> map = new HashMap<>((int) (KEY.size() / 0.75) + 1);
         for (int i = KEY.nextSetBit(0), offset = 0; i >= 0; i = KEY.nextSetBit(i + 1)) {
-            if (!DEFAULT_KEY.get(i)) {
-                map.put(i, VALUE[offset++]);
-            }
+            map.put(i, VALUE[offset++]);
         }
         return map;
     }
 
-    private Integer[] addByMove(Integer[] array, int index, Integer value) {
+    private int[] addByMove(int[] array, int index, Integer value) {
         if (index < 0 || index > array.length) {
             throw new IllegalArgumentException();
         }
         // copy-on-write
-        Integer[] result = new Integer[array.length + 1];
+        int[] result = new int[array.length + 1];
 
         System.arraycopy(array, 0, result, 0, index);
         result[index] = value;
@@ -690,12 +639,12 @@ public class URLParam {
         return result;
     }
 
-    private Integer[] replaceOffset(Integer[] array, int index, Integer value) {
+    private int[] replaceOffset(int[] array, int index, Integer value) {
         if (index < 0 || index > array.length) {
             throw new IllegalArgumentException();
         }
         // copy-on-write
-        Integer[] result = new Integer[array.length];
+        int[] result = new int[array.length];
 
         System.arraycopy(array, 0, result, 0, array.length);
         result[index] = value;
@@ -715,32 +664,23 @@ public class URLParam {
         }
         // lazy init, null if no modify
         BitSet newKey = null;
-        BitSet defaultKey = null;
-        Integer[] newValueArray = null;
+        int[] newValueArray = null;
         Map<String, String> newExtraParams = null;
         Map<String, Map<String, String>> newMethodParams = null;
         for (String key : keys) {
-            Integer keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, key);
-            if (keyIndex != null && KEY.get(keyIndex)) {
+            int keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, key);
+            if (keyIndex >= 0 && KEY.get(keyIndex)) {
                 if (newKey == null) {
                     newKey = (BitSet) KEY.clone();
                 }
                 newKey.clear(keyIndex);
-                if (DEFAULT_KEY.get(keyIndex)) {
-                    // is default value, remove in DEFAULT_KEY
-                    if (defaultKey == null) {
-                        defaultKey = (BitSet) DEFAULT_KEY.clone();
-                    }
-                    defaultKey.clear(keyIndex);
-                } else {
-                    // which offset is in VALUE array, set value as -1, compress in the end
-                    if (newValueArray == null) {
-                        newValueArray = new Integer[VALUE.length];
-                        System.arraycopy(VALUE, 0, newValueArray, 0, VALUE.length);
-                    }
-                    // KEY is immutable
-                    newValueArray[keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex)] = -1;
+                // which offset is in VALUE array, set value as -1, compress in the end
+                if (newValueArray == null) {
+                    newValueArray = new int[VALUE.length];
+                    System.arraycopy(VALUE, 0, newValueArray, 0, VALUE.length);
                 }
+                // KEY is immutable
+                newValueArray[keyIndexToIndex(KEY, keyIndex)] = -1;
             }
             if (EXTRA_PARAMS.containsKey(key)) {
                 if (newExtraParams == null) {
@@ -764,9 +704,6 @@ public class URLParam {
         if (newKey == null) {
             newKey = KEY;
         }
-        if (defaultKey == null) {
-            defaultKey = DEFAULT_KEY;
-        }
         if (newValueArray == null) {
             newValueArray = VALUE;
         } else {
@@ -783,11 +720,11 @@ public class URLParam {
             // empty, directly return cache
             return EMPTY_PARAM;
         } else {
-            return new URLParam(newKey, defaultKey, newValueArray, newExtraParams, newMethodParams, null);
+            return new URLParam(newKey, newValueArray, newExtraParams, newMethodParams, null);
         }
     }
 
-    private Integer[] compressArray(Integer[] array) {
+    private int[] compressArray(int[] array) {
         int total = 0;
         for (int i : array) {
             if (i > -1) {
@@ -795,10 +732,10 @@ public class URLParam {
             }
         }
         if (total == 0) {
-            return new Integer[0];
+            return new int[0];
         }
 
-        Integer[] result = new Integer[total];
+        int[] result = new int[total];
         for (int i = 0, offset = 0; i < array.length; i++) {
             // skip if value if less than 0
             if (array[i] > -1) {
@@ -824,8 +761,8 @@ public class URLParam {
      * @return present or not
      */
     public boolean hasParameter(String key) {
-        Integer keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, key);
-        if (keyIndex == null) {
+        int keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, key);
+        if (keyIndex < 0) {
             return EXTRA_PARAMS.containsKey(key);
         }
         return KEY.get(keyIndex);
@@ -838,47 +775,34 @@ public class URLParam {
      * @return value, null if key is absent
      */
     public String getParameter(String key) {
-        Integer keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, key);
-        if (keyIndex == null) {
-            if (EXTRA_PARAMS.containsKey(key)) {
-                return EXTRA_PARAMS.get(key);
-            }
-            return null;
+        int keyIndex = DynamicParamTable.getKeyIndex(enableCompressed, key);
+        if (keyIndex < 0) {
+            return EXTRA_PARAMS.get(key);
         }
         if (KEY.get(keyIndex)) {
             String value;
-            if (DEFAULT_KEY.get(keyIndex)) {
-                value = DynamicParamTable.getDefaultValue(keyIndex);
-            } else {
-                Integer offset = keyIndexToOffset(keyIndex);
-                value = DynamicParamTable.getValue(keyIndex, offset);
-            }
-            if (StringUtils.isEmpty(value)) {
-                // Forward compatible, make sure key dynamic increment can work.
-                // In that case, some values which are proceed before increment will set in EXTRA_PARAMS.
-                return EXTRA_PARAMS.get(key);
-            } else {
-                return value;
-            }
+            int offset = keyIndexToOffset(keyIndex);
+            value = DynamicParamTable.getValue(keyIndex, offset);
+
+            return value;
+//            if (StringUtils.isEmpty(value)) {
+//                // Forward compatible, make sure key dynamic increment can work.
+//                // In that case, some values which are proceed before increment will set in EXTRA_PARAMS.
+//                return EXTRA_PARAMS.get(key);
+//            } else {
+//                return value;
+//            }
         }
         return null;
     }
 
 
-    private int keyIndexToCompressIndex(BitSet key, BitSet defaultKey, int keyIndex) {
-        int index = 0;
-        for (int i = 0; i < keyIndex; i++) {
-            if (key.get(i)) {
-                if (!defaultKey.get(i)) {
-                    index++;
-                }
-            }
-        }
-        return index;
+    private int keyIndexToIndex(BitSet key, int keyIndex) {
+        return key.get(0, keyIndex).cardinality();
     }
 
-    private Integer keyIndexToOffset(int keyIndex) {
-        int arrayOffset = keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex);
+    private int keyIndexToOffset(int keyIndex) {
+        int arrayOffset = keyIndexToIndex(KEY, keyIndex);
         return VALUE[arrayOffset];
     }
 
@@ -919,8 +843,7 @@ public class URLParam {
         URLParam urlParam = (URLParam) o;
 
         if (Objects.equals(KEY, urlParam.KEY)
-                && Objects.equals(DEFAULT_KEY, urlParam.DEFAULT_KEY)
-                && Arrays.equals(VALUE, urlParam.VALUE)) {
+            && Arrays.equals(VALUE, urlParam.VALUE)) {
             if (CollectionUtils.isNotEmptyMap(EXTRA_PARAMS)) {
                 if (CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS) || EXTRA_PARAMS.size() != urlParam.EXTRA_PARAMS.size()) {
                     return false;
@@ -954,7 +877,6 @@ public class URLParam {
                 hashCodeCache = hashCodeCache * 31 + value;
             }
             hashCodeCache = hashCodeCache * 31 + ((KEY == null) ? 0 : KEY.hashCode());
-            hashCodeCache = hashCodeCache * 31 + ((DEFAULT_KEY == null) ? 0 : DEFAULT_KEY.hashCode());
         }
         return hashCodeCache;
     }
@@ -971,8 +893,7 @@ public class URLParam {
         StringJoiner stringJoiner = new StringJoiner("&");
         for (int i = KEY.nextSetBit(0); i >= 0; i = KEY.nextSetBit(i + 1)) {
             String key = DynamicParamTable.getKey(i);
-            String value = DEFAULT_KEY.get(i) ?
-                    DynamicParamTable.getDefaultValue(i) : DynamicParamTable.getValue(i, keyIndexToOffset(i));
+            String value = DynamicParamTable.getValue(i, keyIndexToOffset(i));
             value = value == null ? "" : value.trim();
             stringJoiner.add(String.format("%s=%s", key, value));
         }
@@ -1083,9 +1004,9 @@ public class URLParam {
 
     private static void addParameter(BitSet keyBit, Map<Integer, Integer> valueMap, Map<String, String> extraParam,
                                      Map<String, Map<String, String>> methodParameters, String key, String value, boolean skipIfPresent) {
-        Integer keyIndex = DynamicParamTable.getKeyIndex(true, key);
+        int keyIndex = DynamicParamTable.getKeyIndex(true, key);
         if (skipIfPresent) {
-            if (keyIndex == null) {
+            if (keyIndex < 0) {
                 if (extraParam.containsKey(key)) {
                     return;
                 }
@@ -1096,7 +1017,7 @@ public class URLParam {
             }
         }
 
-        if (keyIndex == null) {
+        if (keyIndex < 0) {
             extraParam.put(key, value);
             String[] methodSplit = key.split("\\.", 2);
             if (methodSplit.length == 2) {
@@ -1104,9 +1025,7 @@ public class URLParam {
                 methodMap.put(methodSplit[0], value);
             }
         } else {
-            if (!DynamicParamTable.isDefaultValue(key, value)) {
-                valueMap.put(keyIndex, DynamicParamTable.getValueIndex(key, value));
-            }
+            valueMap.put(keyIndex, DynamicParamTable.getValueIndex(key, value));
             keyBit.set(keyIndex);
         }
     }
