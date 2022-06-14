@@ -230,7 +230,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 }
 
                 for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
-                    processScannedBeanDefinition(beanDefinitionHolder, registry, scanner);
+                    processScannedBeanDefinition(beanDefinitionHolder);
                     servicePackagesHolder.addScannedClass(beanDefinitionHolder.getBeanDefinition().getBeanClassName());
                 }
             } else {
@@ -318,13 +318,10 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * Registers {@link ServiceBean} from new annotated {@link Service} {@link BeanDefinition}
      *
      * @param beanDefinitionHolder
-     * @param registry
-     * @param scanner
      * @see ServiceBean
      * @see BeanDefinition
      */
-    private void processScannedBeanDefinition(BeanDefinitionHolder beanDefinitionHolder, BeanDefinitionRegistry registry,
-                                              DubboClassPathBeanDefinitionScanner scanner) {
+    private void processScannedBeanDefinition(BeanDefinitionHolder beanDefinitionHolder) {
 
         Class<?> beanClass = resolveClass(beanDefinitionHolder);
 
