@@ -297,7 +297,7 @@ public class DubboTestChecker implements TestExecutionListener {
     public static String getFullStacktrace(Thread thread, StackTraceElement[] stackTrace) {
         StringBuilder sb = new StringBuilder("Thread: \"" + thread.getName() + "\"" + " Id="
             + thread.getId());
-        sb.append(" ").append(thread.getState());
+        sb.append(' ').append(thread.getState());
         sb.append('\n');
         if (stackTrace == null) {
             stackTrace = thread.getStackTrace();

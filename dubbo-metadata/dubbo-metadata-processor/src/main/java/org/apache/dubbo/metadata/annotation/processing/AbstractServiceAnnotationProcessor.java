@@ -82,7 +82,7 @@ public abstract class AbstractServiceAnnotationProcessor extends AbstractProcess
         });
 
         methodSignatureBuilder.append(method.getReturnType())
-                .append(" ")
+                .append(' ')
                 .append(method.toString());
 
         return methodSignatureBuilder.toString();

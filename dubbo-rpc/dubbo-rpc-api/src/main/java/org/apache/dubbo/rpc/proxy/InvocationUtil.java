@@ -70,7 +70,7 @@ public class InvocationUtil {
                 if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
                     StringBuilder attachment = new StringBuilder();
                     for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
-                        attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
+                        attachment.append(entry.getKey()).append('=').append(entry.getValue()).append(";\n");
                     }
 
                     logger.warn(String.format(
