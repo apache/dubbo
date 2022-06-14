@@ -1088,28 +1088,27 @@ public class ExtensionLoader<T> {
             }
         }
 
-        if (urlListMap.get(resourceURL) != null) {
-            return urlListMap.get(resourceURL);
-        }
+        List<String> contentList = urlListMap.computeIfAbsent(resourceURL,key->{
+            List<String> newContentList = new ArrayList<>();
 
-        List<String> newContentList = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                final int ci = line.indexOf('#');
-                if (ci >= 0) {
-                    line = line.substring(0, ci);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    final int ci = line.indexOf('#');
+                    if (ci >= 0) {
+                        line = line.substring(0, ci);
+                    }
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        newContentList.add(line);
+                    }
                 }
-                line = line.trim();
-                if (line.length() > 0) {
-                    newContentList.add(line);
-                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
             }
-        }
-
-        urlListMap.put(resourceURL, newContentList);
-        return newContentList;
+            return newContentList;
+        });
+        return contentList;
     }
 
     private boolean isIncluded(String className, String... includedPackages) {
