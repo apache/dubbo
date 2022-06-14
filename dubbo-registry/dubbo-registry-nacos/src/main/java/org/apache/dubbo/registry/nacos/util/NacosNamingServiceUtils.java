@@ -35,6 +35,7 @@ import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
@@ -142,14 +143,19 @@ public class NacosNamingServiceUtils {
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
         // Put all parameters
         properties.putAll(parameters);
-        if (StringUtils.isNotEmpty(url.getUsername())){
+        if (StringUtils.isNotEmpty(url.getUsername())) {
             properties.put(USERNAME, url.getUsername());
         }
-        if (StringUtils.isNotEmpty(url.getPassword())){
+        if (StringUtils.isNotEmpty(url.getPassword())) {
             properties.put(PASSWORD, url.getPassword());
         }
 
         putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
+        // compatible with other registry configuration patterns, use 'group' as 'namespace' if not explicitly specified
+        String group = url.getGroup();
+        if (StringUtils.isNotEmpty(group) && properties.getProperty(NAMESPACE) == null) {
+            properties.put(NAMESPACE, group);
+        }
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
