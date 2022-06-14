@@ -539,4 +539,7 @@ public interface CommonConstants {
     String METADATA = "metadata";
 
     String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
+
+    String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
+
 }

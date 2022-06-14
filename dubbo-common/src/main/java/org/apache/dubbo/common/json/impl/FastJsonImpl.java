@@ -17,15 +17,22 @@
 package org.apache.dubbo.common.json.impl;
 
 import org.apache.dubbo.common.json.JSON;
-
-import com.alibaba.fastjson.JSONArray;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.lang.reflect.Type;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class FastJsonImpl implements JSON {
+
+    @Override
+    public boolean isSupport() {
+        try {
+            Class<?> aClass = ClassUtils.forName("com.alibaba.fastjson.JSON");
+            return aClass != null;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
 
     @Override
     public <T> T toJavaObject(String json, Type type) {
@@ -33,18 +40,8 @@ public class FastJsonImpl implements JSON {
     }
 
     @Override
-    public <T> Set<T> toJavaSet(String json, Class<T> clazz) {
-        JSONArray jsonArray = com.alibaba.fastjson.JSON.parseArray(json);
-        Set<T> set = new HashSet<>();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            set.add(jsonArray.getObject(i, clazz));
-        }
-        return set;
-    }
-
-    @Override
     public <T> List<T> toJavaList(String json, Class<T> clazz) {
-        return (List<T>) com.alibaba.fastjson.JSON.parseArray(json, clazz);
+        return com.alibaba.fastjson.JSON.parseArray(json, clazz);
     }
 
     @Override
