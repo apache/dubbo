@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -90,6 +91,12 @@ public interface Invocation {
 
     @Experimental("Experiment api for supporting Object transmission")
     Map<String, Object> getObjectAttachments();
+
+    @Experimental("Experiment api for supporting Object transmission")
+    Map<String, Object> copyObjectAttachments();
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void foreachAttachment(Consumer<Map.Entry<String, Object>> consumer);
 
     void setAttachment(String key, String value);
 
