@@ -27,9 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
@@ -59,9 +57,7 @@ public class MockInvokersSelectorTest {
         Assertions.assertTrue(invokers.contains(invoker3));
 
         // rpcInvocation have an attached "invocation.need.mock" parameter, so it will filter out the invoker whose protocol is mock
-        Map<String,Object> attachments = new HashMap<>();
-        attachments.put(INVOCATION_NEED_MOCK,"true");
-        Mockito.when(rpcInvocation.getObjectAttachments()).thenReturn(attachments);
+        Mockito.when(rpcInvocation.getObjectAttachment(INVOCATION_NEED_MOCK)).thenReturn("true");
         invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
         Assertions.assertEquals(invokers.size(),2);
         Assertions.assertTrue(invokers.contains(invoker1));
