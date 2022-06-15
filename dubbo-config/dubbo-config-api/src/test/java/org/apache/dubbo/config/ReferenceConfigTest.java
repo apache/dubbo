@@ -963,7 +963,7 @@ public class ReferenceConfigTest {
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
-//    @Test
+    @Test
     public void testDifferentClassLoader() throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
         ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
