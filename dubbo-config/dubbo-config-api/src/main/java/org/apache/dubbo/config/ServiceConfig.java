@@ -94,7 +94,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
-public class ServiceConfig<T> extends ServiceConfigBase<T> implements Callable<Void> {
+public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private static final long serialVersionUID = 7868244018230856253L;
 
@@ -380,7 +380,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> implements Callable<V
             getScopeModel(),
             serviceMetadata, interfaceClassLoader);
 
-        providerModel.setDestroyCaller(this);
+        providerModel.setDestroyCaller(getDestroyRunner(this));
         repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
@@ -833,9 +833,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> implements Callable<V
         }
     }
 
-    @Override
-    public Void call() throws Exception {
-        this.unexport();
-        return null;
+    public Callable<Void> getDestroyRunner(ServiceConfigBase<?> serviceConfigBase) {
+        return () -> {
+            serviceConfigBase.unexport();
+            return null;
+        };
     }
 }

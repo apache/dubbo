@@ -90,7 +90,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  * Please avoid using this class for any new application,
  * use {@link ReferenceConfigBase} instead.
  */
-public class ReferenceConfig<T> extends ReferenceConfigBase<T> implements Callable<Void> {
+public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     public static final Logger logger = LoggerFactory.getLogger(ReferenceConfig.class);
 
@@ -288,7 +288,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> implements Callab
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
-        consumerModel.setDestroyCaller(this);
+        consumerModel.setDestroyCaller(getDestroyRunner(this));
         consumerModel.setProxyObject(ref);
         consumerModel.initMethodModels();
 
@@ -653,9 +653,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> implements Callab
         return invoker;
     }
 
-    @Override
-    public Void call() throws Exception {
-        this.destroy();
-        return null;
+    public Callable<Void> getDestroyRunner(ReferenceConfigBase<?> referenceConfigBase) {
+        return () -> {
+            referenceConfigBase.destroy();
+            return null;
+        };
     }
 }
