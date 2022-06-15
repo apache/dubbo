@@ -41,25 +41,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
-import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildServiceDiscovery;
+import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.getRootPath;
 import static org.apache.dubbo.rpc.RpcException.REGISTRY_EXCEPTION;
 
 /**
  * Zookeeper {@link ServiceDiscovery} implementation based on
  * <a href="https://curator.apache.org/curator-x-discovery/index.html">Apache Curator X Discovery</a>
+ * <p>
+ * TODO, replace curator CuratorFramework with dubbo ZookeeperClient
  */
 public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private CuratorFramework curatorFramework;
+    public static final String DEFAULT_GROUP = "/services";
 
-    private String rootPath;
+    private final CuratorFramework curatorFramework;
 
-    private org.apache.curator.x.discovery.ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
+    private final String rootPath;
+
+    private final org.apache.curator.x.discovery.ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
 
     /**
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
@@ -69,8 +73,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     public ZookeeperServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
         try {
-            this.curatorFramework = buildCuratorFramework(registryURL);
-            this.rootPath = ROOT_PATH.getParameterValue(registryURL);
+            this.curatorFramework = buildCuratorFramework(registryURL, this);
+            this.rootPath = getRootPath(registryURL);
             this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
             this.serviceDiscovery.start();
         } catch (Exception e) {
@@ -82,6 +86,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     public void doDestroy() throws Exception {
         serviceDiscovery.close();
         curatorFramework.close();
+        watcherCaches.clear();
     }
 
     @Override
@@ -170,6 +175,29 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         watcher.addListener(listener);
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));
         latch.countDown();
+    }
+
+    /**
+     * 1. re-register, taken care by curator ServiceDiscovery
+     * 2. re-subscribe, register curator watcher and notify the latest provider list
+     */
+    public void recover() {
+        watcherCaches.forEach((path, watcher) -> {
+            CountDownLatch latch = new CountDownLatch(1);
+            Set<ServiceInstancesChangedListener> listeners = watcher.getListeners();
+            try {
+                watcher.setLatch(latch);
+                curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
+            } catch (Exception e) {
+                logger.error("Trying to recover from new zkClient session failed, path is " + path + ", error msg: " + e.getMessage());
+            }
+
+            List<ServiceInstance> instances = this.getInstances(serviceName);
+            for (ServiceInstancesChangedListener listener : listeners) {
+                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
+            }
+            latch.countDown();
+        });
     }
 
     public void reRegisterWatcher(ZookeeperServiceDiscoveryChangeWatcher watcher) throws Exception {
