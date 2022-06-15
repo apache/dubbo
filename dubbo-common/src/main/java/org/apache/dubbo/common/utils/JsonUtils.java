@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
@@ -26,49 +27,60 @@ import java.util.List;
 public class JsonUtils {
     private static volatile JSON json;
 
-    static {
-        String preferJsonFrameworkName = System.getProperty("PREFER_JSON_FRAMEWORK_NAME");
-        if (StringUtils.isNotEmpty(preferJsonFrameworkName)) {
-            try {
-                JSON instance = null;
-                switch (preferJsonFrameworkName) {
-                    case "fastjson":
-                        instance = new FastJsonImpl();
-                        break;
-                    case "gson":
-                        instance = new GsonImpl();
-                        break;
-                }
-                if (instance != null && instance.isSupport()) {
-                    json = instance;
-                }
-            } catch (Throwable ignore) {
-
-            }
-        }
-        if (json == null) {
-            List<Class<? extends JSON>> jsonClasses = Arrays.asList(
-                FastJsonImpl.class,
-                GsonImpl.class);
-            for (Class<? extends JSON> jsonClass : jsonClasses) {
-                try {
-                    JSON instance = jsonClass.getConstructor().newInstance();
-                    if (instance.isSupport()) {
-                        json = instance;
-                        break;
-                    }
-                } catch (Throwable ignore) {
-
-                }
-            }
-        }
-    }
-
     public static JSON getJson() {
         if (json == null) {
-            throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson, gson) from jvm env. " +
-                "Please import at least one json framework.");
+            synchronized (JsonUtils.class) {
+                if (json == null) {
+                    String preferJsonFrameworkName = System.getProperty(CommonConstants.PREFER_JSON_FRAMEWORK_NAME);
+                    if (StringUtils.isNotEmpty(preferJsonFrameworkName)) {
+                        try {
+                            JSON instance = null;
+                            switch (preferJsonFrameworkName) {
+                                case "fastjson":
+                                    instance = new FastJsonImpl();
+                                    break;
+                                case "gson":
+                                    instance = new GsonImpl();
+                                    break;
+                            }
+                            if (instance != null && instance.isSupport()) {
+                                json = instance;
+                            }
+                        } catch (Throwable ignore) {
+
+                        }
+                    }
+                    if (json == null) {
+                        List<Class<? extends JSON>> jsonClasses = Arrays.asList(
+                            FastJsonImpl.class,
+                            GsonImpl.class);
+                        for (Class<? extends JSON> jsonClass : jsonClasses) {
+                            try {
+                                JSON instance = jsonClass.getConstructor().newInstance();
+                                if (instance.isSupport()) {
+                                    json = instance;
+                                    break;
+                                }
+                            } catch (Throwable ignore) {
+
+                            }
+                        }
+                    }
+                    if (json == null) {
+                        throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson, gson) from jvm env. " +
+                            "Please import at least one json framework.");
+                    }
+                }
+            }
         }
         return json;
+    }
+
+    /**
+     * @deprecated for uts only
+     */
+    @Deprecated
+    protected static void setJson(JSON json) {
+        JsonUtils.json = json;
     }
 }
