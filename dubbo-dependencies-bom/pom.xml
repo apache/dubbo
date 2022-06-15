@@ -134,7 +134,9 @@
         <tomcat_embed_version>8.5.69</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
         <nacos_version>2.1.0</nacos_version>
-        <grpc.version>1.31.1</grpc.version>
+        <grpc.version>1.44.0</grpc.version>
+        <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
+        <jprotoc_version>1.2.1</jprotoc_version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -725,6 +727,21 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-grpclb</artifactId>
                 <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-context</artifactId>
+                <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.salesforce.servicelibs</groupId>
+                <artifactId>grpc-contrib</artifactId>
+                <version>${grpc_contrib_verdion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.salesforce.servicelibs</groupId>
+                <artifactId>jprotoc</artifactId>
+                <version>${jprotoc_version}</version>
             </dependency>
             <dependency>
                 <groupId>io.fabric8</groupId>
