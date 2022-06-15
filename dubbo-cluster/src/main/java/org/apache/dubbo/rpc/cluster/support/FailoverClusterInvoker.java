@@ -93,6 +93,10 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 if (e.isBiz()) { // biz exception.
                     throw e;
                 }
+                if (e.getCause() != null && InterruptedException.class.getName().equals(e.getCause().toString())) {
+                    // don`t catch interrupt exception
+                    throw new RuntimeException(e);
+                }
                 le = e;
             } catch (Throwable e) {
                 le = new RpcException(e.getMessage(), e);
