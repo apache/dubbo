@@ -57,7 +57,7 @@ public class MockInvokersSelectorTest {
         Assertions.assertTrue(invokers.contains(invoker3));
 
         // rpcInvocation have an attached "invocation.need.mock" parameter, so it will filter out the invoker whose protocol is mock
-        Mockito.when(rpcInvocation.getObjectAttachment(INVOCATION_NEED_MOCK)).thenReturn("true");
+        Mockito.when(rpcInvocation.getObjectAttachmentWithoutConvert(INVOCATION_NEED_MOCK)).thenReturn("true");
         invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
         Assertions.assertEquals(invokers.size(),2);
         Assertions.assertTrue(invokers.contains(invoker1));
