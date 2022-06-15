@@ -135,6 +135,7 @@
     <modules>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
+        <module>dubbo-compiler</module>
         <module>dubbo-remoting</module>
         <module>dubbo-rpc</module>
         <module>dubbo-cluster</module>
