@@ -102,11 +102,19 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         listeners.add(listener);
     }
 
+    public Set<ServiceInstancesChangedListener> getListeners() {
+        return listeners;
+    }
+
     public boolean shouldKeepWatching() {
         return keepWatching;
     }
 
     public void stopWatching() {
         this.keepWatching = false;
+    }
+
+    public void setLatch(CountDownLatch latch) {
+        this.latch = latch;
     }
 }
