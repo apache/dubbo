@@ -108,8 +108,8 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             .addParameter(SIDE_KEY, CONSUMER)
             .addParameter(CONNECTIONS_KEY, 1)
             .addParameter(THREADPOOL_KEY, "cached")
-            .addParameter(THREADS_KEY, "50")
-            .addParameter(CORE_THREADS_KEY, "0")
+            .addParameter(THREADS_KEY, "100")
+            .addParameter(CORE_THREADS_KEY, "2")
                 .addParameter(RETRIES_KEY, 0);
 
 

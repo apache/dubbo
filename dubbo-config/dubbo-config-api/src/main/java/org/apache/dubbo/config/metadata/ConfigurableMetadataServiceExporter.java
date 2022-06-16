@@ -184,7 +184,7 @@ public class ConfigurableMetadataServiceExporter {
         serviceConfig.setExecutes(100); // max tasks running at the same time
         Map<String, String> threadParams = new HashMap<>();
         threadParams.put(THREADPOOL_KEY, "cached");
-        threadParams.put(THREADS_KEY, "200");
+        threadParams.put(THREADS_KEY, "100");
         threadParams.put(CORE_THREADS_KEY, "2");
         serviceConfig.setParameters(threadParams);
 
