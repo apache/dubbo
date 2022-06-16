@@ -58,7 +58,7 @@ class CuratorFrameworkUtilsTest {
 
     @Test
     void testBuildCuratorFramework() throws Exception {
-        CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl);
+        CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
         Assertions.assertNotNull(curatorFramework);
         Assertions.assertTrue(curatorFramework.getZookeeperClient().isConnected());
         curatorFramework.getZookeeperClient().close();
@@ -66,7 +66,7 @@ class CuratorFrameworkUtilsTest {
 
     @Test
     void testBuildServiceDiscovery() throws Exception {
-        CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl);
+        CuratorFramework curatorFramework = CuratorFrameworkUtils.buildCuratorFramework(registryUrl, null);
         ServiceDiscovery<ZookeeperInstance> discovery = CuratorFrameworkUtils.buildServiceDiscovery(curatorFramework, ROOT_PATH.getParameterValue(registryUrl));
         Assertions.assertNotNull(discovery);
         discovery.close();

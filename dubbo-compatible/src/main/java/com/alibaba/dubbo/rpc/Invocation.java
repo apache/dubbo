@@ -20,7 +20,9 @@ package com.alibaba.dubbo.rpc;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Deprecated
 public interface Invocation extends org.apache.dubbo.rpc.Invocation {
@@ -105,6 +107,16 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
     @Override
     default Map<String, Object> getObjectAttachments() {
         return Collections.emptyMap();
+    }
+
+    @Override
+    default Map<String, Object> copyObjectAttachments() {
+        return new HashMap<>(getObjectAttachments());
+    }
+
+    @Override
+    default void foreachAttachment(Consumer<Map.Entry<String, Object>> consumer) {
+        getObjectAttachments().entrySet().forEach(consumer);
     }
 
     @Override

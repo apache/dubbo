@@ -66,7 +66,6 @@ public class TripleProtocol extends AbstractProtocol {
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
     private final ConnectionManager connectionManager;
-    private final FrameworkModel frameworkModel;
     private final String acceptEncodings;
     private boolean versionChecked = false;
 
@@ -124,12 +123,14 @@ public class TripleProtocol extends AbstractProtocol {
         url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
             .createExecutorIfAbsent(url);
-        PortUnificationExchanger.bind(invoker.getUrl());
+        PortUnificationExchanger.bind(url);
+        optimizeSerialization(url);
         return exporter;
     }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
             url.getOrDefaultApplicationModel(), url);
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,

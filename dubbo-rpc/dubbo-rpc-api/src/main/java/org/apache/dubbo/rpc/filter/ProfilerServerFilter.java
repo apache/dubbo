@@ -30,8 +30,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
-import java.util.Map;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -92,9 +90,9 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         if (((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) && timeout != -1) {
 
             StringBuilder attachment = new StringBuilder();
-            for (Map.Entry<String, Object> entry : invocation.getObjectAttachments().entrySet()) {
+            invocation.foreachAttachment((entry) -> {
                 attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
-            }
+            });
 
             logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
                     "client: %s\n" +
