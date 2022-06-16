@@ -288,7 +288,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
-        consumerModel.setDestroyCaller(getDestroyRunner(this));
+        consumerModel.setDestroyCaller(getDestroyRunner());
         consumerModel.setProxyObject(ref);
         consumerModel.initMethodModels();
 
@@ -653,9 +653,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         return invoker;
     }
 
-    public Callable<Void> getDestroyRunner(ReferenceConfigBase<?> referenceConfigBase) {
+    public Callable<Void> getDestroyRunner() {
         return () -> {
-            referenceConfigBase.destroy();
+            this.destroy();
             return null;
         };
     }

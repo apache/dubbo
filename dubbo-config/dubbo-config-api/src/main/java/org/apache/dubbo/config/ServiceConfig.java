@@ -380,7 +380,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             getScopeModel(),
             serviceMetadata, interfaceClassLoader);
 
-        providerModel.setDestroyCaller(getDestroyRunner(this));
+        providerModel.setDestroyCaller(getDestroyRunner());
         repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
@@ -833,9 +833,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    public Callable<Void> getDestroyRunner(ServiceConfigBase<?> serviceConfigBase) {
+    public Callable<Void> getDestroyRunner() {
         return () -> {
-            serviceConfigBase.unexport();
+            this.unexport();
             return null;
         };
     }
