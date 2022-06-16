@@ -189,7 +189,7 @@ public class ModuleModel extends ScopeModel {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), "jdk", serviceRepository.lookupService(serviceMetadata.getServiceInterfaceName()), null,
             this, serviceMetadata, new HashMap<>());
 
-        logger.info("Registering consumer model " + servyceKey + " into model " + this.getDesc());
+        logger.info("Dynamically registering consumer model " + servyceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);
         return consumerModel;
     }

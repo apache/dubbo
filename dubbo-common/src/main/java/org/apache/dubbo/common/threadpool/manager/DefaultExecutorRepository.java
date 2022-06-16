@@ -30,7 +30,6 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,11 +104,9 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      */
     private String getExecutorKey(URL url) {
         String executorKey = INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
-        ServiceDescriptor serviceDescriptor = applicationModel.getInternalModule().getServiceRepository().lookupService(url.getServiceInterface());
-        // if not found in internal service repository, then it's biz service defined by user.
-        if (serviceDescriptor == null) {
+        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+        if (moduleModel != null && moduleModel.isInternal()) {
             executorKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-
         }
         return executorKey;
     }
