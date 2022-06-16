@@ -18,15 +18,14 @@
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.model.ModuleServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
-import io.grpc.reflection.v1alpha.DubboServerReflectionTriple;
-import io.grpc.reflection.v1alpha.FileDescriptorResponse;
-import io.grpc.reflection.v1alpha.ServerReflectionRequest;
-import io.grpc.reflection.v1alpha.ServerReflectionResponse;
+import io.grpc.reflection.v1.DubboServerReflectionTriple;
+import io.grpc.reflection.v1.FileDescriptorResponse;
+import io.grpc.reflection.v1.ListServiceResponse;
+import io.grpc.reflection.v1.ServerReflectionRequest;
+import io.grpc.reflection.v1.ServerReflectionResponse;
+import io.grpc.reflection.v1.ServiceResponse;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -40,119 +39,112 @@ import java.util.Set;
  */
 public class ReflectionService extends DubboServerReflectionTriple.ServerReflectionImplBase {
 
+
     @Override
     public StreamObserver<ServerReflectionRequest> serverReflectionInfo(
         StreamObserver<ServerReflectionResponse> responseObserver) {
-        ServerCallToObserverAdapter<ServerReflectionResponse> serverCallObserver = (ServerCallToObserverAdapter) responseObserver;
         return new StreamObserver<ServerReflectionRequest>() {
             @Override
             public void onNext(ServerReflectionRequest request) {
-                    switch (request.getMessageRequestCase()) {
-                        case FILE_BY_FILENAME:
-                            getFileByName(request);
-                            break;
-                        case FILE_CONTAINING_SYMBOL:
-                            getFileContainingSymbol(request);
-                            break;
-                        case FILE_CONTAINING_EXTENSION:
-                            getFileByExtension(request);
-                            break;
-                        case ALL_EXTENSION_NUMBERS_OF_TYPE:
-                            getAllExtensions(request);
-                            break;
-                        case LIST_SERVICES:
-                            listServices(request);
-                            break;
-                        default:
-                            sendErrorResponse(
-                                request,
-                                Status.Code.UNIMPLEMENTED,
-                                "not implemented " + request.getMessageRequestCase());
-                    }
-                    request = null;
-                    if (closeAfterSend) {
-                        serverCallStreamObserver.onCompleted();
-                    } else {
-                        serverCallStreamObserver.request(1);
-                    }
+                switch (request.getMessageRequestCase()) {
+//                    case FILE_BY_FILENAME:
+//                        getFileByName(request);
+//                        break;
+//                    case FILE_CONTAINING_SYMBOL:
+//                        getFileContainingSymbol(request);
+//                        break;
+//                    case FILE_CONTAINING_EXTENSION:
+//                        getFileByExtension(request);
+//                        break;
+//                    case ALL_EXTENSION_NUMBERS_OF_TYPE:
+//                        getAllExtensions(request);
+//                        break;
+                    case LIST_SERVICES:
+                        listServices(request,responseObserver);
+                        break;
+                    default:
+//                        sendErrorResponse(
+//                            request,
+//                            TriRpcStatus.Code.UNIMPLEMENTED,
+//                            "not implemented " + request.getMessageRequestCase());
                 }
-
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-
-            }
-
-            @Override
-            public void onCompleted() {
-
-            }
-        };
-    }
-
-    private void getFileByName(ServerReflectionRequest request) {
-        ModuleServiceRepository repo;
-        for (ProviderModel exportedService : repo.getExportedServices()) {
-            exportedService.getServiceModel().
         }
-        String name = request.getFileByFilename();
-        FileDescriptor fd = serverReflectionIndex.getFileDescriptorByName(name);
-        if (fd != null) {
-            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
-        } else {
-            sendErrorResponse(request, Status.Code.NOT_FOUND, "File not found.");
-        }
-    }
 
-    private void getFileContainingSymbol(ServerReflectionRequest request) {
-        String symbol = request.getFileContainingSymbol();
-        FileDescriptor fd = serverReflectionIndex.getFileDescriptorBySymbol(symbol);
-        if (fd != null) {
-            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
-        } else {
-            sendErrorResponse(request, Status.Code.NOT_FOUND, "Symbol not found.");
+        @Override
+        public void onError (Throwable throwable){
+            responseObserver.onError(throwable);
         }
-    }
 
-    private void getFileByExtension(ServerReflectionRequest request) {
-        ExtensionRequest extensionRequest = request.getFileContainingExtension();
-        String type = extensionRequest.getContainingType();
-        int extension = extensionRequest.getExtensionNumber();
-        FileDescriptor fd =
-            serverReflectionIndex.getFileDescriptorByExtensionAndNumber(type, extension);
-        if (fd != null) {
-            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
-        } else {
-            sendErrorResponse(request, Status.Code.NOT_FOUND, "Extension not found.");
+        @Override
+        public void onCompleted () {
+            responseObserver.onCompleted();
         }
-    }
+    };
+}
 
-    private void getAllExtensions(ServerReflectionRequest request) {
-        String type = request.getAllExtensionNumbersOfType();
-        Set<Integer> extensions = serverReflectionIndex.getExtensionNumbersOfType(type);
-        if (extensions != null) {
-            ExtensionNumberResponse.Builder builder =
-                ExtensionNumberResponse.newBuilder()
-                    .setBaseTypeName(type)
-                    .addAllExtensionNumber(extensions);
-            serverCallStreamObserver.onNext(
-                ServerReflectionResponse.newBuilder()
-                    .setValidHost(request.getHost())
-                    .setOriginalRequest(request)
-                    .setAllExtensionNumbersResponse(builder)
-                    .build());
-        } else {
-            sendErrorResponse(request, Status.Code.NOT_FOUND, "Type not found.");
-        }
-    }
+//    private void getFileByName(ServerReflectionRequest request) {
+//        ModuleServiceRepository repo;
+//        for (ProviderModel exportedService : repo.getExportedServices()) {
+//            exportedService.getServiceModel().
+//        }
+//        String name = request.getFileByFilename();
+//        FileDescriptor fd = serverReflectionIndex.getFileDescriptorByName(name);
+//        if (fd != null) {
+//            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
+//        } else {
+//            sendErrorResponse(request, Status.Code.NOT_FOUND, "File not found.");
+//        }
+//    }
 
-    private void listServices(ServerReflectionRequest request) {
+//    private void getFileContainingSymbol(ServerReflectionRequest request) {
+//        String symbol = request.getFileContainingSymbol();
+//        FileDescriptor fd = serverReflectionIndex.getFileDescriptorBySymbol(symbol);
+//        if (fd != null) {
+//            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
+//        } else {
+//            sendErrorResponse(request, Status.Code.NOT_FOUND, "Symbol not found.");
+//        }
+//    }
+
+//    private void getFileByExtension(ServerReflectionRequest request) {
+//        ExtensionRequest extensionRequest = request.getFileContainingExtension();
+//        String type = extensionRequest.getContainingType();
+//        int extension = extensionRequest.getExtensionNumber();
+//        FileDescriptor fd =
+//            serverReflectionIndex.getFileDescriptorByExtensionAndNumber(type, extension);
+//        if (fd != null) {
+//            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
+//        } else {
+//            sendErrorResponse(request, Status.Code.NOT_FOUND, "Extension not found.");
+//        }
+//    }
+
+//    private void getAllExtensions(ServerReflectionRequest request) {
+//        String type = request.getAllExtensionNumbersOfType();
+//        Set<Integer> extensions = serverReflectionIndex.getExtensionNumbersOfType(type);
+//        if (extensions != null) {
+//            ExtensionNumberResponse.Builder builder =
+//                ExtensionNumberResponse.newBuilder()
+//                    .setBaseTypeName(type)
+//                    .addAllExtensionNumber(extensions);
+//            serverCallStreamObserver.onNext(
+//                ServerReflectionResponse.newBuilder()
+//                    .setValidHost(request.getHost())
+//                    .setOriginalRequest(request)
+//                    .setAllExtensionNumbersResponse(builder)
+//                    .build());
+//        } else {
+//            sendErrorResponse(request, Status.Code.NOT_FOUND, "Type not found.");
+//        }
+//    }
+
+    private void listServices(ServerReflectionRequest request,StreamObserver<ServerReflectionResponse> responseObserver) {
         ListServiceResponse.Builder builder = ListServiceResponse.newBuilder();
-        for (String serviceName : serverReflectionIndex.getServiceNames()) {
+
+        for (String serviceName : SchemaDescriptorRegistry.listServiceNames()) {
             builder.addService(ServiceResponse.newBuilder().setName(serviceName));
         }
-        serverCallStreamObserver.onNext(
+        responseObserver.onNext(
             ServerReflectionResponse.newBuilder()
                 .setValidHost(request.getHost())
                 .setOriginalRequest(request)
@@ -160,19 +152,19 @@ public class ReflectionService extends DubboServerReflectionTriple.ServerReflect
                 .build());
     }
 
-    private void sendErrorResponse(
-        ServerReflectionRequest request, Status.Code code, String message) {
-        ServerReflectionResponse response =
-            ServerReflectionResponse.newBuilder()
-                .setValidHost(request.getHost())
-                .setOriginalRequest(request)
-                .setErrorResponse(
-                    ErrorResponse.newBuilder()
-                        .setErrorCode(code.value())
-                        .setErrorMessage(message))
-                .build();
-        serverCallStreamObserver.onNext(response);
-    }
+//    private void sendErrorResponse(
+//        ServerReflectionRequest request,TriRpcStatus.Code code, String message) {
+//        ServerReflectionResponse response =
+//            ServerReflectionResponse.newBuilder()
+//                .setValidHost(request.getHost())
+//                .setOriginalRequest(request)
+//                .setErrorResponse(
+//                    ErrorResponse.newBuilder()
+//                        .setErrorCode(code.value())
+//                        .setErrorMessage(message))
+//                .build();
+//        serverCallStreamObserver.onNext(response);
+//    }
 
     private ServerReflectionResponse createServerReflectionResponse(
         ServerReflectionRequest request, FileDescriptor fd) {
@@ -197,6 +189,5 @@ public class ReflectionService extends DubboServerReflectionTriple.ServerReflect
             .setFileDescriptorResponse(fdRBuilder)
             .build();
     }
-}
 
 }
