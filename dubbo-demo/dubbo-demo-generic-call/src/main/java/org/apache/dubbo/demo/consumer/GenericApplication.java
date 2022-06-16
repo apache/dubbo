@@ -17,15 +17,14 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import com.google.gson.Gson;
 
 public class GenericApplication {
 
@@ -42,7 +41,7 @@ public class GenericApplication {
 
         if (args.length > 0 && CommonConstants.GENERIC_SERIALIZATION_GSON.equals(args[0])) {
             reference.setGeneric(CommonConstants.GENERIC_SERIALIZATION_GSON);
-            param = new Gson().toJson(param + " gson");
+            param = JsonUtils.getJson().toJson(param + " gson");
         } else {
             reference.setGeneric("true");
         }

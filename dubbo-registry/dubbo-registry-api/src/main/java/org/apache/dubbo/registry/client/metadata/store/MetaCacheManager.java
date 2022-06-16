@@ -66,7 +66,7 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
 
     @Override
     protected MetadataInfo toValueType(String value) {
-        return JsonUtils.getGson().fromJson(value, MetadataInfo.class);
+        return JsonUtils.getJson().toJavaObject(value, MetadataInfo.class);
     }
 
     @Override

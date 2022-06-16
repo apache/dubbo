@@ -19,10 +19,9 @@ package org.apache.dubbo.common.status.reporter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
-
-import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -36,7 +35,6 @@ public class FrameworkStatusReportService implements ScopeModelAware {
 
     private ApplicationModel applicationModel;
     private Set<FrameworkStatusReporter> reporters;
-    private Gson gson = new Gson();
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
@@ -77,7 +75,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         HashMap<String, String> registration = new HashMap<>();
         registration.put("application", applicationModel.getApplicationName());
         registration.put("status", status);
-        return gson.toJson(registration);
+        return JsonUtils.getJson().toJson(registration);
     }
 
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {
@@ -88,7 +86,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);
         migrationStatus.put("status", status);
-        return gson.toJson(migrationStatus);
+        return JsonUtils.getJson().toJson(migrationStatus);
     }
 
     public String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
@@ -101,6 +99,6 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         migrationStatus.put("originStep", originStep);
         migrationStatus.put("newStep", newStep);
         migrationStatus.put("success", success);
-        return gson.toJson(migrationStatus);
+        return JsonUtils.getJson().toJson(migrationStatus);
     }
 }

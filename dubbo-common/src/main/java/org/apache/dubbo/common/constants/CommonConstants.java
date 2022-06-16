@@ -540,7 +540,8 @@ public interface CommonConstants {
 
     String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
 
-
     String OPTIMIZER_KEY = "optimizer";
+
+    String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
 
 }

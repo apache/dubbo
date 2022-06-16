@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -35,7 +36,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.metrics.FastCompass;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
@@ -94,12 +94,12 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (exported.compareAndSet(false, true)) {
             this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
-                    DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
+                DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
             Protocol protocol = extensionAccessor.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+                protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -107,7 +107,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
                 logger.error("Metrics Service need to be configured" +
-                        " when multiple processes are running on a host" + e.getMessage());
+                    " when multiple processes are running on a host" + e.getMessage());
             }
         }
 
@@ -151,7 +151,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
         method.append(')');
         Class<?> returnType = RpcUtils.getReturnType(invocation);
         String typeName = null;
-        if(returnType != null) {
+        if (returnType != null) {
             typeName = returnType.getTypeName();
             typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
         }
@@ -218,10 +218,10 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
         }
 
         return new MetricObject
-                .Builder(metric)
-                .withValue(value)
-                .withLevel(level)
-                .build();
+            .Builder(metric)
+            .withValue(value)
+            .withLevel(level)
+            .build();
     }
 
     private Invoker<MetricsService> initMetricsInvoker() {
@@ -244,7 +244,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
 
 
                 MetricsCollector collector = MetricsCollectorFactory.createNew(
-                        CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
+                    CollectLevel.NORMAL, Collections.EMPTY_MAP, rateFactor, durationFactor, null);
 
                 for (Map.Entry<MetricName, FastCompass> entry : fastCompasses.entrySet()) {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
@@ -252,7 +252,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
 
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(res), invocation);
+                return AsyncRpcResult.newDefaultAsyncResult(JsonUtils.getJson().toJson(res), invocation);
             }
 
             @Override

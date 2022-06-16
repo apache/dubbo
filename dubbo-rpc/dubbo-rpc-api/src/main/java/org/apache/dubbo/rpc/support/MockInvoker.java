@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -32,11 +33,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import com.alibaba.fastjson.JSON;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,16 +74,16 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if ("false".equals(mock)) {
             value = false;
         } else if (mock.length() >= 2 && (mock.startsWith("\"") && mock.endsWith("\"")
-                || mock.startsWith("\'") && mock.endsWith("\'"))) {
+            || mock.startsWith("\'") && mock.endsWith("\'"))) {
             value = mock.subSequence(1, mock.length() - 1);
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
         } else if (StringUtils.isNumeric(mock, false)) {
-            value = JSON.parse(mock);
+            value = JsonUtils.getJson().toJavaObject(mock, Object.class);
         } else if (mock.startsWith("{")) {
-            value = JSON.parseObject(mock, Map.class);
+            value = JsonUtils.getJson().toJavaObject(mock, Map.class);
         } else if (mock.startsWith("[")) {
-            value = JSON.parseObject(mock, List.class);
+            value = JsonUtils.getJson().toJavaList(mock, Object.class);
         } else {
             value = mock;
         }
@@ -114,7 +112,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
             } catch (Exception ew) {
                 throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
-                        + ", mock:" + mock + ", url: " + url, ew);
+                    + ", mock:" + mock + ", url: " + url, ew);
             }
         } else if (mock.startsWith(THROW_PREFIX)) {
             mock = mock.substring(THROW_PREFIX.length()).trim();
@@ -192,13 +190,13 @@ final public class MockInvoker<T> implements Invoker<T> {
                 }
             }
             throw new IllegalStateException("Did not find mock class or instance "
-                    + mockService
-                    + ", please check if there's mock class or instance implementing interface "
-                    + serviceType.getName(), e);
+                + mockService
+                + ", please check if there's mock class or instance implementing interface "
+                + serviceType.getName(), e);
         }
         if (mockClass == null || !serviceType.isAssignableFrom(mockClass)) {
             throw new IllegalStateException("The mock class " + mockClass.getName() +
-                    " not implement interface " + serviceType.getName());
+                " not implement interface " + serviceType.getName());
         }
 
         try {
