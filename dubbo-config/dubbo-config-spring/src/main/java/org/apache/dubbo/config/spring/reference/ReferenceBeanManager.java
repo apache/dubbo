@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.reference;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -67,8 +69,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                     " the BeanPostProcessor has not been loaded at this time, which may cause abnormalities in some components (such as seata): " +
                     referenceBeanName + " = " + ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext));
         }
-
-        String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
+        String referenceKey = getReferenceKeyByBeanName(referenceBeanName);
+        if (StringUtils.isEmpty(referenceKey)) {
+            referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
+        }
         ReferenceBean oldReferenceBean = referenceBeanMap.get(referenceBeanName);
         if (oldReferenceBean != null) {
             if (referenceBean != oldReferenceBean) {
@@ -86,6 +90,16 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         if (initialized) {
             initReferenceBean(referenceBean);
         }
+    }
+
+    private String getReferenceKeyByBeanName(String referenceBeanName){
+        Set<Map.Entry<String, List<String>>> entries = referenceKeyMap.entrySet();
+        for (Map.Entry<String, List<String>> entry : entries) {
+            if (entry.getValue().contains(referenceBeanName)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanNameOrAlias) {
@@ -154,7 +168,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         // TOTO check same unique service name but difference reference key (means difference attributes).
 
         // reference key
-        String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
+        String referenceKey = getReferenceKeyByBeanName(referenceBean.getId());
+        if (StringUtils.isEmpty(referenceKey)) {
+            referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
+        }
 
         ReferenceConfig referenceConfig = referenceConfigMap.get(referenceKey);
         if (referenceConfig == null) {
