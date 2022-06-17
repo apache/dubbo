@@ -248,6 +248,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         mappingListeners.clear();
         mappingLocks.clear();
         mappingInitStatus.clear();
+
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {
