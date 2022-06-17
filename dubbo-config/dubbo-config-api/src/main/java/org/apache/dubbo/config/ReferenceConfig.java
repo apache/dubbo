@@ -279,6 +279,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor,
             getScopeModel(), serviceMetadata, createAsyncMethodInfo(), interfaceClassLoader);
 
+        // Compatible with dependencies on ServiceModel#getReferenceConfig() , and will be removed in a future version.
+        consumerModel.setConfig(this);
+
         repository.registerConsumer(consumerModel);
 
         serviceMetadata.getAttachments().putAll(referenceParameters);

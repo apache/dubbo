@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.Objects;
 import java.util.Set;
@@ -28,12 +31,14 @@ public class ServiceModel {
     private Callable<Void> destroyCaller;
     private ClassLoader classLoader;
 
-    private ClassLoader interfaceClassLoader;
+    private final ClassLoader interfaceClassLoader;
 
     private final ModuleModel moduleModel;
     private final ServiceDescriptor serviceModel;
 
-    private ServiceMetadata serviceMetadata;
+    private AbstractInterfaceConfig config;
+
+    private final ServiceMetadata serviceMetadata;
 
     public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, ClassLoader interfaceClassLoader) {
         this(proxyObject, serviceKey, serviceModel, moduleModel, null, interfaceClassLoader);
@@ -55,6 +60,48 @@ public class ServiceModel {
         }
         if (this.classLoader == null) {
             this.classLoader = Thread.currentThread().getContextClassLoader();
+        }
+    }
+
+    @Deprecated
+    public AbstractInterfaceConfig getConfig() {
+        return config;
+    }
+
+    @Deprecated
+    public void setConfig(AbstractInterfaceConfig config) {
+        this.config = config;
+    }
+
+    /**
+     * ServiceModel should be decoupled from AbstractInterfaceConfig and removed in a future version
+     * @return
+     */
+    @Deprecated
+    public ReferenceConfigBase<?> getReferenceConfig() {
+        if (config == null) {
+            return null;
+        }
+        if (config instanceof ReferenceConfigBase) {
+            return (ReferenceConfigBase<?>) config;
+        } else {
+            throw new IllegalArgumentException("Current ServiceModel is not a ConsumerModel");
+        }
+    }
+
+    /**
+     * ServiceModel should be decoupled from AbstractInterfaceConfig and removed in a future version
+     * @return
+     */
+    @Deprecated
+    public ServiceConfigBase<?> getServiceConfig() {
+        if (config == null) {
+            return null;
+        }
+        if (config instanceof ServiceConfigBase) {
+            return (ServiceConfigBase<?>) config;
+        } else {
+            throw new IllegalArgumentException("Current ServiceModel is not a ProviderModel");
         }
     }
 

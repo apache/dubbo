@@ -380,6 +380,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             getScopeModel(),
             serviceMetadata, interfaceClassLoader);
 
+        // Compatible with dependencies on ServiceModel#getServiceConfig(), and will be removed in a future version
+        providerModel.setConfig(this);
+
         providerModel.setDestroyCaller(getDestroyRunner());
         repository.registerProvider(providerModel);
 
