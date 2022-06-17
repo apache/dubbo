@@ -18,12 +18,11 @@ package org.apache.dubbo.rpc.cluster.configurator.parser;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONValidator;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -43,8 +42,9 @@ public class ConfigParser {
 
     public static List<URL> parseConfigurators(String rawConfig) {
         // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
-        if (isJsonArray(rawConfig)) {
-            return parseJsonArray(rawConfig);
+        List<URL> compatibleUrls = parseJsonArray(rawConfig);
+        if (CollectionUtils.isNotEmpty(compatibleUrls)) {
+            return compatibleUrls;
         }
 
         List<URL> urls = new ArrayList<>();
@@ -64,9 +64,13 @@ public class ConfigParser {
 
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
-        List<String> list = JSON.parseArray(rawConfig, String.class);
-        if (!CollectionUtils.isEmpty(list)) {
-            list.forEach(u -> urls.add(URL.valueOf(u)));
+        try {
+            List<String> list = JsonUtils.getJson().toJavaList(rawConfig, String.class);
+            if (!CollectionUtils.isEmpty(list)) {
+                list.forEach(u -> urls.add(URL.valueOf(u)));
+            }
+        } catch (Throwable t) {
+            return null;
         }
         return urls;
     }
@@ -148,7 +152,7 @@ public class ConfigParser {
         Map<String, String> parameters = item.getParameters();
         if (CollectionUtils.isEmptyMap(parameters)) {
             throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter " +
-                    "you want to change in the rule.");
+                "you want to change in the rule.");
         }
 
         parameters.forEach((k, v) -> {
@@ -213,15 +217,5 @@ public class ConfigParser {
             addresses.add(ANYHOST_VALUE);
         }
         return addresses;
-    }
-
-    private static boolean isJsonArray(String rawConfig) {
-        try {
-            JSONValidator validator = JSONValidator.from(rawConfig);
-            return validator.validate() && validator.getType() == JSONValidator.Type.Array;
-        } catch (Exception e) {
-            // ignore exception and return false
-        }
-        return false;
     }
 }

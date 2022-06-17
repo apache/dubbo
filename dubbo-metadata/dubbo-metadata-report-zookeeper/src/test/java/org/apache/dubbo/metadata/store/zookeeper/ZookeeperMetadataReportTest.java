@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -31,7 +32,6 @@ import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,8 +100,7 @@ public class ZookeeperMetadataReportTest {
         fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
 
-        Gson gson = new Gson();
-        FullServiceDefinition fullServiceDefinition = gson.fromJson(fileContent, FullServiceDefinition.class);
+        FullServiceDefinition fullServiceDefinition = JsonUtils.getJson().toJavaObject(fileContent, FullServiceDefinition.class);
         Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "zkTest");
     }
 
@@ -204,8 +203,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
-        Gson gson = new Gson();
-        String r = gson.toJson(Arrays.asList(url));
+        String r = JsonUtils.getJson().toJson(Arrays.asList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));
@@ -225,8 +223,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         SubscriberMetadataIdentifier subscriberMetadataIdentifier = new SubscriberMetadataIdentifier(application, revision);
-        Gson gson = new Gson();
-        String r = gson.toJson(Arrays.asList(url));
+        String r = JsonUtils.getJson().toJson(Arrays.asList(url.toString()));
         zookeeperMetadataReport.doSaveSubscriberData(subscriberMetadataIdentifier, r);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(subscriberMetadataIdentifier));

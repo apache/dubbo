@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -82,6 +83,16 @@ public class MockDirInvocation implements Invocation {
     @Override
     public Map<String, Object> getObjectAttachments() {
         return attachments;
+    }
+
+    @Override
+    public Map<String, Object> copyObjectAttachments() {
+        return new HashMap<>(attachments);
+    }
+
+    @Override
+    public void foreachAttachment(Consumer<Map.Entry<String, Object>> consumer) {
+        attachments.entrySet().forEach(consumer);
     }
 
     @Override

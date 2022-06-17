@@ -259,7 +259,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
-            Object timeout = invocation.getObjectAttachment(TIMEOUT_KEY);
+            Object timeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
             if (timeout instanceof Integer) {
                 asyncResult.get((Integer) timeout, TimeUnit.MILLISECONDS);
             } else {

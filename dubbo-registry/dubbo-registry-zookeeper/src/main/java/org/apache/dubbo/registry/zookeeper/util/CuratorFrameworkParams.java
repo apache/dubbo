@@ -24,6 +24,8 @@ import org.apache.curator.framework.CuratorFramework;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery.DEFAULT_GROUP;
+
 /**
  * The enumeration for the parameters  of {@link CuratorFramework}
  *
@@ -31,11 +33,12 @@ import java.util.function.Function;
  * @since 2.7.5
  */
 public enum CuratorFrameworkParams {
-
     /**
      * The root path of Dubbo Service
      */
-    ROOT_PATH("rootPath", "/services", value -> value),
+    ROOT_PATH("rootPath", DEFAULT_GROUP, value -> value),
+
+    GROUP_PATH("group", DEFAULT_GROUP, value -> value),
 
     /**
      * The host of current {@link ServiceInstance service instance} that will be registered

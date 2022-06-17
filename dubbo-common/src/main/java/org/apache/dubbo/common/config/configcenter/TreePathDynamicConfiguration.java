@@ -21,14 +21,9 @@ import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigu
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
-import static java.util.Collections.emptySortedSet;
-import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.common.utils.PathUtils.normalize;
 
@@ -106,13 +101,6 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
     public final void removeListener(String key, String group, ConfigurationListener listener) {
         String pathKey = buildPathKey(group, key);
         doRemoveListener(pathKey, listener);
-    }
-
-    @Override
-    public final SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        String groupPath = buildGroupPath(group);
-        Collection<String> configKeys = doGetConfigKeys(groupPath);
-        return isEmpty(configKeys) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(configKeys));
     }
 
     protected abstract boolean doPublishConfig(String pathKey, String content) throws Exception;

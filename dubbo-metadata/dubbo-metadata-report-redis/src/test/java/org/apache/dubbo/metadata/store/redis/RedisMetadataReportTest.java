@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.store.redis;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -24,7 +25,6 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -49,9 +49,9 @@ import static redis.embedded.RedisServer.newRedisServer;
 public class RedisMetadataReportTest {
 
     private static final String
-            REDIS_URL_TEMPLATE = "redis://%slocalhost:%d",
-            REDIS_PASSWORD = "チェリー",
-            REDIS_URL_AUTH_SECTION = "username:" + REDIS_PASSWORD + "@";
+        REDIS_URL_TEMPLATE = "redis://%slocalhost:%d",
+        REDIS_PASSWORD = "チェリー",
+        REDIS_URL_AUTH_SECTION = "username:" + REDIS_PASSWORD + "@";
 
     RedisMetadataReport redisMetadataReport;
     RedisMetadataReport syncRedisMetadataReport;
@@ -68,11 +68,11 @@ public class RedisMetadataReportTest {
             try {
                 redisPort = NetUtils.getAvailablePort(30000 + new Random().nextInt(10000));
                 redisServer = newRedisServer()
-                        .port(redisPort)
-                        // set maxheap to fix Windows error 0x70 while starting redis
-                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
-                        .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
-                        .build();
+                    .port(redisPort)
+                    // set maxheap to fix Windows error 0x70 while starting redis
+                    .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                    .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+                    .build();
                 this.redisServer.start();
                 exception = null;
             } catch (IOException e) {
@@ -87,7 +87,7 @@ public class RedisMetadataReportTest {
         Assertions.assertNull(exception);
         registryUrl = newRedisUrl(usesAuthentication, redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
-        URL syncRegistryUrl = registryUrl.addParameter(SYNC_REPORT_KEY ,"true");
+        URL syncRegistryUrl = registryUrl.addParameter(SYNC_REPORT_KEY, "true");
         syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(syncRegistryUrl);
     }
 
@@ -133,8 +133,7 @@ public class RedisMetadataReportTest {
 
             Assertions.assertNotNull(value);
 
-            Gson gson = new Gson();
-            FullServiceDefinition fullServiceDefinition = gson.fromJson(value, FullServiceDefinition.class);
+            FullServiceDefinition fullServiceDefinition = JsonUtils.getJson().toJavaObject(value, FullServiceDefinition.class);
             Assertions.assertEquals(fullServiceDefinition.getParameters().get("paramTest"), "redisTest");
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
@@ -183,7 +182,7 @@ public class RedisMetadataReportTest {
 
     private MetadataIdentifier storePrivider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=redisTest&version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
+            + application + (group == null ? "" : "&group=" + group));
 
         MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
@@ -200,7 +199,7 @@ public class RedisMetadataReportTest {
 
     private MetadataIdentifier storeConsumer(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
+            + application + (group == null ? "" : "&group=" + group));
 
         MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);

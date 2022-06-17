@@ -122,7 +122,7 @@ public class DubboProtocol extends AbstractProtocol {
                 Thread.currentThread().setContextClassLoader(invoker.getUrl().getServiceModel().getClassLoader());
             }
             // need to consider backward-compatibility if it's a callback
-            if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
+            if (Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(IS_CALLBACK_SERVICE_INVOKE))) {
                 String methodsStr = invoker.getUrl().getParameters().get("methods");
                 boolean hasMethod = false;
                 if (methodsStr == null || !methodsStr.contains(",")) {
@@ -192,9 +192,9 @@ public class DubboProtocol extends AbstractProtocol {
             } catch (RemotingException e) {
                 String serviceKey = serviceKey(
                     0,
-                    (String) invocation.getObjectAttachments().get(PATH_KEY),
-                    (String) invocation.getObjectAttachments().get(VERSION_KEY),
-                    (String) invocation.getObjectAttachments().get(GROUP_KEY)
+                    (String) invocation.getObjectAttachmentWithoutConvert(PATH_KEY),
+                    (String) invocation.getObjectAttachmentWithoutConvert(VERSION_KEY),
+                    (String) invocation.getObjectAttachmentWithoutConvert(GROUP_KEY)
                 );
                 throw new RemotingException(channel, "The stub service[" + serviceKey + "] is not found, it may not be exported yet");
             }
@@ -260,10 +260,10 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isCallBackServiceInvoke;
         boolean isStubServiceInvoke;
         int port = channel.getLocalAddress().getPort();
-        String path = (String) inv.getObjectAttachments().get(PATH_KEY);
+        String path = (String) inv.getObjectAttachmentWithoutConvert(PATH_KEY);
 
         //if it's stub service on client side(after enable stubevent, usually is set up onconnect or ondisconnect method)
-        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(STUB_EVENT_KEY));
+        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
             //when a stub service export to local, it usually can't be exposed to port
             port = 0;
@@ -272,15 +272,15 @@ public class DubboProtocol extends AbstractProtocol {
         // if it's callback service on client side
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {
-            path += "." + inv.getObjectAttachments().get(CALLBACK_SERVICE_KEY);
-            inv.getObjectAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
+            path += "." + inv.getObjectAttachmentWithoutConvert(CALLBACK_SERVICE_KEY);
+            inv.setObjectAttachment(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
         String serviceKey = serviceKey(
                 port,
                 path,
-                (String) inv.getObjectAttachments().get(VERSION_KEY),
-                (String) inv.getObjectAttachments().get(GROUP_KEY)
+                (String) inv.getObjectAttachmentWithoutConvert(VERSION_KEY),
+                (String) inv.getObjectAttachmentWithoutConvert(GROUP_KEY)
         );
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 

@@ -17,8 +17,8 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -152,14 +152,13 @@ public class MetadataInfoTest {
 
         // export normal url again
         metadataInfo.addService(url);
-        Gson gson = new Gson();
-        System.out.println(gson.toJson(metadataInfo));
+        System.out.println(JsonUtils.getJson().toJson(metadataInfo));
 
         MetadataInfo metadataInfo2 = new MetadataInfo("demo");
         // export normal url again
         metadataInfo2.addService(url);
         metadataInfo2.addService(url2);
-        System.out.println(gson.toJson(metadataInfo2));
+        System.out.println(JsonUtils.getJson().toJson(metadataInfo2));
 
     }
 }

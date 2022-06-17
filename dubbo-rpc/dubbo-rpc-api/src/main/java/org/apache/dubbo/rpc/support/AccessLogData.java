@@ -17,11 +17,12 @@
 package org.apache.dubbo.rpc.support;
 
 
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
-import com.alibaba.fastjson.JSON;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -34,7 +35,6 @@ import java.util.Map;
  * AccessLogData is a container for log event data. In internally uses map and store each field of log as value. It
  * does not generate any dynamic value e.g. time stamp, local jvm machine host address etc. It does not allow any null
  * or empty key.
- *
  */
 public final class AccessLogData {
 
@@ -192,16 +192,16 @@ public final class AccessLogData {
         StringBuilder sn = new StringBuilder();
 
         sn.append('[')
-                .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
-                .append("] ")
-                .append(get(REMOTE_HOST))
-                .append(':')
-                .append(get(REMOTE_PORT))
-                .append(" -> ")
-                .append(get(LOCAL_HOST))
-                .append(':')
-                .append(get(LOCAL_PORT))
-                .append(" - ");
+            .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
+            .append("] ")
+            .append(get(REMOTE_HOST))
+            .append(':')
+            .append(get(REMOTE_PORT))
+            .append(" -> ")
+            .append(get(LOCAL_HOST))
+            .append(':')
+            .append(get(LOCAL_PORT))
+            .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
         if (StringUtils.isNotEmpty(group)) {
@@ -234,15 +234,16 @@ public final class AccessLogData {
 
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
-            sn.append(JSON.toJSONString(args));
+            sn.append(JsonUtils.getJson().toJson(args));
         }
 
         return sn.toString();
     }
 
     private Date getInvocationTime() {
-        return (Date)get(INVOCATION_TIME);
+        return (Date) get(INVOCATION_TIME);
     }
+
     /**
      * Return value of key
      *
@@ -262,7 +263,7 @@ public final class AccessLogData {
     private void set(String key, Object value) {
         data.put(key, value);
     }
-    
+
     public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         setServiceName(invoker.getInterface().getName());
         setMethodName(inv.getMethodName());

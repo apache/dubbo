@@ -112,6 +112,8 @@ public interface CommonConstants {
 
     String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
+    String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
+
     String THREADPOOL_KEY = "threadpool";
 
     String THREAD_NAME_KEY = "threadname";
@@ -540,7 +542,8 @@ public interface CommonConstants {
 
     String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
 
-
     String OPTIMIZER_KEY = "optimizer";
+
+    String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
 
 }

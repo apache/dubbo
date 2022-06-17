@@ -90,9 +90,9 @@ public interface ServiceNameMapping extends Destroyable {
     }
 
     /**
-     * Init the mapping data from local storage and url parameter.
+     * Init mapping from local storage and url parameter.
      *
-     * @return app list that current interface maps to, in sequence determined by:
+     * @return app list the current interface maps to, in sequence determined by:
      * 1. PROVIDED_BY specified by user
      * 2. snapshot in local file
      */
