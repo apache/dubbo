@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -37,7 +38,9 @@ public class SwitchLogger implements BaseCommand {
         if (args.length != 1) {
             return "Unexpected argument length.";
         }
+        Level level = LoggerFactory.getLevel();
         LoggerFactory.setLoggerAdapter(frameworkModel, args[0]);
+        LoggerFactory.setLevel(level);
         return "OK";
     }
 }
