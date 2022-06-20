@@ -17,9 +17,13 @@
 
 package org.apache.dubbo.common.threadpool;
 
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link java.lang.Runtime#freeMemory()} technology is used to calculate the
@@ -33,18 +37,28 @@ public class MemoryLimitCalculator {
 
     private static volatile long maxAvailable;
 
-    private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
-
-    static {
-        // immediately refresh when this class is loaded to prevent maxAvailable from being 0
-        refresh();
-        // check every 50 ms to improve performance
-        SCHEDULER.scheduleWithFixedDelay(MemoryLimitCalculator::refresh, 50, 50, TimeUnit.MILLISECONDS);
-        Runtime.getRuntime().addShutdownHook(new Thread(SCHEDULER::shutdown));
-    }
+    private static final AtomicBoolean refreshStarted = new AtomicBoolean(false);
 
     private static void refresh() {
         maxAvailable = Runtime.getRuntime().freeMemory();
+    }
+
+    private static void checkAndScheduleRefresh() {
+        if (!refreshStarted.get()) {
+            // immediately refresh when first call to prevent maxAvailable from being 0
+            // to ensure that being refreshed before refreshStarted being set as true
+            // notice: refresh may be called for more than once because there is no lock
+            refresh();
+            if (refreshStarted.compareAndSet(false, true)) {
+                ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Memory-Calculator"));
+                // check every 50 ms to improve performance
+                scheduledExecutorService.scheduleWithFixedDelay(MemoryLimitCalculator::refresh, 50, 50, TimeUnit.MILLISECONDS);
+                GlobalResourcesRepository.registerGlobalDisposable(() -> {
+                    refreshStarted.set(false);
+                    scheduledExecutorService.shutdown();
+                });
+            }
+        }
     }
 
     /**
@@ -53,6 +67,7 @@ public class MemoryLimitCalculator {
      * @return maximum available memory
      */
     public static long maxAvailable() {
+        checkAndScheduleRefresh();
         return maxAvailable;
     }
 
@@ -67,6 +82,7 @@ public class MemoryLimitCalculator {
         if (percentage <= 0 || percentage > 1) {
             throw new IllegalArgumentException();
         }
+        checkAndScheduleRefresh();
         return (long) (maxAvailable() * percentage);
     }
 
@@ -76,6 +92,7 @@ public class MemoryLimitCalculator {
      * @return available memory
      */
     public static long defaultLimit() {
+        checkAndScheduleRefresh();
         return (long) (maxAvailable() * 0.8);
     }
 }
