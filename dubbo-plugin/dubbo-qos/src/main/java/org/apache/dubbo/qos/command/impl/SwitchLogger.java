@@ -26,7 +26,11 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
     "switchLogger slf4j"
 })
 public class SwitchLogger implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
+
+    public SwitchLogger(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
