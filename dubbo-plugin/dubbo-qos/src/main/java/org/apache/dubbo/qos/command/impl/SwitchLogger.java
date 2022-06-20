@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.logger.Level;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -26,14 +27,20 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
     "switchLogger slf4j"
 })
 public class SwitchLogger implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
+
+    public SwitchLogger(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         if (args.length != 1) {
             return "Unexpected argument length.";
         }
+        Level level = LoggerFactory.getLevel();
         LoggerFactory.setLoggerAdapter(frameworkModel, args[0]);
+        LoggerFactory.setLevel(level);
         return "OK";
     }
 }
