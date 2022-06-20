@@ -25,10 +25,12 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -536,6 +538,13 @@ public class InstanceAddressURL extends URL {
     @Override
     public ApplicationModel getApplicationModel() {
         return instance.getApplicationModel();
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return Optional.ofNullable(RpcContext.getServiceContext().getConsumerUrl())
+            .map(URL::getScopeModel)
+            .orElse(super.getScopeModel());
     }
 
     @Override
