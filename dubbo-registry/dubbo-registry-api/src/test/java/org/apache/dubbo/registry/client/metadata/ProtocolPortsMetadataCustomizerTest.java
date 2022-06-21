@@ -18,13 +18,12 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ProtocolPortsMetadataCustomizerTest {
-    private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
     private MetadataService mockedMetadataService;
@@ -87,7 +85,7 @@ public class ProtocolPortsMetadataCustomizerTest {
         customizer.customize(instance, ApplicationModel.defaultModel());
         String endpoints = instance.getMetadata().get(ENDPOINTS);
         assertNotNull(endpoints);
-        List<DefaultServiceInstance.Endpoint> endpointList = gson.fromJson(endpoints, new TypeToken<List<DefaultServiceInstance.Endpoint>>(){}.getType());
+        List<DefaultServiceInstance.Endpoint> endpointList = JsonUtils.getJson().toJavaList(endpoints, DefaultServiceInstance.Endpoint.class);
         assertEquals(2, endpointList.size());
         MatcherAssert.assertThat(endpointList, hasItem(hasProperty("protocol", equalTo("dubbo"))));
         MatcherAssert.assertThat(endpointList, hasItem(hasProperty("port", equalTo(20880))));

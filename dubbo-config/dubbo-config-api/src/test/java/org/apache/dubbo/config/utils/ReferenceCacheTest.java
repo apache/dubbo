@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReferenceCacheTest {
@@ -42,16 +43,18 @@ public class ReferenceCacheTest {
         ReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         assertEquals(0L, config.getCounter());
-        cache.get(config);
+        Object proxy = cache.get(config);
         assertTrue(config.isGetMethodRun());
 
+        // singleton reference config by default
         MockReferenceConfig configCopy = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         assertEquals(1L, configCopy.getCounter());
-        cache.get(configCopy);
-        assertTrue(configCopy.isGetMethodRun());
+        Object proxyOfCopyConfig = cache.get(configCopy);
+        assertFalse(configCopy.isGetMethodRun());
 
-        assertEquals(2L, config.getCounter());
-        assertEquals(2L, configCopy.getCounter());
+        assertEquals(1L, config.getCounter());
+        assertEquals(1L, configCopy.getCounter());
+        assertEquals(proxy, proxyOfCopyConfig);
     }
 
     @Test

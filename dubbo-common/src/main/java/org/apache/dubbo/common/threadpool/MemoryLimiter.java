@@ -122,7 +122,8 @@ public class MemoryLimiter {
                 return false;
             }
             memory.add(objectSize);
-            if (sum < memoryLimit) {
+            // see https://github.com/apache/incubator-shenyu/pull/3356
+            if (memory.sum() < memoryLimit) {
                 notLimited.signal();
             }
         } finally {
@@ -140,13 +141,13 @@ public class MemoryLimiter {
         }
         acquireLock.lockInterruptibly();
         try {
-            final long sum = memory.sum();
             final long objectSize = inst.getObjectSize(e);
-            while (sum + objectSize >= memoryLimit) {
+            // see https://github.com/apache/incubator-shenyu/pull/3335
+            while (memory.sum() + objectSize >= memoryLimit) {
                 notLimited.await();
             }
             memory.add(objectSize);
-            if (sum < memoryLimit) {
+            if (memory.sum() < memoryLimit) {
                 notLimited.signal();
             }
         } finally {

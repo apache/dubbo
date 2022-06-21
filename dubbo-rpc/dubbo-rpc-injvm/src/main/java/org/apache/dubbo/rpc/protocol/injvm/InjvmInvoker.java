@@ -34,9 +34,11 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -44,10 +46,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
@@ -99,8 +105,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-
-        invocation.setAttachment(TIMEOUT_KEY, invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT));
+        invocation.setAttachment(TIMEOUT_KEY, calculateTimeout(invocation, invocation.getMethodName()));
 
         String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
 
@@ -138,16 +143,35 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             } finally {
                 InternalThreadLocalMap.set(originTL);
             }
-            if (result.hasException()) {
-                AsyncRpcResult rpcResult = AsyncRpcResult.newDefaultAsyncResult(result.getException(), copiedInvocation);
-                rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                return rpcResult;
+            CompletableFuture<AppResponse> future = new CompletableFuture<>();
+            AppResponse rpcResult = new AppResponse(copiedInvocation);
+            if (result instanceof AsyncRpcResult) {
+                result.whenCompleteWithContext((r, t) -> {
+                    if (t != null) {
+                        rpcResult.setException(t);
+                    } else {
+                        if (r.hasException()) {
+                            rpcResult.setException(r.getException());
+                        } else {
+                            Object rebuildValue = rebuildValue(invocation, desc, r.getValue());
+                            rpcResult.setValue(rebuildValue);
+                        }
+                    }
+                    rpcResult.setObjectAttachments(new HashMap<>(r.getObjectAttachments()));
+                    future.complete(rpcResult);
+                });
             } else {
-                rebuildValue(invocation, desc, result);
-                AsyncRpcResult rpcResult = AsyncRpcResult.newDefaultAsyncResult(result.getValue(), copiedInvocation);
+                if (result.hasException()) {
+                    rpcResult.setException(result.getException());
+                } else {
+                    Object rebuildValue = rebuildValue(invocation, desc, result.getValue());
+                    rpcResult.setValue(rebuildValue);
+                }
                 rpcResult.setObjectAttachments(new HashMap<>(result.getObjectAttachments()));
-                return rpcResult;
+                future.complete(rpcResult);
             }
+            return new AsyncRpcResult(future, invocation);
+
         }
     }
 
@@ -175,11 +199,11 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         ServiceModel consumerServiceModel = invocation.getServiceModel();
         boolean shouldSkip = shouldIgnoreSameModule && consumerServiceModel != null &&
             Objects.equals(providerServiceModel.getModuleModel(), consumerServiceModel.getModuleModel());
-        if(CommonConstants.$INVOKE.equals(methodName) || shouldSkip) {
+        if (CommonConstants.$INVOKE.equals(methodName) || shouldSkip) {
             // generic invoke, skip copy arguments
             RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                 providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
-                invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
+                invocation.getParameterTypes(), invocation.getArguments(), invocation.copyObjectAttachments(),
                 invocation.getInvoker(), new HashMap<>(),
                 invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
             copiedInvocation.setInvoker(invoker);
@@ -209,7 +233,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
                 RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
                     providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
-                    pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
+                    pts, realArgument, invocation.copyObjectAttachments(),
                     invocation.getInvoker(), new HashMap<>(),
                     invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
                 copiedInvocation.setInvoker(invoker);
@@ -222,8 +246,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
-    private void rebuildValue(Invocation invocation, String desc, Result result) {
-        Object originValue = result.getValue();
+    private Object rebuildValue(Invocation invocation, String desc, Object originValue) {
         Object value = originValue;
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
@@ -235,7 +258,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                     value = paramDeepCopyUtil.copy(getUrl(), originValue, returnType);
                 }
             }
-            result.setValue(value);
+            return value;
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
@@ -246,6 +269,22 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             return localUrl.getParameter(ASYNC_KEY, false);
         }
         return remoteUrl.getParameter(ASYNC_KEY, false);
+    }
+
+    private int calculateTimeout(Invocation invocation, String methodName) {
+        Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
+        int timeout;
+        if (countdown == null) {
+            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
+            if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+                invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
+            }
+        } else {
+            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
+            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
+            invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
+        }
+        return timeout;
     }
 
 }

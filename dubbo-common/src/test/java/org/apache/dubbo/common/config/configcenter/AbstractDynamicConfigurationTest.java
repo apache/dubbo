@@ -38,7 +38,6 @@ import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.D
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link AbstractDynamicConfiguration} Test
@@ -126,11 +125,11 @@ public class AbstractDynamicConfigurationTest {
         assertFalse(configuration.publishConfig(null, null));
         assertFalse(configuration.publishConfig(null, null, null));
     }
-
-    @Test
-    public void testGetConfigKeys() {
-        assertTrue(configuration.getConfigKeys(null).isEmpty());
-    }
+//
+//    @Test
+//    public void testGetConfigKeys() {
+//        assertTrue(configuration.getConfigKeys(null).isEmpty());
+//    }
 
     @Test
     public void testGetConfig() {

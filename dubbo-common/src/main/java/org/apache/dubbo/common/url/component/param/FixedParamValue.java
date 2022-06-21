@@ -48,12 +48,12 @@ public class FixedParamValue implements ParamValue {
      * @param n
      */
     @Override
-    public String getN(Integer n) {
+    public String getN(int n) {
         return values[n];
     }
 
     @Override
-    public Integer getIndex(String value) {
+    public int getIndex(String value) {
         Integer offset = val2Index.get(value.toLowerCase(Locale.ROOT));
         if (offset == null) {
             throw new IllegalArgumentException("unrecognized value " + value
@@ -61,10 +61,5 @@ public class FixedParamValue implements ParamValue {
                     "Permitted values: " + Arrays.asList(values));
         }
         return offset;
-    }
-
-    @Override
-    public String defaultVal() {
-        return values[0];
     }
 }

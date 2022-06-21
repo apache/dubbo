@@ -95,5 +95,7 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
      *
      * @return The description.
      */
+
+    @Override
     String toString();
 }

@@ -444,12 +444,12 @@ public class ReflectionPackableMethod implements PackableMethod {
             TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(
                 data);
             Object[] ret = new Object[wrapper.getArgsCount()];
-            final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
-            ((WrapResponsePack) responsePack).serialize = serializeType;
+            ((WrapResponsePack) responsePack).serialize = wrapper.getSerializeType();
             for (int i = 0; i < wrapper.getArgsList().size(); i++) {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                     wrapper.getArgs(i).toByteArray());
-                ret[i] = serialization.deserialize(url, serializeType, wrapper.getArgTypes(i),
+                ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
+                    wrapper.getArgTypes(i),
                     bais);
             }
             return ret;

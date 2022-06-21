@@ -20,11 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
-import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -84,7 +81,6 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_SHARE_CONNEC
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_CONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_DISCONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.OPTIMIZER_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 
 
@@ -104,7 +100,6 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private final Map<String, Object> referenceClientMap = new ConcurrentHashMap<>();
     private static final Object PENDING_OBJECT = new Object();
-    private final Set<String> optimizers = new ConcurrentHashSet<>();
 
     private AtomicBoolean destroyed = new AtomicBoolean();
 
@@ -127,7 +122,7 @@ public class DubboProtocol extends AbstractProtocol {
                 Thread.currentThread().setContextClassLoader(invoker.getUrl().getServiceModel().getClassLoader());
             }
             // need to consider backward-compatibility if it's a callback
-            if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
+            if (Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(IS_CALLBACK_SERVICE_INVOKE))) {
                 String methodsStr = invoker.getUrl().getParameters().get("methods");
                 boolean hasMethod = false;
                 if (methodsStr == null || !methodsStr.contains(",")) {
@@ -197,9 +192,9 @@ public class DubboProtocol extends AbstractProtocol {
             } catch (RemotingException e) {
                 String serviceKey = serviceKey(
                     0,
-                    (String) invocation.getObjectAttachments().get(PATH_KEY),
-                    (String) invocation.getObjectAttachments().get(VERSION_KEY),
-                    (String) invocation.getObjectAttachments().get(GROUP_KEY)
+                    (String) invocation.getObjectAttachmentWithoutConvert(PATH_KEY),
+                    (String) invocation.getObjectAttachmentWithoutConvert(VERSION_KEY),
+                    (String) invocation.getObjectAttachmentWithoutConvert(GROUP_KEY)
                 );
                 throw new RemotingException(channel, "The stub service[" + serviceKey + "] is not found, it may not be exported yet");
             }
@@ -265,10 +260,10 @@ public class DubboProtocol extends AbstractProtocol {
         boolean isCallBackServiceInvoke;
         boolean isStubServiceInvoke;
         int port = channel.getLocalAddress().getPort();
-        String path = (String) inv.getObjectAttachments().get(PATH_KEY);
+        String path = (String) inv.getObjectAttachmentWithoutConvert(PATH_KEY);
 
         //if it's stub service on client side(after enable stubevent, usually is set up onconnect or ondisconnect method)
-        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(STUB_EVENT_KEY));
+        isStubServiceInvoke = Boolean.TRUE.toString().equals(inv.getObjectAttachmentWithoutConvert(STUB_EVENT_KEY));
         if (isStubServiceInvoke) {
             //when a stub service export to local, it usually can't be exposed to port
             port = 0;
@@ -277,15 +272,15 @@ public class DubboProtocol extends AbstractProtocol {
         // if it's callback service on client side
         isCallBackServiceInvoke = isClientSide(channel) && !isStubServiceInvoke;
         if (isCallBackServiceInvoke) {
-            path += "." + inv.getObjectAttachments().get(CALLBACK_SERVICE_KEY);
-            inv.getObjectAttachments().put(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
+            path += "." + inv.getObjectAttachmentWithoutConvert(CALLBACK_SERVICE_KEY);
+            inv.setObjectAttachment(IS_CALLBACK_SERVICE_INVOKE, Boolean.TRUE.toString());
         }
 
         String serviceKey = serviceKey(
                 port,
                 path,
-                (String) inv.getObjectAttachments().get(VERSION_KEY),
-                (String) inv.getObjectAttachments().get(GROUP_KEY)
+                (String) inv.getObjectAttachmentWithoutConvert(VERSION_KEY),
+                (String) inv.getObjectAttachmentWithoutConvert(GROUP_KEY)
         );
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
@@ -399,40 +394,6 @@ public class DubboProtocol extends AbstractProtocol {
         return protocolServer;
     }
 
-    private void optimizeSerialization(URL url) throws RpcException {
-        String className = url.getParameter(OPTIMIZER_KEY, "");
-        if (StringUtils.isEmpty(className) || optimizers.contains(className)) {
-            return;
-        }
-
-        logger.info("Optimizing the serialization process for Kryo, FST, etc...");
-
-        try {
-            Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
-            if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
-                throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
-            }
-
-            SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
-
-            if (optimizer.getSerializableClasses() == null) {
-                return;
-            }
-
-            for (Class c : optimizer.getSerializableClasses()) {
-                SerializableClassRegistry.registerClass(c);
-            }
-
-            optimizers.add(className);
-
-        } catch (ClassNotFoundException e) {
-            throw new RpcException("Cannot find the serialization optimizer class: " + className, e);
-
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RpcException("Cannot instantiate the serialization optimizer class: " + className, e);
-
-        }
-    }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {

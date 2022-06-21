@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
@@ -32,12 +33,15 @@ import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -97,13 +101,16 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
         String protocol = params.get(PROTOCOL_KEY);
         int port = Integer.parseInt(params.get(PORT_KEY));
         URLBuilder urlBuilder = new URLBuilder()
-                .setHost(host)
-                .setPort(port)
-                .setProtocol(protocol)
-                .setPath(MetadataService.class.getName())
-                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
-                .addParameter(SIDE_KEY, CONSUMER)
-                .addParameter(CONNECTIONS_KEY, 1)
+            .setHost(host)
+            .setPort(port)
+            .setProtocol(protocol)
+            .setPath(MetadataService.class.getName())
+            .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+            .addParameter(SIDE_KEY, CONSUMER)
+            .addParameter(CONNECTIONS_KEY, 1)
+            .addParameter(THREADPOOL_KEY, "cached")
+            .addParameter(THREADS_KEY, "100")
+            .addParameter(CORE_THREADS_KEY, "2")
                 .addParameter(RETRIES_KEY, 0);
 
 
@@ -158,6 +165,6 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     private Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) ServiceInstanceMetadataUtils.gson.fromJson(param,Map.class);
+        return isBlank(param) ? emptyMap() : (Map) JsonUtils.getJson().toJavaObject(param, Map.class);
     }
 }

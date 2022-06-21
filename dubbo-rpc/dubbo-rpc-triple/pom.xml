@@ -81,14 +81,20 @@
         </dependency>
     </dependencies>
     <build>
-        <extensions>
-            <extension>
+        <plugins>
+            <plugin>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
                 <version>1.6.2</version>
-            </extension>
-        </extensions>
-        <plugins>
+                <executions>
+                    <execution>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>detect</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
@@ -102,7 +108,7 @@
                             <id>dubbo</id>
                             <groupId>org.apache.dubbo</groupId>
                             <artifactId>dubbo-compiler</artifactId>
-                            <version>${dubbo.compiler.version}</version>
+                            <version>${project.parent.version}</version>
                             <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
                         </protocPlugin>
                     </protocPlugins>

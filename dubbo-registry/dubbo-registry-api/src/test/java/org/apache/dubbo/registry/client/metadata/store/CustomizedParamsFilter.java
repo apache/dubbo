@@ -33,11 +33,21 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
         return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
     }
 
+    @Override
+    public String[] serviceParamsExcluded() {
+        return new String[0];
+    }
+
     /**
      * Not included in this test
      */
     @Override
     public String[] instanceParamsIncluded() {
         return new String[]{SIDE_KEY};
+    }
+
+    @Override
+    public String[] instanceParamsExcluded() {
+        return new String[0];
     }
 }

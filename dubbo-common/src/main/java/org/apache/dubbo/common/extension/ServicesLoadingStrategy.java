@@ -38,4 +38,8 @@ public class ServicesLoadingStrategy implements LoadingStrategy {
         return MIN_PRIORITY;
     }
 
+    @Override
+    public String getName() {
+        return "SERVICES";
+    }
 }

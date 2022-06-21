@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -29,8 +30,6 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -90,10 +89,6 @@ public class ServiceInstanceMetadataUtils {
 
     public static final String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
 
-    public static final String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
-
-    public static final Gson gson = new Gson();
-
     public static String getMetadataServiceParameter(URL url) {
         if (url == null) {
             return "";
@@ -105,7 +100,7 @@ public class ServiceInstanceMetadataUtils {
             return null;
         }
 
-        return gson.toJson(params);
+        return JsonUtils.getJson().toJson(params);
     }
 
     private static Map<String, String> getParams(URL providerURL) {
@@ -139,6 +134,7 @@ public class ServiceInstanceMetadataUtils {
 
     /**
      * Get the metadata storage type specified by the peer instance.
+     *
      * @return storage type, remote or local
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
@@ -174,7 +170,7 @@ public class ServiceInstanceMetadataUtils {
             endpoints.add(endpoint);
         });
 
-        metadata.put(ENDPOINTS, gson.toJson(endpoints));
+        metadata.put(ENDPOINTS, JsonUtils.getJson().toJson(endpoints));
     }
 
     /**
@@ -223,7 +219,7 @@ public class ServiceInstanceMetadataUtils {
 
     public static void customizeInstance(ServiceInstance instance, ApplicationModel applicationModel) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
-                instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
+            instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customize

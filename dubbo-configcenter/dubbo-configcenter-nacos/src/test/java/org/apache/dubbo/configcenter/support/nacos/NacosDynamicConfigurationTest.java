@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -102,18 +101,18 @@ public class NacosDynamicConfigurationTest {
         Assertions.assertEquals("new value2", listener4.getValue());
 
     }
-
-    @Test
-    public void testGetConfigKeys() {
-
-        put("key1", "a");
-        put("key2", "b");
-
-        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP);
-
-        Assertions.assertFalse(keys.isEmpty());
-
-    }
+//
+//    @Test
+//    public void testGetConfigKeys() {
+//
+//        put("key1", "a");
+//        put("key2", "b");
+//
+//        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP);
+//
+//        Assertions.assertFalse(keys.isEmpty());
+//
+//    }
 
     private void put(String key, String value) {
         put(key, DynamicConfiguration.DEFAULT_GROUP, value);

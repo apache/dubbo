@@ -35,6 +35,9 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -74,6 +77,8 @@ public class RpcInvocation implements Invocation, Serializable {
      */
     private Map<String, Object> attachments;
 
+    private transient Lock attachmentLock = new ReentrantLock();
+
     /**
      * Only used on the caller side, will not appear on the wire.
      */
@@ -112,7 +117,7 @@ public class RpcInvocation implements Invocation, Serializable {
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getTargetServiceUniqueName(), invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(),
             invocation.getProtocolServiceKey(), invocation.getParameterTypes(), invocation.getArguments(),
-            new HashMap<>(invocation.getObjectAttachments()), invocation.getInvoker(), invocation.getAttributes(),
+            invocation.copyObjectAttachments(), invocation.getInvoker(), invocation.getAttributes(),
             invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -377,11 +382,46 @@ public class RpcInvocation implements Invocation, Serializable {
 
     @Override
     public Map<String, Object> getObjectAttachments() {
-        return attachments;
+        try {
+            attachmentLock.lock();
+            return attachments;
+        } finally {
+            attachmentLock.unlock();
+        }
+    }
+
+    @Override
+    public Map<String, Object> copyObjectAttachments() {
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return new HashMap<>();
+            }
+            return new HashMap<>(attachments);
+        } finally {
+            attachmentLock.unlock();
+        }
+    }
+
+    @Override
+    public void foreachAttachment(Consumer<Map.Entry<String, Object>> consumer) {
+        try {
+            attachmentLock.lock();
+            if (attachments != null) {
+                attachments.entrySet().forEach(consumer);
+            }
+        } finally {
+            attachmentLock.unlock();
+        }
     }
 
     public void setObjectAttachments(Map<String, Object> attachments) {
-        this.attachments = attachments == null ? new HashMap<>() : attachments;
+        try {
+            attachmentLock.lock();
+            this.attachments = attachments == null ? new HashMap<>() : attachments;
+        } finally {
+            attachmentLock.unlock();
+        }
     }
 
     @Override
@@ -392,12 +432,22 @@ public class RpcInvocation implements Invocation, Serializable {
     @Deprecated
     @Override
     public Map<String, String> getAttachments() {
-        return new AttachmentsAdapter.ObjectToStringMap(attachments);
+        try {
+            attachmentLock.lock();
+            return new AttachmentsAdapter.ObjectToStringMap(attachments);
+        } finally {
+            attachmentLock.unlock();
+        }
     }
 
     @Deprecated
     public void setAttachments(Map<String, String> attachments) {
-        this.attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
+        try {
+            attachmentLock.lock();
+            this.attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
+        } finally {
+            attachmentLock.unlock();
+        }
     }
 
     @Override
@@ -407,10 +457,15 @@ public class RpcInvocation implements Invocation, Serializable {
 
     @Override
     public void setObjectAttachment(String key, Object value) {
-        if (attachments == null) {
-            attachments = new HashMap<>();
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                attachments = new HashMap<>();
+            }
+            attachments.put(key, value);
+        } finally {
+            attachmentLock.unlock();
         }
-        attachments.put(key, value);
     }
 
     @Override
@@ -425,33 +480,48 @@ public class RpcInvocation implements Invocation, Serializable {
 
     @Override
     public void setObjectAttachmentIfAbsent(String key, Object value) {
-        if (attachments == null) {
-            attachments = new HashMap<>();
-        }
-        if (!attachments.containsKey(key)) {
-            attachments.put(key, value);
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                attachments = new HashMap<>();
+            }
+            if (!attachments.containsKey(key)) {
+                attachments.put(key, value);
+            }
+        } finally {
+            attachmentLock.unlock();
         }
     }
 
     @Deprecated
     public void addAttachments(Map<String, String> attachments) {
-        if (attachments == null) {
-            return;
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return;
+            }
+            if (this.attachments == null) {
+                this.attachments = new HashMap<>();
+            }
+            this.attachments.putAll(attachments);
+        } finally {
+            attachmentLock.unlock();
         }
-        if (this.attachments == null) {
-            this.attachments = new HashMap<>();
-        }
-        this.attachments.putAll(attachments);
     }
 
     public void addObjectAttachments(Map<String, Object> attachments) {
-        if (attachments == null) {
-            return;
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return;
+            }
+            if (this.attachments == null) {
+                this.attachments = new HashMap<>();
+            }
+            this.attachments.putAll(attachments);
+        } finally {
+            attachmentLock.unlock();
         }
-        if (this.attachments == null) {
-            this.attachments = new HashMap<>();
-        }
-        this.attachments.putAll(attachments);
     }
 
     @Deprecated
@@ -476,65 +546,90 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     @Deprecated
     public String getAttachment(String key) {
-        if (attachments == null) {
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return null;
+            }
+            Object value = attachments.get(key);
+            if (value instanceof String) {
+                return (String) value;
+            }
             return null;
+        } finally {
+            attachmentLock.unlock();
         }
-        Object value = attachments.get(key);
-        if (value instanceof String) {
-            return (String) value;
-        }
-        return null;
     }
 
     @Override
     public Object getObjectAttachment(String key) {
-        if (attachments == null) {
-            return null;
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return null;
+            }
+            final Object val = attachments.get(key);
+            if (val != null) {
+                return val;
+            }
+            return attachments.get(key.toLowerCase(Locale.ROOT));
+        } finally {
+            attachmentLock.unlock();
         }
-        final Object val = attachments.get(key);
-        if (val != null) {
-            return val;
-        }
-        return attachments.get(key.toLowerCase(Locale.ROOT));
     }
 
     @Override
     @Deprecated
     public String getAttachment(String key, String defaultValue) {
-        if (attachments == null) {
-            return defaultValue;
-        }
-        Object value = attachments.get(key);
-        if (value instanceof String) {
-            String strValue = (String) value;
-            if (StringUtils.isEmpty(strValue)) {
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
                 return defaultValue;
-            } else {
-                return strValue;
             }
+            Object value = attachments.get(key);
+            if (value instanceof String) {
+                String strValue = (String) value;
+                if (StringUtils.isEmpty(strValue)) {
+                    return defaultValue;
+                } else {
+                    return strValue;
+                }
+            }
+            return defaultValue;
+        } finally {
+            attachmentLock.unlock();
         }
-        return null;
     }
 
     @Deprecated
     @Override
     public Object getObjectAttachment(String key, Object defaultValue) {
-        if (attachments == null) {
-            return defaultValue;
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return defaultValue;
+            }
+            Object value = attachments.get(key);
+            if (value == null) {
+                return defaultValue;
+            }
+            return value;
+        } finally {
+            attachmentLock.unlock();
         }
-        Object value = attachments.get(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return value;
     }
 
     @Override
     public Object getObjectAttachmentWithoutConvert(String key) {
-        if (attachments == null) {
-            return null;
+        try {
+            attachmentLock.lock();
+            if (attachments == null) {
+                return null;
+            }
+            return attachments.get(key);
+        } finally {
+            attachmentLock.unlock();
         }
-        return attachments.get(key);
     }
 
     public Class<?> getReturnType() {

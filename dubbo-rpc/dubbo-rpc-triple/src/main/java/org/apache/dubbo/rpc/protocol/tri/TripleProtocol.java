@@ -66,7 +66,6 @@ public class TripleProtocol extends AbstractProtocol {
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
     private final ConnectionManager connectionManager;
-    private final FrameworkModel frameworkModel;
     private final String acceptEncodings;
     private boolean versionChecked = false;
 
@@ -120,26 +119,32 @@ public class TripleProtocol extends AbstractProtocol {
         triBuiltinService.getHealthStatusManager()
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
-        PortUnificationExchanger.bind(invoker.getUrl());
+        // init
+        url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .createExecutorIfAbsent(url);
+        PortUnificationExchanger.bind(url);
+        optimizeSerialization(url);
         return exporter;
     }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
-            url.getOrDefaultApplicationModel());
+            url.getOrDefaultApplicationModel(), url);
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
             connectionManager, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
     }
 
-    private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel) {
+    private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
         ExecutorService executor = applicationModel.getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
-            .createExecutorIfAbsent(THREAD_POOL_URL);
+            .createExecutorIfAbsent(url);
         Objects.requireNonNull(executor,
-            String.format("No available executor found in %s", THREAD_POOL_URL));
+            String.format("No available executor found in %s", url));
         return executor;
     }
 

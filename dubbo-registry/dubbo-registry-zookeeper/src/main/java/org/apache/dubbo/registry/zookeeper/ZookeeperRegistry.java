@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
@@ -57,9 +56,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
  */
 public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
-    private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 
@@ -177,7 +176,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     List<URL> urls = new ArrayList<>();
                     for (String path : toCategoriesPath(url)) {
                         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
-                        ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, path, k, latch));
+                        ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
                         if (zkListener instanceof RegistryChildListenerImpl) {
                             ((RegistryChildListenerImpl) zkListener).setLatch(latch);
                         }
@@ -309,37 +308,12 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     }
 
     private class RegistryChildListenerImpl implements ChildListener {
-        private RegistryNotifier notifier;
-        private long lastExecuteTime;
+        private ZookeeperRegistryNotifier notifier;
         private volatile CountDownLatch latch;
 
-        public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
+        public RegistryChildListenerImpl(URL consumerUrl, NotifyListener listener, CountDownLatch latch) {
             this.latch = latch;
-            notifier = new RegistryNotifier(getUrl(), ZookeeperRegistry.this.getDelay()) {
-                @Override
-                public void notify(Object rawAddresses) {
-                    long delayTime = getDelayTime();
-                    if (delayTime <= 0) {
-                        this.doNotify(rawAddresses);
-                    } else {
-                        long interval = delayTime - (System.currentTimeMillis() - lastExecuteTime);
-                        if (interval > 0) {
-                            try {
-                                Thread.sleep(interval);
-                            } catch (InterruptedException e) {
-                                // ignore
-                            }
-                        }
-                        lastExecuteTime = System.currentTimeMillis();
-                        this.doNotify(rawAddresses);
-                    }
-                }
-
-                @Override
-                protected void doNotify(Object rawAddresses) {
-                    ZookeeperRegistry.this.notify(consumerUrl, listener, ZookeeperRegistry.this.toUrlsWithEmpty(consumerUrl, path, (List<String>) rawAddresses));
-                }
-            };
+            notifier = new ZookeeperRegistryNotifier(consumerUrl, listener, ZookeeperRegistry.this.getDelay());
         }
 
         public void setLatch(CountDownLatch latch) {
@@ -353,7 +327,50 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             } catch (InterruptedException e) {
                 logger.warn("Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
             }
-            notifier.notify(children);
+            notifier.notify(path, children);
+        }
+    }
+
+    /**
+     * Customized Registry Notifier for zookeeper registry.
+     */
+    public class ZookeeperRegistryNotifier {
+        private long lastExecuteTime;
+        private final URL consumerUrl;
+        private final NotifyListener listener;
+        private final long delayTime;
+
+        public ZookeeperRegistryNotifier(URL consumerUrl, NotifyListener listener, long delayTime) {
+            this.consumerUrl = consumerUrl;
+            this.listener = listener;
+            this.delayTime = delayTime;
+        }
+
+        public void notify(String path, Object rawAddresses) {
+            // notify immediately if it's notification of governance rules.
+            if (path.endsWith(CONFIGURATORS_CATEGORY) || path.endsWith(ROUTERS_CATEGORY)) {
+                this.doNotify(path, rawAddresses);
+            }
+
+            // if address notification, check if delay is necessary.
+            if (delayTime <= 0) {
+                this.doNotify(path, rawAddresses);
+            } else {
+                long interval = delayTime - (System.currentTimeMillis() - lastExecuteTime);
+                if (interval > 0) {
+                    try {
+                        Thread.sleep(interval);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
+                lastExecuteTime = System.currentTimeMillis();
+                this.doNotify(path, rawAddresses);
+            }
+        }
+
+        protected void doNotify(String path, Object rawAddresses) {
+            ZookeeperRegistry.this.notify(consumerUrl, listener, ZookeeperRegistry.this.toUrlsWithEmpty(consumerUrl, path, (List<String>) rawAddresses));
         }
     }
 }

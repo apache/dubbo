@@ -40,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isValidInstance;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 
@@ -85,6 +86,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
 
+    @Override
     public synchronized void register() throws RuntimeException {
         this.serviceInstance = createServiceInstance(this.metadataInfo);
         if (!isValidInstance(this.serviceInstance)) {
@@ -235,11 +237,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
-
         this.unregister();
 
-        reportMetadata(serviceInstance.getServiceMetadata());
-        this.doRegister(serviceInstance);
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
+            reportMetadata(serviceInstance.getServiceMetadata());
+            this.doRegister(serviceInstance);
+        }
     }
 
     @Override
@@ -262,13 +265,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
-        String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+        String existingInstanceRevision = getExportedServicesRevision(instance);
         MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
-            if (EMPTY_REVISION.equals(newRevision)) {
-                return false;
-            }
             instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.getRevision());
             return true;
         }

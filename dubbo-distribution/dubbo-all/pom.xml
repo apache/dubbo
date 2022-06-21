@@ -444,6 +444,7 @@
                                     <include>org.apache.dubbo:dubbo-serialization-fastjson2</include>
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization</include>
+                                    <include>org.apache.dubbo:dubbo-compiler</include>
                                 </includes>
                             </artifactSet>
                             <transformers>

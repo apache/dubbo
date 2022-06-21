@@ -17,50 +17,86 @@
 package org.apache.dubbo.qos.command.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistry;
-import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.registry.client.migration.model.MigrationStep;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class ServiceCheckUtils {
 
-    public static boolean isRegistered(ProviderModel providerModel) {
+    public static String getRegisterStatus(ProviderModel providerModel) {
         // check all registries status
+        List<String> statuses = new LinkedList<>();
         for (ProviderModel.RegisterStatedURL registerStatedURL : providerModel.getStatedUrl()) {
-            if (registerStatedURL.isRegistered()) {
-                return true;
-            }
+            URL registryUrl = registerStatedURL.getRegistryUrl();
+            boolean isServiceDiscovery = UrlUtils.isServiceDiscoveryURL(registryUrl);
+            String protocol = isServiceDiscovery ? registryUrl.getParameter(RegistryConstants.REGISTRY_KEY) : registryUrl.getProtocol();
+            // e.g. zookeeper-A(Y)
+            statuses.add(protocol + "-" + (isServiceDiscovery ? "A" : "I") + "(" + (registerStatedURL.isRegistered() ? "Y" : "N") + ")");
         }
-        return false;
+        // e.g. zookeeper-A(Y)/zookeeper-I(Y)
+        return String.join("/", statuses.toArray(new String[0]));
     }
 
-    public static int getConsumerAddressNum(ConsumerModel consumerModel) {
-        // TODO, only check one registry by default.
+    public static String getConsumerAddressNum(ConsumerModel consumerModel) {
         int num = 0;
-        RegistryManager registryManager = consumerModel.getModuleModel().getApplicationModel().getBeanFactory().getBean(RegistryManager.class);
-
-        Collection<Registry> registries = registryManager.getRegistries();
-        if (CollectionUtils.isNotEmpty(registries)) {
-            for (Registry registry : registries) {
-                if (!(registry instanceof AbstractRegistry)) {
-                    continue;
+        Object object = consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
+        Map<Registry, MigrationInvoker<?>> invokerMap;
+        List<String> nums = new LinkedList<>();
+        if (object instanceof Map) {
+            invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
+            for (Map.Entry<Registry, MigrationInvoker<?>> entry : invokerMap.entrySet()) {
+                URL registryUrl = entry.getKey().getUrl();
+                boolean isServiceDiscovery = UrlUtils.isServiceDiscoveryURL(registryUrl);
+                String protocol = isServiceDiscovery ? registryUrl.getParameter(RegistryConstants.REGISTRY_KEY) : registryUrl.getProtocol();
+                MigrationInvoker<?> migrationInvoker = entry.getValue();
+                MigrationStep migrationStep = migrationInvoker.getMigrationStep();
+                String interfaceSize = Optional.ofNullable(migrationInvoker.getInvoker())
+                    .map(ClusterInvoker::getDirectory)
+                    .map(Directory::getAllInvokers)
+                    .map(List::size)
+                    .map(String::valueOf)
+                    .orElse("-");
+                String applicationSize = Optional.ofNullable(migrationInvoker.getServiceDiscoveryInvoker())
+                    .map(ClusterInvoker::getDirectory)
+                    .map(Directory::getAllInvokers)
+                    .map(List::size)
+                    .map(String::valueOf)
+                    .orElse("-");
+                String step;
+                String size;
+                switch (migrationStep) {
+                    case APPLICATION_FIRST:
+                        step = "AF";
+                        size = "I-" + interfaceSize + ",A-" + applicationSize;
+                        break;
+                    case FORCE_INTERFACE:
+                        step = "I";
+                        size = interfaceSize;
+                        break;
+                    default:
+                        step = "A";
+                        size = applicationSize;
+                        break;
                 }
-                AbstractRegistry abstractRegistry = (AbstractRegistry) registry;
-                for (Map.Entry<URL, Map<String, List<URL>>> entry : abstractRegistry.getNotified().entrySet()) {
-                    if (entry.getKey().getServiceKey().equals(consumerModel.getServiceKey())) {
-                        if (CollectionUtils.isNotEmptyMap(entry.getValue())) {
-                            num = entry.getValue().size();
-                        }
-                    }
-                }
+                // zookeeper-AF(I-10,A-0)
+                // zookeeper-I(10)
+                // zookeeper-A(10)
+                nums.add(protocol + "-" + step + "(" + size + ")");
             }
         }
-        return num;
+        // zookeeper-AF(I-10,A-0)/nacos-I(10)
+        return String.join("/", nums.toArray(new String[0]));
     }
 }

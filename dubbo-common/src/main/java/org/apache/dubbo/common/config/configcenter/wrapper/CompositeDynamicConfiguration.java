@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -83,12 +82,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             }
         }
         return publishedAll;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group));
     }
 
     @Override
