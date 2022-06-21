@@ -499,6 +499,10 @@
             <id>jdk15ge</id>
             <activation>
                 <jdk>[15,</jdk>
+                <property>
+                    <name>MAVEN_SUREFIRE_ADD_OPENS</name>
+                    <value>true</value>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -509,6 +513,8 @@
                             <useSystemClassLoader>true</useSystemClassLoader>
                             <forkMode>once</forkMode>
                             <argLine>${argline} ${jacocoArgLine}
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-opens java.base/java.util=ALL-UNNAMED
                             </argLine>
                             <systemProperties>
                                 <!-- common shared -->

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBufferInputStream;
 import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
@@ -61,7 +62,7 @@ public class DecodeableRpcInvocationTest {
         inv.setObjectAttachment("k2", "v2");
         inv.setTargetServiceUniqueName(url.getServiceKey());
         // Write the data of inv to the buffer
-        Byte proto = CodecSupport.getIDByName("fastjson2");
+        Byte proto = CodecSupport.getIDByName(Constants.DEFAULT_REMOTING_SERIALIZATION);
         ChannelBuffer buffer = writeBuffer(url, inv, proto);
 
         FrameworkModel frameworkModel = new FrameworkModel();

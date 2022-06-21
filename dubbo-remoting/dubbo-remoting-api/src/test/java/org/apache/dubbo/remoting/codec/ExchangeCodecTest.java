@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
 import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +67,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     private static final byte MAGIC_HIGH = (byte) Bytes.short2bytes(MAGIC)[0];
     private static final byte MAGIC_LOW = (byte) Bytes.short2bytes(MAGIC)[1];
     Serialization serialization = getSerialization(Constants.DEFAULT_REMOTING_SERIALIZATION);
-    private static final byte SERIALIZATION_BYTE = FASTJSON2_SERIALIZATION_ID;
+    private static final byte SERIALIZATION_BYTE = FrameworkModel.defaultModel().getExtension(Serialization.class, Constants.DEFAULT_REMOTING_SERIALIZATION).getContentTypeId();
 
     private static Serialization getSerialization(String name) {
         Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(name);
@@ -252,7 +253,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     @Test
     public void test_Decode_Return_Request_Event_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
-        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE | (byte) 0xe0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
 
@@ -269,7 +270,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     @Test
     public void test_Decode_Return_Request_Event_String() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
-        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE | (byte) 0xe0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         String event = READONLY_EVENT;
         byte[] request = getRequestBytes(event, header);
 
@@ -284,7 +285,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     @Test
     public void test_Decode_Return_Request_Heartbeat_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
-        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE | (byte) 0xe0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         byte[] request = getRequestBytes(null, header);
         Request obj = (Request) decode(request);
         Assertions.assertNull(obj.getData());
@@ -297,7 +298,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     @Test
     public void test_Decode_Return_Request_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
-        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE | (byte) 0xe0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
 
@@ -314,7 +315,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     @Test
     public void test_Decode_Error_Request_Object() throws IOException {
         //00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
-        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE | (byte) 0xe0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
         //bad object

@@ -69,6 +69,7 @@ public class FastJson2Serialization implements Serialization {
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
+        // 检查获取源，从TCCL加载
         ClassLoader classLoader = Optional.ofNullable(url)
             .map(URL::getServiceModel)
             .map(ServiceModel::getClassLoader)
