@@ -476,7 +476,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
             codec.encode(channel, encodeBuffer, request);
             Assertions.fail();
         } catch (IOException e) {
-            Assertions.assertTrue(e.getMessage().startsWith("Data length too large: " + 10));
+            Assertions.assertTrue(e.getMessage().startsWith("Data length too large: "));
+            Assertions.assertTrue(e.getMessage().contains("max payload: 4, channel: org.apache.dubbo.remoting.codec.AbstractMockChannel"));
         }
 
         Response response = new Response(1L);
