@@ -69,19 +69,13 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (UrlUtils.isRegistry(invoker.getUrl())) {
-            startQosServer(invoker.getUrl());
-            return protocol.export(invoker);
-        }
+        startQosServer(invoker.getUrl());
         return protocol.export(invoker);
     }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (UrlUtils.isRegistry(url)) {
-            startQosServer(url);
-            return protocol.refer(type, url);
-        }
+        startQosServer(url);
         return protocol.refer(type, url);
     }
 
@@ -105,8 +99,8 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             boolean qosEnable = url.getParameter(QOS_ENABLE, true);
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
-                        "Please check dubbo.application.qos.enable is configured either in system property, " +
-                        "dubbo.properties or XML/spring-boot configuration.");
+                    "Please check dubbo.application.qos.enable is configured either in system property, " +
+                    "dubbo.properties or XML/spring-boot configuration.");
                 return;
             }
 
