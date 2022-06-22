@@ -240,8 +240,8 @@ public class NacosRegistry extends FailbackRegistry {
                     subscribeEventListener(serviceName, url, listener);
                 }
             } else {
+                List<Instance> instances = new LinkedList<>();
                 for (String serviceName : serviceNames) {
-                    List<Instance> instances = new LinkedList<>();
                     instances.addAll(namingService.getAllInstances(serviceName
                         , getUrl().getGroup(Constants.DEFAULT_GROUP)));
                     String serviceInterface = serviceName;
