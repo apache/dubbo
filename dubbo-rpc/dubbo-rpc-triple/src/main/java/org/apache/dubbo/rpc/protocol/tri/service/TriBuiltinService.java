@@ -28,8 +28,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import io.grpc.health.v1.DubboHealthTriple;
 import io.grpc.health.v1.Health;
-import io.grpc.reflection.v1.DubboServerReflectionTriple;
-import io.grpc.reflection.v1.ServerReflection;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -65,40 +63,23 @@ public class TriBuiltinService {
 
     public void init() {
         if (init.compareAndSet(false, true)) {
-            ModuleModel internalModule = ApplicationModel.defaultModel().getInternalModule();
-            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
-                DubboHealthTriple.SERVICE_NAME)
-                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
-                .setScopeModel(internalModule);
-            Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
-            pathResolver.add(DubboHealthTriple.SERVICE_NAME, invoker);
-
-            URL url2 = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
-                DubboServerReflectionTriple.SERVICE_NAME)
-                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
-                .setScopeModel(internalModule);
-            Invoker<?> invoker2 = proxyFactory.getInvoker(reflectionService, ServerReflection.class,
-                url2);
-            pathResolver.add(DubboServerReflectionTriple.SERVICE_NAME, invoker2);
-
-            URL url3 = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
-                io.grpc.reflection.v1alpha.DubboServerReflectionTriple.SERVICE_NAME)
-                .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
-                .setScopeModel(internalModule);
-            Invoker<?> invoker3 = proxyFactory.getInvoker(reflectionServiceV1Alpha,
-                io.grpc.reflection.v1alpha.ServerReflection.class,
-                url3);
-            pathResolver.add(io.grpc.reflection.v1alpha.DubboServerReflectionTriple.SERVICE_NAME,
-                invoker3);
-
-            internalModule.addDestroyListener(
-                scopeModel -> pathResolver.remove(DubboHealthTriple.SERVICE_NAME));
-            internalModule.addDestroyListener(
-                scopeModel -> pathResolver.remove(DubboServerReflectionTriple.SERVICE_NAME));
-            internalModule.addDestroyListener(
-                scopeModel -> pathResolver.remove(
-                    io.grpc.reflection.v1alpha.DubboServerReflectionTriple.SERVICE_NAME));
+            addSingleBuiltinService(DubboHealthTriple.SERVICE_NAME, healthService, Health.class);
+            addSingleBuiltinService(ReflectionService.SERVICE_NAME, reflectionService,
+                ReflectionService.class);
+            addSingleBuiltinService(ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha,
+                ReflectionV1AlphaService.class);
         }
+    }
+
+    private <T> void addSingleBuiltinService(String serviceName, T impl, Class<T> interfaceClass) {
+        ModuleModel internalModule = ApplicationModel.defaultModel().getInternalModule();
+        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null, null, ANYHOST_VALUE, 0,
+            serviceName)
+            .addParameter(PROXY_KEY, CommonConstants.NATIVE_STUB)
+            .setScopeModel(internalModule);
+        Invoker<?> invoker = proxyFactory.getInvoker(impl, interfaceClass, url);
+        pathResolver.add(serviceName, invoker);
+        internalModule.addDestroyListener(scopeModel -> pathResolver.remove(serviceName));
     }
 
     public HealthStatusManager getHealthStatusManager() {
