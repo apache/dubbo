@@ -544,7 +544,21 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     + " to the consumer "
                     + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
             } finally {
-                destroy();
+                try {
+                    if (invoker != null) {
+                        invoker.destroy();
+                    }
+                } catch (Throwable t) {
+                    logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
+                }
+                if (consumerModel != null) {
+                    ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                    repository.unregisterConsumer(consumerModel);
+                }
+                initialized = false;
+                invoker = null;
+                ref = null;
+                consumerModel = null;
             }
         }
     }
