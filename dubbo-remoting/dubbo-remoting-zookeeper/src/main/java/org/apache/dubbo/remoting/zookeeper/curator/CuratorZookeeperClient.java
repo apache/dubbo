@@ -49,6 +49,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
@@ -354,6 +357,15 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     static class CuratorWatcherImpl implements CuratorWatcher {
 
+        private static final ExecutorService CURATOR_WATCHER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("Dubbo-CuratorWatcher-Thread");
+                return thread;
+            }
+        });
+
         private CuratorFramework client;
         private volatile ChildListener childListener;
         private String path;
@@ -380,7 +392,17 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             }
 
             if (childListener != null) {
-                childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
+                Runnable task = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            childListener.childChanged(path, client.getChildren().usingWatcher(CuratorWatcherImpl.this).forPath(path));
+                        } catch (Exception e) {
+                            logger.warn("client get children error", e);
+                        }
+                    }
+                };
+                CURATOR_WATCHER_EXECUTOR_SERVICE.execute(task);
             }
         }
     }
