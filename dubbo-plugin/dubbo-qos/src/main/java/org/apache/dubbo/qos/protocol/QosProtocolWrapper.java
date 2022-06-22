@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Exporter;
