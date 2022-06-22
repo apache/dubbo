@@ -44,7 +44,6 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
 
     private final List<HeaderFilter> headerFilters;
     private List<MethodDescriptor> methodDescriptors;
-    private RpcInvocation invocation;
 
     public ReflectionAbstractServerCall(Invoker<?> invoker,
         ServerStream serverStream,
@@ -136,7 +135,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (isClosed()) {
             return;
         }
-        invocation = buildInvocation(methodDescriptor);
+        RpcInvocation invocation = buildInvocation(methodDescriptor);
         if (isClosed()) {
             return;
         }
