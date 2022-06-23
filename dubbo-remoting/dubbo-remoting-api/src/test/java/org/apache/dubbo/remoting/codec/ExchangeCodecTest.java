@@ -23,6 +23,7 @@ import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -66,8 +67,8 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     private static final short MAGIC = (short) 0xdabb;
     private static final byte MAGIC_HIGH = (byte) Bytes.short2bytes(MAGIC)[0];
     private static final byte MAGIC_LOW = (byte) Bytes.short2bytes(MAGIC)[1];
-    Serialization serialization = getSerialization(Constants.DEFAULT_REMOTING_SERIALIZATION);
-    private static final byte SERIALIZATION_BYTE = FrameworkModel.defaultModel().getExtension(Serialization.class, Constants.DEFAULT_REMOTING_SERIALIZATION).getContentTypeId();
+    Serialization serialization = getSerialization(DefaultSerializationSelector.getDefaultRemotingSerialization());
+    private static final byte SERIALIZATION_BYTE = FrameworkModel.defaultModel().getExtension(Serialization.class, DefaultSerializationSelector.getDefaultRemotingSerialization()).getContentTypeId();
 
     private static Serialization getSerialization(String name) {
         Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(name);
