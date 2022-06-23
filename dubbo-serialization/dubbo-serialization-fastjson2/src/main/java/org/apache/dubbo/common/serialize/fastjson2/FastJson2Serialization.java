@@ -21,18 +21,10 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ServiceModel;
-
-import com.alibaba.fastjson2.JSONFactory;
-import com.alibaba.fastjson2.reader.ObjectReaderCreatorASM;
-import com.alibaba.fastjson2.writer.ObjectWriterCreatorASM;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATION_ID;
 
