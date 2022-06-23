@@ -24,19 +24,21 @@ import com.alibaba.fastjson2.JSONWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import static org.apache.dubbo.common.serialize.fastjson2.FastJson2Serialization.setCreator;
-
 /**
  * FastJson object output implementation
  */
 public class FastJson2ObjectOutput implements ObjectOutput {
 
-    private final ClassLoader classLoader;
+    private final Fastjson2CreatorManager fastjson2CreatorManager;
+
+    private volatile ClassLoader classLoader;
     private final OutputStream os;
 
-    public FastJson2ObjectOutput(ClassLoader classLoader, OutputStream out) {
-        this.classLoader = classLoader;
+    public FastJson2ObjectOutput(Fastjson2CreatorManager fastjson2CreatorManager, OutputStream out) {
+        this.fastjson2CreatorManager = fastjson2CreatorManager;
+        this.classLoader = Thread.currentThread().getContextClassLoader();
         this.os = out;
+        fastjson2CreatorManager.setCreator(classLoader);
     }
 
     @Override
@@ -93,24 +95,24 @@ public class FastJson2ObjectOutput implements ObjectOutput {
 
     @Override
     public void writeObject(Object obj) throws IOException {
-        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            if (classLoader != null) {
-                Thread.currentThread().setContextClassLoader(classLoader);
-                setCreator(classLoader);
-            }
-            byte[] bytes = JSONB.toBytes(obj, JSONWriter.Feature.WriteClassName,
-                JSONWriter.Feature.FieldBased,
-                JSONWriter.Feature.ReferenceDetection,
-                JSONWriter.Feature.WriteNulls,
-                JSONWriter.Feature.NotWriteDefaultValue,
-                JSONWriter.Feature.NotWriteHashMapArrayListClassName,
-                JSONWriter.Feature.WriteNameAsSymbol);
-            writeLength(bytes.length);
-            os.write(bytes);
-            os.flush();
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        updateClassLoaderIfNeed();
+        byte[] bytes = JSONB.toBytes(obj, JSONWriter.Feature.WriteClassName,
+            JSONWriter.Feature.FieldBased,
+            JSONWriter.Feature.ReferenceDetection,
+            JSONWriter.Feature.WriteNulls,
+            JSONWriter.Feature.NotWriteDefaultValue,
+            JSONWriter.Feature.NotWriteHashMapArrayListClassName,
+            JSONWriter.Feature.WriteNameAsSymbol);
+        writeLength(bytes.length);
+        os.write(bytes);
+        os.flush();
+    }
+
+    private void updateClassLoaderIfNeed() {
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+        if (currentClassLoader != classLoader) {
+            fastjson2CreatorManager.setCreator(currentClassLoader);
+            classLoader = currentClassLoader;
         }
     }
 

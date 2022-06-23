@@ -25,19 +25,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
-import static org.apache.dubbo.common.serialize.fastjson2.FastJson2Serialization.setCreator;
-
 /**
  * FastJson object input implementation
  */
 public class FastJson2ObjectInput implements ObjectInput {
 
-    private final ClassLoader classLoader;
+    private final Fastjson2CreatorManager fastjson2CreatorManager;
+
+    private volatile ClassLoader classLoader;
     private final InputStream is;
 
-    public FastJson2ObjectInput(ClassLoader classLoader, InputStream in) {
-        this.classLoader = classLoader;
+    public FastJson2ObjectInput(Fastjson2CreatorManager fastjson2CreatorManager, InputStream in) {
+        this.fastjson2CreatorManager = fastjson2CreatorManager;
+        this.classLoader = Thread.currentThread().getContextClassLoader();
         this.is = in;
+        fastjson2CreatorManager.setCreator(classLoader);
     }
 
     @Override
@@ -98,60 +100,40 @@ public class FastJson2ObjectInput implements ObjectInput {
 
     @Override
     public <T> T readObject(Class<T> cls) throws IOException {
-        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            if (classLoader != null) {
-                Thread.currentThread().setContextClassLoader(classLoader);
-                setCreator(classLoader);
-            }
-            int length = readLength();
-            byte[] bytes = new byte[length];
-            int read = is.read(bytes, 0, length);
-            if (read != length) {
-                throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
-            }
-            try {
-                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-            } catch (Throwable t) {
-                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        updateClassLoaderIfNeed();
+        int length = readLength();
+        byte[] bytes = new byte[length];
+        int read = is.read(bytes, 0, length);
+        if (read != length) {
+            throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
+        return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+            JSONReader.Feature.UseDefaultConstructorAsPossible,
+            JSONReader.Feature.UseNativeObject,
+            JSONReader.Feature.FieldBased);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
-        try {
-            if (classLoader != null) {
-                Thread.currentThread().setContextClassLoader(classLoader);
-                setCreator(classLoader);
-            }
-            int length = readLength();
-            byte[] bytes = new byte[length];
-            int read = is.read(bytes, 0, length);
-            if (read != length) {
-                throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
-            }
-            try {
-                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
-                    JSONReader.Feature.UseDefaultConstructorAsPossible,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-            } catch (Throwable t) {
-                return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
-                    JSONReader.Feature.UseNativeObject,
-                    JSONReader.Feature.FieldBased);
-            }
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldClassLoader);
+        updateClassLoaderIfNeed();
+        int length = readLength();
+        byte[] bytes = new byte[length];
+        int read = is.read(bytes, 0, length);
+        if (read != length) {
+            throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
+        }
+        return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+            JSONReader.Feature.UseDefaultConstructorAsPossible,
+            JSONReader.Feature.UseNativeObject,
+            JSONReader.Feature.FieldBased);
+    }
+
+    private void updateClassLoaderIfNeed() {
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+        if (currentClassLoader != classLoader) {
+            fastjson2CreatorManager.setCreator(currentClassLoader);
+            classLoader = currentClassLoader;
         }
     }
 

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import com.alibaba.fastjson2.JSONFactory;
@@ -44,9 +45,11 @@ import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATIO
  */
 public class FastJson2Serialization implements Serialization {
 
-    // TODO: move to module bean
-    private static Map<ClassLoader, ObjectReaderCreatorASM> readerMap = new ConcurrentHashMap<>();
-    private static Map<ClassLoader, ObjectWriterCreatorASM> writerMap = new ConcurrentHashMap<>();
+    private final Fastjson2CreatorManager fastjson2CreatorManager;
+
+    public FastJson2Serialization(FrameworkModel frameworkModel) {
+        this.fastjson2CreatorManager = frameworkModel.getBeanFactory().getBean(Fastjson2CreatorManager.class);
+    }
 
     @Override
     public byte getContentTypeId() {
@@ -60,26 +63,12 @@ public class FastJson2Serialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        ClassLoader classLoader = Optional.ofNullable(url)
-            .map(URL::getServiceModel)
-            .map(ServiceModel::getClassLoader)
-            .orElse(Thread.currentThread().getContextClassLoader());
-        return new FastJson2ObjectOutput(classLoader, output);
+        return new FastJson2ObjectOutput(fastjson2CreatorManager, output);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        // 检查获取源，从TCCL加载
-        ClassLoader classLoader = Optional.ofNullable(url)
-            .map(URL::getServiceModel)
-            .map(ServiceModel::getClassLoader)
-            .orElse(Thread.currentThread().getContextClassLoader());
-        return new FastJson2ObjectInput(classLoader, input);
-    }
-
-    protected static void setCreator(ClassLoader classLoader) {
-        JSONFactory.setContextReaderCreator(readerMap.computeIfAbsent(classLoader, ObjectReaderCreatorASM::new));
-        JSONFactory.setContextWriterCreator(writerMap.computeIfAbsent(classLoader, ObjectWriterCreatorASM::new));
+        return new FastJson2ObjectInput(fastjson2CreatorManager, input);
     }
 
 }
