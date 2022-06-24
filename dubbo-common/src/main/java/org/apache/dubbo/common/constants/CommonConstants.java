@@ -546,4 +546,6 @@ public interface CommonConstants {
 
     String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
 
+    String DEFAULT_ISOLATION_THREAD_NAME = "isolation";
+
 }
