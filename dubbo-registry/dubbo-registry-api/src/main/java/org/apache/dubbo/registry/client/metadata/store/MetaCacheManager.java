@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.AbstractCacheManager;
 import org.apache.dubbo.metadata.MetadataInfo;
