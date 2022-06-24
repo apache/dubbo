@@ -909,7 +909,12 @@ public class ExtensionLoader<T> {
             synchronized (cachedClasses) {
                 classes = cachedClasses.get();
                 if (classes == null) {
-                    classes = loadExtensionClasses();
+                    try {
+                        classes = loadExtensionClasses();
+                    } catch (InterruptedException e) {
+                        logger.error("Exception occurred when loading extension class (interface: " + type + ")", e);
+                        throw new IllegalStateException("Exception occurred when loading extension class (interface: " + type + ")", e);
+                    }
                     cachedClasses.set(classes);
                 }
             }
@@ -921,7 +926,7 @@ public class ExtensionLoader<T> {
      * synchronized in getExtensionClasses
      */
     @SuppressWarnings("deprecation")
-    private Map<String, Class<?>> loadExtensionClasses() {
+    private Map<String, Class<?>> loadExtensionClasses() throws InterruptedException {
         checkDestroyed();
         cacheDefaultExtensionName();
 
@@ -939,7 +944,7 @@ public class ExtensionLoader<T> {
         return extensionClasses;
     }
 
-    private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy, String type) {
+    private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy, String type) throws InterruptedException {
         loadDirectoryInternal(extensionClasses, strategy, type);
         try {
             String oldType = type.replace("org.apache", "com.alibaba");
@@ -976,7 +981,7 @@ public class ExtensionLoader<T> {
         }
     }
 
-    private void loadDirectoryInternal(Map<String, Class<?>> extensionClasses, LoadingStrategy loadingStrategy, String type) {
+    private void loadDirectoryInternal(Map<String, Class<?>> extensionClasses, LoadingStrategy loadingStrategy, String type) throws InterruptedException {
         String fileName = loadingStrategy.directory() + type;
         try {
             List<ClassLoader> classLoadersToLoad = new LinkedList<>();
@@ -1024,6 +1029,8 @@ public class ExtensionLoader<T> {
                     loadingStrategy.excludedPackages(),
                     loadingStrategy.onlyExtensionClassLoaderPackages());
             }));
+        } catch (InterruptedException e) {
+            throw e;
         } catch (Throwable t) {
             logger.error("Exception occurred when loading extension class (interface: " +
                 type + ", description file: " + fileName + ").", t);
