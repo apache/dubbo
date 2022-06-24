@@ -250,47 +250,68 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (initialized) {
             return;
         }
+        try {
+            if (!this.isRefreshed()) {
+                this.refresh();
+            }
+
+            // init serviceMetadata
+            initServiceMetadata(consumer);
+
+            serviceMetadata.setServiceType(getServiceInterfaceClass());
+            // TODO, uncomment this line once service key is unified
+            serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+
+            Map<String, String> referenceParameters = appendConfig();
+            // init service-application mapping
+            initServiceAppsMapping(referenceParameters);
+
+            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+            ServiceDescriptor serviceDescriptor;
+            if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
+                serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
+                repository.registerService(serviceDescriptor);
+            } else {
+                serviceDescriptor = repository.registerService(interfaceClass);
+            }
+            consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
+                getScopeModel(), serviceMetadata, createAsyncMethodInfo());
+
+            repository.registerConsumer(consumerModel);
+
+            serviceMetadata.getAttachments().putAll(referenceParameters);
+
+            ref = createProxy(referenceParameters);
+
+            serviceMetadata.setTarget(ref);
+            serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+            consumerModel.setProxyObject(ref);
+            consumerModel.initMethodModels();
+
+            checkInvokerAvailable();
+        } catch (Throwable t) {
+            try {
+                if (invoker != null) {
+                    invoker.destroy();
+                }
+            } catch (Throwable destroy) {
+                logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", destroy);
+            }
+            if (consumerModel != null) {
+                ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+                repository.unregisterConsumer(consumerModel);
+            }
+            initialized = false;
+            invoker = null;
+            ref = null;
+            consumerModel = null;
+            serviceMetadata.setTarget(null);
+            serviceMetadata.getAttributeMap().remove(PROXY_CLASS_REF);
+
+            throw t;
+        }
         initialized = true;
-
-        if (!this.isRefreshed()) {
-            this.refresh();
-        }
-
-        // init serviceMetadata
-        initServiceMetadata(consumer);
-
-        serviceMetadata.setServiceType(getServiceInterfaceClass());
-        // TODO, uncomment this line once service key is unified
-        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
-
-        Map<String, String> referenceParameters = appendConfig();
-        // init service-application mapping
-        initServiceAppsMapping(referenceParameters);
-
-        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-        ServiceDescriptor serviceDescriptor;
-        if (CommonConstants.NATIVE_STUB.equals(getProxy())) {
-            serviceDescriptor = StubSuppliers.getServiceDescriptor(interfaceName);
-            repository.registerService(serviceDescriptor);
-        } else {
-            serviceDescriptor = repository.registerService(interfaceClass);
-        }
-        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
-            getScopeModel(), serviceMetadata, createAsyncMethodInfo());
-
-        repository.registerConsumer(consumerModel);
-
-        serviceMetadata.getAttachments().putAll(referenceParameters);
-
-        ref = createProxy(referenceParameters);
-
-        serviceMetadata.setTarget(ref);
-        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
-
-        consumerModel.setProxyObject(ref);
-        consumerModel.initMethodModels();
-
-        checkInvokerAvailable();
     }
 
     private void initServiceAppsMapping(Map<String, String> referenceParameters) {
@@ -532,7 +553,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private void checkInvokerAvailable() throws IllegalStateException {
         if (shouldCheck() && !invoker.isAvailable()) {
-            try {
                 throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
                     + ". No provider available for the service "
@@ -543,23 +563,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     + invoker.getUrl()
                     + " to the consumer "
                     + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
-            } finally {
-                try {
-                    if (invoker != null) {
-                        invoker.destroy();
-                    }
-                } catch (Throwable t) {
-                    logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
-                }
-                if (consumerModel != null) {
-                    ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-                    repository.unregisterConsumer(consumerModel);
-                }
-                initialized = false;
-                invoker = null;
-                ref = null;
-                consumerModel = null;
-            }
         }
     }
 
