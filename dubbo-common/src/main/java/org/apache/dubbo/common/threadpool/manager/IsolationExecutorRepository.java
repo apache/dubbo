@@ -33,6 +33,9 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 public class IsolationExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
 
@@ -74,7 +77,7 @@ public class IsolationExecutorRepository implements ExecutorRepository, Extensio
     }
 
     private String getIsolationThreadpoolKey(URL url) {
-        return new MD5Utils().getMd5(url.getServiceInterface() + url.getPort());
+        return new MD5Utils().getMd5(url.getServiceKey() + url.getPort());
     }
 
     @Override
@@ -107,7 +110,30 @@ public class IsolationExecutorRepository implements ExecutorRepository, Extensio
 
     @Override
     public void updateThreadpool(URL url, ExecutorService executor) {
-
+        try {
+            if (url.hasParameter(THREADS_KEY)
+                && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
+                ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
+                int threads = url.getParameter(THREADS_KEY, 0);
+                int max = threadPoolExecutor.getMaximumPoolSize();
+                int core = threadPoolExecutor.getCorePoolSize();
+                if (threads > 0 && (threads != max || threads != core)) {
+                    if (threads < core) {
+                        threadPoolExecutor.setCorePoolSize(threads);
+                        if (core == max) {
+                            threadPoolExecutor.setMaximumPoolSize(threads);
+                        }
+                    } else {
+                        threadPoolExecutor.setMaximumPoolSize(threads);
+                        if (core == max) {
+                            threadPoolExecutor.setCorePoolSize(threads);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            logger.error(t.getMessage(), t);
+        }
     }
 
     @Override
@@ -147,56 +173,67 @@ public class IsolationExecutorRepository implements ExecutorRepository, Extensio
         }
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService nextScheduledExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ExecutorService nextExecutorExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService getMetadataRetryExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService getRegistryNotificationExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ExecutorService getSharedExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService getSharedScheduledExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ExecutorService getPoolRouterExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService getConnectivityScheduledExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ScheduledExecutorService getCacheRefreshingScheduledExecutor() {
         return null;
     }
 
+    @Deprecated
     @Override
     public ExecutorService getMappingRefreshingExecutor() {
         return null;
