@@ -37,6 +37,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
+/**
+ * interface level thread pools isolation
+ */
 public class IsolationExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
 
     private static final Logger logger = LoggerFactory.getLogger(IsolationExecutorRepository.class);
