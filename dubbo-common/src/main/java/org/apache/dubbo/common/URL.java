@@ -378,11 +378,11 @@ class URL implements Serializable {
 
         if (StringUtils.isNotEmpty(getHost())) {
             if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getPassword())) {
-                ret.append("@");
+                ret.append('@');
             }
             ret.append(getHost());
             if (getPort() != 0) {
-                ret.append(":");
+                ret.append(':');
                 ret.append(getPort());
             }
         }
@@ -406,7 +406,7 @@ class URL implements Serializable {
             ret.append(getUsername());
         }
 
-        ret.append(":");
+        ret.append(':');
 
         if (StringUtils.isNotEmpty(getPassword())) {
             ret.append(getPassword());
