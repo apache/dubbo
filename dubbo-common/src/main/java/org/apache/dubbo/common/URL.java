@@ -378,11 +378,11 @@ class URL implements Serializable {
 
         if (StringUtils.isNotEmpty(getHost())) {
             if (StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getPassword())) {
-                ret.append("@");
+                ret.append('@');
             }
             ret.append(getHost());
             if (getPort() != 0) {
-                ret.append(":");
+                ret.append(':');
                 ret.append(getPort());
             }
         }
@@ -406,7 +406,7 @@ class URL implements Serializable {
             ret.append(getUsername());
         }
 
-        ret.append(":");
+        ret.append(':');
 
         if (StringUtils.isNotEmpty(getPassword())) {
             ret.append(getPassword());
@@ -1402,8 +1402,8 @@ class URL implements Serializable {
         }
         this.protocolServiceKey = getServiceKey();
         /*
-        Special treatment if this is a consumer subscription url instance with no protocol specified - starts with 'consumer://'
-        If the specific protocol is specified on the consumer side, then this method will return as normal.
+        Special treatment for urls begins with 'consumer://', that is, a consumer subscription url instance with no protocol specified.
+        If protocol is specified on the consumer side, then this method will return as normal.
         */
         if (!CONSUMER.equals(getProtocol())) {
             this.protocolServiceKey += (GROUP_CHAR_SEPARATOR + getProtocol());

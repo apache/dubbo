@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 
 public class DefaultProviderFirstParams implements ProviderFirstParams {
-    private final static Set<String> PARAMS = Collections.unmodifiableSet(new HashSet<String>() {{
+    private static final Set<String> PARAMS = Collections.unmodifiableSet(new HashSet<String>() {{
         addAll(Arrays.asList(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY));
     }});
 

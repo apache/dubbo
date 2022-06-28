@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -25,7 +26,6 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +46,7 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-                    store.put(providerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceDefinition));
+                    store.put(providerMetadataIdentifier.getIdentifierKey(), JsonUtils.getJson().toJson(serviceDefinition));
                 }
 
                 @Override
@@ -101,7 +101,7 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
-                    store.put(consumerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceParameterMap));
+                    store.put(consumerMetadataIdentifier.getIdentifierKey(), JsonUtils.getJson().toJson(serviceParameterMap));
                 }
 
                 Map<String, String> store = new ConcurrentHashMap<>();

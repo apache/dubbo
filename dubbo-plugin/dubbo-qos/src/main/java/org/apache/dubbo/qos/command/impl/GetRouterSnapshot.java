@@ -57,7 +57,7 @@ public class GetRouterSnapshot implements BaseCommand {
                         for (Map.Entry<Registry, MigrationInvoker<?>> invokerEntry : invokerMap.entrySet()) {
                             Directory<?> directory = invokerEntry.getValue().getDirectory();
                             StateRouter<?> headStateRouter = directory.getRouterChain().getHeadStateRouter();
-                            stringBuilder.append(metadata.getServiceKey()).append("@").append(Integer.toHexString(System.identityHashCode(metadata)))
+                            stringBuilder.append(metadata.getServiceKey()).append('@').append(Integer.toHexString(System.identityHashCode(metadata)))
                                 .append("\n")
                                 .append("[ All Invokers:").append(directory.getAllInvokers().size()).append(" ] ")
                                 .append("[ Valid Invokers: ").append(((AbstractDirectory<?>)directory).getValidInvokers().size()).append(" ]\n")

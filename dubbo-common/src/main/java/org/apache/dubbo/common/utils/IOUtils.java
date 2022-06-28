@@ -42,7 +42,6 @@ import java.util.List;
  * Miscellaneous io utility methods.
  * Mainly for internal use within the framework.
  *
- * @author william.liangf
  * @since 2.0.7
  */
 public class IOUtils {
@@ -189,6 +188,18 @@ public class IOUtils {
         }
     }
 
+    public static String read(InputStream is, String encoding) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        InputStreamReader inputStreamReader = new InputStreamReader(is, encoding);
+        char[] buf = new char[1024];
+        int len;
+        while ((len = inputStreamReader.read(buf)) != -1) {
+            stringBuilder.append(buf, 0, len);
+        }
+        inputStreamReader.close();
+        return stringBuilder.toString();
+    }
+
     /**
      * write lines.
      *
@@ -236,6 +247,7 @@ public class IOUtils {
 
     /**
      * use like spring code
+     *
      * @param resourceLocation
      * @return
      */
@@ -248,22 +260,20 @@ public class IOUtils {
             if (url == null) {
                 String description = "class path resource [" + path + "]";
                 throw new FileNotFoundException(description +
-                        " cannot be resolved to URL because it does not exist");
+                    " cannot be resolved to URL because it does not exist");
             }
             return url;
         }
         try {
             // try URL
             return new URL(resourceLocation);
-        }
-        catch (MalformedURLException ex) {
+        } catch (MalformedURLException ex) {
             // no URL -> treat as file path
             try {
                 return new File(resourceLocation).toURI().toURL();
-            }
-            catch (MalformedURLException ex2) {
+            } catch (MalformedURLException ex2) {
                 throw new FileNotFoundException("Resource location [" + resourceLocation +
-                        "] is neither a URL not a well-formed file path");
+                    "] is neither a URL not a well-formed file path");
             }
         }
     }

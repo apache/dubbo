@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
  */
 public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
+    @Override
     boolean isServiceDiscovery();
 
     MigrationStep getMigrationStep();

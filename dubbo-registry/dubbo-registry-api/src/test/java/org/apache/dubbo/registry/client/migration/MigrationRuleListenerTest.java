@@ -129,7 +129,7 @@ public class MigrationRuleListenerTest {
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
         migrationRuleListener.onRefer(null, migrationInvoker, consumerURL, null);
         // check migration happened after invoker referred
-        Mockito.verify(handler, Mockito.times(1)).doMigrate(MigrationRule.INIT);
+        Mockito.verify(handler, Mockito.times(1)).doMigrate(MigrationRule.getInitRule());
 
         // check no delay tasks created for there's no local rule and no config center
         Assertions.assertNull(migrationRuleListener.localRuleMigrationFuture);

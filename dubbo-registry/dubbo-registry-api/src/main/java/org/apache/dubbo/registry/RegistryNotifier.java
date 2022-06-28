@@ -82,6 +82,11 @@ public abstract class RegistryNotifier {
         return delayTime;
     }
 
+    /**
+     * notification of instance addresses (aka providers).
+     *
+     * @param rawAddresses data.
+     */
     protected abstract void doNotify(Object rawAddresses);
 
     public static class NotificationTask implements Runnable {

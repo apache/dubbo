@@ -20,12 +20,9 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -34,8 +31,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
     private static final String DEFAULT_FILE_NAME = ".mapping";
     private static final int DEFAULT_ENTRY_SIZE = 10000;
-    private static final Type founderSetType = new TypeToken<TreeSet<String>>() {
-    }.getType();
 
     public static MappingCacheManager getInstance(ScopeModel scopeModel) {
         return scopeModel.getBeanFactory().getOrRegisterBean(MappingCacheManager.class);
@@ -64,7 +59,7 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
 
     @Override
     protected Set<String> toValueType(String value) {
-        return JsonUtils.getGson().fromJson(value, founderSetType);
+        return new HashSet<>(JsonUtils.getJson().toJavaList(value, String.class));
     }
 
     @Override

@@ -45,7 +45,7 @@ public class AbstractServiceDiscoveryFactoryTest {
 
         AbstractServiceDiscoveryFactory abstractServiceDiscoveryFactory = (AbstractServiceDiscoveryFactory) factory;
         List<ServiceDiscovery> allServiceDiscoveries = abstractServiceDiscoveryFactory.getAllServiceDiscoveries();
-        Assertions.assertEquals(allServiceDiscoveries.size(), 2);
+        Assertions.assertEquals(2, allServiceDiscoveries.size());
         Assertions.assertTrue(allServiceDiscoveries.contains(serviceDiscovery1));
         Assertions.assertTrue(allServiceDiscoveries.contains(serviceDiscovery3));
     }

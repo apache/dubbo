@@ -202,6 +202,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     }
 
     @Override
+    public Set<String> getRemoteMapping(URL consumerURL) {
+        return get(consumerURL);
+    }
+
+    @Override
     public Set<String> removeCachedMapping(String serviceKey) {
         return mappingCacheManager.remove(serviceKey);
     }
@@ -243,6 +248,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         mappingListeners.clear();
         mappingLocks.clear();
         mappingInitStatus.clear();
+
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {

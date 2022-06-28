@@ -205,7 +205,7 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor lookupService(String interfaceName) {
-        if (services.containsKey(interfaceName)) {
+        if (interfaceName != null && services.containsKey(interfaceName)) {
             List<ServiceDescriptor> serviceDescriptors = services.get(interfaceName);
             return serviceDescriptors.size() > 0 ? serviceDescriptors.get(0) : null;
         } else {

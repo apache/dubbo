@@ -27,8 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
 
-import java.util.Map;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -69,9 +67,9 @@ public class InvocationUtil {
                 long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
                 if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
                     StringBuilder attachment = new StringBuilder();
-                    for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
+                    rpcInvocation.foreachAttachment((entry) -> {
                         attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
-                    }
+                    });
 
                     logger.warn(String.format(
                         "[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" + "invocation context:\n%s" + "thread info: \n%s",

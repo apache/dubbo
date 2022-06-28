@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
@@ -28,7 +29,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-import com.alibaba.fastjson.JSON;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
@@ -88,7 +88,7 @@ public class InvokeTelnet implements BaseCommand {
 
         List<Object> list;
         try {
-            list = JSON.parseArray("[" + param + "]", Object.class);
+            list = JsonUtils.getJson().toJavaList("[" + param + "]", Object.class);
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -133,7 +133,7 @@ public class InvokeTelnet implements BaseCommand {
 
 
         if (!StringUtils.isEmpty(service)) {
-            buf.append("Use default service ").append(service).append(".");
+            buf.append("Use default service ").append(service).append('.');
         }
         if (selectedProvider == null) {
             buf.append("\r\nNo such service ").append(service);
@@ -156,7 +156,7 @@ public class InvokeTelnet implements BaseCommand {
             }
             long end = System.currentTimeMillis();
             buf.append("\r\nresult: ");
-            buf.append(JSON.toJSONString(result.recreate()));
+            buf.append(JsonUtils.getJson().toJson(result.recreate()));
             buf.append("\r\nelapsed: ");
             buf.append(end - start);
             buf.append(" ms.");
