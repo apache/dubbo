@@ -17,26 +17,44 @@
 
 package org.apache.dubbo.rpc.protocol.tri.service;
 
+import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SchemaDescriptorRegistry {
 
-    private static final Map<String, FileDescriptor> SERVICE_SCHEMA_DESCRIPTORS = new ConcurrentHashMap<>();
+    private static final Map<String, FileDescriptor> DESCRIPTORS_BY_SYMBOL = new ConcurrentHashMap<>();
 
-    public static void addSchemaDescriptor(String serviceName, com.google.protobuf.Descriptors.FileDescriptor fd) {
-        SERVICE_SCHEMA_DESCRIPTORS.put(serviceName, fd);
+    private static final Set<String> SERVICES = new HashSet<>();
+
+    public static void addSchemaDescriptor(String serviceName,
+        com.google.protobuf.Descriptors.FileDescriptor fd) {
+        SERVICES.add(serviceName);
+        DESCRIPTORS_BY_SYMBOL.put(serviceName, fd);
+        for (Descriptor messageType : fd.getMessageTypes()) {
+            addType(messageType);
+        }
+    }
+
+    private static void addType(Descriptor descriptor) {
+        DESCRIPTORS_BY_SYMBOL.put(descriptor.getFullName(), descriptor.getFile());
+        for (Descriptor nestedType : descriptor.getNestedTypes()) {
+            addType(nestedType);
+        }
     }
 
 
     public static FileDescriptor getSchemaDescriptor(String serviceName) {
-        return SERVICE_SCHEMA_DESCRIPTORS.get(serviceName);
+        return DESCRIPTORS_BY_SYMBOL.get(serviceName);
     }
-    public static List<String> listServiceNames(){
-        return new ArrayList<>(SERVICE_SCHEMA_DESCRIPTORS.keySet());
+
+    public static List<String> listServiceNames() {
+        return new ArrayList<>(SERVICES);
     }
 }
