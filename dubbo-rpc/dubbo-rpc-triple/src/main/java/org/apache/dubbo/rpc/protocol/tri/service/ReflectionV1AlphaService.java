@@ -18,14 +18,16 @@
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.TriRpcStatus;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
+import io.grpc.reflection.v1alpha.DubboServerReflectionTriple;
+import io.grpc.reflection.v1alpha.ErrorResponse;
 import io.grpc.reflection.v1alpha.FileDescriptorResponse;
 import io.grpc.reflection.v1alpha.ListServiceResponse;
 import io.grpc.reflection.v1alpha.ServerReflectionRequest;
 import io.grpc.reflection.v1alpha.ServerReflectionResponse;
 import io.grpc.reflection.v1alpha.ServiceResponse;
-import io.grpc.reflection.v1alpha.DubboServerReflectionTriple;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -47,9 +49,9 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
             @Override
             public void onNext(ServerReflectionRequest request) {
                 switch (request.getMessageRequestCase()) {
-//                    case FILE_BY_FILENAME:
-//                        getFileByName(request);
-//                        break;
+                    case FILE_BY_FILENAME:
+                        getFileByName(request,responseObserver);
+                        break;
 //                    case FILE_CONTAINING_SYMBOL:
 //                        getFileContainingSymbol(request);
 //                        break;
@@ -82,19 +84,15 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
     };
 }
 
-//    private void getFileByName(ServerReflectionRequest request) {
-//        ModuleServiceRepository repo;
-//        for (ProviderModel exportedService : repo.getExportedServices()) {
-//            exportedService.getServiceModel().
-//        }
-//        String name = request.getFileByFilename();
-//        FileDescriptor fd = serverReflectionIndex.getFileDescriptorByName(name);
-//        if (fd != null) {
-//            serverCallStreamObserver.onNext(createServerReflectionResponse(request, fd));
-//        } else {
-//            sendErrorResponse(request, Status.Code.NOT_FOUND, "File not found.");
-//        }
-//    }
+    private void getFileByName(ServerReflectionRequest request,StreamObserver<ServerReflectionResponse> responseObserver) {
+        String name = request.getFileByFilename();
+        FileDescriptor fd = SchemaDescriptorRegistry.getSchemaDescriptor(name);
+        if (fd != null) {
+            responseObserver.onNext(createServerReflectionResponse(request, fd));
+        } else {
+            sendErrorResponse(request, TriRpcStatus.Code.NOT_FOUND, "File not found.",responseObserver);
+        }
+    }
 
 //    private void getFileContainingSymbol(ServerReflectionRequest request) {
 //        String symbol = request.getFileContainingSymbol();
@@ -152,19 +150,19 @@ public class ReflectionV1AlphaService extends DubboServerReflectionTriple.Server
                 .build());
     }
 
-//    private void sendErrorResponse(
-//        ServerReflectionRequest request,TriRpcStatus.Code code, String message) {
-//        ServerReflectionResponse response =
-//            ServerReflectionResponse.newBuilder()
-//                .setValidHost(request.getHost())
-//                .setOriginalRequest(request)
-//                .setErrorResponse(
-//                    ErrorResponse.newBuilder()
-//                        .setErrorCode(code.value())
-//                        .setErrorMessage(message))
-//                .build();
-//        serverCallStreamObserver.onNext(response);
-//    }
+    private void sendErrorResponse(
+        ServerReflectionRequest request,TriRpcStatus.Code code, String message,StreamObserver<ServerReflectionResponse> responseObserver) {
+        ServerReflectionResponse response =
+            ServerReflectionResponse.newBuilder()
+                .setValidHost(request.getHost())
+                .setOriginalRequest(request)
+                .setErrorResponse(
+                    ErrorResponse.newBuilder()
+                        .setErrorCode(code.code)
+                        .setErrorMessage(message))
+                .build();
+        responseObserver.onNext(response);
+    }
 
     private ServerReflectionResponse createServerReflectionResponse(
         ServerReflectionRequest request, FileDescriptor fd) {

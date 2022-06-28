@@ -33,6 +33,9 @@ public class SchemaDescriptorRegistry {
     }
 
 
+    public static FileDescriptor getSchemaDescriptor(String serviceName) {
+        return SERVICE_SCHEMA_DESCRIPTORS.get(serviceName);
+    }
     public static List<String> listServiceNames(){
         return new ArrayList<>(SERVICE_SCHEMA_DESCRIPTORS.keySet());
     }
