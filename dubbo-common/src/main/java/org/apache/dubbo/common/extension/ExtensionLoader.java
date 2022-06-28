@@ -100,7 +100,7 @@ public class ExtensionLoader<T> {
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, T> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
@@ -386,18 +386,9 @@ public class ExtensionLoader<T> {
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
-        Holder<Object> holder = getOrCreateHolder(name);
-        return (T) holder.get();
+        return cachedInstances.get(name);
     }
 
-    private Holder<Object> getOrCreateHolder(String name) {
-        Holder<Object> holder = cachedInstances.get(name);
-        if (holder == null) {
-            cachedInstances.putIfAbsent(name, new Holder<>());
-            holder = cachedInstances.get(name);
-        }
-        return holder;
-    }
 
     /**
      * Return the list of extensions which are already loaded.
@@ -411,9 +402,7 @@ public class ExtensionLoader<T> {
     }
 
     public List<T> getLoadedExtensionInstances() {
-        List<T> instances = new ArrayList<>();
-        cachedInstances.values().forEach(holder -> instances.add((T) holder.get()));
-        return instances;
+        return new ArrayList<>(cachedInstances.values());
     }
 
     public Object getLoadedAdaptiveExtensionInstances() {
@@ -436,18 +425,7 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        final Holder<Object> holder = getOrCreateHolder(name);
-        Object instance = holder.get();
-        if (instance == null) {
-            synchronized (holder) {
-                instance = holder.get();
-                if (instance == null) {
-                    instance = createExtension(name, wrap);
-                    holder.set(instance);
-                }
-            }
-        }
-        return (T) instance;
+        return cachedInstances.computeIfAbsent(name, (k) -> createExtension(k, wrap));
     }
 
     /**
@@ -617,7 +595,7 @@ public class ExtensionLoader<T> {
                         cachedAdaptiveInstance.set(instance);
                     } catch (Throwable t) {
                         createAdaptiveInstanceError = t;
-                        throw new IllegalStateException("Failed to create adaptive instance: " + t.toString(), t);
+                        throw new IllegalStateException("Failed to create adaptive instance: " + t, t);
                     }
                 }
             }
