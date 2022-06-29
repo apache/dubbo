@@ -50,6 +50,14 @@ public class SentinelRedisClient extends AbstractRedisClient implements RedisCli
     }
 
     @Override
+    public boolean exists(String key) {
+        Jedis jedis = sentinelPool.getResource();
+        boolean result = jedis.exists(key);
+        jedis.close();
+        return result;
+    }
+
+    @Override
     public Long hset(String key, String field, String value) {
         Jedis jedis = sentinelPool.getResource();
         Long result = jedis.hset(key, field, value);

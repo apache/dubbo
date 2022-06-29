@@ -43,7 +43,13 @@ public class MonoRedisClient extends AbstractRedisClient implements RedisClient 
         jedisPool = new JedisPool(getConfig(), url.getHost(), url.getPort(),
                 url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), url.getPassword());
     }
-
+    @Override
+    public boolean exists(String key) {
+        Jedis jedis = jedisPool.getResource();
+        boolean exists = jedis.exists(key);
+        jedis.close();
+        return exists;
+    }
     @Override
     public Long hset(String key, String field, String value) {
         Jedis jedis = jedisPool.getResource();

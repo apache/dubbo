@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 
 public interface RedisClient {
+
+    boolean exists(String key);
+
     Long hset(String key, String field, String value);
 
     Long publish(String channel, String message);

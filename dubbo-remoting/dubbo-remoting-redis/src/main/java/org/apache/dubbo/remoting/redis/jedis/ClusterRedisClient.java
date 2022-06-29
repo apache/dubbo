@@ -53,7 +53,10 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
                 url.getParameter("so.timeout", DEFAULT_SO_TIMEOUT), url.getParameter("max.attempts", DEFAULT_MAX_ATTEMPTS),
                 url.getPassword(), getConfig());
     }
-
+    @Override
+    public boolean exists(String key) {
+        return jedisCluster.exists(key);
+    }
     @Override
     public Long hset(String key, String field, String value) {
         return jedisCluster.hset(key, field, value);
