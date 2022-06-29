@@ -425,7 +425,8 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        return cachedInstances.computeIfAbsent(name, (k) -> createExtension(k, wrap));
+        T instance = cachedInstances.get(name);
+        return null == instance ? cachedInstances.computeIfAbsent(name, (k) -> createExtension(k, wrap)) : instance;
     }
 
     /**
