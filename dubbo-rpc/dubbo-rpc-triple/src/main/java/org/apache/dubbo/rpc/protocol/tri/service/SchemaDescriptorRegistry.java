@@ -18,9 +18,12 @@
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +34,18 @@ public class SchemaDescriptorRegistry {
 
     private static final Map<String, FileDescriptor> DESCRIPTORS_BY_SYMBOL = new ConcurrentHashMap<>();
 
+    private static final Map<String, Map<Integer, FileDescriptor>> EXTENSIONS = new ConcurrentHashMap<>();
+
     private static final Set<String> SERVICES = new HashSet<>();
 
-    public static void addSchemaDescriptor(String serviceName,
-        com.google.protobuf.Descriptors.FileDescriptor fd) {
+    public static void addSchemaDescriptor(String serviceName, FileDescriptor fd) {
         SERVICES.add(serviceName);
         DESCRIPTORS_BY_SYMBOL.put(serviceName, fd);
         for (Descriptor messageType : fd.getMessageTypes()) {
             addType(messageType);
+        }
+        for (FieldDescriptor extension : fd.getExtensions()) {
+            addExtension(extension, fd);
         }
     }
 
@@ -49,6 +56,29 @@ public class SchemaDescriptorRegistry {
         }
     }
 
+    private static void addExtension(FieldDescriptor extension, FileDescriptor fd) {
+        String name = extension.getContainingType().getFullName();
+        int number = extension.getNumber();
+        if (!EXTENSIONS.containsKey(name)) {
+            EXTENSIONS.put(name, new HashMap<>());
+        }
+        Map<Integer, FileDescriptor> fdMap = EXTENSIONS.get(name);
+        fdMap.put(number, fd);
+    }
+
+    public static FileDescriptor getFileDescriptorByExtensionAndNumber(String extension,
+        int number) {
+        return EXTENSIONS.getOrDefault(extension, Collections.emptyMap()).get(number);
+    }
+
+    public static Set<Integer> getExtensionNumbers(String extension) {
+        Map<Integer, FileDescriptor> ret = EXTENSIONS.get(extension);
+        if (ret == null) {
+            return null;
+        } else {
+            return ret.keySet();
+        }
+    }
 
     public static FileDescriptor getSchemaDescriptor(String serviceName) {
         return DESCRIPTORS_BY_SYMBOL.get(serviceName);
