@@ -45,7 +45,6 @@ public class TriBuiltinService {
 
     private final Health healthService;
 
-    private final ReflectionService reflectionService;
     private final ReflectionV1AlphaService reflectionServiceV1Alpha;
     private final HealthStatusManager healthStatusManager;
 
@@ -54,7 +53,6 @@ public class TriBuiltinService {
     public TriBuiltinService(FrameworkModel frameworkModel) {
         healthStatusManager = new HealthStatusManager(new TriHealthImpl());
         healthService = healthStatusManager.getHealthService();
-        reflectionService = new ReflectionService();
         reflectionServiceV1Alpha = new ReflectionV1AlphaService();
         proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
@@ -64,8 +62,6 @@ public class TriBuiltinService {
     public void init() {
         if (init.compareAndSet(false, true)) {
             addSingleBuiltinService(DubboHealthTriple.SERVICE_NAME, healthService, Health.class);
-            addSingleBuiltinService(ReflectionService.SERVICE_NAME, reflectionService,
-                ReflectionService.class);
             addSingleBuiltinService(ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha,
                 ReflectionV1AlphaService.class);
         }
