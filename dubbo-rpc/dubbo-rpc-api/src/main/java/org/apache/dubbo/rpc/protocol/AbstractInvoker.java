@@ -23,7 +23,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -294,8 +294,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
             return new ThreadlessExecutor();
         }
-        return url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
+        return url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url)
             .getExecutor(url);
     }
 

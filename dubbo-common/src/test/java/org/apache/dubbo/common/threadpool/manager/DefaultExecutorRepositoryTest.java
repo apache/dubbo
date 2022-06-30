@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -29,14 +30,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ExecutorRepositoryTest {
+/**
+ * test for DefaultExecutorRepository
+ */
+public class DefaultExecutorRepositoryTest {
     private ApplicationModel applicationModel;
     private ExecutorRepository executorRepository;
 
     @BeforeEach
     public void setup() {
         applicationModel = FrameworkModel.defaultModel().newApplication();
-        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     }
 
     @AfterEach
@@ -46,8 +49,27 @@ public class ExecutorRepositoryTest {
 
     @Test
     public void testGetExecutor() {
-        testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService"));
-        testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService?side=consumer"));
+        URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService");
+
+        executorRepository = applicationModel.getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url);
+
+        testGet(url);
+
+        Assertions.assertNotNull(executorRepository.getSharedExecutor());
+        Assertions.assertNotNull(executorRepository.getServiceExportExecutor());
+        Assertions.assertNotNull(executorRepository.getServiceReferExecutor());
+        executorRepository.nextScheduledExecutor();
+    }
+
+    @Test
+    public void testGetExecutorWithConsumerSide() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?side=consumer");
+
+        executorRepository = applicationModel.getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getDefaultExtension().getExecutorRepository(url);
+
+        testGet(url);
 
         Assertions.assertNotNull(executorRepository.getSharedExecutor());
         Assertions.assertNotNull(executorRepository.getServiceExportExecutor());
@@ -69,6 +91,9 @@ public class ExecutorRepositoryTest {
     @Test
     public void testUpdateExecutor() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?threads=5");
+        executorRepository = applicationModel.getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url);
+
         ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);
 
         executorService.setCorePoolSize(3);
@@ -92,6 +117,10 @@ public class ExecutorRepositoryTest {
 
     @Test
     public void testSharedExecutor() throws Exception {
+        URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?threads=5");
+        executorRepository = applicationModel.getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url);
+
         ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
         MockTask task1 = new MockTask(2000);
         MockTask task2 = new MockTask(100);

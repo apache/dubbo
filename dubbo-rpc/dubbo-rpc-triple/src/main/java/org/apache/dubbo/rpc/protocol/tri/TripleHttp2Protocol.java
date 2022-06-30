@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -127,8 +127,9 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     private Executor lookupExecutor(URL url) {
         return url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().getExecutor(url);
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension()
+            .getExecutorRepository(url).getExecutor(url);
     }
 
     @Override

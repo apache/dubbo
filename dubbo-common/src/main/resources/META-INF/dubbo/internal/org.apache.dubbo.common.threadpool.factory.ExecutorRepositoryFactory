@@ -1,0 +1,2 @@
+default=org.apache.dubbo.common.threadpool.factory.DefaultExecutorRepositoryFactory
+isolation=org.apache.dubbo.common.threadpool.factory.IsolationExecutorRepositoryFactory

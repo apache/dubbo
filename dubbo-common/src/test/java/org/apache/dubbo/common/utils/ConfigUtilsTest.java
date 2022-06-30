@@ -234,6 +234,7 @@ public class ConfigUtilsTest {
         expected.put("cached", "org.apache.dubbo.common.threadpool.support.cached.CachedThreadPool");
         expected.put("limited", "org.apache.dubbo.common.threadpool.support.limited.LimitedThreadPool");
         expected.put("eager", "org.apache.dubbo.common.threadpool.support.eager.EagerThreadPool");
+        expected.put("isolation", "org.apache.dubbo.common.threadpool.support.isolation.IsolationFixedThreadPool");
 
         assertEquals(expected, p);
     }

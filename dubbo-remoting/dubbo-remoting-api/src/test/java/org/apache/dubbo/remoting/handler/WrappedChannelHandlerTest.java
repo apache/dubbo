@@ -20,7 +20,7 @@ package org.apache.dubbo.remoting.handler;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -125,8 +125,10 @@ public class WrappedChannelHandlerTest {
 
         Channel channel = new MockedChannel();
         Request request = new Request(10);
-        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().createExecutorIfAbsent(url);
+
+        URL url = URL.valueOf("dubbo://127.0.0.1:23456");
+        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url).createExecutorIfAbsent(url);
 
         DefaultFuture future = DefaultFuture.newFuture(channel, request, 1000, null);
         preferredExecutorService = handler.getPreferredExecutorService(response);

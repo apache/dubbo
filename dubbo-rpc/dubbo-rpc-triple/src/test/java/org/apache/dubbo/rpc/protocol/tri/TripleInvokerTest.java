@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -52,8 +52,8 @@ class TripleInvokerTest {
             .thenReturn(channel);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
         ExecutorService executorService = url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url)
             .createExecutorIfAbsent(url);
         TripleClientCall call = Mockito.mock(TripleClientCall.class);
         StreamObserver streamObserver = Mockito.mock(StreamObserver.class);

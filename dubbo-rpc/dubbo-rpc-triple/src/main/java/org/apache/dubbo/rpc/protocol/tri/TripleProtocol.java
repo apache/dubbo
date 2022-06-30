@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
@@ -120,9 +120,10 @@ public class TripleProtocol extends AbstractProtocol {
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
         // init
-        url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
-            .createExecutorIfAbsent(url);
+        url.getOrDefaultFrameworkModel()
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension()
+            .getExecutorRepository(url).createExecutorIfAbsent(url);
         PortUnificationExchanger.bind(url);
         optimizeSerialization(url);
         return exporter;
@@ -140,9 +141,10 @@ public class TripleProtocol extends AbstractProtocol {
     }
 
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
-        ExecutorService executor = applicationModel.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
-            .createExecutorIfAbsent(url);
+        ExecutorService executor = applicationModel
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension()
+            .getExecutorRepository(url).createExecutorIfAbsent(url);
         Objects.requireNonNull(executor,
             String.format("No available executor found in %s", url));
         return executor;

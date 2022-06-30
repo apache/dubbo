@@ -18,8 +18,6 @@ package org.apache.dubbo.common.threadpool.manager;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionAccessor;
-import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.IsolationThreadPool;
@@ -38,25 +36,24 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
- * interface level thread pools isolation
+ * method level thread pools isolation
  */
-public class IsolationExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
+public class IsolationExecutorRepository implements ExecutorRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(IsolationExecutorRepository.class);
 
-    private ExtensionAccessor extensionAccessor;
+    public static final String NAME = "isolation";
+
+    private final ApplicationModel applicationModel;
 
     private final FrameworkExecutorRepository frameworkExecutorRepository;
 
     private final Map<String, ExecutorService> isolationThreadpool = new ConcurrentHashMap<>();
 
-    public IsolationExecutorRepository(ApplicationModel applicationModel) {
-        this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-    }
-
-    @Override
-    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
-        this.extensionAccessor = extensionAccessor;
+    public IsolationExecutorRepository(URL url) {
+        this.applicationModel = url.getOrDefaultApplicationModel();
+        this.frameworkExecutorRepository = url.getOrDefaultApplicationModel().getFrameworkModel()
+            .getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
     /**
@@ -76,11 +73,14 @@ public class IsolationExecutorRepository implements ExecutorRepository, Extensio
     }
 
     private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) extensionAccessor.getExtensionLoader(IsolationThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        return (ExecutorService) url.getOrDefaultFrameworkModel()
+            .getExtensionLoader(IsolationThreadPool.class)
+            .getAdaptiveExtension()
+            .getExecutor(url);
     }
 
     private String getIsolationThreadpoolKey(URL url) {
-        return new MD5Utils().getMd5(url.getServiceKey() + url.getPort());
+        return new MD5Utils().getMd5(url.getProtocol() + url.getServiceKey() + url.getPort());
     }
 
     @Override
