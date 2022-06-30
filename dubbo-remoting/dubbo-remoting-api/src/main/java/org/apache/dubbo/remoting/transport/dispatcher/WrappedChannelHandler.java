@@ -29,7 +29,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ExecutorService;
 
@@ -140,8 +139,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         }
 
         // note: url.getOrDefaultApplicationModel() may create new application model
-        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
-        ExecutorRepository executorRepository = url.getOrDefaultFrameworkModel()
+        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepositoryFactory.class)
             .getAdaptiveExtension()
             .getExecutorRepository(url);

@@ -120,7 +120,7 @@ public class TripleProtocol extends AbstractProtocol {
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
         // init
-        url.getOrDefaultFrameworkModel()
+        url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepositoryFactory.class)
             .getAdaptiveExtension()
             .getExecutorRepository(url).createExecutorIfAbsent(url);

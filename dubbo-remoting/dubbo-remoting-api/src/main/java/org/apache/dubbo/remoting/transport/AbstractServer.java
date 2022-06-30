@@ -54,7 +54,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        executorRepository = url.getOrDefaultFrameworkModel()
+        executorRepository = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepositoryFactory.class)
             .getAdaptiveExtension()
             .getExecutorRepository(url);

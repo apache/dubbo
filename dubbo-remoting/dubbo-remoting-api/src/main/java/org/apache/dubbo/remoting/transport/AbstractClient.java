@@ -55,7 +55,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        this.executorRepository = url.getOrDefaultFrameworkModel()
+        this.executorRepository = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepositoryFactory.class)
             .getAdaptiveExtension()
             .getExecutorRepository(url);

@@ -76,7 +76,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         super(type, url);
         this.key = key;
         this.exporterMap = exporterMap;
-        this.executorRepository = url.getOrDefaultFrameworkModel()
+        this.executorRepository = url.getOrDefaultApplicationModel()
             .getExtensionLoader(ExecutorRepositoryFactory.class)
             .getAdaptiveExtension()
             .getExecutorRepository(url);

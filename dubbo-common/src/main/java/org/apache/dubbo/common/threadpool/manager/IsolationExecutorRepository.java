@@ -73,7 +73,7 @@ public class IsolationExecutorRepository implements ExecutorRepository {
     }
 
     private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) url.getOrDefaultFrameworkModel()
+        return (ExecutorService) url.getOrDefaultApplicationModel()
             .getExtensionLoader(IsolationThreadPool.class)
             .getAdaptiveExtension()
             .getExecutor(url);
