@@ -70,10 +70,14 @@ public abstract class CuratorFrameworkUtils {
     }
 
     public static CuratorFramework buildCuratorFramework(URL connectionURL, ZookeeperServiceDiscovery serviceDiscovery) throws Exception {
-        CuratorFramework curatorFramework = CuratorFrameworkFactory.builder()
+        CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
             .connectString(connectionURL.getBackupAddress())
-            .retryPolicy(buildRetryPolicy(connectionURL))
-            .build();
+            .retryPolicy(buildRetryPolicy(connectionURL));
+        String userInformation = connectionURL.getUserInformation();
+        if (userInformation != null && userInformation.length() > 0) {
+            builder = builder.authorization("digest", userInformation.getBytes());
+        }
+        CuratorFramework curatorFramework = builder.build();
 
         curatorFramework.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(connectionURL, serviceDiscovery));
 
