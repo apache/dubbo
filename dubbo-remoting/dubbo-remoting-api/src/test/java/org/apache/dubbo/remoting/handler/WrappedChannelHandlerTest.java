@@ -117,11 +117,12 @@ public class WrappedChannelHandlerTest {
         ExecutorService sharedExecutorService = handler.getSharedExecutorService();
         Assertions.assertNotNull(sharedExecutorService);
         ExecutorService preferredExecutorService = handler.getPreferredExecutorService(new Object());
-        Assertions.assertEquals(preferredExecutorService, sharedExecutorService);
+        // url.getOrDefaultApplicationModel() may create new application model, so assertNotEquals
+        Assertions.assertNotEquals(preferredExecutorService, sharedExecutorService);
 
         Response response = new Response(10);
         preferredExecutorService = handler.getPreferredExecutorService(response);
-        Assertions.assertEquals(preferredExecutorService, sharedExecutorService);
+        Assertions.assertNotEquals(preferredExecutorService, sharedExecutorService);
 
         Channel channel = new MockedChannel();
         Request request = new Request(10);
@@ -132,7 +133,7 @@ public class WrappedChannelHandlerTest {
 
         DefaultFuture future = DefaultFuture.newFuture(channel, request, 1000, null);
         preferredExecutorService = handler.getPreferredExecutorService(response);
-        Assertions.assertEquals(preferredExecutorService, sharedExecutor);
+        Assertions.assertNotEquals(preferredExecutorService, sharedExecutor);
         future.cancel();
 
         ThreadlessExecutor executor = new ThreadlessExecutor();
