@@ -123,7 +123,7 @@ public class RegistryProtocolTest {
                 newRegistryUrl, new ExchangeClient[] {new MockedClient("10.20.20.20", 2222, true)});
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
         Exporter<DemoService> exporter2 = registryProtocol.export(invoker);
-        //The same invoker, exporter that multiple exported are different
+        // The same invoker, exporter that multiple exported are different
         Assertions.assertNotSame(exporter, exporter2);
         exporter.unexport();
         exporter2.unexport();
