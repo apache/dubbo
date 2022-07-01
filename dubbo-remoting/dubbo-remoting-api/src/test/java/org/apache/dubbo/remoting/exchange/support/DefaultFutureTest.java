@@ -20,7 +20,7 @@ package org.apache.dubbo.remoting.exchange.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -134,8 +134,6 @@ public class DefaultFutureTest {
         Channel channel = new MockedChannel();
         int channelId = 10;
         Request request = new Request(channelId);
-        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
         ThreadlessExecutor executor = new ThreadlessExecutor();
         DefaultFuture f = DefaultFuture.newFuture(channel, request, 1000, executor);
         //mark the future is sent
@@ -162,8 +160,9 @@ public class DefaultFutureTest {
     public void testClose() throws Exception {
         Channel channel = new MockedChannel();
         Request request = new Request(123);
-        ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
+        URL url = URL.valueOf("dubbo://127.0.0.1:23456");
+        ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension().getExecutorRepository(url).createExecutorIfAbsent(url);
         DefaultFuture.newFuture(channel, request, 1000, executor);
         DefaultFuture.closeChannel(channel);
         Assertions.assertFalse(executor.isTerminated());

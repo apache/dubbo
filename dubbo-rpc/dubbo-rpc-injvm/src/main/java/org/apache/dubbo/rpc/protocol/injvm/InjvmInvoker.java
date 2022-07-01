@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.injvm;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -75,7 +76,10 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         super(type, url);
         this.key = key;
         this.exporterMap = exporterMap;
-        this.executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        this.executorRepository = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension()
+            .getExecutorRepository(url);
         this.paramDeepCopyUtil = url.getOrDefaultFrameworkModel().getExtensionLoader(ParamDeepCopyUtil.class)
             .getExtension(url.getParameter(CommonConstants.INJVM_COPY_UTIL_KEY, DefaultParamDeepCopyUtil.NAME));
         this.shouldIgnoreSameModule = url.getParameter(CommonConstants.INJVM_IGNORE_SAME_MODULE_KEY, false);

@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.factory.ExecutorRepositoryFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -53,7 +54,10 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     public AbstractServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension()
+            .getExecutorRepository(url);
         localAddress = getUrl().toInetSocketAddress();
 
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());

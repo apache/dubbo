@@ -17,8 +17,6 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionAccessor;
-import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
@@ -52,8 +50,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
-public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
+public class DefaultExecutorRepository implements ExecutorRepository {
+
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
+
+    public static final String NAME = "default";
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
@@ -62,14 +63,15 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     private final Object LOCK = new Object();
-    private ExtensionAccessor extensionAccessor;
 
     private final ApplicationModel applicationModel;
+
     private final FrameworkExecutorRepository frameworkExecutorRepository;
 
-    public DefaultExecutorRepository(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-        this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+    public DefaultExecutorRepository(URL url) {
+        this.applicationModel = url.getOrDefaultApplicationModel();
+        this.frameworkExecutorRepository = url.getOrDefaultApplicationModel().getFrameworkModel()
+            .getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
     /**
@@ -115,7 +117,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        return (ExecutorService) url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ThreadPool.class)
+            .getAdaptiveExtension()
+            .getExecutor(url);
     }
 
     @Override
@@ -327,11 +332,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             String msg = "shutdown executor service [" + name + "] failed: ";
             logger.warn(msg + e.getMessage(), e);
         }
-    }
-
-    @Override
-    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
-        this.extensionAccessor = extensionAccessor;
     }
 
     @Override

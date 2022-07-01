@@ -1,0 +1,1 @@
+isolation=org.apache.dubbo.common.threadpool.support.isolation.IsolationFixedThreadPool
