@@ -169,7 +169,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>2.7.16-SNAPSHOT</revision>
+        <revision>2.7.16</revision>
     </properties>
 
     <dependencyManagement>
