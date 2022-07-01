@@ -72,22 +72,25 @@ public abstract class AbstractGenerator extends Generator {
     }
 
     @Override
-    public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(PluginProtos.CodeGeneratorRequest request) throws GeneratorException {
+    public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(
+        PluginProtos.CodeGeneratorRequest request) throws GeneratorException {
         final ProtoTypeMap typeMap = ProtoTypeMap.of(request.getProtoFileList());
 
         List<FileDescriptorProto> protosToGenerate = request.getProtoFileList().stream()
-                .filter(protoFile -> request.getFileToGenerateList().contains(protoFile.getName()))
-                .collect(Collectors.toList());
+            .filter(protoFile -> request.getFileToGenerateList().contains(protoFile.getName()))
+            .collect(Collectors.toList());
 
         List<ServiceContext> services = findServices(protosToGenerate, typeMap);
         return generateFiles(services);
     }
 
-    private List<ServiceContext> findServices(List<FileDescriptorProto> protos, ProtoTypeMap typeMap) {
+    private List<ServiceContext> findServices(List<FileDescriptorProto> protos,
+        ProtoTypeMap typeMap) {
         List<ServiceContext> contexts = new ArrayList<>();
 
         protos.forEach(fileProto -> {
-            for (int serviceNumber = 0; serviceNumber < fileProto.getServiceCount(); serviceNumber++) {
+            for (int serviceNumber = 0; serviceNumber < fileProto.getServiceCount();
+                serviceNumber++) {
                 ServiceContext serviceContext = buildServiceContext(
                     fileProto.getService(serviceNumber),
                     typeMap,
@@ -96,8 +99,12 @@ public abstract class AbstractGenerator extends Generator {
                 );
                 serviceContext.protoName = fileProto.getName();
                 serviceContext.packageName = extractPackageName(fileProto);
+                if (!Strings.isNullOrEmpty(fileProto.getOptions().getJavaOuterClassname())) {
+                    serviceContext.outerClassName = fileProto.getOptions().getJavaOuterClassname();
+                }
                 serviceContext.commonPackageName = extractCommonPackageName(fileProto);
-                serviceContext.multipleFiles = fileProto.getOptions() != null && fileProto.getOptions().getJavaMultipleFiles();
+                serviceContext.multipleFiles =
+                    fileProto.getOptions() != null && fileProto.getOptions().getJavaMultipleFiles();
                 contexts.add(serviceContext);
             }
         });
@@ -121,15 +128,18 @@ public abstract class AbstractGenerator extends Generator {
         return Strings.nullToEmpty(proto.getPackage());
     }
 
-    private ServiceContext buildServiceContext(ServiceDescriptorProto serviceProto, ProtoTypeMap typeMap, List<Location> locations, int serviceNumber) {
+    private ServiceContext buildServiceContext(ServiceDescriptorProto serviceProto,
+        ProtoTypeMap typeMap, List<Location> locations, int serviceNumber) {
         ServiceContext serviceContext = new ServiceContext();
-        serviceContext.fileName = getClassPrefix() + serviceProto.getName() + getClassSuffix() + ".java";
+        serviceContext.fileName =
+            getClassPrefix() + serviceProto.getName() + getClassSuffix() + ".java";
         serviceContext.className = getClassPrefix() + serviceProto.getName() + getClassSuffix();
-
+        serviceContext.outerClassName = serviceProto.getName() + "OuterClass";
         serviceContext.interfaceFileName = serviceProto.getName() + ".java";
         serviceContext.interfaceClassName = serviceProto.getName();
         serviceContext.serviceName = serviceProto.getName();
-        serviceContext.deprecated = serviceProto.getOptions() != null && serviceProto.getOptions().getDeprecated();
+        serviceContext.deprecated =
+            serviceProto.getOptions() != null && serviceProto.getOptions().getDeprecated();
 
         List<Location> allLocationsForService = locations.stream()
             .filter(location ->
@@ -143,7 +153,8 @@ public abstract class AbstractGenerator extends Generator {
             .filter(location -> location.getPathCount() == SERVICE_NUMBER_OF_PATHS)
             .findFirst()
             .orElseGet(Location::getDefaultInstance);
-        serviceContext.javaDoc = getJavaDoc(getComments(serviceLocation), getServiceJavaDocPrefix());
+        serviceContext.javaDoc = getJavaDoc(getComments(serviceLocation),
+            getServiceJavaDocPrefix());
 
         for (int methodNumber = 0; methodNumber < serviceProto.getMethodCount(); methodNumber++) {
             MethodContext methodContext = buildMethodContext(
@@ -160,13 +171,15 @@ public abstract class AbstractGenerator extends Generator {
         return serviceContext;
     }
 
-    private MethodContext buildMethodContext(MethodDescriptorProto methodProto, ProtoTypeMap typeMap, List<Location> locations, int methodNumber) {
+    private MethodContext buildMethodContext(MethodDescriptorProto methodProto,
+        ProtoTypeMap typeMap, List<Location> locations, int methodNumber) {
         MethodContext methodContext = new MethodContext();
         methodContext.originMethodName = methodProto.getName();
         methodContext.methodName = lowerCaseFirst(methodProto.getName());
         methodContext.inputType = typeMap.toJavaTypeName(methodProto.getInputType());
         methodContext.outputType = typeMap.toJavaTypeName(methodProto.getOutputType());
-        methodContext.deprecated = methodProto.getOptions() != null && methodProto.getOptions().getDeprecated();
+        methodContext.deprecated =
+            methodProto.getOptions() != null && methodProto.getOptions().getDeprecated();
         methodContext.isManyInput = methodProto.getClientStreaming();
         methodContext.isManyOutput = methodProto.getServerStreaming();
         methodContext.methodNumber = methodNumber;
@@ -203,7 +216,8 @@ public abstract class AbstractGenerator extends Generator {
         return Character.toLowerCase(s.charAt(0)) + s.substring(1);
     }
 
-    private List<PluginProtos.CodeGeneratorResponse.File> generateFiles(List<ServiceContext> services) {
+    private List<PluginProtos.CodeGeneratorResponse.File> generateFiles(
+        List<ServiceContext> services) {
         List<PluginProtos.CodeGeneratorResponse.File> allServiceFiles = new ArrayList<>();
         for (ServiceContext context : services) {
             List<PluginProtos.CodeGeneratorResponse.File> files = buildFile(context);
@@ -212,7 +226,7 @@ public abstract class AbstractGenerator extends Generator {
         return allServiceFiles;
     }
 
-    protected boolean enableMultipleTemplateFiles(){
+    protected boolean enableMultipleTemplateFiles() {
         return false;
     }
 
@@ -266,7 +280,8 @@ public abstract class AbstractGenerator extends Generator {
     }
 
     private String getComments(Location location) {
-        return location.getLeadingComments().isEmpty() ? location.getTrailingComments() : location.getLeadingComments();
+        return location.getLeadingComments().isEmpty() ? location.getTrailingComments()
+            : location.getLeadingComments();
     }
 
     private String getJavaDoc(String comments, String prefix) {
@@ -288,6 +303,7 @@ public abstract class AbstractGenerator extends Generator {
      * Template class for proto Service objects.
      */
     private class ServiceContext {
+
         // CHECKSTYLE DISABLE VisibilityModifier FOR 8 LINES
         public String fileName;
         public String interfaceFileName;
@@ -300,6 +316,8 @@ public abstract class AbstractGenerator extends Generator {
         public boolean deprecated;
         public String javaDoc;
         public boolean multipleFiles;
+
+        public String outerClassName;
         public List<MethodContext> methods = new ArrayList<>();
 
         public Set<String> methodTypes = new HashSet<>();
@@ -309,11 +327,13 @@ public abstract class AbstractGenerator extends Generator {
         }
 
         public List<MethodContext> unaryMethods() {
-            return methods.stream().filter(m -> (!m.isManyInput && !m.isManyOutput)).collect(Collectors.toList());
+            return methods.stream().filter(m -> (!m.isManyInput && !m.isManyOutput))
+                .collect(Collectors.toList());
         }
 
         public List<MethodContext> serverStreamingMethods() {
-            return methods.stream().filter(m -> !m.isManyInput && m.isManyOutput).collect(Collectors.toList());
+            return methods.stream().filter(m -> !m.isManyInput && m.isManyOutput)
+                .collect(Collectors.toList());
         }
 
         public List<MethodContext> biStreamingMethods() {
@@ -321,11 +341,13 @@ public abstract class AbstractGenerator extends Generator {
         }
 
         public List<MethodContext> biStreamingWithoutClientStreamMethods() {
-            return methods.stream().filter(m->m.isManyInput&&m.isManyOutput).collect(Collectors.toList());
+            return methods.stream().filter(m -> m.isManyInput && m.isManyOutput)
+                .collect(Collectors.toList());
         }
 
         public List<MethodContext> clientStreamingMethods() {
-            return methods.stream().filter(m->m.isManyInput&&!m.isManyOutput).collect(Collectors.toList());
+            return methods.stream().filter(m -> m.isManyInput && !m.isManyOutput)
+                .collect(Collectors.toList());
         }
 
         public List<MethodContext> methods() {
@@ -338,6 +360,7 @@ public abstract class AbstractGenerator extends Generator {
      * Template class for proto RPC objects.
      */
     private class MethodContext {
+
         // CHECKSTYLE DISABLE VisibilityModifier FOR 10 LINES
         public String originMethodName;
         public String methodName;
@@ -358,7 +381,8 @@ public abstract class AbstractGenerator extends Generator {
             for (int i = 0; i < methodName.length(); i++) {
                 char c = methodName.charAt(i);
                 s.append(Character.toUpperCase(c));
-                if ((i < methodName.length() - 1) && Character.isLowerCase(c) && Character.isUpperCase(methodName.charAt(i + 1))) {
+                if ((i < methodName.length() - 1) && Character.isLowerCase(c)
+                    && Character.isUpperCase(methodName.charAt(i + 1))) {
                     s.append('_');
                 }
             }

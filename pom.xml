@@ -330,6 +330,7 @@
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
                                         **/grpc/health/**/*,
+                                        **/grpc/reflection/**/*,
                                         **/target/**/*,
                                         **/*.json
                                     </excludes>
