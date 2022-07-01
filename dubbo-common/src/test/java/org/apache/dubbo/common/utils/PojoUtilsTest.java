@@ -707,12 +707,12 @@ public class PojoUtilsTest {
         String dateTimeStr = "2018-09-12 10:12:33";
         String[] dateFormat = new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss"};
 
-        //java.util.Date
+        // java.util.Date
         Object date = PojoUtils.realize(dateTimeStr, Date.class, (Type) Date.class);
         assertEquals(Date.class, date.getClass());
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(date));
 
-        //java.sql.Time
+        // java.sql.Time
         Object time = PojoUtils.realize(dateTimeStr, java.sql.Time.class, (Type) java.sql.Time.class);
         assertEquals(java.sql.Time.class, time.getClass());
         assertEquals(timeStr, new SimpleDateFormat(dateFormat[2]).format(time));

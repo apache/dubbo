@@ -81,7 +81,7 @@ public class TelnetCodecTest {
             bytes = (byte[]) obj;
         } else {
             try {
-                //object to bytearray
+                // object to bytearray
                 ByteArrayOutputStream bo = new ByteArrayOutputStream();
                 ObjectOutputStream oo = new ObjectOutputStream(bo);
                 oo.writeObject(obj);
@@ -109,19 +109,19 @@ public class TelnetCodecTest {
     }
 
     protected void testDecode_assertEquals(byte[] request, Object ret, boolean isServerside) throws IOException {
-        //init channel
+        // init channel
         Channel channel = isServerside ? getServerSideChannel(url) : getCliendSideChannel(url);
-        //init request string
+        // init request string
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(request);
 
-        //decode
+        // decode
         Object obj = codec.decode(channel, buffer);
         Assertions.assertEquals(ret, obj);
     }
 
 
     protected void testEecode_assertEquals(Object request, byte[] ret, boolean isServerside) throws IOException {
-        //init channel
+        // init channel
         Channel channel = isServerside ? getServerSideChannel(url) : getCliendSideChannel(url);
 
         ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(1024);
@@ -147,7 +147,7 @@ public class TelnetCodecTest {
     }
 
     private void testDecode_assertEquals(AbstractMockChannel channel, Object request, Object expectret, Object channelReceive) throws IOException {
-        //init channel
+        // init channel
         if (channel == null) {
             channel = getServerSideChannel(url);
         }
@@ -155,21 +155,21 @@ public class TelnetCodecTest {
         byte[] buf = objectToByte(request);
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(buf);
 
-        //decode
+        // decode
         Object obj = codec.decode(channel, buffer);
         Assertions.assertEquals(expectret, obj);
         Assertions.assertEquals(channelReceive, channel.getReceivedMessage());
     }
 
     private void testDecode_PersonWithEnterByte(byte[] enterbytes, boolean isNeedmore) throws IOException {
-        //init channel
+        // init channel
         Channel channel = getServerSideChannel(url);
-        //init request string
+        // init request string
         Person request = new Person();
         byte[] newbuf = join(objectToByte(request), enterbytes);
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(newbuf);
 
-        //decode
+        // decode
         Object obj = codec.decode(channel, buffer);
         if (isNeedmore) {
             Assertions.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, obj);
@@ -179,11 +179,11 @@ public class TelnetCodecTest {
     }
 
     private void testDecode_WithExitByte(byte[] exitbytes, boolean isChannelClose) throws IOException {
-        //init channel
+        // init channel
         Channel channel = getServerSideChannel(url);
         ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(exitbytes);
 
-        //decode
+        // decode
         codec.decode(channel, buffer);
         Assertions.assertEquals(isChannelClose, channel.isClosed());
     }
@@ -304,26 +304,26 @@ public class TelnetCodecTest {
     public void testEncode_String_ClientSide() throws IOException {
         testEecode_assertEquals("aaa", "aaa\r\n".getBytes(), false);
     }
-    
+
     /*@Test()
     public void testDecode_History_UP_DOWN_MULTI() throws IOException{
         AbstractMockChannel channel = getServerSideChannel(url);
-        
-        String request1 = "aaa\n"; 
+
+        String request1 = "aaa\n";
         Object expected1 = request1.replace("\n", "");
-        //init history 
+        //init history
         testDecode_assertEquals(channel, request1, expected1, null);
-        
-        String request2 = "bbb\n"; 
+
+        String request2 = "bbb\n";
         Object expected2 = request2.replace("\n", "");
-        //init history 
+        //init history
         testDecode_assertEquals(channel, request2, expected2, null);
-        
-        String request3 = "ccc\n"; 
+
+        String request3 = "ccc\n";
         Object expected3= request3.replace("\n", "");
-        //init history 
+        //init history
         testDecode_assertEquals(channel, request3, expected3, null);
-        
+
         byte[] UP = new byte[] {27, 91, 65};
         byte[] DOWN = new byte[] {27, 91, 66};
         //history[aaa,bbb,ccc]

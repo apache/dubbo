@@ -29,7 +29,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
             String extName = StringUtils.camelToSplitName(commandContext.getCommandName(), PROPERTIES_CHAR_SEPARATOR);
             command = ExtensionLoader.getExtensionLoader(BaseCommand.class).getExtension(extName);
         } catch (Throwable throwable) {
-                //can't find command
+            // can't find command
         }
         if (command == null) {
             throw new NoSuchCommandException(commandContext.getCommandName());
