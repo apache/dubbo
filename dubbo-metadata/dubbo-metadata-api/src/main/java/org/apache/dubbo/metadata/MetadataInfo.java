@@ -584,7 +584,7 @@ public class MetadataInfo implements Serializable {
             if (protocolServiceKey != null) {
                 return protocolServiceKey;
             }
-            protocolServiceKey = new ProtocolServiceKey(name, group, version, protocol);
+            protocolServiceKey = new ProtocolServiceKey(name, version, group,  protocol);
             return protocolServiceKey;
         }
 

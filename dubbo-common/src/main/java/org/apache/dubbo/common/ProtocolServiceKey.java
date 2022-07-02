@@ -24,8 +24,8 @@ import java.util.Objects;
 public class ProtocolServiceKey extends ServiceKey {
     private final String protocol;
 
-    public ProtocolServiceKey(String interfaceName, String group, String version, String protocol) {
-        super(interfaceName, group, version);
+    public ProtocolServiceKey(String interfaceName, String version, String group, String protocol) {
+        super(interfaceName, version, group);
         this.protocol = protocol;
     }
 
@@ -87,6 +87,7 @@ public class ProtocolServiceKey extends ServiceKey {
                         String[] groups = rule.getGroup().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
                         boolean match = false;
                         for (String group : groups) {
+                            group = group.trim();
                             if (StringUtils.isEmpty(group) && StringUtils.isEmpty(target.getGroup())) {
                                 match = true;
                                 break;
@@ -110,12 +111,13 @@ public class ProtocolServiceKey extends ServiceKey {
             // 4.1. if rule group is *, match all
             if (!CommonConstants.ANY_VALUE.equals(rule.getProtocol())) {
                 // 4.2. if rule protocol is null, match all
-                if (rule.getProtocol() != null) {
+                if (StringUtils.isNotEmpty(rule.getProtocol())) {
                     // 4.3. if rule protocol contains ',', split and match each
                     if (rule.getProtocol().contains(CommonConstants.COMMA_SEPARATOR)) {
                         String[] protocols = rule.getProtocol().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
                         boolean match = false;
                         for (String protocol : protocols) {
+                            protocol = protocol.trim();
                             if (StringUtils.isEmpty(protocol) && StringUtils.isEmpty(target.getProtocol())) {
                                 match = true;
                                 break;

@@ -23,7 +23,7 @@ public class ServiceKey {
     private final String group;
     private final String version;
 
-    public ServiceKey(String interfaceName, String group, String version) {
+    public ServiceKey(String interfaceName, String version, String group) {
         this.interfaceName = interfaceName;
         this.group = group;
         this.version = version;
