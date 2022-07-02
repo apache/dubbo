@@ -103,7 +103,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                     BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
                     result = result.or(destination);
                     if (stringBuilder != null) {
-                        stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(" ");
+                        stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(' ');
                     }
                 }
             }

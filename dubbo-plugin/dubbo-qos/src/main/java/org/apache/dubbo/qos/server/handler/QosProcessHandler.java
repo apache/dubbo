@@ -57,16 +57,11 @@ public class QosProcessHandler extends ByteToMessageDecoder {
 
     @Override
     public void channelActive(final ChannelHandlerContext ctx) throws Exception {
-        welcomeFuture = ctx.executor().schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                if (welcome != null) {
-                    ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
-                    ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
-                }
+        welcomeFuture = ctx.executor().schedule(() -> {
+            if (welcome != null) {
+                ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
+                ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
             }
-
         }, 500, TimeUnit.MILLISECONDS);
     }
 

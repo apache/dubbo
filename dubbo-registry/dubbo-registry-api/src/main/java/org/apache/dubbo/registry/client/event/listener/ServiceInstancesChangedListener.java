@@ -328,7 +328,7 @@ public class ServiceInstancesChangedListener {
             }
 
             builder.append(entry.getKey());
-            builder.append(" ");
+            builder.append(' ');
         }
 
         if (emptyMetadataNum > 0) {

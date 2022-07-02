@@ -68,12 +68,18 @@ import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
  * </ul>
  * <p/>
  * Other type will be covert to a map which contains the attributes and value pair of object.
+ *
+ * TODO: exact PojoUtils to scope bean
  */
 public class PojoUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(PojoUtils.class);
     private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
+
+    private static final ConcurrentMap<String, Object> CLASS_NOT_FOUND_CACHE = new ConcurrentHashMap<String, Object>();
+
+    private static final Object NOT_FOUND_VALUE = new Object();
     private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(ConfigurationUtils.getProperty(CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
     private static final List<Class<?>> CLASS_CAN_BE_STRING = Arrays.asList(Byte.class, Short.class, Integer.class,
         Long.class, Float.class, Double.class, Boolean.class, Character.class);
@@ -397,10 +403,12 @@ public class PojoUtils {
             Object className = ((Map<Object, Object>) pojo).get("class");
             if (className instanceof String) {
                 SerializeClassChecker.getInstance().validateClass((String) className);
-                try {
-                    type = ClassUtils.forName((String) className);
-                } catch (ClassNotFoundException e) {
-                    // ignore
+                if (!CLASS_NOT_FOUND_CACHE.containsKey(className)) {
+                    try {
+                        type = ClassUtils.forName((String) className);
+                    } catch (ClassNotFoundException e) {
+                        CLASS_NOT_FOUND_CACHE.put((String) className, NOT_FOUND_VALUE);
+                    }
                 }
             }
 

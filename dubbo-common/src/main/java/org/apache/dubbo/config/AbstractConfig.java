@@ -647,7 +647,6 @@ public abstract class AbstractConfig implements Serializable {
      * Dubbo config property override
      */
     public void refresh() {
-        refreshed.set(true);
         try {
             // check and init before do refresh
             preProcessRefresh();
@@ -697,6 +696,7 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         postProcessRefresh();
+        refreshed.set(true);
     }
 
     private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
