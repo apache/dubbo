@@ -19,12 +19,12 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.registry.NotifyListener;
@@ -203,8 +203,9 @@ public class ServiceInstancesChangedListener {
         }
 
         Set<NotifyListenerWithKey> notifyListeners = this.listeners.computeIfAbsent(url.getServiceKey(), _k -> new ConcurrentHashSet<>());
-        String protocol = url.getParameter(PROTOCOL_KEY);
-        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(url.getServiceInterface(), url.getVersion(), url.getGroup(), protocol);
+        String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY, url.getProtocol());
+        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(url.getServiceInterface(), url.getVersion(), url.getGroup(),
+            !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
         NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, listener);
         notifyListeners.add(listenerWithKey);
 
@@ -435,25 +436,6 @@ public class ServiceInstancesChangedListener {
     @Override
     public int hashCode() {
         return Objects.hash(getClass(), getServiceNames());
-    }
-
-    /**
-     * Calculate the protocol list that the consumer cares about.
-     *
-     * @param serviceKey possible input serviceKey includes
-     *                   1. {group}/{interface}:{version}, if protocol is not specified
-     *                   2. {group}/{interface}:{version}:{user specified protocols}
-     * @param listener   listener also contains the user specified protocols
-     * @return protocol list with the format {group}/{interface}:{version}:{protocol}
-     */
-    protected String getProtocolFromListener(String serviceKey, NotifyListener listener) {
-        String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY);
-
-        if (StringUtils.isNotEmpty(protocol)) {
-            return protocol;
-        } else {
-            return null;
-        }
     }
 
     protected class AddressRefreshRetryTask implements Runnable {
