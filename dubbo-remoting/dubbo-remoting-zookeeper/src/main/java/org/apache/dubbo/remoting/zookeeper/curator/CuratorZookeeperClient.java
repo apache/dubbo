@@ -259,6 +259,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     public void doClose() {
         super.close();
         client.close();
+        if (CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE != null) {
+            CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE.shutdown();
+        }
     }
 
     @Override
@@ -357,18 +360,28 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     static class CuratorWatcherImpl implements CuratorWatcher {
 
-        private static final ExecutorService CURATOR_WATCHER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName("Dubbo-CuratorWatcher-Thread");
-                return thread;
-            }
-        });
+        private static volatile ExecutorService CURATOR_WATCHER_EXECUTOR_SERVICE;
 
         private CuratorFramework client;
         private volatile ChildListener childListener;
         private String path;
+
+        private static void initExecutorIfNecessary() {
+            if (CURATOR_WATCHER_EXECUTOR_SERVICE == null) {
+                synchronized (CuratorWatcherImpl.class) {
+                    if (CURATOR_WATCHER_EXECUTOR_SERVICE == null) {
+                        CURATOR_WATCHER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(new ThreadFactory() {
+                            @Override
+                            public Thread newThread(Runnable r) {
+                                Thread thread = new Thread(r);
+                                thread.setName("Dubbo-CuratorWatcher-Thread");
+                                return thread;
+                            }
+                        });
+                    }
+                }
+            }
+        }
 
         public CuratorWatcherImpl(CuratorFramework client, ChildListener listener, String path) {
             this.client = client;
@@ -402,6 +415,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                         }
                     }
                 };
+                initExecutorIfNecessary();
                 CURATOR_WATCHER_EXECUTOR_SERVICE.execute(task);
             }
         }
