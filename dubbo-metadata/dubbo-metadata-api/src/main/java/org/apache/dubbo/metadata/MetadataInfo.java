@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -453,6 +454,8 @@ public class MetadataInfo implements Serializable {
         // service + group + version + protocol
         private volatile transient String matchKey;
 
+        private volatile transient ProtocolServiceKey protocolServiceKey;
+
         private transient URL url;
 
         public ServiceInfo() {}
@@ -575,6 +578,14 @@ public class MetadataInfo implements Serializable {
                 matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol;
             }
             return matchKey;
+        }
+
+        public ProtocolServiceKey getProtocolServiceKey() {
+            if (protocolServiceKey != null) {
+                return protocolServiceKey;
+            }
+            protocolServiceKey = new ProtocolServiceKey(name, group, version, protocol);
+            return protocolServiceKey;
         }
 
         private String buildServiceKey(String name, String group, String version) {

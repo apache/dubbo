@@ -295,8 +295,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
         serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
-        String protocolServiceKey = url.getProtocolServiceKey();
-        logger.info(String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, protocolServiceKey));
+        String serviceKey = url.getServiceKey();
+        logger.info(String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, serviceKey));
 
         // register ServiceInstancesChangedListener
         Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
@@ -318,7 +318,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 serviceInstancesChangedListener.setUrl(url);
                 listener.addServiceListener(serviceInstancesChangedListener);
-                serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
+                serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
@@ -394,7 +394,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                             Lock appSubscriptionLock = getAppSubscription(appKey);
                             try {
                                 appSubscriptionLock.lock();
-                                oldListener.removeListener(url.getProtocolServiceKey(), listener);
+                                oldListener.removeListener(url.getServiceKey(), listener);
                                 if (!oldListener.hasListeners()) {
                                     oldListener.destroy();
                                     removeAppSubscriptionLock(appKey);
