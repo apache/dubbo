@@ -17,16 +17,12 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Objects;
 
 public class ProtocolServiceKey extends ServiceKey {
     private final String protocol;
-
-    public ProtocolServiceKey(ServiceKey serviceKey, String protocol) {
-        super(serviceKey.getInterfaceName(), serviceKey.getVersion(), serviceKey.getGroup());
-        this.protocol = protocol;
-    }
 
     public ProtocolServiceKey(String interfaceName, String group, String version, String protocol) {
         super(interfaceName, group, version);
@@ -82,16 +78,19 @@ public class ProtocolServiceKey extends ServiceKey {
             // 3.1. if rule group is *, match all
             if (!CommonConstants.ANY_VALUE.equals(rule.getGroup())) {
                 // 3.2. if rule group is null, target group should be null
-                if (rule.getGroup() == null && target.getGroup() != null) {
+                if (StringUtils.isEmpty(rule.getGroup()) && !StringUtils.isEmpty(target.getGroup())) {
                     return false;
                 }
-                if (rule.getGroup() != null) {
+                if (!StringUtils.isEmpty(rule.getGroup())) {
                     // 3.3. if rule group contains ',', split and match each
                     if (rule.getGroup().contains(CommonConstants.COMMA_SEPARATOR)) {
-                        String[] groups = rule.getGroup().split(CommonConstants.COMMA_SEPARATOR);
+                        String[] groups = rule.getGroup().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
                         boolean match = false;
                         for (String group : groups) {
-                            if (group.equals(target.getGroup())) {
+                            if (StringUtils.isEmpty(group) && StringUtils.isEmpty(target.getGroup())) {
+                                match = true;
+                                break;
+                            } else if (group.equals(target.getGroup())) {
                                 match = true;
                                 break;
                             }
@@ -114,10 +113,13 @@ public class ProtocolServiceKey extends ServiceKey {
                 if (rule.getProtocol() != null) {
                     // 4.3. if rule protocol contains ',', split and match each
                     if (rule.getProtocol().contains(CommonConstants.COMMA_SEPARATOR)) {
-                        String[] protocols = rule.getProtocol().split(CommonConstants.COMMA_SEPARATOR);
+                        String[] protocols = rule.getProtocol().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
                         boolean match = false;
                         for (String protocol : protocols) {
-                            if (protocol.equals(target.getProtocol())) {
+                            if (StringUtils.isEmpty(protocol) && StringUtils.isEmpty(target.getProtocol())) {
+                                match = true;
+                                break;
+                            } else if (protocol.equals(target.getProtocol())) {
                                 match = true;
                                 break;
                             }
@@ -126,7 +128,7 @@ public class ProtocolServiceKey extends ServiceKey {
                             return false;
                         }
                     }
-                    // 4.4. if rule protocol is not contains ',', match directly
+                    // 4.3. if rule protocol is not contains ',', match directly
                     else if (!Objects.equals(rule.getProtocol(), target.getProtocol())) {
                         return false;
                     }

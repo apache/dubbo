@@ -488,9 +488,66 @@ public class ServiceInstancesChangedListenerTest {
         Assertions.assertEquals(1, single_protocol_notifiedUrls.size());
     }
 
-    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    /**
+     * Test subscribe multiple groups
+     */
     @Test
     @Order(8)
+    public void testSubscribeMultipleGroups() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+
+        // notify instance change
+        ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
+        listener.onEvent(event);
+
+        Map<String, List<ServiceInstance>> allInstances = listener.getAllInstances();
+        Assertions.assertEquals(1, allInstances.size());
+        Assertions.assertEquals(3, allInstances.get("app1").size());
+
+        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(service1, null, null, "dubbo");
+        List<URL> serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, ",group1", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "group1,", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "*", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "group1", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(0, serviceUrls.size());
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "group1,group2", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(0, serviceUrls.size());
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "group1,,group2", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+    }
+
+    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    @Test
+    @Order(9)
     public void testRevisionFailureOnStartup() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -512,7 +569,7 @@ public class ServiceInstancesChangedListenerTest {
 
     // revision 异常场景。运行中地址通知，拿不到revision就用老版本revision
     @Test
-    @Order(9)
+    @Order(10)
     public void testRevisionFailureOnNotification() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -561,7 +618,7 @@ public class ServiceInstancesChangedListenerTest {
 
     // Abnormal case. Instance does not have revision
     @Test
-    @Order(10)
+    @Order(11)
     public void testInstanceWithoutRevision() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -574,39 +631,6 @@ public class ServiceInstancesChangedListenerTest {
         // notification succeeded
         assertTrue(true);
     }
-
-//    /**
-//     * Test calculation of subscription protocols
-//     */
-//    @Test
-//    public void testGetProtocolServiceKeyList() {
-//        NotifyListener listener = Mockito.mock(NotifyListener.class);
-//
-//        Set<String> serviceNames = new HashSet<>();
-//        serviceNames.add("app1");
-//        ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
-//        ServiceInstancesChangedListener instancesChangedListener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
-//
-//        URL url1 = URL.valueOf("tri://localhost/Service?protocol=tri");
-//        when(listener.getConsumerUrl()).thenReturn(url1);
-//        Set<String> keyList11 = instancesChangedListener.getProtocolServiceKeyList(url1.getProtocolServiceKey(), listener);
-//        assertEquals(getExpectedSet(Arrays.asList("Service:tri")), keyList11);
-//
-//        URL url2 = URL.valueOf("consumer://localhost/Service?group=group&version=1.0");
-//        when(listener.getConsumerUrl()).thenReturn(url2);
-//        Set<String> keyList12 = instancesChangedListener.getProtocolServiceKeyList(url2.getProtocolServiceKey(), listener);
-//        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo", "group/Service:1.0:rest")), keyList12);
-//
-//        URL url3 = URL.valueOf("dubbo://localhost/Service?protocol=dubbo&group=group&version=1.0");
-//        when(listener.getConsumerUrl()).thenReturn(url3);
-//        Set<String> keyList21 = instancesChangedListener.getProtocolServiceKeyList(url3.getProtocolServiceKey(), listener);
-//        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:dubbo")), keyList21);
-//
-//        URL url4 = URL.valueOf("dubbo,tri://localhost/Service?protocol=dubbo,tri&group=group&version=1.0");
-//        when(listener.getConsumerUrl()).thenReturn(url4);
-//        Set<String> keyList23 = instancesChangedListener.getProtocolServiceKeyList(url4.getProtocolServiceKey(), listener);
-//        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:dubbo", "group/Service:1.0:tri")), keyList23);
-//    }
 
     Set<String> getExpectedSet(List<String> list) {
         return new HashSet<>(list);
