@@ -35,6 +35,7 @@
         <module>dubbo-registry-zookeeper</module>
         <module>dubbo-registry-nacos</module>
         <module>dubbo-registry-multiple</module>
+        <module>dubbo-registry-xds</module>
     </modules>
 
     <dependencies>
