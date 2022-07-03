@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
@@ -51,7 +52,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
@@ -87,6 +87,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (!connected) {
                 throw new IllegalStateException("zookeeper not connected");
             }
+            CuratorWatcherImpl.closed = false;
         } catch (Exception e) {
             close();
             throw new IllegalStateException(e.getMessage(), e);
@@ -259,8 +260,12 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     public void doClose() {
         super.close();
         client.close();
-        if (CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE != null) {
-            CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE.shutdown();
+        CuratorWatcherImpl.closed = true;
+        synchronized (CuratorWatcherImpl.class) {
+            if (CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE != null) {
+                CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE.shutdown();
+                CuratorWatcherImpl.CURATOR_WATCHER_EXECUTOR_SERVICE = null;
+            }
         }
     }
 
@@ -362,22 +367,17 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
         private static volatile ExecutorService CURATOR_WATCHER_EXECUTOR_SERVICE;
 
+        private static volatile boolean closed = false;
+
         private CuratorFramework client;
         private volatile ChildListener childListener;
         private String path;
 
         private static void initExecutorIfNecessary() {
-            if (CURATOR_WATCHER_EXECUTOR_SERVICE == null) {
+            if (!closed && CURATOR_WATCHER_EXECUTOR_SERVICE == null) {
                 synchronized (CuratorWatcherImpl.class) {
-                    if (CURATOR_WATCHER_EXECUTOR_SERVICE == null) {
-                        CURATOR_WATCHER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(new ThreadFactory() {
-                            @Override
-                            public Thread newThread(Runnable r) {
-                                Thread thread = new Thread(r);
-                                thread.setName("Dubbo-CuratorWatcher-Thread");
-                                return thread;
-                            }
-                        });
+                    if (!closed && CURATOR_WATCHER_EXECUTOR_SERVICE == null) {
+                        CURATOR_WATCHER_EXECUTOR_SERVICE = Executors.newSingleThreadExecutor(new NamedThreadFactory("Dubbo-CuratorWatcher"));
                     }
                 }
             }
@@ -416,7 +416,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     }
                 };
                 initExecutorIfNecessary();
-                CURATOR_WATCHER_EXECUTOR_SERVICE.execute(task);
+                if (!closed && CURATOR_WATCHER_EXECUTOR_SERVICE != null) {
+                    CURATOR_WATCHER_EXECUTOR_SERVICE.execute(task);
+                }
             }
         }
     }
