@@ -25,8 +25,8 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.integration.IntegrationTest;
-import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.RegistryServiceListener;
+import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
