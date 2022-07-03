@@ -23,13 +23,13 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.RevisionResolver;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.RpcException;
@@ -261,7 +261,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
-        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> MetadataUtils.referProxy(instance));
+        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> MetadataUtils.referProxy(instance).getProxy());
     }
 
     private synchronized void destroyMetadataServiceProxy(ServiceInstance instance) {
