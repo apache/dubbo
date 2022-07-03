@@ -511,35 +511,35 @@ public class ServiceInstancesChangedListenerTest {
         Assertions.assertEquals(3, serviceUrls.size());
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
-        protocolServiceKey = new ProtocolServiceKey(service1, "", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, "", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(3, serviceUrls.size());
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
-        protocolServiceKey = new ProtocolServiceKey(service1, ",group1", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, ",group1", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(3, serviceUrls.size());
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
-        protocolServiceKey = new ProtocolServiceKey(service1, "group1,", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, "group1,", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(3, serviceUrls.size());
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
-        protocolServiceKey = new ProtocolServiceKey(service1, "*", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, "*", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(3, serviceUrls.size());
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
-        protocolServiceKey = new ProtocolServiceKey(service1, "group1", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, "group1", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(0, serviceUrls.size());
 
-        protocolServiceKey = new ProtocolServiceKey(service1, "group1,group2", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, "group1,group2", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(0, serviceUrls.size());
 
-        protocolServiceKey = new ProtocolServiceKey(service1, "group1,,group2", null, "dubbo");
+        protocolServiceKey = new ProtocolServiceKey(service1, null, "group1,,group2", "dubbo");
         serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
         Assertions.assertEquals(3, serviceUrls.size());
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
