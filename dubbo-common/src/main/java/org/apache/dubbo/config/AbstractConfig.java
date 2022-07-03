@@ -823,8 +823,8 @@ public abstract class AbstractConfig implements Serializable {
         if (CollectionUtils.isEmptyMap(values)) {
             return;
         }
-        Map<String, String> map = new HashMap<>();
-        map.putAll(invokeGetParameters(obj.getClass(), obj));
+        Map<String, String> map = invokeGetParameters(obj.getClass(), obj);
+        map = (map == null || map.isEmpty()) ? new HashMap<>() : map;
         map.putAll(values);
         invokeSetParameters(obj.getClass(), obj, map);
     }
