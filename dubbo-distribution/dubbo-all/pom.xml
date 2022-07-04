@@ -345,7 +345,6 @@
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
-            <version>2.0.7</version>
         </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
