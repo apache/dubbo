@@ -1,0 +1,67 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+{{#packageName}}
+    package {{packageName}};
+{{/packageName}}
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+{{#deprecated}}
+    @java.lang.Deprecated
+{{/deprecated}}
+public final class {{className}} {
+private static final AtomicBoolean registered = new AtomicBoolean();
+
+private static Class<?> init() {
+Class<?> clazz = null;
+try {
+clazz = Class.forName({{serviceName}}Dubbo.class.getName());
+if (registered.compareAndSet(false, true)) {
+{{#methodTypes}}
+    org.apache.dubbo.common.serialize.protobuf.support.ProtobufUtils.marshaller(
+    {{.}}.getDefaultInstance());
+{{/methodTypes}}
+}
+} catch (ClassNotFoundException e) {
+// ignore
+}
+return clazz;
+}
+
+private {{serviceName}}Dubbo() {}
+
+public static final String SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+
+/**
+* Code generated for Dubbo
+*/
+public interface I{{serviceName}} {
+
+static Class<?> clazz = init();
+
+{{#methods}}
+    {{outputType}} {{methodName}}({{inputType}} request);
+
+    CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request);
+
+{{/methods}}
+
+}
+
+}

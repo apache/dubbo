@@ -137,15 +137,21 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 super.destroy();
                 target.destroy();
                 invokers.remove(this);
+                AbstractProxyProtocol.this.destroyInternal(url);
             }
         };
         invokers.add(invoker);
         return invoker;
     }
 
+    // used to destroy unused clients and other resource
+    protected void destroyInternal(URL url) {
+        // subclass override
+    }
+
     protected RpcException getRpcException(Class<?> type, URL url, Invocation invocation, Throwable e) {
         RpcException re = new RpcException("Failed to invoke remote service: " + type + ", method: "
-                + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
+            + invocation.getMethodName() + ", cause: " + e.getMessage(), e);
         re.setCode(getErrorCode(e));
         return re;
     }

@@ -79,9 +79,9 @@ public class Profiler {
         long offset = entry.getStartTime() - startTime;
         List<String> lines = new LinkedList<>();
         stringBuilder.append("+-[ Offset: ")
-            .append(offset / 1000_000).append(".").append(String.format("%06d", offset % 1000_000))
+            .append(offset / 1000_000).append('.').append(String.format("%06d", offset % 1000_000))
             .append("ms; Usage: ")
-            .append(usage / 1000_000).append(".").append(String.format("%06d", usage % 1000_000))
+            .append(usage / 1000_000).append('.').append(String.format("%06d", usage % 1000_000))
             .append("ms, ")
             .append(percent)
             .append("% ] ")

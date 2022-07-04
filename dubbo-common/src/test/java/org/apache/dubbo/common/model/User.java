@@ -20,9 +20,7 @@ package org.apache.dubbo.common.model;
 import java.util.Objects;
 
 /**
- * @author: fibbery
- * @date: 2019-05-13 18:41
- * @description: this class has no nullary constructor and some field is primitive
+ * this class has no nullary constructor and some field is primitive
  */
 public class User {
     private int age;

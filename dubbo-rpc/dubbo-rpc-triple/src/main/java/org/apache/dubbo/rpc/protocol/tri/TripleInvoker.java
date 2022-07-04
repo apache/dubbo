@@ -51,7 +51,6 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import io.netty.util.AsciiString;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -260,16 +259,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (timeout != null) {
             meta.timeout = timeout + "m";
         }
-        final Map<String, Object> objectAttachments = invocation.getObjectAttachments();
-        if (objectAttachments != null) {
-            String application = (String) objectAttachments.get(CommonConstants.APPLICATION_KEY);
-            if (application == null) {
-                application = (String) objectAttachments.get(
-                    CommonConstants.REMOTE_APPLICATION_KEY);
-            }
-            meta.application = application;
-            meta.attachments = objectAttachments;
+        String application = (String) invocation.getObjectAttachmentWithoutConvert(CommonConstants.APPLICATION_KEY);
+        if (application == null) {
+            application = (String) invocation.getObjectAttachmentWithoutConvert(CommonConstants.REMOTE_APPLICATION_KEY);
         }
+        meta.application = application;
+        meta.attachments = invocation.getObjectAttachments();
         return meta;
     }
 

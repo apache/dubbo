@@ -61,7 +61,11 @@ public class Ls implements BaseCommand {
 
         //Content
         for (ProviderModel providerModel : providerModelList) {
-            tTable.addRow(providerModel.getServiceKey(), ServiceCheckUtils.isRegistered(providerModel) ? "Y" : "N");
+            if (providerModel.getModuleModel().isInternal()) {
+                tTable.addRow("DubboInternal - " + providerModel.getServiceKey(), ServiceCheckUtils.getRegisterStatus(providerModel));
+            } else {
+                tTable.addRow(providerModel.getServiceKey(), ServiceCheckUtils.getRegisterStatus(providerModel));
+            }
         }
         stringBuilder.append(tTable.rendering());
 

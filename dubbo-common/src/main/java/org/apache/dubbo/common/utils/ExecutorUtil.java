@@ -99,21 +99,18 @@ public class ExecutorUtil {
 
     private static void newThreadToCloseExecutor(final ExecutorService es) {
         if (!isTerminated(es)) {
-            SHUTDOWN_EXECUTOR.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        for (int i = 0; i < 1000; i++) {
-                            es.shutdownNow();
-                            if (es.awaitTermination(10, TimeUnit.MILLISECONDS)) {
-                                break;
-                            }
+            SHUTDOWN_EXECUTOR.execute(() -> {
+                try {
+                    for (int i = 0; i < 1000; i++) {
+                        es.shutdownNow();
+                        if (es.awaitTermination(10, TimeUnit.MILLISECONDS)) {
+                            break;
                         }
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
                     }
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (Throwable e) {
+                    logger.warn(e.getMessage(), e);
                 }
             });
         }

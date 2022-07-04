@@ -35,11 +35,8 @@ import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -166,22 +163,22 @@ public class ZookeeperDynamicConfigurationTest {
         assertFalse(configuration.publishConfigCas(key, group, "newtest2", configItem.getTicket()));
         assertEquals("newtest", configuration.getConfigItem(key, group).getContent());
     }
-
-    @Test
-    public void testGetConfigKeysAndContents() {
-
-        String group = "mapping";
-        String key = "org.apache.dubbo.service.UserService";
-        String content = "app1";
-
-        String key2 = "org.apache.dubbo.service.UserService2";
-
-        assertTrue(configuration.publishConfig(key, group, content));
-        assertTrue(configuration.publishConfig(key2, group, content));
-
-        Set<String> configKeys = configuration.getConfigKeys(group);
-
-        assertEquals(new TreeSet(asList(key, key2)), configKeys);
-    }
+//
+//    @Test
+//    public void testGetConfigKeysAndContents() {
+//
+//        String group = "mapping";
+//        String key = "org.apache.dubbo.service.UserService";
+//        String content = "app1";
+//
+//        String key2 = "org.apache.dubbo.service.UserService2";
+//
+//        assertTrue(configuration.publishConfig(key, group, content));
+//        assertTrue(configuration.publishConfig(key2, group, content));
+//
+//        Set<String> configKeys = configuration.getConfigKeys(group);
+//
+//        assertEquals(new TreeSet(asList(key, key2)), configKeys);
+//    }
 
 }

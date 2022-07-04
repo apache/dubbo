@@ -61,6 +61,8 @@ public interface CommonConstants {
 
     String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
 
+    String DUBBO_MIGRATION_FILE_ENABLE = "dubbo.migration-file.enable";
+
     String DEFAULT_DUBBO_MIGRATION_FILE = "dubbo-migration.yaml";
 
     String ANY_VALUE = "*";
@@ -109,6 +111,8 @@ public interface CommonConstants {
     int DEFAULT_THREADS = 200;
 
     String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
+
+    String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
 
     String THREADPOOL_KEY = "threadpool";
 
@@ -537,4 +541,9 @@ public interface CommonConstants {
     String METADATA = "metadata";
 
     String IGNORE_LISTEN_SHUTDOWN_HOOK = "dubbo.shutdownHook.listenIgnore";
+
+    String OPTIMIZER_KEY = "optimizer";
+
+    String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
+
 }

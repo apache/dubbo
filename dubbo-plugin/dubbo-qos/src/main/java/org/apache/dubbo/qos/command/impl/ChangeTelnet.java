@@ -51,7 +51,7 @@ public class ChangeTelnet implements BaseCommand {
         StringBuilder buf = new StringBuilder();
         if ("/".equals(message) || "..".equals(message)) {
             String service = channel.attr(SERVICE_KEY).getAndRemove();
-            buf.append("Cancelled default service ").append(service).append(".");
+            buf.append("Cancelled default service ").append(service).append('.');
         } else {
             boolean found = false;
             for (Exporter<?> exporter : dubboProtocol.getExporters()) {

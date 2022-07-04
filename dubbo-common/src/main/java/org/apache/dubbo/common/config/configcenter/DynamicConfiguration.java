@@ -19,10 +19,6 @@ package org.apache.dubbo.common.config.configcenter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.SortedSet;
-
 
 /**
  * Dynamic Configuration
@@ -98,6 +94,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     /**
      * get configItem which contains content and stat info.
+     *
      * @param key
      * @param group
      * @return
@@ -165,6 +162,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
 
     /**
      * publish config mapped to this given key and given group with stat.
+     *
      * @param key
      * @param group
      * @param content
@@ -174,18 +172,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      */
     default boolean publishConfigCas(String key, String group, String content, Object ticket) throws UnsupportedOperationException {
         return false;
-    }
-
-    /**
-     * Get the config keys by the specified group
-     *
-     * @param group the specified group
-     * @return the read-only non-null sorted {@link Set set} of config keys
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.5
-     */
-    default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        return Collections.emptySortedSet();
     }
 
     /**

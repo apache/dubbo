@@ -17,10 +17,9 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
-
-import com.alibaba.fastjson.JSON;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +44,7 @@ public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLB
         if (StringUtils.isBlank(dubboUrlsForJson)) {
             return Collections.emptyList();
         }
-        List<String> urlStrings = JSON.parseArray(dubboUrlsForJson, String.class);
+        List<String> urlStrings = JsonUtils.getJson().toJavaList(dubboUrlsForJson, String.class);
         return urlStrings.stream().map(URL::valueOf).collect(Collectors.toList());
     }
 }

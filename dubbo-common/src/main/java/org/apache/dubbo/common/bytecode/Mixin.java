@@ -108,7 +108,7 @@ public abstract class Mixin {
 
                 code.append('d').append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i).append("];\n");
                 if (MixinAware.class.isAssignableFrom(dcs[i])) {
-                    code.append("d").append(i).append(".setMixinInstance(this);\n");
+                    code.append('d').append(i).append(".setMixinInstance(this);\n");
                 }
             }
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{Object[].class}, code.toString());

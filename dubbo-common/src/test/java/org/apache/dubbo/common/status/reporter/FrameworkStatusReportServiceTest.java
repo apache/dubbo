@@ -17,11 +17,11 @@
 package org.apache.dubbo.common.status.reporter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -74,15 +74,14 @@ public class FrameworkStatusReportServiceTest {
         Assertions.assertEquals(reportContent.size(), 3);
 
         // verify registrationStatus
-        Gson gson = new Gson();
         Object registrationStatus = reportContent.get(REGISTRATION_STATUS);
-        Map<String, String> registrationMap = gson.fromJson(String.valueOf(registrationStatus), Map.class);
+        Map<String, String> registrationMap = JsonUtils.getJson().toJavaObject(String.valueOf(registrationStatus), Map.class);
         Assertions.assertEquals(registrationMap.get("application"), "APP");
         Assertions.assertEquals(registrationMap.get("status"), "instance");
 
         // verify addressConsumptionStatus
         Object addressConsumptionStatus = reportContent.get(ADDRESS_CONSUMPTION_STATUS);
-        Map<String, String> consumptionMap = gson.fromJson(String.valueOf(addressConsumptionStatus), Map.class);
+        Map<String, String> consumptionMap = JsonUtils.getJson().toJavaObject(String.valueOf(addressConsumptionStatus), Map.class);
         Assertions.assertEquals(consumptionMap.get("application"), "APP");
         Assertions.assertEquals(consumptionMap.get("service"), "Test");
         Assertions.assertEquals(consumptionMap.get("status"), "status");
@@ -92,7 +91,7 @@ public class FrameworkStatusReportServiceTest {
 
         // verify migrationStepStatus
         Object migrationStepStatus = reportContent.get(MIGRATION_STEP_STATUS);
-        Map<String, String> migrationStepStatusMap = gson.fromJson(String.valueOf(migrationStepStatus), Map.class);
+        Map<String, String> migrationStepStatusMap = JsonUtils.getJson().toJavaObject(String.valueOf(migrationStepStatus), Map.class);
         Assertions.assertEquals(migrationStepStatusMap.get("originStep"), "FORCE_INTERFACE");
         Assertions.assertEquals(migrationStepStatusMap.get("application"), "APP");
         Assertions.assertEquals(migrationStepStatusMap.get("service"), "Test");

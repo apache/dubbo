@@ -647,7 +647,6 @@ public abstract class AbstractConfig implements Serializable {
      * Dubbo config property override
      */
     public void refresh() {
-        refreshed.set(true);
         try {
             // check and init before do refresh
             preProcessRefresh();
@@ -697,6 +696,7 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         postProcessRefresh();
+        refreshed.set(true);
     }
 
     private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
@@ -708,12 +708,13 @@ public abstract class AbstractConfig implements Serializable {
 
         // loop methods, get override value and set the new value back to method
         List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
+        Method[] methodsList = this.getClass().getDeclaredMethods();
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
 
                 // if config mode is OVERRIDE_IF_ABSENT and property has set, skip
-                if (overrideIfAbsent && isPropertySet(propertyName)) {
+                if (overrideIfAbsent && isPropertySet(methodsList, propertyName)) {
                     continue;
                 }
 
@@ -792,10 +793,13 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private boolean isPropertySet(String propertyName) {
+    private boolean isPropertySet(Method[] methods, String propertyName) {
         try {
             String getterName = calculatePropertyToGetter(propertyName);
-            Method getterMethod = this.getClass().getDeclaredMethod(getterName);
+            Method getterMethod = findGetMethod(methods,getterName);
+            if (getterMethod == null) {
+                return false;
+            }
             Object oldOne = getterMethod.invoke(this);
             if (oldOne != null) {
                 return true;
@@ -804,6 +808,15 @@ public abstract class AbstractConfig implements Serializable {
 
         }
         return false;
+    }
+
+    private Method findGetMethod(Method[] methods, String methodName) {
+        for (Method method : methods) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == 0) {
+                return method;
+            }
+        }
+        return null;
     }
 
     private void invokeSetParameters(Map<String, String> values, Object obj) {

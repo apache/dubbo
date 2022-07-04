@@ -37,6 +37,6 @@ public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModel
 
     @Override
     public <T> T getInstance(Class<T> type, String name) {
-        return beanFactory.getBean(name, type);
+        return beanFactory == null ? null : beanFactory.getBean(name, type);
     }
 }

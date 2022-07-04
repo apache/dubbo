@@ -167,7 +167,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         try {
             String content = configService.getConfig(identifier.getApplication(), identifier.getRevision(), 3000L);
-            return JsonUtils.getGson().fromJson(content, MetadataInfo.class);
+            return JsonUtils.getJson().toJavaObject(content, MetadataInfo.class);
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

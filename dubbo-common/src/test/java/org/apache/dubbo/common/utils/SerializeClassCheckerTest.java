@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import javassist.compiler.Javac;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.Socket;
@@ -32,6 +33,11 @@ public class SerializeClassCheckerTest {
 
     @BeforeEach
     public void setUp() {
+        SerializeClassChecker.clearInstance();
+    }
+
+    @AfterAll
+    public static void tearDown() {
         SerializeClassChecker.clearInstance();
     }
 

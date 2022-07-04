@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.definition;
 
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.definition.common.ClassExtendsMap;
 import org.apache.dubbo.metadata.definition.common.ColorEnum;
 import org.apache.dubbo.metadata.definition.common.OuterClass;
@@ -25,7 +26,6 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -49,13 +49,13 @@ public class MetadataTest {
     public void testInnerClassType() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(OuterClass.InnerClass.class, OuterClass.InnerClass.class);
-        System.out.println(">> testInnerClassType: " + new Gson().toJson(td));
+        System.out.println(">> testInnerClassType: " + JsonUtils.getJson().toJson(td));
 
         Assertions.assertEquals("org.apache.dubbo.metadata.definition.common.OuterClass.InnerClass", td.getType());
         Assertions.assertEquals(1, td.getProperties().size());
         Assertions.assertNotNull(td.getProperties().get("name"));
         ServiceDefinition sd = MetadataUtils.generateMetadata(TestService.class);
-        System.out.println(">> testInnerClassType: " + new Gson().toJson(sd));
+        System.out.println(">> testInnerClassType: " + JsonUtils.getJson().toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
         Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
@@ -70,12 +70,13 @@ public class MetadataTest {
     }
 
     /**
+     *
      */
     @Test
     public void testRawMap() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(ResultWithRawCollections.class, ResultWithRawCollections.class);
-        System.out.println(">> testRawMap: " + new Gson().toJson(td));
+        System.out.println(">> testRawMap: " + JsonUtils.getJson().toJson(td));
 
         Assertions.assertEquals("org.apache.dubbo.metadata.definition.common.ResultWithRawCollections", td.getType());
         Assertions.assertEquals(2, td.getProperties().size());
@@ -83,7 +84,7 @@ public class MetadataTest {
         Assertions.assertEquals("java.util.List", td.getProperties().get("list"));
 
         ServiceDefinition sd = MetadataUtils.generateMetadata(TestService.class);
-        System.out.println(">> testRawMap: " + new Gson().toJson(sd));
+        System.out.println(">> testRawMap: " + JsonUtils.getJson().toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
         Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
@@ -101,7 +102,7 @@ public class MetadataTest {
     public void testEnum() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(ColorEnum.class, ColorEnum.class);
-        System.out.println(">> testEnum: " + new Gson().toJson(td));
+        System.out.println(">> testEnum: " + JsonUtils.getJson().toJson(td));
 
         Assertions.assertEquals("org.apache.dubbo.metadata.definition.common.ColorEnum", td.getType());
         Assertions.assertEquals(3, td.getEnums().size());
@@ -110,7 +111,7 @@ public class MetadataTest {
         Assertions.assertTrue(td.getEnums().contains("BLUE"));
 
         ServiceDefinition sd = MetadataUtils.generateMetadata(TestService.class);
-        System.out.println(">> testEnum: " + new Gson().toJson(sd));
+        System.out.println(">> testEnum: " + JsonUtils.getJson().toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
         Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());
@@ -128,13 +129,13 @@ public class MetadataTest {
     public void testExtendsMap() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(ClassExtendsMap.class, ClassExtendsMap.class);
-        System.out.println(">> testExtendsMap: " + new Gson().toJson(td));
+        System.out.println(">> testExtendsMap: " + JsonUtils.getJson().toJson(td));
 
         Assertions.assertEquals("org.apache.dubbo.metadata.definition.common.ClassExtendsMap", td.getType());
         Assertions.assertEquals(0, td.getProperties().size());
 
         ServiceDefinition sd = MetadataUtils.generateMetadata(TestService.class);
-        System.out.println(">> testExtendsMap: " + new Gson().toJson(sd));
+        System.out.println(">> testExtendsMap: " + JsonUtils.getJson().toJson(sd));
 
         Assertions.assertEquals(TestService.class.getName(), sd.getCanonicalName());
         Assertions.assertEquals(TestService.class.getMethods().length, sd.getMethods().size());

@@ -20,6 +20,7 @@ package org.apache.dubbo.generic;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -35,7 +36,6 @@ import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
 import com.alibaba.dubbo.config.ReferenceConfig;
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -99,8 +99,8 @@ public class GenericServiceTest {
     @Test
     public void testGenericCompatible() {
         DubboBootstrap.getInstance()
-                .application("test-app")
-                .initialize();
+            .application("test-app")
+            .initialize();
 
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -182,7 +182,7 @@ public class GenericServiceTest {
 
         GenericService client = proxyFactory.getProxy(invoker, true);
         Object result = client.$invoke("findComplexObject", new String[]{"java.lang.String", "int", "long", "java.lang.String[]", "java.util.List", "org.apache.dubbo.service.ComplexObject$TestEnum"},
-                new Object[]{var1, var2, l, var3, var4, testEnum});
+            new Object[]{var1, var2, l, var3, var4, testEnum});
         Assertions.assertNotNull(result);
         ComplexObject r = map2bean((Map) result);
         Assertions.assertEquals(r, createComplexObject(var1, var2, l, var3, var4, testEnum));
@@ -272,11 +272,11 @@ public class GenericServiceTest {
     }
 
     Map<String, Object> bean2Map(ComplexObject complexObject) {
-        return JSON.parseObject(JSON.toJSONString(complexObject), Map.class);
+        return JsonUtils.getJson().toJavaObject(JsonUtils.getJson().toJson(complexObject), Map.class);
     }
 
     ComplexObject map2bean(Map<String, Object> map) {
-        return JSON.parseObject(JSON.toJSONString(map), ComplexObject.class);
+        return JsonUtils.getJson().toJavaObject(JsonUtils.getJson().toJson(map), ComplexObject.class);
     }
 
     ComplexObject createComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum) {

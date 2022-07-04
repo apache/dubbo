@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.metadata.rest.jaxrs;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.rest.ClassPathServiceRestMetadataReader;
 import org.apache.dubbo.metadata.rest.DefaultRestService;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.RestService;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.SpringRestService;
@@ -26,7 +26,6 @@ import org.apache.dubbo.metadata.rest.StandardRestService;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,15 +64,7 @@ public class JAXRSServiceRestMetadataResolverTest {
         ServiceRestMetadata expectedServiceRestMetadata = serviceRestMetadataList.get(0);
         ServiceRestMetadata serviceRestMetadata = instance.resolve(StandardRestService.class);
 
-
-        List<RestMethodMetadata> meta1 = new LinkedList<>(expectedServiceRestMetadata.getMeta());
-        List<RestMethodMetadata> meta2 = new LinkedList<>(serviceRestMetadata.getMeta());
-
-        for (int i = 0; i < meta1.size(); i++) {
-            RestMethodMetadata restMethodMetadata = meta1.get(i);
-            RestMethodMetadata restMethodMetadata2 = meta2.get(i);
-            assertEquals(restMethodMetadata, restMethodMetadata2);
-        }
+        assertTrue(CollectionUtils.equals(expectedServiceRestMetadata.getMeta(), serviceRestMetadata.getMeta()));
 
         assertEquals(expectedServiceRestMetadata, serviceRestMetadata);
 

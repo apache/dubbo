@@ -427,4 +427,35 @@ public interface MethodUtils {
 
         return fieldName;
     }
+
+    /**
+     * Invoke and return double value.
+     *
+     * @param method method
+     * @param targetObj the object the method is invoked from
+     * @return double value
+     */
+    static double invokeAndReturnDouble(Method method, Object targetObj) {
+        try {
+            return method != null ? (double) method.invoke(targetObj) : Double.NaN;
+        } catch (Exception e) {
+            return Double.NaN;
+        }
+    }
+
+    /**
+     * Invoke and return long value.
+     *
+     * @param method method
+     * @param targetObj the object the method is invoked from
+     * @return long value
+     */
+    static long invokeAndReturnLong(Method method, Object targetObj) {
+        try {
+            return method != null ? (long) method.invoke(targetObj) : -1;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
 }
+
