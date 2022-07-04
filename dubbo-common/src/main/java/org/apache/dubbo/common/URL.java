@@ -68,6 +68,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
@@ -329,6 +330,42 @@ class URL implements Serializable {
             }
         }
         return address;
+    }
+
+    public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters) {
+        Map<String, Map<String, String>> methodParameters = new HashMap<>();
+        if (parameters == null) {
+            return methodParameters;
+        }
+
+        String methodsString = parameters.get(METHODS_KEY);
+        if (StringUtils.isNotEmpty(methodsString)) {
+            List<String> methods = StringUtils.splitToList(methodsString, ',');
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                for (int i = 0; i < methods.size(); i++) {
+                    String method = methods.get(i);
+                    int methodLen = method.length();
+                    if (key.length() > methodLen
+                        && key.startsWith(method)
+                        && key.charAt(methodLen) == '.') {//equals to: key.startsWith(method + '.')
+                        String realKey = key.substring(methodLen + 1);
+                        URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                    }
+                }
+            }
+        } else {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                String key = entry.getKey();
+                int methodSeparator = key.indexOf('.');
+                if (methodSeparator > 0) {
+                    String method = key.substring(0, methodSeparator);
+                    String realKey = key.substring(methodSeparator + 1);
+                    URL.putMethodParameter(method, realKey, entry.getValue(), methodParameters);
+                }
+            }
+        }
+        return methodParameters;
     }
 
     public URLAddress getUrlAddress() {

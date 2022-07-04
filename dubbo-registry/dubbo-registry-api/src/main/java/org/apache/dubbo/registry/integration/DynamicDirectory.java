@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -52,6 +53,11 @@ import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 
 
 /**
@@ -98,6 +104,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * Initialization at construction time, assertion not null, and always assign not null value
      */
     protected volatile URL subscribeUrl;
+    protected volatile URL overrideDirectoryUrl;
     protected volatile URL registeredConsumerUrl;
 
     /**
@@ -142,7 +149,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.serviceType = serviceType;
         this.serviceKey = super.getConsumerUrl().getServiceKey();
 
-        this.directoryUrl = consumerUrl;
+        this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
 
@@ -152,6 +159,19 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     @Override
     public void addServiceListener(ServiceInstancesChangedListener instanceListener) {
         this.serviceListener = instanceListener;
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url) {
+        return URLBuilder.from(url)
+                .setHost(queryMap.get(REGISTER_IP_KEY) == null ? url.getHost() : queryMap.get(REGISTER_IP_KEY))
+                .setPort(0)
+                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
+                .setPath(queryMap.get(INTERFACE_KEY))
+                .clearParameters()
+                .addParameters(queryMap)
+                .removeParameter(MONITOR_KEY)
+                .addMethodParameters(URL.toMethodParameters(queryMap)) // reset method parameters
+                .build();
     }
 
     @Override
@@ -226,7 +246,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.consumerUrl;
+        return this.overrideDirectoryUrl;
     }
 
     /**
