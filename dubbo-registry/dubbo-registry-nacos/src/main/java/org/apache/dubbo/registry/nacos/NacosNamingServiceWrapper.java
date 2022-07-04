@@ -43,10 +43,6 @@ public class NacosNamingServiceWrapper {
         return namingService.getServerStatus();
     }
 
-    public void subscribe(String serviceName, EventListener eventListener) throws NacosException {
-        namingService.subscribe(handleInnerSymbol(serviceName), eventListener);
-    }
-
     public void subscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
         namingService.subscribe(handleInnerSymbol(serviceName), group, eventListener);
     }
@@ -68,12 +64,8 @@ public class NacosNamingServiceWrapper {
         namingService.deregisterInstance(handleInnerSymbol(serviceName), group, instance);
     }
 
-    public ListView<String> getServicesOfServer(int pageNo, int pageSize, String parameter) throws NacosException {
-        return namingService.getServicesOfServer(pageNo, pageSize, parameter);
-    }
-
-    public List<Instance> selectInstances(String serviceName, boolean healthy) throws NacosException {
-        return namingService.selectInstances(handleInnerSymbol(serviceName), healthy);
+    public ListView<String> getServicesOfServer(int pageNo, int pageSize, String group) throws NacosException {
+        return namingService.getServicesOfServer(pageNo, pageSize, group);
     }
 
     public List<Instance> selectInstances(String serviceName, String group, boolean healthy) throws NacosException {
