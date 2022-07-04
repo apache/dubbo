@@ -133,7 +133,7 @@ public class InvokeTelnet implements BaseCommand {
 
 
         if (!StringUtils.isEmpty(service)) {
-            buf.append("Use default service ").append(service).append(".");
+            buf.append("Use default service ").append(service).append('.');
         }
         if (selectedProvider == null) {
             buf.append("\r\nNo such service ").append(service);

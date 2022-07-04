@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.0.10-SNAPSHOT</revision>
+        <revision>3.1.0-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -326,11 +326,12 @@
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
-                                        **/istio/v1/auth/Ca.java,
-                                        **/istio/v1/auth/IstioCertificateServiceGrpc.java,
+                                        **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
+                                        **/generated-sources/**/*,
                                         **/grpc/health/**/*,
+                                        **/grpc/reflection/**/*,
                                         **/target/**/*,
                                         **/*.json
                                     </excludes>

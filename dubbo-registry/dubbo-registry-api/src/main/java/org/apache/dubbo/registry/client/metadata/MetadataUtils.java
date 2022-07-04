@@ -203,7 +203,7 @@ public class MetadataUtils {
         return instances.get(ThreadLocalRandom.current().nextInt(0, instances.size()));
     }
 
-    private static class ProxyHolder {
+    public static class ProxyHolder {
         private final ConsumerModel consumerModel;
         private final MetadataService proxy;
         private final ModuleModel internalModel;
