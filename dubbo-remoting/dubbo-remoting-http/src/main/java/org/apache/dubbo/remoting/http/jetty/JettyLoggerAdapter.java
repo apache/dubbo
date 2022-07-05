@@ -143,7 +143,7 @@ public class JettyLoggerAdapter extends AbstractLogger {
             int bracesIndex = msg.indexOf(braces, start);
             if (bracesIndex < 0) {
                 builder.append(msg.substring(start));
-                builder.append(" ");
+                builder.append(' ');
                 builder.append(arg);
                 start = msg.length();
             } else {

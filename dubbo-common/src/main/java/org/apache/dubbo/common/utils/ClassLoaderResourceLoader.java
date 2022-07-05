@@ -42,7 +42,7 @@ public class ClassLoaderResourceLoader {
         GlobalResourcesRepository.registerGlobalDisposable(()-> destroy());
     }
 
-    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
+    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) throws InterruptedException {
         Map<ClassLoader, Set<URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {
@@ -51,11 +51,7 @@ public class ClassLoaderResourceLoader {
                 countDownLatch.countDown();
             });
         }
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        countDownLatch.await();
         return Collections.unmodifiableMap(new LinkedHashMap<>(resources));
     }
 

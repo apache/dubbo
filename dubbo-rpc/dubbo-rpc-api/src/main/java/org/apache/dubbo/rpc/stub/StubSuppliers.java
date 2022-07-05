@@ -33,7 +33,6 @@ public class StubSuppliers {
     public static void addDescriptor(String interfaceName, ServiceDescriptor serviceDescriptor) {
         SERVICE_DESCRIPTOR_MAP.put(interfaceName, serviceDescriptor);
     }
-
     public static void addSupplier(String interfaceName, Function<Invoker<?>, Object> supplier) {
         STUB_SUPPLIERS.put(interfaceName, supplier);
     }

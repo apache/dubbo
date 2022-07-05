@@ -123,6 +123,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     @Override
+    public void destroy() {
+        super.destroy();
+        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            getConsumerConfigurationListener(moduleModel).removeNotifyListener(this);
+            referenceConfigurationListener.stop();
+        }
+    }
+
+    @Override
     public void buildRouterChain(URL url) {
         this.setRouterChain(RouterChain.buildChain(getInterface(), url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
     }
