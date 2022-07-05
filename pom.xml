@@ -501,10 +501,6 @@
             <id>jdk15ge</id>
             <activation>
                 <jdk>[15,</jdk>
-                <property>
-                    <name>MAVEN_SUREFIRE_ADD_OPENS</name>
-                    <value>true</value>
-                </property>
             </activation>
             <build>
                 <plugins>
