@@ -100,17 +100,17 @@ public class CacheFilter implements Filter {
         }
         String key = StringUtils.toArgumentString(invocation.getArguments());
         Object value = cache.get(key);
-        return (value != null) ? resultOnCacheNotNull(invocation, value) : resultOnCacheNull(invoker, invocation, cache, key);
+        return (value != null) ? onCacheValuePresent(invocation, value) : onCacheValueNotPresent(invoker, invocation, cache, key);
     }
     
-    private Result resultOnCacheNotNull(Invocation invocation, Object value) {
+    private Result onCacheValuePresent(Invocation invocation, Object value) {
         if (value instanceof ValueWrapper) {
             return AsyncRpcResult.newDefaultAsyncResult(((ValueWrapper) value).get(), invocation);
         }
         return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
     }
     
-    private Result resultOnCacheNull(Invoker<?> invoker, Invocation invocation, Cache cache, String key) {
+    private Result onCacheValueNotPresent(Invoker<?> invoker, Invocation invocation, Cache cache, String key) {
         Result result = invoker.invoke(invocation);
         if (!result.hasException()) {
             cache.put(key, new ValueWrapper(result.getValue()));
