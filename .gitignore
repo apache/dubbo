@@ -12,6 +12,7 @@ target/
 .settings/
 .project
 .classpath
+.checkstyle
 
 # idea ignore
 .idea/

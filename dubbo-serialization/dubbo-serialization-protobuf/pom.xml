@@ -67,12 +67,12 @@ limitations under the License.
                     <clearOutputDirectory>false</clearOutputDirectory>
                 </configuration>
                 <executions>
-                    <execution>
+<!--                     <execution>
                         <goals>
                             <goal>compile</goal>
                             <goal>test-compile</goal>
                         </goals>
-                    </execution>
+                    </execution> -->
                 </executions>
             </plugin>
             <plugin>

@@ -262,11 +262,11 @@
                                 <artifactId>checkstyle</artifactId>
                                 <version>8.41</version>
                             </dependency>
-                            <dependency>
+                           <!--  <dependency>
                                 <groupId>org.apache.dubbo</groupId>
                                 <artifactId>dubbo-build-tools</artifactId>
                                 <version>1.0.0</version>
-                            </dependency>
+                            </dependency> -->
                         </dependencies>
                         <executions>
                             <execution>
@@ -617,7 +617,7 @@
                     <updatePomFile>true</updatePomFile>
                     <flattenMode>resolveCiFriendliesOnly</flattenMode>
                 </configuration>
-                <executions>
+               <!--  <executions>
                     <execution>
                         <id>flatten</id>
                         <phase>process-resources</phase>
@@ -632,7 +632,7 @@
                             <goal>clean</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions> -->
             </plugin>
         </plugins>
 
