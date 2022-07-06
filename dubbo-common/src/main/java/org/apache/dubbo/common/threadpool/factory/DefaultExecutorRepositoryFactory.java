@@ -21,13 +21,19 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.DefaultExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * default executor repository factory
  */
 public class DefaultExecutorRepositoryFactory implements ExecutorRepositoryFactory {
 
+    private final ConcurrentMap<String, DefaultExecutorRepository> defaultRepositoryMap = new ConcurrentHashMap<>();
+
     @Override
     public ExecutorRepository getExecutorRepository(URL url) {
-        return new DefaultExecutorRepository(url);
+        String port = String.valueOf(url.getPort());
+        return defaultRepositoryMap.computeIfAbsent(port, key -> new DefaultExecutorRepository(url));
     }
 }

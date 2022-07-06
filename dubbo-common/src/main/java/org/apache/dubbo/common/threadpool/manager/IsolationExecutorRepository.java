@@ -24,7 +24,6 @@ import org.apache.dubbo.common.threadpool.IsolationThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.MD5Utils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.Objects;
@@ -44,14 +43,11 @@ public class IsolationExecutorRepository implements ExecutorRepository {
 
     public static final String NAME = "isolation";
 
-    private final ApplicationModel applicationModel;
-
     private final FrameworkExecutorRepository frameworkExecutorRepository;
 
     private final Map<String, ExecutorService> isolationThreadpool = new ConcurrentHashMap<>();
 
     public IsolationExecutorRepository(URL url) {
-        this.applicationModel = url.getOrDefaultApplicationModel();
         this.frameworkExecutorRepository = url.getOrDefaultApplicationModel().getFrameworkModel()
             .getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
