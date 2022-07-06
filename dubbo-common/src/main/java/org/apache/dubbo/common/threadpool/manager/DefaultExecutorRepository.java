@@ -74,6 +74,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             .getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
+    public DefaultExecutorRepository(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+    }
+
     /**
      * Get called when the server or client instance initiating.
      *
