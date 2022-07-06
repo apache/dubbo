@@ -117,12 +117,11 @@ public class WrappedChannelHandlerTest {
         ExecutorService sharedExecutorService = handler.getSharedExecutorService();
         Assertions.assertNotNull(sharedExecutorService);
         ExecutorService preferredExecutorService = handler.getPreferredExecutorService(new Object());
-        // url.getOrDefaultApplicationModel() may create new application model, so assertNotEquals
-        Assertions.assertNotEquals(preferredExecutorService, sharedExecutorService);
+        Assertions.assertEquals(preferredExecutorService, sharedExecutorService);
 
         Response response = new Response(10);
         preferredExecutorService = handler.getPreferredExecutorService(response);
-        Assertions.assertNotEquals(preferredExecutorService, sharedExecutorService);
+        Assertions.assertEquals(preferredExecutorService, sharedExecutorService);
 
         Channel channel = new MockedChannel();
         Request request = new Request(10);
