@@ -30,7 +30,6 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +37,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -238,7 +238,7 @@ public abstract class AbstractRegistry implements Registry {
                 savePropertiesRetryTimes.set(0);
                 return;
             } else {
-                registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
+                registryCacheExecutor.execute(() -> doSaveProperties(lastCacheChanged.incrementAndGet()));
             }
             if (!(e instanceof OverlappingFileLockException)) {
                 logger.warn("Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
@@ -253,25 +253,18 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     private void loadProperties() {
-        if (file != null && file.exists()) {
-            InputStream in = null;
-            try {
-                in = new FileInputStream(file);
-                properties.load(in);
-                if (logger.isInfoEnabled()) {
-                    logger.info("Loaded registry cache file " + file);
-                }
-            } catch (Throwable e) {
-                logger.warn("Failed to load registry cache file " + file, e);
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        logger.warn(e.getMessage(), e);
-                    }
-                }
+        if (file == null || !file.exists()) {
+            return;
+        }
+        try (InputStream in = Files.newInputStream(file.toPath())) {
+            properties.load(in);
+            if (logger.isInfoEnabled()) {
+                logger.info("Loaded registry cache file " + file);
             }
+        } catch (IOException e) {
+            logger.warn(e.getMessage(), e);
+        } catch (Throwable e) {
+            logger.warn("Failed to load registry cache file " + file, e);
         }
     }
 
@@ -502,7 +495,7 @@ public abstract class AbstractRegistry implements Registry {
             if (syncSaveFile) {
                 doSaveProperties(version);
             } else {
-                registryCacheExecutor.execute(new SaveProperties(version));
+                registryCacheExecutor.execute(() -> doSaveProperties(version));
             }
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
@@ -575,18 +568,4 @@ public abstract class AbstractRegistry implements Registry {
     public String toString() {
         return getUrl().toString();
     }
-
-    private class SaveProperties implements Runnable {
-        private long version;
-
-        private SaveProperties(long version) {
-            this.version = version;
-        }
-
-        @Override
-        public void run() {
-            doSaveProperties(version);
-        }
-    }
-
 }
