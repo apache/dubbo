@@ -545,9 +545,62 @@ public class ServiceInstancesChangedListenerTest {
         assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
     }
 
-    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    /**
+     * Test subscribe multiple versions
+     */
     @Test
     @Order(9)
+    public void testSubscribeMultipleVersions() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+
+        // notify instance change
+        ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
+        listener.onEvent(event);
+
+        Map<String, List<ServiceInstance>> allInstances = listener.getAllInstances();
+        Assertions.assertEquals(1, allInstances.size());
+        Assertions.assertEquals(3, allInstances.get("app1").size());
+
+        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(service1, null, null, "dubbo");
+        List<URL> serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "*", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, ",1.0.0", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "1.0.0,", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "1.0.0,,1.0.1", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(3, serviceUrls.size());
+        assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+        protocolServiceKey = new ProtocolServiceKey(service1, "1.0.1,1.0.0", null, "dubbo");
+        serviceUrls = listener.getAddresses(protocolServiceKey, consumerURL);
+        Assertions.assertEquals(0, serviceUrls.size());
+    }
+
+    // revision 异常场景。第一次启动，完全拿不到metadata，只能通知部分地址
+    @Test
+    @Order(10)
     public void testRevisionFailureOnStartup() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -569,7 +622,7 @@ public class ServiceInstancesChangedListenerTest {
 
     // revision 异常场景。运行中地址通知，拿不到revision就用老版本revision
     @Test
-    @Order(10)
+    @Order(11)
     public void testRevisionFailureOnNotification() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
@@ -618,7 +671,7 @@ public class ServiceInstancesChangedListenerTest {
 
     // Abnormal case. Instance does not have revision
     @Test
-    @Order(11)
+    @Order(12)
     public void testInstanceWithoutRevision() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");

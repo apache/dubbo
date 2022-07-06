@@ -22,119 +22,6 @@ import org.junit.jupiter.api.Test;
 public class ProtocolServiceKeyMatcherTest {
 
     @Test
-    public void testInterface() {
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, null),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey("DemoService", null, null, null),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, null),
-            new ProtocolServiceKey("DemoService", null, null, null)
-        ));
-    }
-
-    @Test
-    public void testVersion() {
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, "1.0.0", null, null),
-            new ProtocolServiceKey(null, "1.0.0", null, null)
-        ));
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, "1.0.0", null, null),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, null),
-            new ProtocolServiceKey(null, "1.0.0", null, null)
-        ));
-    }
-
-    @Test
-    public void testGroup() {
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group1", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group1", null),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, null, null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group1, group2", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2, group3", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2, group3", null),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
-
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2, group3", null),
-            new ProtocolServiceKey(null, null, "", null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, ",group2", null),
-            new ProtocolServiceKey(null, null, "", null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2,", null),
-            new ProtocolServiceKey(null, null, "", null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2, ,group3", null),
-            new ProtocolServiceKey(null, null, "", null)
-        ));
-
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, ",group2", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2,", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-
-        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "group2, ,group3", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "*", null),
-            new ProtocolServiceKey(null, null, "", null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "*", null),
-            new ProtocolServiceKey(null, null, null, null)
-        ));
-
-        Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
-            new ProtocolServiceKey(null, null, "*", null),
-            new ProtocolServiceKey(null, null, "group1", null)
-        ));
-    }
-
-    @Test
     public void testProtocol() {
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
             new ProtocolServiceKey(null, null, null, "dubbo"),
@@ -144,6 +31,11 @@ public class ProtocolServiceKeyMatcherTest {
         Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
             new ProtocolServiceKey(null, null, null, "dubbo"),
             new ProtocolServiceKey(null, null, null, null)
+        ));
+
+        Assertions.assertFalse(ProtocolServiceKey.Matcher.isMatch(
+            new ProtocolServiceKey(null, null, null, "dubbo"),
+            new ProtocolServiceKey("DemoService", null, null, "dubbo")
         ));
 
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(

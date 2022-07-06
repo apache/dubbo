@@ -64,47 +64,9 @@ public class ProtocolServiceKey extends ServiceKey {
 
     public static class Matcher {
         public static boolean isMatch(ProtocolServiceKey rule, ProtocolServiceKey target) {
-            // 1. match interface (accurate match)
-            if (!Objects.equals(rule.getInterfaceName(), target.getInterfaceName())) {
+            // 1. 2. 3. match interface / version / group
+            if (!ServiceKey.Matcher.isMatch(rule, target)) {
                 return false;
-            }
-
-            // 2. match version (accurate match)
-            if (!Objects.equals(rule.getVersion(), target.getVersion())) {
-                return false;
-            }
-
-            // match group (wildcard match)
-            // 3.1. if rule group is *, match all
-            if (!CommonConstants.ANY_VALUE.equals(rule.getGroup())) {
-                // 3.2. if rule group is null, target group should be null
-                if (StringUtils.isEmpty(rule.getGroup()) && !StringUtils.isEmpty(target.getGroup())) {
-                    return false;
-                }
-                if (!StringUtils.isEmpty(rule.getGroup())) {
-                    // 3.3. if rule group contains ',', split and match each
-                    if (rule.getGroup().contains(CommonConstants.COMMA_SEPARATOR)) {
-                        String[] groups = rule.getGroup().split("\\" +CommonConstants.COMMA_SEPARATOR, -1);
-                        boolean match = false;
-                        for (String group : groups) {
-                            group = group.trim();
-                            if (StringUtils.isEmpty(group) && StringUtils.isEmpty(target.getGroup())) {
-                                match = true;
-                                break;
-                            } else if (group.equals(target.getGroup())) {
-                                match = true;
-                                break;
-                            }
-                        }
-                        if (!match) {
-                            return false;
-                        }
-                    }
-                    // 3.4. if rule group is not contains ',', match directly
-                    else if (!Objects.equals(rule.getGroup(), target.getGroup())) {
-                        return false;
-                    }
-                }
             }
 
             // 4.match protocol
