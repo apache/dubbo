@@ -69,6 +69,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         if (channel != null) {
             channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
         }
+
         handler.connected(channel);
 
         if (logger.isInfoEnabled()) {

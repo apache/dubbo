@@ -22,6 +22,7 @@ import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
+import org.apache.dubbo.remoting.transport.netty4.portunification.NettyPortUnificationServer;
 
 /**
  * Default extension of {@link Transporter} using netty4.x.
@@ -32,7 +33,8 @@ public class NettyTransporter implements Transporter {
 
     @Override
     public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyServer(url, handler);
+//        return new NettyServer(url, handler);
+        return new NettyPortUnificationServer(url, handler);
     }
 
     @Override
