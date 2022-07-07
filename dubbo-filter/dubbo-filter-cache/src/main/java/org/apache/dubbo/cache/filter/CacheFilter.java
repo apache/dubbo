@@ -91,26 +91,31 @@ public class CacheFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), CACHE_KEY))) {
-            Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
-            if (cache != null) {
-                String key = StringUtils.toArgumentString(invocation.getArguments());
-                Object value = cache.get(key);
-                if (value != null) {
-                    if (value instanceof ValueWrapper) {
-                        return AsyncRpcResult.newDefaultAsyncResult(((ValueWrapper) value).get(), invocation);
-                    } else {
-                        return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
-                    }
-                }
-                Result result = invoker.invoke(invocation);
-                if (!result.hasException()) {
-                    cache.put(key, new ValueWrapper(result.getValue()));
-                }
-                return result;
-            }
+        if (cacheFactory == null || ConfigUtils.isEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), CACHE_KEY))) {
+            return invoker.invoke(invocation);
         }
-        return invoker.invoke(invocation);
+        Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
+        if (cache == null) {
+            return invoker.invoke(invocation);
+        }
+        String key = StringUtils.toArgumentString(invocation.getArguments());
+        Object value = cache.get(key);
+        return (value != null) ? onCacheValuePresent(invocation, value) : onCacheValueNotPresent(invoker, invocation, cache, key);
+    }
+    
+    private Result onCacheValuePresent(Invocation invocation, Object value) {
+        if (value instanceof ValueWrapper) {
+            return AsyncRpcResult.newDefaultAsyncResult(((ValueWrapper) value).get(), invocation);
+        }
+        return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
+    }
+    
+    private Result onCacheValueNotPresent(Invoker<?> invoker, Invocation invocation, Cache cache, String key) {
+        Result result = invoker.invoke(invocation);
+        if (!result.hasException()) {
+            cache.put(key, new ValueWrapper(result.getValue()));
+        }
+        return result;
     }
 
     /**
