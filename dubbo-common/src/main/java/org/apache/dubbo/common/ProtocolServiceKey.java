@@ -37,6 +37,26 @@ public class ProtocolServiceKey extends ServiceKey {
         return super.toString();
     }
 
+    public boolean isSameWith(ProtocolServiceKey protocolServiceKey) {
+        // interface version group should be the same
+        if (!super.equals(protocolServiceKey)) {
+            return false;
+        }
+
+        // origin protocol is *, can not match any protocol
+        if (CommonConstants.ANY_VALUE.equals(protocol)) {
+            return false;
+        }
+
+        // origin protocol is null, can match any protocol
+        if (StringUtils.isEmpty(protocol) || StringUtils.isEmpty(protocolServiceKey.getProtocol())) {
+            return true;
+        }
+
+        // origin protocol is not *, match itself
+        return Objects.equals(protocol, protocolServiceKey.getProtocol());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

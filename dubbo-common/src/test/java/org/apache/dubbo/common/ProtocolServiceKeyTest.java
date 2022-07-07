@@ -51,5 +51,26 @@ public class ProtocolServiceKeyTest {
 
         ServiceKey serviceKey = new ServiceKey("DemoService", "1.0.0", "group1");
         Assertions.assertNotEquals(protocolServiceKey, serviceKey);
+
+        Assertions.assertTrue(protocolServiceKey.isSameWith(protocolServiceKey));
+        Assertions.assertTrue(protocolServiceKey.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "")));
+        Assertions.assertTrue(protocolServiceKey.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", null)));
+
+        Assertions.assertFalse(protocolServiceKey.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group2", "protocol1")));
+        Assertions.assertFalse(protocolServiceKey.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group2", "")));
+        Assertions.assertFalse(protocolServiceKey.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group2", null)));
+
+
+        ProtocolServiceKey protocolServiceKey6 = new ProtocolServiceKey("DemoService", "1.0.0", "group1", null);
+        Assertions.assertTrue(protocolServiceKey6.isSameWith(protocolServiceKey6));
+        Assertions.assertTrue(protocolServiceKey6.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "")));
+        Assertions.assertTrue(protocolServiceKey6.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "protocol1")));
+        Assertions.assertTrue(protocolServiceKey6.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "protocol2")));
+
+        ProtocolServiceKey protocolServiceKey7 = new ProtocolServiceKey("DemoService", "1.0.0", "group1", "*");
+        Assertions.assertFalse(protocolServiceKey7.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", null)));
+        Assertions.assertFalse(protocolServiceKey7.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "")));
+        Assertions.assertFalse(protocolServiceKey7.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "protocol1")));
+        Assertions.assertFalse(protocolServiceKey7.isSameWith(new ProtocolServiceKey("DemoService", "1.0.0", "group1", "protocol2")));
     }
 }
