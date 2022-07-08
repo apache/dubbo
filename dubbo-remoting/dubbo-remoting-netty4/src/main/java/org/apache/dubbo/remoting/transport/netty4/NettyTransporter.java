@@ -33,8 +33,7 @@ public class NettyTransporter implements Transporter {
 
     @Override
     public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
-//        return new NettyServer(url, handler);
-        return new NettyPortUnificationServer(url, handler);
+        return new NettyServer(url, handler);
     }
 
     @Override
