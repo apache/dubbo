@@ -25,12 +25,19 @@ public class RetryServiceInstancesChangedEvent extends ServiceInstancesChangedEv
 
     private volatile long failureRecordTime;
 
-    public RetryServiceInstancesChangedEvent(String serviceName) {
+    private volatile int retryCount;
+
+    public RetryServiceInstancesChangedEvent(String serviceName, int retryCount) {
         super(serviceName, Collections.emptyList());// instance list has been stored by ServiceInstancesChangedListener
         this.failureRecordTime = System.currentTimeMillis();
+        this.retryCount = retryCount;
     }
 
     public long getFailureRecordTime() {
         return failureRecordTime;
+    }
+
+    public int getRetryCount() {
+        return retryCount;
     }
 }
