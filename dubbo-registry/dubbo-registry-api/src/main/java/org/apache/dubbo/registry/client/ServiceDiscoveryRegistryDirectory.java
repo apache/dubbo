@@ -556,6 +556,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 invocation.getParameterTypes(), invocation.getArguments(), invocation.getObjectAttachments(),
                 invocation.getInvoker(), invocation.getAttributes(),
                 invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
+            copiedInvocation.setObjectAttachment(CommonConstants.GROUP_KEY, protocolServiceKey.getGroup());
+            copiedInvocation.setObjectAttachment(CommonConstants.VERSION_KEY, protocolServiceKey.getVersion());
             return originInvoker.invoke(copiedInvocation);
         }
 
