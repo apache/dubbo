@@ -16,6 +16,24 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
+import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
+import static org.springframework.util.StringUtils.hasText;
+
+import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Member;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,9 +48,6 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -52,23 +67,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.MethodMetadata;
-
-import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Member;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
-import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
-import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
-import static org.springframework.util.StringUtils.hasText;
 
 /**
  * <p>
@@ -218,11 +216,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         MethodMetadata factoryMethodMetadata = SpringCompatUtils.getFactoryMethodMetadata(beanDefinition);
 
         // Extract beanClass from generic return type of java-config bean method: ReferenceBean<DemoService>
-        // see org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryBeanFromMethod
-        Class beanClass = getBeanFactory().getType(beanName);
-        if (beanClass == Object.class) {
-            beanClass = SpringCompatUtils.getGenericTypeOfReturnType(factoryMethodMetadata);
-        }
+        Class<?> beanClass = SpringCompatUtils.getTypeForFactoryBeanFromMethod(getBeanFactory(), beanDefinition);
         if (beanClass == Object.class) {
             // bean class is invalid, ignore it
             return;
