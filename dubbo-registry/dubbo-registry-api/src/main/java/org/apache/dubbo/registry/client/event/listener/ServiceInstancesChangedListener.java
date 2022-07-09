@@ -124,7 +124,7 @@ public class ServiceInstancesChangedListener {
         }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
-        Map<ProtocolServiceKey, Set<String>> localServiceToRevisions = new HashMap<>();
+        Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
 
         // grouping all instances of this app(service name) by revision
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
@@ -176,21 +176,22 @@ public class ServiceInstancesChangedListener {
         }
         hasEmptyMetadata = false;
 
-        Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
+        Map<String, Map<Integer, Map<Set<String>, Object>>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, List<ProtocolServiceKeyWithUrls>> newServiceUrls = new HashMap<>();
-        for (Map.Entry<ProtocolServiceKey, Set<String>> entry : localServiceToRevisions.entrySet()) {
-            String protocol = entry.getKey().getProtocol();
+        for (Map.Entry<ServiceInfo, Set<String>> entry : localServiceToRevisions.entrySet()) {
+            ServiceInfo serviceInfo = entry.getKey();
             Set<String> revisions = entry.getValue();
 
-            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> new HashMap<>());
+            Map<Integer, Map<Set<String>, Object>> portToRevisions = protocolRevisionsToUrls.computeIfAbsent(serviceInfo.getProtocol(), k -> new HashMap<>());
+            Map<Set<String>, Object> revisionsToUrls = portToRevisions.computeIfAbsent(serviceInfo.getPort(), k -> new HashMap<>());
             Object urls = revisionsToUrls.get(revisions);
             if (urls == null) {
-                urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
+                urls = getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort());
                 revisionsToUrls.put(revisions, urls);
             }
 
-            List<ProtocolServiceKeyWithUrls> list = newServiceUrls.computeIfAbsent(entry.getKey().getInterfaceName(), k -> new LinkedList<>());
-            list.add(new ProtocolServiceKeyWithUrls(entry.getKey(), (List<URL>) urls));
+            List<ProtocolServiceKeyWithUrls> list = newServiceUrls.computeIfAbsent(serviceInfo.getPath(), k -> new LinkedList<>());
+            list.add(new ProtocolServiceKeyWithUrls(serviceInfo.getProtocolServiceKey(), (List<URL>) urls));
         }
 
         this.serviceUrls = newServiceUrls;
@@ -325,20 +326,28 @@ public class ServiceInstancesChangedListener {
         return emptyMetadataNum;
     }
 
-    protected Map<ProtocolServiceKey, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ProtocolServiceKey, Set<String>> localServiceToRevisions) {
+    protected Map<ServiceInfo, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
-            Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getValue().getProtocolServiceKey(), _k -> new TreeSet<>());
+            Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getValue(), _k -> new TreeSet<>());
             set.add(revision);
         }
 
         return localServiceToRevisions;
     }
 
-    protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol) {
+    protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol, int port) {
         List<URL> urls = new ArrayList<>();
         for (String r : revisions) {
             for (ServiceInstance i : revisionToInstances.get(r)) {
+                if (port > 0) {
+                    if (i.getPort() == port) {
+                        urls.add(i.toURL(protocol).setScopeModel(i.getApplicationModel()));
+                    } else {
+                        urls.add(((DefaultServiceInstance) i).copyFrom(port).toURL(protocol).setScopeModel(i.getApplicationModel()));
+                    }
+                    continue;
+                }
                 // different protocols may have ports specified in meta
                 if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);

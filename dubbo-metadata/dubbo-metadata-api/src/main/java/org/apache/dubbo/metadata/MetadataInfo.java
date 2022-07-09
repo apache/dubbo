@@ -438,6 +438,7 @@ public class MetadataInfo implements Serializable {
         private String group;
         private String version;
         private String protocol;
+        private int port = -1;
         private String path; // most of the time, path is the same with the interface name.
         private Map<String, String> params;
 
@@ -461,7 +462,7 @@ public class MetadataInfo implements Serializable {
         public ServiceInfo() {}
 
         public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
-            this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
+            this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPort(), url.getPath(), null);
             this.url = url;
             Map<String, String> params = extractServiceParams(url, filters);
             // initialize method params caches.
@@ -469,11 +470,12 @@ public class MetadataInfo implements Serializable {
             this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
         }
 
-        public ServiceInfo(String name, String group, String version, String protocol, String path, Map<String, String> params) {
+        public ServiceInfo(String name, String group, String version, String protocol, int port, String path, Map<String, String> params) {
             this.name = name;
             this.group = group;
             this.version = version;
             this.protocol = protocol;
+            this.port = port;
             this.path = path;
             this.params = params == null ? new ConcurrentHashMap<>() : params;
 
@@ -641,6 +643,14 @@ public class MetadataInfo implements Serializable {
             this.protocol = protocol;
         }
 
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int port) {
+            this.port = port;
+        }
+
         public Map<String, String> getParams() {
             if (params == null) {
                 return Collections.emptyMap();
@@ -770,12 +780,13 @@ public class MetadataInfo implements Serializable {
                 && Objects.equals(this.getGroup(), serviceInfo.getGroup())
                 && Objects.equals(this.getName(), serviceInfo.getName())
                 && Objects.equals(this.getProtocol(), serviceInfo.getProtocol())
+                && Objects.equals(this.getPort(), serviceInfo.getPort())
                 && this.getParams().equals(serviceInfo.getParams());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol(), getParams());
+            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol(), getPort(), getParams());
         }
 
         @Override
@@ -789,6 +800,7 @@ public class MetadataInfo implements Serializable {
                 "group='" + group + "'," +
                 "version='" + version + "'," +
                 "protocol='" + protocol + "'," +
+                "port='" + port + "'," +
                 "params=" + params + "," +
                 "}";
         }
