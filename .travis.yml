@@ -18,6 +18,9 @@ branches:
   only:
     - '3.0'
 
+before_install:
+  - "wget https://archive.apache.org/dist/zookeeper/zookeeper-3.6.0/apache-zookeeper-3.6.0-bin.tar.gz -o ~/.tmp/zookeeper/apache-zookeeper-bin.tar.gz"
+
 before_script:
   - rm -rf $HOME/.m2/repository/org/glassfish/javax.el/3.0.1-b08
 
