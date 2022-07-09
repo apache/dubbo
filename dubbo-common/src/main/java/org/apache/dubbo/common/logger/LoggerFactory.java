@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
+import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -39,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 public class LoggerFactory {
 
     private static final ConcurrentMap<String, FailsafeLogger> LOGGERS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, FailsafeErrorTypeAwareLogger> ERROR_TYPE_AWARE_LOGGERS = new ConcurrentHashMap<>();
     private static volatile LoggerAdapter LOGGER_ADAPTER;
 
     // search common-used logging frameworks
@@ -125,6 +127,26 @@ public class LoggerFactory {
      */
     public static Logger getLogger(String key) {
         return LOGGERS.computeIfAbsent(key, k -> new FailsafeLogger(LOGGER_ADAPTER.getLogger(k)));
+    }
+
+    /**
+     * Get error type aware logger by Class object.
+     *
+     * @param key the returned logger will be named after clazz
+     * @return error type aware logger
+     */
+    public static ErrorTypeAwareLogger getErrorTypeAwareLogger(Class<?> key) {
+        return ERROR_TYPE_AWARE_LOGGERS.computeIfAbsent(key.getName(), name -> new FailsafeErrorTypeAwareLogger(LOGGER_ADAPTER.getLogger(name)));
+    }
+
+    /**
+     * Get error type aware logger by a String key.
+     *
+     * @param key the returned logger will be named after key
+     * @return error type aware logger
+     */
+    public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String key) {
+        return ERROR_TYPE_AWARE_LOGGERS.computeIfAbsent(key, k -> new FailsafeErrorTypeAwareLogger(LOGGER_ADAPTER.getLogger(k)));
     }
 
     /**

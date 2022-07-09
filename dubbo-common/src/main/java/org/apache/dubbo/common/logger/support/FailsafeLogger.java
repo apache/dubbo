@@ -34,6 +34,10 @@ public class FailsafeLogger implements Logger {
         FailsafeLogger.disabled = disabled;
     }
 
+    static boolean getDisabled() {
+        return disabled;
+    }
+
     public Logger getLogger() {
         return logger;
     }
