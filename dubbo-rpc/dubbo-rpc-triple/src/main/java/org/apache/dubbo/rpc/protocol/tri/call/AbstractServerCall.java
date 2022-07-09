@@ -301,7 +301,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
 
 
     public void close(TriRpcStatus status, Map<String, Object> attachments) {
-        executor.execute(() -> doClose(status, attachments));
+        doClose(status, attachments);
     }
 
     private void doClose(TriRpcStatus status, Map<String, Object> attachments) {
