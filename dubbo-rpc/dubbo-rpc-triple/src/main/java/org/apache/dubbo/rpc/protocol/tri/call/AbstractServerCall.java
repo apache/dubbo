@@ -124,8 +124,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         if (closed) {
             throw new IllegalStateException("Stream has already canceled");
         }
-        final Runnable sendMessage = () -> doSendMessage(message);
-        executor.execute(sendMessage);
+        // is already in executor
+        doSendMessage(message);
     }
 
     private void doSendMessage(Object message) {
