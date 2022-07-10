@@ -18,7 +18,6 @@
 package org.apache.dubbo.common.logger.support;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.ErrorType;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -28,133 +27,142 @@ import org.apache.dubbo.common.utils.NetUtils;
  */
 public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements ErrorTypeAwareLogger {
 
+    /**
+     * Mock address for formatting.
+     */
+    private static final String INSTRUCTIONS_URL = "https://dubbo.apache.org/faq/%s";
+
     public FailsafeErrorTypeAwareLogger(Logger logger) {
         super(logger);
     }
 
-    private String appendContextMessageWithInstructions(ErrorType errorType, String msg) {
+    private String appendContextMessageWithInstructions(String code, String cause, String extendedInformation, String msg) {
         return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() +
-            ", current host: " + NetUtils.getLocalHost() + ", error code: " + errorType.getCode() +
-            ". This may be caused by " + errorType.getCause() + ", " +
-            "go to " + errorType.getErrorUrl() + " to find instructions.";
+            ", current host: " + NetUtils.getLocalHost() + ", error code: " + code +
+            ". This may be caused by " + cause + ", " +
+            "go to " + getErrorUrl(code) + " to find instructions. " + extendedInformation;
+    }
+
+    private String getErrorUrl(String code) {
+        return String.format(INSTRUCTIONS_URL, code);
     }
 
     @Override
-    public void trace(ErrorType errorType, String msg) {
+    public void trace(String code, String cause, String extendedInformation, String msg) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().trace(appendContextMessageWithInstructions(errorType, msg));
+            getLogger().trace(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void trace(ErrorType errorType, String msg, Throwable e) {
+    public void trace(String code, String cause, String extendedInformation, String msg, Throwable e) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().trace(appendContextMessageWithInstructions(errorType, msg), e);
+            getLogger().trace(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void debug(ErrorType errorType, String msg) {
+    public void debug(String code, String cause, String extendedInformation, String msg) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().debug(appendContextMessageWithInstructions(errorType, msg));
+            getLogger().debug(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void debug(ErrorType errorType, String msg, Throwable e) {
+    public void debug(String code, String cause, String extendedInformation, String msg, Throwable e) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().debug(appendContextMessageWithInstructions(errorType, msg), e);
+            getLogger().debug(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void info(ErrorType errorType, String msg) {
+    public void info(String code, String cause, String extendedInformation, String msg) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().info(appendContextMessageWithInstructions(errorType, msg));
+            getLogger().info(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void info(ErrorType errorType, String msg, Throwable e) {
+    public void info(String code, String cause, String extendedInformation, String msg, Throwable e) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().info(appendContextMessageWithInstructions(errorType, msg), e);
+            getLogger().info(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void warn(ErrorType errorType, String msg) {
+    public void warn(String code, String cause, String extendedInformation, String msg) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().warn(appendContextMessageWithInstructions(errorType, msg));
+            getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void warn(ErrorType errorType, String msg, Throwable e) {
+    public void warn(String code, String cause, String extendedInformation, String msg, Throwable e) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().warn(appendContextMessageWithInstructions(errorType, msg), e);
+            getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void error(ErrorType errorType, String msg) {
+    public void error(String code, String cause, String extendedInformation, String msg) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().error(appendContextMessageWithInstructions(errorType, msg));
+            getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
         }
     }
 
     @Override
-    public void error(ErrorType errorType, String msg, Throwable e) {
+    public void error(String code, String cause, String extendedInformation, String msg, Throwable e) {
         if (getDisabled()) {
             return;
         }
 
         try {
-            getLogger().error(appendContextMessageWithInstructions(errorType, msg), e);
+            getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
         }
     }

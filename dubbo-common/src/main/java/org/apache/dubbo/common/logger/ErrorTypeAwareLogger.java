@@ -25,85 +25,105 @@ public interface ErrorTypeAwareLogger extends Logger {
     /**
      * Logs a message with trace log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      */
-    void trace(ErrorType errorType, String msg);
+    void trace(String code, String cause, String extendedInformation, String msg);
 
     /**
      * Logs a message with trace log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      * @param e log this cause
      */
-    void trace(ErrorType errorType, String msg, Throwable e);
+    void trace(String code, String cause, String extendedInformation, String msg, Throwable e);
 
     /**
      * Logs a message with debug log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      */
-    void debug(ErrorType errorType, String msg);
+    void debug(String code, String cause, String extendedInformation, String msg);
 
     /**
      * Logs a message with debug log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      * @param e log this cause
      */
-    void debug(ErrorType errorType, String msg, Throwable e);
+    void debug(String code, String cause, String extendedInformation, String msg, Throwable e);
 
     /**
      * Logs a message with info log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      */
-    void info(ErrorType errorType, String msg);
+    void info(String code, String cause, String extendedInformation, String msg);
 
     /**
      * Logs a message with info log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      * @param e log this cause
      */
-    void info(ErrorType errorType, String msg, Throwable e);
+    void info(String code, String cause, String extendedInformation, String msg, Throwable e);
 
     /**
      * Logs a message with warn log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      */
-    void warn(ErrorType errorType, String msg);
+    void warn(String code, String cause, String extendedInformation, String msg);
 
     /**
      * Logs a message with warn log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      * @param e log this cause
      */
-    void warn(ErrorType errorType, String msg, Throwable e);
+    void warn(String code, String cause, String extendedInformation, String msg, Throwable e);
 
     /**
      * Logs a message with error log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      */
-    void error(ErrorType errorType, String msg);
+    void error(String code, String cause, String extendedInformation, String msg);
 
     /**
      * Logs a message with error log level.
      *
-     * @param errorType error type of this log
+     * @param code error code
+     * @param cause error cause
+     * @param extendedInformation extended information
      * @param msg log this message
      * @param e log this cause
      */
-    void error(ErrorType errorType, String msg, Throwable e);
+    void error(String code, String cause, String extendedInformation, String msg, Throwable e);
 }

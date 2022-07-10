@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.logger.support;
 
-import org.apache.dubbo.common.logger.ErrorType;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -46,11 +45,11 @@ public class FailsafeErrorTypeAwareLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(anyString());
         doThrow(new RuntimeException()).when(failLogger).trace(anyString());
 
-        failsafeLogger.error(ErrorType.REGISTRY_CENTER_OFFLINE, "error");
-        failsafeLogger.warn(ErrorType.REGISTRY_CENTER_OFFLINE, "warn");
-        failsafeLogger.info(ErrorType.REGISTRY_CENTER_OFFLINE, "info");
-        failsafeLogger.debug(ErrorType.REGISTRY_CENTER_OFFLINE, "debug");
-        failsafeLogger.trace(ErrorType.REGISTRY_CENTER_OFFLINE, "info");
+        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error");
+        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn");
+        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info");
+        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug");
+        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "info");
 
         doThrow(new RuntimeException()).when(failLogger).error(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).warn(any(Throwable.class));
@@ -58,11 +57,11 @@ public class FailsafeErrorTypeAwareLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).trace(any(Throwable.class));
 
-        failsafeLogger.error(ErrorType.REGISTRY_CENTER_OFFLINE, "error", new Exception("error"));
-        failsafeLogger.warn(ErrorType.REGISTRY_CENTER_OFFLINE, "warn", new Exception("warn"));
-        failsafeLogger.info(ErrorType.REGISTRY_CENTER_OFFLINE, "info", new Exception("info"));
-        failsafeLogger.debug(ErrorType.REGISTRY_CENTER_OFFLINE, "debug", new Exception("debug"));
-        failsafeLogger.trace(ErrorType.REGISTRY_CENTER_OFFLINE, "trace", new Exception("trace"));
+        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error", new Exception("error"));
+        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn", new Exception("warn"));
+        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info", new Exception("info"));
+        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug", new Exception("debug"));
+        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "trace", new Exception("trace"));
     }
 
     @Test
@@ -70,11 +69,11 @@ public class FailsafeErrorTypeAwareLoggerTest {
         Logger successLogger = mock(Logger.class);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(successLogger);
 
-        failsafeLogger.error(ErrorType.REGISTRY_CENTER_OFFLINE, "error");
-        failsafeLogger.warn(ErrorType.REGISTRY_CENTER_OFFLINE, "warn");
-        failsafeLogger.info(ErrorType.REGISTRY_CENTER_OFFLINE, "info");
-        failsafeLogger.debug(ErrorType.REGISTRY_CENTER_OFFLINE, "debug");
-        failsafeLogger.trace(ErrorType.REGISTRY_CENTER_OFFLINE, "info");
+        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error");
+        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn");
+        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info");
+        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug");
+        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "info");
 
         verify(successLogger).error(anyString());
         verify(successLogger).warn(anyString());
@@ -82,11 +81,11 @@ public class FailsafeErrorTypeAwareLoggerTest {
         verify(successLogger).debug(anyString());
         verify(successLogger).trace(anyString());
 
-        failsafeLogger.error(ErrorType.REGISTRY_CENTER_OFFLINE, "error", new Exception("error"));
-        failsafeLogger.warn(ErrorType.REGISTRY_CENTER_OFFLINE, "warn", new Exception("warn"));
-        failsafeLogger.info(ErrorType.REGISTRY_CENTER_OFFLINE, "info", new Exception("info"));
-        failsafeLogger.debug(ErrorType.REGISTRY_CENTER_OFFLINE, "debug", new Exception("debug"));
-        failsafeLogger.trace(ErrorType.REGISTRY_CENTER_OFFLINE, "trace", new Exception("trace"));
+        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error", new Exception("error"));
+        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn", new Exception("warn"));
+        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info", new Exception("info"));
+        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug", new Exception("debug"));
+        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "trace", new Exception("trace"));
     }
 
     @Test
@@ -106,6 +105,7 @@ public class FailsafeErrorTypeAwareLoggerTest {
 
         ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailsafeErrorTypeAwareLoggerTest.class);
 
-        logger.error(ErrorType.REGISTRY_CENTER_OFFLINE, "error", new Exception("error"));
+        logger.error("1-1", "Registry center", "May be it's offline.",
+            "error message", new Exception("error"));
     }
 }
