@@ -42,7 +42,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
      * the cache for alive worker channel.
      * <ip:port, dubbo channel>
      */
-    private final Map<String, Channel> channels = new ConcurrentHashMap<String, Channel>();
+    private final Map<String, Channel> channels = new ConcurrentHashMap<>();
 
     private final URL url;
 
