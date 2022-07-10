@@ -20,15 +20,15 @@ public class ReactorServerCalls {
      *
      * @param request request
      * @param responseObserver responseObserver
-     * @param delegate service impl
+     * @param func service impl
      */
-    public static <TRequest, TResponse> void oneToMany (TRequest request,
-                                                        StreamObserver<TResponse> responseObserver,
-                                                        Function<Mono<TRequest>, Flux<TResponse>> delegate) {
+    public static <T, R> void oneToMany (T request,
+                                         StreamObserver<R> responseObserver,
+                                         Function<Mono<T>, Flux<R>> func) {
         try {
-            Flux<TResponse> response = delegate.apply(Mono.just(request));
-            TripleReactorSubscriber<TResponse> subscriber = response.subscribeWith(new TripleReactorSubscriber<>());
-            subscriber.subscribe((ServerCallToObserverAdapter<TResponse>) responseObserver);
+            Flux<R> response = func.apply(Mono.just(request));
+            TripleReactorSubscriber<R> subscriber = response.subscribeWith(new TripleReactorSubscriber<>());
+            subscriber.subscribe((ServerCallToObserverAdapter<R>) responseObserver);
         } catch (Throwable throwable) {
             responseObserver.onError(throwable);
         }

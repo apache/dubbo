@@ -1,8 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -10,7 +9,7 @@ import org.reactivestreams.Subscription;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-public class TripleReactorPublisher<T> implements Publisher<T>, StreamObserver<T>, Subscription {
+public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>, StreamObserver<T>, Subscription {
 
     private static final Subscription EMPTY_SUBSCRIPTION = new Subscription() {
         @Override
@@ -30,28 +29,34 @@ public class TripleReactorPublisher<T> implements Publisher<T>, StreamObserver<T
 
     private volatile Subscriber<? super T> downstream;
 
-    protected volatile CallStreamObserver<?> upstream;
-
     private volatile boolean cancelled;
 
     private volatile boolean done;
 
     private volatile Runnable shutdownHook;
 
-    private static final AtomicReferenceFieldUpdater<TripleReactorPublisher, Runnable> ON_SHUTDOWN =
-        AtomicReferenceFieldUpdater.newUpdater(TripleReactorPublisher.class, Runnable.class, "shutdownHook");
+    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, Runnable> ON_SHUTDOWN =
+        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, Runnable.class, "shutdownHook");
 
-    private static final AtomicIntegerFieldUpdater<TripleReactorPublisher> STATE =
-        AtomicIntegerFieldUpdater.newUpdater(TripleReactorPublisher.class, "state");
+    private static final AtomicIntegerFieldUpdater<AbstractTripleReactorPublisher> STATE =
+        AtomicIntegerFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, "state");
 
-    public TripleReactorPublisher(final ClientStreamObserver<?> upstream) {
-        this(upstream, null);
+    protected volatile ClientCallToObserverAdapter<?> upstream;
+    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, ClientCallToObserverAdapter> UPSTREAM =
+        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, ClientCallToObserverAdapter.class, "upstream");
+
+    public AbstractTripleReactorPublisher() {
+        this(null);
     }
 
-    public TripleReactorPublisher(final ClientStreamObserver<?> upstream, Runnable shutdownHook) {
-        this.upstream = upstream;
+    public AbstractTripleReactorPublisher(Runnable shutdownHook) {
         this.shutdownHook = shutdownHook;
-        upstream.disableAutoRequest();
+    }
+
+    protected void onSubscribe(final ClientCallToObserverAdapter<?> upstream) {
+        this.upstream = upstream;
+        // TODO need to uncomment
+//        upstream.disableAutoRequest();
     }
 
     @Override
@@ -110,9 +115,13 @@ public class TripleReactorPublisher<T> implements Publisher<T>, StreamObserver<T
 
     @Override
     public void request(long l) {
-        if (l > 0 && l <= Integer.MAX_VALUE) {
-            upstream.request((int) l);
-        }
+        // TODO the first time to call upstream#request will cause NPE !!!
+        // TODO think about delay request or ...
+//        if (l > 0 && l < Integer.MAX_VALUE) {
+//            upstream.request((int) l);
+//        } else if (l >= Integer.MAX_VALUE) {
+//            upstream.request(Integer.MAX_VALUE - 1);
+//        }
     }
 
     @Override

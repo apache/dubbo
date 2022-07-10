@@ -46,6 +46,8 @@ import org.apache.dubbo.rpc.protocol.tri.call.ObserverToClientCallListenerAdapte
 import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.reactive.ClientResponseObserver;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
@@ -181,7 +183,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
             responseObserver);
-        return call.start(metadata, listener);
+        StreamObserver<Object> streamObserver = call.start(metadata, listener);
+        if (responseObserver instanceof ClientResponseObserver) {
+            ((ClientResponseObserver<Object>) responseObserver).beforeStart((ClientCallToObserverAdapter<Object>) streamObserver);
+        }
+        return streamObserver;
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,

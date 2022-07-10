@@ -1,32 +1,32 @@
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.function.BiConsumer;
 
 public class ReactorClientCalls {
 
     private ReactorClientCalls() {
     }
 
+    // TODO oneToOne, ManyToOne, ManyToMany
+
     /**
      * Mono -> Flux
      *
      * TODO stub call this to bind responseStream to TripleReactorPublisher
-     * @param monoSource request mono
-     * @param delegate the function of call remote method
-     * @return a flux contains StreamObserver
      */
-    public static <TRequest, TResponse> Flux<TResponse> oneToMany(Mono<TRequest> monoSource,
-                                                                  BiConsumer<TRequest, StreamObserver<TResponse>> delegate) {
+    public static <TRequest, TResponse, TInvoker> Flux<TResponse> oneToMany(Invoker<TInvoker> invoker,
+                                                                            Mono<TRequest> monoRequest,
+                                                                            StubMethodDescriptor methodDescriptor) {
         try {
-            return monoSource
+            return monoRequest
                 .flatMapMany(request -> {
-                    TripleReactorPublisher<TResponse> consumerStreamObserver =
-                        new TripleReactorPublisher<>(null, null);
-                    delegate.accept(request, consumerStreamObserver);
+                    ClientTripleReactorPublisher<TResponse> consumerStreamObserver =
+                        new ClientTripleReactorPublisher<>();
+                    StubInvocationUtil.serverStreamCall(invoker, methodDescriptor , request, consumerStreamObserver);
                     return consumerStreamObserver;
                 });
         } catch (Throwable throwable) {

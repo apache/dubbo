@@ -3,10 +3,11 @@ package org.apache.dubbo.rpc.protocol.tri.reactive;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+import reactor.core.CoreSubscriber;
 
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-public class TripleReactorSubscriber<T> implements Subscriber<T> {
+public class TripleReactorSubscriber<T> implements Subscriber<T>, CoreSubscriber<T> {
 
     private volatile boolean isDone;
 
@@ -27,6 +28,7 @@ public class TripleReactorSubscriber<T> implements Subscriber<T> {
             throw new NullPointerException();
         }
         if (this.downstream == null && DOWNSTREAM.compareAndSet(this, null, downstream)) {
+            upstream.request(1);
             return;
         }
 
@@ -35,15 +37,20 @@ public class TripleReactorSubscriber<T> implements Subscriber<T> {
 
     @Override
     public void onSubscribe(Subscription subscription) {
-        if (this.upstream == null && UPSTREAM.compareAndSet(this, null, upstream)) {
-            upstream = subscription;
+        if (subscription == null) {
+            throw new NullPointerException();
+        }
+        if (this.upstream == null) {
+            UPSTREAM.compareAndSet(this, null, subscription);
         }
     }
 
     @Override
     public void onNext(T t) {
+        System.out.println(t);
         if (!isCanceled && !isDone) {
             downstream.onNext(t);
+            upstream.request(1);
         }
     }
 
