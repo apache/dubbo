@@ -107,5 +107,8 @@ public class FailsafeErrorTypeAwareLoggerTest {
 
         logger.error("1-1", "Registry center", "May be it's offline.",
             "error message", new Exception("error"));
+
+        logger.error("-1", "Registry center", "May be it's offline.",
+            "error message", new Exception("error"));
     }
 }

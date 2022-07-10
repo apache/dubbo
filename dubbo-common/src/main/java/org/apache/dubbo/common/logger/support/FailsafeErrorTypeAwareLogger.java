@@ -22,6 +22,8 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.utils.NetUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * A fail-safe (ignoring exception thrown by logger) wrapper of error type aware logger.
  */
@@ -30,7 +32,9 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
     /**
      * Mock address for formatting.
      */
-    private static final String INSTRUCTIONS_URL = "https://dubbo.apache.org/faq/%s";
+    private static final String INSTRUCTIONS_URL = "https://dubbo.apache.org/faq/%d/%d";
+
+    private static final Pattern ERROR_CODE_PATTERN = Pattern.compile("\\d+-\\d+");
 
     public FailsafeErrorTypeAwareLogger(Logger logger) {
         super(logger);
@@ -44,7 +48,27 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
     }
 
     private String getErrorUrl(String code) {
-        return String.format(INSTRUCTIONS_URL, code);
+
+        String trimmedString = code.trim();
+
+        if (!ERROR_CODE_PATTERN.matcher(code).matches()) {
+            error("Invalid error code: " + code + ", the format of error code is: X-X (where X is a number).");
+            return "";
+        }
+
+        String[] segments = trimmedString.split("[-]");
+
+        int[] errorCodeSegments = new int[2];
+
+        try {
+            errorCodeSegments[0] = Integer.parseInt(segments[0]);
+            errorCodeSegments[1] = Integer.parseInt(segments[1]);
+        } catch (NumberFormatException numberFormatException) {
+            error("Invalid error code: " + code + ", the format of error code is: X-X (where X is a number).",
+                numberFormatException);
+        }
+
+        return String.format(INSTRUCTIONS_URL, errorCodeSegments[0], errorCodeSegments[1]);
     }
 
     @Override
