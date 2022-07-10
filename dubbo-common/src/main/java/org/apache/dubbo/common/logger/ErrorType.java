@@ -24,7 +24,12 @@ package org.apache.dubbo.common.logger;
 public enum ErrorType {
 
     // Temporarily empty. The only one entry is for testing.
-    REGISTRY_CENTER_OFFLINE("registry center offline", "http://dubbo.apache.org/");
+    REGISTRY_CENTER_OFFLINE("1-1", "registry center", "http://dubbo.apache.org/");
+
+    /**
+     * Error code.
+     */
+    private final String code;
 
     /**
      * Error cause.
@@ -36,7 +41,8 @@ public enum ErrorType {
      */
     private final String errorUrl;
 
-    ErrorType(String cause, String errorUrl) {
+    ErrorType(String code, String cause, String errorUrl) {
+        this.code = code;
         this.cause = cause;
         this.errorUrl = errorUrl;
     }
@@ -47,5 +53,9 @@ public enum ErrorType {
 
     public String getErrorUrl() {
         return errorUrl;
+    }
+
+    public String getCode() {
+        return code;
     }
 }
