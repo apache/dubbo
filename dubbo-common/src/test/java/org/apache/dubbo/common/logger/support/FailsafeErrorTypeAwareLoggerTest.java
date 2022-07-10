@@ -47,9 +47,6 @@ public class FailsafeErrorTypeAwareLoggerTest {
 
         failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error");
         failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn");
-        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info");
-        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug");
-        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "info");
 
         doThrow(new RuntimeException()).when(failLogger).error(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).warn(any(Throwable.class));
@@ -59,9 +56,6 @@ public class FailsafeErrorTypeAwareLoggerTest {
 
         failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error", new Exception("error"));
         failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn", new Exception("warn"));
-        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info", new Exception("info"));
-        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug", new Exception("debug"));
-        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "trace", new Exception("trace"));
     }
 
     @Test
@@ -71,21 +65,12 @@ public class FailsafeErrorTypeAwareLoggerTest {
 
         failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error");
         failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn");
-        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info");
-        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug");
-        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "info");
 
         verify(successLogger).error(anyString());
         verify(successLogger).warn(anyString());
-        verify(successLogger).info(anyString());
-        verify(successLogger).debug(anyString());
-        verify(successLogger).trace(anyString());
 
         failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error", new Exception("error"));
         failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn", new Exception("warn"));
-        failsafeLogger.info("1-1", "Registry center", "May be it's offline.", "info", new Exception("info"));
-        failsafeLogger.debug("1-1", "Registry center", "May be it's offline.", "debug", new Exception("debug"));
-        failsafeLogger.trace("1-1", "Registry center", "May be it's offline.", "trace", new Exception("trace"));
     }
 
     @Test

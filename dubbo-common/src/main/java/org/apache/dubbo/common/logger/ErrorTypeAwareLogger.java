@@ -23,69 +23,6 @@ package org.apache.dubbo.common.logger;
 public interface ErrorTypeAwareLogger extends Logger {
 
     /**
-     * Logs a message with trace log level.
-     *
-     * @param code error code
-     * @param cause error cause
-     * @param extendedInformation extended information
-     * @param msg log this message
-     */
-    void trace(String code, String cause, String extendedInformation, String msg);
-
-    /**
-     * Logs a message with trace log level.
-     *
-     * @param code error code
-     * @param cause error cause
-     * @param extendedInformation extended information
-     * @param msg log this message
-     * @param e log this cause
-     */
-    void trace(String code, String cause, String extendedInformation, String msg, Throwable e);
-
-    /**
-     * Logs a message with debug log level.
-     *
-     * @param code error code
-     * @param cause error cause
-     * @param extendedInformation extended information
-     * @param msg log this message
-     */
-    void debug(String code, String cause, String extendedInformation, String msg);
-
-    /**
-     * Logs a message with debug log level.
-     *
-     * @param code error code
-     * @param cause error cause
-     * @param extendedInformation extended information
-     * @param msg log this message
-     * @param e log this cause
-     */
-    void debug(String code, String cause, String extendedInformation, String msg, Throwable e);
-
-    /**
-     * Logs a message with info log level.
-     *
-     * @param code error code
-     * @param cause error cause
-     * @param extendedInformation extended information
-     * @param msg log this message
-     */
-    void info(String code, String cause, String extendedInformation, String msg);
-
-    /**
-     * Logs a message with info log level.
-     *
-     * @param code error code
-     * @param cause error cause
-     * @param extendedInformation extended information
-     * @param msg log this message
-     * @param e log this cause
-     */
-    void info(String code, String cause, String extendedInformation, String msg, Throwable e);
-
-    /**
      * Logs a message with warn log level.
      *
      * @param code error code
