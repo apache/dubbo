@@ -51,7 +51,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
 
         String trimmedString = code.trim();
 
-        if (!ERROR_CODE_PATTERN.matcher(code).matches()) {
+        if (!ERROR_CODE_PATTERN.matcher(trimmedString).matches()) {
             error("Invalid error code: " + code + ", the format of error code is: X-X (where X is a number).");
             return "";
         }
