@@ -64,7 +64,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
-    private static Map<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
+    private static final Map<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
 
     public CuratorZookeeperClient(URL url) {
         super(url);
@@ -287,7 +287,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     protected CuratorZookeeperClient.NodeCacheListenerImpl createTargetDataListener(String path, DataListener listener) {
-        return new NodeCacheListenerImpl(client, listener, path);
+        return new NodeCacheListenerImpl(listener, path);
     }
 
     @Override
@@ -330,8 +330,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     static class NodeCacheListenerImpl implements NodeCacheListener {
 
-        private CuratorFramework client;
-
         private volatile DataListener dataListener;
 
         private String path;
@@ -339,8 +337,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         protected NodeCacheListenerImpl() {
         }
 
-        public NodeCacheListenerImpl(CuratorFramework client, DataListener dataListener, String path) {
-            this.client = client;
+        public NodeCacheListenerImpl(DataListener dataListener, String path) {
             this.dataListener = dataListener;
             this.path = path;
         }
@@ -405,14 +402,11 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             }
 
             if (childListener != null) {
-                Runnable task = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            childListener.childChanged(path, client.getChildren().usingWatcher(CuratorWatcherImpl.this).forPath(path));
-                        } catch (Exception e) {
-                            logger.warn("client get children error", e);
-                        }
+                Runnable task = () -> {
+                    try {
+                        childListener.childChanged(path, client.getChildren().usingWatcher(CuratorWatcherImpl.this).forPath(path));
+                    } catch (Exception e) {
+                        logger.warn("client get children error", e);
                     }
                 };
                 initExecutorIfNecessary();
@@ -425,7 +419,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     private class CuratorConnectionStateListener implements ConnectionStateListener {
         private final long UNKNOWN_SESSION_ID = -1L;
-
         private long lastSessionId;
         private int timeout;
         private int sessionExpireMs;
@@ -468,7 +461,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 }
             }
         }
-
     }
 
     /**

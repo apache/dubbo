@@ -80,7 +80,7 @@ public abstract class AbstractRetryTask implements TimerTask {
         this.url = url;
         this.registry = registry;
         this.taskName = taskName;
-        cancel = false;
+        this.cancel = false;
         this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryTimes = url.getParameter(REGISTRY_RETRY_TIMES_KEY, DEFAULT_REGISTRY_RETRY_TIMES);
     }
