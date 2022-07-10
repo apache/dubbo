@@ -34,7 +34,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
 
     private String appendContextMessageWithInstructions(ErrorType errorType, String msg) {
         return " [DUBBO] " + msg + ", dubbo version: " + Version.getVersion() +
-            ", current host: " + NetUtils.getLocalHost() + ", error code: " +
+            ", current host: " + NetUtils.getLocalHost() + ", error code: " + errorType.getCode() +
             ". This may be caused by " + errorType.getCause() + ", " +
             "go to " + errorType.getErrorUrl() + " to find instructions.";
     }
