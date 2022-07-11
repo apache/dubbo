@@ -17,16 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.ClientResponseObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
-
 /**
- * The publisher in client in OneToMany call.
+ * The subscriber in server in OneToMany call.
  */
-public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> implements ClientResponseObserver<T> {
-
-    @Override
-    public void beforeStart(ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
-        super.onSubscribe(clientCallToObserverAdapter);
-    }
+public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T>{
 }

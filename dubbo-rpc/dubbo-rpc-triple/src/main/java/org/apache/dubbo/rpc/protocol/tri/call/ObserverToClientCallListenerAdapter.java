@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.reactive.SafeRequestObserver;
+import org.apache.dubbo.rpc.protocol.tri.SafeRequestObserver;
 
 import java.util.Map;
 

@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.reactive;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.protocol.tri.ClientResponseObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.common.stream.StreamObserver;
 
 /**
- * The publisher in client in OneToMany call.
+ * The StreamObserver for downstream of a stream to start request safely.
  */
-public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> implements ClientResponseObserver<T> {
+public interface SafeRequestObserver<T> extends StreamObserver<T> {
 
-    @Override
-    public void beforeStart(ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
-        super.onSubscribe(clientCallToObserverAdapter);
-    }
+    /**
+     * In {@code startRequest}, {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver#request(int)} can be used safely,
+     * because the lower-level call has already started.
+     */
+    void startRequest();
 }

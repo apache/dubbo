@@ -1,52 +1,72 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.SafeRequestObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+/**
+ * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <p>
+ * 1. passing the data received by CallStreamObserver to Reactive consumer <br>
+ * 2. passing the request of Reactive API to CallStreamObserver
+ */
 public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
 
     private static final Subscription EMPTY_SUBSCRIPTION = new Subscription() {
         @Override
         public void cancel() {
         }
-
         @Override
         public void request(long n) {
         }
     };
 
-    private volatile int state;
-
-    private static final int UNSUBSCRIBED = 0;
-
-    private static final int SUBSCRIBED = 1;
-
+    // accumulate the number of un-requested
     private static final AtomicLong REQUESTED = new AtomicLong();
 
+    // weather CallStreamObserver#request can be called
     private static final AtomicBoolean CAN_REQUEST = new AtomicBoolean();
+
+    // weather publisher has been subscribed
+    private static final AtomicBoolean SUBSCRIBED = new AtomicBoolean();
 
     private volatile Subscriber<? super T> downstream;
 
-    private volatile boolean cancelled;
+    protected volatile ClientCallToObserverAdapter<?> upstream;
 
-    private volatile boolean done;
+    // cancel status
+    private volatile boolean isCancelled;
+
+    // complete status
+    private volatile boolean isDone;
 
     private volatile Runnable shutdownHook;
 
+    @SuppressWarnings("rawtypes")
     private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, Runnable> ON_SHUTDOWN =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, Runnable.class, "shutdownHook");
-
-    private static final AtomicIntegerFieldUpdater<AbstractTripleReactorPublisher> STATE =
-        AtomicIntegerFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, "state");
-
-    protected volatile ClientCallToObserverAdapter<?> upstream;
-    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, ClientCallToObserverAdapter> UPSTREAM =
-        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, ClientCallToObserverAdapter.class, "upstream");
 
     public AbstractTripleReactorPublisher() {
         this(null);
@@ -63,7 +83,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     @Override
     public void onNext(T data) {
-        if (done || cancelled) {
+        if (isDone || isCancelled) {
             return;
         }
 
@@ -72,20 +92,20 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     @Override
     public void onError(Throwable throwable) {
-        if (done || cancelled) {
+        if (isDone || isCancelled) {
             return;
         }
         downstream.onError(throwable);
-        done = true;
+        isDone = true;
         doPostShutdown();
     }
 
     @Override
     public void onCompleted() {
-        if (done || cancelled) {
+        if (isDone || isCancelled) {
             return;
         }
-        done = true;
+        isDone = true;
         doPostShutdown();
     }
 
@@ -103,10 +123,10 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
             throw new NullPointerException();
         }
 
-        if (state == UNSUBSCRIBED && STATE.compareAndSet(this, UNSUBSCRIBED, SUBSCRIBED)) {
+        if (SUBSCRIBED.compareAndSet(false, true)) {
             subscriber.onSubscribe(this);
             this.downstream = subscriber;
-            if (cancelled) {
+            if (isCancelled) {
                 this.downstream = null;
             }
         } else {
@@ -117,7 +137,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     @Override
     public void request(long l) {
-        if (CAN_REQUEST.get()) {
+        if (SUBSCRIBED.get() && CAN_REQUEST.get()) {
             upstream.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
         } else {
             REQUESTED.getAndAdd(l);
@@ -134,10 +154,10 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     @Override
     public void cancel() {
-        if (cancelled) {
+        if (isCancelled) {
             return;
         }
-        cancelled = true;
+        isCancelled = true;
         doPostShutdown();
     }
 }

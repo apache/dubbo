@@ -47,7 +47,6 @@ import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.reactive.ClientResponseObserver;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
