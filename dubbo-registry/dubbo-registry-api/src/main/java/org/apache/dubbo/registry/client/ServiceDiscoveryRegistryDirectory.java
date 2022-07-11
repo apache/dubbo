@@ -42,11 +42,13 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -381,7 +383,26 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
-        return invokers;
+        List<Invoker<T>> mergedInvokers = new ArrayList<>();
+        Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
+        for (Invoker<T> invoker : invokers) {
+            String group = invoker.getUrl().getGroup("");
+            groupMap.computeIfAbsent(group, k -> new ArrayList<>());
+            groupMap.get(group).add(invoker);
+        }
+
+        if (groupMap.size() == 1) {
+            mergedInvokers.addAll(groupMap.values().iterator().next());
+        } else if (groupMap.size() > 1) {
+            for (List<Invoker<T>> groupList : groupMap.values()) {
+                StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
+                staticDirectory.buildRouterChain();
+                mergedInvokers.add(cluster.join(staticDirectory, false));
+            }
+        } else {
+            mergedInvokers = invokers;
+        }
+        return mergedInvokers;
     }
 
     /**
