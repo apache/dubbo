@@ -29,9 +29,9 @@ public interface ExtensionInjector extends ExtensionAccessorAware {
      * @param name object name.
      * @return object instance.
      */
-    <T> T getInstance(Class<T> type, String name);
+    <T> T getInstance(final Class<T> type, final String name);
 
     @Override
-    default void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+    default void setExtensionAccessor(final ExtensionAccessor extensionAccessor) {
     }
 }
