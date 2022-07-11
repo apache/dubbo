@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -124,6 +125,26 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getServiceKey() {
         return RpcContext.getServiceContext().getServiceKey();
+    }
+
+    @Override
+    public URL setProtocol(String protocol) {
+        return new ServiceConfigURL(protocol, getUsername(), getPassword(), getHost(), getPort(), getPath(), getParameters(), attributes);
+    }
+
+    @Override
+    public URL setHost(String host) {
+        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), host, getPort(), getPath(), getParameters(), attributes);
+    }
+
+    @Override
+    public URL setPort(int port) {
+        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), getHost(), port, getPath(), getParameters(), attributes);
+    }
+
+    @Override
+    public URL setPath(String path) {
+        return new ServiceConfigURL(getProtocol(), getUsername(), getPassword(), getHost(), getPort(), path, getParameters(), attributes);
     }
 
     @Override
