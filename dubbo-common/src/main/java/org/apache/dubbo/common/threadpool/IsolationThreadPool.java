@@ -18,7 +18,6 @@ package org.apache.dubbo.common.threadpool;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.concurrent.Executor;
@@ -28,7 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 /**
  * IsolationThreadPool
  */
-@SPI(value = "isolation", scope = ExtensionScope.FRAMEWORK)
+@SPI(value = "isolation")
 public interface IsolationThreadPool {
 
     /**

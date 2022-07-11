@@ -33,7 +33,7 @@ public class DefaultExecutorRepositoryFactory implements ExecutorRepositoryFacto
 
     @Override
     public ExecutorRepository getExecutorRepository(URL url) {
-        String port = String.valueOf(url.getPort());
-        return defaultRepositoryMap.computeIfAbsent(port, key -> new DefaultExecutorRepository(url));
+        String port = String.valueOf(url.getUrlAddress());
+        return defaultRepositoryMap.computeIfAbsent(port, key -> new DefaultExecutorRepository(url.getOrDefaultApplicationModel()));
     }
 }

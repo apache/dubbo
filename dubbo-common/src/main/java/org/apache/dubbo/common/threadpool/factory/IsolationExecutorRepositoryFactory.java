@@ -33,7 +33,7 @@ public class IsolationExecutorRepositoryFactory implements ExecutorRepositoryFac
 
     @Override
     public ExecutorRepository getExecutorRepository(URL url) {
-        String port = String.valueOf(url.getPort());
+        String port = String.valueOf(url.getUrlAddress());
         return isolationRepositoryMap.computeIfAbsent(port, key -> new IsolationExecutorRepository(url));
     }
 }
