@@ -6,10 +6,9 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
-import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.atomic.*;
 
-public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>, StreamObserver<T>, Subscription {
+public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
 
     private static final Subscription EMPTY_SUBSCRIPTION = new Subscription() {
         @Override
@@ -26,6 +25,10 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     private static final int UNSUBSCRIBED = 0;
 
     private static final int SUBSCRIBED = 1;
+
+    private static final AtomicLong REQUESTED = new AtomicLong();
+
+    private static final AtomicBoolean CAN_REQUEST = new AtomicBoolean();
 
     private volatile Subscriber<? super T> downstream;
 
@@ -55,8 +58,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     protected void onSubscribe(final ClientCallToObserverAdapter<?> upstream) {
         this.upstream = upstream;
-        // TODO need to uncomment
-//        upstream.disableAutoRequest();
+        upstream.disableAutoRequest();
     }
 
     @Override
@@ -115,13 +117,19 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     @Override
     public void request(long l) {
-        // TODO the first time to call upstream#request will cause NPE !!!
-        // TODO think about delay request or ...
-//        if (l > 0 && l < Integer.MAX_VALUE) {
-//            upstream.request((int) l);
-//        } else if (l >= Integer.MAX_VALUE) {
-//            upstream.request(Integer.MAX_VALUE - 1);
-//        }
+        if (CAN_REQUEST.get()) {
+            upstream.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
+        } else {
+            REQUESTED.getAndAdd(l);
+        }
+    }
+
+    @Override
+    public void startRequest() {
+        if (CAN_REQUEST.compareAndSet(false, true)) {
+            long count = REQUESTED.get();
+            upstream.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
+        }
     }
 
     @Override

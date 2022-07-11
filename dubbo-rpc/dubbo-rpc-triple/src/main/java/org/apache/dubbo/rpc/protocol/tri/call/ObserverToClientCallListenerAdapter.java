@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.reactive.SafeRequestObserver;
 
 import java.util.Map;
 
@@ -53,6 +54,10 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
         this.call = call;
         if (call.isAutoRequest()) {
             call.request(1);
+        }
+
+        if (delegate instanceof SafeRequestObserver) {
+            ((SafeRequestObserver<Object>) delegate).startRequest();
         }
     }
 }

@@ -16,7 +16,6 @@ public class ReactorClientCalls {
     /**
      * Mono -> Flux
      *
-     * TODO stub call this to bind responseStream to TripleReactorPublisher
      */
     public static <TRequest, TResponse, TInvoker> Flux<TResponse> oneToMany(Invoker<TInvoker> invoker,
                                                                             Mono<TRequest> monoRequest,
