@@ -49,17 +49,16 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
     // this handler will be bind to channelWithHandler and will be updated after recognizing
     private final ChannelHandler handler;
 
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
         if (channel == null) {
             return;
         }else {
             channels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
         }
 
-        channel.connected(channel);
+        handler.connected(channel);
 
         if (logger.isInfoEnabled()) {
             logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress() + " is established.");
@@ -68,12 +67,12 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
         try {
             channels.remove(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
-            channel.disconnected(channel);
+            handler.disconnected(channel);
         } finally {
-            NettyChannelWithHandler.removeChannel(ctx.channel());
+            PuNettyChannel.removeChannel(ctx.channel());
         }
 
         if (logger.isInfoEnabled()) {
@@ -83,31 +82,27 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), handler);
-        if (channel.getUrl() == null) {
-            return;
-        }
-        channel.received(channel, msg);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        handler.received(channel, msg);
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
-        NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), handler);
-        channel.sent(channel, msg);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        handler.sent(channel, msg);
     }
-
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         // server will close channel when server don't receive any heartbeat from client util timeout.
         if (evt instanceof IdleStateEvent) {
-            NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), handler);
+            PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
             try {
                 logger.info("IdleStateEvent triggered, close channel " + channel);
                 channel.close();
             } finally {
-                NettyChannelWithHandler.removeChannelIfDisconnected(ctx.channel());
+                PuNettyChannel.removeChannelIfDisconnected(ctx.channel());
             }
         }
         super.userEventTriggered(ctx, evt);
@@ -117,11 +112,11 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
         throws Exception {
-        NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
         try {
-            channel.caught(channel, cause);
+            handler.caught(channel, cause);
         } finally {
-            NettyChannelWithHandler.removeChannelIfDisconnected(ctx.channel());
+            PuNettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
     }
 }

@@ -36,37 +36,40 @@ public class PortUnificationServerHandlerDelegate implements ChannelHandlerDeleg
         PortUnificationServerHandlerDelegate.class);
 
     // inner handler of this wrapper
-    private ChannelHandler handler;
+    private final ConcurrentMap<URL, ChannelHandler> urlChannelHandlerConcurrentMap;
 
     public final List<NewWireProtocol> protocols;
     public final ConcurrentMap<NewWireProtocol, URL> wireProtocolURLConcurrentMap;
 
     public PortUnificationServerHandlerDelegate(List<NewWireProtocol> protocols,
                                                 ConcurrentMap<NewWireProtocol, URL> wireProtocolURLConcurrentMap,
-                                                ChannelHandler handler) {
+                                                ConcurrentMap<URL, ChannelHandler> urlChannelHandlerConcurrentMap) {
         this.protocols = protocols;
-        this.handler = handler;
+        this.urlChannelHandlerConcurrentMap = urlChannelHandlerConcurrentMap;
         this.wireProtocolURLConcurrentMap = wireProtocolURLConcurrentMap;
     }
 
     @Override
     public void connected(Channel channel) throws RemotingException {
         if(channel.getUrl() != null) {
-            handler.connected(channel);
+           this.urlChannelHandlerConcurrentMap.get(channel.getUrl())
+               .connected(channel);
         }
     }
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
         if(channel.getUrl() != null) {
-            handler.disconnected(channel);
+            this.urlChannelHandlerConcurrentMap.get(channel.getUrl())
+                .disconnected(channel);
         }
     }
 
     @Override
     public void sent(Channel channel, Object message) throws RemotingException {
         if(channel.getUrl() != null) {
-            handler.sent(channel, message);
+            this.urlChannelHandlerConcurrentMap.get(channel.getUrl())
+                .sent(channel, message);
         }
     }
 
@@ -74,46 +77,50 @@ public class PortUnificationServerHandlerDelegate implements ChannelHandlerDeleg
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
         // message in this method should be a ChannelBuffer
-        LOGGER.debug("trigger handler delegate for wire protocol ");
-        if (message instanceof ChannelBuffer) {
-            ChannelBuffer in = (ChannelBuffer) message;
-            if (in.readableBytes() < 5) {
-                return;
-            }
-
-            for (final NewWireProtocol protocol : protocols) {
-                in.markReaderIndex();
-                final NewProtocolDetector.Result result = protocol.detector().detect((ChannelWithHandler) channel, in);
-                in.resetReaderIndex();
-                switch (result) {
-                    case UNRECOGNIZED:
-                        continue;
-                    case RECOGNIZED:
-                        URL local_url = wireProtocolURLConcurrentMap.get(protocol);
-                        //!todo here may need pass new handler of this URL to configServerPipeline
-                        protocol.configServerPipeline(local_url, (ChannelWithHandler) channel);
-                        // trigger connected event
-                        // this event won't be triggered by nio framework,
-                        // but this event is needed by protocols(such as Dubbo protocol)
-                        ((ChannelWithHandler) channel).connected(channel);
-
-                        return;
-                    case NEED_MORE_DATA:
-                        return;
-                    default:
-                        return;
+        if(channel.getUrl() == null) {
+            LOGGER.debug("trigger handler delegate for wire protocol ");
+            if (message instanceof ChannelBuffer) {
+                ChannelBuffer in = (ChannelBuffer) message;
+                if (in.readableBytes() < 5) {
+                    return;
                 }
+
+                for (final NewWireProtocol protocol : protocols) {
+                    in.markReaderIndex();
+                    final NewProtocolDetector.Result result = protocol.detector().detect(channel, in);
+                    in.resetReaderIndex();
+                    switch (result) {
+                        case UNRECOGNIZED:
+                            continue;
+                        case RECOGNIZED:
+                            URL local_url = wireProtocolURLConcurrentMap.get(protocol);
+                            //!todo here may need pass new handler of this URL to configServerPipeline
+                            protocol.configServerPipeline(local_url, channel);
+                            // trigger connected event
+                            // this event won't be triggered by nio framework,
+                            // but this event is needed by protocols(such as Dubbo protocol)
+                            this.connected(channel);
+                            return;
+                        case NEED_MORE_DATA:
+                            return;
+                        default:
+                            return;
+                    }
+                }
+                byte[] preface = new byte[in.readableBytes()];
+                in.readBytes(preface);
+
+                LOGGER.error(String.format("Can not recognize protocol from downstream=%s . "
+                        + "preface=%s protocols=%s", channel.getRemoteAddress(),
+                    Bytes.bytes2hex(preface)));
+
+                // Unknown protocol; discard everything and close the connection.
+                in.clear();
+                channel.close();
             }
-            byte[] preface = new byte[in.readableBytes()];
-            in.readBytes(preface);
-
-            LOGGER.error(String.format("Can not recognize protocol from downstream=%s . "
-                    + "preface=%s protocols=%s", channel.getRemoteAddress(),
-                Bytes.bytes2hex(preface)));
-
-            // Unknown protocol; discard everything and close the connection.
-            in.clear();
-            channel.close();
+        }else {
+            this.urlChannelHandlerConcurrentMap.get(channel.getUrl())
+                .received(channel, message);
         }
     }
 
@@ -124,6 +131,6 @@ public class PortUnificationServerHandlerDelegate implements ChannelHandlerDeleg
 
     @Override
     public ChannelHandler getHandler() {
-        return handler;
+        return this;
     }
 }

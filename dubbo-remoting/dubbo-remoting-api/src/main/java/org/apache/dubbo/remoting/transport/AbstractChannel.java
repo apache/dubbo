@@ -31,6 +31,10 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
         super(url, handler);
     }
 
+    public AbstractChannel(ChannelHandler handler) {
+        super(handler);
+    }
+
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (isClosed()) {

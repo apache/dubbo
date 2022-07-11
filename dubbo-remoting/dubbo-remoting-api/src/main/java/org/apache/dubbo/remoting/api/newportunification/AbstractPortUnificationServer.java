@@ -45,10 +45,14 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         return wireProtocolURLConcurrentMap;
     }
 
+    public ConcurrentMap<URL, ChannelHandler> getUrlChannelHandlerConcurrentMap() {
+        return urlChannelHandlerConcurrentMap;
+    }
     private final List<NewWireProtocol> protocols;
 
     private final List<URL> urls;
     private final ConcurrentMap<NewWireProtocol, URL> wireProtocolURLConcurrentMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<URL, ChannelHandler> urlChannelHandlerConcurrentMap = new ConcurrentHashMap<>();
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -59,14 +63,16 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         final NewWireProtocol wp = ExtensionLoader.getExtensionLoader(NewWireProtocol.class).getExtension(url.getProtocol());
         this.protocols.add(wp);
         this.wireProtocolURLConcurrentMap.put(wp, url);
+        this.urlChannelHandlerConcurrentMap.put(url, handler);
     }
 
 
-    public void AddNewUrl(URL url) {
+    public void AddNewUrl(URL url, ChannelHandler handler) {
         this.urls.add(url);
         final NewWireProtocol wp = ExtensionLoader.getExtensionLoader(NewWireProtocol.class).getExtension(url.getProtocol());
 
         this.wireProtocolURLConcurrentMap.put(wp, url);
         this.protocols.add(wp);
+        this.urlChannelHandlerConcurrentMap.put(url, handler);
     }
 }

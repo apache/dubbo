@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.netty4.portunification;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -25,15 +26,13 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.api.newportunification.AbstractPortUnificationServer;
+import org.apache.dubbo.remoting.api.newportunification.NewWireProtocol;
 import org.apache.dubbo.remoting.api.newportunification.PortUnificationServerHandlerDelegate;
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -95,59 +94,19 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
 
-    private class InternalEncoder extends MessageToByteEncoder {
+    @Override
+    public void AddNewUrl(URL url, ChannelHandler handler){
+        // update some url config, port and others
+        url = ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME);
 
-        @Override
-        protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {
-            ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
-            // channel should have been created here,
-            // so passing null pointer to handler has no effect
-            NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), null);
-            if(channel.getUrl() != null) {
-                getChannelCodec(channel.getUrl()).encode(channel, buffer, msg);
-            }
-        }
+        this.getUrls().add(url);
+        final NewWireProtocol wp = ExtensionLoader.getExtensionLoader(NewWireProtocol.class).getExtension(url.getProtocol());
+
+        this.getWireProtocolURLConcurrentMap().put(wp, url);
+        this.getProtocols().add(wp);
+        this.getUrlChannelHandlerConcurrentMap().put(url, handler);
     }
 
-    private class InternalDecoder extends ByteToMessageDecoder {
-
-        @Override
-        protected void decode(ChannelHandlerContext ctx, ByteBuf input, List<Object> out) throws Exception {
-
-            ChannelBuffer message = new NettyBackedChannelBuffer(input);
-            // channel should have been created here,
-            // so passing null pointer to handler has no effect
-            NettyChannelWithHandler channel = NettyChannelWithHandler.getOrAddChannel(ctx.channel(), null);
-            if(channel.getUrl() == null) {
-                // 这里调用的应该是检测协议的方法
-                // here channel call portUnificationServerHandlerDelegate
-                channel.received(channel, message);
-                if(channel.getUrl() == null) {
-                    return;
-                }
-                // if url is not null, protocol recognition process is finished
-                // time to decode,
-            }
-            Codec2 codec = getChannelCodec(channel.getUrl());
-            // decode object.
-            do {
-                int saveReaderIndex = message.readerIndex();
-                Object msg = codec.decode(channel, message);
-                if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
-                    message.readerIndex(saveReaderIndex);
-                    break;
-                } else {
-                    //is it possible to go here ?
-                    if (saveReaderIndex == message.readerIndex()) {
-                        throw new IOException("Decode without read data.");
-                    }
-                    if (msg != null) {
-                        out.add(msg);
-                    }
-                }
-            } while (message.readable());
-        }
-    }
 
     protected void initServerBootstrap() {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
@@ -167,16 +126,12 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     PortUnificationServerHandlerDelegate handler = new PortUnificationServerHandlerDelegate(
                         NettyPortUnificationServer.this.getProtocols(),
                         NettyPortUnificationServer.this.getWireProtocolURLConcurrentMap(),
-                        NettyPortUnificationServer.this
+                        NettyPortUnificationServer.this.getUrlChannelHandlerConcurrentMap()
                     );
 
                     final NettyPortUnificationServerHandler serverHandler =
                         new NettyPortUnificationServerHandler(handler);
-                    // message in pu-handler decoder
-                    // message out encoder pu-handler
                     ch.pipeline()
-                        .addLast("encoder", new NettyPortUnificationServer.InternalEncoder())
-                        .addLast("decoder", new NettyPortUnificationServer.InternalDecoder())
                         .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
                         .addLast("pu-handler", serverHandler);
                 }

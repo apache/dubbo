@@ -1,26 +1,10 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.dubbo.remoting.transport.netty4.portunification;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.newportunification.ChannelWithHandler;
+import org.apache.dubbo.remoting.transport.AbstractChannel;
 import org.apache.dubbo.remoting.utils.PayloadDropper;
 
 import io.netty.channel.Channel;
@@ -35,13 +19,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
-public class NettyChannelWithHandler extends ChannelWithHandler {
-    private static final Logger logger = LoggerFactory.getLogger(NettyChannelWithHandler.class);
+public class PuNettyChannel extends AbstractChannel {
+    private static final Logger logger = LoggerFactory.getLogger(PuNettyChannel.class);
     /**
      * the cache for netty channel and dubbo channel
      */
-    private static final ConcurrentMap<Channel, NettyChannelWithHandler> CHANNEL_MAP = new ConcurrentHashMap
-        <Channel, NettyChannelWithHandler>();
+    private static final ConcurrentMap<Channel, PuNettyChannel> CHANNEL_MAP = new ConcurrentHashMap<>();
     /**
      * netty channel
      */
@@ -51,9 +34,54 @@ public class NettyChannelWithHandler extends ChannelWithHandler {
 
     private final AtomicBoolean active = new AtomicBoolean(false);
 
-    public NettyChannelWithHandler(Channel channel, ChannelHandler handler) {
-        super(handler); // bind this handler to Class ChannelWithHandler
+    public PuNettyChannel(Channel channel, ChannelHandler handler) {
+        super(handler);
         this.channel = channel;
+    }
+
+    static PuNettyChannel getOrAddChannel(Channel ch, ChannelHandler handler) {
+        if (ch == null) {
+            return null;
+        }
+        PuNettyChannel ret = CHANNEL_MAP.get(ch);
+        if (ret == null) {
+            PuNettyChannel nettyChannel = new PuNettyChannel(ch, handler);
+            if (ch.isActive()) {
+                nettyChannel.markActive(true);
+                ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);
+            }
+            if (ret == null) {
+                ret = nettyChannel;
+            }
+        }
+        return ret;
+    }
+
+    static void removeChannelIfDisconnected(Channel ch) {
+        if (ch != null && !ch.isActive()) {
+            PuNettyChannel nettyChannel = CHANNEL_MAP.remove(ch);
+            if (nettyChannel != null) {
+                nettyChannel.markActive(false);
+            }
+        }
+    }
+
+    static void removeChannel(Channel ch) {
+        if (ch != null) {
+            PuNettyChannel nettyChannel = CHANNEL_MAP.remove(ch);
+            if (nettyChannel != null) {
+                nettyChannel.markActive(false);
+            }
+        }
+    }
+
+    public void markActive(boolean b) {
+        active.set(b);
+    }
+
+    @Override
+    public InetSocketAddress getLocalAddress() {
+        return (InetSocketAddress) channel.localAddress();
     }
 
     @Override
@@ -66,23 +94,33 @@ public class NettyChannelWithHandler extends ChannelWithHandler {
         return !isClosed() && active.get();
     }
 
-    public boolean isActive() {
-        return active.get();
+    @Override
+    public boolean hasAttribute(String key) {
+        return attributes.containsKey(key);
     }
-
-    public void markActive(boolean isActive) {
-        active.set(isActive);
-    }
-
 
     @Override
-    public InetSocketAddress getLocalAddress() {
-        return (InetSocketAddress) channel.localAddress();
+    public Object getAttribute(String key) {
+        return attributes.get(key);
     }
 
+    @Override
+    public void setAttribute(String key, Object value) {
+        if (value == null) {
+            attributes.remove(key);
+        } else {
+            attributes.put(key, value);
+        }
+    }
+
+    @Override
+    public void removeAttribute(String key) {
+        attributes.remove(key);
+    }
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
+        // whether the channel is closed
         super.send(message, sent);
 
         boolean success = true;
@@ -105,43 +143,6 @@ public class NettyChannelWithHandler extends ChannelWithHandler {
         if (!success) {
             throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
                 + "in timeout(" + timeout + "ms) limit");
-        }
-    }
-
-    //  create channel if it not exists, and bind handler to channel
-    static NettyChannelWithHandler getOrAddChannel(Channel ch, ChannelHandler handler) {
-        if (ch == null) {
-            return null;
-        }
-        NettyChannelWithHandler ret = CHANNEL_MAP.get(ch);
-        if (ret == null) {
-            NettyChannelWithHandler nettyChannel = new NettyChannelWithHandler(ch, handler);
-            if (ch.isActive()) {
-                nettyChannel.markActive(true);
-                ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);
-            }
-            if (ret == null) {
-                ret = nettyChannel;
-            }
-        }
-        return ret;
-    }
-
-    static void removeChannelIfDisconnected(Channel ch) {
-        if (ch != null && !ch.isActive()) {
-            NettyChannelWithHandler nettyChannel = CHANNEL_MAP.remove(ch);
-            if (nettyChannel != null) {
-                nettyChannel.markActive(false);
-            }
-        }
-    }
-
-    static void removeChannel(Channel ch) {
-        if (ch != null) {
-            NettyChannelWithHandler nettyChannel = CHANNEL_MAP.remove(ch);
-            if (nettyChannel != null) {
-                nettyChannel.markActive(false);
-            }
         }
     }
 
@@ -174,39 +175,13 @@ public class NettyChannelWithHandler extends ChannelWithHandler {
     }
 
     @Override
-    public boolean hasAttribute(String key) {
-        return attributes.containsKey(key);
-    }
-
-    @Override
-    public Object getAttribute(String key) {
-        return attributes.get(key);
-    }
-
-
-    @Override
-    public void setAttribute(String key, Object value) {
-        // The null value is not allowed in the ConcurrentHashMap.
-        if (value == null) {
-            attributes.remove(key);
-        } else {
-            attributes.put(key, value);
-        }
-    }
-
-    @Override
-    public void removeAttribute(String key) {
-        attributes.remove(key);
-    }
-
-
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((channel == null) ? 0 : channel.hashCode());
         return result;
     }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -220,7 +195,7 @@ public class NettyChannelWithHandler extends ChannelWithHandler {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        NettyChannelWithHandler other = (NettyChannelWithHandler) obj;
+        PuNettyChannel other = (PuNettyChannel) obj;
         if (channel == null) {
             if (other.channel != null) {
                 return false;
@@ -233,7 +208,6 @@ public class NettyChannelWithHandler extends ChannelWithHandler {
 
     @Override
     public String toString() {
-        return "NettyChannelWithHandler [channel=" + channel + "]";
+        return "PuNettyChannel [channel=" + channel + "]";
     }
-
 }
