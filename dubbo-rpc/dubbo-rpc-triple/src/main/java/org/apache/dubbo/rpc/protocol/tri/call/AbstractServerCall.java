@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
@@ -87,7 +86,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         Objects.requireNonNull(serviceDescriptor,
             "No service descriptor found for " + invoker.getUrl());
         this.invoker = invoker;
-        this.executor = new SerializingExecutor(executor);
+        // is already serialized in the stream, so we don't need to serialize it again.
+        this.executor = executor;
         this.frameworkModel = frameworkModel;
         this.serviceDescriptor = serviceDescriptor;
         this.serviceName = serviceName;
@@ -124,8 +124,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         if (closed) {
             throw new IllegalStateException("Stream has already canceled");
         }
-        final Runnable sendMessage = () -> doSendMessage(message);
-        executor.execute(sendMessage);
+        // is already in executor
+        doSendMessage(message);
     }
 
     private void doSendMessage(Object message) {
@@ -301,7 +301,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
 
 
     public void close(TriRpcStatus status, Map<String, Object> attachments) {
-        executor.execute(() -> doClose(status, attachments));
+        doClose(status, attachments);
     }
 
     private void doClose(TriRpcStatus status, Map<String, Object> attachments) {
