@@ -25,25 +25,24 @@ import org.apache.dubbo.common.extension.SPI;
  * SpiExtensionInjector
  */
 public class SpiExtensionInjector implements ExtensionInjector {
-    public static final String NAME = "spi";
-
     private ExtensionAccessor extensionAccessor;
 
     @Override
-    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+    public void setExtensionAccessor(final ExtensionAccessor extensionAccessor) {
         this.extensionAccessor = extensionAccessor;
     }
 
     @Override
-    public <T> T getInstance(Class<T> type, String name) {
-        if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
-            ExtensionLoader<T> loader = extensionAccessor.getExtensionLoader(type);
-            if (loader == null) {
-                return null;
-            }
-            if (!loader.getSupportedExtensions().isEmpty()) {
-                return loader.getAdaptiveExtension();
-            }
+    public <T> T getInstance(final Class<T> type, final String name) {
+        if (!type.isInterface() || !type.isAnnotationPresent(SPI.class)) {
+            return null;
+        }
+        ExtensionLoader<T> loader = extensionAccessor.getExtensionLoader(type);
+        if (loader == null) {
+            return null;
+        }
+        if (!loader.getSupportedExtensions().isEmpty()) {
+            return loader.getAdaptiveExtension();
         }
         return null;
     }
