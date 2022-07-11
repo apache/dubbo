@@ -40,7 +40,7 @@ public class DynamicChannelBuffer extends AbstractChannelBuffer {
             throw new NullPointerException("factory");
         }
         this.factory = factory;
-        buffer = factory.getBuffer(estimatedLength);
+        this.buffer = factory.getBuffer(estimatedLength);
     }
 
     @Override
@@ -49,12 +49,7 @@ public class DynamicChannelBuffer extends AbstractChannelBuffer {
             return;
         }
 
-        int newCapacity;
-        if (capacity() == 0) {
-            newCapacity = 1;
-        } else {
-            newCapacity = capacity();
-        }
+        int newCapacity = capacity() == 0 ? 1 : capacity();
         int minNewCapacity = writerIndex() + minWritableBytes;
         while (newCapacity < minNewCapacity) {
             newCapacity <<= 1;
