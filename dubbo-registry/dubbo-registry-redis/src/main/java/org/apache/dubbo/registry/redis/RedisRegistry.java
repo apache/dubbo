@@ -268,18 +268,6 @@ public class RedisRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-//                doNotify(redisClient.scan(service + PATH_SEPARATOR + ANY_VALUE), url, Collections.singletonList(listener));
-                //@tietang.wang  2022.06.29
-                // 原来为使用redis scan命令来扫描 /dubbo/com.xxx.yyy.XxxService/*的key
-                // 按照https://dubbo.apache.org/zh/docsv2.7/user/references/registry/redis/对redis注册中心的介绍
-                //只有/dubbo/com.xxx.yyy.XxxService/providers 和/dubbo/com.xxx.yyy.XxxService/consumers 2种可能性。
-                //在在使用ClusterRedisClient时，scan命令（参考：org.apache.dubbo.remoting.redis.jedis.ClusterRedisClient.scan）是迭代循环所有cluster node
-                // 来扫描每一个node，并合并扫描结果完成的，scan命令本来就很慢，使用ClusterRedisClient时会随着节点越多越慢
-                //我的场景中有6个节点，每次需要5~20秒的扫描时间，每次启动时很慢且卡在初始化reference阶段；或者泛化每接口第一次调用或者硬编码每接口第一次调用时，都会构建Reference，构建reference时花费了很多时间
-                //如果项目中service 接口很多时，有可能在启动或者重启后会导致worker线程阻塞而请求无法正常调用，目前在测试环境已经遇到了该现象，高并发请求时有可能引起雪奔，特别是存在dubbo http网关时的场景。
-                // 经过优化后，该场景在开发环境下从5~20秒性能提升至300~1000ms，提升5~20倍，基本上在300~1000ms即可构建好reference。
-                // 测试环境多线程（50线程）预创建48个reference需要，同机房1985ms（优化前9839ms）提升5倍，跨机房（同地域）3276ms（优化前35303ms）提升10倍。
-                // 本地环境（远程连接测试环境redis）多线程（50线程）预创建48个reference需要18288ms（优化前436235ms，约7分钟多，提升23倍）。
                 Set<String> keys = new HashSet<>();
                 String keyProviders = service + PATH_SEPARATOR + PROVIDERS_CATEGORY;
                 boolean existsProviders = redisClient.exists(keyProviders);
