@@ -175,7 +175,6 @@ public class ServiceInstancesChangedListener {
                 }
 
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName(), retryCount), 10_000L, TimeUnit.MILLISECONDS);
-                logger.warn("Address refresh try task submitted");
             }
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
@@ -528,9 +527,14 @@ public class ServiceInstancesChangedListener {
         @Override
         public void run() {
             retryPermission.release();
+
             if (retryCount < 3) {
                 ServiceInstancesChangedListener.this.onEvent(retryEvent);
+                logger.warn("Address refresh try task submitted, retryCount:" + retryCount);
+                return;
             }
+
+            logger.info("Address refresh try task retryCount threshold reached");
         }
     }
 
