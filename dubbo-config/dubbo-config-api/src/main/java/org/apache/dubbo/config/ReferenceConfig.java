@@ -247,7 +247,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     protected synchronized void init() {
-        if (initialized) {
+        if (initialized && ref !=null ) {
             return;
         }
         try {
