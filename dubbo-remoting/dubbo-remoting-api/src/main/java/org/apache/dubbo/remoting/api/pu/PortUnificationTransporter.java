@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api.newportunification;
+package org.apache.dubbo.remoting.api.pu;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
@@ -29,10 +29,10 @@ import org.apache.dubbo.remoting.RemotingServer;
 @SPI(value = "netty", scope = ExtensionScope.FRAMEWORK)
 public interface PortUnificationTransporter {
 
-    @Adaptive({Constants.PU_SERVER_KEY, Constants.PU_TRANSPORTER_KEY})
+    @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
     RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException;
 
-    @Adaptive({Constants.PU_CLIENT_KEY, Constants.PU_TRANSPORTER_KEY})
+    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     Client connect(URL url, ChannelHandler handler) throws RemotingException;
 
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4.portunification;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.api.WireProtocol;
-import org.apache.dubbo.remoting.api.newportunification.AbstractPortUnificationServer;
+import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -102,8 +102,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
 
-                    final NettyPortUnificationServerHandler serverHandler =
-                        new NettyPortUnificationServerHandler(NettyPortUnificationServer.this.getUrl(),NettyPortUnificationServer.this);
+                    final NettyServerHandler serverHandler =
+                        new NettyServerHandler(NettyPortUnificationServer.this.getUrl(),NettyPortUnificationServer.this);
                     ch.pipeline()
                         .addLast("negotiation-handler", serverHandler);
                 }
