@@ -29,32 +29,28 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
+import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.newportunification.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.newportunification.NewWireProtocol;
-import org.apache.dubbo.remoting.api.newportunification.PortUnificationServerHandlerDelegate;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GlobalEventExecutor;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -68,6 +64,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyPortUnificationServer.class);
 
+
+    private final DefaultChannelGroup channelGroup = new DefaultChannelGroup(
+        GlobalEventExecutor.INSTANCE);
     /**
      * the cache for alive worker channel.
      * <ip:port, dubbo channel>
@@ -120,20 +119,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
-                    // FIXME: should we use getTimeout()?
-                    int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-                    // 通过port统一的包装server自身的handler
-                    PortUnificationServerHandlerDelegate handler = new PortUnificationServerHandlerDelegate(
-                        NettyPortUnificationServer.this.getProtocols(),
-                        NettyPortUnificationServer.this.getWireProtocolURLConcurrentMap(),
-                        NettyPortUnificationServer.this.getUrlChannelHandlerConcurrentMap()
-                    );
 
                     final NettyPortUnificationServerHandler serverHandler =
-                        new NettyPortUnificationServerHandler(handler);
+                        new NettyPortUnificationServerHandler(NettyPortUnificationServer.this.getUrl(),NettyPortUnificationServer.this);
                     ch.pipeline()
-                        .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
-                        .addLast("pu-handler", serverHandler);
+                        .addLast("negotiation-handler", serverHandler);
                 }
             });
     }
@@ -164,8 +154,12 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 // unbind.
                 channel.close();
             }
+            channelGroup.close().await(serverShutdownTimeoutMills);
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
+        }
+        for (NewWireProtocol protocol: getProtocols()) {
+            protocol.close();
         }
         try {
             Collection<Channel> channels = getChannels();
@@ -201,7 +195,6 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             logger.warn(e.getMessage(), e);
         }
     }
-
 
 
     @Override

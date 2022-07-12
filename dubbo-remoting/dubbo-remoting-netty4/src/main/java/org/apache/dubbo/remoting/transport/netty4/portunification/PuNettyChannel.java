@@ -1,5 +1,6 @@
 package org.apache.dubbo.remoting.transport.netty4.portunification;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -34,18 +35,18 @@ public class PuNettyChannel extends AbstractChannel {
 
     private final AtomicBoolean active = new AtomicBoolean(false);
 
-    public PuNettyChannel(Channel channel, ChannelHandler handler) {
-        super(handler);
+    public PuNettyChannel(Channel channel, URL url, ChannelHandler handler) {
+        super(url, handler);
         this.channel = channel;
     }
 
-    static PuNettyChannel getOrAddChannel(Channel ch, ChannelHandler handler) {
+    static PuNettyChannel getOrAddChannel(Channel ch, URL url, ChannelHandler handler) {
         if (ch == null) {
             return null;
         }
         PuNettyChannel ret = CHANNEL_MAP.get(ch);
         if (ret == null) {
-            PuNettyChannel nettyChannel = new PuNettyChannel(ch, handler);
+            PuNettyChannel nettyChannel = new PuNettyChannel(ch, url, handler);
             if (ch.isActive()) {
                 nettyChannel.markActive(true);
                 ret = CHANNEL_MAP.putIfAbsent(ch, nettyChannel);

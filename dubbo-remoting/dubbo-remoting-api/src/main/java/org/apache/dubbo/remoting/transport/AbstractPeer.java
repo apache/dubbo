@@ -48,15 +48,6 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
         this.handler = handler;
     }
 
-    public AbstractPeer(ChannelHandler handler) {
-        // if is ok for assign null to a volatile var
-        if (handler == null) {
-            throw new IllegalArgumentException("handler == null");
-        }
-        this.url = null;
-        this.handler = handler;
-    }
-
     @Override
     public void send(Object message) throws RemotingException {
         send(message, url.getParameter(Constants.SENT_KEY, false));

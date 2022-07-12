@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4.portunification;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -42,16 +43,18 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
     }
 
 
-    public NettyPortUnificationServerHandler(ChannelHandler handler) {
+    public NettyPortUnificationServerHandler(URL url, ChannelHandler handler) {
+        this.url = url;
         this.handler = handler;
     }
 
     // this handler will be bind to channelWithHandler and will be updated after recognizing
     private final ChannelHandler handler;
 
+    private final URL url;
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         if (channel == null) {
             return;
         }else {
@@ -67,7 +70,7 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             channels.remove(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
             handler.disconnected(channel);
@@ -82,14 +85,14 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         handler.received(channel, msg);
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
-        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         handler.sent(channel, msg);
     }
 
@@ -97,7 +100,7 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         // server will close channel when server don't receive any heartbeat from client util timeout.
         if (evt instanceof IdleStateEvent) {
-            PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+            PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), url, handler);
             try {
                 logger.info("IdleStateEvent triggered, close channel " + channel);
                 channel.close();
@@ -112,7 +115,7 @@ public class NettyPortUnificationServerHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
         throws Exception {
-        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), handler);
+        PuNettyChannel channel = PuNettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
             handler.caught(channel, cause);
         } finally {
