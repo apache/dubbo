@@ -37,7 +37,7 @@ import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
- * Dubbbo Annotation Utilities Class
+ * Dubbo Annotation Utilities Class
  *
  * @see org.springframework.core.annotation.AnnotationUtils
  * @since 2.5.11

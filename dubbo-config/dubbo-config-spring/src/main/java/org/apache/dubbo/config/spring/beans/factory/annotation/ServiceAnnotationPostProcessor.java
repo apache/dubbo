@@ -89,7 +89,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
  * A {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes and annotated bean in java config classes.
- * It's also the infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbbo:annotation /&gt;
+ * It's also the infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbo:annotation /&gt;
  *
  *
  * @see AnnotationBeanDefinitionParser
