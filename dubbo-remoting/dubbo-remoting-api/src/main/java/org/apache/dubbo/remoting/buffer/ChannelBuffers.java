@@ -114,24 +114,6 @@ public final class ChannelBuffers {
         return true;
     }
 
-    public static boolean equals(ChannelBuffer bufferA, ChannelBuffer bufferB, int byteCount) {
-
-        int aIndex = bufferA.readerIndex();
-        int bIndex = bufferB.readerIndex();
-
-        for (int i = byteCount; i > 0; i--) {
-            if (bufferA.getByte(aIndex) != bufferB.getByte(bIndex)) {
-                return false;
-            }
-            aIndex++;
-            bIndex++;
-        }
-
-        return true;
-    }
-
-
-
     public static int hasCode(ChannelBuffer buffer) {
         final int aLen = buffer.readableBytes();
         final int byteCount = aLen & 7;
