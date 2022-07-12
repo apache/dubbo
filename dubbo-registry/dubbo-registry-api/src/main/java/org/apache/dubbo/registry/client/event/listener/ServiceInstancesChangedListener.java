@@ -174,7 +174,12 @@ public class ServiceInstancesChangedListener {
                     retryCount = ((RetryServiceInstancesChangedEvent) event).getRetryCount() + 1;
                 }
 
-                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName(), retryCount), 10_000L, TimeUnit.MILLISECONDS);
+                if (retryCount < 3) {
+                    retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName(), retryCount), 10_000L, TimeUnit.MILLISECONDS);
+                    logger.warn("Address refresh try task submitted, retryCount:" + retryCount);
+                } else {
+                    logger.info("Address refresh try task retryCount threshold reached");
+                }
             }
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
@@ -516,25 +521,16 @@ public class ServiceInstancesChangedListener {
     protected class AddressRefreshRetryTask implements Runnable {
         private final RetryServiceInstancesChangedEvent retryEvent;
         private final Semaphore retryPermission;
-        private final int retryCount;
 
         public AddressRefreshRetryTask(Semaphore semaphore, String serviceName, int retryCount) {
             this.retryEvent = new RetryServiceInstancesChangedEvent(serviceName, retryCount);
             this.retryPermission = semaphore;
-            this.retryCount = retryCount;
         }
 
         @Override
         public void run() {
             retryPermission.release();
-
-            if (retryCount < 3) {
-                ServiceInstancesChangedListener.this.onEvent(retryEvent);
-                logger.warn("Address refresh try task submitted, retryCount:" + retryCount);
-                return;
-            }
-
-            logger.info("Address refresh try task retryCount threshold reached");
+            ServiceInstancesChangedListener.this.onEvent(retryEvent);
         }
     }
 
