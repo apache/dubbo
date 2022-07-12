@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
+import org.apache.dubbo.remoting.api.SslContexts;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
@@ -40,6 +41,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
@@ -52,6 +54,7 @@ import java.util.Map;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.KEEP_ALIVE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
@@ -59,6 +62,8 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyPortUnificationServer.class);
+
+
 
 
     private final DefaultChannelGroup channelGroup = new DefaultChannelGroup(
@@ -90,6 +95,14 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     protected void initServerBootstrap() {
+        final SslContext sslContext;
+        final boolean enableSsl = getUrl().getParameter(SSL_ENABLED_KEY, false);
+        if (enableSsl) {
+            sslContext = SslContexts.buildServerSslContext(getUrl());
+        } else {
+            sslContext = null;
+        }
+
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
         logger.debug("start create port unification netty server");
         bootstrap.group(bossGroup, workerGroup)
@@ -102,10 +115,15 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
 
-                    final NettyServerHandler serverHandler =
-                        new NettyServerHandler(NettyPortUnificationServer.this.getUrl(),NettyPortUnificationServer.this);
+                    NettyPortUnificationServerHandler handler = new NettyPortUnificationServerHandler(
+                        NettyPortUnificationServer.this.getUrl(),
+                        sslContext,
+                        true,
+                        NettyPortUnificationServer.this.getProtocols(),
+                        NettyPortUnificationServer.this.channelGroup
+                        );
                     ch.pipeline()
-                        .addLast("negotiation-handler", serverHandler);
+                        .addLast("negotiation-handler", handler);
                 }
             });
     }
