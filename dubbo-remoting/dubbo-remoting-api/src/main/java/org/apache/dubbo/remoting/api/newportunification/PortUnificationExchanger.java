@@ -14,42 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4.portunification;
+package org.apache.dubbo.remoting.api.newportunification;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.Transporter;
-import org.apache.dubbo.remoting.api.newportunification.AbstractPortUnificationServer;
 
-public class PortUnificationTransporter implements Transporter {
-
-    private static volatile AbstractPortUnificationServer server = null ;
-
-    public static RemotingServer getInstance(URL url, ChannelHandler handler) throws RemotingException {
-        if ( server == null ) {
-            synchronized ( RemotingServer.class ){
-                if ( server == null ) {
-                    server = new NettyPortUnificationServer(url, handler) ;
-                } else {
-                    server.AddNewUrl(url, handler);
-                }
-            }
-        }
-
-        return server ;
-    }
-
-    @Override
+public class PortUnificationExchanger {
     public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return getInstance(url, handler);
+        return getTransporter(url).bind(url, handler);
     }
 
-    @Override
     public Client connect(URL url, ChannelHandler handler) throws RemotingException {
-        return null;
+        return getTransporter(url).connect(url, handler);
+    }
+
+    public static PortUnificationTransporter getTransporter(URL url) {
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class).getAdaptiveExtension();
     }
 }

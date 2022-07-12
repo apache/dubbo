@@ -85,7 +85,13 @@ public interface Constants {
 
     String CODEC_VERSION_KEY = "codec.version";
 
-    String PU_STATE = "pu.state";
+    String PU_STATE = "PUState";
+
+    String PU_SERVER_KEY = "PUServer";
+
+    String PU_CLIENT_KEY = "PUClient";
+
+    String PU_TRANSPORTER_KEY = "PUTransporter";
 
     String SERVER_KEY = "server";
 
