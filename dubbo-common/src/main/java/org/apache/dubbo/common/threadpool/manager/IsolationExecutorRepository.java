@@ -30,14 +30,11 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
  * method level thread pools isolation
  */
-public class IsolationExecutorRepository implements ExecutorRepository {
+public class IsolationExecutorRepository extends AbstractExecutorRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(IsolationExecutorRepository.class);
 
@@ -48,6 +45,7 @@ public class IsolationExecutorRepository implements ExecutorRepository {
     private final Map<String, ExecutorService> isolationThreadpool = new ConcurrentHashMap<>();
 
     public IsolationExecutorRepository(URL url) {
+        super(url.getOrDefaultApplicationModel());
         this.frameworkExecutorRepository = url.getOrDefaultApplicationModel().getFrameworkModel()
             .getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
@@ -105,54 +103,6 @@ public class IsolationExecutorRepository implements ExecutorRepository {
         } else {
             return executor;
         }
-    }
-
-    @Override
-    public void updateThreadpool(URL url, ExecutorService executor) {
-        try {
-            if (url.hasParameter(THREADS_KEY)
-                && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
-                ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-                int threads = url.getParameter(THREADS_KEY, 0);
-                int max = threadPoolExecutor.getMaximumPoolSize();
-                int core = threadPoolExecutor.getCorePoolSize();
-                if (threads > 0 && (threads != max || threads != core)) {
-                    if (threads < core) {
-                        threadPoolExecutor.setCorePoolSize(threads);
-                        if (core == max) {
-                            threadPoolExecutor.setMaximumPoolSize(threads);
-                        }
-                    } else {
-                        threadPoolExecutor.setMaximumPoolSize(threads);
-                        if (core == max) {
-                            threadPoolExecutor.setCorePoolSize(threads);
-                        }
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
-        }
-    }
-
-    @Override
-    public ScheduledExecutorService getServiceExportExecutor() {
-        return null;
-    }
-
-    @Override
-    public void shutdownServiceExportExecutor() {
-
-    }
-
-    @Override
-    public ExecutorService getServiceReferExecutor() {
-        return null;
-    }
-
-    @Override
-    public void shutdownServiceReferExecutor() {
-
     }
 
     @Override

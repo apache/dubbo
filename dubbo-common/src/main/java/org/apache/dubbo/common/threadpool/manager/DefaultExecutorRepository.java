@@ -21,61 +21,42 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.ModuleConfig;
-import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
-public class DefaultExecutorRepository implements ExecutorRepository {
+public class DefaultExecutorRepository extends AbstractExecutorRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
 
     public static final String NAME = "default";
 
-    private volatile ScheduledExecutorService serviceExportExecutor;
-
-    private volatile ExecutorService serviceReferExecutor;
-
     private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
-
-    private final Object LOCK = new Object();
-
-    private final ApplicationModel applicationModel;
 
     private final FrameworkExecutorRepository frameworkExecutorRepository;
 
     public DefaultExecutorRepository(URL url) {
-        this.applicationModel = url.getOrDefaultApplicationModel();
+        super(url.getOrDefaultApplicationModel());
         this.frameworkExecutorRepository = url.getOrDefaultApplicationModel().getFrameworkModel()
             .getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
     public DefaultExecutorRepository(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+        super(applicationModel);
         this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
     }
 
@@ -159,155 +140,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
-    public void updateThreadpool(URL url, ExecutorService executor) {
-        try {
-            if (url.hasParameter(THREADS_KEY)
-                && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
-                ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-                int threads = url.getParameter(THREADS_KEY, 0);
-                int max = threadPoolExecutor.getMaximumPoolSize();
-                int core = threadPoolExecutor.getCorePoolSize();
-                if (threads > 0 && (threads != max || threads != core)) {
-                    if (threads < core) {
-                        threadPoolExecutor.setCorePoolSize(threads);
-                        if (core == max) {
-                            threadPoolExecutor.setMaximumPoolSize(threads);
-                        }
-                    } else {
-                        threadPoolExecutor.setMaximumPoolSize(threads);
-                        if (core == max) {
-                            threadPoolExecutor.setCorePoolSize(threads);
-                        }
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
-        }
-    }
-
-    @Override
-    public ScheduledExecutorService getServiceExportExecutor() {
-        synchronized (LOCK) {
-            if (serviceExportExecutor == null) {
-                int coreSize = getExportThreadNum();
-                String applicationName = applicationModel.tryGetApplicationName();
-                applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
-                serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-" + applicationName + "-service-export", true));
-            }
-        }
-        return serviceExportExecutor;
-    }
-
-    @Override
-    public void shutdownServiceExportExecutor() {
-        synchronized (LOCK) {
-            if (serviceExportExecutor != null && !serviceExportExecutor.isShutdown()) {
-                try {
-                    serviceExportExecutor.shutdown();
-                } catch (Throwable ignored) {
-                    // ignored
-                    logger.warn(ignored.getMessage(), ignored);
-                }
-            }
-            serviceExportExecutor = null;
-        }
-    }
-
-    @Override
-    public ExecutorService getServiceReferExecutor() {
-        synchronized (LOCK) {
-            if (serviceReferExecutor == null) {
-                int coreSize = getReferThreadNum();
-                String applicationName = applicationModel.tryGetApplicationName();
-                applicationName = StringUtils.isEmpty(applicationName) ? "app" : applicationName;
-                serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
-                    new NamedThreadFactory("Dubbo-" + applicationName + "-service-refer", true));
-            }
-        }
-        return serviceReferExecutor;
-    }
-
-    @Override
-    public void shutdownServiceReferExecutor() {
-        synchronized (LOCK) {
-            if (serviceReferExecutor != null && !serviceReferExecutor.isShutdown()) {
-                try {
-                    serviceReferExecutor.shutdown();
-                } catch (Throwable ignored) {
-                    logger.warn(ignored.getMessage(), ignored);
-                }
-            }
-            serviceReferExecutor = null;
-        }
-    }
-
-    private Integer getExportThreadNum() {
-        Integer threadNum = null;
-        ApplicationModel applicationModel = ApplicationModel.ofNullable(this.applicationModel);
-        for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-            threadNum = getExportThreadNum(moduleModel);
-            if (threadNum != null) {
-                break;
-            }
-        }
-        if (threadNum == null) {
-            logger.info("Cannot get config `export-thread-num` from module config, using default: " + DEFAULT_EXPORT_THREAD_NUM);
-            return DEFAULT_EXPORT_THREAD_NUM;
-        }
-        return threadNum;
-    }
-
-    private Integer getExportThreadNum(ModuleModel moduleModel) {
-        ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule().orElse(null);
-        if (moduleConfig == null) {
-            return null;
-        }
-        Integer threadNum = moduleConfig.getExportThreadNum();
-        if (threadNum == null) {
-            threadNum = moduleModel.getConfigManager().getProviders()
-                .stream()
-                .map(ProviderConfig::getExportThreadNum)
-                .filter(k -> k != null && k > 0)
-                .findAny().orElse(null);
-        }
-        return threadNum;
-    }
-
-    private Integer getReferThreadNum() {
-        Integer threadNum = null;
-        ApplicationModel applicationModel = ApplicationModel.ofNullable(this.applicationModel);
-        for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
-            threadNum = getReferThreadNum(moduleModel);
-            if (threadNum != null) {
-                break;
-            }
-        }
-        if (threadNum == null) {
-            logger.info("Cannot get config `refer-thread-num` from module config, using default: " + DEFAULT_REFER_THREAD_NUM);
-            return DEFAULT_REFER_THREAD_NUM;
-        }
-        return threadNum;
-    }
-
-    private Integer getReferThreadNum(ModuleModel moduleModel) {
-        ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule().orElse(null);
-        if (moduleConfig == null) {
-            return null;
-        }
-        Integer threadNum = moduleConfig.getReferThreadNum();
-        if (threadNum == null) {
-            threadNum = moduleModel.getConfigManager().getConsumers()
-                .stream()
-                .map(ConsumerConfig::getReferThreadNum)
-                .filter(k -> k != null && k > 0)
-                .findAny().orElse(null);
-        }
-        return threadNum;
-    }
-
-    @Override
     public void destroyAll() {
         logger.info("destroying application executor repository ..");
         shutdownServiceExportExecutor();
@@ -328,15 +160,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             }
         });
         data.clear();
-    }
-
-    private void shutdownExecutorService(ExecutorService executorService, String name) {
-        try {
-            executorService.shutdownNow();
-        } catch (Exception e) {
-            String msg = "shutdown executor service [" + name + "] failed: ";
-            logger.warn(msg + e.getMessage(), e);
-        }
     }
 
     @Override
