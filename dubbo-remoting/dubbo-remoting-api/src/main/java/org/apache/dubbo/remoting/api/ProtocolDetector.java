@@ -17,6 +17,9 @@
 package org.apache.dubbo.remoting.api;
 
 
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -26,7 +29,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public interface ProtocolDetector {
 
-    Result detect(final ChannelHandlerContext ctx, final ByteBuf in);
+    Result detect(Channel channel, ChannelBuffer in);
 
     enum Result {
         RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA

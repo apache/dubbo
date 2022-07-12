@@ -25,6 +25,8 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 
@@ -38,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class AbstractPortUnificationServer extends AbstractServer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractPortUnificationServer.class);
 
-    public List<NewWireProtocol> getProtocols() {
+    public List<WireProtocol> getProtocols() {
         return protocols;
     }
 
@@ -46,18 +48,14 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         return urls;
     }
 
-    public ConcurrentMap<NewWireProtocol, URL> getWireProtocolURLConcurrentMap() {
+    public ConcurrentMap<WireProtocol, URL> getWireProtocolURLConcurrentMap() {
         return wireProtocolURLConcurrentMap;
     }
 
-    public ConcurrentMap<URL, ChannelHandler> getUrlChannelHandlerConcurrentMap() {
-        return urlChannelHandlerConcurrentMap;
-    }
-    private final List<NewWireProtocol> protocols;
+    private final List<WireProtocol> protocols;
 
     private final List<URL> urls;
-    private final ConcurrentMap<NewWireProtocol, URL> wireProtocolURLConcurrentMap = new ConcurrentHashMap<>();
-    private final ConcurrentMap<URL, ChannelHandler> urlChannelHandlerConcurrentMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<WireProtocol, URL> wireProtocolURLConcurrentMap = new ConcurrentHashMap<>();
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -65,20 +63,9 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         this.urls = new ArrayList<>();
 
         this.urls.add(url);
-        final NewWireProtocol wp = ExtensionLoader.getExtensionLoader(NewWireProtocol.class).getExtension(url.getProtocol());
+        final WireProtocol wp = ExtensionLoader.getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
         this.protocols.add(wp);
         this.wireProtocolURLConcurrentMap.put(wp, url);
-        this.urlChannelHandlerConcurrentMap.put(url, handler);
-    }
-
-
-    public void AddNewUrl(URL url, ChannelHandler handler) {
-        this.urls.add(url);
-        final NewWireProtocol wp = ExtensionLoader.getExtensionLoader(NewWireProtocol.class).getExtension(url.getProtocol());
-
-        this.wireProtocolURLConcurrentMap.put(wp, url);
-        this.protocols.add(wp);
-        this.urlChannelHandlerConcurrentMap.put(url, handler);
     }
 
     @Override
@@ -109,9 +96,9 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
                     return;
                 }
 
-                for (final NewWireProtocol protocol : protocols) {
+                for (final WireProtocol protocol : protocols) {
                     in.markReaderIndex();
-                    final NewProtocolDetector.Result result = protocol.detector().detect(ch, in);
+                    final ProtocolDetector.Result result = protocol.detector().detect(ch, in);
                     in.resetReaderIndex();
                     switch (result) {
                         case UNRECOGNIZED:

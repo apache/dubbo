@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.transport.netty4.portunification;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -31,9 +30,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.newportunification.AbstractPortUnificationServer;
-import org.apache.dubbo.remoting.api.newportunification.NewWireProtocol;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
-import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -43,7 +40,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
@@ -92,20 +88,6 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         // read config before destroy
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(getUrl().getOrDefaultModuleModel());
     }
-
-    @Override
-    public void AddNewUrl(URL url, ChannelHandler handler){
-        // update some url config, port and others
-        url = ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME);
-
-        this.getUrls().add(url);
-        final NewWireProtocol wp = ExtensionLoader.getExtensionLoader(NewWireProtocol.class).getExtension(url.getProtocol());
-
-        this.getWireProtocolURLConcurrentMap().put(wp, url);
-        this.getProtocols().add(wp);
-        this.getUrlChannelHandlerConcurrentMap().put(url, handler);
-    }
-
 
     protected void initServerBootstrap() {
         boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
@@ -158,7 +140,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
-        for (NewWireProtocol protocol: getProtocols()) {
+        for (WireProtocol protocol: getProtocols()) {
             protocol.close();
         }
         try {

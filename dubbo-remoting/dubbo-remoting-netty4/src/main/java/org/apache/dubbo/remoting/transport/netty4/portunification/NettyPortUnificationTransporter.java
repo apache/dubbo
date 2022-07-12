@@ -36,7 +36,7 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
                 if ( server == null ) {
                     server = new NettyPortUnificationServer(url, handler) ;
                 } else {
-                    server.AddNewUrl(url, handler);
+                    //todo reset or other operation
                 }
             }
         }
