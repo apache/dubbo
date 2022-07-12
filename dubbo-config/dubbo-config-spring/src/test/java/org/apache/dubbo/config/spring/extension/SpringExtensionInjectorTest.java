@@ -38,7 +38,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpringExtensionInjectorTest {
 
-
     @BeforeEach
     public void init() {
         DubboBootstrap.reset();
