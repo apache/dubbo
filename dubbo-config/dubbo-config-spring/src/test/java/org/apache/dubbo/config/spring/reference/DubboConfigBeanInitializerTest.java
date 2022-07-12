@@ -105,7 +105,7 @@ public class DubboConfigBeanInitializerTest {
     static class BusinessConfig {
         @Bean
         public FooService fooService(ApplicationContext applicationContext) {
-            // Dubbo config beans should be inited at DubboConfigInitializer, before init FooService bean
+            // Dubbo config beans should be initialized at DubboConfigInitializer, before init FooService bean
             Assertions.assertTrue(DubboBeanUtils.getModuleModel(applicationContext).getDeployer().isInitialized());
             Assertions.assertTrue(DubboBeanUtils.getApplicationModel(applicationContext).getDeployer().isInitialized());
             Assertions.assertTrue(DubboBootstrap.getInstance().isInitialized());

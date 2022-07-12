@@ -114,7 +114,7 @@ public class DubboSpringInitializer {
                 applicationModel = ApplicationModel.defaultModel();
                 logger.info("Use default application: " + safeGetModelDesc(applicationModel));
             } else {
-                // create an new application instance for later spring context
+                // create a new application instance for later spring context
                 applicationModel = FrameworkModel.defaultModel().newApplication();
                 logger.info("Create new application: " + safeGetModelDesc(applicationModel));
             }

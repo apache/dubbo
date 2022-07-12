@@ -126,7 +126,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     private ServicePackagesHolder servicePackagesHolder;
 
-    private volatile boolean scaned = false;
+    private volatile boolean scanned = false;
 
     public ServiceAnnotationPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
@@ -169,7 +169,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             }
         }
 
-        if (!scaned) {
+        if (!scanned) {
             // In spring 3.x, may be not call postProcessBeanDefinitionRegistry(), so scan service class here
             scanServiceBeans(resolvedPackagesToScan, registry);
         }
@@ -183,7 +183,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      */
     private void scanServiceBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
-        scaned = true;
+        scanned = true;
         if (CollectionUtils.isEmpty(packagesToScan)) {
             if (logger.isWarnEnabled()) {
                 logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
@@ -423,7 +423,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
         String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
-                "interface", "interfaceName", "parameters");
+                "methods", "interfaceName", "parameters");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, ignoreAttributeNames));
 
@@ -467,12 +467,6 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         if (StringUtils.hasText(monitorConfigId)) {
             addPropertyReference(builder, "monitor", monitorConfigId);
         }
-
-        // deprecate application reference
-//        String applicationConfigId = (String) serviceAnnotationAttributes.get("application");
-//        if (StringUtils.hasText(applicationConfigId)) {
-//            addPropertyReference(builder, "application", applicationConfigId);
-//        }
 
         // module reference
         String moduleConfigId = (String) serviceAnnotationAttributes.get("module");
@@ -624,7 +618,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             String className = metadataReader.getClassMetadata().getClassName();
             boolean excluded = servicePackagesHolder.isClassScanned(className);
             if (excluded) {
-                excludedCount ++;
+                excludedCount++;
             }
             return excluded;
         }

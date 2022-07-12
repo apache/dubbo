@@ -102,18 +102,15 @@ public class ReferenceCreator {
 
     }
 
-    protected void configureBean(ReferenceConfig configBean) throws Exception {
+    protected void configureBean(ReferenceConfig referenceConfig) throws Exception {
 
-        populateBean(configBean);
+        populateBean(referenceConfig);
 
-        // deprecate application reference
-        //configureApplicationConfig(configBean);
+        configureMonitorConfig(referenceConfig);
 
-        configureMonitorConfig(configBean);
+        configureModuleConfig(referenceConfig);
 
-        configureModuleConfig(configBean);
-
-        configureConsumerConfig(configBean);
+        configureConsumerConfig(referenceConfig);
 
     }
 
@@ -171,12 +168,12 @@ public class ReferenceCreator {
         return config;
     }
 
-    protected void populateBean(ReferenceConfig referenceBean) {
+    protected void populateBean(ReferenceConfig referenceConfig) {
         Assert.notNull(defaultInterfaceClass, "The default interface class cannot be empty!");
         // convert attributes, e.g. interface, registry
         ReferenceBeanSupport.convertReferenceProps(attributes, defaultInterfaceClass);
 
-        DataBinder dataBinder = new DataBinder(referenceBean);
+        DataBinder dataBinder = new DataBinder(referenceConfig);
         // Register CustomEditors for special fields
         dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(String.class, "listener", new StringTrimmerEditor(true));
