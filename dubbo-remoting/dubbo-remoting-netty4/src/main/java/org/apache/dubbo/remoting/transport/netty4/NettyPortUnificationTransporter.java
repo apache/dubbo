@@ -28,25 +28,9 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
 
     public static final String NAME = "netty";
 
-    private static volatile AbstractPortUnificationServer server = null ;
-
-    public static RemotingServer getInstance(URL url, ChannelHandler handler) throws RemotingException {
-        if ( server == null ) {
-            synchronized ( RemotingServer.class ){
-                if ( server == null ) {
-                    server = new NettyPortUnificationServer(url, handler) ;
-                } else {
-                    //todo reset or other operation
-                }
-            }
-        }
-
-        return server ;
-    }
-
     @Override
     public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return getInstance(url, handler);
+        return new NettyPortUnificationServer(url, handler);
     }
 
     @Override

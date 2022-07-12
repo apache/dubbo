@@ -20,10 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.api.PortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
 import java.util.ArrayList;
