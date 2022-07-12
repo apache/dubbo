@@ -313,7 +313,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             List<ProtocolServiceKey> matchedProtocolServiceKeys = instanceAddressURL.getMetadataInfo()
                 .getServices().values()
                 .stream()
-                .filter(serviceInfo -> serviceInfo.getPort() == port)
+                .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
                 .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
                 .filter(key -> ProtocolServiceKey.Matcher.isMatch(consumerProtocolServiceKey, key))
                 .collect(Collectors.toList());
