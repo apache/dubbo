@@ -116,10 +116,10 @@ public class RouterSnapshotNode<T> {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("[ ")
             .append(name)
-            .append(" ")
+            .append(' ')
             .append("(Input: ").append(beforeSize).append(") ")
             .append("(Current Node Output: ").append(nodeOutputSize).append(") ")
-            .append("(Chain Node Output: ").append(chainOutputSize).append(")")
+            .append("(Chain Node Output: ").append(chainOutputSize).append(')')
             .append(routerMessage == null ? "" : " Router message: ")
             .append(routerMessage == null ? "" : routerMessage)
             .append(" ] ");

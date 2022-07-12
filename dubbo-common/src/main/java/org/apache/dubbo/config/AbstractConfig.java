@@ -647,7 +647,6 @@ public abstract class AbstractConfig implements Serializable {
      * Dubbo config property override
      */
     public void refresh() {
-        refreshed.set(true);
         try {
             // check and init before do refresh
             preProcessRefresh();
@@ -697,6 +696,7 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         postProcessRefresh();
+        refreshed.set(true);
     }
 
     private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
@@ -823,8 +823,11 @@ public abstract class AbstractConfig implements Serializable {
         if (CollectionUtils.isEmptyMap(values)) {
             return;
         }
-        Map<String, String> map = invokeGetParameters(obj.getClass(), obj);
-        map = map == null ? new HashMap<>() : map;
+        Map<String, String> map = new HashMap<>();
+        Map<String, String> getParametersMap = invokeGetParameters(obj.getClass(), obj);
+        if (getParametersMap != null && !getParametersMap.isEmpty()) {
+            map.putAll(getParametersMap);
+        }
         map.putAll(values);
         invokeSetParameters(obj.getClass(), obj, map);
     }

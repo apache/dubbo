@@ -47,7 +47,7 @@ public class FrameworkModel extends ScopeModel {
     // internal app index is 0, default app index is 1
     private final AtomicLong appIndex = new AtomicLong(0);
 
-    private static Object globalLock = new Object();
+    private static final Object globalLock = new Object();
     
     private volatile static FrameworkModel defaultInstance;
 
@@ -63,7 +63,7 @@ public class FrameworkModel extends ScopeModel {
 
     private ApplicationModel internalApplicationModel;
 
-    private Object instLock = new Object();
+    private final Object instLock = new Object();
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK, false);
@@ -142,7 +142,7 @@ public class FrameworkModel extends ScopeModel {
     private void checkApplicationDestroy() {
         if (applicationModels.size() > 0) {
             List<String> remainApplications = applicationModels.stream()
-                .map(model -> model.getDesc())
+                .map(ScopeModel::getDesc)
                 .collect(Collectors.toList());
             throw new IllegalStateException("Not all application models are completely destroyed, remaining " +
                 remainApplications.size() + " application models may be created during destruction: " + remainApplications);

@@ -134,14 +134,11 @@ public class MulticastRegistry extends FailbackRegistry {
         }
         this.cleanPeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_SESSION_TIMEOUT);
         if (url.getParameter("clean", true)) {
-            this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        clean(); // Remove the expired
-                    } catch (Throwable t) { // Defensive fault tolerance
-                        logger.error("Unexpected exception occur at clean expired provider, cause: " + t.getMessage(), t);
-                    }
+            this.cleanFuture = cleanExecutor.scheduleWithFixedDelay(() -> {
+                try {
+                    clean(); // Remove the expired
+                } catch (Throwable t) { // Defensive fault tolerance
+                    logger.error("Unexpected exception occur at clean expired provider, cause: " + t.getMessage(), t);
                 }
             }, cleanPeriod, cleanPeriod, TimeUnit.MILLISECONDS);
         } else {

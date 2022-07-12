@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.utils.JsonUtils;
-import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.AbstractCacheManager;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -53,8 +52,6 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
 
         String rawMaxFileSize = System.getProperty("dubbo.meta.cache.maxFileSize");
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
-
-        cache = new LRUCache<>(entrySize);
 
         init(filePath, fileName, entrySize, maxFileSize, 60, executorService);
     }

@@ -37,5 +37,4 @@ public interface ExtensionFactory extends ExtensionInjector {
      * @return object instance.
      */
     <T> T getExtension(Class<T> type, String name);
-
 }

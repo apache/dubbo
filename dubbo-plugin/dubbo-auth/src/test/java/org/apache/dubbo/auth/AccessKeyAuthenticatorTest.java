@@ -133,6 +133,5 @@ class AccessKeyAuthenticatorTest {
         when(invocation.getArguments()).thenReturn(fakeParams);
         String signature1 = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotEquals(signature, signature1);
-
     }
 }

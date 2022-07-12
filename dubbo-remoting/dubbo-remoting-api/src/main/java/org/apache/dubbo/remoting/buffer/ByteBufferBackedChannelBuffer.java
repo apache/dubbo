@@ -132,10 +132,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         }
 
         if (buffer.hasArray()) {
-            out.write(
-                    buffer.array(),
-                    index + buffer.arrayOffset(),
-                    length);
+            out.write(buffer.array(), index + buffer.arrayOffset(), length);
         } else {
             byte[] tmp = new byte[length];
             ((ByteBuffer) buffer.duplicate().position(index)).get(tmp);
@@ -193,8 +190,7 @@ public class ByteBufferBackedChannelBuffer extends AbstractChannelBuffer {
         if (index == 0 && length == capacity()) {
             return buffer.duplicate();
         } else {
-            return ((ByteBuffer) buffer.duplicate().position(
-                    index).limit(index + length)).slice();
+            return ((ByteBuffer) buffer.duplicate().position(index).limit(index + length)).slice();
         }
     }
 

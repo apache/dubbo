@@ -22,8 +22,8 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -33,15 +33,14 @@ import java.util.stream.Collectors;
 @Adaptive
 public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
 
-    private List<ExtensionInjector> injectors = Collections.emptyList();
-
+    private Collection<ExtensionInjector> injectors = Collections.emptyList();
     private ExtensionAccessor extensionAccessor;
 
     public AdaptiveExtensionInjector() {
     }
 
     @Override
-    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+    public void setExtensionAccessor(final ExtensionAccessor extensionAccessor) {
         this.extensionAccessor = extensionAccessor;
     }
 
@@ -54,7 +53,7 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
     }
 
     @Override
-    public <T> T getInstance(Class<T> type, String name) {
+    public <T> T getInstance(final Class<T> type, final String name) {
         return injectors.stream()
             .map(injector -> injector.getInstance(type, name))
             .filter(Objects::nonNull)
@@ -64,11 +63,9 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
 
     @Override
     public void start() throws IllegalStateException {
-
     }
 
     @Override
     public void destroy() throws IllegalStateException {
-
     }
 }

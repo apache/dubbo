@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.ProviderFirstParams;
@@ -116,6 +117,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
         this.originalUrls = null;
+        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            getConsumerConfigurationListener(moduleModel).removeNotifyListener(this);
+            referenceConfigurationListener.stop();
+        }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
         if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             getConsumerConfigurationListener(moduleModel).removeNotifyListener(this);
             referenceConfigurationListener.stop();
@@ -315,7 +325,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         if (oldURL instanceof OverrideInstanceAddressURL || newURL instanceof OverrideInstanceAddressURL) {
-            if(!(oldURL instanceof OverrideInstanceAddressURL && newURL instanceof OverrideInstanceAddressURL)) {
+            if (!(oldURL instanceof OverrideInstanceAddressURL && newURL instanceof OverrideInstanceAddressURL)) {
                 // sub-class changed
                 return true;
             } else {
@@ -325,8 +335,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
 
-        return !oldURL.getMetadataInfo().getValidServiceInfo(getConsumerUrl().getProtocolServiceKey())
-            .equals(newURL.getMetadataInfo().getValidServiceInfo(getConsumerUrl().getProtocolServiceKey()));
+        MetadataInfo.ServiceInfo oldServiceInfo = oldURL.getMetadataInfo().getValidServiceInfo(getConsumerUrl().getProtocolServiceKey());
+        if (null == oldServiceInfo) {
+            return false;
+        }
+
+        return !oldServiceInfo.equals(newURL.getMetadataInfo().getValidServiceInfo(getConsumerUrl().getProtocolServiceKey()));
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {

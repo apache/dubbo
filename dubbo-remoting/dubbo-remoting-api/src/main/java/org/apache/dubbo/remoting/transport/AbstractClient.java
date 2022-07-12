@@ -46,19 +46,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
     protected static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
-    private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
-    private final Lock connectLock = new ReentrantLock();
-    private final boolean needReconnect;
-    protected volatile ExecutorService executor;
-    private final ExecutorRepository executorRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
+
+    private final Lock connectLock = new ReentrantLock();
+
+    private final boolean needReconnect;
+
+    protected volatile ExecutorService executor;
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        this.executorRepository = url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepositoryFactory.class)
-            .getAdaptiveExtension()
-            .getExecutorRepository(url);
         // set default needReconnect true when channel is not connected
         needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
@@ -106,14 +104,19 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
+        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepositoryFactory.class)
+            .getAdaptiveExtension()
+            .getExecutorRepository(url);
+
         /**
          * Consumer's executor is shared globally, provider ip doesn't need to be part of the thread name.
          *
          * Instance of url is InstanceAddressURL, so addParameter actually adds parameters into ServiceInstance,
          * which means params are shared among different services. Since client is shared among services this is currently not a problem.
          */
-        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
-        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
+            .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 

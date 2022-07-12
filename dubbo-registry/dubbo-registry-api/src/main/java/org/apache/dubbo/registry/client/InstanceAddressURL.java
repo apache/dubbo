@@ -55,7 +55,7 @@ public class InstanceAddressURL extends URL {
     private volatile transient Set<String> providerFirstParams;
     // one instance address url serves only one protocol.
     private final transient String protocol;
-    
+
     protected InstanceAddressURL() {
         this(null, null, null);
     }
@@ -242,6 +242,10 @@ public class InstanceAddressURL extends URL {
         }
 
         MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+        if (null == serviceInfo) {
+            return getParameter(key);
+        }
+
         String value = serviceInfo.getMethodParameter(method, key, null);
         if (StringUtils.isNotEmpty(value)) {
             return value;
@@ -307,6 +311,10 @@ public class InstanceAddressURL extends URL {
             return false;
         }
 
+        if (null == serviceInfo) {
+            return false;
+        }
+
         return serviceInfo.hasMethodParameter(method, key);
     }
 
@@ -344,6 +352,10 @@ public class InstanceAddressURL extends URL {
         }
 
         MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+        if (null == serviceInfo) {
+            return false;
+        }
+
         return serviceInfo.hasMethodParameter(method);
     }
 
@@ -427,7 +439,11 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-       getServiceInfo(protocolServiceKey).addParameter(key, value);
+        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+        if (null != serviceInfo) {
+            serviceInfo.addParameter(key, value);
+        }
+
         return this;
     }
 
@@ -436,12 +452,20 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        getServiceInfo(protocolServiceKey).addParameterIfAbsent(key, value);
+        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+        if (null != serviceInfo) {
+            serviceInfo.addParameterIfAbsent(key, value);
+        }
+
         return this;
     }
 
     public URL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
-        getServiceInfo(protocolServiceKey).addConsumerParams(params);
+        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+        if (null != serviceInfo) {
+            serviceInfo.addConsumerParams(params);
+        }
+
         return this;
     }
 
@@ -456,7 +480,12 @@ public class InstanceAddressURL extends URL {
         String suffix = "." + key;
         String protocolServiceKey = getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
-            for (String fullKey : getServiceInfo(protocolServiceKey).getAllParams().keySet()) {
+            MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+            if (null == serviceInfo) {
+                return null;
+            }
+
+            for (String fullKey : serviceInfo.getAllParams().keySet()) {
                 if (fullKey.endsWith(suffix)) {
                     return getParameter(fullKey);
                 }
@@ -477,7 +506,9 @@ public class InstanceAddressURL extends URL {
 
     @Override
     protected Map<String, Number> getServiceNumbers(String protocolServiceKey) {
-        return getServiceInfo(protocolServiceKey).getNumbers();
+        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+
+        return null == serviceInfo ? new ConcurrentHashMap<>() : serviceInfo.getNumbers();
     }
 
     @Override
@@ -494,7 +525,8 @@ public class InstanceAddressURL extends URL {
 
     @Override
     protected Map<String, Map<String, Number>> getServiceMethodNumbers(String protocolServiceKey) {
-        return getServiceInfo(protocolServiceKey).getMethodNumbers();
+        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
+        return null == serviceInfo ? new ConcurrentHashMap<>() : serviceInfo.getMethodNumbers();
     }
 
     @Override

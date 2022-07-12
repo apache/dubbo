@@ -49,7 +49,7 @@ public class RouterGroupingState<T> {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(routerName)
-            .append(" ")
+            .append(' ')
             .append(" Total: ")
             .append(total)
             .append("\n");
