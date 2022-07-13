@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 
@@ -160,5 +162,27 @@ public class MetadataInfoTest {
         metadataInfo2.addService(url2);
         System.out.println(JsonUtils.getJson().toJson(metadataInfo2));
 
+    }
+
+    @Test
+    public void testCal() {
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
+
+        // export normal url again
+        metadataInfo.addService(url);
+
+        metadataInfo.calAndGetRevision();
+
+        metadataInfo.addService(url2);
+
+        metadataInfo.calAndGetRevision();
+
+        metadataInfo.addService(url3);
+
+        metadataInfo.calAndGetRevision();
+
+        JSONObject object = JSON.parseObject(metadataInfo.getContent());
+        assertNull(object.get("content"));
+        assertNull(object.get("rawMetadataInfo"));
     }
 }

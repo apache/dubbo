@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -197,6 +198,7 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
     }
 
+    @Transient
     public String getContent() {
         return this.rawMetadataInfo;
     }
