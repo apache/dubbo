@@ -61,7 +61,7 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-        // In Spring 3.2.x, registry may be null because do not calling postProcessBeanDefinitionRegistry method before postProcessBeanFactory
+        // In Spring 3.2.x, registry may be null because do not call postProcessBeanDefinitionRegistry method before postProcessBeanFactory
         if (registry != null) {
             // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
             // for processing early init ReferenceBean
