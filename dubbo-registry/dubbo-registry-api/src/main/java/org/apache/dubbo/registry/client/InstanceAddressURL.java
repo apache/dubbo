@@ -170,7 +170,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public String getParameter(String key) {
+    public String getParameter(final String key) {
         if (VERSION_KEY.equals(key)) {
             return getVersion();
         } else if (GROUP_KEY.equals(key)) {
@@ -196,7 +196,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public String getServiceParameter(String service, String key) {
+    public String getServiceParameter(final String service, final String key) {
         Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrl.ServiceParameter, service, null, key);
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
@@ -220,7 +220,7 @@ public class InstanceAddressURL extends URL {
      * @return
      */
     @Override
-    public String getServiceMethodParameter(String protocolServiceKey, String method, String key) {
+    public String getServiceMethodParameter(final String protocolServiceKey, final String method, final String key) {
         Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrl.ServiceMethodParameter, protocolServiceKey, method, key);
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
@@ -239,7 +239,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public String getMethodParameter(String method, String key) {
+    public String getMethodParameter(final String method, final String key) {
         Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrl.MethodParameter, null, method, key);
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
@@ -260,7 +260,7 @@ public class InstanceAddressURL extends URL {
      * @return
      */
     @Override
-    public boolean hasServiceMethodParameter(String protocolServiceKey, String method, String key) {
+    public boolean hasServiceMethodParameter(final String protocolServiceKey, final String method, final String key) {
         if (hasParameterOnConsumerUrl(ParameterOnConsumerUrl.ServiceMethodParameter, protocolServiceKey, method, key, true)) {
             return true;
         }
@@ -294,7 +294,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public boolean hasMethodParameter(String method, String key) {
+    public boolean hasMethodParameter(final String method, final String key) {
         if (hasParameterOnConsumerUrl(ParameterOnConsumerUrl.MethodParameter, null, method, key, true)) {
             return true;
         }
@@ -312,7 +312,7 @@ public class InstanceAddressURL extends URL {
      * @return
      */
     @Override
-    public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {
+    public boolean hasServiceMethodParameter(final String protocolServiceKey, final String method) {
         if (hasParameterOnConsumerUrl(ParameterOnConsumerUrl.ServiceMethodParameter, protocolServiceKey, method, null, false)) {
             return true;
         }
@@ -324,7 +324,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public boolean hasMethodParameter(String method) {
+    public boolean hasMethodParameter(final String method) {
         if (hasParameterOnConsumerUrl(ParameterOnConsumerUrl.MethodParameter, null, method, null, false)) {
             return true;
         }
