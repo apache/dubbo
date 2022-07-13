@@ -21,10 +21,9 @@ import org.apache.dubbo.common.URL;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 
-public class EmptyProtocol implements WireProtocol {
-    @Override
-    public ProtocolDetector detector() {
-        return null;
+public class EmptyProtocol extends AbstractWireProtocol {
+    public EmptyProtocol() {
+        super(null);
     }
 
     @Override

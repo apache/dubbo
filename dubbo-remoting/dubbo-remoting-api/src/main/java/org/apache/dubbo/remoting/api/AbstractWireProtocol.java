@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.remoting.api;
 
-import io.netty.handler.codec.http2.Http2FrameLogger;
 
-import static io.netty.handler.logging.LogLevel.DEBUG;
+public abstract class AbstractWireProtocol implements WireProtocol {
 
-public abstract class Http2WireProtocol implements WireProtocol {
-    public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(DEBUG, "H2_CLIENT");
-    public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(DEBUG, "H2_SERVER");
-    private final ProtocolDetector detector = new Http2ProtocolDetector();
+    private final ProtocolDetector detector;
+
+    public AbstractWireProtocol(ProtocolDetector detector) {
+        this.detector = detector;
+    }
 
     @Override
     public ProtocolDetector detector() {
@@ -32,5 +33,6 @@ public abstract class Http2WireProtocol implements WireProtocol {
 
     @Override
     public void close() {
+
     }
 }
