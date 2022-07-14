@@ -51,7 +51,7 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
 
 /**
  * TODO, this bridge implementation is not necessary now, protocol can interact with service discovery directly.
- *
+ * <p>
  * ServiceDiscoveryRegistry is a very special Registry implementation, which is used to bridge the old interface-level service discovery model
  * with the new service discovery model introduced in 3.0 in a compatible manner.
  * <p>
@@ -92,7 +92,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, ServiceNameMapping serviceNameMapping) {
         super(registryURL);
         this.serviceDiscovery = serviceDiscovery;
-        this.serviceNameMapping = (AbstractServiceNameMapping)serviceNameMapping;
+        this.serviceNameMapping = (AbstractServiceNameMapping) serviceNameMapping;
     }
 
     public ServiceDiscovery getServiceDiscovery() {
@@ -270,6 +270,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
+        if (serviceDiscovery instanceof NopServiceDiscovery) {
+            // NopServiceDiscovery is designed for compatibility, check availability is meaningless, just return true
+            return true;
+        }
         return !serviceDiscovery.isDestroy() && !serviceDiscovery.getServices().isEmpty();
     }
 

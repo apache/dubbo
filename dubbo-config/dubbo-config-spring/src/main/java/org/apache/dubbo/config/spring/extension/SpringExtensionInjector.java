@@ -20,10 +20,7 @@ import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
@@ -33,49 +30,28 @@ import java.util.Arrays;
  * SpringExtensionInjector
  */
 public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
-    private static final Logger logger = LoggerFactory.getLogger(SpringExtensionInjector.class);
-
-    public static final String NAME = "spring";
 
     private ApplicationContext context;
 
     @Deprecated
-    public static void addApplicationContext(ApplicationContext context) {
-//        CONTEXTS.add(context);
-//        if (context instanceof ConfigurableApplicationContext) {
-//            ((ConfigurableApplicationContext) context).registerShutdownHook();
-//            // see https://github.com/apache/dubbo/issues/7093
-//            DubboShutdownHook.getDubboShutdownHook().unregister();
-//        }
+    public static void addApplicationContext(final ApplicationContext context) {
     }
 
-//    @Deprecated
-//    public static Set<ApplicationContext> getContexts() {
-//        // return contexts;
-//        return Collections.emptySet();
-//    }
-
-//    @Deprecated
-//    public static void clearContexts() {
-//        //contexts.clear();
-//    }
-
-    public static SpringExtensionInjector get(ExtensionAccessor extensionAccessor) {
-        return (SpringExtensionInjector) extensionAccessor.getExtension(ExtensionInjector.class, NAME);
+    public static SpringExtensionInjector get(final ExtensionAccessor extensionAccessor) {
+        return (SpringExtensionInjector) extensionAccessor.getExtension(ExtensionInjector.class, "spring");
     }
 
     public ApplicationContext getContext() {
         return context;
     }
 
-    public void init(ApplicationContext context) {
+    public void init(final ApplicationContext context) {
         this.context = context;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getInstance(Class<T> type, String name) {
-
         if (context == null) {
             // ignore if spring context is not bound
             return null;
@@ -95,24 +71,27 @@ public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
         return null;
     }
 
-    private <T> T getOptionalBean(ListableBeanFactory beanFactory, String name, Class<T> type) {
+    private <T> T getOptionalBean(final ListableBeanFactory beanFactory, final String name, final Class<T> type) {
         if (StringUtils.isEmpty(name)) {
-            String[] beanNamesForType = beanFactory.getBeanNamesForType(type, true, false);
-            if (beanNamesForType != null) {
-                if (beanNamesForType.length == 1) {
-                    return beanFactory.getBean(beanNamesForType[0], type);
-                } else if (beanNamesForType.length > 1) {
-                    throw new IllegalStateException("Expect single but found " + beanNamesForType.length + " beans in spring context: " +
-                        Arrays.toString(beanNamesForType));
-                }
-            }
-        } else {
-            if (beanFactory.containsBean(name)) {
-                return beanFactory.getBean(name, type);
-            }
+            return getOptionalBeanByType(beanFactory, type);
+        } 
+        if (beanFactory.containsBean(name)) {
+            return beanFactory.getBean(name, type);
         }
         return null;
     }
+    
+    private <T> T getOptionalBeanByType(final ListableBeanFactory beanFactory, final Class<T> type) {
+        String[] beanNamesForType = beanFactory.getBeanNamesForType(type, true, false);
+        if (beanNamesForType == null) {
+            return null;
+        }
+        if (beanNamesForType.length > 1) {
+            throw new IllegalStateException("Expect single but found " + beanNamesForType.length + " beans in spring context: " +
+                    Arrays.toString(beanNamesForType));
+        }
+        return beanFactory.getBean(beanNamesForType[0], type);
+    } 
 
     @Override
     public void initialize() throws IllegalStateException {

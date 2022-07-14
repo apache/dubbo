@@ -38,12 +38,11 @@ public class AccessKeyAuthenticator implements Authenticator {
     @Override
     public void sign(Invocation invocation, URL url) {
         String currentTime = String.valueOf(System.currentTimeMillis());
-        String consumer = url.getApplication();
         AccessKeyPair accessKeyPair = getAccessKeyPair(invocation, url);
         invocation.setAttachment(Constants.REQUEST_SIGNATURE_KEY, getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
         invocation.setAttachment(Constants.REQUEST_TIMESTAMP_KEY, currentTime);
         invocation.setAttachment(Constants.AK_KEY, accessKeyPair.getAccessKey());
-        invocation.setAttachment(CommonConstants.CONSUMER, consumer);
+        invocation.setAttachment(CommonConstants.CONSUMER, url.getApplication());
     }
 
     @Override
@@ -52,12 +51,11 @@ public class AccessKeyAuthenticator implements Authenticator {
         String requestTimestamp = String.valueOf(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY));
         String originSignature = String.valueOf(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY));
         String consumer = String.valueOf(invocation.getAttachment(CommonConstants.CONSUMER));
-
-        if (StringUtils.isEmpty(accessKeyId) || StringUtils.isEmpty(consumer)
-                || StringUtils.isEmpty(requestTimestamp) || StringUtils.isEmpty(originSignature)) {
-            throw new RpcAuthenticationException("Failed to authenticate, maybe consumer not enable the auth");
+        if (StringUtils.isAnyEmpty(accessKeyId, consumer, requestTimestamp, originSignature)) {
+            throw new RpcAuthenticationException("Failed to authenticate, maybe consumer side did not enable the auth");
         }
-        AccessKeyPair accessKeyPair = null;
+        
+        AccessKeyPair accessKeyPair;
         try {
             accessKeyPair = getAccessKeyPair(invocation, url);
         } catch (Exception e) {
@@ -75,10 +73,10 @@ public class AccessKeyAuthenticator implements Authenticator {
         AccessKeyStorage accessKeyStorage = applicationModel.getExtensionLoader(AccessKeyStorage.class)
                 .getExtension(url.getParameter(Constants.ACCESS_KEY_STORAGE_KEY, Constants.DEFAULT_ACCESS_KEY_STORAGE));
 
-        AccessKeyPair accessKeyPair = null;
+        AccessKeyPair accessKeyPair;
         try {
             accessKeyPair = accessKeyStorage.getAccessKey(url, invocation);
-            if (accessKeyPair == null || StringUtils.isEmpty(accessKeyPair.getAccessKey()) || StringUtils.isEmpty(accessKeyPair.getSecretKey())) {
+            if (accessKeyPair == null || StringUtils.isAnyEmpty(accessKeyPair.getAccessKey(), accessKeyPair.getSecretKey())) {
                 throw new AccessKeyNotFoundException("AccessKeyId or secretAccessKey not found");
             }
         } catch (Exception e) {
@@ -88,16 +86,11 @@ public class AccessKeyAuthenticator implements Authenticator {
     }
 
     String getSignature(URL url, Invocation invocation, String secretKey, String time) {
+        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT, url.getColonSeparatedKey(), invocation.getMethodName(), secretKey, time);
         boolean parameterEncrypt = url.getParameter(Constants.PARAMETER_SIGNATURE_ENABLE_KEY, false);
-        String signature;
-        String requestString = String.format(Constants.SIGNATURE_STRING_FORMAT,
-                url.getColonSeparatedKey(), invocation.getMethodName(), secretKey, time);
         if (parameterEncrypt) {
-            signature = SignatureUtils.sign(invocation.getArguments(), requestString, secretKey);
-        } else {
-            signature = SignatureUtils.sign(requestString, secretKey);
+            return SignatureUtils.sign(invocation.getArguments(), requestString, secretKey);
         }
-        return signature;
+        return SignatureUtils.sign(requestString, secretKey);
     }
-
 }

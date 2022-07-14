@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -68,7 +69,7 @@ public class NettyClient extends AbstractClient {
      */
     private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(() ->
         eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
-        eventLoopGroup -> eventLoopGroup.shutdownGracefully());
+        EventExecutorGroup::shutdownGracefully);
 
     private Bootstrap bootstrap;
 
@@ -143,10 +144,7 @@ public class NettyClient extends AbstractClient {
 
     private boolean isFilteredAddress(String host) {
         // filter local address
-        if (StringUtils.isEquals(NetUtils.getLocalHost(), host) || NetUtils.isLocalHost(host)) {
-            return true;
-        }
-        return false;
+        return StringUtils.isEquals(NetUtils.getLocalHost(), host) || NetUtils.isLocalHost(host);
     }
 
     @Override

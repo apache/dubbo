@@ -135,7 +135,7 @@ class URL implements Serializable {
 
     protected URL() {
         this.urlAddress = null;
-        this.urlParam = null;
+        this.urlParam = URLParam.parse(new HashMap<>());
         this.attributes = null;
     }
 
@@ -145,7 +145,7 @@ class URL implements Serializable {
 
     public URL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
         this.urlAddress = urlAddress;
-        this.urlParam = urlParam;
+        this.urlParam = null == urlParam ? URLParam.parse(new HashMap<>()) : urlParam;
         this.attributes = (attributes != null ? attributes.isEmpty() ? null : attributes : null);
     }
 

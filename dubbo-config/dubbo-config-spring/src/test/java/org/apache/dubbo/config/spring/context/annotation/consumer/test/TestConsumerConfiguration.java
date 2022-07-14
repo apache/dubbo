@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  *
  * @since 2.5.7
  */
-@EnableDubbo(scanBasePackageClasses = TestConsumerConfiguration.class, multipleConfig = true)
+@EnableDubbo(scanBasePackageClasses = TestConsumerConfiguration.class)
 @PropertySource("classpath:/META-INF/dubbb-consumer.properties")
 @EnableTransactionManagement
 public class TestConsumerConfiguration {

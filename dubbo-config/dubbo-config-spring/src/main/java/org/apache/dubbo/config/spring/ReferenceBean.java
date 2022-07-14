@@ -236,9 +236,6 @@ public class ReferenceBean<T> implements FactoryBean<T>,
         }
         Assert.notNull(this.interfaceName, "The interface name of ReferenceBean is not initialized");
 
-//        this.sources = (List<Map<String, Object>>) beanDefinition.getAttribute(Constants.REFERENCE_SOURCES);
-//        Assert.notNull(this.sources, "The registration sources of this reference is empty");
-
         ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
     }

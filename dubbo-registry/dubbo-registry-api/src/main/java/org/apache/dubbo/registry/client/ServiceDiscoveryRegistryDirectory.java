@@ -378,8 +378,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             }
         }
 
-        return !oldURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString())
-            .equals(newURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString()));
+        MetadataInfo.ServiceInfo oldServiceInfo = oldURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString());
+        if (null == oldServiceInfo) {
+            return false;
+        }
+
+        return !oldServiceInfo.equals(newURL.getMetadataInfo().getValidServiceInfo(protocolServiceKey.toString()));
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
