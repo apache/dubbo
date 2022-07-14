@@ -44,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
@@ -250,6 +251,13 @@ public class MetadataInfo implements Serializable {
             }
         }
         return serviceInfo;
+    }
+
+    public List<ServiceInfo> getMatchedServiceInfos(ProtocolServiceKey consumerProtocolServiceKey) {
+        return getServices().values()
+            .stream()
+            .filter(serviceInfo -> serviceInfo.matchProtocolServiceKey(consumerProtocolServiceKey))
+            .collect(Collectors.toList());
     }
 
     public Map<String, String> getExtendParams() {
@@ -580,6 +588,10 @@ public class MetadataInfo implements Serializable {
                 matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol;
             }
             return matchKey;
+        }
+
+        public boolean matchProtocolServiceKey(ProtocolServiceKey protocolServiceKey) {
+            return ProtocolServiceKey.Matcher.isMatch(protocolServiceKey, getProtocolServiceKey());
         }
 
         public ProtocolServiceKey getProtocolServiceKey() {

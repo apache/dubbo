@@ -33,6 +33,8 @@ import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -151,6 +153,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
+        Optional<MetadataInfo> cachedInstance = instances.stream()
+            .map(ServiceInstance::getServiceMetadata)
+            .filter(Objects::nonNull)
+            .filter(metadata -> revision.equals(metadata.getRevision()))
+            .findFirst();
+        if (cachedInstance.isPresent()) {
+            return cachedInstance.get();
+        }
         MetadataInfo metadata = metaCacheManager.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
