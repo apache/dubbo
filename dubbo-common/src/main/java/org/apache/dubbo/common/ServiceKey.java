@@ -69,15 +69,12 @@ public class ServiceKey {
 
     public static class Matcher {
         public static boolean isMatch(ServiceKey rule, ServiceKey target) {
-            // 1. match interface (wildcard match)
-            // * interface might from Spring Cloud
-            if (!CommonConstants.ANY_VALUE.equals(rule.getInterfaceName())) {
-                if (!Objects.equals(rule.getInterfaceName(), target.getInterfaceName())) {
-                    return false;
-                }
+            // 1. match interface (accurate match)
+            if (!Objects.equals(rule.getInterfaceName(), target.getInterfaceName())) {
+                return false;
             }
 
-            // 2. match version (wildcard match)
+            // 2. match version (accurate match)
             // 2.1. if rule version is *, match all
             if (!CommonConstants.ANY_VALUE.equals(rule.getVersion())) {
                 // 2.2. if rule version is null, target version should be null
