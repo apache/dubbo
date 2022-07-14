@@ -39,8 +39,8 @@ public class AdaptiveExtensionInjectorTest {
         ExtensionLoader<ExtensionInjector> extensionLoader = frameworkModel.getExtensionLoader(ExtensionInjector.class);
 
         ExtensionInjector adaptiveExtensionInjector = extensionLoader.getAdaptiveExtension();
-        ExtensionInjector scopeExtensionInjector = extensionLoader.getExtension(ScopeBeanExtensionInjector.NAME);
-        ExtensionInjector spiExtensionInjector = extensionLoader.getExtension(SpiExtensionInjector.NAME);
+        ExtensionInjector scopeExtensionInjector = extensionLoader.getExtension("scopeBean");
+        ExtensionInjector spiExtensionInjector = extensionLoader.getExtension("spi");
 
         FooFrameworkProvider testFrameworkProvider = adaptiveExtensionInjector.getInstance(FooFrameworkProvider.class, "testFrameworkProvider");
         Assertions.assertNotNull(testFrameworkProvider);

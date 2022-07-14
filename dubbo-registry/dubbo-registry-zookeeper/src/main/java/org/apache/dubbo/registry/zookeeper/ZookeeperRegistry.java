@@ -78,8 +78,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             group = PATH_SEPARATOR + group;
         }
         this.root = group;
-        zkClient = zookeeperTransporter.connect(url);
-        zkClient.addStateListener((state) -> {
+        this.zkClient = zookeeperTransporter.connect(url);
+        this.zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
                 logger.warn("Trying to fetch the latest urls, in case there're provider changes during connection loss.\n" +
                     " Since ephemeral ZNode will not get deleted for a connection lose, " +
@@ -150,8 +150,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 String root = toRootPath();
                 boolean check = url.getParameter(CHECK_KEY, false);
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
-                ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> {
-                    for (String child : currentChilds) {
+                ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChildren) -> {
+                    for (String child : currentChildren) {
                         child = URL.decode(child);
                         if (!anyServices.contains(child)) {
                             anyServices.add(child);
@@ -308,12 +308,12 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     }
 
     private class RegistryChildListenerImpl implements ChildListener {
-        private ZookeeperRegistryNotifier notifier;
+        private final ZookeeperRegistryNotifier notifier;
         private volatile CountDownLatch latch;
 
         public RegistryChildListenerImpl(URL consumerUrl, NotifyListener listener, CountDownLatch latch) {
             this.latch = latch;
-            notifier = new ZookeeperRegistryNotifier(consumerUrl, listener, ZookeeperRegistry.this.getDelay());
+            this.notifier = new ZookeeperRegistryNotifier(consumerUrl, listener, ZookeeperRegistry.this.getDelay());
         }
 
         public void setLatch(CountDownLatch latch) {

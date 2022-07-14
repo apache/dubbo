@@ -33,7 +33,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ChannelHandlerDispatcher.class);
 
-    private final Collection<ChannelHandler> channelHandlers = new CopyOnWriteArraySet<ChannelHandler>();
+    private final Collection<ChannelHandler> channelHandlers = new CopyOnWriteArraySet<>();
 
     public ChannelHandlerDispatcher() {
     }

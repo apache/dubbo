@@ -35,11 +35,7 @@ public interface ZookeeperTransporter {
 
     static ZookeeperTransporter getExtension(ApplicationModel applicationModel) {
         ExtensionLoader<ZookeeperTransporter> extensionLoader = applicationModel.getExtensionLoader(ZookeeperTransporter.class);
-        boolean isHighVersion = isHighVersionCurator();
-        if (isHighVersion) {
-            return extensionLoader.getExtension(CURATOR_5);
-        }
-        return extensionLoader.getExtension(CURATOR);
+        return isHighVersionCurator() ? extensionLoader.getExtension(CURATOR_5) : extensionLoader.getExtension(CURATOR);
     }
 
     static boolean isHighVersionCurator() {
@@ -50,5 +46,4 @@ public interface ZookeeperTransporter {
             return false;
         }
     }
-
 }
