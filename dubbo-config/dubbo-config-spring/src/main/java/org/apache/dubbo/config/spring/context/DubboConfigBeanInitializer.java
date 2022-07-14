@@ -100,7 +100,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private void prepareDubboConfigBeans() {
         logger.info("loading dubbo config beans ...");
 
-        //Make sure all these config beans are inited and registered to ConfigManager
+        //Make sure all these config beans are initialed and registered to ConfigManager
         // load application config beans
         loadConfigBeansOfType(ApplicationConfig.class, configManager);
         loadConfigBeansOfType(RegistryConfig.class, configManager);

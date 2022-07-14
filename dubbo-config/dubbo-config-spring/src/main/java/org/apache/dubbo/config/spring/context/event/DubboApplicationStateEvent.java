@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Dubbo application state event on starting/started/stopping/stopped
+ * Dubbo's application state event on starting/started/stopping/stopped
  */
 public class DubboApplicationStateEvent extends ApplicationEvent {
 

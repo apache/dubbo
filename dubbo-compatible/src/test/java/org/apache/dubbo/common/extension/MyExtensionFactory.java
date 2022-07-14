@@ -21,18 +21,18 @@ import com.alibaba.dubbo.common.extension.ExtensionFactory;
 public class MyExtensionFactory implements ExtensionFactory {
 
     @Override
-    public <T> T getExtension(Class<T> type, String name) {
+    public <T> T getExtension(final Class<T> type, final String name) {
         if (type == InjectObject.class) {
             return (T) new InjectObject(name);
         }
         return null;
     }
 
-
     public static class InjectObject {
-        private String name;
+        
+        private final String name;
 
-        public InjectObject(String name) {
+        public InjectObject(final String name) {
             this.name = name;
         }
     }
