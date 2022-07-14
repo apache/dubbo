@@ -19,6 +19,7 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
