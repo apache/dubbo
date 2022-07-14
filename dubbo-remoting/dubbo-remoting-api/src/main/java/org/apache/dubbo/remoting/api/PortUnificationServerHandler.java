@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -77,7 +79,8 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         } else {
             for (final WireProtocol protocol : protocols) {
                 in.markReaderIndex();
-                final ProtocolDetector.Result result = protocol.detector().detect(ctx, in);
+                ChannelBuffer buf = new ByteBufferBackedChannelBuffer(in.nioBuffer());
+                final ProtocolDetector.Result result = protocol.detector().detect(buf);
                 in.resetReaderIndex();
                 switch (result) {
                     case UNRECOGNIZED:

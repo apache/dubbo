@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelHandlerContext;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.remoting.buffer.ChannelBuffers;
+
 import io.netty.handler.codec.http2.Http2CodecUtil;
 
 import static java.lang.Math.min;
 
 public class Http2ProtocolDetector implements ProtocolDetector {
-    private final ByteBuf clientPrefaceString = Http2CodecUtil.connectionPrefaceBuf();
+    private final ChannelBuffer clientPrefaceString = new ByteBufferBackedChannelBuffer(
+        Http2CodecUtil.connectionPrefaceBuf().nioBuffer());
 
     @Override
-    public Result detect(ChannelHandlerContext ctx, ByteBuf in) {
+    public Result detect(ChannelBuffer in) {
         int prefaceLen = clientPrefaceString.readableBytes();
         int bytesRead = min(in.readableBytes(), prefaceLen);
 
         // If the input so far doesn't match the preface, break the connection.
-        if (bytesRead == 0 || !ByteBufUtil.equals(in, 0,
-                clientPrefaceString, 0, bytesRead)) {
-
+        if (bytesRead == 0 || !ChannelBuffers.prefixEquals(in, clientPrefaceString, bytesRead)) {
             return Result.UNRECOGNIZED;
         }
         if (bytesRead == prefaceLen) {

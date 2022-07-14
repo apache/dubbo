@@ -14,7 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.rpc.protocol.tri;
+
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -36,16 +42,17 @@ public class Http2ProtocolDetectorTest {
 
         ByteBuf connectionPrefaceBuf = Http2CodecUtil.connectionPrefaceBuf();
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer();
-        ProtocolDetector.Result result = detector.detect(ctx, byteBuf);
+        ChannelBuffer in = new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer());
+        ProtocolDetector.Result result = detector.detect(in);
         Assertions.assertEquals(result, ProtocolDetector.Result.UNRECOGNIZED);
 
         byteBuf.writeBytes(connectionPrefaceBuf);
-        result = detector.detect(ctx, byteBuf);
+        result = detector.detect(new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer()));
         Assertions.assertEquals(result, ProtocolDetector.Result.RECOGNIZED);
 
         byteBuf.clear();
         byteBuf.writeBytes(connectionPrefaceBuf, 0, 1);
-        result = detector.detect(ctx, byteBuf);
+        result = detector.detect(new ByteBufferBackedChannelBuffer(byteBuf.nioBuffer()));
         Assertions.assertEquals(result, ProtocolDetector.Result.NEED_MORE_DATA);
 
     }

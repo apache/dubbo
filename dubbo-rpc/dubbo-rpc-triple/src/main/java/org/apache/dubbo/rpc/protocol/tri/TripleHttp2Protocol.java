@@ -23,7 +23,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.remoting.api.Http2WireProtocol;
+import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -39,8 +39,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
+import io.netty.handler.codec.http2.Http2FrameLogger;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
 
 import java.util.Collections;
@@ -56,7 +58,7 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_FRAME_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY;
 
 @Activate
-public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModelAware {
+public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
 
     // 1 MiB
     private static final int MIB_1 = 1 << 20;
@@ -67,10 +69,18 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
     private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
+    public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
+
+    public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
+
     private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
     private Configuration config = ConfigurationUtils.getGlobalConfiguration(
         ApplicationModel.defaultModel());
+
+    public TripleHttp2Protocol() {
+        super(new Http2ProtocolDetector());
+    }
 
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
