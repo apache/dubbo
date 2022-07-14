@@ -37,11 +37,11 @@ public class ServiceKeyMatcherTest {
         ));
 
 
-        Assertions.assertFalse(ServiceKey.Matcher.isMatch(
+        Assertions.assertTrue(ServiceKey.Matcher.isMatch(
             new ServiceKey("*", null, null),
             new ServiceKey("DemoService", null, null)
         ));
-        Assertions.assertFalse(ServiceKey.Matcher.isMatch(
+        Assertions.assertTrue(ServiceKey.Matcher.isMatch(
             new ServiceKey("*", null, null),
             new ServiceKey(null, null, null)
         ));

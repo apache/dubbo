@@ -337,6 +337,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                             if (shouldWrap) {
                                 URL newConsumerUrl = customizedConsumerUrlMap.computeIfAbsent(matchedProtocolServiceKey,
                                     k -> consumerUrl.setProtocol(k.getProtocol())
+                                        .setPath(k.getInterfaceName())
+                                        .setServiceInterface(k.getInterfaceName())
                                         .addParameter(CommonConstants.GROUP_KEY, k.getGroup())
                                         .addParameter(CommonConstants.VERSION_KEY, k.getVersion()));
                                 RpcContext.getServiceContext().setConsumerUrl(newConsumerUrl);
