@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
+import org.apache.dubbo.remoting.api.SslContexts;
+import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -40,7 +44,7 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Collection;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -53,11 +57,9 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 /**
  * PortUnificationServer.
  */
-public class PortUnificationServer {
+public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(PortUnificationServer.class);
-    private final List<WireProtocol> protocols;
-    private final URL url;
+    private static final Logger logger = LoggerFactory.getLogger(NettyPortUnificationServer.class);
 
     private final DefaultChannelGroup channels = new DefaultChannelGroup(
         GlobalEventExecutor.INSTANCE);
@@ -70,41 +72,30 @@ public class PortUnificationServer {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-    private Channel channel;
+    private io.netty.channel.Channel channel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public PortUnificationServer(URL url) {
+    public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
+        super(url, handler);
+
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-        this.url = ExecutorUtil.setThreadName(url, "DubboPUServerHandler");
-        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class)
-            .getActivateExtension(url, new String[0]);
         // read config before destroy
         serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout(
             getUrl().getOrDefaultModuleModel());
     }
 
-    public URL getUrl() {
-        return url;
-    }
-
-    public void bind() {
-        if (channel == null) {
-            doOpen();
-        }
-    }
-
-    public void close() throws Throwable {
+    @Override
+    public void close() {
         if (channel != null) {
             doClose();
         }
     }
 
-    /**
-     * Init and start netty server
-     */
-    protected void doOpen() {
+
+    @Override
+    public void doOpen() {
         bootstrap = new ServerBootstrap();
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);
@@ -115,7 +106,7 @@ public class PortUnificationServer {
         final boolean enableSsl = getUrl().getParameter(SSL_ENABLED_KEY, false);
         final SslContext sslContext;
         if (enableSsl) {
-            sslContext = SslContexts.buildServerSslContext(url);
+            sslContext = SslContexts.buildServerSslContext(getUrl());
         } else {
             sslContext = null;
         }
@@ -129,9 +120,9 @@ public class PortUnificationServer {
                 protected void initChannel(SocketChannel ch) throws Exception {
                     // Do not add idle state handler here, because it should be added in the protocol handler.
                     final ChannelPipeline p = ch.pipeline();
-                    final PortUnificationServerHandler puHandler;
-                    puHandler = new PortUnificationServerHandler(url, sslContext, true, protocols,
-                        channels);
+                    final NettyPortUnificationServerHandler puHandler;
+                    puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
+                        channels, NettyPortUnificationServer.this);
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
@@ -139,7 +130,7 @@ public class PortUnificationServer {
 
         String bindIp = getUrl().getParameter(Constants.BIND_IP_KEY, getUrl().getHost());
         int bindPort = getUrl().getParameter(Constants.BIND_PORT_KEY, getUrl().getPort());
-        if (url.getParameter(ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
+        if (getUrl().getParameter(ANYHOST_KEY, false) || NetUtils.isInvalidLocalHost(bindIp)) {
             bindIp = ANYHOST_VALUE;
         }
         InetSocketAddress bindAddress = new InetSocketAddress(bindIp, bindPort);
@@ -148,7 +139,7 @@ public class PortUnificationServer {
         channel = channelFuture.channel();
     }
 
-    protected void doClose() throws Throwable {
+    protected void doClose(){
         final long st = System.currentTimeMillis();
 
         try {
@@ -165,7 +156,7 @@ public class PortUnificationServer {
             logger.warn("Interrupted while shutting down", e);
         }
 
-        for (WireProtocol protocol : protocols) {
+        for (WireProtocol protocol : getProtocols()) {
             protocol.close();
         }
 
@@ -187,6 +178,16 @@ public class PortUnificationServer {
 
     public boolean isBound() {
         return channel.isActive();
+    }
+
+    @Override
+    public Collection<Channel> getChannels() {
+        return null;
+    }
+
+    @Override
+    public Channel getChannel(InetSocketAddress remoteAddress) {
+        return null;
     }
 
     public InetSocketAddress getLocalAddress() {
