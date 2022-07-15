@@ -42,7 +42,7 @@ public class DubboCountCodecTest {
     @Test
     public void test() throws Exception {
         DubboCountCodec dubboCountCodec = new DubboCountCodec(FrameworkModel.defaultModel());
-        ChannelBuffer buffer = ChannelBuffers.buffer(1024);
+        ChannelBuffer buffer = ChannelBuffers.buffer(2048);
         Channel channel = new MockChannel();
         Assertions.assertEquals(Codec2.DecodeResult.NEED_MORE_INPUT, dubboCountCodec.decode(channel, buffer));
 

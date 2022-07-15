@@ -70,6 +70,8 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private ScopeBeanFactory beanFactory;
     private List<ScopeModelDestroyListener> destroyListeners;
 
+    private List<ScopeClassLoaderListener> classLoaderListeners;
+
     private Map<String, Object> attributes;
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
     private final boolean internalScope;
@@ -94,6 +96,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
         this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
         this.destroyListeners = new LinkedList<>();
+        this.classLoaderListeners = new LinkedList<>();
         this.attributes = new ConcurrentHashMap<>();
         this.classLoaders = new ConcurrentHashSet<>();
 
@@ -142,10 +145,26 @@ public abstract class ScopeModel implements ExtensionAccessor {
         }
     }
 
+    protected void notifyClassLoaderAdd(ClassLoader classLoader) {
+        for (ScopeClassLoaderListener classLoaderListener : classLoaderListeners) {
+            classLoaderListener.onAddClassLoader(this, classLoader);
+        }
+    }
+
+    protected void notifyClassLoaderDestroy(ClassLoader classLoader) {
+        for (ScopeClassLoaderListener classLoaderListener : classLoaderListeners) {
+            classLoaderListener.onRemoveClassLoader(this, classLoader);
+        }
+    }
+
     protected abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
         destroyListeners.add(listener);
+    }
+
+    public final void addClassLoaderListener(ScopeClassLoaderListener listener) {
+        classLoaderListeners.add(listener);
     }
 
     public Map<String, Object> getAttributes() {
@@ -187,6 +206,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
             parent.addClassLoader(classLoader);
         }
         extensionDirector.removeAllCachedLoader();
+        notifyClassLoaderAdd(classLoader);
     }
 
     public void removeClassLoader(ClassLoader classLoader) {
@@ -196,6 +216,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
                 parent.removeClassLoader(classLoader);
             }
             extensionDirector.removeAllCachedLoader();
+            notifyClassLoaderDestroy(classLoader);
         }
     }
 
