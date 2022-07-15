@@ -148,7 +148,14 @@ public class ServiceInstancesChangedListener {
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
-            MetadataInfo metadata = serviceDiscovery.getRemoteMetadata(revision, subInstances);
+
+            MetadataInfo metadata = subInstances.stream()
+                .map(ServiceInstance::getServiceMetadata)
+                .filter(Objects::nonNull)
+                .filter(m -> revision.equals(m.getRevision()))
+                .findFirst()
+                .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
+
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
