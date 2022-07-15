@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
@@ -274,8 +275,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             } else {
                 serviceDescriptor = repository.registerService(interfaceClass);
             }
-            consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
-                getScopeModel(), serviceMetadata, createAsyncMethodInfo());
+            consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor,
+                getScopeModel(), serviceMetadata, createAsyncMethodInfo(), interfaceClassLoader);
+
+            // Compatible with dependencies on ServiceModel#getReferenceConfig() , and will be removed in a future version.
+            consumerModel.setConfig(this);
 
             repository.registerConsumer(consumerModel);
 
@@ -286,6 +290,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             serviceMetadata.setTarget(ref);
             serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
+            consumerModel.setDestroyCaller(getDestroyRunner());
             consumerModel.setProxyObject(ref);
             consumerModel.initMethodModels();
 
@@ -669,5 +674,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @Deprecated
     public Invoker<?> getInvoker() {
         return invoker;
+    }
+
+    public Callable<Void> getDestroyRunner() {
+        return () -> {
+            this.destroy();
+            return null;
+        };
     }
 }

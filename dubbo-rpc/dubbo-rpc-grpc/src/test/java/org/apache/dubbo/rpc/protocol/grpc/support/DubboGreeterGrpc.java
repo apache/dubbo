@@ -38,16 +38,13 @@ public final class DubboGreeterGrpc {
     public static class DubboGreeterStub implements IGreeter {
 
         protected URL url;
-        protected ReferenceConfigBase<?> referenceConfig;
 
         protected GreeterGrpc.GreeterBlockingStub blockingStub;
         protected GreeterGrpc.GreeterFutureStub futureStub;
         protected GreeterGrpc.GreeterStub stub;
 
-        public DubboGreeterStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url,
-                                ReferenceConfigBase<?> referenceConfig) {
+        public DubboGreeterStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url) {
             this.url = url;
-            this.referenceConfig = referenceConfig;
 
             blockingStub = GreeterGrpc.newBlockingStub(channel).build(channel, callOptions);
             futureStub = GreeterGrpc.newFutureStub(channel).build(channel, callOptions);
@@ -82,9 +79,8 @@ public final class DubboGreeterGrpc {
 
     }
 
-    public static DubboGreeterStub getDubboStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url,
-                                                ReferenceConfigBase<?> referenceConfig) {
-        return new DubboGreeterStub(channel, callOptions, url, referenceConfig);
+    public static DubboGreeterStub getDubboStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url) {
+        return new DubboGreeterStub(channel, callOptions, url);
     }
 
     public interface IGreeter {

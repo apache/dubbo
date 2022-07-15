@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.grpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
@@ -108,7 +107,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         final Method dubboStubMethod;
         try {
             dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class,
-                    URL.class, ReferenceConfigBase.class);
+                    URL.class);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Does not find getDubboStub in " + enclosingClass.getName() + ", please use the customized protoc-gen-dubbo-java to update the generated classes.");
         }
@@ -118,12 +117,10 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         // CallOptions
         try {
-            ReferenceConfigBase<?> referenceConfig = url.getServiceModel().getReferenceConfig();
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
-                    url,
-                    referenceConfig
+                    url
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.qos.DemoService;
 import org.apache.dubbo.qos.DemoServiceImpl;
@@ -83,7 +84,7 @@ public class LsTest {
             new DemoServiceImpl(),
             serviceDescriptor,
             null,
-            serviceMetadata);
+            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
     }
 
@@ -96,8 +97,7 @@ public class LsTest {
         Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
         ConsumerModel consumerModel = new ConsumerModel(
             serviceMetadata.getServiceKey(), null, serviceDescriptor,
-            referenceConfig, serviceMetadata, methodConfigs
-        );
+            serviceMetadata, methodConfigs, referenceConfig.getInterfaceClassLoader());
         repository.registerConsumer(consumerModel);
     }
 }
