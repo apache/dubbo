@@ -14,25 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.WireProtocol;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.ssl.SslContext;
 
-public class PortUnificationServerTest {
+public class EmptyWireProtocol implements WireProtocol {
+    @Override
+    public ProtocolDetector detector() {
+        return null;
+    }
 
-    @Test
-    public void testBind() {
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 8898,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
+    @Override
+    public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
 
-        final PortUnificationServer server = new PortUnificationServer(url);
-        server.bind();
-        Assertions.assertTrue(server.isBound());
+    }
+
+    @Override
+    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
 }

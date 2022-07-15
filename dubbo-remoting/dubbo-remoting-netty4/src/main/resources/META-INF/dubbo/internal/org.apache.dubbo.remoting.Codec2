@@ -1,0 +1,2 @@
+tri=org.apache.dubbo.remoting.transport.netty4.DefaultCodec
+empty=org.apache.dubbo.remoting.transport.netty4.DefaultCodec

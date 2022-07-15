@@ -93,6 +93,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
     }
 
+    public void bind(){
+        if(channel == null) {
+            doOpen();
+        }
+    }
 
     @Override
     public void doOpen() {
@@ -139,7 +144,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         channel = channelFuture.channel();
     }
 
-    protected void doClose(){
+    @Override
+    public void doClose(){
         final long st = System.currentTimeMillis();
 
         try {
