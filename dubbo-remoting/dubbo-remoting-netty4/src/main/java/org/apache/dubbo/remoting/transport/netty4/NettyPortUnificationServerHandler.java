@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -45,15 +44,12 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private final SslContext sslCtx;
     private final URL url;
-    private final ChannelHandler handler;
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
 
     public NettyPortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
-                                             List<WireProtocol> protocols, ChannelGroup channels,
-                                             ChannelHandler handler) {
+                                             List<WireProtocol> protocols, ChannelGroup channels) {
         this.url = url;
-        this.handler = handler;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
         this.detectSsl = detectSsl;
@@ -67,7 +63,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//        NettyChannel ch = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         super.channelActive(ctx);
         channels.add(ctx.channel());
     }
@@ -120,7 +115,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         ChannelPipeline p = ctx.pipeline();
         p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
         p.addLast("unificationA",
-            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols, channels, handler));
+            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols, channels));
         p.remove(this);
     }
 

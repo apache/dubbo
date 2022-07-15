@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
@@ -31,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 public class PortUnificationExchanger {
 
     private static final Logger log = LoggerFactory.getLogger(PortUnificationExchanger.class);
-    private static final ConcurrentMap<String, AbstractPortUnificationServer> servers = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
 
     public static void bind(URL url, ChannelHandler handler) {
         servers.computeIfAbsent(url.getAddress(), addr -> {
@@ -47,9 +48,9 @@ public class PortUnificationExchanger {
     }
 
     public static void close() {
-        final ArrayList<AbstractPortUnificationServer> toClose = new ArrayList<>(servers.values());
+        final ArrayList<RemotingServer> toClose = new ArrayList<>(servers.values());
         servers.clear();
-        for (AbstractPortUnificationServer server : toClose) {
+        for (RemotingServer server : toClose) {
             try {
                 server.close();
             } catch (Throwable throwable) {
@@ -59,7 +60,7 @@ public class PortUnificationExchanger {
     }
 
     // for test
-    public static ConcurrentMap<String, AbstractPortUnificationServer> getServers() {
+    public static ConcurrentMap<String, RemotingServer> getServers() {
         return servers;
     }
 
