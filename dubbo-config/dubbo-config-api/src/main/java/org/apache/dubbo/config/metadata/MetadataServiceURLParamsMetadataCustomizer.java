@@ -62,7 +62,7 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         ProviderModel providerModel = serviceRepository.lookupExportedService(key);
         String metadataValue = "";
         if (providerModel != null) {
-            List<URL> metadataURLs = providerModel.getServiceConfig().getExportedUrls();
+            List<URL> metadataURLs = providerModel.getServiceUrls();
             if (CollectionUtils.isNotEmpty(metadataURLs)) {
                 metadataValue = getMetadataServiceParameter(metadataURLs.get(0));
             }

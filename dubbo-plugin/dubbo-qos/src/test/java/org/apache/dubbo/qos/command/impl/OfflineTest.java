@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.qos.DemoService;
 import org.apache.dubbo.qos.DemoServiceImpl;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -90,8 +91,7 @@ public class OfflineTest {
             DemoService.class.getName(),
             new DemoServiceImpl(),
             serviceDescriptor,
-            null,
-            serviceMetadata);
+            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
         registerStatedURL = new ProviderModel.RegisterStatedURL(
             URL.valueOf("dubbo://127.0.0.1:20880/" + DemoService.class.getName()),
             URL.valueOf("test://127.0.0.1:2181/" + RegistryService.class.getName()),

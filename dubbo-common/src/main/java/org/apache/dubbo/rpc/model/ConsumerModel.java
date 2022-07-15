@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -49,11 +48,11 @@ public class ConsumerModel extends ServiceModel {
      */
     public ConsumerModel(String serviceKey,
                          Object proxyObject,
-                         ServiceDescriptor serviceModel,
-                         ReferenceConfigBase<?> referenceConfig,
-                         Map<String, AsyncMethodInfo> methodConfigs) {
+                         ServiceDescriptor serviceDescriptor,
+                         Map<String, AsyncMethodInfo> methodConfigs,
+                         ClassLoader interfaceClassLoader) {
 
-        super(proxyObject, serviceKey, serviceModel, referenceConfig);
+        super(proxyObject, serviceKey, serviceDescriptor, null, interfaceClassLoader);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
 
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
@@ -61,12 +60,12 @@ public class ConsumerModel extends ServiceModel {
 
     public ConsumerModel(String serviceKey,
                          Object proxyObject,
-                         ServiceDescriptor serviceModel,
-                         ReferenceConfigBase<?> referenceConfig,
+                         ServiceDescriptor serviceDescriptor,
                          ServiceMetadata metadata,
-                         Map<String, AsyncMethodInfo> methodConfigs) {
+                         Map<String, AsyncMethodInfo> methodConfigs,
+                         ClassLoader interfaceClassLoader) {
 
-        super(proxyObject, serviceKey, serviceModel, referenceConfig, metadata);
+        super(proxyObject, serviceKey, serviceDescriptor, null, metadata, interfaceClassLoader);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
 
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
@@ -74,13 +73,13 @@ public class ConsumerModel extends ServiceModel {
 
     public ConsumerModel(String serviceKey,
                          Object proxyObject,
-                         ServiceDescriptor serviceModel,
-                         ReferenceConfigBase<?> referenceConfig,
+                         ServiceDescriptor serviceDescriptor,
                          ModuleModel moduleModel,
                          ServiceMetadata metadata,
-                         Map<String, AsyncMethodInfo> methodConfigs) {
+                         Map<String, AsyncMethodInfo> methodConfigs,
+                         ClassLoader interfaceClassLoader) {
+        super(proxyObject, serviceKey, serviceDescriptor, moduleModel, metadata, interfaceClassLoader);
 
-        super(proxyObject, serviceKey, serviceModel, referenceConfig, moduleModel, metadata);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
 
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
@@ -101,7 +100,7 @@ public class ConsumerModel extends ServiceModel {
     public void initMethodModels() {
         Class<?>[] interfaceList;
         if (getProxyObject() == null) {
-            Class<?> serviceInterfaceClass = getReferenceConfig().getServiceInterfaceClass();
+            Class<?> serviceInterfaceClass = getServiceInterfaceClass();
             if (serviceInterfaceClass != null) {
                 interfaceList = new Class[]{serviceInterfaceClass};
             } else {

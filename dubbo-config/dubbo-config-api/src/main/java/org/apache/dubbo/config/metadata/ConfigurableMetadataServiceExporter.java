@@ -98,6 +98,10 @@ public class ConfigurableMetadataServiceExporter {
         return applicationModel.getApplicationConfigManager().getApplication().get();
     }
 
+    private ProtocolConfig getProtocolConfig(String protocol) {
+        return applicationModel.getApplicationConfigManager().getProtocol(protocol).get();
+    }
+
     private ProtocolConfig generateMetadataProtocol() {
         // protocol always defaults to dubbo if not specified
         String specifiedProtocol = getSpecifiedProtocol();
@@ -116,10 +120,17 @@ public class ConfigurableMetadataServiceExporter {
                 Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(specifiedProtocol);
                 if (protocol != null && protocol.getServers() != null) {
                     Iterator<ProtocolServer> it = protocol.getServers().iterator();
+                    // metadata service may export before normal service export, it.hasNext() will return false.
+                    // so need use specified protocol port.
                     if (it.hasNext()) {
                         String addr = it.next().getAddress();
                         String rawPort = addr.substring(addr.indexOf(":") + 1);
                         protocolConfig.setPort(Integer.parseInt(rawPort));
+                    } else {
+                        Integer protocolPort = getProtocolConfig(specifiedProtocol).getPort();
+                        if (null != protocolPort && protocolPort != -1) {
+                            protocolConfig.setPort(protocolPort);
+                        }
                     }
                 }
             } catch (Exception e) {
