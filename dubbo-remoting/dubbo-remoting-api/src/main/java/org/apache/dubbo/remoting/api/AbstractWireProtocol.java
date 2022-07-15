@@ -20,7 +20,7 @@ public abstract class AbstractWireProtocol implements WireProtocol {
 
     private final ProtocolDetector detector;
 
-    protected AbstractWireProtocol(ProtocolDetector detector) {
+    public AbstractWireProtocol(ProtocolDetector detector) {
         this.detector = detector;
     }
 

@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
 public class NettyPortUnificationTransporter implements PortUnificationTransporter {
 
-    public static final String NAME = "pu_netty";
+    public static final String NAME = "netty";
 
     @Override
     public AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException {
