@@ -1,9 +1,3 @@
-package org.apache.dubbo.rpc.protocol.tri;
-
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Codec2;
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,6 +14,11 @@ import org.apache.dubbo.remoting.buffer.ChannelBuffer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.tri;
+
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import java.io.IOException;
 
 public class DefaultTriCodec implements Codec2 {
