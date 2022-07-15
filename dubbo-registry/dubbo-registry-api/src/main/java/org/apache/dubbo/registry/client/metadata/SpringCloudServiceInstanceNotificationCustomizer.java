@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpringCloudServiceInstanceCustomizer implements ServiceInstanceCustomizer {
+public class SpringCloudServiceInstanceNotificationCustomizer implements ServiceInstanceNotificationCustomizer {
     @Override
     public void customize(List<ServiceInstance> serviceInstance) {
         for (ServiceInstance instance : serviceInstance) {

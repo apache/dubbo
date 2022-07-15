@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import java.util.List;
 
 @SPI
-public interface ServiceInstanceCustomizer {
+public interface ServiceInstanceNotificationCustomizer {
 
     void customize(List<ServiceInstance> serviceInstance);
 }

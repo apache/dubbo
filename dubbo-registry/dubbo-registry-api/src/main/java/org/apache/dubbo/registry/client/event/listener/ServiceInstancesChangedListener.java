@@ -33,8 +33,8 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -84,7 +84,7 @@ public class ServiceInstancesChangedListener {
     private volatile ScheduledFuture<?> retryFuture;
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
-    private final Set<ServiceInstanceCustomizer> serviceInstanceCustomizers;
+    private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
 
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
@@ -96,7 +96,7 @@ public class ServiceInstancesChangedListener {
         retryPermission = new Semaphore(1);
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
         this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
-        this.serviceInstanceCustomizers = applicationModel.getExtensionLoader(ServiceInstanceCustomizer.class).getSupportedExtensionInstances();
+        this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
     }
 
     /**
@@ -298,8 +298,8 @@ public class ServiceInstancesChangedListener {
         String appName = event.getServiceName();
         List<ServiceInstance> appInstances = event.getServiceInstances();
         logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
-        for (ServiceInstanceCustomizer serviceInstanceCustomizer : serviceInstanceCustomizers) {
-            serviceInstanceCustomizer.customize(appInstances);
+        for (ServiceInstanceNotificationCustomizer serviceInstanceNotificationCustomizer : serviceInstanceNotificationCustomizers) {
+            serviceInstanceNotificationCustomizer.customize(appInstances);
         }
         allInstances.put(appName, appInstances);
         lastRefreshTime = System.currentTimeMillis();
