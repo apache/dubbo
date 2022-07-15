@@ -131,12 +131,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         for (ReferenceBean referenceBean : getReferences()) {
             initReferenceBean(referenceBean);
         }
-
-        // prepare all reference beans, including those loaded very early that are dependent on some BeanFactoryPostProcessor
-//        Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class, true, false);
-//        for (ReferenceBean referenceBean : referenceBeanMap.values()) {
-//            addReference(referenceBean);
-//        }
     }
 
     /**
@@ -145,7 +139,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @param referenceBean
      * @throws Exception
      */
-    private synchronized void  initReferenceBean(ReferenceBean referenceBean) throws Exception {
+    private synchronized void initReferenceBean(ReferenceBean referenceBean) throws Exception {
 
         if (referenceBean.getReferenceConfig() != null) {
             return;

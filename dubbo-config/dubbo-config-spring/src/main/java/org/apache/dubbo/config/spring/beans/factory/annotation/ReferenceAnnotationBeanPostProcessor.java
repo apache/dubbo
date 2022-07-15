@@ -67,7 +67,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
-import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -141,10 +140,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 }
 
                 String beanClassName = beanDefinition.getBeanClassName();
-//                if (beanDefinition instanceof AnnotatedBeanDefinition) {
-//                    AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
-//                    beanClassName = annotatedBeanDefinition.getFactoryMethodMetadata().getDeclaringClassName();
-//                }
                 beanType = ClassUtils.resolveClass(beanClassName, getClassLoader());
             } else {
                 beanType = beanFactory.getType(beanName);
@@ -229,10 +224,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         if (beanClass == null) {
-            String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName()+"#"+factoryMethodMetadata.getMethodName()+"()";
+            String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName() + "#" + factoryMethodMetadata.getMethodName() + "()";
             throw new BeanCreationException("The ReferenceBean is missing necessary generic type, which returned by the @Bean method of Java-config class. " +
-                    "The generic type of the returned ReferenceBean must be specified as the referenced interface type, " +
-                    "such as ReferenceBean<DemoService>. Please check bean method: "+beanMethodSignature);
+                "The generic type of the returned ReferenceBean must be specified as the referenced interface type, " +
+                "such as ReferenceBean<DemoService>. Please check bean method: " + beanMethodSignature);
         }
 
         // get dubbo reference annotation attributes
@@ -245,6 +240,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 // Compatible with Spring 4.x
                 annotationAttributes = factoryMethodMetadata.getAnnotationAttributes(annotationType.getName());
                 annotationAttributes = filterDefaultValues(annotationType, annotationAttributes);
+                break;
             }
         }
 
@@ -261,12 +257,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             // check beanClass and reference interface class
             if (!StringUtils.isEquals(interfaceName, beanClass.getName()) && beanClass != GenericService.class) {
-                String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName()+"#"+factoryMethodMetadata.getMethodName()+"()";
+                String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName() + "#" + factoryMethodMetadata.getMethodName() + "()";
                 throw new BeanCreationException("The 'interfaceClass' or 'interfaceName' attribute value of @DubboReference annotation " +
-                        "is inconsistent with the generic type of the ReferenceBean returned by the bean method. " +
-                        "The interface class of @DubboReference is: "+interfaceName+", but return ReferenceBean<"+beanClass.getName()+">. " +
-                        "Please remove the 'interfaceClass' and 'interfaceName' attributes from @DubboReference annotation. " +
-                        "Please check bean method: "+beanMethodSignature);
+                    "is inconsistent with the generic type of the ReferenceBean returned by the bean method. " +
+                    "The interface class of @DubboReference is: " + interfaceName + ", but return ReferenceBean<" + beanClass.getName() + ">. " +
+                    "Please remove the 'interfaceClass' and 'interfaceName' attributes from @DubboReference annotation. " +
+                    "Please check bean method: " + beanMethodSignature);
             }
 
             Class interfaceClass = beanClass;
@@ -386,7 +382,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // get interface
         String interfaceName = (String) attributes.get(ReferenceAttributes.INTERFACE);
         if (StringUtils.isBlank(interfaceName)) {
-            throw new BeanCreationException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference' if enable generic. "+checkLocation);
+            throw new BeanCreationException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference' if enable generic. " + checkLocation);
         }
 
         // check reference key
@@ -399,11 +395,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             if (registeredReferenceBeanNames.contains(referenceBeanName)) {
                 return referenceBeanName;
             }
-//            else if (renameable) {
-//                // reference key matched, but difference bean name
-//                return registeredReferenceBeanNames.get(0);
-//            }
-            // specify bean name by id attribute, it will register alias later
         }
 
         //check bean definition
@@ -421,19 +412,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                     return referenceBeanName;
                 }
                 //get interfaceName from attribute
-                Class prevInterfaceClass = (Class) prevBeanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
                 Assert.notNull(prevBeanDefinition, "The interface class of ReferenceBean is not initialized");
-                prevBeanType = prevInterfaceClass.getName();
                 prevBeanDesc = referenceBeanName + "[" + prevReferenceKey + "]";
-
-                //check bean type
-                // If two reference beans are the same type and name, then other class injection them by type or name are confusion.
-                // Let it go, Spring find candidate bean will check it
-//                if (StringUtils.isEquals(prevBeanType, interfaceName)) {
-//                    throw new BeanCreationException("Already exists another reference bean with the same bean name and type but difference attributes. " +
-//                        "In order to avoid injection confusion later, please modify the name of one of the beans: " +
-//                        "prev: " + prevBeanDesc + ", new: " + newBeanDesc+". "+checkLocation);
-//                }
             }
 
             // bean name from attribute 'id' or java-config bean, cannot be renamed
@@ -486,9 +466,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
         GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
         targetDefinition.setBeanClass(interfaceClass);
-        String id = getPropertyValue(beanDefinition.getPropertyValues(), ReferenceAttributes.ID);
-
-        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, referenceBeanName + "_decorated"));
 
         // signal object type since Spring 5.2
         beanDefinition.setAttribute(Constants.OBJECT_TYPE_ATTRIBUTE, interfaceClass);

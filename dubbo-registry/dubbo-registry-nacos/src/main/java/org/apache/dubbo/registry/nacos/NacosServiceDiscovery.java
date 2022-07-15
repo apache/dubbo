@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,7 +29,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
@@ -39,8 +39,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
+import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
 
 /**
@@ -53,11 +55,18 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private NacosNamingServiceWrapper namingService;
+    private final String group;
+
+    private final NacosNamingServiceWrapper namingService;
+
+    private static final String NACOS_SD_USE_DEFAULT_GROUP_KEY = "dubbo.nacos-service-discovery.use-default-group";
 
     public NacosServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
         this.namingService = createNamingService(registryURL);
+        // backward compatibility for 3.0.x
+        this.group = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, NACOS_SD_USE_DEFAULT_GROUP_KEY, "false")) ?
+            DEFAULT_GROUP: getGroup(registryURL);
     }
 
     @Override
@@ -69,10 +78,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
-            // Should not register real group for ServiceInstance
-            // Or will cause consumer unable to fetch all of the providers from every group
-            // Provider's group is invisible for consumer
-            service.registerInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
+            service.registerInstance(instance.getServiceName(), group, instance);
         });
     }
 
@@ -80,20 +86,14 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
-            // Should not register real group for ServiceInstance
-            // Or will cause consumer unable to fetch all of the providers from every group
-            // Provider's group is invisible for consumer
-            service.deregisterInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
+            service.deregisterInstance(instance.getServiceName(), group, instance);
         });
     }
 
     @Override
     public Set<String> getServices() {
         return ThrowableFunction.execute(namingService, service -> {
-            // Should not register real group for ServiceInstance
-            // Or will cause consumer unable to fetch all of the providers from every group
-            // Provider's group is invisible for consumer
-            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, Constants.DEFAULT_GROUP);
+            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, group);
             return new LinkedHashSet<>(view.getData());
         });
     }
@@ -101,7 +101,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
-            service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
+            service.selectInstances(serviceName, group, true)
                 .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList())
         );
@@ -116,7 +116,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         }
         execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
             try {
-                service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener
+                service.subscribe(serviceName, group, e -> { // Register Nacos EventListener
                     if (e instanceof NamingEvent) {
                         NamingEvent event = (NamingEvent) e;
                         handleEvent(event, listener);

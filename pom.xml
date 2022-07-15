@@ -514,6 +514,7 @@
                             <forkMode>once</forkMode>
                             <argLine>${argline} ${jacocoArgLine}
                                 --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-opens java.base/java.math=ALL-UNNAMED
                                 --add-opens java.base/java.util=ALL-UNNAMED
                             </argLine>
                             <systemProperties>

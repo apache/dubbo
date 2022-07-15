@@ -287,7 +287,7 @@ public class JValidator implements Validator {
             }
 
             if (!violations.isEmpty()) {
-                logger.error("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
+                logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
                 throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
             }
         } catch (ValidationException e) {
