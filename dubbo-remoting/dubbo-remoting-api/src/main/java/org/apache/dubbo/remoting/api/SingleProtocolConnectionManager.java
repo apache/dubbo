@@ -19,16 +19,15 @@ package org.apache.dubbo.remoting.api;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.api.connection.ConnectionPoolFactory;
 
-import io.netty.util.internal.PlatformDependent;
-
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class SingleProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "single";
 
-    private final ConcurrentMap<String, ConnectionPool> connectionPools = PlatformDependent.newConcurrentHashMap();
+    private final ConcurrentMap<String, ConnectionPool> connectionPools = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<String, Connection> connections = PlatformDependent.newConcurrentHashMap();
+    private final ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<>();
 
     @Override
     public Connection connect(URL url) {
