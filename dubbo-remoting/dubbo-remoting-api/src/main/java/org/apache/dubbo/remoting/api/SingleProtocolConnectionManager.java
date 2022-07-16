@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SingleProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "single";
 
-    private final ConcurrentMap<String, ConnectionPool> connectionPools = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConnectionPool<?>> connectionPools = new ConcurrentHashMap<>();
 
     private final ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<>();
 
@@ -47,7 +47,7 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public ConnectionPool getConnectionPool(URL url) {
+    public ConnectionPool<?> getConnectionPool(URL url) {
         String address = url.getAddress();
         return connectionPools.computeIfAbsent(address, key -> {
             return url.getOrDefaultFrameworkModel()
