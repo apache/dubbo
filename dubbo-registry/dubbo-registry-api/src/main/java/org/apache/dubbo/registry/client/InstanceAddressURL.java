@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -183,8 +183,8 @@ public class InstanceAddressURL extends URL {
         } else if (SIDE_KEY.equals(key)) {
             return getSide();
         }
-
-        Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.Parameter, null, null, key);
+    
+        Optional<String> parameterOnConsumerUrl = new GetParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.Parameter, null, null, key).get();
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
         }
@@ -198,7 +198,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceParameter(final String service, final String key) {
-        Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.ServiceParameter, service, null, key);
+        Optional<String> parameterOnConsumerUrl = new GetParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.ServiceParameter, service, null, key).get();
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
         }
@@ -222,7 +222,7 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public String getServiceMethodParameter(final String protocolServiceKey, final String method, final String key) {
-        Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.ServiceMethodParameter, protocolServiceKey, method, key);
+        Optional<String> parameterOnConsumerUrl = new GetParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.ServiceMethodParameter, protocolServiceKey, method, key).get();
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
         }
@@ -241,7 +241,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getMethodParameter(final String method, final String key) {
-        Optional<String> parameterOnConsumerUrl = getParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.MethodParameter, null, method, key);
+        Optional<String> parameterOnConsumerUrl = new GetParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.MethodParameter, null, method, key).get();
         if (parameterOnConsumerUrl.isPresent()) {
             return parameterOnConsumerUrl.get();
         }
@@ -262,7 +262,7 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public boolean hasServiceMethodParameter(final String protocolServiceKey, final String method, final String key) {
-        if (hasParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.ServiceMethodParameter, protocolServiceKey, method, key, true)) {
+        if (new HasParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.ServiceMethodParameter, protocolServiceKey, method, key, true).get()) {
             return true;
         }
         MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
@@ -295,7 +295,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public boolean hasMethodParameter(final String method, final String key) {
-        if (hasParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.MethodParameter, null, method, key, true)) {
+        if (new HasParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.MethodParameter, null, method, key, true).get()) {
             return true;
         }
         String protocolServiceKey = getProtocolServiceKey();
@@ -313,9 +313,10 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public boolean hasServiceMethodParameter(final String protocolServiceKey, final String method) {
-        if (hasParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.ServiceMethodParameter, protocolServiceKey, method, null, false)) {
+        if (new HasParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.ServiceMethodParameter, protocolServiceKey, method, null, false).get()) {
             return true;
         }
+
         MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
         if (null == serviceInfo) {
             return false;
@@ -325,7 +326,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public boolean hasMethodParameter(final String method) {
-        if (hasParameterOnConsumerUrl(ParameterOnConsumerUrlEnum.MethodParameter, null, method, null, false)) {
+        if (new HasParameterOnConsumerUrlSupplier(ParameterOnConsumerUrlEnum.MethodParameter, null, method, null, false).get()) {
             return true;
         }
         String protocolServiceKey = getProtocolServiceKey();
@@ -335,13 +336,13 @@ public class InstanceAddressURL extends URL {
         return hasServiceMethodParameter(protocolServiceKey, method);
     }
     
-    public class GetParameterOnConsumerUrlFunction implements Function<URL, Optional<String>> {
+    public class GetParameterOnConsumerUrlSupplier implements Supplier<Optional<String>> {
         private final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum;
         private final String service;
         private final String method;
         private final String key;
         
-        public GetParameterOnConsumerUrlFunction(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service, 
+        public GetParameterOnConsumerUrlSupplier(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service, 
                                                  final String method, final String key) {
             this.parameterOnConsumerUrlEnum = parameterOnConsumerUrlEnum;
             this.service = service;
@@ -350,7 +351,11 @@ public class InstanceAddressURL extends URL {
         }
     
         @Override
-        public Optional<String> apply(final URL url) {
+        public Optional<String> get() {
+            if (!consumerParamFirst(key)) {
+                return Optional.empty();
+            }
+            URL url = RpcContext.getServiceContext().getConsumerUrl();
             if (url == null) {
                 return Optional.empty();
             }
@@ -374,22 +379,28 @@ public class InstanceAddressURL extends URL {
         }
     }
     
-    public class HasParameterOnConsumerUrlFunction implements Function<URL, Boolean> {
+    public class HasParameterOnConsumerUrlSupplier implements Supplier<Boolean> {
         private final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum;
         private final String service;
         private final String method;
         private final String key;
+        private final Boolean checkConsumerParamFirst;
         
-        public HasParameterOnConsumerUrlFunction(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service,
-                                                 final String method, final String key) {
+        public HasParameterOnConsumerUrlSupplier(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service,
+                                                 final String method, final String key, final Boolean checkConsumerParamFirst) {
             this.parameterOnConsumerUrlEnum = parameterOnConsumerUrlEnum;
             this.service = service;
             this.method = method;
             this.key = key;
+            this.checkConsumerParamFirst = checkConsumerParamFirst;
         }
         
         @Override
-        public Boolean apply(final URL url) {
+        public Boolean get() {
+            if (checkConsumerParamFirst && !consumerParamFirst(key)) {
+                return Boolean.FALSE;
+            }
+            URL url = RpcContext.getServiceContext().getConsumerUrl();
             if (url == null) {
                 return Boolean.FALSE;
             }
@@ -401,22 +412,6 @@ public class InstanceAddressURL extends URL {
             }
             return Boolean.FALSE;
         }
-    }
-    
-    private Optional<String> getParameterOnConsumerUrl(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service,
-                                                       final String method, final String key) {
-        if (!consumerParamFirst(key)) {
-            return Optional.empty();
-        }
-        return new GetParameterOnConsumerUrlFunction(parameterOnConsumerUrlEnum, service, method, key).apply(RpcContext.getServiceContext().getConsumerUrl());
-    }
-    
-    private Boolean hasParameterOnConsumerUrl(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service,
-                                              final String method, final String key, final Boolean checkConsumerParamFirst) {
-        if (checkConsumerParamFirst && !consumerParamFirst(key)) {
-            return false;
-        }
-        return new HasParameterOnConsumerUrlFunction(parameterOnConsumerUrlEnum, service, method, key).apply(RpcContext.getServiceContext().getConsumerUrl());
     }
     
     enum ParameterOnConsumerUrlEnum {
