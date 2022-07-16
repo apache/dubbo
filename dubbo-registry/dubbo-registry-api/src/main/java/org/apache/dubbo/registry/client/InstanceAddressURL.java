@@ -335,7 +335,7 @@ public class InstanceAddressURL extends URL {
         return hasServiceMethodParameter(protocolServiceKey, method);
     }
     
-    public class GetParameterOnConsumerUrlFunction implements Function<URL, String> {
+    public class GetParameterOnConsumerUrlFunction implements Function<URL, Optional<String>> {
         private final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum;
         private final String service;
         private final String method;
@@ -350,20 +350,27 @@ public class InstanceAddressURL extends URL {
         }
     
         @Override
-        public String apply(final URL url) {
+        public Optional<String> apply(final URL url) {
+            if (url == null) {
+                return Optional.empty();
+            }
             if (parameterOnConsumerUrlEnum == ParameterOnConsumerUrlEnum.Parameter) {
-                return url.getParameter(key);
+                return clean(url.getParameter(key));
             }
             if (parameterOnConsumerUrlEnum == ParameterOnConsumerUrlEnum.ServiceParameter) {
-                return url.getServiceParameter(service, key);
+                return clean(url.getServiceParameter(service, key));
             }
             if (parameterOnConsumerUrlEnum == ParameterOnConsumerUrlEnum.ServiceMethodParameter) {
-                return url.getServiceMethodParameter(service, method, key);
+                return clean(url.getServiceMethodParameter(service, method, key));
             }
             if (parameterOnConsumerUrlEnum == ParameterOnConsumerUrlEnum.MethodParameter) {
-                return url.getMethodParameter(method, key);
+                return clean(url.getMethodParameter(method, key));
             }
-            return null;
+            return Optional.empty();
+        }
+        
+        private Optional<String> clean(final String value) {
+            return StringUtils.isEmpty(value) ? Optional.empty() : Optional.ofNullable(value);
         }
     }
     
@@ -383,13 +390,16 @@ public class InstanceAddressURL extends URL {
         
         @Override
         public Boolean apply(final URL url) {
+            if (url == null) {
+                return Boolean.FALSE;
+            }
             if (parameterOnConsumerUrlEnum == ParameterOnConsumerUrlEnum.ServiceMethodParameter) {
                 return url.hasServiceMethodParameter(service, method, key);
             }
             if (parameterOnConsumerUrlEnum == ParameterOnConsumerUrlEnum.MethodParameter) {
                 return url.hasMethodParameter(method, key);
             }
-            return false;
+            return Boolean.FALSE;
         }
     }
     
@@ -398,15 +408,7 @@ public class InstanceAddressURL extends URL {
         if (!consumerParamFirst(key)) {
             return Optional.empty();
         }
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        if (consumerUrl == null) {
-            return Optional.empty();
-        }
-        String value = new GetParameterOnConsumerUrlFunction(parameterOnConsumerUrlEnum, service, method, key).apply(consumerUrl);
-        if (StringUtils.isEmpty(value)) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(value);
+        return new GetParameterOnConsumerUrlFunction(parameterOnConsumerUrlEnum, service, method, key).apply(RpcContext.getServiceContext().getConsumerUrl());
     }
     
     private Boolean hasParameterOnConsumerUrl(final ParameterOnConsumerUrlEnum parameterOnConsumerUrlEnum, final String service,
@@ -414,11 +416,7 @@ public class InstanceAddressURL extends URL {
         if (checkConsumerParamFirst && !consumerParamFirst(key)) {
             return false;
         }
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        if (consumerUrl == null) {
-            return false;
-        }
-        return new HasParameterOnConsumerUrlFunction(parameterOnConsumerUrlEnum, service, method, key).apply(consumerUrl);
+        return new HasParameterOnConsumerUrlFunction(parameterOnConsumerUrlEnum, service, method, key).apply(RpcContext.getServiceContext().getConsumerUrl());
     }
     
     enum ParameterOnConsumerUrlEnum {
