@@ -58,12 +58,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final RemotingServer server;
-    private AtomicBoolean closed = new AtomicBoolean(false);
 
-    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
-        new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
-            TimeUnit.SECONDS, TICKS_PER_WHEEL),
-        timer -> timer.stop());
+    private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL), HashedWheelTimer::stop);
 
     private Timeout closeTimer;
 
@@ -83,19 +81,9 @@ public class HeaderExchangeServer implements ExchangeServer {
     }
 
     private boolean isRunning() {
-        Collection<Channel> channels = getChannels();
-        for (Channel channel : channels) {
-
-            /**
-             *  If there are any client connections,
-             *  our server should be running.
-             */
-
-            if (channel.isConnected()) {
-                return true;
-            }
-        }
-        return false;
+        // If there are any client connections,
+        // our server should be running.
+        return getChannels().stream().anyMatch(Channel::isConnected);
     }
 
     @Override
@@ -114,13 +102,12 @@ public class HeaderExchangeServer implements ExchangeServer {
         }
         startClose();
         if (timeout > 0) {
-            final long max = timeout;
             final long start = System.currentTimeMillis();
             if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
             while (HeaderExchangeServer.this.isRunning()
-                    && System.currentTimeMillis() - start < max) {
+                && System.currentTimeMillis() - start < (long) timeout) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {

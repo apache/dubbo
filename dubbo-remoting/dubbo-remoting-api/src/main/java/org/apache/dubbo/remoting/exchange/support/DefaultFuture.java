@@ -49,21 +49,31 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture.class);
 
+    /**
+     * in-flight channels
+     */
     private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
 
+    /**
+     * in-flight requests
+     */
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    private static GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(
-        new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
-        () -> destroy());
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture::destroy);
 
     // invoke id.
     private final Long id;
+
     private final Channel channel;
+
     private final Request request;
+
     private final int timeout;
+
     private final long start = System.currentTimeMillis();
+
     private volatile long sent;
+
     private Timeout timeoutCheckTask;
 
     private ExecutorService executor;
@@ -95,7 +105,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
     }
 
     public static void destroy() {
-        TIME_OUT_TIMER.remove(timer-> timer.stop());
+        TIME_OUT_TIMER.remove(Timer::stop);
         FUTURES.clear();
         CHANNELS.clear();
     }
@@ -151,9 +161,8 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                     disconnectResponse.setErrorMessage("Channel " +
-                            channel +
-                            " is inactive. Directly return the unFinished request : " +
-                            (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
+                        channel + " is inactive. Directly return the unFinished request : " +
+                        (logger.isDebugEnabled() ? future.getRequest() : future.getRequest().copyWithoutData()));
                     DefaultFuture.received(channel, disconnectResponse);
                 }
             }
@@ -214,7 +223,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
             this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
         }
 
-        // the result is returning, but the caller thread may still waiting
+        // the result is returning, but the caller thread may still wait
         // to avoid endless waiting for whatever reason, notify caller thread to return.
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
