@@ -28,12 +28,18 @@
     <description>The metrics module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <t-digest.version>3.3</t-digest.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.tdunning</groupId>
+            <artifactId>t-digest</artifactId>
+            <version>${t-digest.version}</version>
         </dependency>
     </dependencies>
 </project>
