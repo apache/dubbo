@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.metadata;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.JsonUtils;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -181,8 +181,8 @@ public class MetadataInfoTest {
 
         metadataInfo.calAndGetRevision();
 
-        JSONObject object = JSON.parseObject(metadataInfo.getContent());
-        assertNull(object.get("content"));
-        assertNull(object.get("rawMetadataInfo"));
+        Map<String, Object> ret  = JsonUtils.getJson().toJavaObject(metadataInfo.getContent(), Map.class);
+        assertNull(ret.get("content"));
+        assertNull(ret.get("rawMetadataInfo"));
     }
 }
