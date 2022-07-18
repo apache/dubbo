@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements ErrorTypeAwareLogger {
 
     /**
-     * Mock address for formatting.
+     * Template address for formatting.
      */
     private static final String INSTRUCTIONS_URL = "https://dubbo.apache.org/faq/%d/%d";
 
