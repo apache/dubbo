@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
+import org.apache.dubbo.registry.client.DefaultServiceInstance.MultiPortEndpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
@@ -64,6 +65,8 @@ public class ServiceInstanceMetadataUtils {
     public static final String METADATA_SERVICE_PREFIX = "dubbo.metadata-service.";
 
     public static final String ENDPOINTS = "dubbo.endpoints";
+
+    public static final String MULTIPORT_ENDPOINTS = "dubbo.multi-endpoints";
 
     /**
      * The property name of metadata JSON of {@link MetadataService}'s {@link URL}
@@ -162,6 +165,10 @@ public class ServiceInstanceMetadataUtils {
         return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(ENDPOINTS));
     }
 
+    public static boolean hasMultiEndpoints(ServiceInstance serviceInstance) {
+        return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(MULTIPORT_ENDPOINTS));
+    }
+
     public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPorts) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         List<Endpoint> endpoints = new ArrayList<>();
@@ -171,6 +178,18 @@ public class ServiceInstanceMetadataUtils {
         });
 
         metadata.put(ENDPOINTS, JsonUtils.getJson().toJson(endpoints));
+    }
+
+    public static void setMultiEndpoints(ServiceInstance serviceInstance, Map<String, List<Integer>> protocolPorts) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+
+        List<MultiPortEndpoint> multiPortEndpoints = new ArrayList<>();
+        protocolPorts.forEach((k, v) -> {
+            MultiPortEndpoint endpoint = new MultiPortEndpoint(v.toArray(new Integer[0]), k);
+            multiPortEndpoints.add(endpoint);
+        });
+
+        metadata.put(MULTIPORT_ENDPOINTS, JsonUtils.getJson().toJson(multiPortEndpoints));
     }
 
     /**
@@ -185,6 +204,18 @@ public class ServiceInstanceMetadataUtils {
         List<Endpoint> endpoints = ((DefaultServiceInstance) serviceInstance).getEndpoints();
         if (endpoints != null) {
             for (Endpoint endpoint : endpoints) {
+                if (endpoint.getProtocol().equals(protocol)) {
+                    return endpoint;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static MultiPortEndpoint getMultiEndpoint(ServiceInstance serviceInstance, String protocol) {
+        List<MultiPortEndpoint> endpoints = ((DefaultServiceInstance) serviceInstance).getMultiEndpoints();
+        if (endpoints != null) {
+            for (MultiPortEndpoint endpoint : endpoints) {
                 if (endpoint.getProtocol().equals(protocol)) {
                     return endpoint;
                 }

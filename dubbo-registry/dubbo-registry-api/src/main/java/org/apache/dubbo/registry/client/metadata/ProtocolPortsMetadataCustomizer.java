@@ -24,13 +24,10 @@ import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMultiEndpoints;
 
 /**
  * A Class to customize the ports of {@link Protocol protocols} into
@@ -48,6 +45,7 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
         }
 
         Map<String, Integer> protocols = new HashMap<>();
+        Map<String, List<Integer>> multiProtocols = new HashMap<>();
         Set<URL> urls = new HashSet<>();
         Map<String, SortedSet<URL>> exportedURLS = metadataInfo.getExportedServiceURLs();
         for (Map.Entry<String, SortedSet<URL>> entry : exportedURLS.entrySet()) {
@@ -57,12 +55,19 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
         }
 
         urls.forEach(url -> {
-            // TODO, same protocol listen on different ports will override with each other.
             protocols.put(url.getProtocol(), url.getPort());
+
+            List<Integer> portList = multiProtocols.computeIfAbsent(url.getProtocol(), k -> new ArrayList<>());
+            portList.add(url.getPort());
+
         });
 
         if (protocols.size() > 0) {// set endpoints only for multi-protocol scenario
             setEndpoints(serviceInstance, protocols);
+        }
+
+        if (multiProtocols.size() > 0) {// set endpoints only for multi-protocol scenario
+            setMultiEndpoints(serviceInstance, multiProtocols);
         }
     }
 }
