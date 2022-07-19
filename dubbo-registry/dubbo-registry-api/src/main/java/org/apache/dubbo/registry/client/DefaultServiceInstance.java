@@ -31,7 +31,9 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.*;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MULTIPORT_ENDPOINTS;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
 /**
  * The default implementation of {@link ServiceInstance}.
