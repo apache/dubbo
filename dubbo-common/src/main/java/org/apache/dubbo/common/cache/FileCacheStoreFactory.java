@@ -59,6 +59,10 @@ public class FileCacheStoreFactory {
     }});
 
     public static FileCacheStore getInstance(String basePath, String cacheName) {
+        return getInstance(basePath, cacheName, true);
+    }
+
+    public static FileCacheStore getInstance(String basePath, String cacheName, boolean fileCache) {
         if (basePath == null) {
             basePath = System.getProperty("user.home") + File.separator + ".dubbo";
         }
@@ -79,7 +83,7 @@ public class FileCacheStoreFactory {
 
         String cacheFilePath = basePath + File.separator + cacheName;
 
-        return cacheMap.computeIfAbsent(cacheFilePath, (k) -> getFile(k));
+        return cacheMap.computeIfAbsent(cacheFilePath, (k) -> getFile(k, fileCache));
     }
 
     /**
@@ -109,7 +113,10 @@ public class FileCacheStoreFactory {
      * @param name the file name
      * @return a file object
      */
-    private static FileCacheStore getFile(String name) {
+    private static FileCacheStore getFile(String name, boolean fileCache) {
+        if(!fileCache) {
+            return FileCacheStore.Empty.getInstance(name);
+        }
         try {
             FileCacheStore.Builder builder = FileCacheStore.newBuilder();
             tryFileLock(builder, name);

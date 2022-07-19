@@ -35,7 +35,7 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
         return scopeModel.getBeanFactory().getOrRegisterBean(MetaCacheManager.class);
     }
 
-    public MetaCacheManager(String registryName, ScheduledExecutorService executorService) {
+    public MetaCacheManager(boolean fileCache, String registryName, ScheduledExecutorService executorService) {
         String filePath = System.getProperty("dubbo.meta.cache.filePath");
         String fileName = System.getProperty("dubbo.meta.cache.fileName");
         if (StringUtils.isEmpty(fileName)) {
@@ -53,12 +53,12 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
         String rawMaxFileSize = System.getProperty("dubbo.meta.cache.maxFileSize");
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
 
-        init(filePath, fileName, entrySize, maxFileSize, 60, executorService);
+        init(fileCache, filePath, fileName, entrySize, maxFileSize, 60, executorService);
     }
 
     // for unit test only
     public MetaCacheManager() {
-        this("", null);
+        this(true, "", null);
     }
 
     @Override
