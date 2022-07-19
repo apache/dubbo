@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceAddressURL;
@@ -81,7 +81,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
  * RegistryDirectory
  */
 public class RegistryDirectory<T> extends DynamicDirectory<T> {
-    private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryDirectory.class);
 
     private final ConsumerConfigurationListener consumerConfigurationListener;
     private ReferenceConfigurationListener referenceConfigurationListener;
@@ -246,7 +246,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
 
-            /**
+            /*
              * If the calculation is wrong, it is not processed.
              *
              * 1. The protocol configured by the client is inconsistent with the protocol of the server.

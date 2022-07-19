@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -59,7 +59,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
  */
 public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(DynamicDirectory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DynamicDirectory.class);
 
     protected final Cluster cluster;
 
@@ -204,7 +204,10 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
             return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
-            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+            // 2-1 - Failed to execute routing.
+            logger.error("2-1", "", "",
+                "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+
             return BitList.emptyList();
         }
     }
@@ -295,15 +298,20 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                 registry.unregister(getRegisteredConsumerUrl());
             }
         } catch (Throwable t) {
-            logger.warn("unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(), t);
+            // 1-8: Failed to unregister / unsubscribe url on destroy.
+            logger.warn("1-8", "", "",
+                "unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
+
         // unsubscribe.
         try {
             if (getSubscribeUrl() != null && registry != null && registry.isAvailable()) {
                 registry.unsubscribe(getSubscribeUrl(), this);
             }
         } catch (Throwable t) {
-            logger.warn("unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
+            // 1-8: Failed to unregister / unsubscribe url on destroy.
+            logger.warn("1-8", "", "",
+                "unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
@@ -318,7 +326,9 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             try {
                 destroyAllInvokers();
             } catch (Throwable t) {
-                logger.warn("Failed to destroy service " + serviceKey, t);
+                // 1-15 - Failed to destroy service.
+                logger.warn("1-15", "", "",
+                    "Failed to destroy service " + serviceKey, t);
             }
             routerChain.destroy();
             invokersChangedListener = null;
@@ -333,7 +343,9 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         try {
             destroyAllInvokers();
         } catch (Throwable t) {
-            logger.warn("Failed to destroy service " + serviceKey, t);
+            // 1-15 - Failed to destroy service.
+            logger.warn("1-15", "", "",
+                "Failed to destroy service " + serviceKey, t);
         }
     }
 
