@@ -1,0 +1,93 @@
+{
+  "xds_servers": [
+    {
+      "server_uri": "unix:///etc/istio/proxy/XDS",
+      "channel_creds": [
+        {
+          "type": "insecure"
+        }
+      ],
+      "server_features": [
+        "xds_v3"
+      ]
+    }
+  ],
+  "node": {
+    "id": "sidecar~172.17.0.4~dubbo-demo-consumer-deployment-grpc-agent-58585cb9cd-gp79p.dubbo-demo~dubbo-demo.svc.cluster.local",
+    "metadata": {
+      "ANNOTATIONS": {
+        "inject.istio.io/templates": "grpc-agent",
+        "kubernetes.io/config.seen": "2022-07-19T12:53:29.742565722Z",
+        "kubernetes.io/config.source": "api",
+        "prometheus.io/path": "/stats/prometheus",
+        "prometheus.io/port": "15020",
+        "prometheus.io/scrape": "true",
+        "proxy.istio.io/config": "{\"holdApplicationUntilProxyStarts\": true}",
+        "proxy.istio.io/overrides": "{\"containers\":[{\"name\":\"app\",\"image\":\"gcr.io/istio-testing/app:latest\",\"args\":[\"--metrics=15014\",\"--port\",\"18080\",\"--tcp\",\"19090\",\"--xds-grpc-server=17070\",\"--grpc\",\"17070\",\"--grpc\",\"17171\",\"--port\",\"3333\",\"--port\",\"8080\",\"--version\",\"v1\",\"--crt=/cert.crt\",\"--key=/cert.key\"],\"ports\":[{\"containerPort\":17070,\"protocol\":\"TCP\"},{\"containerPort\":17171,\"protocol\":\"TCP\"},{\"containerPort\":8080,\"protocol\":\"TCP\"},{\"name\":\"tcp-health-port\",\"containerPort\":3333,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"INSTANCE_IP\",\"valueFrom\":{\"fieldRef\":{\"apiVersion\":\"v1\",\"fieldPath\":\"status.podIP\"}}}],\"resources\":{},\"volumeMounts\":[{\"name\":\"kube-api-access-2tknx\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"livenessProbe\":{\"tcpSocket\":{\"port\":\"tcp-health-port\"},\"initialDelaySeconds\":10,\"timeoutSeconds\":1,\"periodSeconds\":10,\"successThreshold\":1,\"failureThreshold\":10},\"readinessProbe\":{\"httpGet\":{\"path\":\"/\",\"port\":8080,\"scheme\":\"HTTP\"},\"initialDelaySeconds\":1,\"timeoutSeconds\":1,\"periodSeconds\":2,\"successThreshold\":1,\"failureThreshold\":10},\"startupProbe\":{\"tcpSocket\":{\"port\":\"tcp-health-port\"},\"timeoutSeconds\":1,\"periodSeconds\":10,\"successThreshold\":1,\"failureThreshold\":10},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\",\"securityContext\":{\"runAsUser\":1338,\"runAsGroup\":1338}},{\"name\":\"dubbo-demo-consumer\",\"image\":\"dockeddocking/dubbo:consumer.v1.0\",\"command\":[\"sh\",\"-c\",\"java $JAVA_OPTS -jar dubbo-demo-consumer.jar \"],\"resources\":{},\"volumeMounts\":[{\"name\":\"kube-api-access-2tknx\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}]}",
+        "sidecar.istio.io/rewriteAppHTTPProbers": "false",
+        "sidecar.istio.io/status": "{\"initContainers\":null,\"containers\":[\"app\",\"dubbo-demo-consumer\",\"istio-proxy\"],\"volumes\":[\"workload-socket\",\"workload-certs\",\"istio-xds\",\"istio-data\",\"istio-podinfo\",\"istio-token\",\"istiod-ca-cert\"],\"imagePullSecrets\":null,\"revision\":\"default\"}"
+      },
+      "APP_CONTAINERS": "app,dubbo-demo-consumer",
+      "CLUSTER_ID": "Kubernetes",
+      "ENVOY_PROMETHEUS_PORT": 15090,
+      "ENVOY_STATUS_PORT": 15021,
+      "GENERATOR": "grpc",
+      "INSTANCE_IPS": "172.17.0.4",
+      "INTERCEPTION_MODE": "REDIRECT",
+      "ISTIO_PROXY_SHA": "2b6009118109b480e1d5abf3188fd7d9c0c0acf0",
+      "ISTIO_VERSION": "1.14.1",
+      "LABELS": {
+        "app": "dubbo-demo-consumer-dev",
+        "pod-template-hash": "58585cb9cd",
+        "service.istio.io/canonical-name": "dubbo-demo-consumer-dev",
+        "service.istio.io/canonical-revision": "v1",
+        "version": "v1"
+      },
+      "MESH_ID": "cluster.local",
+      "NAME": "dubbo-demo-consumer-deployment-grpc-agent-58585cb9cd-gp79p",
+      "NAMESPACE": "dubbo-demo",
+      "OWNER": "kubernetes://apis/apps/v1/namespaces/dubbo-demo/deployments/dubbo-demo-consumer-deployment-grpc-agent",
+      "PILOT_SAN": [
+        "istiod.istio-system.svc"
+      ],
+      "POD_PORTS": "[{\"containerPort\":17070,\"protocol\":\"TCP\"},{\"containerPort\":17171,\"protocol\":\"TCP\"},{\"containerPort\":8080,\"protocol\":\"TCP\"},{\"name\":\"tcp-health-port\",\"containerPort\":3333,\"protocol\":\"TCP\"}]",
+      "PROV_CERT": "var/run/secrets/istio/root-cert.pem",
+      "PROXY_CONFIG": {
+        "binaryPath": "/usr/local/bin/envoy",
+        "concurrency": 2,
+        "configPath": "./etc/istio/proxy",
+        "controlPlaneAuthPolicy": "MUTUAL_TLS",
+        "discoveryAddress": "istiod.istio-system.svc:15012",
+        "drainDuration": "45s",
+        "holdApplicationUntilProxyStarts": true,
+        "parentShutdownDuration": "60s",
+        "proxyAdminPort": 15000,
+        "serviceCluster": "istio-proxy",
+        "statNameLength": 189,
+        "statusPort": 15020,
+        "terminationDrainDuration": "5s",
+        "tracing": {
+          "zipkin": {
+            "address": "zipkin.istio-system:9411"
+          }
+        }
+      },
+      "SERVICE_ACCOUNT": "default",
+      "WORKLOAD_NAME": "dubbo-demo-consumer-deployment-grpc-agent"
+    },
+    "locality": {},
+    "UserAgentVersionType": null
+  },
+  "certificate_providers": {
+    "default": {
+      "plugin_name": "file_watcher",
+      "config": {
+        "certificate_file": "/var/lib/istio/data/cert-chain.pem",
+        "private_key_file": "/var/lib/istio/data/key.pem",
+        "ca_certificate_file": "/var/lib/istio/data/root-cert.pem",
+        "refresh_interval": "900s"
+      }
+    }
+  },
+  "server_listener_resource_name_template": "xds.istio.io/grpc/lds/inbound/%s"
+}
