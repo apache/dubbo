@@ -301,10 +301,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (i != -1) {
             name = name.substring(0, i);
         }
+        StringBuilder stringBuilder = new StringBuilder(128);
+        stringBuilder.append(applicationModel.getApplicationName());
+        stringBuilder.append(".");
+        stringBuilder.append(name.toLowerCase());
+
         URL url = this.getUrl();
         if (url != null) {
-           return name.toLowerCase() + url.getBackupAddress();
+            stringBuilder.append(".");
+            stringBuilder.append(url.getBackupAddress());
         }
-        return name.toLowerCase();
+        return stringBuilder.toString();
     }
 }
