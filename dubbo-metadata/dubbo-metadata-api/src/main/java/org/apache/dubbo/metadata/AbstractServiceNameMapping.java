@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -60,8 +62,13 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.mappingCacheManager = new MappingCacheManager(Boolean.TRUE.equals(applicationModel.getCurrentConfig().getEnableFileCache()) ? true : false,
-            applicationModel.getApplicationName(),
+        boolean fileCache = true;
+        Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
+        if(application.isPresent()) {
+            fileCache = Boolean.TRUE.equals(application.get().getEnableFileCache()) ? true : false;
+        }
+        this.mappingCacheManager = new MappingCacheManager(fileCache,
+            applicationModel.tryGetApplicationName(),
             applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
