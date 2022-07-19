@@ -98,7 +98,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
             if (check) {
                 throw new RuntimeException("Can not create registry " + url, e);
             } else {
-                LOGGER.warn("Failed to obtain or create registry ", e);
+                // 1-11 Failed to obtain or create registry (service) object.
+                LOGGER.warn("1-11", "", "",
+                    "Failed to obtain or create registry ", e);
             }
         } finally {
             // Release the lock
