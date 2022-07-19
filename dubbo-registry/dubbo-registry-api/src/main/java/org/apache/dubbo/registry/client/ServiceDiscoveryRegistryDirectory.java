@@ -311,11 +311,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             // filter all the service available (version wildcard, group wildcard, protocol wildcard)
             int port = instanceAddressURL.getPort();
             List<ProtocolServiceKey> matchedProtocolServiceKeys = instanceAddressURL.getMetadataInfo()
-                .getServices().values()
+                .getMatchedServiceInfos(consumerProtocolServiceKey)
                 .stream()
                 .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
                 .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
-                .filter(key -> ProtocolServiceKey.Matcher.isMatch(consumerProtocolServiceKey, key))
                 .collect(Collectors.toList());
 
             // see org.apache.dubbo.common.ProtocolServiceKey.isSameWith
