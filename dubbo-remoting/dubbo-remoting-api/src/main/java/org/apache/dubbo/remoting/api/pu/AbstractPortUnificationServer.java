@@ -30,8 +30,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class)
-            .getActivateExtension(url, new String[0]);
+        this.protocols = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class).getActivateExtension(url, new String[0]);
     }
 
     public List<WireProtocol> getProtocols() {
