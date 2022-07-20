@@ -124,9 +124,8 @@ public class TripleProtocol extends AbstractProtocol {
         url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
             .createExecutorIfAbsent(url);
-        // because of inner reference, can't assign new value to url
-        PortUnificationExchanger.bind(url.addParameter(Constants.SERVER_KEY, org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER),
-            new DefaultPuHandler());
+
+        PortUnificationExchanger.bind(url, new DefaultPuHandler());
         optimizeSerialization(url);
         return exporter;
     }
