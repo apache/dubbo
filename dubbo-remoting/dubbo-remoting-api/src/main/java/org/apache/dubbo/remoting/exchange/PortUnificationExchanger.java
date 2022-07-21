@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
@@ -39,7 +38,7 @@ public class PortUnificationExchanger {
         servers.computeIfAbsent(url.getAddress(), addr -> {
             final AbstractPortUnificationServer server;
             try {
-                server = createServer(url, handler);
+                server = getTransporter(url).bind(url, handler);
             } catch (RemotingException e) {
                 throw new RuntimeException(e);
             }
@@ -70,10 +69,4 @@ public class PortUnificationExchanger {
             .getAdaptiveExtension();
     }
 
-    public static AbstractPortUnificationServer createServer(URL url, ChannelHandler handler) throws RemotingException {
-        // if url don't config server key and transporter key,
-        // add a default transporter key to load pu server transporter
-        url = url.addParameterIfAbsent(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        return getTransporter(url).bind(url, handler);
-    }
 }
