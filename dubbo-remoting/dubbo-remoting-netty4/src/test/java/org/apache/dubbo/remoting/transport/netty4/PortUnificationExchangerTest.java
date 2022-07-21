@@ -17,9 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 
@@ -30,8 +28,8 @@ public class PortUnificationExchangerTest {
 
     @Test
     public void test() {
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 9103,
-            new String[]{Constants.BIND_PORT_KEY, String.valueOf(9103)});
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         PortUnificationExchanger.bind(url, new DefaultPuHandler());
         PortUnificationExchanger.bind(url, new DefaultPuHandler());
         Assertions.assertEquals(PortUnificationExchanger.getServers().size(), 1);

@@ -39,7 +39,7 @@ public class PortUnificationExchanger {
         servers.computeIfAbsent(url.getAddress(), addr -> {
             final AbstractPortUnificationServer server;
             try {
-                server = getTransporter(url).bind(url, handler);
+                server = createServer(url, handler);
             } catch (RemotingException e) {
                 throw new RuntimeException(e);
             }
@@ -66,10 +66,14 @@ public class PortUnificationExchanger {
     }
 
     public static PortUnificationTransporter getTransporter(URL url) {
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class)
+            .getAdaptiveExtension();
+    }
+
+    public static AbstractPortUnificationServer createServer(URL url, ChannelHandler handler) throws RemotingException {
         // if url don't config server key and transporter key,
         // add a default transporter key to load pu server transporter
         url = url.addParameterIfAbsent(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class)
-            .getAdaptiveExtension();
+        return getTransporter(url).bind(url, handler);
     }
 }
