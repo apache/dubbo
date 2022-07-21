@@ -22,6 +22,8 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -160,5 +162,27 @@ public class MetadataInfoTest {
         metadataInfo2.addService(url2);
         System.out.println(JsonUtils.getJson().toJson(metadataInfo2));
 
+    }
+
+    @Test
+    public void testCal() {
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
+
+        // export normal url again
+        metadataInfo.addService(url);
+
+        metadataInfo.calAndGetRevision();
+
+        metadataInfo.addService(url2);
+
+        metadataInfo.calAndGetRevision();
+
+        metadataInfo.addService(url3);
+
+        metadataInfo.calAndGetRevision();
+
+        Map<String, Object> ret  = JsonUtils.getJson().toJavaObject(metadataInfo.getContent(), Map.class);
+        assertNull(ret.get("content"));
+        assertNull(ret.get("rawMetadataInfo"));
     }
 }
