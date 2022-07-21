@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
@@ -224,8 +225,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
             Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
             if (invokerUrls.isEmpty() && localCachedInvokerUrls != null) {
-                logger.warn("Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
+
+                // 1-4 Empty address.
+                logger.warn("1-4", "configuration ", "",
+                    "Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
+
                 invokerUrls.addAll(localCachedInvokerUrls);
+
             } else {
                 localCachedInvokerUrls = new HashSet<>();
                 localCachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
@@ -255,8 +261,16 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
              *
              */
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls
-                    .toString()));
+
+                // 3-1 - Failed to convert the URL address into Invokers.
+
+                logger.error(
+                    "3-1", "inconsistency between the client protocol and the protocol of the server",
+                    "", "urls to invokers error",
+                    new IllegalStateException(
+                        "urls to invokers error. invokerUrls.size :" +
+                            invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls.toString()));
+
                 return;
             }
 
@@ -333,7 +347,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     /**
-     * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * Turn urls into invokers, and if url has been referred, will not re-reference.
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
      * @param oldUrlInvokerMap it might be modified during the process.
@@ -361,19 +375,28 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     continue;
                 }
             }
+
             if (EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
+
             if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
-                logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
+
+                // 4-1 - Unsupported protocol
+
+                logger.error("4-1", "typo in URL", "", "Unsupported protocol.",
+                    new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
                     " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
                     " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
                     getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+
                 continue;
             }
             URL url = mergeUrl(providerUrl);
 
-            // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
+            // Cache key is url that does not merge with consumer side parameters,
+            // regardless of how the consumer combines parameters,
+            // if the server url changes, then refer again
             Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.remove(url);
             if (invoker == null) { // Not in the cache, refer again
                 try {
@@ -387,7 +410,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                         invoker = protocol.refer(serviceType, url);
                     }
                 } catch (Throwable t) {
-                    logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
+
+                    // Thrown by AbstractProtocol.optimizeSerialization()
+                    if (t instanceof RpcException && t.getMessage().contains("serialization optimizer")) {
+                        // 4-2 - serialization optimizer class initialization failed.
+                        logger.error("4-2", "typo in optimizer class", "",
+                            "Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
+
+                    } else {
+                        // 4-3 - Failed to refer invoker by other reason.
+                        logger.error("4-3", "", "",
+                            "Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
+                    }
                 }
                 if (invoker != null) { // Put new invoker in cache
                     newUrlInvokerMap.put(url, invoker);
@@ -494,7 +528,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 try {
                     invoker.destroyAll();
                 } catch (Throwable t) {
-                    logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
+                    // 1-15 - Failed to destroy service
+                    logger.warn("1-15", "", "",
+                        "Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
             }
             localUrlInvokerMap.clear();
@@ -547,8 +583,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             APP_DYNAMIC_CONFIGURATORS_CATEGORY.equals(category)) {
             return true;
         }
-        logger.warn("Unsupported category " + category + " in notified url: " + url + " from registry " +
+
+        // 1-16 - Unsupported category in NotifyListener
+        logger.warn("1-16", "", "",
+            "Unsupported category " + category + " in notified url: " + url + " from registry " +
             getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
+
         return false;
     }
 
