@@ -585,7 +585,7 @@ public class MetadataInfo implements Serializable {
         private String buildMatchKey() {
             matchKey = getServiceKey();
             if (StringUtils.isNotEmpty(protocol)) {
-                matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol;
+                matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol + GROUP_CHAR_SEPARATOR + port;
             }
             return matchKey;
         }
