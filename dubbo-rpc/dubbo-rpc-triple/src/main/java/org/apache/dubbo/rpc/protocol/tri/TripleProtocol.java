@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.api.ConnectionManager;
+import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -107,12 +108,12 @@ public class TripleProtocol extends AbstractProtocol {
             .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
         triBuiltinService.getHealthStatusManager()
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
-
         // init
         url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()
             .createExecutorIfAbsent(url);
-        PortUnificationExchanger.bind(url);
+
+        PortUnificationExchanger.bind(url, new DefaultPuHandler());
         optimizeSerialization(url);
         return exporter;
     }

@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.pu;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.transport.AbstractServer;
 
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import java.util.List;
 
+public abstract class AbstractPortUnificationServer extends AbstractServer {
+    private final List<WireProtocol> protocols;
 
-/**
- * Determine incoming bytes belong to the specific protocol.
- *
- */
-public interface ProtocolDetector {
-
-    Result detect(ChannelBuffer in);
-
-    enum Result {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
+        super(url, handler);
+        this.protocols = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class).getActivateExtension(url, new String[0]);
     }
+
+    public List<WireProtocol> getProtocols() {
+        return protocols;
+    }
+
 }

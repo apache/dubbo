@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,10 +35,10 @@ import io.netty.handler.ssl.SslHandler;
 import java.util.List;
 import java.util.Set;
 
-public class PortUnificationServerHandler extends ByteToMessageDecoder {
+public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
-        PortUnificationServerHandler.class);
+        NettyPortUnificationServerHandler.class);
 
     private final ChannelGroup channels;
 
@@ -44,8 +47,8 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
 
-    public PortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
-        List<WireProtocol> protocols, ChannelGroup channels) {
+    public NettyPortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
+                                             List<WireProtocol> protocols, ChannelGroup channels) {
         this.url = url;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
@@ -77,7 +80,8 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         } else {
             for (final WireProtocol protocol : protocols) {
                 in.markReaderIndex();
-                final ProtocolDetector.Result result = protocol.detector().detect(ctx, in);
+                ChannelBuffer buf = new NettyBackedChannelBuffer(in);
+                final ProtocolDetector.Result result = protocol.detector().detect(buf);
                 in.resetReaderIndex();
                 switch (result) {
                     case UNRECOGNIZED:
@@ -111,7 +115,7 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         ChannelPipeline p = ctx.pipeline();
         p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
         p.addLast("unificationA",
-            new PortUnificationServerHandler(url, sslCtx, false, protocols, channels));
+            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols, channels));
         p.remove(this);
     }
 

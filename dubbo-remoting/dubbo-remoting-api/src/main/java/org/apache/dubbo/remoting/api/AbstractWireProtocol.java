@@ -16,19 +16,20 @@
  */
 package org.apache.dubbo.remoting.api;
 
+public abstract class AbstractWireProtocol implements WireProtocol {
 
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+    private final ProtocolDetector detector;
 
+    public AbstractWireProtocol(ProtocolDetector detector) {
+        this.detector = detector;
+    }
 
-/**
- * Determine incoming bytes belong to the specific protocol.
- *
- */
-public interface ProtocolDetector {
+    @Override
+    public ProtocolDetector detector() {
+        return detector;
+    }
 
-    Result detect(ChannelBuffer in);
-
-    enum Result {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    @Override
+    public void close() {
     }
 }

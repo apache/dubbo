@@ -14,21 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.WireProtocol;
 
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.ssl.SslContext;
 
+public class EmptyWireProtocol implements WireProtocol {
+    @Override
+    public ProtocolDetector detector() {
+        return null;
+    }
 
-/**
- * Determine incoming bytes belong to the specific protocol.
- *
- */
-public interface ProtocolDetector {
+    @Override
+    public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
 
-    Result detect(ChannelBuffer in);
+    }
 
-    enum Result {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    @Override
+    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
 }

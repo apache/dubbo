@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.rpc.protocol.tri;
 
-
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+import java.io.IOException;
 
+public class DefaultTriCodec implements Codec2 {
 
-/**
- * Determine incoming bytes belong to the specific protocol.
- *
- */
-public interface ProtocolDetector {
+    @Override
+    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
 
-    Result detect(ChannelBuffer in);
+    }
 
-    enum Result {
-        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    @Override
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        return null;
     }
 }

@@ -14,23 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.pu;
 
-import io.netty.handler.codec.http2.Http2FrameLogger;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
 
-import static io.netty.handler.logging.LogLevel.DEBUG;
-
-public abstract class Http2WireProtocol implements WireProtocol {
-    public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(DEBUG, "H2_CLIENT");
-    public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(DEBUG, "H2_SERVER");
-    private final ProtocolDetector detector = new Http2ProtocolDetector();
-
+public class DefaultPuHandler implements ChannelHandler {
     @Override
-    public ProtocolDetector detector() {
-        return detector;
+    public void connected(Channel channel) throws RemotingException {
+
     }
 
     @Override
-    public void close() {
+    public void disconnected(Channel channel) throws RemotingException {
+
+    }
+
+    @Override
+    public void sent(Channel channel, Object message) throws RemotingException {
+
+    }
+
+    @Override
+    public void received(Channel channel, Object message) throws RemotingException {
+
+    }
+
+    @Override
+    public void caught(Channel channel, Throwable exception) throws RemotingException {
+
     }
 }
