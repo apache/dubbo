@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.nacos.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -52,7 +52,7 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
  */
 public class NacosNamingServiceUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(NacosNamingServiceUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
     private static final String NACOS_GROUP_KEY = "nacos.group";
 
     /**
