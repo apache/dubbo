@@ -61,9 +61,6 @@ public class ModuleModel extends ScopeModel {
         }
 
         initialize();
-        Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
-        Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");
-        Assert.assertTrue(moduleConfigManager.isInitialized(), "ModuleConfigManager can not be initialized");
 
         // notify application check state
         ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
@@ -76,8 +73,6 @@ public class ModuleModel extends ScopeModel {
     protected void initialize() {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
-        this.moduleConfigManager = new ModuleConfigManager(this);
-        this.moduleConfigManager.initialize();
 
         initModuleExt();
 
@@ -158,6 +153,10 @@ public class ModuleModel extends ScopeModel {
     }
 
     public ModuleConfigManager getConfigManager() {
+        if (moduleConfigManager == null) {
+            moduleConfigManager = (ModuleConfigManager) this.getExtensionLoader(ModuleExt.class)
+                .getExtension(ModuleConfigManager.NAME);
+        }
         return moduleConfigManager;
     }
 

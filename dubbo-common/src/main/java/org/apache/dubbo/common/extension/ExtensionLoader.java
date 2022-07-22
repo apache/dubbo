@@ -41,6 +41,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -134,6 +135,8 @@ public class ExtensionLoader<T> {
 
     private static SoftReference<Map<java.net.URL,List<String>>> urlListMapCache = new SoftReference<>(new ConcurrentHashMap<>());
 
+    private static List<String> ignoredInjectMethodsDesc = getIgnoredInjectMethodsDesc();
+
     /**
      * Record all unacceptable exceptions when using SPI
      */
@@ -185,6 +188,13 @@ public class ExtensionLoader<T> {
      */
     public static List<LoadingStrategy> getLoadingStrategies() {
         return asList(strategies);
+    }
+
+    private static List<String> getIgnoredInjectMethodsDesc() {
+        List<String> ignoreInjectMethodsDesc = new ArrayList<>();
+        Arrays.stream(ScopeModelAware.class.getMethods()).map(ReflectUtils::getDesc).forEach(ignoreInjectMethodsDesc::add);
+        Arrays.stream(ExtensionAccessorAware.class.getMethods()).map(ReflectUtils::getDesc).forEach(ignoreInjectMethodsDesc::add);
+        return ignoreInjectMethodsDesc;
     }
 
     ExtensionLoader(Class<?> type, ExtensionDirector extensionDirector, ScopeModel scopeModel) {
@@ -835,11 +845,24 @@ public class ExtensionLoader<T> {
                     continue;
                 }
                 /**
-                 * Check {@link DisableInject} to see if we need auto injection for this property
+                 * Check {@link DisableInject} to see if we need auto-injection for this property
                  */
                 if (method.isAnnotationPresent(DisableInject.class)) {
                     continue;
                 }
+
+                // When spiXXX implements ScopeModelAware, ExtensionAccessorAware,
+                // the setXXX of ScopeModelAware and ExtensionAccessorAware does not need to be injected
+                if (method.getDeclaringClass() == ScopeModelAware.class ||
+                    method.getDeclaringClass() == ExtensionAccessorAware.class) {
+                    continue;
+                }
+                if (instance instanceof ScopeModelAware || instance instanceof ExtensionAccessorAware) {
+                    if (ignoredInjectMethodsDesc.contains(ReflectUtils.getDesc(method))) {
+                        continue;
+                    }
+                }
+
                 Class<?> pt = method.getParameterTypes()[0];
                 if (ReflectUtils.isPrimitives(pt)) {
                     continue;
