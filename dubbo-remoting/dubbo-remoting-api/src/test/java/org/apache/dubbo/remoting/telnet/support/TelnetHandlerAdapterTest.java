@@ -53,7 +53,7 @@ class TelnetHandlerAdapterTest {
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
 
         message = "--no-prompt help";
-        expectedResult = "Command: help disabled\r\n";
+        expectedResult = "Command: help disabled for security reasons, please enable support by listing the commands through 'telnet'\r\n";
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
 
         message = "--no-prompt";
@@ -61,7 +61,7 @@ class TelnetHandlerAdapterTest {
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
 
         message = "help";
-        expectedResult = "Command: help disabled\r\ndubbo>";
+        expectedResult = "Command: help disabled for security reasons, please enable support by listing the commands through 'telnet'\r\ndubbo>";
         Assertions.assertEquals(expectedResult, telnetHandlerAdapter.telnet(channel, message));
     }
 }
