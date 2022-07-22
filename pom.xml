@@ -109,7 +109,6 @@
         <!-- for maven compiler plugin -->
         <java_source_version>1.8</java_source_version>
         <java_target_version>1.8</java_target_version>
-        <java_release_version>8</java_release_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.2.0</maven_jar_version>
@@ -525,6 +524,22 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>jdk9-compile</id>
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -618,7 +633,6 @@
                     <fork>true</fork>
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
-                    <release>${java_release_version}</release>
                     <encoding>${file_encoding}</encoding>
                 </configuration>
             </plugin>
