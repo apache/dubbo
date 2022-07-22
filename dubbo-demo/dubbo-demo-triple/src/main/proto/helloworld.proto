@@ -29,4 +29,5 @@ service StreamTest {
   rpc testOneToOne(HelloRequest) returns (HelloReply);
   rpc testOneToMany(HelloRequest) returns (stream HelloReply);
   rpc testManyToMany(stream HelloRequest) returns (stream HelloReply);
+  rpc testManyToOne(stream HelloRequest) returns (HelloReply);
 }

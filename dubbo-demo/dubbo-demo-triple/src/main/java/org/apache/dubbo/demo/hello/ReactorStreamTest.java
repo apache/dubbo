@@ -13,6 +13,8 @@ public interface ReactorStreamTest {
 
     Flux<HelloReply> testOneToMany(Mono<HelloRequest> requestMono);
 
+    Mono<HelloReply> testManyToOne(Flux<HelloRequest> requestFlux);
+
     Flux<HelloReply> testManyToMany(Flux<HelloRequest> requestFlux);
 
 }

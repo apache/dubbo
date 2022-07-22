@@ -8,6 +8,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.model.StubServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.reactive.handler.ManyToManyMethodHandler;
+import org.apache.dubbo.rpc.protocol.tri.reactive.handler.ManyToOneMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.reactive.handler.OneToManyMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.reactive.calls.ReactorClientCalls;
 import org.apache.dubbo.rpc.protocol.tri.reactive.handler.OneToOneMethodHandler;
@@ -44,6 +45,11 @@ public final class DubboReactorStreamTestTriple {
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), org.apache.dubbo.demo.hello.HelloRequest::parseFrom,
         org.apache.dubbo.demo.hello.HelloReply::parseFrom);
 
+    private static final StubMethodDescriptor testManyToOneMethod = new StubMethodDescriptor("testManyToOne",
+        org.apache.dubbo.demo.hello.HelloRequest.class, org.apache.dubbo.demo.hello.HelloReply.class, serviceDescriptor, MethodDescriptor.RpcType.CLIENT_STREAM,
+        obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), org.apache.dubbo.demo.hello.HelloRequest::parseFrom,
+        org.apache.dubbo.demo.hello.HelloReply::parseFrom);
+
     private static final StubMethodDescriptor testManyToManyMethod = new StubMethodDescriptor("testManyToMany",
         org.apache.dubbo.demo.hello.HelloRequest.class, org.apache.dubbo.demo.hello.HelloReply.class, serviceDescriptor, MethodDescriptor.RpcType.BI_STREAM,
         obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), org.apache.dubbo.demo.hello.HelloRequest::parseFrom,
@@ -73,6 +79,11 @@ public final class DubboReactorStreamTestTriple {
         }
 
         @Override
+        public Mono<HelloReply> testManyToOne(Flux<HelloRequest> request) {
+            return ReactorClientCalls.manyToOne(invoker, request, testManyToOneMethod);
+        }
+
+        @Override
         public Flux<HelloReply> testManyToMany(Flux<HelloRequest> request) {
             return ReactorClientCalls.manyToMany(invoker, request, testManyToManyMethod);
         }
@@ -89,10 +100,12 @@ public final class DubboReactorStreamTestTriple {
 
             pathResolver.addNativeStub( "/" + SERVICE_NAME + "/testOneToOne");
             pathResolver.addNativeStub( "/" + SERVICE_NAME + "/testOneToMany");
+            pathResolver.addNativeStub( "/" + SERVICE_NAME + "/testManyToOne");
             pathResolver.addNativeStub( "/" + SERVICE_NAME + "/testManyToMany");
 
             handlers.put(testOneToOneMethod.getMethodName(), new OneToOneMethodHandler<>(this::testOneToOne));
             handlers.put(testOneToManyMethod.getMethodName(), new OneToManyMethodHandler<>(this::testOneToMany));
+            handlers.put(testManyToOneMethod.getMethodName(), new ManyToOneMethodHandler<>(this::testManyToOne));
             handlers.put(testManyToManyMethod.getMethodName(), new ManyToManyMethodHandler<>(this::testManyToMany));
 
             return new StubInvoker<>(this, url, ReactorStreamTest.class, handlers);
@@ -109,8 +122,13 @@ public final class DubboReactorStreamTestTriple {
         }
 
         @Override
+        public Mono<HelloReply> testManyToOne(Flux<HelloRequest> requestFlux) {
+            throw unimplementedMethodException(testManyToOneMethod);
+        }
+
+        @Override
         public Flux<HelloReply> testManyToMany(Flux<HelloRequest> requestFlux) {
-            throw  unimplementedMethodException(testManyToManyMethod);
+            throw unimplementedMethodException(testManyToManyMethod);
         }
 
         @Override

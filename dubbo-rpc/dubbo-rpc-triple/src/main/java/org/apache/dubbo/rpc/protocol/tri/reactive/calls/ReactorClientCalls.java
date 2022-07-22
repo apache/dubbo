@@ -39,8 +39,6 @@ public final class ReactorClientCalls {
     private ReactorClientCalls() {
     }
 
-    // TODO ManyToOne
-
     public static <TRequest, TResponse, TInvoker> Mono<TResponse> oneToOne(Invoker<TInvoker> invoker,
                                                                  Mono<TRequest> monoRequest,
                                                                  StubMethodDescriptor methodDescriptor) {
@@ -93,6 +91,21 @@ public final class ReactorClientCalls {
         }
     }
 
+    public static <TRequest, TResponse, TInvoker> Mono<TResponse> manyToOne(Invoker<TInvoker> invoker,
+                                                                            Flux<TRequest> requestFlux,
+                                                                            StubMethodDescriptor methodDescriptor) {
+        try {
+            ClientTripleReactorSubscriber<TRequest> clientSubscriber = requestFlux.subscribeWith(new ClientTripleReactorSubscriber<>());
+            ClientTripleReactorPublisher<TResponse> clientPublisher = new ClientTripleReactorPublisher<>(
+                s -> clientSubscriber.subscribe((CallStreamObserver<TRequest>) s),
+                clientSubscriber::terminate);
+            StubInvocationUtil.biOrClientStreamCall(invoker, methodDescriptor, clientPublisher);
+            return Mono.from(clientPublisher);
+        } catch (Throwable throwable) {
+            return Mono.error(throwable);
+        }
+    }
+
     /**
      * Implements a stream -> stream call as Flux -> Flux
      *
@@ -102,8 +115,8 @@ public final class ReactorClientCalls {
      * @return
      */
     public static <TRequest, TResponse, TInvoker> Flux<TResponse> manyToMany(Invoker<TInvoker> invoker,
-                                                                            Flux<TRequest> requestFlux,
-                                                                            StubMethodDescriptor methodDescriptor) {
+                                                                             Flux<TRequest> requestFlux,
+                                                                             StubMethodDescriptor methodDescriptor) {
         try {
             ClientTripleReactorSubscriber<TRequest> clientSubscriber = requestFlux.subscribeWith(new ClientTripleReactorSubscriber<>());
             ClientTripleReactorPublisher<TResponse> clientPublisher = new ClientTripleReactorPublisher<>(

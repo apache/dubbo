@@ -48,13 +48,13 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     };
 
     // accumulate the number of un-requested
-    private static final AtomicLong REQUESTED = new AtomicLong();
+    private final AtomicLong REQUESTED = new AtomicLong();
 
     // weather CallStreamObserver#request can be called
-    private static final AtomicBoolean CAN_REQUEST = new AtomicBoolean();
+    private final AtomicBoolean CAN_REQUEST = new AtomicBoolean();
 
     // weather publisher has been subscribed
-    private static final AtomicBoolean SUBSCRIBED = new AtomicBoolean();
+    private final AtomicBoolean SUBSCRIBED = new AtomicBoolean();
 
     private volatile Subscriber<? super T> downstream;
 
