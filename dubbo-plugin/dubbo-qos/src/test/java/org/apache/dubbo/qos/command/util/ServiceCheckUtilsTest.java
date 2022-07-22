@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.command.util;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.qos.DemoService;
 import org.apache.dubbo.qos.DemoServiceImpl;
@@ -64,8 +65,7 @@ public class ServiceCheckUtilsTest {
             url.getServiceKey(),
             demoServiceImpl,
             serviceDescriptor,
-            null,
-            new ServiceMetadata());
+            new ServiceMetadata(), ClassUtils.getClassLoader(DemoService.class));
         repository.registerProvider(providerModel);
 
         String url1 = "service-discovery-registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-provider&dubbo=2.0.2&pid=66099&registry=zookeeper&timestamp=1654588337653";

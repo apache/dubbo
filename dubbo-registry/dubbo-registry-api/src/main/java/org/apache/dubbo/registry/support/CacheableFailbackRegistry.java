@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
@@ -65,7 +65,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
-    private static final Logger logger = LoggerFactory.getLogger(CacheableFailbackRegistry.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CacheableFailbackRegistry.class);
+
     private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
 
     protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
@@ -96,7 +97,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             try {
                 result = Integer.parseInt(str);
             } catch (NumberFormatException e) {
-                logger.warn("Invalid registry properties configuration key " + key + ", value " + str);
+                // 1-2 Invalid registry properties.
+                logger.warn("1-2", "", "",
+                    "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
         return result;
@@ -123,7 +126,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 }
             }
         } catch (Exception e) {
-            logger.warn("Failed to evict url for " + url.getServiceKey(), e);
+            // 1-3: URL evicting failed.
+            logger.warn("1-3", "", "",
+                "Failed to evict url for " + url.getServiceKey(), e);
         }
     }
 
@@ -131,21 +136,22 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         // keep old urls
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
         // create new urls
-        Map<String, ServiceAddressURL> newURLs;
+        Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
         if (oldURLs == null) {
-            newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
-                    logger.warn("Invalid address, failed to parse into URL " + rawProvider);
+                    // 1-1: Address invalid.
+                    logger.warn("1-1", "", "",
+                        "Invalid address, failed to parse into URL " + rawProvider);
+
                     continue;
                 }
                 newURLs.put(rawProvider, cachedURL);
             }
         } else {
-            newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
             // maybe only default , or "env" + default
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
@@ -153,7 +159,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 if (cachedURL == null) {
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
-                        logger.warn("Invalid address, failed to parse into URL " + rawProvider);
+                        logger.warn("1-1", "", "",
+                            "Invalid address, failed to parse into URL " + rawProvider);
+
                         continue;
                     }
                 }
@@ -188,7 +196,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             String category = i < 0 ? path : path.substring(i + 1);
             if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
                 if (PROVIDERS_CATEGORY.equals(category)) {
-                    logger.warn("Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
+                    logger.warn("1-4", "", "",
+                        "Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
                 }
                 URL empty = URLBuilder.from(consumer)
                     .setProtocol(EMPTY_PROTOCOL)
@@ -210,7 +219,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         }
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
         if (parts.length <= 1) {
-            logger.warn("Received url without any parameters " + rawProvider);
+            // 1-5 Received URL without any parameters.
+            logger.warn("1-5", "", "",
+                "Received url without any parameters " + rawProvider);
+
             return DubboServiceAddressURL.valueOf(rawProvider, consumerURL);
         }
 
@@ -343,7 +355,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                     }
                 }
             } catch (Throwable t) {
-                logger.error("Error occurred when clearing cached URLs", t);
+                // 1-6 Error when clearing cached URLs.
+
+                logger.error("1-6", "", "",
+                    "Error occurred when clearing cached URLs", t);
+
             } finally {
                 semaphore.release();
             }

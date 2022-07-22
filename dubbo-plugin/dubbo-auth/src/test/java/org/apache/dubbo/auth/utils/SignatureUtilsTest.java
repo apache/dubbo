@@ -16,43 +16,23 @@
  */
 package org.apache.dubbo.auth.utils;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SignatureUtilsTest {
 
-
-    private Object[] objects = new Object[2];
-    private List<String> list = new ArrayList<>();
-    private String temp = "temp";
-    private String key = "TOKEN";
-
-    {
-        objects[0] = list;
-        objects[1] = temp;
-    }
-
     @Test
-    void testObjectToByteArray() {
-
-        try {
-            byte[] bytes = SignatureUtils.toByteArray(objects);
-            Assertions.assertNotEquals(0, bytes.length);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    void testEncryptWithObject() {
+        Object[] objects = new Object[] {new ArrayList<>(), "temp"};
+        String encryptWithObject = SignatureUtils.sign(objects, "TestMethod#hello", "TOKEN");
+        Assertions.assertEquals(encryptWithObject, "t6c7PasKguovqSrVRcTQU4wTZt/ybl0jBCUMgAt/zQw=");
     }
-
+    
     @Test
-    void testEncryptObject() {
-        String encrypt = SignatureUtils.sign(objects, "TestMethod#hello", key);
-        String encryptNoParams = SignatureUtils.sign(null, "TestMethod#hello", key);
-        Assertions.assertNotNull(encrypt);
-        Assertions.assertNotNull(encryptNoParams);
-        Assertions.assertNotEquals(encrypt, encryptNoParams);
+    void testEncryptWithNoParameters() {
+        String encryptWithNoParams = SignatureUtils.sign(null, "TestMethod#hello", "TOKEN");
+        Assertions.assertEquals(encryptWithNoParams, "2DGkTcyXg4plU24rY8MZkEJwOMRW3o+wUP3HssRc3EE=");
     }
 }

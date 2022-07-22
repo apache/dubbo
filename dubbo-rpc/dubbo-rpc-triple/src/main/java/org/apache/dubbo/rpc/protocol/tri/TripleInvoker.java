@@ -299,8 +299,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     private int calculateTimeout(Invocation invocation, String methodName) {
-        if (invocation.get(TIMEOUT_KEY) != null) {
-            return (int) invocation.get(TIMEOUT_KEY);
+        if (invocation.getObjectAttachment(TIMEOUT_KEY) != null) {
+            return (int) invocation.getObjectAttachment(TIMEOUT_KEY);
         }
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;

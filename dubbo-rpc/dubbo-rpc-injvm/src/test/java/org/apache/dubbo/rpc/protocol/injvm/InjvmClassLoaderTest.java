@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.injvm;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
 import org.apache.dubbo.common.compiler.support.JavassistCompiler;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -31,11 +32,13 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+import demo.Empty;
 import demo.MultiClassLoaderService;
 import demo.MultiClassLoaderServiceImpl;
 import demo.MultiClassLoaderServiceRequest;
 import demo.MultiClassLoaderServiceResult;
 import javassist.CannotCompileException;
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import org.junit.jupiter.api.Assertions;
@@ -105,8 +108,8 @@ public class InjvmClassLoaderTest {
 
         // refer consumer
         ServiceDescriptor consumerServiceDescriptor = moduleModel.getServiceRepository().registerService(clazz2);
-        ConsumerModel consumerModel = new ConsumerModel(clazz2.getName(), null, consumerServiceDescriptor, null,
-            ApplicationModel.defaultModel().getDefaultModule(), null, null);
+        ConsumerModel consumerModel = new ConsumerModel(clazz2.getName(), null, consumerServiceDescriptor,
+            ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(clazz2));
         consumerModel.setClassLoader(classLoader3);
         URL consumerUrl = url.setScopeModel(moduleModel).setServiceModel(consumerModel);
 
@@ -127,20 +130,28 @@ public class InjvmClassLoaderTest {
         applicationModel.destroy();
     }
 
-    private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+    private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException, ClassNotFoundException {
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(MultiClassLoaderServiceRequest.class.getName() + "A");
         builder.setSuperClassName(MultiClassLoaderServiceRequest.class.getName());
         CtClass cls = builder.build(classLoader);
-        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+        ClassPool cp = cls.getClassPool();
+        if (classLoader == null) {
+            classLoader = cp.getClassLoader();
+        }
+        return cp.toClass(cls, classLoader.loadClass(Empty.class.getName()), classLoader, JavassistCompiler.class.getProtectionDomain());
     }
 
-    private Class<?> compileCustomResult(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+    private Class<?> compileCustomResult(ClassLoader classLoader) throws NotFoundException, CannotCompileException, ClassNotFoundException {
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(MultiClassLoaderServiceResult.class.getName() + "A");
         builder.setSuperClassName(MultiClassLoaderServiceResult.class.getName());
         CtClass cls = builder.build(classLoader);
-        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+        ClassPool cp = cls.getClassPool();
+        if (classLoader == null) {
+            classLoader = cp.getClassLoader();
+        }
+        return cp.toClass(cls, classLoader.loadClass(Empty.class.getName()), classLoader, JavassistCompiler.class.getProtectionDomain());
     }
 
     private static class TestClassLoader1 extends ClassLoader {
@@ -168,6 +179,9 @@ public class InjvmClassLoaderTest {
                 return loadedClass.get(name);
             }
             if (name.startsWith("demo")) {
+                if (name.equals(MultiClassLoaderServiceRequest.class.getName()) || name.equals(MultiClassLoaderServiceResult.class.getName())) {
+                    return super.loadClass(name, resolve);
+                }
                 Class<?> aClass = this.findClass(name);
                 this.loadedClass.put(name, aClass);
                 if (resolve) {
@@ -216,7 +230,7 @@ public class InjvmClassLoaderTest {
                 byte[] bytes = loadClassData(name);
                 return defineClass(name, bytes, 0, bytes.length);
             } catch (Exception e) {
-                throw new ClassNotFoundException();
+                return testClassLoader.loadClass(name, false);
             }
         }
 
@@ -225,7 +239,7 @@ public class InjvmClassLoaderTest {
             if (loadedClass.containsKey(name)) {
                 return loadedClass.get(name);
             }
-            if (name.startsWith("demo.MultiClassLoaderServiceRe")) {
+            if (name.startsWith("demo.MultiClassLoaderServiceRe") || name.startsWith("demo.Empty")) {
                 Class<?> aClass = this.findClass(name);
                 this.loadedClass.put(name, aClass);
                 if (resolve) {

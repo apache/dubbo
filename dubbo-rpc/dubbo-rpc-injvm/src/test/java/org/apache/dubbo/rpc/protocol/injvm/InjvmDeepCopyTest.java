@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -67,8 +68,8 @@ public class InjvmDeepCopyTest {
 
         // refer consumer
         ServiceDescriptor consumerServiceDescriptor = moduleModel.getServiceRepository().registerService(DemoInterface.class);
-        ConsumerModel consumerModel = new ConsumerModel(DemoInterface.class.getName(), null, consumerServiceDescriptor, null,
-            ApplicationModel.defaultModel().getDefaultModule(), null, null);
+        ConsumerModel consumerModel = new ConsumerModel(DemoInterface.class.getName(), null, consumerServiceDescriptor,
+            ApplicationModel.defaultModel().getDefaultModule(), null, null, ClassUtils.getClassLoader(DemoInterface.class));
         URL consumerUrl = url.setScopeModel(moduleModel).setServiceModel(consumerModel);
 
         DemoInterface stub = proxyFactory.getProxy(protocol.refer(DemoInterface.class, consumerUrl));

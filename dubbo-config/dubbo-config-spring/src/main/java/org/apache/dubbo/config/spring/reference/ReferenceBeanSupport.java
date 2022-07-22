@@ -51,6 +51,10 @@ import static org.apache.dubbo.common.utils.StringUtils.join;
 
 public class ReferenceBeanSupport {
 
+    private static List<String> IGNORED_ATTRS = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
+        ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME,
+        ReferenceAttributes.INTERFACE_CLASS);
+
     public static void convertReferenceProps(Map<String, Object> attributes, Class defaultInterfaceClass) {
 
         // interface class
@@ -119,11 +123,8 @@ public class ReferenceBeanSupport {
         //sort attributes keys
         List<String> sortedAttrKeys = new ArrayList<>(attributes.keySet());
         Collections.sort(sortedAttrKeys);
-        List<String> ignoredAttrs = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
-            ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME,
-            ReferenceAttributes.INTERFACE_CLASS);
         for (String key : sortedAttrKeys) {
-            if (ignoredAttrs.contains(key)) {
+            if (IGNORED_ATTRS.contains(key)) {
                 continue;
             }
             Object value = attributes.get(key);
@@ -149,10 +150,6 @@ public class ReferenceBeanSupport {
             // resolve placeholder with Spring BeanFactory ( using PropertyResourceConfigurer/PropertySourcesPlaceholderConfigurer )
             referenceKey = ((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory()).resolveEmbeddedValue(referenceKey);
         }
-        // The property placeholder maybe not resolved if is early init
-        // if (referenceKey != null && referenceKey.contains("${")) {
-        //     throw new IllegalStateException("Reference key contains unresolved placeholders ${..} : " + referenceKey);
-        // }
         return referenceKey;
     }
 

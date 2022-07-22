@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -38,7 +39,6 @@ import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.TripleProtocol.METHOD_ATTR_PACK;
 
@@ -105,7 +105,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
         final String serializeName = url.getParameter(SERIALIZATION_KEY,
-            DEFAULT_REMOTING_SERIALIZATION);
+            DefaultSerializationSelector.getDefaultRemotingSerialization());
         Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         if (stored != null) {
             return (ReflectionPackableMethod) stored;

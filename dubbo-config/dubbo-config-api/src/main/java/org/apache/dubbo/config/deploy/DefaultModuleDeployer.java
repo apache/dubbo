@@ -213,9 +213,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             for (ConsumerModel consumerModel : consumerModels) {
                 try {
-                    if (consumerModel.getReferenceConfig() != null) {
-                        consumerModel.getReferenceConfig().destroy();
-                    } else if (consumerModel.getDestroyCaller() != null) {
+                    if (consumerModel.getDestroyCaller() != null) {
                         consumerModel.getDestroyCaller().call();
                     }
                 } catch (Throwable t) {
@@ -226,9 +224,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
             for (ProviderModel providerModel : exportedServices) {
                 try {
-                    if (providerModel.getServiceConfig() != null) {
-                        providerModel.getServiceConfig().unexport();
-                    } else if (providerModel.getDestroyCaller() != null) {
+                    if (providerModel.getDestroyCaller() != null) {
                         providerModel.getDestroyCaller().call();
                     }
                 } catch (Throwable t) {

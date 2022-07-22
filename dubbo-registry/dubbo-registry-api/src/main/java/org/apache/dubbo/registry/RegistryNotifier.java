@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 
@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DELAY_EX
 
 public abstract class RegistryNotifier {
 
-    private static final Logger logger = LoggerFactory.getLogger(RegistryNotifier.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RegistryNotifier.class);
     private volatile long lastExecuteTime;
     private volatile long lastEventTime;
 

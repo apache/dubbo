@@ -20,7 +20,6 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasP
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
-import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.DubboDeployApplicationListener;
@@ -62,7 +61,6 @@ public interface DubboBeanUtils {
      * @see ReferenceAnnotationBeanPostProcessor
      * @see DubboConfigDefaultPropertyValueBeanPostProcessor
      * @see DubboConfigAliasPostProcessor
-     * @see DubboBootstrapApplicationListener
      */
     static void registerCommonBeans(BeanDefinitionRegistry registry) {
 
@@ -78,10 +76,6 @@ public interface DubboBeanUtils {
         // Since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME,
             DubboConfigAliasPostProcessor.class);
-
-        // Since 2.7.4 Register DubboBootstrapApplicationListener as an infrastructure Bean
-//        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
-//            DubboBootstrapApplicationListener.class);
 
         // register ApplicationListeners
         registerInfrastructureBean(registry, DubboDeployApplicationListener.class.getName(), DubboDeployApplicationListener.class);

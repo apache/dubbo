@@ -245,6 +245,12 @@ public class DefaultServiceInstance implements ServiceInstance {
         return copyOfInstance;
     }
 
+    public DefaultServiceInstance copyFrom(int port) {
+        DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
+        copyOfInstance.setPort(port);
+        return copyOfInstance;
+    }
+
     @Override
     public Map<String, String> getAllParams() {
         if (extendParams == null) {

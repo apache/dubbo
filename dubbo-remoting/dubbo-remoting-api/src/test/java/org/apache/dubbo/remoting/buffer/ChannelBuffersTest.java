@@ -41,6 +41,15 @@ public class ChannelBuffersTest {
     }
 
     @Test
+    public void testPrefixEquals(){
+        ChannelBuffer bufA = ChannelBuffers.wrappedBuffer("abcedfaf".getBytes());
+        ChannelBuffer bufB = ChannelBuffers.wrappedBuffer("abcedfaa".getBytes());
+        Assertions.assertTrue(ChannelBuffers.equals(bufA, bufB));
+        Assertions.assertTrue(ChannelBuffers.prefixEquals(bufA, bufB, 7));
+        Assertions.assertFalse(ChannelBuffers.prefixEquals(bufA, bufB, 8));
+    }
+
+    @Test
     public void testBuffer() {
         ChannelBuffer channelBuffer = ChannelBuffers.buffer(DEFAULT_CAPACITY);
         Assertions.assertTrue(channelBuffer instanceof HeapChannelBuffer);

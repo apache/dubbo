@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -83,7 +84,7 @@ public class CodecSupport {
 
     public static Serialization getSerialization(URL url) {
         return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+                url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
     }
 
     public static Serialization getSerialization(URL url, Byte id) throws IOException {
@@ -168,7 +169,7 @@ public class CodecSupport {
         } else {
             boolean match = false;
             for (URL url : urls) {
-                String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+                String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
                 Byte localId = SERIALIZATIONNAME_ID_MAP.get(serializationName);
                 if (localId != null && localId.equals(id)) {
                     match = true;

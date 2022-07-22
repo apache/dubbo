@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.registry.NotifyListener;
@@ -33,12 +34,13 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +54,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.Collections.emptySet;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
@@ -67,7 +67,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  */
 public class ServiceInstancesChangedListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceInstancesChangedListener.class);
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
@@ -77,17 +77,15 @@ public class ServiceInstancesChangedListener {
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
     protected Map<String, List<ServiceInstance>> allInstances;
-    protected Map<String, Object> serviceUrls;
+    protected Map<String, List<ProtocolServiceKeyWithUrls>> serviceUrls;
 
     private volatile long lastRefreshTime;
     private final Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
+    private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
 
-    // protocols subscribe by default, specify the protocol that should be subscribed through 'consumer.protocol'.
-    private static final String[] SUPPORTED_PROTOCOLS = new String[]{"dubbo", "tri", "rest"};
-    public static final String CONSUMER_PROTOCOL_SUFFIX = ":consumer";
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -96,8 +94,9 @@ public class ServiceInstancesChangedListener {
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
-            .getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
+        this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
+        this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
     }
 
     /**
@@ -127,7 +126,7 @@ public class ServiceInstancesChangedListener {
         }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
-        Map<String, Map<String, Set<String>>> localServiceToRevisions = new HashMap<>();
+        Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
 
         // grouping all instances of this app(service name) by revision
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
@@ -149,7 +148,14 @@ public class ServiceInstancesChangedListener {
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
-            MetadataInfo metadata = serviceDiscovery.getRemoteMetadata(revision, subInstances);
+
+            MetadataInfo metadata = subInstances.stream()
+                .map(ServiceInstance::getServiceMetadata)
+                .filter(Objects::nonNull)
+                .filter(m -> revision.equals(m.getRevision()))
+                .findFirst()
+                .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
+
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
@@ -179,55 +185,45 @@ public class ServiceInstancesChangedListener {
         }
         hasEmptyMetadata = false;
 
-        Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
-        Map<String, Object> newServiceUrls = new HashMap<>();
-        for (Map.Entry<String, Map<String, Set<String>>> entry : localServiceToRevisions.entrySet()) {
-            String protocol = entry.getKey();
-            entry.getValue().forEach((protocolServiceKey, revisions) -> {
-                Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> new HashMap<>());
-                Object urls = revisionsToUrls.get(revisions);
-                if (urls == null) {
-                    urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
-                    revisionsToUrls.put(revisions, urls);
-                }
+        Map<String, Map<Integer, Map<Set<String>, Object>>> protocolRevisionsToUrls = new HashMap<>();
+        Map<String, List<ProtocolServiceKeyWithUrls>> newServiceUrls = new HashMap<>();
+        for (Map.Entry<ServiceInfo, Set<String>> entry : localServiceToRevisions.entrySet()) {
+            ServiceInfo serviceInfo = entry.getKey();
+            Set<String> revisions = entry.getValue();
 
-                newServiceUrls.put(protocolServiceKey, urls);
-            });
+            Map<Integer, Map<Set<String>, Object>> portToRevisions = protocolRevisionsToUrls.computeIfAbsent(serviceInfo.getProtocol(), k -> new HashMap<>());
+            Map<Set<String>, Object> revisionsToUrls = portToRevisions.computeIfAbsent(serviceInfo.getPort(), k -> new HashMap<>());
+            Object urls = revisionsToUrls.get(revisions);
+            if (urls == null) {
+                urls = getServiceUrlsCache(revisionToInstances, revisions, serviceInfo.getProtocol(), serviceInfo.getPort());
+                revisionsToUrls.put(revisions, urls);
+            }
+
+            List<ProtocolServiceKeyWithUrls> list = newServiceUrls.computeIfAbsent(serviceInfo.getPath(), k -> new LinkedList<>());
+            list.add(new ProtocolServiceKeyWithUrls(serviceInfo.getProtocolServiceKey(), (List<URL>) urls));
         }
 
         this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
     }
 
-    public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
+    public synchronized void addListenerAndNotify(URL url, NotifyListener listener) {
         if (destroyed.get()) {
             return;
         }
 
-        Set<NotifyListenerWithKey> notifyListeners = this.listeners.computeIfAbsent(serviceKey, _k -> new ConcurrentHashSet<>());
-        // {@code protocolServiceKeysToConsume} will be specific protocols configured in reference config or default protocols supported by framework.
-        Set<String> protocolServiceKeysToConsume = getProtocolServiceKeyList(serviceKey, listener);
-        // Add current listener to serviceKey set, there will have more than one listener when multiple references of one same service is configured.
-        NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, protocolServiceKeysToConsume, listener);
+        Set<NotifyListenerWithKey> notifyListeners = this.listeners.computeIfAbsent(url.getServiceKey(), _k -> new ConcurrentHashSet<>());
+        String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY, url.getProtocol());
+        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(url.getServiceInterface(), url.getVersion(), url.getGroup(),
+            !CommonConstants.CONSUMER.equals(protocol) ? protocol : null);
+        NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, listener);
         notifyListeners.add(listenerWithKey);
 
         // Aggregate address and notify on subscription.
-        List<URL> urls;
-        if (protocolServiceKeysToConsume.size() > 1) {
-            urls = new ArrayList<>();
-            for (String protocolServiceKey : protocolServiceKeysToConsume) {
-                List<URL> urlsOfProtocol = getAddresses(protocolServiceKey, listener.getConsumerUrl());
-                if (CollectionUtils.isNotEmpty(urlsOfProtocol)) {
-                    logger.info(String.format("Found %s urls of protocol service key %s ", urlsOfProtocol.size(), protocolServiceKey));
-                    urls.addAll(urlsOfProtocol);
-                }
-            }
-        } else {
-            urls = getAddresses(protocolServiceKeysToConsume.iterator().next(), listener.getConsumerUrl());
-        }
+        List<URL> urls = getAddresses(protocolServiceKey, listener.getConsumerUrl());
 
         if (CollectionUtils.isNotEmpty(urls)) {
-            logger.info(String.format("Notify serviceKey: %s, listener: %s with %s urls on subscription", serviceKey, listener, urls.size()));
+            logger.info(String.format("Notify serviceKey: %s, listener: %s with %s urls on subscription", protocolServiceKey, listener, urls.size()));
             listener.notify(urls);
         }
     }
@@ -240,9 +236,7 @@ public class ServiceInstancesChangedListener {
         // synchronized method, no need to use DCL
         Set<NotifyListenerWithKey> notifyListeners = this.listeners.get(serviceKey);
         if (notifyListeners != null) {
-            NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, notifyListener);
-            // Remove from global listeners
-            notifyListeners.remove(listenerWithKey);
+            notifyListeners.removeIf(listener -> listener.getNotifyListener().equals(notifyListener));
 
             // ServiceKey has no listener, remove set
             if (notifyListeners.size() == 0) {
@@ -304,6 +298,9 @@ public class ServiceInstancesChangedListener {
         String appName = event.getServiceName();
         List<ServiceInstance> appInstances = event.getServiceInstances();
         logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
+        for (ServiceInstanceNotificationCustomizer serviceInstanceNotificationCustomizer : serviceInstanceNotificationCustomizers) {
+            serviceInstanceNotificationCustomizer.customize(appInstances);
+        }
         allInstances.put(appName, appInstances);
         lastRefreshTime = System.currentTimeMillis();
     }
@@ -341,23 +338,28 @@ public class ServiceInstancesChangedListener {
         return emptyMetadataNum;
     }
 
-    protected Map<String, Map<String, Set<String>>> parseMetadata(String revision, MetadataInfo metadata, Map<String, Map<String, Set<String>>> localServiceToRevisions) {
+    protected Map<ServiceInfo, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
-            String protocol = entry.getValue().getProtocol();
-            String protocolServiceKey = entry.getValue().getMatchKey();
-            Map<String, Set<String>> map = localServiceToRevisions.computeIfAbsent(protocol, _p -> new HashMap<>());
-            Set<String> set = map.computeIfAbsent(protocolServiceKey, _k -> new TreeSet<>());
+            Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getValue(), _k -> new TreeSet<>());
             set.add(revision);
         }
 
         return localServiceToRevisions;
     }
 
-    protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol) {
+    protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol, int port) {
         List<URL> urls = new ArrayList<>();
         for (String r : revisions) {
             for (ServiceInstance i : revisionToInstances.get(r)) {
+                if (port > 0) {
+                    if (i.getPort() == port) {
+                        urls.add(i.toURL(protocol).setScopeModel(i.getApplicationModel()));
+                    } else {
+                        urls.add(((DefaultServiceInstance) i).copyFrom(port).toURL(protocol).setScopeModel(i.getApplicationModel()));
+                    }
+                    continue;
+                }
                 // different protocols may have ports specified in meta
                 if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
@@ -372,8 +374,22 @@ public class ServiceInstancesChangedListener {
         return urls;
     }
 
-    protected List<URL> getAddresses(String serviceProtocolKey, URL consumerURL) {
-        return (List<URL>) serviceUrls.get(serviceProtocolKey);
+    protected List<URL> getAddresses(ProtocolServiceKey protocolServiceKey, URL consumerURL) {
+        List<ProtocolServiceKeyWithUrls> protocolServiceKeyWithUrlsList = serviceUrls.get(protocolServiceKey.getInterfaceName());
+        List<URL> urls = new ArrayList<>();
+        if (protocolServiceKeyWithUrlsList != null) {
+            for (ProtocolServiceKeyWithUrls protocolServiceKeyWithUrls : protocolServiceKeyWithUrlsList) {
+                if (ProtocolServiceKey.Matcher.isMatch(protocolServiceKey, protocolServiceKeyWithUrls.getProtocolServiceKey())) {
+                    urls.addAll(protocolServiceKeyWithUrls.getUrls());
+                }
+            }
+        }
+        if (serviceUrls.containsKey(CommonConstants.ANY_VALUE)) {
+            for (ProtocolServiceKeyWithUrls protocolServiceKeyWithUrls : serviceUrls.get(CommonConstants.ANY_VALUE)) {
+                urls.addAll(protocolServiceKeyWithUrls.getUrls());
+            }
+        }
+        return urls;
     }
 
     /**
@@ -385,28 +401,10 @@ public class ServiceInstancesChangedListener {
             // 2 multiple subscription listener of the same service
             for (NotifyListenerWithKey listenerWithKey : listenerSet) {
                 NotifyListener notifyListener = listenerWithKey.getNotifyListener();
-                if (listenerWithKey.getProtocolServiceKeys().size() == 1) {// 2.1 if one specific protocol is specified
-                    String protocolServiceKey = listenerWithKey.getProtocolServiceKeys().iterator().next();
-                    //FIXME, group wildcard match
-                    List<URL> urls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
-                    logger.info("Notify service " + protocolServiceKey + " with urls " + urls.size());
-                    notifyListener.notify(urls);
-                } else {// 2.2 multiple protocols or no protocol(using default protocols) set
-                    List<URL> urls = new ArrayList<>();
-                    int effectiveProtocolNum = 0;
-                    for (String protocolServiceKey : listenerWithKey.getProtocolServiceKeys()) {
-                        List<URL> tmpUrls = getAddresses(protocolServiceKey, notifyListener.getConsumerUrl());
-                        if (CollectionUtils.isNotEmpty(tmpUrls)) {
-                            logger.info("Found  " + urls.size() + " urls of protocol service key " + protocolServiceKey);
-                            effectiveProtocolNum++;
-                            urls.addAll(tmpUrls);
-                        }
-                    }
 
-                    logger.info("Notify service " + serviceKey + " with " + urls.size() + " urls from " + effectiveProtocolNum + " different protocols");
-                    urls = toUrlsWithEmpty(urls);
-                    notifyListener.notify(urls);
-                }
+                List<URL> urls = toUrlsWithEmpty(getAddresses(listenerWithKey.getProtocolServiceKey(), notifyListener.getConsumerUrl()));
+                logger.info("Notify service " + listenerWithKey.getProtocolServiceKey() + " with urls " + urls.size());
+                notifyListener.notify(urls);
             }
         });
     }
@@ -421,9 +419,7 @@ public class ServiceInstancesChangedListener {
 
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
             // notice that the service of this.url may not be the same as notify listener.
-            URL empty = URLBuilder.from(this.url)
-                .setProtocol(EMPTY_PROTOCOL)
-                .build();
+            URL empty = URLBuilder.from(this.url).setProtocol(EMPTY_PROTOCOL).build();
             urls.add(empty);
         }
         return urls;
@@ -468,46 +464,6 @@ public class ServiceInstancesChangedListener {
         return Objects.hash(getClass(), getServiceNames());
     }
 
-    /**
-     * Calculate the protocol list that the consumer cares about.
-     *
-     * @param serviceKey possible input serviceKey includes
-     *                   1. {group}/{interface}:{version}, if protocol is not specified
-     *                   2. {group}/{interface}:{version}:{user specified protocols}
-     * @param listener   listener also contains the user specified protocols
-     * @return protocol list with the format {group}/{interface}:{version}:{protocol}
-     */
-    protected Set<String> getProtocolServiceKeyList(String serviceKey, NotifyListener listener) {
-        if (StringUtils.isEmpty(serviceKey)) {
-            return emptySet();
-        }
-
-        Set<String> result = new HashSet<>();
-        String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY);
-        if (serviceKey.endsWith(CONSUMER_PROTOCOL_SUFFIX)) {
-            serviceKey = serviceKey.substring(0, serviceKey.indexOf(CONSUMER_PROTOCOL_SUFFIX));
-        }
-
-        if (StringUtils.isNotEmpty(protocol)) {
-            int protocolIndex = serviceKey.indexOf(":" + protocol);
-            if (protocol.contains(",") && protocolIndex != -1) {
-                serviceKey = serviceKey.substring(0, protocolIndex);
-                String[] specifiedProtocols = protocol.split(",");
-                for (String specifiedProtocol : specifiedProtocols) {
-                    result.add(serviceKey + GROUP_CHAR_SEPARATOR + specifiedProtocol);
-                }
-            } else {
-                result.add(serviceKey);
-            }
-        } else {
-            for (String supportedProtocol : SUPPORTED_PROTOCOLS) {
-                result.add(serviceKey + GROUP_CHAR_SEPARATOR + supportedProtocol);
-            }
-        }
-
-        return result;
-    }
-
     protected class AddressRefreshRetryTask implements Runnable {
         private final RetryServiceInstancesChangedEvent retryEvent;
         private final Semaphore retryPermission;
@@ -525,26 +481,16 @@ public class ServiceInstancesChangedListener {
     }
 
     public static class NotifyListenerWithKey {
-        private final String serviceKey;
-        private final Set<String> protocolServiceKeys;
+        private final ProtocolServiceKey protocolServiceKey;
         private final NotifyListener notifyListener;
 
-        public NotifyListenerWithKey(String protocolServiceKey, Set<String> protocolServiceKeys, NotifyListener notifyListener) {
-            this.serviceKey = protocolServiceKey;
-            this.protocolServiceKeys = (protocolServiceKeys == null ? new ConcurrentHashSet<>() : protocolServiceKeys);
+        public NotifyListenerWithKey(ProtocolServiceKey protocolServiceKey, NotifyListener notifyListener) {
+            this.protocolServiceKey = protocolServiceKey;
             this.notifyListener = notifyListener;
         }
 
-        public NotifyListenerWithKey(String protocolServiceKey, NotifyListener notifyListener) {
-            this(protocolServiceKey, null, notifyListener);
-        }
-
-        public String getServiceKey() {
-            return serviceKey;
-        }
-
-        public Set<String> getProtocolServiceKeys() {
-            return protocolServiceKeys;
+        public ProtocolServiceKey getProtocolServiceKey() {
+            return protocolServiceKey;
         }
 
         public NotifyListener getNotifyListener() {
@@ -560,12 +506,30 @@ public class ServiceInstancesChangedListener {
                 return false;
             }
             NotifyListenerWithKey that = (NotifyListenerWithKey) o;
-            return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(notifyListener, that.notifyListener);
+            return Objects.equals(protocolServiceKey, that.protocolServiceKey) && Objects.equals(notifyListener, that.notifyListener);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(serviceKey, notifyListener);
+            return Objects.hash(protocolServiceKey, notifyListener);
+        }
+    }
+
+    public static class ProtocolServiceKeyWithUrls {
+        private final ProtocolServiceKey protocolServiceKey;
+        private final List<URL> urls;
+
+        public ProtocolServiceKeyWithUrls(ProtocolServiceKey protocolServiceKey, List<URL> urls) {
+            this.protocolServiceKey = protocolServiceKey;
+            this.urls = urls;
+        }
+
+        public ProtocolServiceKey getProtocolServiceKey() {
+            return protocolServiceKey;
+        }
+
+        public List<URL> getUrls() {
+            return urls;
         }
     }
 }

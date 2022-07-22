@@ -132,6 +132,4 @@ public interface ReferenceAttributes {
     String SERVICES = "services";
 
     String SCOPE = "scope";
-
-//    String ROUTER = "router";
 }

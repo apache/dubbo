@@ -32,6 +32,7 @@ public interface Constants {
     byte PROTOBUF_JSON_SERIALIZATION_ID = 21;
 
     byte PROTOBUF_SERIALIZATION_ID = 22;
+    byte FASTJSON2_SERIALIZATION_ID = 23;
     byte KRYO_SERIALIZATION2_ID = 25;
     byte CUSTOM_MESSAGE_PACK_ID = 31;
 }

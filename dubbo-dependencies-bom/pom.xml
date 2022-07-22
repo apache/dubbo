@@ -99,6 +99,7 @@
         <httpclient_version>4.5.13</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.83</fastjson_version>
+        <fastjson2_version>2.0.7</fastjson2_version>
         <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.2.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
@@ -153,7 +154,7 @@
         <eureka.version>1.9.12</eureka.version>
 
         <!-- Fabric8 for Kubernetes -->
-        <fabric8_kubernetes_version>5.3.0</fabric8_kubernetes_version>
+        <fabric8_kubernetes_version>5.3.2</fabric8_kubernetes_version>
 
         <!-- Alibaba -->
         <alibaba_spring_context_support_version>1.0.8</alibaba_spring_context_support_version>
@@ -175,7 +176,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.21</commons_compress_version>
-        <revision>3.0.10-SNAPSHOT</revision>
+        <revision>3.1.0-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -227,6 +228,11 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.fastjson2</groupId>
+                <artifactId>fastjson2</artifactId>
+                <version>${fastjson2_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>

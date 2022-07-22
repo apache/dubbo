@@ -18,7 +18,7 @@
 package org.apache.dubbo.registry.retry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
@@ -38,7 +38,7 @@ import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_TIMES_KEY;
  */
 public abstract class AbstractRetryTask implements TimerTask {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     /**
      * url for retry task
@@ -80,7 +80,7 @@ public abstract class AbstractRetryTask implements TimerTask {
         this.url = url;
         this.registry = registry;
         this.taskName = taskName;
-        cancel = false;
+        this.cancel = false;
         this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
         this.retryTimes = url.getParameter(REGISTRY_RETRY_TIMES_KEY, DEFAULT_REGISTRY_RETRY_TIMES);
     }
@@ -113,8 +113,12 @@ public abstract class AbstractRetryTask implements TimerTask {
             return;
         }
         if (times > retryTimes) {
-            // reach the most times of retry.
-            logger.warn("Final failed to execute task " + taskName + ", url: " + url + ", retry " + retryTimes + " times.");
+            // 1-13 - failed to execute the retrying task.
+
+            logger.warn(
+                "1-13", "registry center offline", "Check the registry server.",
+                "Final failed to execute task " + taskName + ", url: " + url + ", retry " + retryTimes + " times.");
+
             return;
         }
         if (logger.isInfoEnabled()) {
@@ -123,7 +127,12 @@ public abstract class AbstractRetryTask implements TimerTask {
         try {
             doRetry(url, registry, timeout);
         } catch (Throwable t) { // Ignore all the exceptions and wait for the next retry
-            logger.warn("Failed to execute task " + taskName + ", url: " + url + ", waiting for again, cause:" + t.getMessage(), t);
+
+            // 1-13 - failed to execute the retrying task.
+
+            logger.warn("1-13", "registry center offline", "Check the registry server.",
+                "Failed to execute task " + taskName + ", url: " + url + ", waiting for again, cause:" + t.getMessage(), t);
+
             // reput this task when catch exception.
             reput(timeout, retryPeriod);
         }

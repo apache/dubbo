@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
@@ -62,9 +63,8 @@ public class FrameworkServiceRepositoryTest {
         ProviderModel providerModel = new ProviderModel(serviceKey,
             new DemoServiceImpl(),
             serviceDescriptor,
-            null,
             moduleModel,
-            serviceMetadata);
+            serviceMetadata, ClassUtils.getClassLoader(DemoService.class));
         frameworkServiceRepository.registerProvider(providerModel);
 
         ProviderModel lookupExportedService = frameworkServiceRepository.lookupExportedService(serviceKey);
@@ -89,8 +89,8 @@ public class FrameworkServiceRepositoryTest {
         Assertions.assertEquals(urls.get(0), url);
 
         ConsumerModel consumerModel = new ConsumerModel(
-            serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor, null,
-            moduleModel, serviceMetadata, null);
+            serviceMetadata.getServiceKey(), new DemoServiceImpl(), serviceDescriptor,
+            moduleModel, serviceMetadata, null, ClassUtils.getClassLoader(DemoService.class));
         moduleServiceRepository.registerConsumer(consumerModel);
         List<ConsumerModel> consumerModels = frameworkServiceRepository.allConsumerModels();
         Assertions.assertEquals(consumerModels.size(), 1);
