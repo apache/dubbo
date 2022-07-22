@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -48,20 +47,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
-
 public class TripleProtocol extends AbstractProtocol {
 
 
     public static final String METHOD_ATTR_PACK = "pack";
-    private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
-    private static final URL THREAD_POOL_URL = new URL(CommonConstants.TRIPLE,
-        CommonConstants.LOCALHOST_VALUE, 50051)
-        .addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME)
-        .addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
-
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
