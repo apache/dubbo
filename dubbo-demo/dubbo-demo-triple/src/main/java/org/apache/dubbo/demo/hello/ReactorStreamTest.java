@@ -9,6 +9,10 @@ public interface ReactorStreamTest {
     String JAVA_SERVICE_NAME = "org.apache.dubbo.demo.hello.ReactorStreamTest";
     String SERVICE_NAME = "org.apache.dubbo.demo.hello.ReactorStreamTest";
 
-    Flux<HelloReply> test(Mono<HelloRequest> requestMono);
+    Mono<HelloReply> testOneToOne(Mono<HelloRequest> requestMono);
+
+    Flux<HelloReply> testOneToMany(Mono<HelloRequest> requestMono);
+
+    Flux<HelloReply> testManyToMany(Flux<HelloRequest> requestFlux);
 
 }

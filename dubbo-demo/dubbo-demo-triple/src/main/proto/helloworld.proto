@@ -26,5 +26,7 @@ message HelloReply {
 }
 
 service StreamTest {
-  rpc test(HelloRequest) returns (stream HelloReply);
+  rpc testOneToOne(HelloRequest) returns (HelloReply);
+  rpc testOneToMany(HelloRequest) returns (stream HelloReply);
+  rpc testManyToMany(stream HelloRequest) returns (stream HelloReply);
 }

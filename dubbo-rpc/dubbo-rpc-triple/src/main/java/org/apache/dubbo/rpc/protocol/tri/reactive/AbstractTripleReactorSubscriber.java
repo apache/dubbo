@@ -33,15 +33,15 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  */
 public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T>, CoreSubscriber<T> {
 
-    private volatile CallStreamObserver<T> downstream;
+    protected volatile CallStreamObserver<T> downstream;
 
     private static final AtomicReferenceFieldUpdater<AbstractTripleReactorSubscriber, CallStreamObserver> DOWNSTREAM =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorSubscriber.class, CallStreamObserver.class, "downstream");
 
-    private volatile Subscription upstream;
+    private volatile Subscription subscription;
 
-    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorSubscriber, Subscription> UPSTREAM =
-        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorSubscriber.class, Subscription.class, "upstream");
+    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorSubscriber, Subscription> SUBSCRIPTION =
+        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorSubscriber.class, Subscription.class, "subscription");
 
     // cancel status
     private volatile boolean isCanceled;
@@ -54,7 +54,7 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
             throw new NullPointerException();
         }
         if (this.downstream == null && DOWNSTREAM.compareAndSet(this, null, downstream)) {
-            upstream.request(1);
+            subscription.request(1);
             return;
         }
 
@@ -63,8 +63,8 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
 
     @Override
     public void onSubscribe(@NonNull final Subscription subscription) {
-        if (this.upstream == null) {
-            UPSTREAM.compareAndSet(this, null, subscription);
+        if (this.subscription == null) {
+            SUBSCRIPTION.compareAndSet(this, null, subscription);
         }
     }
 
@@ -72,7 +72,7 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
     public void onNext(T t) {
         if (!isCanceled && !isDone) {
             downstream.onNext(t);
-            upstream.request(1);
+            subscription.request(1);
         }
     }
 
@@ -86,5 +86,14 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
     public void onComplete() {
         isDone = true;
         downstream.onCompleted();
+    }
+
+    public void terminate() {
+        isDone = true;
+        isCanceled = true;
+    }
+
+    public boolean isTerminated() {
+        return isCanceled || isDone;
     }
 }

@@ -17,12 +17,19 @@
 
 package org.apache.dubbo.rpc.protocol.tri.reactive.calls;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.reactive.ClientTripleReactorPublisher;
+import org.apache.dubbo.rpc.protocol.tri.reactive.ClientTripleReactorSubscriber;
 import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Operators;
+
+import java.util.function.BiConsumer;
 
 /**
  * A collection of methods to convert client-side Reactor calls to stream calls.
@@ -32,7 +39,36 @@ public final class ReactorClientCalls {
     private ReactorClientCalls() {
     }
 
-    // TODO oneToOne, ManyToOne, ManyToMany
+    // TODO ManyToOne
+
+    public static <TRequest, TResponse, TInvoker> Mono<TResponse> oneToOne(Invoker<TInvoker> invoker,
+                                                                 Mono<TRequest> monoRequest,
+                                                                 StubMethodDescriptor methodDescriptor) {
+        try {
+            return Mono.create(emitter -> monoRequest.subscribe(
+                    request -> StubInvocationUtil.unaryCall(invoker, methodDescriptor, request, new StreamObserver<TResponse>() {
+                        @Override
+                        public void onNext(TResponse tResponse) {
+                            emitter.success(tResponse);
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                            emitter.error(throwable);
+                        }
+
+                        @Override
+                        public void onCompleted() {
+                            // Do nothing
+                        }
+                    }),
+                    emitter::error
+                ));
+        } catch (Throwable throwable) {
+            return Mono.error(throwable);
+        }
+    }
+
 
     /**
      * Implements a unary -> stream call as Mono -> Flux
@@ -48,13 +84,36 @@ public final class ReactorClientCalls {
         try {
             return monoRequest
                 .flatMapMany(request -> {
-                    ClientTripleReactorPublisher<TResponse> consumerStreamObserver =
-                        new ClientTripleReactorPublisher<>();
-                    StubInvocationUtil.serverStreamCall(invoker, methodDescriptor , request, consumerStreamObserver);
-                    return consumerStreamObserver;
+                    ClientTripleReactorPublisher<TResponse> clientPublisher = new ClientTripleReactorPublisher<>();
+                    StubInvocationUtil.serverStreamCall(invoker, methodDescriptor, request, clientPublisher);
+                    return clientPublisher;
                 });
         } catch (Throwable throwable) {
             return Flux.error(throwable);
         }
     }
+
+    /**
+     * Implements a stream -> stream call as Flux -> Flux
+     *
+     * @param invoker invoker
+     * @param requestFlux the flux with request
+     * @param methodDescriptor the method descriptor
+     * @return
+     */
+    public static <TRequest, TResponse, TInvoker> Flux<TResponse> manyToMany(Invoker<TInvoker> invoker,
+                                                                            Flux<TRequest> requestFlux,
+                                                                            StubMethodDescriptor methodDescriptor) {
+        try {
+            ClientTripleReactorSubscriber<TRequest> clientSubscriber = requestFlux.subscribeWith(new ClientTripleReactorSubscriber<>());
+            ClientTripleReactorPublisher<TResponse> clientPublisher = new ClientTripleReactorPublisher<>(
+                s -> clientSubscriber.subscribe((CallStreamObserver<TRequest>) s),
+                clientSubscriber::terminate);
+            StubInvocationUtil.biOrClientStreamCall(invoker, methodDescriptor, clientPublisher);
+            return Flux.from(clientPublisher);
+        } catch (Throwable throwable) {
+            return Flux.error(throwable);
+        }
+    }
+
 }

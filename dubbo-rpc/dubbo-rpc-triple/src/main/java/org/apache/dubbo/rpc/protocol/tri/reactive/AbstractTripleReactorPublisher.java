@@ -17,8 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
+import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.SafeRequestObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -26,11 +28,13 @@ import org.reactivestreams.Subscription;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.function.Consumer;
 
 /**
  * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <p>
  * 1. passing the data received by CallStreamObserver to Reactive consumer <br>
  * 2. passing the request of Reactive API to CallStreamObserver
+ *
  */
 public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
 
@@ -54,7 +58,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     private volatile Subscriber<? super T> downstream;
 
-    protected volatile ClientCallToObserverAdapter<?> upstream;
+    protected volatile CallStreamObserver<?> subscription;
 
     // cancel status
     private volatile boolean isCancelled;
@@ -64,21 +68,31 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     private volatile Runnable shutdownHook;
 
+    // to help bind TripleSubscriber
+    private volatile Consumer<CallStreamObserver<?>> onSubscribe;
+
     @SuppressWarnings("rawtypes")
     private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, Runnable> ON_SHUTDOWN =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, Runnable.class, "shutdownHook");
 
     public AbstractTripleReactorPublisher() {
-        this(null);
     }
 
-    public AbstractTripleReactorPublisher(Runnable shutdownHook) {
+    public AbstractTripleReactorPublisher(Consumer<CallStreamObserver<?>> onSubscribe, Runnable shutdownHook) {
+        this.onSubscribe = onSubscribe;
         this.shutdownHook = shutdownHook;
     }
 
-    protected void onSubscribe(final ClientCallToObserverAdapter<?> upstream) {
-        this.upstream = upstream;
-        upstream.disableAutoRequest();
+    protected void onSubscribe(final CallStreamObserver<?> subscription) {
+        this.subscription = subscription;
+        if (subscription instanceof ClientStreamObserver<?>) {
+            ((ClientStreamObserver<?>) subscription).disableAutoRequest();
+        } else if (subscription instanceof ServerStreamObserver<?>) {
+            ((ServerStreamObserver<?>) subscription).disableAutoInboundFlowControl();
+        }
+        if (onSubscribe != null) {
+            onSubscribe.accept((subscription));
+        }
     }
 
     @Override
@@ -88,6 +102,8 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
         }
 
         downstream.onNext(data);
+        subscription.request(1);
+        // TODO use an appropriate backpressure strategy
     }
 
     @Override
@@ -138,7 +154,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     @Override
     public void request(long l) {
         if (SUBSCRIBED.get() && CAN_REQUEST.get()) {
-            upstream.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
+            subscription.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
         } else {
             REQUESTED.getAndAdd(l);
         }
@@ -148,7 +164,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     public void startRequest() {
         if (CAN_REQUEST.compareAndSet(false, true)) {
             long count = REQUESTED.get();
-            upstream.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
+            subscription.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
         }
     }
 

@@ -18,12 +18,14 @@
 package org.apache.dubbo.rpc.protocol.tri.reactive.calls;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.reactive.AbstractTripleReactorSubscriber;
+import org.apache.dubbo.rpc.protocol.tri.reactive.ServerTripleReactorPublisher;
 import org.apache.dubbo.rpc.protocol.tri.reactive.ServerTripleReactorSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
@@ -34,7 +36,30 @@ public final class ReactorServerCalls {
     private ReactorServerCalls() {
     }
 
-    // TODO oneToOne, ManyToOne, ManyToMany
+    // TODO ManyToOne
+
+    /**
+     * Implements a unary -> unary call as Mono -> Mono
+     *
+     * @param request request
+     * @param responseObserver responseObserver
+     * @param func service implementation
+     */
+    public static <T, R> void oneToOne(T request,
+                                       StreamObserver<R> responseObserver,
+                                       Function<Mono<T>, Mono<R>> func) {
+        func.apply(Mono.just(request)).subscribe(res -> {
+            CompletableFuture.completedFuture(res)
+                .whenComplete((r, t) -> {
+                    if (t != null) {
+                        responseObserver.onError(t);
+                    } else {
+                        responseObserver.onNext(r);
+                        responseObserver.onCompleted();
+                    }
+                });
+        });
+    }
 
     /**
      * Implements a unary -> stream call as Mono -> Flux
@@ -43,15 +68,32 @@ public final class ReactorServerCalls {
      * @param responseObserver responseObserver
      * @param func service implementation
      */
-    public static <T, R> void oneToMany (T request,
-                                         StreamObserver<R> responseObserver,
-                                         Function<Mono<T>, Flux<R>> func) {
+    public static <T, R> void oneToMany(T request,
+                                        StreamObserver<R> responseObserver,
+                                        Function<Mono<T>, Flux<R>> func) {
         try {
             Flux<R> response = func.apply(Mono.just(request));
-            AbstractTripleReactorSubscriber<R> subscriber = response.subscribeWith(new ServerTripleReactorSubscriber<>());
+            ServerTripleReactorSubscriber<R> subscriber = response.subscribeWith(new ServerTripleReactorSubscriber<>());
             subscriber.subscribe((ServerCallToObserverAdapter<R>) responseObserver);
         } catch (Throwable throwable) {
             responseObserver.onError(throwable);
         }
+    }
+
+    /**
+     * Implements a stream -> stream call as Flux -> Flux
+     *
+     * @param responseObserver response StreamObserver
+     * @param func service implementation
+     * @return request StreamObserver
+     */
+    public static <T, R> StreamObserver<T> manyToMany(StreamObserver<R> responseObserver,
+                                                      Function<Flux<T>, Flux<R>> func) {
+        // responseObserver is also a subscription of publisher, we can use it to request more data
+        ServerTripleReactorPublisher<T> serverPublisher = new ServerTripleReactorPublisher<T>((CallStreamObserver<R>) responseObserver);
+        Flux<R> responseFlux = func.apply(Flux.from(serverPublisher));
+        ServerTripleReactorSubscriber<R> serverSubscriber = responseFlux.subscribeWith(new ServerTripleReactorSubscriber<>());
+        serverSubscriber.subscribe((CallStreamObserver<R>) responseObserver);
+        return serverPublisher;
     }
 }

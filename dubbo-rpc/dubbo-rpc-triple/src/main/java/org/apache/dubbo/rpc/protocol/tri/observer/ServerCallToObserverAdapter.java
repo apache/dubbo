@@ -47,7 +47,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     }
 
 
-    private boolean isTerminated() {
+    public boolean isTerminated() {
         return terminated;
     }
 
