@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -50,7 +50,8 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
  * Implementation providing remote RPC service to facilitate the query of metadata information.
  */
 public class MetadataServiceDelegation implements MetadataService, Disposable {
-    Logger logger = LoggerFactory.getLogger(getClass());
+    ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+
     private final ApplicationModel applicationModel;
     private final RegistryManager registryManager;
     private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
