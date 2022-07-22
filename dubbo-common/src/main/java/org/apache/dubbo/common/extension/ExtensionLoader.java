@@ -853,8 +853,7 @@ public class ExtensionLoader<T> {
 
                 // When spiXXX implements ScopeModelAware, ExtensionAccessorAware,
                 // the setXXX of ScopeModelAware and ExtensionAccessorAware does not need to be injected
-                if (method.getDeclaringClass() == ScopeModelAware.class ||
-                    method.getDeclaringClass() == ExtensionAccessorAware.class) {
+                if (method.getDeclaringClass() == ScopeModelAware.class) {
                     continue;
                 }
                 if (instance instanceof ScopeModelAware || instance instanceof ExtensionAccessorAware) {
