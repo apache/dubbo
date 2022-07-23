@@ -427,9 +427,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             // the prev bean type is different, rename the new reference bean
             int index = 2;
             String newReferenceBeanName = null;
-            while (newReferenceBeanName == null || beanDefinitionRegistry.containsBeanDefinition(newReferenceBeanName)) {
+            while (newReferenceBeanName == null || beanDefinitionRegistry.containsBeanDefinition(newReferenceBeanName)
+                || beanDefinitionRegistry.isAlias(newReferenceBeanName)) {
                 newReferenceBeanName = referenceBeanName + "#" + index;
                 index++;
+                // double check found same name and reference key
+                if (registeredReferenceBeanNames.contains(newReferenceBeanName)) {
+                    return newReferenceBeanName;
+                }
             }
             newBeanDesc = newReferenceBeanName + "[" + referenceKey + "]";
 
