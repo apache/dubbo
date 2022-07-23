@@ -40,7 +40,7 @@ public final class ReactorServerCalls {
      * Implements a unary -> unary call as Mono -> Mono
      *
      * @param request request
-     * @param responseObserver responseObserver
+     * @param responseObserver response StreamObserver
      * @param func service implementation
      */
     public static <T, R> void oneToOne(T request,
@@ -63,7 +63,7 @@ public final class ReactorServerCalls {
      * Implements a unary -> stream call as Mono -> Flux
      *
      * @param request request
-     * @param responseObserver responseObserver
+     * @param responseObserver response StreamObserver
      * @param func service implementation
      */
     public static <T, R> void oneToMany(T request,
@@ -78,6 +78,13 @@ public final class ReactorServerCalls {
         }
     }
 
+    /**
+     * Implements a stream -> unary call as Flux -> Mono
+     *
+     * @param responseObserver response StreamObserver
+     * @param func service implementation
+     * @return request StreamObserver
+     */
     public static <T, R> StreamObserver<T> manyToOne(StreamObserver<R> responseObserver,
                                                       Function<Flux<T>, Mono<R>> func) {
         ServerTripleReactorPublisher<T> serverPublisher = new ServerTripleReactorPublisher<T>((CallStreamObserver<R>) responseObserver);

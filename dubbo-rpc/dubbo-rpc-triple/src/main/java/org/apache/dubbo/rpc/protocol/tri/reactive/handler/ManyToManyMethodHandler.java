@@ -26,6 +26,9 @@ import reactor.core.publisher.Flux;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+/**
+ * The handler of ManyToMany() method for stub invocation.
+ */
 public class ManyToManyMethodHandler<T, R> implements StubMethodHandler<T, R> {
 
     private final Function<Flux<T>, Flux<R>> func;
@@ -34,7 +37,6 @@ public class ManyToManyMethodHandler<T, R> implements StubMethodHandler<T, R> {
         this.func = func;
     }
 
-    // 返回的是requestObserver，一返回就会被监听，然后请求会往里面打
     @SuppressWarnings("unchecked")
     @Override
     public CompletableFuture<?> invoke(Object[] arguments) {

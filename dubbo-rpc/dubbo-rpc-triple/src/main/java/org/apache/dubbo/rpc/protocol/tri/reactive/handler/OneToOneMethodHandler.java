@@ -27,6 +27,9 @@ import reactor.core.publisher.Mono;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+/**
+ * The handler of OneToOne() method for stub invocation.
+ */
 public class OneToOneMethodHandler<T, R> implements StubMethodHandler<T, R> {
 
     private final Function<Mono<T>, Mono<R>> func;
@@ -35,6 +38,7 @@ public class OneToOneMethodHandler<T, R> implements StubMethodHandler<T, R> {
         this.func = func;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public CompletableFuture<?> invoke(Object[] arguments) {
         T request = (T) arguments[0];

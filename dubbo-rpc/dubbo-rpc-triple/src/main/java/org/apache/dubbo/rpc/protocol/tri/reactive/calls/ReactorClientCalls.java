@@ -21,15 +21,11 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.reactive.ClientTripleReactorPublisher;
 import org.apache.dubbo.rpc.protocol.tri.reactive.ClientTripleReactorSubscriber;
 import org.apache.dubbo.rpc.stub.StubInvocationUtil;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.Operators;
-
-import java.util.function.BiConsumer;
 
 /**
  * A collection of methods to convert client-side Reactor calls to stream calls.
@@ -39,6 +35,14 @@ public final class ReactorClientCalls {
     private ReactorClientCalls() {
     }
 
+    /**
+     * Implements a unary -> unary call as Mono -> Mono
+     *
+     * @param invoker invoker
+     * @param monoRequest the mono with request
+     * @param methodDescriptor the method descriptor
+     * @return the mono with response
+     */
     public static <TRequest, TResponse, TInvoker> Mono<TResponse> oneToOne(Invoker<TInvoker> invoker,
                                                                  Mono<TRequest> monoRequest,
                                                                  StubMethodDescriptor methodDescriptor) {
@@ -67,7 +71,6 @@ public final class ReactorClientCalls {
         }
     }
 
-
     /**
      * Implements a unary -> stream call as Mono -> Flux
      *
@@ -91,6 +94,14 @@ public final class ReactorClientCalls {
         }
     }
 
+    /**
+     * Implements a stream -> unary call as Flux -> Mono
+     *
+     * @param invoker invoker
+     * @param requestFlux the flux with request
+     * @param methodDescriptor the method descriptor
+     * @return the mono with response
+     */
     public static <TRequest, TResponse, TInvoker> Mono<TResponse> manyToOne(Invoker<TInvoker> invoker,
                                                                             Flux<TRequest> requestFlux,
                                                                             StubMethodDescriptor methodDescriptor) {
@@ -112,7 +123,7 @@ public final class ReactorClientCalls {
      * @param invoker invoker
      * @param requestFlux the flux with request
      * @param methodDescriptor the method descriptor
-     * @return
+     * @return the flux with response
      */
     public static <TRequest, TResponse, TInvoker> Flux<TResponse> manyToMany(Invoker<TInvoker> invoker,
                                                                              Flux<TRequest> requestFlux,

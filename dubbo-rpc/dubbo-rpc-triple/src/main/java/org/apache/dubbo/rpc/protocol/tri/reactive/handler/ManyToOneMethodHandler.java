@@ -27,6 +27,9 @@ import reactor.core.publisher.Mono;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+/**
+ * The handler of ManyToOne() method for stub invocation.
+ */
 public class ManyToOneMethodHandler<T, R> implements StubMethodHandler<T, R> {
 
     private final Function<Flux<T>, Mono<R>> func;
@@ -35,7 +38,6 @@ public class ManyToOneMethodHandler<T, R> implements StubMethodHandler<T, R> {
         this.func = func;
     }
 
-    // 返回的是requestObserver，一返回就会被监听，然后请求会往里面打
     @SuppressWarnings("unchecked")
     @Override
     public CompletableFuture<?> invoke(Object[] arguments) {
