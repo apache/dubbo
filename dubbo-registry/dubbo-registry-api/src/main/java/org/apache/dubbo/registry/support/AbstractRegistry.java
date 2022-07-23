@@ -433,7 +433,7 @@ public abstract class AbstractRegistry implements Registry {
                         notify(url, listener, filterEmpty(url, urls));
                     } catch (Throwable t) {
                         // 1-7: Failed to notify registry event.
-                        logger.error("1-7", "", "",
+                        logger.error("1-7", "consumer is offline", "",
                             "Failed to notify registry event, urls: " + urls + ", cause: " + t.getMessage(), t);
                     }
                 }

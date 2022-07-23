@@ -160,7 +160,12 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                 try {
                     entry.getValue().onEvent(metadataString);
                 } catch (RpcException e) {
-                    logger.warn("Notify to consumer error. Possible cause: consumer is offline.");
+                    // 1-7 - Failed to notify registry event.
+                    // The updating of metadata to consumer is a type of registry event.
+
+                    logger.warn("1-7", "consumer is offline", "",
+                        "Notify to consumer error, removing listener.");
+
                     // remove listener if consumer is offline
                     iterator.remove();
                 }
