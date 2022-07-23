@@ -203,7 +203,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ClientCall.Listener callListener;
 
         final Object pureArgument;
-        if (invocation.getArguments().length == 2 && invocation.getArguments()[1] instanceof StreamObserver) {
+        if (invocation.getArguments() != null && invocation.getArguments().length == 2 && invocation.getArguments()[1] instanceof StreamObserver) {
             StreamObserver<Object> observer = (StreamObserver<Object>) invocation.getArguments()[1];
             pureArgument = invocation.getArguments()[0];
             result = new AsyncRpcResult(CompletableFuture.completedFuture(new AppResponse()),
