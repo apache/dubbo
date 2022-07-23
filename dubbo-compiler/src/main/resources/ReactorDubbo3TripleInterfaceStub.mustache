@@ -1,0 +1,24 @@
+{{#packageName}}
+package {{packageName}};
+{{/packageName}}
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public interface {{interfaceClassName}} {
+
+    String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+
+    String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+
+{{#methods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    public {{#isManyOutput}}Flux{{/isManyOutput}}{{^isManyOutput}}Mono{{/isManyOutput}}<{{outputType}}> {{methodName}}({{#isManyInput}}Flux{{/isManyInput}}{{^isManyInput}}Mono{{/isManyInput}}<{{inputType}}> reactorRequest) ;
+
+{{/methods}}
+}

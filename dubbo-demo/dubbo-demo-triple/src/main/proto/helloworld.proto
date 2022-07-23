@@ -12,8 +12,11 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
+option java_package = "org.apache.dubbo.demo.hello";
+option java_outer_classname = "HelloWorldProto";
+option objc_class_prefix = "HLW";
 
-package org.apache.dubbo.demo.hello;
+package helloworld;
 
 // The request message containing the user's name.
 message HelloRequest {
@@ -23,11 +26,4 @@ message HelloRequest {
 // The response message containing the greetings
 message HelloReply {
   string message = 1;
-}
-
-service StreamTest {
-  rpc testOneToOne(HelloRequest) returns (HelloReply);
-  rpc testOneToMany(HelloRequest) returns (stream HelloReply);
-  rpc testManyToMany(stream HelloRequest) returns (stream HelloReply);
-  rpc testManyToOne(stream HelloRequest) returns (HelloReply);
 }
