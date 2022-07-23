@@ -91,7 +91,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
             ((ServerStreamObserver<?>) subscription).disableAutoInboundFlowControl();
         }
         if (onSubscribe != null) {
-            onSubscribe.accept((subscription));
+            onSubscribe.accept(subscription);
         }
     }
 
@@ -175,5 +175,9 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
         }
         isCancelled = true;
         doPostShutdown();
+    }
+
+    public boolean isCancelled() {
+        return isCancelled;
     }
 }

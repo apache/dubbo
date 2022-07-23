@@ -90,8 +90,20 @@ public final class ReactorServerCalls {
         ServerTripleReactorPublisher<T> serverPublisher = new ServerTripleReactorPublisher<T>((CallStreamObserver<R>) responseObserver);
         try {
             Mono<R> responseMono = func.apply(Flux.from(serverPublisher));
-            ServerTripleReactorSubscriber<R> serverSubscriber = responseMono.subscribeWith(new ServerTripleReactorSubscriber<>());
-            serverSubscriber.subscribe((CallStreamObserver<R>) responseObserver);
+            responseMono.subscribe(value -> {
+                    // Don't try to respond if the server has already canceled the request
+                    if (!serverPublisher.isCancelled()) {
+                        responseObserver.onNext(value);
+                    }
+                },
+                throwable -> {
+                    // Don't try to respond if the server has already canceled the request
+                    if (!serverPublisher.isCancelled()) {
+                        responseObserver.onError(throwable);
+                    }
+                },
+                responseObserver::onCompleted
+            );
         } catch (Throwable throwable) {
             responseObserver.onError(throwable);
         }
