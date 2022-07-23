@@ -39,17 +39,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.reactivestreams</groupId>
-            <artifactId>reactive-streams</artifactId>
-            <version>1.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-            <version>3.4.7</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-filter-cache</artifactId>
         </dependency>
@@ -152,20 +141,8 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.7.1:exe:${os.detected.classifier}
-                    </protocArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:3.7.1:exe:${os.detected.classifier}
-                    </pluginArtifact>
-                    <protocPlugins>
-                        <protocPlugin>
-                            <id>dubbo</id>
-                            <groupId>org.apache.dubbo</groupId>
-                            <artifactId>dubbo-compiler</artifactId>
-                            <version>0.0.4.1-SNAPSHOT</version>
-                            <mainClass>org.apache.dubbo.gen.tri.Dubbo3TripleGenerator</mainClass>
-                        </protocPlugin>
-                    </protocPlugins>
+                    <protocArtifact>com.google.protobuf:protoc:3.7.1:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginId>triple-java</pluginId>
                     <outputDirectory>build/generated/source/proto/main/java</outputDirectory>
                 </configuration>
                 <executions>
