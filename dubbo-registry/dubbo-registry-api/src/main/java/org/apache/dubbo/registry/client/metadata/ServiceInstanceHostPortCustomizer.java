@@ -71,7 +71,14 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                 }
                 
                 if (host == null || port == -1) {
-                    logger.warn("The default preferredProtocol \"" + preferredProtocol + "\" is not found, fall back to the strategy that pick the first found protocol. Please try to modify the config of dubbo.application.protocol");
+
+                    // 4-2 - The default preferredProtocol is not found.
+
+                    logger.warn("4-2", "typo in protocol", "",
+                        "The default preferredProtocol \"" + preferredProtocol + "\" is not found, " +
+                        "falling back to the strategy that pick the first found protocol. " +
+                        "Please try modifying the config of dubbo.application.protocol");
+
                     URL url = urls.iterator().next();
                     host = url.getHost();
                     port = url.getPort();
