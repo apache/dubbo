@@ -255,7 +255,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             try {
                 Thread.sleep(delay * 1000L);
             } catch (InterruptedException e) {
-                logger.error("Interrupter when waiting for address notify!" + e);
+                logger.error("Interrupted when waiting for address notify!" + e);
             }
         } else {
             // do not wait address notify by default
@@ -264,7 +264,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         try {
             latch.await(delay, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            logger.error("Interrupter when waiting for address notify!" + e);
+            logger.error("Interrupted when waiting for address notify!" + e);
         }
     }
 
