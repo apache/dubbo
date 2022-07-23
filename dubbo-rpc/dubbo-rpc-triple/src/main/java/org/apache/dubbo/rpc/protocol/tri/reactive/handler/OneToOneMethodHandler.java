@@ -21,7 +21,6 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.reactive.calls.ReactorServerCalls;
 import org.apache.dubbo.rpc.stub.FutureToObserverAdaptor;
 import org.apache.dubbo.rpc.stub.StubMethodHandler;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.CompletableFuture;
