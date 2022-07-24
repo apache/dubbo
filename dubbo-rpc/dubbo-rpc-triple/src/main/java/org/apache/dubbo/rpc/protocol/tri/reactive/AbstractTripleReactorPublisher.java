@@ -26,7 +26,7 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Consumer;
 
@@ -34,7 +34,6 @@ import java.util.function.Consumer;
  * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <p>
  * 1. passing the data received by CallStreamObserver to Reactive consumer <br>
  * 2. passing the request of Reactive API to CallStreamObserver
- *
  */
 public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
 
@@ -47,8 +46,10 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
         }
     };
 
-    // accumulate the number of un-requested
-    private final AtomicLong REQUESTED = new AtomicLong();
+    private volatile long requested;
+
+    private static final AtomicLongFieldUpdater<AbstractTripleReactorPublisher> REQUESTED =
+        AtomicLongFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, "requested");
 
     // weather CallStreamObserver#request can be called
     private final AtomicBoolean CAN_REQUEST = new AtomicBoolean();
@@ -60,19 +61,23 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
 
     protected volatile CallStreamObserver<?> subscription;
 
+    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, CallStreamObserver> SUBSCRIPTION =
+        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, CallStreamObserver.class, "subscription");
+
+
     // cancel status
     private volatile boolean isCancelled;
 
     // complete status
     private volatile boolean isDone;
 
-    private volatile Runnable shutdownHook;
-
     // to help bind TripleSubscriber
     private volatile Consumer<CallStreamObserver<?>> onSubscribe;
 
+    private volatile Runnable shutdownHook;
+
     @SuppressWarnings("rawtypes")
-    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, Runnable> ON_SHUTDOWN =
+    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, Runnable> SHUTDOWN_HOOK =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, Runnable.class, "shutdownHook");
 
     public AbstractTripleReactorPublisher() {
@@ -84,15 +89,20 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     }
 
     protected void onSubscribe(final CallStreamObserver<?> subscription) {
-        this.subscription = subscription;
-        if (subscription instanceof ClientStreamObserver<?>) {
-            ((ClientStreamObserver<?>) subscription).disableAutoRequest();
-        } else if (subscription instanceof ServerStreamObserver<?>) {
-            ((ServerStreamObserver<?>) subscription).disableAutoInboundFlowControl();
+        if (subscription != null && SUBSCRIPTION.compareAndSet(this, null, subscription)) {
+            this.subscription = subscription;
+            if (subscription instanceof ClientStreamObserver<?>) {
+                ((ClientStreamObserver<?>) subscription).disableAutoRequest();
+            } else if (subscription instanceof ServerStreamObserver<?>) {
+                ((ServerStreamObserver<?>) subscription).disableAutoInboundFlowControl();
+            }
+            if (onSubscribe != null) {
+                onSubscribe.accept(subscription);
+            }
+            return;
         }
-        if (onSubscribe != null) {
-            onSubscribe.accept(subscription);
-        }
+
+        throw new IllegalStateException(getClass().getSimpleName() + " supports only a single subscription");
     }
 
     @Override
@@ -100,10 +110,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
         if (isDone || isCancelled) {
             return;
         }
-
         downstream.onNext(data);
-//        subscription.request(1);
-        // TODO use an appropriate backpressure strategy
     }
 
     @Override
@@ -128,7 +135,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     private void doPostShutdown() {
         Runnable r = shutdownHook;
         // CAS to confirm shutdownHook will be run only once.
-        if (r != null && ON_SHUTDOWN.compareAndSet(this, r, null)) {
+        if (r != null && SHUTDOWN_HOOK.compareAndSet(this, r, null)) {
             r.run();
         }
     }
@@ -147,7 +154,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
             }
         } else {
             subscriber.onSubscribe(EMPTY_SUBSCRIPTION);
-            subscriber.onError(new IllegalStateException(getClass().getSimpleName() + " allows only a single Subscriber"));
+            subscriber.onError(new IllegalStateException(getClass().getSimpleName() + " can't be subscribed repeatedly"));
         }
     }
 
@@ -156,14 +163,14 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
         if (SUBSCRIBED.get() && CAN_REQUEST.get()) {
             subscription.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
         } else {
-            REQUESTED.getAndAdd(l);
+            REQUESTED.getAndAdd(this, l);
         }
     }
 
     @Override
     public void startRequest() {
         if (CAN_REQUEST.compareAndSet(false, true)) {
-            long count = REQUESTED.get();
+            long count = requested;
             subscription.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
         }
     }

@@ -67,7 +67,7 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
             return;
         }
 
-        throw new IllegalStateException(getClass().getSimpleName() + " does not support multiple subscribers");
+        throw new IllegalStateException(getClass().getSimpleName() + " can't be subscribed repeatedly");
     }
 
     @Override
