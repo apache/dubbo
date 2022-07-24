@@ -64,7 +64,6 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
     private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, CallStreamObserver> SUBSCRIPTION =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, CallStreamObserver.class, "subscription");
 
-
     // cancel status
     private volatile boolean isCancelled;
 
@@ -129,6 +128,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
             return;
         }
         isDone = true;
+        downstream.onComplete();
         doPostShutdown();
     }
 
