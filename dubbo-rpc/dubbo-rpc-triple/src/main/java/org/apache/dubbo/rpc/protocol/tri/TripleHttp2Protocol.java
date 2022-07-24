@@ -23,7 +23,10 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
+import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
+import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -45,6 +48,7 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -99,7 +103,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     @Override
-    public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+    public void configServerPipeline(URL url, ChannelOperator operator) {
+
         final List<HeaderFilter> headFilters;
         if (filtersLoader != null) {
             headFilters = filtersLoader.getActivateExtension(url,
@@ -130,8 +135,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                         headFilters));
                 }
             });
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
-            new TripleTailHandler());
+        List<ChannelHandler> handlers = new ArrayList<>();
+        handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(new TripleServerConnectionHandler()));
+        handlers.add(new ChannelHandlerPretender(handler));
+        handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
+        operator.configChannelHandler(handlers);
+
+
     }
 
 

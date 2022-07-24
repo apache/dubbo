@@ -14,10 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.remoting.api.pu;
 
-import org.apache.dubbo.remoting.api.pu.DefaultCodec;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
-public class DefaultTriCodec extends DefaultCodec {
+import java.io.IOException;
 
+public class DefaultCodec implements Codec2 {
+    @Override
+    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
+
+    }
+
+    @Override
+    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
+        return null;
+    }
 }

@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.remoting.api.pu;
 
-import org.apache.dubbo.remoting.api.pu.DefaultCodec;
+import org.apache.dubbo.remoting.ChannelHandler;
 
-public class DefaultTriCodec extends DefaultCodec {
+import java.util.List;
 
+public interface ChannelOperator {
+    void configChannelHandler(List<ChannelHandler> handlerList);
 }

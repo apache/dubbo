@@ -14,10 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.remoting.api.pu;
 
-import org.apache.dubbo.remoting.api.pu.DefaultCodec;
+import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
-public class DefaultTriCodec extends DefaultCodec {
+public class ChannelHandlerPretender extends ChannelHandlerAdapter {
+    private final Object realHandler;
+
+    public ChannelHandlerPretender(Object realHandler) {
+        this.realHandler = realHandler;
+    }
+
+    public Object getRealHandler() {
+        return realHandler;
+    }
 
 }
