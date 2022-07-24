@@ -72,10 +72,10 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                 
                 if (host == null || port == -1) {
 
-                    // 4-2 - The default preferredProtocol is not found.
+                    // 4-2 - Can't find an instance URL using the default preferredProtocol.
 
-                    logger.warn("4-2", "typo in protocol", "",
-                        "The default preferredProtocol \"" + preferredProtocol + "\" is not found, " +
+                    logger.warn("4-2", "typo in preferred protocol", "",
+                        "Can't find an instance URL  using the default preferredProtocol \"" + preferredProtocol + "\", " +
                         "falling back to the strategy that pick the first found protocol. " +
                         "Please try modifying the config of dubbo.application.protocol");
 
