@@ -19,6 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
+/**
+ * Used in ManyToOne and ManyToMany in server. <br>
+ * It is a Publisher for user subscriber to subscribe. <br>
+ * It is a StreamObserver for requestStream. <br>
+ * It is a Subscription for user subscriber to request and pass request to responseStream.
+ */
 public class ServerTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> {
 
     public ServerTripleReactorPublisher(CallStreamObserver<?> callStreamObserver) {

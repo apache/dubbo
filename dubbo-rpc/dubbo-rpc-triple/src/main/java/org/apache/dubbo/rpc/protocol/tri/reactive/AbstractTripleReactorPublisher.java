@@ -102,7 +102,7 @@ public abstract class AbstractTripleReactorPublisher<T> implements Publisher<T>,
         }
 
         downstream.onNext(data);
-        subscription.request(1);
+//        subscription.request(1);
         // TODO use an appropriate backpressure strategy
     }
 

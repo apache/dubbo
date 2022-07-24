@@ -19,12 +19,15 @@ package org.apache.dubbo.rpc.protocol.tri.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
+/**
+ * The subscriber in client to subscribe user publisher and is subscribed by ClientStreamObserver.
+ */
 public class ClientTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T> {
 
     @Override
-    public void terminate() {
-        if (!isTerminated()) {
-            super.terminate();
+    public void cancel() {
+        if (!isCanceled()) {
+            super.cancel();
             ((ClientCallToObserverAdapter<T>) downstream).cancel(new Exception("Cancelled"));
         }
     }

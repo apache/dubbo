@@ -28,6 +28,10 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
         this.cancellationContext = cancellationContext;
     }
 
+    public CancellationContext getCancellationContext() {
+        return cancellationContext;
+    }
+
     public void cancel(Throwable throwable) {
         cancellationContext.cancel(throwable);
     }

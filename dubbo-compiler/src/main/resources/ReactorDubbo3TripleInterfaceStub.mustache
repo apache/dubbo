@@ -35,7 +35,7 @@ public interface {{interfaceClassName}} {
     {{#deprecated}}
         @java.lang.Deprecated
     {{/deprecated}}
-    public {{#isManyOutput}}Flux{{/isManyOutput}}{{^isManyOutput}}Mono{{/isManyOutput}}<{{outputType}}> {{methodName}}({{#isManyInput}}Flux{{/isManyInput}}{{^isManyInput}}Mono{{/isManyInput}}<{{inputType}}> reactorRequest) ;
+    {{#isManyOutput}}Flux{{/isManyOutput}}{{^isManyOutput}}Mono{{/isManyOutput}}<{{outputType}}> {{methodName}}({{#isManyInput}}Flux{{/isManyInput}}{{^isManyInput}}Mono{{/isManyInput}}<{{inputType}}> reactorRequest) ;
 
 {{/methods}}
 }

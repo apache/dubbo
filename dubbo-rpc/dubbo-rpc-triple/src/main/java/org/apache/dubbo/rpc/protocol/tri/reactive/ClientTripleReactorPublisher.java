@@ -24,7 +24,10 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import java.util.function.Consumer;
 
 /**
- * The publisher in client in OneToMany call.
+ * Used in OneToMany & ManyToOne & ManyToMany in client. <br>
+ * It is a Publisher for user subscriber to subscribe. <br>
+ * It is a StreamObserver for responseStream. <br>
+ * It is a Subscription for user subscriber to request and pass request to requestStream.
  */
 public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> implements ClientResponseObserver<T> {
 

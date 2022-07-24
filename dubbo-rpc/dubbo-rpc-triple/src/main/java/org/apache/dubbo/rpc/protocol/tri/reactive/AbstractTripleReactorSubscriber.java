@@ -28,27 +28,36 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 /**
  * The middle layer between {@link org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver} and Reactive API. <br>
  * Passing the data from Reactive producer to CallStreamObserver.
- *
- * TODO optimize the request loop
  */
 public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T>, CoreSubscriber<T> {
 
+    private static final Subscription CANCELLED_SUBSCRIPTION = new Subscription() {
+        @Override
+        public void cancel() {}
+        @Override
+        public void request(long n) {}
+    };
+
     protected volatile CallStreamObserver<T> downstream;
 
+    @SuppressWarnings("rawtypes")
     private static final AtomicReferenceFieldUpdater<AbstractTripleReactorSubscriber, CallStreamObserver> DOWNSTREAM =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorSubscriber.class, CallStreamObserver.class, "downstream");
 
     private volatile Subscription subscription;
 
+    @SuppressWarnings("rawtypes")
     private static final AtomicReferenceFieldUpdater<AbstractTripleReactorSubscriber, Subscription> SUBSCRIPTION =
         AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorSubscriber.class, Subscription.class, "subscription");
-
-    // cancel status
-    private volatile boolean isCanceled;
 
     // complete status
     private volatile boolean isDone;
 
+    /**
+     * Binding the downstream, and call subscription#request(1).
+     *
+     * @param downstream downstream
+     */
     public void subscribe(final CallStreamObserver<T> downstream) {
         if (downstream == null) {
             throw new NullPointerException();
@@ -63,14 +72,16 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
 
     @Override
     public void onSubscribe(@NonNull final Subscription subscription) {
-        if (this.subscription == null) {
-            SUBSCRIPTION.compareAndSet(this, null, subscription);
+        if (this.subscription == null && SUBSCRIPTION.compareAndSet(this, null, subscription)) {
+            return;
         }
+        // onSubscribe cannot be called repeatedly
+        subscription.cancel();
     }
 
     @Override
     public void onNext(T t) {
-        if (!isCanceled && !isDone) {
+        if (!isDone && !isCanceled()) {
             downstream.onNext(t);
             subscription.request(1);
         }
@@ -78,22 +89,28 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
 
     @Override
     public void onError(Throwable throwable) {
-        isCanceled = true;
-        downstream.onError(throwable);
+        if (!isCanceled()) {
+            isDone = true;
+            downstream.onError(throwable);
+        }
     }
 
     @Override
     public void onComplete() {
-        isDone = true;
-        downstream.onCompleted();
+        if (!isCanceled()) {
+            isDone = true;
+            downstream.onCompleted();
+        }
     }
 
-    public void terminate() {
-        isDone = true;
-        isCanceled = true;
+    public void cancel() {
+        Subscription subscription = SUBSCRIPTION.getAndSet(this, CANCELLED_SUBSCRIPTION);
+        if (subscription != null && subscription != CANCELLED_SUBSCRIPTION) {
+            subscription.cancel();
+        }
     }
 
-    public boolean isTerminated() {
-        return isCanceled || isDone;
+    public boolean isCanceled() {
+        return subscription == CANCELLED_SUBSCRIPTION;
     }
 }

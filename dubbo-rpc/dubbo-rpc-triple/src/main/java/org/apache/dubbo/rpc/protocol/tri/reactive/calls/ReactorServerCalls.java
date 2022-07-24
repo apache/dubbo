@@ -104,6 +104,7 @@ public final class ReactorServerCalls {
                 },
                 responseObserver::onCompleted
             );
+            serverPublisher.startRequest();
         } catch (Throwable throwable) {
             responseObserver.onError(throwable);
         }
@@ -125,6 +126,7 @@ public final class ReactorServerCalls {
             Flux<R> responseFlux = func.apply(Flux.from(serverPublisher));
             ServerTripleReactorSubscriber<R> serverSubscriber = responseFlux.subscribeWith(new ServerTripleReactorSubscriber<>());
             serverSubscriber.subscribe((CallStreamObserver<R>) responseObserver);
+            serverPublisher.startRequest();
         } catch (Throwable throwable) {
             responseObserver.onError(throwable);
         }

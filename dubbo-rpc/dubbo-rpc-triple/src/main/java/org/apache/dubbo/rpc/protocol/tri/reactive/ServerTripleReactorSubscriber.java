@@ -17,8 +17,28 @@
 
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
+import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
+
 /**
- * The subscriber in server in OneToMany call.
+ * The Subscriber in server to passing the data produced by user publisher to responseStream.
  */
 public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T>{
+
+    @Override
+    public void subscribe(CallStreamObserver<T> downstream) {
+        super.subscribe(downstream);
+        if (downstream instanceof CancelableStreamObserver) {
+            CancelableStreamObserver<?> observer = (CancelableStreamObserver<?>) downstream;
+            final CancellationContext context;
+            if (observer.getCancellationContext() == null) {
+                context = new CancellationContext();
+                observer.setCancellationContext(context);
+            } else {
+                context = observer.getCancellationContext();
+            }
+            context.addListener(ctx -> super.cancel());
+        }
+    }
 }
