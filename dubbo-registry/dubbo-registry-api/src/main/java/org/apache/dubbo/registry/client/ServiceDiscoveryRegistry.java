@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
@@ -66,7 +66,7 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
  */
 public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final ServiceDiscovery serviceDiscovery;
 
@@ -348,7 +348,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     private class DefaultMappingListener implements MappingListener {
-        private final Logger logger = LoggerFactory.getLogger(DefaultMappingListener.class);
+        private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMappingListener.class);
         private final URL url;
         private Set<String> oldApps;
         private NotifyListener listener;

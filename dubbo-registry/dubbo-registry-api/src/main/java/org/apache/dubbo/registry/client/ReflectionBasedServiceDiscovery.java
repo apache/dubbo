@@ -18,7 +18,7 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     /**
      * Echo check if consumer is still work
@@ -160,7 +160,12 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                 try {
                     entry.getValue().onEvent(metadataString);
                 } catch (RpcException e) {
-                    logger.warn("Notify to consumer error. Possible cause: consumer is offline.");
+                    // 1-7 - Failed to notify registry event.
+                    // The updating of metadata to consumer is a type of registry event.
+
+                    logger.warn("1-7", "consumer is offline", "",
+                        "Notify to consumer error, removing listener.");
+
                     // remove listener if consumer is offline
                     iterator.remove();
                 }

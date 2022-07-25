@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -48,7 +48,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * Each service discovery is bond to one application.
  */
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
-    private final Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
 
     protected final String serviceName;

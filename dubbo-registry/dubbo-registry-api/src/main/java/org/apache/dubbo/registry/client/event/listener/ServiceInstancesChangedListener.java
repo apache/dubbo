@@ -177,9 +177,13 @@ public class ServiceInstancesChangedListener {
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted");
             }
+
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
-                logger.error("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+                // 1-17 - Address refresh failed.
+                logger.error("1-17", "metadata Server failure", "",
+                    "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+
                 return;
             }
         }
