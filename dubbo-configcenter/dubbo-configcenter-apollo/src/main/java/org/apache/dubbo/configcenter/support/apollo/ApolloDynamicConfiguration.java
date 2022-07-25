@@ -21,7 +21,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -61,7 +61,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE
  * Please see http://dubbo.apache.org/zh-cn/docs/user/configuration/config-center.html for details.
  */
 public class ApolloDynamicConfiguration implements DynamicConfiguration {
-    private static final Logger logger = LoggerFactory.getLogger(ApolloDynamicConfiguration.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ApolloDynamicConfiguration.class);
     private static final String APOLLO_ENV_KEY = "env";
     private static final String APOLLO_ADDR_KEY = "apollo.meta";
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
@@ -106,7 +106,10 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
                 throw new IllegalStateException("Failed to connect to config center, the config center is Apollo, " +
                     "the address is: " + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv));
             } else {
-                logger.warn("Failed to connect to config center, the config center is Apollo, " +
+                // 5-1 Failed to connect to configuration center.
+
+                logger.warn("5-1", "configuration server offline", "",
+                    "Failed to connect to config center, the config center is Apollo, " +
                     "the address is: " + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv) +
                     ", will use the local cache value instead before eventually the connection is established.");
             }
