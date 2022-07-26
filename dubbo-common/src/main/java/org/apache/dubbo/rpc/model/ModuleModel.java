@@ -61,6 +61,9 @@ public class ModuleModel extends ScopeModel {
         }
 
         initialize();
+        Assert.notNull(getServiceRepository(), "ModuleServiceRepository can not be null");
+        Assert.notNull(getConfigManager(), "ModuleConfigManager can not be null");
+        Assert.assertTrue(getConfigManager().isInitialized(), "ModuleConfigManager can not be initialized");
 
         // notify application check state
         ApplicationDeployer applicationDeployer = applicationModel.getDeployer();

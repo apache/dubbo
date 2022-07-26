@@ -203,6 +203,9 @@ public class ApplicationModel extends ScopeModel {
             LOGGER.info(getDesc() + " is created");
         }
         initialize();
+        Assert.notNull(getApplicationServiceRepository(), "ApplicationServiceRepository can not be null");
+        Assert.notNull(getApplicationConfigManager(), "ApplicationConfigManager can not be null");
+        Assert.assertTrue(getApplicationConfigManager().isInitialized(), "ApplicationConfigManager can not be initialized");
     }
 
     @Override
