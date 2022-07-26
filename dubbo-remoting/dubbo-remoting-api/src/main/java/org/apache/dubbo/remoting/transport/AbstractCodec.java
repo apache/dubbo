@@ -63,18 +63,14 @@ public abstract class AbstractCodec implements Codec2, ScopeModelAware {
     }
 
     protected static int getPayload(Channel channel) {
-        int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
+            return channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
-        return payload;
+        return Constants.DEFAULT_PAYLOAD;
     }
 
     protected static boolean isOverPayload(int payload, long size) {
-        if (payload > 0 && size > payload) {
-            return true;
-        }
-        return false;
+        return payload > 0 && size > payload;
     }
 
     protected Serialization getSerialization(Channel channel, Request req) {

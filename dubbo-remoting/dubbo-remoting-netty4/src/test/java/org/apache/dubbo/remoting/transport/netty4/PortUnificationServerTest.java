@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,11 +27,12 @@ import org.junit.jupiter.api.Test;
 public class PortUnificationServerTest {
 
     @Test
-    public void testBind() {
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 8898,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
+    public void testBind() throws RemotingException {
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
 
-        final PortUnificationServer server = new PortUnificationServer(url);
+        // abstract endpoint need to get codec of url(which is in triple package)
+        final NettyPortUnificationServer server = new NettyPortUnificationServer(url, new DefaultPuHandler());
         server.bind();
         Assertions.assertTrue(server.isBound());
     }

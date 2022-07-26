@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
@@ -198,6 +200,7 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
     }
 
+    @Transient
     public String getContent() {
         return this.rawMetadataInfo;
     }
@@ -250,6 +253,13 @@ public class MetadataInfo implements Serializable {
             }
         }
         return serviceInfo;
+    }
+
+    public List<ServiceInfo> getMatchedServiceInfos(ProtocolServiceKey consumerProtocolServiceKey) {
+        return getServices().values()
+            .stream()
+            .filter(serviceInfo -> serviceInfo.matchProtocolServiceKey(consumerProtocolServiceKey))
+            .collect(Collectors.toList());
     }
 
     public Map<String, String> getExtendParams() {
@@ -580,6 +590,10 @@ public class MetadataInfo implements Serializable {
                 matchKey = getServiceKey() + GROUP_CHAR_SEPARATOR + protocol;
             }
             return matchKey;
+        }
+
+        public boolean matchProtocolServiceKey(ProtocolServiceKey protocolServiceKey) {
+            return ProtocolServiceKey.Matcher.isMatch(protocolServiceKey, getProtocolServiceKey());
         }
 
         public ProtocolServiceKey getProtocolServiceKey() {

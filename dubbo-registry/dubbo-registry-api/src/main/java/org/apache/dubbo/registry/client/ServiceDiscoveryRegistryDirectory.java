@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -69,7 +69,7 @@ import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
 
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
-    private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceDiscoveryRegistryDirectory.class);
 
     /**
      * instance address to invoker mapping.
@@ -311,11 +311,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             // filter all the service available (version wildcard, group wildcard, protocol wildcard)
             int port = instanceAddressURL.getPort();
             List<ProtocolServiceKey> matchedProtocolServiceKeys = instanceAddressURL.getMetadataInfo()
-                .getServices().values()
+                .getMatchedServiceInfos(consumerProtocolServiceKey)
                 .stream()
                 .filter(serviceInfo -> serviceInfo.getPort() <= 0 || serviceInfo.getPort() == port)
                 .map(MetadataInfo.ServiceInfo::getProtocolServiceKey)
-                .filter(key -> ProtocolServiceKey.Matcher.isMatch(consumerProtocolServiceKey, key))
                 .collect(Collectors.toList());
 
             // see org.apache.dubbo.common.ProtocolServiceKey.isSameWith

@@ -154,7 +154,7 @@
         <eureka.version>1.9.12</eureka.version>
 
         <!-- Fabric8 for Kubernetes -->
-        <fabric8_kubernetes_version>5.3.0</fabric8_kubernetes_version>
+        <fabric8_kubernetes_version>5.3.2</fabric8_kubernetes_version>
 
         <!-- Alibaba -->
         <alibaba_spring_context_support_version>1.0.8</alibaba_spring_context_support_version>

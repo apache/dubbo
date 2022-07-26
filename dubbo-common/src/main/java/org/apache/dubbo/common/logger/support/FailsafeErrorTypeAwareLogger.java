@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements ErrorTypeAwareLogger {
 
     /**
-     * Mock address for formatting.
+     * Template address for formatting.
      */
     private static final String INSTRUCTIONS_URL = "https://dubbo.apache.org/faq/%d/%d";
 
@@ -66,6 +66,8 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         } catch (NumberFormatException numberFormatException) {
             error("Invalid error code: " + code + ", the format of error code is: X-X (where X is a number).",
                 numberFormatException);
+
+            return "";
         }
 
         return String.format(INSTRUCTIONS_URL, errorCodeSegments[0], errorCodeSegments[1]);
@@ -80,6 +82,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         try {
             getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
+            // ignored.
         }
     }
 
@@ -92,6 +95,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         try {
             getLogger().warn(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
+            // ignored.
         }
     }
 
@@ -104,6 +108,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         try {
             getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg));
         } catch (Throwable t) {
+            // ignored.
         }
     }
 
@@ -116,6 +121,7 @@ public class FailsafeErrorTypeAwareLogger extends FailsafeLogger implements Erro
         try {
             getLogger().error(appendContextMessageWithInstructions(code, cause, extendedInformation, msg), e);
         } catch (Throwable t) {
+            // ignored.
         }
     }
 }

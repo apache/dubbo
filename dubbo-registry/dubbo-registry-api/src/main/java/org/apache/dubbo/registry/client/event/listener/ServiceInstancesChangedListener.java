@@ -20,7 +20,7 @@ import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -34,6 +34,8 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
@@ -65,7 +67,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  */
 public class ServiceInstancesChangedListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceInstancesChangedListener.class);
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
@@ -82,10 +84,8 @@ public class ServiceInstancesChangedListener {
     private volatile ScheduledFuture<?> retryFuture;
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
+    private final Set<ServiceInstanceNotificationCustomizer> serviceInstanceNotificationCustomizers;
 
-    // protocols subscribe by default, specify the protocol that should be subscribed through 'consumer.protocol'.
-    private static final String[] SUPPORTED_PROTOCOLS = new String[]{"dubbo", "tri", "rest"};
-    public static final String CONSUMER_PROTOCOL_SUFFIX = ":consumer";
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -94,7 +94,9 @@ public class ServiceInstancesChangedListener {
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel()).getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
+        this.scheduler = applicationModel.getBeanFactory().getBean(FrameworkExecutorRepository.class).getMetadataRetryExecutor();
+        this.serviceInstanceNotificationCustomizers = applicationModel.getExtensionLoader(ServiceInstanceNotificationCustomizer.class).getSupportedExtensionInstances();
     }
 
     /**
@@ -146,7 +148,14 @@ public class ServiceInstancesChangedListener {
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
-            MetadataInfo metadata = serviceDiscovery.getRemoteMetadata(revision, subInstances);
+
+            MetadataInfo metadata = subInstances.stream()
+                .map(ServiceInstance::getServiceMetadata)
+                .filter(Objects::nonNull)
+                .filter(m -> revision.equals(m.getRevision()))
+                .findFirst()
+                .orElseGet(() -> serviceDiscovery.getRemoteMetadata(revision, subInstances));
+
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
@@ -168,9 +177,13 @@ public class ServiceInstancesChangedListener {
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted");
             }
+
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
-                logger.error("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+                // 1-17 - Address refresh failed.
+                logger.error("1-17", "metadata Server failure", "",
+                    "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+
                 return;
             }
         }
@@ -289,6 +302,9 @@ public class ServiceInstancesChangedListener {
         String appName = event.getServiceName();
         List<ServiceInstance> appInstances = event.getServiceInstances();
         logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
+        for (ServiceInstanceNotificationCustomizer serviceInstanceNotificationCustomizer : serviceInstanceNotificationCustomizers) {
+            serviceInstanceNotificationCustomizer.customize(appInstances);
+        }
         allInstances.put(appName, appInstances);
         lastRefreshTime = System.currentTimeMillis();
     }
@@ -370,6 +386,11 @@ public class ServiceInstancesChangedListener {
                 if (ProtocolServiceKey.Matcher.isMatch(protocolServiceKey, protocolServiceKeyWithUrls.getProtocolServiceKey())) {
                     urls.addAll(protocolServiceKeyWithUrls.getUrls());
                 }
+            }
+        }
+        if (serviceUrls.containsKey(CommonConstants.ANY_VALUE)) {
+            for (ProtocolServiceKeyWithUrls protocolServiceKeyWithUrls : serviceUrls.get(CommonConstants.ANY_VALUE)) {
+                urls.addAll(protocolServiceKeyWithUrls.getUrls());
             }
         }
         return urls;
