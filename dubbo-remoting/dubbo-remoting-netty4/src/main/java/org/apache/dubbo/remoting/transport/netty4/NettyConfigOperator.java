@@ -68,8 +68,6 @@ public class NettyConfigOperator implements ChannelOperator {
                 ((NettyChannel) channel).getNioChannel().pipeline().addLast(
                     sh
                 );
-            }else {
-                // channel has no side_key value?
             }
         }
     }
