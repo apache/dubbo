@@ -39,7 +39,7 @@ public class ManyToManyMethodHandler<T, R> implements StubMethodHandler<T, R> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public CompletableFuture<?> invoke(Object[] arguments) {
+    public CompletableFuture<StreamObserver<T>> invoke(Object[] arguments) {
         CallStreamObserver<R> responseObserver = (CallStreamObserver<R>) arguments[0];
         StreamObserver<T> requestObserver = ReactorServerCalls.manyToMany(responseObserver, func);
         return CompletableFuture.completedFuture(requestObserver);
