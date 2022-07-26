@@ -52,6 +52,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     private volatile boolean isDestroy;
 
     protected final String serviceName;
+    protected final String group;
     protected volatile ServiceInstance serviceInstance;
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
@@ -80,6 +81,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.applicationModel = ApplicationModel.defaultModel();
         this.registryURL = registryURL;
         this.serviceName = serviceName;
+        this.group = registryURL.getGroup();
         this.metadataInfo = new MetadataInfo(serviceName);
         this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix(),
             applicationModel.getFrameworkModel().getBeanFactory()

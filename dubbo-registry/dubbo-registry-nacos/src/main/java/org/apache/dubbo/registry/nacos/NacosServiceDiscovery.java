@@ -72,7 +72,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             // Should not register real group for ServiceInstance
             // Or will cause consumer unable to fetch all of the providers from every group
             // Provider's group is invisible for consumer
-            service.registerInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
+            service.registerInstance(instance.getServiceName(), getNacosServiceDiscoveryGroup(), instance);
         });
     }
 
@@ -83,7 +83,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             // Should not register real group for ServiceInstance
             // Or will cause consumer unable to fetch all of the providers from every group
             // Provider's group is invisible for consumer
-            service.deregisterInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
+            service.deregisterInstance(instance.getServiceName(), getNacosServiceDiscoveryGroup(), instance);
         });
     }
 
@@ -93,7 +93,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             // Should not register real group for ServiceInstance
             // Or will cause consumer unable to fetch all of the providers from every group
             // Provider's group is invisible for consumer
-            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, Constants.DEFAULT_GROUP);
+            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, getNacosServiceDiscoveryGroup());
             return new LinkedHashSet<>(view.getData());
         });
     }
@@ -101,7 +101,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
-            service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
+            service.selectInstances(serviceName, getNacosServiceDiscoveryGroup(), true)
                 .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList())
         );
@@ -116,7 +116,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         }
         execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
             try {
-                service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener
+                service.subscribe(serviceName, getNacosServiceDiscoveryGroup(), e -> { // Register Nacos EventListener
                     if (e instanceof NamingEvent) {
                         NamingEvent event = (NamingEvent) e;
                         handleEvent(event, listener);
@@ -140,5 +140,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
             .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+    }
+
+    private String getNacosServiceDiscoveryGroup() {
+        return this.group == null ? Constants.DEFAULT_GROUP : this.group;
     }
 }
