@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -33,6 +34,7 @@ import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -302,10 +304,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             name = name.substring(0, i);
         }
         StringBuilder stringBuilder = new StringBuilder(128);
-        stringBuilder.append(applicationModel.getApplicationName());
-        stringBuilder.append(".");
+        Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
+        if(application.isPresent()) {
+            stringBuilder.append(application.get().getName());
+            stringBuilder.append(".");
+        }
         stringBuilder.append(name.toLowerCase());
-
         URL url = this.getUrl();
         if (url != null) {
             stringBuilder.append(".");
