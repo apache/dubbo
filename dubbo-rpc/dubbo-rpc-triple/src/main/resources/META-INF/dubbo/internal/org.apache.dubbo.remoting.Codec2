@@ -1,1 +1,1 @@
-tri=org.apache.dubbo.rpc.protocol.tri.DefaultTriCodec
+tri=org.apache.dubbo.remoting.api.pu.DefaultCodec

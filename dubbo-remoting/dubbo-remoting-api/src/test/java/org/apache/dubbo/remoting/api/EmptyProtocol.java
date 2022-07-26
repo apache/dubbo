@@ -29,7 +29,7 @@ public class EmptyProtocol implements WireProtocol {
     }
 
     @Override
-    public void configServerPipeline(URL url, ChannelOperator operator) {
+    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
 
     }
 

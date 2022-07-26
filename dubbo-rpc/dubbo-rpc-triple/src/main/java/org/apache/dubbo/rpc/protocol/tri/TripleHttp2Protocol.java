@@ -103,7 +103,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     @Override
-    public void configServerPipeline(URL url, ChannelOperator operator) {
+    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
 
         final List<HeaderFilter> headFilters;
         if (filtersLoader != null) {

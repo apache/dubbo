@@ -94,7 +94,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                         continue;
                     case RECOGNIZED:
                         ChannelOperator operator = new NettyConfigOperator(channel, handler);
-                        protocol.configServerPipeline(url, operator);
+                        protocol.configServerProtocolHandler(url, operator);
                         ctx.pipeline().remove(this);
                     case NEED_MORE_DATA:
                         return;

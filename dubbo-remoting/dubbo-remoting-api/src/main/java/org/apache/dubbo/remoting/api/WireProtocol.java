@@ -29,7 +29,7 @@ public interface WireProtocol {
 
     ProtocolDetector detector();
 
-    void configServerPipeline(URL url, ChannelOperator operator);
+    void configServerProtocolHandler(URL url, ChannelOperator operator);
 
     void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
 

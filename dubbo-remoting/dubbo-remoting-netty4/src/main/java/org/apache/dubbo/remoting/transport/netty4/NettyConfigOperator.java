@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec2;
@@ -25,7 +25,6 @@ import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.pu.DefaultCodec;
 
-import java.net.InetSocketAddress;
 import java.util.List;
 
 public class NettyConfigOperator implements ChannelOperator {
@@ -61,25 +60,22 @@ public class NettyConfigOperator implements ChannelOperator {
                 }
             }
 
-            // triple的codec和channel handler都是default的，不进行任何操作(装饰了一些transporter层的功能),
-            // todo 这里需要区分客户端和服务端
-            if( isClientSide(channel)){
-                //todo 客户端的配置操作
-            }else {
+            // todo distinguish between client and server channel
+            if( isClientSide(channel).equalsIgnoreCase(CommonConstants.CONSUMER)){
+                //todo config client channel handler
+            }else if (isClientSide(channel).equalsIgnoreCase(CommonConstants.PROVIDER)){
                 NettyServerHandler sh = new NettyServerHandler(channel.getUrl(), handler);
                 ((NettyChannel) channel).getNioChannel().pipeline().addLast(
                     sh
                 );
+            }else {
+                // channel has no side_key value?
             }
         }
     }
 
-    private boolean isClientSide(Channel channel) {
-        InetSocketAddress address = channel.getRemoteAddress();
-        URL url = channel.getUrl();
-        return url.getPort() == address.getPort() &&
-            NetUtils.filterLocalHost(channel.getUrl().getIp())
-                .equals(NetUtils.filterLocalHost(address.getAddress().getHostAddress()));
+    private String isClientSide(Channel channel) {
+        return channel.getUrl().getSide("");
     }
 
     private final Channel channel;
