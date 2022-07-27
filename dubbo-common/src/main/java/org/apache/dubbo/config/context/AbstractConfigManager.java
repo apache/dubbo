@@ -224,7 +224,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     }
 
     protected <C extends AbstractConfig> boolean removeIfAbsent(C config, Map<String, C> configsMap) {
-        if(config != null) {
+        if(config.getId() != null) {
             return configsMap.remove(config.getId(), config);
         }
         return configsMap.values().removeIf(c -> config == c);
