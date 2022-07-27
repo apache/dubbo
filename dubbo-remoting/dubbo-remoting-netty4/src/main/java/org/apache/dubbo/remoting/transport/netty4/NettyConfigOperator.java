@@ -38,8 +38,14 @@ public class NettyConfigOperator implements ChannelOperator {
     public void configChannelHandler(List<ChannelHandler> handlerList) {
         if(channel instanceof NettyChannel) {
             URL url = channel.getUrl();
-            Codec2 codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).
-                getExtension(url.getProtocol());
+            Codec2 codec2;
+            try {
+                codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).
+                    getExtension(url.getProtocol());
+            }catch (Exception e) {
+                codec2 = url.getOrDefaultApplicationModel().getExtensionLoader(Codec2.class).
+                    getExtension("default");
+            }
             if (!(codec2 instanceof DefaultCodec)){
                 NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
                 ((NettyChannel) channel).getNioChannel().pipeline().addLast(
