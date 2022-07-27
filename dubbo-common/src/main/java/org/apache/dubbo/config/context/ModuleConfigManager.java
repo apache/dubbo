@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.context.ModuleExt;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -50,9 +51,11 @@ import static org.apache.dubbo.config.AbstractConfig.getTagName;
 /**
  * Manage configs of module
  */
-public class ModuleConfigManager extends AbstractConfigManager {
+public class ModuleConfigManager extends AbstractConfigManager implements ModuleExt {
 
     private static final Logger logger = LoggerFactory.getLogger(ModuleConfigManager.class);
+
+    public static final String NAME = "moduleConfig";
 
     private Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
     private final ConfigManager applicationConfigManager;
