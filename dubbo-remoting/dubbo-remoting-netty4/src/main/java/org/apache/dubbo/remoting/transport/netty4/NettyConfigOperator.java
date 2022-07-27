@@ -77,11 +77,10 @@ public class NettyConfigOperator implements ChannelOperator {
                 sh
             );
         }
-
     }
 
     private boolean isClientSide(Channel channel) {
-        return channel.getUrl().getSide().equalsIgnoreCase(CommonConstants.CONSUMER);
+        return channel.getUrl().getSide("").equalsIgnoreCase(CommonConstants.CONSUMER);
     }
 
 }
