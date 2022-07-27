@@ -36,7 +36,7 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
         return scopeModel.getBeanFactory().getOrRegisterBean(MappingCacheManager.class);
     }
 
-    public MappingCacheManager(boolean fileCache, String name, ScheduledExecutorService executorService) {
+    public MappingCacheManager(boolean enableFileCached, String name, ScheduledExecutorService executorService) {
         String filePath = System.getProperty("dubbo.mapping.cache.filePath");
         String fileName = System.getProperty("dubbo.mapping.cache.fileName");
         if (StringUtils.isEmpty(fileName)) {
@@ -54,7 +54,7 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
         String rawMaxFileSize = System.getProperty("dubbo.mapping.cache.maxFileSize");
         long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
 
-        init(fileCache, filePath, fileName, entrySize,  maxFileSize, 50, executorService);
+        init(enableFileCached, filePath, fileName, entrySize,  maxFileSize, 50, executorService);
     }
 
     @Override

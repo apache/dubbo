@@ -62,12 +62,12 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        boolean fileCache = true;
+        boolean enableFileCached = true;
         Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
         if(application.isPresent()) {
-            fileCache = Boolean.TRUE.equals(application.get().getEnableFileCache()) ? true : false;
+            enableFileCached = Boolean.TRUE.equals(application.get().getEnableFileCache()) ? true : false;
         }
-        this.mappingCacheManager = new MappingCacheManager(fileCache,
+        this.mappingCacheManager = new MappingCacheManager(enableFileCached,
             applicationModel.tryGetApplicationName(),
             applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());

@@ -62,7 +62,7 @@ public class FileCacheStoreFactory {
         return getInstance(basePath, cacheName, true);
     }
 
-    public static FileCacheStore getInstance(String basePath, String cacheName, boolean fileCache) {
+    public static FileCacheStore getInstance(String basePath, String cacheName, boolean enableFileCached) {
         if (basePath == null) {
             basePath = System.getProperty("user.home") + File.separator + ".dubbo";
         }
@@ -83,7 +83,7 @@ public class FileCacheStoreFactory {
 
         String cacheFilePath = basePath + File.separator + cacheName;
 
-        return cacheMap.computeIfAbsent(cacheFilePath, (k) -> getFile(k, fileCache));
+        return cacheMap.computeIfAbsent(cacheFilePath, (k) -> getFile(k, enableFileCached));
     }
 
     /**
@@ -113,8 +113,8 @@ public class FileCacheStoreFactory {
      * @param name the file name
      * @return a file object
      */
-    private static FileCacheStore getFile(String name, boolean fileCache) {
-        if(!fileCache) {
+    private static FileCacheStore getFile(String name, boolean enableFileCached) {
+        if(!enableFileCached) {
             return FileCacheStore.Empty.getInstance(name);
         }
         try {
