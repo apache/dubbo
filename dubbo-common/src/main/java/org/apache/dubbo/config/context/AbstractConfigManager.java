@@ -223,6 +223,13 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return config;
     }
 
+    protected <C extends AbstractConfig> boolean removeIfAbsent(C config, Map<String, C> configsMap) {
+        if(config.getId() != null) {
+            return configsMap.remove(config.getId(), config);
+        }
+        return configsMap.values().removeIf(c -> config == c);
+    }
+
     protected boolean isUniqueConfig(AbstractConfig config) {
         if (uniqueConfigTypes.contains(config.getClass())) {
             return true;
@@ -651,7 +658,10 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         Map<String, AbstractConfig> configs = configsCache.get(getTagName(config.getClass()));
         if (CollectionUtils.isNotEmptyMap(configs)) {
-            return configs.values().removeIf(c -> config == c);
+            // lock by config type
+            synchronized (configs) {
+                return removeIfAbsent(config, configs);
+            }
         }
         return false;
     }

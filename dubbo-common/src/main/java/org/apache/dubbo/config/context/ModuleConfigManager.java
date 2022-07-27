@@ -202,6 +202,17 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
         return Optional.empty();
     }
 
+    @Override
+    protected <C extends AbstractConfig> boolean removeIfAbsent(C config, Map<String, C> configsMap) {
+        if(super.removeIfAbsent(config, configsMap)) {
+            if (config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase) {
+                removeInterfaceConfig((AbstractInterfaceConfig) config);
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * check duplicated ReferenceConfig/ServiceConfig
      *
@@ -248,6 +259,21 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
             }
         }
         return prevConfig;
+    }
+
+    private void removeInterfaceConfig(AbstractInterfaceConfig config) {
+        String uniqueServiceName;
+        Map<String, AbstractInterfaceConfig> configCache;
+        if (config instanceof ReferenceConfigBase) {
+            return;
+        } else if (config instanceof ServiceConfigBase) {
+            ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
+            uniqueServiceName = serviceConfig.getUniqueServiceName();
+            configCache = serviceConfigCache;
+        } else {
+            throw new IllegalArgumentException("Illegal type of parameter 'config' : " + config.getClass().getName());
+        }
+        configCache.remove(uniqueServiceName, config);
     }
 
     @Override
