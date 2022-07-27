@@ -1,4 +1,4 @@
-package org.apache.dubbp.rpc.rocketmq;
+package org.apache.dubbo.rpc.protocol.rocketmq;
 
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
@@ -10,7 +10,7 @@ public class RocketMQExporter<T> extends AbstractExporter<T> {
 
 	private final DelegateExporterMap delegateExporterMap;
 
-	public RocketMQExporter( Invoker<T> invoker,String key, DelegateExporterMap delegateExporterMap) {
+	public RocketMQExporter(Invoker<T> invoker,String key, DelegateExporterMap delegateExporterMap) {
 		super(invoker);
 		this.key = key;
 		this.delegateExporterMap = delegateExporterMap;

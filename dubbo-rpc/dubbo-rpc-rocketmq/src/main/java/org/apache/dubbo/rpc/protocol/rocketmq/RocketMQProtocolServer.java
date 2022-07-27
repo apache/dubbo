@@ -1,4 +1,4 @@
-package org.apache.dubbp.rpc.rocketmq;
+package org.apache.dubbo.rpc.protocol.rocketmq;
 
 import java.util.Objects;
 
@@ -97,13 +97,10 @@ public class RocketMQProtocolServer implements ProtocolServer {
 			DefaultMQProducer defaultMQProducer = new DefaultMQProducer(this.namespace, this.producerGroup, null, this.enableMsgTrace,
 					customizedTraceTopic);
 			defaultMQProducer.setNamesrvAddr(this.address);
-			defaultMQProducer.setSendMsgTimeout(this.sendMsgTimeout);
-			defaultMQProducer.setInstanceName("producer- "+inistanceName);
+			defaultMQProducer.setInstanceName("producer-"+inistanceName);
 			defaultMQProducer.setSendMsgTimeout(this.sendMsgTimeout);
 
 			defaultMQProducer.start();
-
-			
 
 			this.defaultMQProducer = defaultMQProducer;
 			if(Objects.equals(this.model, CommonConstants.PROVIDER) || Objects.equals(this.model, CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY)) {

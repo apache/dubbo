@@ -684,6 +684,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-rest</include>
                                     <include>org.apache.dubbo:dubbo-rpc-xml</include>
                                     <include>org.apache.dubbo:dubbo-rpc-grpc</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-rocketmq</include>
                                     <include>org.apache.dubbo:dubbo-filter-validation</include>
                                     <include>org.apache.dubbo:dubbo-filter-cache</include>
                                     <include>org.apache.dubbo:dubbo-cluster</include>

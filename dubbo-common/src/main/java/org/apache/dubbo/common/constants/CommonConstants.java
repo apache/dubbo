@@ -155,6 +155,10 @@ public interface CommonConstants {
 
     String SIDE_KEY = "side";
 
+    String TOPIC_KEY = "topic";
+
+    String GROUP_MODEL_KEY = "groupModel";
+
     String PROVIDER_SIDE = "provider";
 
     String CONSUMER_SIDE = "consumer";

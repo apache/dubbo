@@ -1,4 +1,4 @@
-package org.apache.dubbp.rpc.rocketmq;
+package org.apache.dubbo.rpc.protocol.rocketmq;
 
 import java.net.InetSocketAddress;
 import java.util.Map;

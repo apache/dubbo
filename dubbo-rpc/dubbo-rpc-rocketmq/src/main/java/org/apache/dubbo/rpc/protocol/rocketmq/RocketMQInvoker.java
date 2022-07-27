@@ -1,4 +1,4 @@
-package org.apache.dubbp.rpc.rocketmq;
+package org.apache.dubbo.rpc.protocol.rocketmq;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
@@ -103,7 +103,7 @@ public class RocketMQInvoker<T> extends AbstractInvoker<T> {
 		final String methodName = RpcUtils.getMethodName(invocation);
 		inv.setAttachment(PATH_KEY, getUrl().getPath());
 		inv.setAttachment(VERSION_KEY, version);
-		// 直连
+		// direct
 		try {
 			RpcContext.getContext().setLocalAddress(NetUtils.getLocalHost(), 0);
 			
@@ -113,7 +113,7 @@ public class RocketMQInvoker<T> extends AbstractInvoker<T> {
 			
 			Request request = new Request();
 			request.setData(inv);
-			// 动态，heap，dirct
+			// dynamic，heap，direct
 			DynamicChannelBuffer buffer = new DynamicChannelBuffer(2048);
 			
 			dubboCountCodec.encode(channel, buffer, request);

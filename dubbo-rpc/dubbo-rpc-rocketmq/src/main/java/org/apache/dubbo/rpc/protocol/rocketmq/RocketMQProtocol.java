@@ -1,5 +1,5 @@
 
-package org.apache.dubbp.rpc.rocketmq;
+package org.apache.dubbo.rpc.protocol.rocketmq;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -49,7 +49,7 @@ public class RocketMQProtocol extends AbstractProtocol {
 
 	private static RocketMQProtocol INSTANCE;
 	
-	private MessageListenerConcurrently  messageListenerConcurrently = new DubboMessageListenerConcurrently();
+	private MessageListenerConcurrently messageListenerConcurrently = new DubboMessageListenerConcurrently();
 
 	public static RocketMQProtocol getRocketMQProtocol() {
 		if (null == INSTANCE) {
@@ -68,6 +68,10 @@ public class RocketMQProtocol extends AbstractProtocol {
 	public RocketMQProtocol() {
 	}
 
+	public MessageListenerConcurrently getMessageListenerConcurrently() {
+		return messageListenerConcurrently;
+	}
+
 	/**
 	 * <host:port,Exchanger>
 	 */
@@ -80,12 +84,12 @@ public class RocketMQProtocol extends AbstractProtocol {
 	@Override
 	public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
 		URL url = invoker.getUrl();
-		String topic = url.getParameter("topic");
+		String topic = url.getParameter(CommonConstants.TOPIC_KEY);
 		RocketMQExporter<T> exporter = new RocketMQExporter<T>(invoker, topic, exporterMap);
 		exporterMap.addExportMap(topic, exporter);
 		RocketMQProtocolServer rocketMQProtocolServer = this.openServer(url,CommonConstants.PROVIDER);
 		try {
-			String groupModel = url.getParameter("groupModel");
+			String groupModel = url.getParameter(CommonConstants.GROUP_MODEL_KEY);
 			if(Objects.nonNull(groupModel) && Objects.equals(groupModel, "select")) {
 				if( Objects.isNull(url.getParameter(CommonConstants.GROUP_KEY)) &&
 							Objects.isNull((url.getParameter(CommonConstants.GROUP_KEY)))) {
@@ -139,6 +143,7 @@ public class RocketMQProtocol extends AbstractProtocol {
 	
 	 private ProtocolServer createServer(URL url,String key,String model) {
 		 RocketMQProtocolServer rocketMQProtocolServer = new RocketMQProtocolServer();
+		 rocketMQProtocolServer.setMessageListenerConcurrently(messageListenerConcurrently);
 		 rocketMQProtocolServer.setModel(model);
 		 rocketMQProtocolServer.reset(url);
 		 return rocketMQProtocolServer;
