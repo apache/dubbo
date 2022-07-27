@@ -32,12 +32,12 @@ public enum ConfigMode {
     OVERRIDE,
 
     /**
-     * Override mode: accept last config, override previous config
+     * Override mode: accept last config, override previous config regardless of whether the attribute of previous config is absent or not
      */
     OVERRIDE_ALL,
 
     /**
-     * Override mode: accept last config, override previous config
+     * Override mode: accept last config, override previous config only when the attribute of previous config is absent
      */
     OVERRIDE_IF_ABSENT,
 
