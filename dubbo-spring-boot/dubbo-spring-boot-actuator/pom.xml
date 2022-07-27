@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-actuator-compatible</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Spring Boot -->
@@ -74,48 +74,48 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Dubbo -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-spring</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-netty4</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-dubbo</artifactId>
-            <version>${revision}</version>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
