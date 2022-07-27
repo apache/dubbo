@@ -29,6 +29,9 @@ import java.util.List;
 
 public class NettyConfigOperator implements ChannelOperator {
 
+    private final Channel channel;
+    private ChannelHandler handler;
+
     public NettyConfigOperator(NettyChannel channel, ChannelHandler handler) {
         this.channel = channel;
         this.handler = handler;
@@ -36,52 +39,49 @@ public class NettyConfigOperator implements ChannelOperator {
 
     @Override
     public void configChannelHandler(List<ChannelHandler> handlerList) {
-        if(channel instanceof NettyChannel) {
-            URL url = channel.getUrl();
-            Codec2 codec2;
-            try {
-                codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).
-                    getExtension(url.getProtocol());
-            }catch (Exception e) {
-                codec2 = url.getOrDefaultApplicationModel().getExtensionLoader(Codec2.class).
-                    getExtension("default");
-            }
-            if (!(codec2 instanceof DefaultCodec)){
-                NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
-                ((NettyChannel) channel).getNioChannel().pipeline().addLast(
-                    codec.getDecoder()
-                ).addLast(
-                    codec.getEncoder()
-                );
-            }
+        URL url = channel.getUrl();
+        Codec2 codec2;
+        try {
+            codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).
+                getExtension(url.getProtocol());
+        }catch (Exception e) {
+            codec2 = url.getOrDefaultApplicationModel().getExtensionLoader(Codec2.class).
+                getExtension("default");
+        }
+        if (!(codec2 instanceof DefaultCodec)){
+            NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
+            ((NettyChannel) channel).getNioChannel().pipeline().addLast(
+                codec.getDecoder()
+            ).addLast(
+                codec.getEncoder()
+            );
+        }
 
-            for (ChannelHandler handler: handlerList) {
-                if (handler instanceof ChannelHandlerPretender) {
-                    Object realHandler = ((ChannelHandlerPretender) handler).getRealHandler();
-                    if(realHandler instanceof io.netty.channel.ChannelHandler) {
-                        ((NettyChannel) channel).getNioChannel().pipeline().addLast(
-                            (io.netty.channel.ChannelHandler) realHandler
-                        );
-                    }
+        for (ChannelHandler handler: handlerList) {
+            if (handler instanceof ChannelHandlerPretender) {
+                Object realHandler = ((ChannelHandlerPretender) handler).getRealHandler();
+                if(realHandler instanceof io.netty.channel.ChannelHandler) {
+                    ((NettyChannel) channel).getNioChannel().pipeline().addLast(
+                        (io.netty.channel.ChannelHandler) realHandler
+                    );
                 }
             }
-
-            // todo distinguish between client and server channel
-            if( isClientSide(channel).equalsIgnoreCase(CommonConstants.CONSUMER)){
-                //todo config client channel handler
-            }else if (isClientSide(channel).equalsIgnoreCase(CommonConstants.PROVIDER)){
-                NettyServerHandler sh = new NettyServerHandler(channel.getUrl(), handler);
-                ((NettyChannel) channel).getNioChannel().pipeline().addLast(
-                    sh
-                );
-            }
         }
+
+        // todo distinguish between client and server channel
+        if( isClientSide(channel)){
+            //todo config client channel handler
+        }else {
+            NettyServerHandler sh = new NettyServerHandler(channel.getUrl(), handler);
+            ((NettyChannel) channel).getNioChannel().pipeline().addLast(
+                sh
+            );
+        }
+
     }
 
-    private String isClientSide(Channel channel) {
-        return channel.getUrl().getSide("");
+    private boolean isClientSide(Channel channel) {
+        return channel.getUrl().getSide().equalsIgnoreCase(CommonConstants.CONSUMER);
     }
 
-    private final Channel channel;
-    private ChannelHandler handler;
 }
