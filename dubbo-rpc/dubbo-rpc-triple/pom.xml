@@ -29,8 +29,6 @@
     <description>The triple protocol module</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
-        <dubbo.compiler.version>0.0.4.1-SNAPSHOT</dubbo.compiler.version>
-
     </properties>
     <dependencies>
         <dependency>
