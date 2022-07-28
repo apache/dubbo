@@ -18,12 +18,16 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.api.pu.DefaultCodec;
+import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 
 import java.util.List;
 
@@ -41,13 +45,20 @@ public class NettyConfigOperator implements ChannelOperator {
     public void configChannelHandler(List<ChannelHandler> handlerList) {
         URL url = channel.getUrl();
         Codec2 codec2;
-        try {
-            codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).
-                getExtension(url.getProtocol());
-        }catch (Exception e) {
-            codec2 = url.getOrDefaultApplicationModel().getExtensionLoader(Codec2.class).
-                getExtension("default");
+        String codecName = url.getParameter(Constants.CODEC_KEY);
+        if (StringUtils.isEmpty(codecName)) {
+            // codec extension name must stay the same with protocol name
+            codecName = url.getProtocol();
         }
+        if (url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).hasExtension(codecName)) {
+            codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).getExtension(codecName);
+        } else if(url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class).hasExtension(codecName)){
+            codec2 = new CodecAdapter(url.getOrDefaultFrameworkModel().getExtensionLoader(Codec.class)
+                .getExtension(codecName));
+        }else {
+            codec2 = url.getOrDefaultFrameworkModel().getExtensionLoader(Codec2.class).getExtension("default");
+        }
+
         if (!(codec2 instanceof DefaultCodec)){
             NettyCodecAdapter codec = new NettyCodecAdapter(codec2, channel.getUrl(), handler);
             ((NettyChannel) channel).getNioChannel().pipeline().addLast(
