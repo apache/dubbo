@@ -69,6 +69,7 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
     private Properties buildNacosProperties(URL url) {
         Properties properties = new Properties();
         setServerAddr(url, properties);
+        setSecurityInfo(url, properties);
         setProperties(url, properties);
         return properties;
     }
@@ -103,5 +104,10 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
         }
+    }
+
+    private void setSecurityInfo(URL url, Properties properties) {
+        properties.setProperty("username", StringUtils.isNotEmpty(url.getUsername()) ? url.getUsername() : "");
+        properties.setProperty("password", StringUtils.isNotEmpty(url.getPassword()) ? url.getPassword() : "");
     }
 }
