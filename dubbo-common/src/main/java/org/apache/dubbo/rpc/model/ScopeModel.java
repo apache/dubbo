@@ -263,7 +263,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     /**
-     * @return the describe string of this scope model
+     * @return to describe string of this scope model
      */
     public String getDesc() {
         if (this.desc == null) {

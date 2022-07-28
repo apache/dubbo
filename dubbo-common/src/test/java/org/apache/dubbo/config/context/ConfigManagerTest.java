@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -306,6 +307,38 @@ public class ConfigManagerTest {
             configManager.addConfig(applicationConfig1);
             configManager.addConfig(applicationConfig2);
             assertEquals(applicationConfig1, configManager.getApplicationOrElseThrow());
+
+            // test OVERRIDE_ALL mode
+            System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE_ALL.name());
+            ApplicationModel.reset();
+            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            Assertions.assertEquals(ConfigMode.OVERRIDE_ALL, configManager.getConfigMode());
+
+            ApplicationConfig applicationConfig11 = new ApplicationConfig("app11");
+            ApplicationConfig applicationConfig22 = new ApplicationConfig("app22");
+            applicationConfig11.setParameters(CollectionUtils.toStringMap("k1", "v1", "k2", "v2"));
+            applicationConfig22.setParameters(CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
+            configManager.addConfig(applicationConfig11);
+            configManager.addConfig(applicationConfig22);
+            assertEquals(applicationConfig11, configManager.getApplicationOrElseThrow());
+            assertEquals(applicationConfig11.getName(), "app22");
+            assertEquals(applicationConfig11.getParameters(), CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
+
+            // test OVERRIDE_IF_ABSENT mode
+            System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE_IF_ABSENT.name());
+            ApplicationModel.reset();
+            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            Assertions.assertEquals(ConfigMode.OVERRIDE_IF_ABSENT, configManager.getConfigMode());
+
+            ApplicationConfig applicationConfig33 = new ApplicationConfig("app33");
+            ApplicationConfig applicationConfig44 = new ApplicationConfig("app44");
+            applicationConfig33.setParameters(CollectionUtils.toStringMap("k1", "v1", "k2", "v2"));
+            applicationConfig44.setParameters(CollectionUtils.toStringMap("k1", "v11", "k2", "v22", "k3", "v3"));
+            configManager.addConfig(applicationConfig33);
+            configManager.addConfig(applicationConfig44);
+            assertEquals(applicationConfig33, configManager.getApplicationOrElseThrow());
+            assertEquals(applicationConfig33.getName(), "app33");
+            assertEquals(applicationConfig33.getParameters(), CollectionUtils.toStringMap("k1", "v1", "k2", "v2", "k3", "v3"));
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }
@@ -319,11 +352,24 @@ public class ConfigManagerTest {
         Optional<RegistryConfig> registryConfigOptional = configManager.getConfig(RegistryConfig.class, registryConfig.getId());
         Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
 
-
         ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
         configManager.addProtocol(protocolConfig);
         Optional<ProtocolConfig> protocolConfigOptional = configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
         Assertions.assertEquals(protocolConfigOptional.get(), protocolConfig);
+
+        // test multi config has same name(dubbo)
+        ProtocolConfig protocolConfig2 = new ProtocolConfig("dubbo");
+        protocolConfig2.setPort(9103);
+        configManager.addProtocol(protocolConfig2);
+        try {
+            configManager.getConfig(ProtocolConfig.class, protocolConfig.getName());
+            Assertions.fail();
+        } catch (Exception e) {
+            Assertions.assertTrue(e instanceof IllegalStateException);
+            Assertions.assertEquals(e.getMessage(), "Found more than one config by name: dubbo, instances: " +
+                "[<dubbo:protocol port=\"9103\" name=\"dubbo\" />, <dubbo:protocol name=\"dubbo\" />]. " +
+                "Please remove redundant configs or get config by id.");
+        }
 
         ModuleConfig moduleConfig = new ModuleConfig();
         moduleConfig.setId("moduleID_1");

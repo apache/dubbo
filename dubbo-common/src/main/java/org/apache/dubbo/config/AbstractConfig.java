@@ -594,7 +594,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (overrideAll || oldOne == null) {
                         Object newResult = getterMethod.invoke(newOne);
                         // if new one is non-null and new one is not equals old one
-                        if (newResult != null && Objects.equals(newResult, oldOne)) {
+                        if (newResult != null && !Objects.equals(newResult, oldOne)) {
                             method.invoke(this, newResult);
                         }
                     }

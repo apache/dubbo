@@ -22,7 +22,7 @@
 //import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 //import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration;
 //import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-//import org.apache.dubbo.common.logger.Logger;
+//import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 //import org.apache.dubbo.common.logger.LoggerFactory;
 //import org.apache.dubbo.common.utils.StringUtils;
 //
@@ -53,7 +53,7 @@
 // */
 //public class FileSystemServiceDiscovery extends AbstractServiceDiscovery {
 //
-//    private final Logger logger = LoggerFactory.getLogger(getClass());
+//    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 //
 //    private final Map<File, FileLock> fileLocksCache = new ConcurrentHashMap<>();
 //

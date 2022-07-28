@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.google.gson.Gson;
@@ -25,7 +24,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class GsonImpl implements JSON {
+public class GsonImpl extends AbstractJSONImpl {
     // weak reference of com.google.gson.Gson, prevent throw exception when init
     private volatile Object gsonCache = null;
 

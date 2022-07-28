@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.proxy.javassist;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Proxy;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
@@ -33,7 +33,7 @@ import java.util.Arrays;
  * JavassistRpcProxyFactory
  */
 public class JavassistProxyFactory extends AbstractProxyFactory {
-    private final static Logger logger = LoggerFactory.getLogger(JavassistProxyFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JavassistProxyFactory.class);
     private final JdkProxyFactory jdkProxyFactory = new JdkProxyFactory();
 
     @Override
