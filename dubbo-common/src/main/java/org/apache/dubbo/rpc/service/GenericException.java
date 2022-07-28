@@ -88,7 +88,7 @@ public class GenericException extends RuntimeException {
                 return cause.getMessage();
             }
         }
-        GenericExceptionInfo genericExceptionInfo = new GenericExceptionInfo(exceptionClass, exceptionMessage, getMessage());
+        GenericExceptionInfo genericExceptionInfo = new GenericExceptionInfo(exceptionClass, exceptionMessage, super.getMessage());
         return JsonUtils.getJson().toJson(genericExceptionInfo);
     }
 
