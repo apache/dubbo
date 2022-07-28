@@ -79,8 +79,9 @@ public class GenericException extends RuntimeException {
     public void setExceptionMessage(String exceptionMessage) {
         this.exceptionMessage = exceptionMessage;
     }
-
+    
     @Override
+    @Transient
     public String getMessage() {
         if(this.useCause) {
             Throwable cause = getCause();
@@ -92,7 +93,11 @@ public class GenericException extends RuntimeException {
         return JsonUtils.getJson().toJson(genericExceptionInfo);
     }
 
-    public void setMessage(String json) {
+    public String getGenericException() {
+        return getMessage();
+    }
+
+    public void setGenericException(String json) {
         GenericExceptionInfo info = JsonUtils.getJson().toJavaObject(json, GenericExceptionInfo.class);
         this.useCause = true;
         initCause(new GenericException(info.getExClass(), info.getExMsg(), info.getMsg()));
