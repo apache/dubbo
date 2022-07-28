@@ -104,6 +104,13 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         moduleModel.getDeployer().setPending();
     }
 
+    @Override
+    public void unexport() {
+        ModuleModel moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        moduleModel.getConfigManager().removeConfig(this);
+        super.unexport();
+    }
+
     /**
      * Get the name of {@link ServiceBean}
      *
