@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -61,26 +60,32 @@ public class Connection extends AbstractReferenceCounted {
     private static final Object CONNECTED_OBJECT = new Object();
     private final URL url;
     private final int connectTimeout;
-    private final WireProtocol protocol;
     private final InetSocketAddress remote;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicBoolean init = new AtomicBoolean(false);
     private final Promise<Void> closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
-    private final Bootstrap bootstrap;
     private final ConnectionListener connectionListener = new ConnectionListener();
     private volatile Promise<Object> connectingPromise;
+
+    private Bootstrap bootstrap;
+
+    private WireProtocol protocol;
+
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         this.url = url;
-        this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class)
-            .getExtension(url.getProtocol());
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY,
             Constants.DEFAULT_CONNECT_TIMEOUT);
         this.remote = getConnectAddress();
+    }
+
+    public Connection createConnection() {
+        this.protocol = url.getOrDefaultFrameworkModel().getExtension(WireProtocol.class, url.getProtocol());
         this.bootstrap = create();
+        return this;
     }
 
     public static Connection getConnectionFromChannel(Channel channel) {

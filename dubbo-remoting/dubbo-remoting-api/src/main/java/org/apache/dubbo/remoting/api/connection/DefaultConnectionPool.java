@@ -64,7 +64,7 @@ public class DefaultConnectionPool implements ConnectionPool<DefaultConnectionPo
 
 
     @Override
-    public ConnectionPoolEntry acquire() {
+    public DefaultConnectionPoolEntry acquire() {
         DefaultConnectionPoolEntry connection = cache.poll();
         if (connection == null) {
             long objects = getObjectCount() + getCreationInProgress();

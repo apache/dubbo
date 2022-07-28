@@ -26,7 +26,7 @@ public class SingleConnectionPool implements ConnectionPool<SingleConnectionPool
 
     private final CompletableFuture<Void> closeFuture = new CompletableFuture<>();
 
-    private final ConnectionPoolEntry poolEntry;
+    private final SingleConnectionPoolEntry poolEntry;
 
     public SingleConnectionPool(URL url) {
         this.poolEntry = new SingleConnectionPoolEntry(url);
@@ -34,7 +34,7 @@ public class SingleConnectionPool implements ConnectionPool<SingleConnectionPool
     }
 
     @Override
-    public ConnectionPoolEntry acquire() {
+    public SingleConnectionPoolEntry acquire() {
         return poolEntry;
     }
 

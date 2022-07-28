@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface ConnectionPool<T extends ConnectionPoolEntry> {
 
-    ConnectionPoolEntry acquire();
+    T acquire();
 
     void release(T connection);
 

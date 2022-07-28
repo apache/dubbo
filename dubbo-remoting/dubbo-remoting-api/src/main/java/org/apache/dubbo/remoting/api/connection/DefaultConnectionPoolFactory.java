@@ -20,10 +20,10 @@ package org.apache.dubbo.remoting.api.connection;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.api.ConnectionPool;
 
-public class DefaultConnectionPoolFactory implements ConnectionPoolFactory<SingleConnectionPoolEntry> {
+public class DefaultConnectionPoolFactory implements ConnectionPoolFactory<DefaultConnectionPoolEntry> {
 
     @Override
-    public ConnectionPool<SingleConnectionPoolEntry> createPool(URL url) {
-        return new SingleConnectionPool(url);
+    public ConnectionPool<DefaultConnectionPoolEntry> createPool(URL url) {
+        return new DefaultConnectionPool(url);
     }
 }
