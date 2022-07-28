@@ -676,6 +676,7 @@ public class MetadataInfo implements Serializable {
             this.params = params;
         }
 
+        @Transient
         public Map<String, String> getAllParams() {
             if (consumerParams != null) {
                 Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
