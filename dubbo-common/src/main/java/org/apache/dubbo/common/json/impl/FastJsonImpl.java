@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class FastJsonImpl implements JSON {
+public class FastJsonImpl extends AbstractJSONImpl {
 
     @Override
     public boolean isSupport() {
