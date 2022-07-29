@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.threadpool.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
@@ -47,7 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
  */
 public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbortPolicyWithReport.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbortPolicyWithReport.class);
 
     private final String threadName;
 
@@ -82,9 +83,12 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 e.getLargestPoolSize(),
                 e.getTaskCount(), e.getCompletedTaskCount(), e.isShutdown(), e.isTerminated(), e.isTerminating(),
                 url.getProtocol(), url.getIp(), url.getPort());
-        logger.warn(msg);
+
+        logger.warn("0-1", "too much client requesting provider", "", msg);
+
         dumpJStack();
         dispatchThreadPoolExhaustedEvent(msg);
+
         throw new RejectedExecutionException(msg);
     }
 
