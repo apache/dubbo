@@ -121,13 +121,26 @@ public class NettyClient extends AbstractClient {
                     }
                 }
             } else if (future.getCause() != null) {
-                throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + future.getCause().getMessage(), future.getCause());
+                Throwable cause = future.getCause();
+
+                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
+                        + getRemoteAddress() + ", error message is:" + cause.getMessage(), cause);
+
+                // 6-1 - Failed to connect to provider server by other reason.
+                logger.error("6-1", "network disconnected", "", "Failed to connect to provider server by other reason.", cause);
+
+                throw remotingException;
             } else {
-                throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
+
+                RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
                         + getRemoteAddress() + " client-side timeout "
                         + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+
+                // 6-2 - Client-side timeout.
+                logger.error("6-2", "provider crash", "", "Client-side timeout.", remotingException);
+
+                throw remotingException;
             }
         } finally {
             if (!isConnected()) {
