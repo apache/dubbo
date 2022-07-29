@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -42,6 +41,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.EventExecutorGroup;
 
 import java.net.InetSocketAddress;
 
@@ -62,7 +62,7 @@ public class NettyClient extends AbstractClient {
 
     private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyClient.class);
 
     /**
      * netty client bootstrap
