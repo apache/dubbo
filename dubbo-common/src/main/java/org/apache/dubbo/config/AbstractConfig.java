@@ -634,7 +634,7 @@ public abstract class AbstractConfig implements Serializable {
 
                     // if old map is null, override with new map
                     if (oldMap == null) {
-                        invokeSetParameters(this.getClass(), this, newMap);
+                        invokeSetParameters(newMap, this);
                         continue;
                     }
 
@@ -646,7 +646,7 @@ public abstract class AbstractConfig implements Serializable {
                         newMap.putAll(oldMap);
                     }
 
-                    invokeSetParameters(this.getClass(), this, newMap);
+                    invokeSetParameters(newMap, this);
                 } else if (isNestedSetter(this, method)) {
                     // not support
                 }
@@ -782,7 +782,7 @@ public abstract class AbstractConfig implements Serializable {
 
                 // if old map is null, directly set params
                 if (oldMap == null) {
-                    invokeSetParameters(obj.getClass(), obj, newMap);
+                    invokeSetParameters(newMap, obj);
                     continue;
                 }
 
@@ -795,7 +795,7 @@ public abstract class AbstractConfig implements Serializable {
                     oldMap.forEach(newMap::putIfAbsent);
                 }
 
-                invokeSetParameters(obj.getClass(), obj, newMap);
+                invokeSetParameters(newMap, obj);
             } else if (isNestedSetter(obj, method)) {
                 try {
                     Class<?> clazz = method.getParameterTypes()[0];
