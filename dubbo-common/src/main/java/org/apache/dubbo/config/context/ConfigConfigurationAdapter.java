@@ -31,14 +31,10 @@ public class ConfigConfigurationAdapter implements Configuration {
     private Map<String, String> metaData;
 
     public ConfigConfigurationAdapter(AbstractConfig config, String prefix) {
-        Map<String, String> configMetadata = config.getMetaData();
         if (StringUtils.hasText(prefix)) {
-            metaData = new HashMap<>(configMetadata.size(), 1.0f);
-            for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
-                metaData.put(prefix + "." + entry.getKey(), entry.getValue());
-            }
+            metaData = config.getMetaData(prefix);
         } else {
-            metaData = configMetadata;
+            metaData = config.getMetaData();
         }
     }
 

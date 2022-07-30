@@ -149,6 +149,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     public Map<String, String> getMetaData() {
+        return getMetaData(null);
+    }
+
+    @Override
+    public Map<String, String> getMetaData(String prefix) {
         Map<String, String> metaData = new HashMap<>();
         ConsumerConfig consumer = this.getConsumer();
         // consumer should be initialized at preProcessRefresh()
@@ -156,8 +161,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("Consumer is not initialized");
         }
         // use consumer attributes as default value
-        appendAttributes(metaData, consumer);
-        appendAttributes(metaData, this);
+        appendAttributes(metaData, consumer, prefix);
+        appendAttributes(metaData, this, prefix);
         return metaData;
     }
 

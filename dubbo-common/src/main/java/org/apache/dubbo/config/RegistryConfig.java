@@ -88,7 +88,7 @@ public class RegistryConfig extends AbstractConfig {
     private String zone;
 
     /**
-     * The group the services registry in
+     * The group that services registry in
      */
     private String group;
 
@@ -125,12 +125,12 @@ public class RegistryConfig extends AbstractConfig {
     private Boolean dynamic;
 
     /**
-     * Whether to export service on the register center
+     * Whether to allow exporting service on the register center
      */
     private Boolean register;
 
     /**
-     * Whether allow to subscribe service on the register center
+     * Whether to allow subscribing service on the register center
      */
     private Boolean subscribe;
 

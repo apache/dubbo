@@ -65,9 +65,13 @@ public class RegistryConfigTest {
     @Test
     public void testAddress() throws Exception {
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress("localhost");
-        assertThat(registry.getAddress(), equalTo("localhost"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        registry.setAddress("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1");
+        assertThat(registry.getAddress(), equalTo("zookeeper://mrh:123@localhost:9103/registry?backup=localhost:9104&k1=v1"));
+        assertThat(registry.getProtocol(), equalTo("zookeeper"));
+        assertThat(registry.getUsername(), equalTo("mrh"));
+        assertThat(registry.getPassword(), equalTo("123"));
+        assertThat(registry.getParameters().get("k1"), equalTo("v1"));
+        Map<String, String> parameters = new HashMap<>();
         RegistryConfig.appendParameters(parameters, registry);
         assertThat(parameters, not(hasKey("address")));
     }
