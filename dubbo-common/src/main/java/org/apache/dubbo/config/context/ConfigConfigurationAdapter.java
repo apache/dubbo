@@ -20,7 +20,6 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
