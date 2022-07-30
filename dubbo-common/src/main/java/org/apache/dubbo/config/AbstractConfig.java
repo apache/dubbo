@@ -281,9 +281,6 @@ public abstract class AbstractConfig implements Serializable {
 
     private static void invokeSetParameters(Class c, Object o, Map map) {
         try {
-            if (CollectionUtils.isEmptyMap(map)) {
-                return;
-            }
             Method method = findMethodByMethodSignature(c, "setParameters", new String[]{Map.class.getName()});
             if (method != null && isParametersSetter(method)) {
                 method.invoke(o, map);
