@@ -84,6 +84,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 e.getTaskCount(), e.getCompletedTaskCount(), e.isShutdown(), e.isTerminated(), e.isTerminating(),
                 url.getProtocol(), url.getIp(), url.getPort());
 
+        // 0-1 - Thread pool is EXHAUSTED!
         logger.warn("0-1", "too much client requesting provider", "", msg);
 
         dumpJStack();
