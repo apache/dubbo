@@ -92,18 +92,20 @@ public class DubboProtocol extends AbstractProtocol {
     public static final String NAME = "dubbo";
 
     public static final int DEFAULT_PORT = 20880;
+
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
 
     /**
      * <host:port,Exchanger>
-     * {@link Map<String, List<ReferenceCountExchangeClient>}
+     * Map<String, List<ReferenceCountExchangeClient>
      */
     private final Map<String, Object> referenceClientMap = new ConcurrentHashMap<>();
+
     private static final Object PENDING_OBJECT = new Object();
 
-    private AtomicBoolean destroyed = new AtomicBoolean();
+    private final AtomicBoolean destroyed = new AtomicBoolean();
 
-    private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
+    private final ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
         @Override
         public CompletableFuture<Object> reply(ExchangeChannel channel, Object message) throws RemotingException {
@@ -243,11 +245,6 @@ public class DubboProtocol extends AbstractProtocol {
         return (DubboProtocol) scopeModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
     }
 
-    @Override
-    public Collection<Exporter<?>> getExporters() {
-        return Collections.unmodifiableCollection(exporterMap.values());
-    }
-
     private boolean isClientSide(Channel channel) {
         InetSocketAddress address = channel.getRemoteAddress();
         URL url = channel.getUrl();
@@ -311,14 +308,14 @@ public class DubboProtocol extends AbstractProtocol {
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
 
         //export a stub service for dispatching event
-        Boolean isStubSupportEvent = url.getParameter(STUB_EVENT_KEY, DEFAULT_STUB_EVENT);
-        Boolean isCallbackservice = url.getParameter(IS_CALLBACK_SERVICE, false);
-        if (isStubSupportEvent && !isCallbackservice) {
+        boolean isStubSupportEvent = url.getParameter(STUB_EVENT_KEY, DEFAULT_STUB_EVENT);
+        boolean isCallbackService = url.getParameter(IS_CALLBACK_SERVICE, false);
+        if (isStubSupportEvent && !isCallbackService) {
             String stubServiceMethods = url.getParameter(STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0) {
                 if (logger.isWarnEnabled()) {
                     logger.warn(new IllegalStateException("consumer [" + url.getParameter(INTERFACE_KEY) +
-                            "], has set stubproxy support event ,but no stub methods founded."));
+                            "], has set stub proxy support event ,but no stub methods founded."));
                 }
 
             }
@@ -343,14 +340,13 @@ public class DubboProtocol extends AbstractProtocol {
                     server = serverMap.get(key);
                     if (server == null) {
                         serverMap.put(key, createServer(url));
-                    }else {
-                        server.reset(url);
+                        return;
                     }
                 }
-            } else {
-                // server supports reset, use together with override
-                server.reset(url);
             }
+
+            // server supports reset, use together with override
+            server.reset(url);
         }
     }
 
@@ -368,10 +364,10 @@ public class DubboProtocol extends AbstractProtocol {
                 .addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT))
                 .addParameter(CODEC_KEY, DubboCodec.NAME)
                 .build();
-        String str = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER);
 
-        if (StringUtils.isNotEmpty(str) && !url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).hasExtension(str)) {
-            throw new RpcException("Unsupported server type: " + str + ", url: " + url);
+        String transporter = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER);
+        if (StringUtils.isNotEmpty(transporter) && !url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).hasExtension(transporter)) {
+            throw new RpcException("Unsupported server type: " + transporter + ", url: " + url);
         }
 
         ExchangeServer server;
@@ -381,12 +377,9 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
 
-        str = url.getParameter(CLIENT_KEY);
-        if (StringUtils.isNotEmpty(str)) {
-            Set<String> supportedTypes = url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).getSupportedExtensions();
-            if (!supportedTypes.contains(str)) {
-                throw new RpcException("Unsupported client type: " + str);
-            }
+        transporter = url.getParameter(CLIENT_KEY);
+        if (StringUtils.isNotEmpty(transporter) && !url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).hasExtension(transporter)) {
+            throw new RpcException("Unsupported client type: " + transporter);
         }
 
         DubboProtocolServer protocolServer = new DubboProtocolServer(server);
@@ -616,7 +609,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeClient client;
         try {
             // Replace InstanceAddressURL with ServiceConfigURL.
-            url = new ServiceConfigURL(DubboCodec.NAME, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(),  url.getAllParameters());
+            url = new ServiceConfigURL(DubboCodec.NAME, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getAllParameters());
             url = url.addParameter(CODEC_KEY, DubboCodec.NAME);
             // enable heartbeat by default
             url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));
