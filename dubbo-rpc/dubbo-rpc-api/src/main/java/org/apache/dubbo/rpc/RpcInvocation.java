@@ -77,7 +77,7 @@ public class RpcInvocation implements Invocation, Serializable {
      */
     private Map<String, Object> attachments;
 
-    private transient Lock attachmentLock = new ReentrantLock();
+    private final transient Lock attachmentLock = new ReentrantLock();
 
     /**
      * Only used on the caller side, will not appear on the wire.
