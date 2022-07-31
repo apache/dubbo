@@ -49,17 +49,17 @@ public class FixedThreadPool implements ThreadPool {
         int threads = url.getParameter(THREADS_KEY, DEFAULT_THREADS);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
 
-        BlockingQueue<Runnable> queue;
+        BlockingQueue<Runnable> blockingQueue;
 
         if (queues == 0) {
-            queue = new SynchronousQueue<>();
+            blockingQueue = new SynchronousQueue<>();
         } else if (queues < 0) {
-            queue = new MemorySafeLinkedBlockingQueue<>();
+            blockingQueue = new MemorySafeLinkedBlockingQueue<>();
         } else {
-            queue = new LinkedBlockingQueue<>(queues);
+            blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MILLISECONDS, queue,
+        return new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MILLISECONDS, blockingQueue,
                 new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
     }
 
