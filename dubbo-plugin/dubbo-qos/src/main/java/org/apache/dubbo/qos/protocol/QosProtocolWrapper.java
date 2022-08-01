@@ -104,9 +104,13 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
                     "dubbo.properties or XML/spring-boot configuration.");
                 return;
             }
-            WireProtocol protocol = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class).getExtension("qos");
-            if(protocol != null) {
-                ((QosWireProtocol) protocol).SetQosEnable(true);
+            // frameModel of mock url is null
+            FrameworkModel frameworkModel1= url.getOrDefaultFrameworkModel();
+            if (frameworkModel1 != null) {
+                WireProtocol protocol1 = frameworkModel1.getExtensionLoader(WireProtocol.class).getExtension("qos");
+                if(protocol1 != null) {
+                    ((QosWireProtocol) protocol1).SetQosEnable(true);
+                }
             }
 
             String host = url.getParameter(QOS_HOST);
