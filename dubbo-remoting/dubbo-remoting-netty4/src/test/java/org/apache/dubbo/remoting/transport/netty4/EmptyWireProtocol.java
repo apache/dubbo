@@ -24,9 +24,16 @@ import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 
+import java.io.IOException;
+
 public class EmptyWireProtocol implements WireProtocol {
     @Override
     public ProtocolDetector detector() {
+        return null;
+    }
+
+    @Override
+    public byte[] runActivateTask() throws IOException {
         return null;
     }
 

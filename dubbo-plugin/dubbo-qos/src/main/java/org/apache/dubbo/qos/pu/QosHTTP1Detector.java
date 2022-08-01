@@ -14,39 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.qos.pu;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.ssl.SslContext;
-
-import java.io.IOException;
-
-public class EmptyProtocol implements WireProtocol {
-    @Override
-    public ProtocolDetector detector() {
-        return null;
+public class QosHTTP1Detector implements ProtocolDetector {
+    private static boolean isHttp(int magic) {
+        return magic == 'G' || magic == 'P';
     }
 
     @Override
-    public byte[] runActivateTask() throws IOException {
-        return null;
-    }
-
-    @Override
-    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
-
-    }
-
-    @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-
-    }
-
-    @Override
-    public void close() {
-
+    public Result detect(ChannelBuffer in) {
+        final int magic = in.getByte(in.readerIndex());
+        // h2 starts with "PR"
+        if (isHttp(magic) && in.getByte(in.readerIndex()+1) != 'R' ){
+            return Result.RECOGNIZED;
+        }
+        return Result.UNRECOGNIZED;
     }
 }

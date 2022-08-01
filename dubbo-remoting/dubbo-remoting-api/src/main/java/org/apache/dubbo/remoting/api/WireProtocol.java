@@ -24,10 +24,14 @@ import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 
+import java.io.IOException;
+
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface WireProtocol {
 
     ProtocolDetector detector();
+
+    byte[] runActivateTask() throws IOException;
 
     void configServerProtocolHandler(URL url, ChannelOperator operator);
 
