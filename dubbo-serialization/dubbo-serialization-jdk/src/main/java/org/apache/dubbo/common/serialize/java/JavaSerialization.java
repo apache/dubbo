@@ -39,7 +39,7 @@ import static org.apache.dubbo.common.serialize.Constants.JAVA_SERIALIZATION_ID;
  */
 public class JavaSerialization implements Serialization {
     private static final Logger logger = LoggerFactory.getLogger(JavaSerialization.class);
-    private final static AtomicBoolean warn = new AtomicBoolean(false);
+    private static final AtomicBoolean warn = new AtomicBoolean(false);
 
     @Override
     public byte getContentTypeId() {

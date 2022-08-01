@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -71,7 +71,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 public abstract class AbstractDirectory<T> implements Directory<T> {
 
     // logger
-    private static final Logger logger = LoggerFactory.getLogger(AbstractDirectory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractDirectory.class);
 
     private final URL url;
 
@@ -193,7 +193,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
         if (routedResult.isEmpty()) {
-            logger.warn("No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
+            // 2-2 - No provider available.
+
+            logger.warn("2-2", "provider server or registry center crashed", "",
+                "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
                 + " All validInvokers' size: " + validInvokers.size()
                 + " All routed invokers' size: " + routedResult.size()
                 + " All invokers' size: " + invokers.size()
