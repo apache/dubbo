@@ -162,6 +162,10 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters0(parameters, config, null, false);
     }
 
+    public static void appendAttributes(Map<String, String> parameters, Object config, String prefix) {
+        appendParameters0(parameters, config, prefix, false);
+    }
+
     private static void appendParameters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
         if (config == null) {
             return;
@@ -259,6 +263,10 @@ public abstract class AbstractConfig implements Serializable {
 
     private static String calculatePropertyToGetter(String name) {
         return "get" + name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    private static String calculatePropertyToSetter(String name) {
+        return "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
     private static String calculatePropertyFromGetter(String name) {
@@ -468,7 +476,7 @@ public abstract class AbstractConfig implements Serializable {
                     if ("interfaceClass".equals(property) || "interfaceName".equals(property)) {
                         property = "interface";
                     }
-                    String setter = "set" + property.substring(0, 1).toUpperCase() + property.substring(1);
+                    String setter = calculatePropertyToSetter(property);
                     Object value = method.invoke(annotation);
                     if (value != null && !value.equals(method.getDefaultValue())) {
                         Class<?> parameterType = ReflectUtils.getBoxedClass(method.getReturnType());
@@ -496,7 +504,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * <p>
      * <b>The new instance of the AbstractConfig subclass should return empty metadata.</b>
-     * The purpose is is to get the attributes set by the user instead of the default value when the {@link #refresh()} method handles attribute overrides.
+     * The purpose is to get the attributes set by the user instead of the default value when the {@link #refresh()} method handles attribute overrides.
      * </p>
      *
      * <p><b>The default value of the field should be set in the {@link #checkDefault()} method</b>,
@@ -514,8 +522,12 @@ public abstract class AbstractConfig implements Serializable {
      * @see AbstractConfig#appendParameters(Map, Object, String)
      */
     public Map<String, String> getMetaData() {
+        return getMetaData(null);
+    }
+
+    public Map<String, String> getMetaData(String prefix) {
         Map<String, String> metaData = new HashMap<>();
-        appendAttributes(metaData, this);
+        appendAttributes(metaData, this, prefix);
         return metaData;
     }
 
@@ -656,14 +668,15 @@ public abstract class AbstractConfig implements Serializable {
 
             // Search props starts with PREFIX in order
             String preferredPrefix = null;
-            for (String prefix : getPrefixes()) {
+            List<String> prefixes = getPrefixes();
+            for (String prefix : prefixes) {
                 if (ConfigurationUtils.hasSubProperties(configurationMaps, prefix)) {
                     preferredPrefix = prefix;
                     break;
                 }
             }
             if (preferredPrefix == null) {
-                preferredPrefix = getPrefixes().get(0);
+                preferredPrefix = prefixes.get(0);
             }
             // Extract sub props (which key was starts with preferredPrefix)
             Collection<Map<String, String>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
@@ -738,6 +751,19 @@ public abstract class AbstractConfig implements Serializable {
             } else if (isParametersSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
 
+                String value = StringUtils.trim(configuration.getString(propertyName));
+                Map<String, String> parameterMap;
+                if (StringUtils.hasText(value)) {
+                    parameterMap = StringUtils.parseParameters(value);
+                } else {
+                    // in this case, maybe parameters.item3=value3.
+                    parameterMap = ConfigurationUtils.getSubProperties(properties, PARAMETERS);
+                }
+                Map<String, String> newMap = convert(parameterMap, "");
+                if (CollectionUtils.isEmptyMap(newMap)) {
+                    continue;
+                }
+
                 // get old map from original obj
                 Map<String, String> oldMap = null;
                 try {
@@ -750,16 +776,6 @@ public abstract class AbstractConfig implements Serializable {
                 } catch (Exception ignore) {
 
                 }
-
-                String value = StringUtils.trim(configuration.getString(propertyName));
-                Map<String, String> parameterMap;
-                if (StringUtils.hasText(value)) {
-                    parameterMap = StringUtils.parseParameters(value);
-                } else {
-                    // in this case, maybe parameters.item3=value3.
-                    parameterMap = ConfigurationUtils.getSubProperties(properties, PARAMETERS);
-                }
-                Map<String, String> newMap = convert(parameterMap, "");
 
                 // if old map is null, directly set params
                 if (oldMap == null) {
@@ -917,17 +933,15 @@ public abstract class AbstractConfig implements Serializable {
             buf.append(getTagName(getClass()));
             for (Method method : getAttributedMethods()) {
                 try {
-                    if (MethodUtils.isGetter(method)) {
-                        String name = method.getName();
-                        String key = calculateAttributeFromGetter(name);
-                        Object value = method.invoke(this);
-                        if (value != null) {
-                            buf.append(' ');
-                            buf.append(key);
-                            buf.append("=\"");
-                            buf.append(key.equals("password") ? "******" : value);
-                            buf.append('\"');
-                        }
+                    String name = method.getName();
+                    String key = calculateAttributeFromGetter(name);
+                    Object value = method.invoke(this);
+                    if (value != null) {
+                        buf.append(' ');
+                        buf.append(key);
+                        buf.append("=\"");
+                        buf.append(key.equals("password") ? "******" : value);
+                        buf.append('\"');
                     }
                 } catch (Exception e) {
                     logger.warn(e.getMessage(), e);

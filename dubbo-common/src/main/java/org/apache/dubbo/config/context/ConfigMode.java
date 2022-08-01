@@ -22,7 +22,7 @@ package org.apache.dubbo.config.context;
  */
 public enum ConfigMode {
     /**
-     * Strict mode: accept only one config for unique config type, throw exceptions if found more than one configs for an unique config type.
+     * Strict mode: accept only one config for unique config type, throw exceptions if found more than one config for a unique config type.
      */
     STRICT,
 

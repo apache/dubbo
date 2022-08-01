@@ -19,11 +19,14 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -173,7 +176,7 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendAttributes1() throws Exception {
-        ParameterConfig config = new ParameterConfig(1, "hello/world", 30, "password");
+        ParameterConfig config = new ParameterConfig(1, "hello/world", 30, "password","BEIJING");
         Map<String, String> parameters = new HashMap<>();
         AbstractConfig.appendParameters(parameters, config);
 
@@ -188,6 +191,8 @@ public class AbstractConfigTest {
         Assertions.assertEquals(String.valueOf(config.getNumber()), attributes.get("number"));
         Assertions.assertEquals(String.valueOf(config.getAge()), attributes.get("age"));
         Assertions.assertEquals(StringUtils.encodeParameters(config.getParameters()), attributes.get("parameters"));
+        Assertions.assertTrue(parameters.containsKey("detail.address"));// detailAddress -> detail.address
+        Assertions.assertTrue(attributes.containsKey("detail-address"));// detailAddress -> detail-address
     }
 
     @Test
@@ -515,6 +520,65 @@ public class AbstractConfigTest {
     }
 
     @Test
+    public void testRefreshParametersWithOverrideConfigMode() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        try {
+            // test OVERRIDE_ALL configMode
+            {
+                SysProps.setProperty(ConfigKeys.DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE_ALL.name());
+                SysProps.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
+                SysProps.setProperty("dubbo.override.protocol", "system");
+                SysProps.setProperty("dubbo.override.parameters", "[{key1:systemValue1},{key2:systemValue2}]");
+
+                ApplicationModel applicationModel1 = frameworkModel.newApplication();
+                OverrideConfig overrideConfig = new OverrideConfig(applicationModel1);
+                overrideConfig.setAddress("override-config://127.0.0.1:2181");
+                overrideConfig.setProtocol("override-config");
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("key1", "value1");
+                parameters.put("key3", "value3");
+                overrideConfig.setParameters(parameters);
+
+                // overrideConfig's config is overridden by system config
+                overrideConfig.refresh();
+                Assertions.assertEquals(overrideConfig.getAddress(), "system://127.0.0.1:2181");
+                Assertions.assertEquals(overrideConfig.getProtocol(), "system");
+                Assertions.assertEquals(overrideConfig.getParameters(),
+                    StringUtils.parseParameters("[{key1:systemValue1},{key2:systemValue2},{key3:value3}]"));
+
+            }
+            // test OVERRIDE_IF_ABSENT configMode
+            {
+                SysProps.setProperty(ConfigKeys.DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE_IF_ABSENT.name());
+                SysProps.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
+                SysProps.setProperty("dubbo.override.protocol", "system");
+                SysProps.setProperty("dubbo.override.parameters", "[{key1:systemValue1},{key2:systemValue2}]");
+                SysProps.setProperty("dubbo.override.key", "systemKey");
+
+                ApplicationModel applicationModel = frameworkModel.newApplication();
+                OverrideConfig overrideConfig = new OverrideConfig(applicationModel);
+                overrideConfig.setAddress("override-config://127.0.0.1:2181");
+                overrideConfig.setProtocol("override-config");
+                Map<String, String> parameters = new HashMap<>();
+                parameters.put("key1", "value1");
+                parameters.put("key3", "value3");
+                overrideConfig.setParameters(parameters);
+
+                // overrideConfig's config is overridden/set by system config only when the overrideConfig's config is absent/empty
+                overrideConfig.refresh();
+                Assertions.assertEquals(overrideConfig.getAddress(), "override-config://127.0.0.1:2181");
+                Assertions.assertEquals(overrideConfig.getProtocol(), "override-config");
+                Assertions.assertEquals(overrideConfig.getKey(), "systemKey");
+                Assertions.assertEquals(overrideConfig.getParameters(),
+                    StringUtils.parseParameters("[{key1:value1},{key2:systemValue2},{key3:value3}]"));
+            }
+
+        } finally {
+            frameworkModel.destroy();
+        }
+    }
+
+    @Test
     public void testOnlyPrefixedKeyTakeEffect() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
@@ -561,6 +625,13 @@ public class AbstractConfigTest {
         Assertions.assertEquals("override-config", metaData.get("exclude"));
         Assertions.assertNull(metaData.get("key"));
         Assertions.assertNull(metaData.get("key2"));
+
+        // with prefix
+        Map<String, String> prefixMetadata = overrideConfig.getMetaData(OverrideConfig.getTypePrefix(OverrideConfig.class));
+        Assertions.assertEquals("override-config://127.0.0.1:2181", prefixMetadata.get("dubbo.override.address"));
+        Assertions.assertEquals("override-config", prefixMetadata.get("dubbo.override.protocol"));
+        Assertions.assertEquals("override-config://", prefixMetadata.get("dubbo.override.escape"));
+        Assertions.assertEquals("override-config", prefixMetadata.get("dubbo.override.exclude"));
     }
 
     @Test
@@ -617,6 +688,13 @@ public class AbstractConfigTest {
         public String notConflictKey;
         public String notConflictKey2;
         protected Map<String, String> parameters;
+
+        public OverrideConfig() {
+        }
+
+        public OverrideConfig(ScopeModel scopeModel) {
+            super(scopeModel);
+        }
 
         public String getAddress() {
             return address;
@@ -791,15 +869,29 @@ public class AbstractConfigTest {
         private String name;
         private int age;
         private String secret;
+        private String detailAddress;
 
         ParameterConfig() {
         }
 
         ParameterConfig(int number, String name, int age, String secret) {
+            this(number, name, age, secret, "");
+        }
+
+        ParameterConfig(int number, String name, int age, String secret,String detailAddress) {
             this.number = number;
             this.name = name;
             this.age = age;
             this.secret = secret;
+            this.detailAddress = detailAddress;
+        }
+
+        public String getDetailAddress() {
+            return detailAddress;
+        }
+
+        public void setDetailAddress(String detailAddress) {
+            this.detailAddress = detailAddress;
         }
 
         @Parameter(key = "num", append = true)
