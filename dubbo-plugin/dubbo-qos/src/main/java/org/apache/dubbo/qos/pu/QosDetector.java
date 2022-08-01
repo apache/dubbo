@@ -24,9 +24,17 @@ public class QosDetector implements ProtocolDetector {
 
     private final QosHTTP1Detector qosHTTP1Detector = new QosHTTP1Detector();
     private final TelnetDetector telnetDetector = new TelnetDetector();
+    private boolean QosEnableFlag = false;
+
+    public void setQosEnableFlag(boolean qosEnableFlag) {
+        QosEnableFlag = qosEnableFlag;
+    }
 
     @Override
     public Result detect(ChannelBuffer in) {
+        if(!QosEnableFlag) {
+            return Result.UNRECOGNIZED;
+        }
         Result h1Res = qosHTTP1Detector.detect(in);
         if(h1Res.equals(Result.RECOGNIZED)) {
             return h1Res;

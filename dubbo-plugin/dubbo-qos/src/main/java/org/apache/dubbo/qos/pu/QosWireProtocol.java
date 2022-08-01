@@ -44,6 +44,10 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
         super(new QosDetector());
     }
 
+    public void SetQosEnable(boolean flag) {
+        ((QosDetector)this.detector()).setQosEnableFlag(flag);
+    }
+
     @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
         // add qosProcess handler
