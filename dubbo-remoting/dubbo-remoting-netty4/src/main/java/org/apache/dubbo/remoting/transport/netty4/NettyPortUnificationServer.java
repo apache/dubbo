@@ -127,7 +127,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     final ChannelPipeline p = ch.pipeline();
                     final NettyPortUnificationServerHandler puHandler;
                     puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
-                        channels);
+                        channels, NettyPortUnificationServer.this);
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
