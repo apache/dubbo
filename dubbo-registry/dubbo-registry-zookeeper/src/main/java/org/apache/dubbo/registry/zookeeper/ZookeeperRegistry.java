@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
@@ -81,7 +82,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         this.zkClient = zookeeperTransporter.connect(url);
         this.zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
-                logger.warn("Trying to fetch the latest urls, in case there're provider changes during connection loss.\n" +
+                logger.warn("Trying to fetch the latest urls, in case there are provider changes during connection loss.\n" +
                     " Since ephemeral ZNode will not get deleted for a connection lose, " +
                     "there's no need to re-register url of this instance.");
                 ZookeeperRegistry.this.fetchLatestAddresses();

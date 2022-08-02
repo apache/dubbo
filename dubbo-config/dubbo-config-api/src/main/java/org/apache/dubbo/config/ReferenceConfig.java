@@ -21,7 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -92,7 +92,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  */
 public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
-    public static final Logger logger = LoggerFactory.getLogger(ReferenceConfig.class);
+    public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceConfig.class);
 
     /**
      * The {@link Protocol} implementation with adaptive functionality,it will be different in different scenarios.
@@ -313,6 +313,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             consumerModel = null;
             serviceMetadata.setTarget(null);
             serviceMetadata.getAttributeMap().remove(PROXY_CLASS_REF);
+
+            // Thrown by checkInvokerAvailable().
+            if (t.getClass() == IllegalStateException.class &&
+                t.getMessage().contains("No provider available for the service")) {
+
+                // 2-2 - No provider available.
+                logger.error("2-2", "server crashed", "", "No provider available.", t);
+            }
 
             throw t;
         }
@@ -558,7 +566,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private void checkInvokerAvailable() throws IllegalStateException {
         if (shouldCheck() && !invoker.isAvailable()) {
-                throw new IllegalStateException("Failed to check the status of the service "
+            throw new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
                     + ". No provider available for the service "
                     + (group == null ? "" : group + "/")
