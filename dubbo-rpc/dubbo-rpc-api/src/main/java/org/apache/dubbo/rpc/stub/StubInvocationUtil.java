@@ -31,11 +31,6 @@ public class StubInvocationUtil {
         return (R) call(invoker, methodDescriptor, new Object[]{request});
     }
 
-    public static <T, R> void unaryCall(Invoker<?> invoker, MethodDescriptor method, T request,
-        StreamObserver<R> responseObserver) {
-        call(invoker, method, new Object[]{request, responseObserver});
-    }
-
     public static <T, R> StreamObserver<T> biOrClientStreamCall(Invoker<?> invoker,
         MethodDescriptor method, StreamObserver<R> responseObserver) {
         return (StreamObserver<T>) call(invoker, method, new Object[]{responseObserver});
