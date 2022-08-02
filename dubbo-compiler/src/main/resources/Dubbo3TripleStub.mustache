@@ -120,14 +120,6 @@ public final class {{className}} {
         public {{outputType}} {{methodName}}({{inputType}} request){
             return StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
         }
-
-        {{#javaDoc}}
-            {{{javaDoc}}}
-        {{/javaDoc}}
-        @Override
-        public void {{methodName}}({{inputType}} request, StreamObserver<{{outputType}}> responseObserver){
-            StubInvocationUtil.unaryCall(invoker, {{methodName}}Method , request, responseObserver);
-        }
     {{/unaryMethods}}
 
     {{#serverStreamingMethods}}
