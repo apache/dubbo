@@ -117,6 +117,56 @@ class StubInvocationUtilTest {
     }
 
     @Test
+    void testUnaryCall() throws Throwable {
+        Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
+        URL url = Mockito.mock(URL.class);
+        ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
+        ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
+        when(consumerModel.getServiceModel()).thenReturn(serviceDescriptor);
+        when(url.getServiceModel())
+            .thenReturn(consumerModel);
+        when(url.getServiceInterface())
+            .thenReturn(DemoService.class.getName());
+        when(url.getProtocolServiceKey())
+            .thenReturn(DemoService.class.getName());
+        when(invoker.getUrl())
+            .thenReturn(url);
+        when(invoker.getInterface())
+            .thenReturn(DemoService.class);
+        Result result = Mockito.mock(Result.class);
+        String response = "response";
+        when(invoker.invoke(any(Invocation.class)))
+            .then(invocationOnMock -> result);
+        when(result.recreate()).thenReturn(response);
+        MethodDescriptor method = Mockito.mock(MethodDescriptor.class);
+        when(method.getParameterClasses())
+            .thenReturn(new Class[]{String.class});
+        when(method.getMethodName())
+            .thenReturn("sayHello");
+        String request = "request";
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Object> atomicReference = new AtomicReference<>();
+        StreamObserver<Object> responseObserver = new StreamObserver<Object>() {
+            @Override
+            public void onNext(Object data) {
+                atomicReference.set(data);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onCompleted() {
+                latch.countDown();
+            }
+        };
+        StubInvocationUtil.unaryCall(invoker, method, request, responseObserver);
+        latch.await(1, TimeUnit.SECONDS);
+        Assertions.assertEquals(response, atomicReference.get());
+    }
+
+    @Test
     void biOrClientStreamCall() throws InterruptedException {
         Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
         URL url = Mockito.mock(URL.class);
