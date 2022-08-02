@@ -77,9 +77,6 @@ public class WelcomeLogoApplicationListener implements ApplicationListener<Appli
         bannerTextBuilder
                 .append(LINE_SEPARATOR)
                 .append(LINE_SEPARATOR)
-                .append(" :: Dubbo Spring Boot (v").append(Version.getVersion(getClass(), Version.getVersion())).append(") : ")
-                .append(DUBBO_SPRING_BOOT_GITHUB_URL)
-                .append(LINE_SEPARATOR)
                 .append(" :: Dubbo (v").append(Version.getVersion()).append(") : ")
                 .append(DUBBO_GITHUB_URL)
                 .append(LINE_SEPARATOR)
