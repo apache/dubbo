@@ -33,7 +33,13 @@ public class StubInvocationUtil {
 
     public static <T, R> void unaryCall(Invoker<?> invoker, MethodDescriptor method, T request,
         StreamObserver<R> responseObserver) {
-        call(invoker, method, new Object[]{request, responseObserver});
+        try {
+            Object res = unaryCall(invoker, method, request);
+            responseObserver.onNext((R) res);
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
+        responseObserver.onCompleted();
     }
 
     public static <T, R> StreamObserver<T> biOrClientStreamCall(Invoker<?> invoker,
