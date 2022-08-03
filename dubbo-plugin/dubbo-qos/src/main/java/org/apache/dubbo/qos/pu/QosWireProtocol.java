@@ -30,15 +30,11 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Activate
 public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelAware {
-    public static final String PROMPT = "dubbo>";
-    public static final String welcome = DubboLogo.DUBBO;
 
     public QosWireProtocol() {
         super(new QosDetector());
@@ -62,18 +58,6 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
     @Override
     public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
 
-    }
-
-    @Override
-    public byte[] runActivateTask() throws IOException {
-        if (welcome != null) {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            os.write(welcome.getBytes());
-            os.write(PROMPT.getBytes());
-            return os.toByteArray();
-        }else {
-            return null;
-        }
     }
 
     @Override

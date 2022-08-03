@@ -26,6 +26,9 @@ public class QosHTTP1Detector implements ProtocolDetector {
 
     @Override
     public Result detect(ChannelBuffer in) {
+        if (in.readableBytes() < 2) {
+            return Result.NEED_MORE_DATA;
+        }
         final int magic = in.getByte(in.readerIndex());
         // h2 starts with "PR"
         if (isHttp(magic) && in.getByte(in.readerIndex()+1) != 'R' ){

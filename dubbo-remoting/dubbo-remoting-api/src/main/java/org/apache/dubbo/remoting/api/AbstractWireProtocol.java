@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.remoting.api;
 
-import java.io.IOException;
-
 public abstract class AbstractWireProtocol implements WireProtocol {
 
     private final ProtocolDetector detector;
@@ -33,10 +31,5 @@ public abstract class AbstractWireProtocol implements WireProtocol {
 
     @Override
     public void close() {
-    }
-
-    @Override
-    public byte[] runActivateTask() throws IOException {
-        return null;
     }
 }

@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
@@ -28,20 +27,15 @@ import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
-import io.netty.util.concurrent.ScheduledFuture;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
@@ -55,7 +49,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     private final ChannelHandler handler;
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
-    private ConcurrentMap<Channel, ScheduledFuture<?>> welcomeFutures = new ConcurrentHashMap<>();
 
     public NettyPortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
                                              List<WireProtocol> protocols, ChannelGroup channels,
@@ -76,16 +69,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        for (WireProtocol protocol: this.protocols) {
-            byte[] task = protocol.runActivateTask();
-            if (task != null) {
-                ScheduledFuture<?> welcomeFuture = ctx.executor().schedule(() -> {
-                    ctx.writeAndFlush(Unpooled.wrappedBuffer(task));
-                }, 500, TimeUnit.MILLISECONDS);
-                welcomeFutures.put(channel, welcomeFuture);
-            }
-        }
         channels.add(ctx.channel());
     }
 
@@ -94,7 +77,8 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         // Will use the first five bytes to detect a protocol.
-        if (in.readableBytes() < 5) {
+        // size of telnet command ls is 3
+        if (in.readableBytes() < 3) {
             return;
         }
 
@@ -110,12 +94,6 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
-                        ScheduledFuture<?> f = welcomeFutures.get(channel);
-                        if(f!=null && f.isCancellable()) {
-                            //todo need to tell telnet from other protocols
-                            f.cancel(false);
-                            welcomeFutures.remove(channel);
-                        }
                         ChannelOperator operator = new NettyConfigOperator(channel, handler);
                         protocol.configServerProtocolHandler(url, operator);
                         ctx.pipeline().remove(this);
