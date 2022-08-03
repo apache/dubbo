@@ -200,32 +200,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         RequestMetadata request = createRequest(methodDescriptor, invocation, timeout);
 
         final Object pureArgument;
-        if (invocation.getArguments() != null && invocation.getArguments().length == 2 && invocation.getArguments()[1] instanceof StreamObserver) {
-            StreamObserver<Object> observer = (StreamObserver<Object>) invocation.getArguments()[1];
+
+        if (methodDescriptor instanceof StubMethodDescriptor) {
             pureArgument = invocation.getArguments()[0];
-            result = new AsyncRpcResult(CompletableFuture.completedFuture(new AppResponse()),
-                invocation);
-            future.whenComplete((r, t) -> {
-                if (t != null) {
-                    observer.onError(t);
-                    return;
-                }
-                if (r.hasException()) {
-                    observer.onError(r.getException());
-                    return;
-                }
-                observer.onNext(r.getValue());
-                observer.onCompleted();
-            });
         } else {
-            if (methodDescriptor instanceof StubMethodDescriptor) {
-                pureArgument = invocation.getArguments()[0];
-            } else {
-                pureArgument = invocation.getArguments();
-            }
-            result = new AsyncRpcResult(future, invocation);
-            FutureContext.getContext().setCompatibleFuture(future);
+            pureArgument = invocation.getArguments();
         }
+        result = new AsyncRpcResult(future, invocation);
+        FutureContext.getContext().setCompatibleFuture(future);
+
         result.setExecutor(callbackExecutor);
         ClientCall.Listener callListener = new UnaryClientCallListener(future);
 

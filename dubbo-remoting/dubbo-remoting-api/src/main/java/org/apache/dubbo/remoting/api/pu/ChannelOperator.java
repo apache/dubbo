@@ -14,33 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo;
+package org.apache.dubbo.remoting.api.pu;
 
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.AbstractExporter;
+import org.apache.dubbo.remoting.ChannelHandler;
 
-import java.util.Map;
+import java.util.List;
 
-/**
- * DubboExporter
- */
-public class DubboExporter<T> extends AbstractExporter<T> {
-
-    private final String key;
-
-    private final Map<String, Exporter<?>> exporterMap;
-
-    public DubboExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
-        super(invoker);
-        this.key = key;
-        this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
-    }
-
-    @Override
-    public void afterUnExport() {
-        exporterMap.remove(key, this);
-    }
-
+public interface ChannelOperator {
+    void configChannelHandler(List<ChannelHandler> handlerList);
 }

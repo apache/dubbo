@@ -14,22 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.registry.xds.util.bootstrap;
 
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Codec2;
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
-import java.io.IOException;
+import java.util.Map;
 
-public class DefaultTriCodec implements Codec2 {
+final class CertificateProviderInfoImpl extends Bootstrapper.CertificateProviderInfo {
 
-    @Override
-    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
+    private final String pluginName;
+    private final Map<String, ?> config;
 
+    CertificateProviderInfoImpl(String pluginName, Map<String, ?> config) {
+        this.pluginName = pluginName;
+        this.config = config;
     }
 
     @Override
-    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
-        return null;
+    public String pluginName() {
+        return pluginName;
     }
+
+    @Override
+    public Map<String, ?> config() {
+        return config;
+    }
+
+    @Override
+    public String toString() {
+        return "CertificateProviderInfo{"
+            + "pluginName=" + pluginName + ", "
+            + "config=" + config
+            + "}";
+    }
+
 }

@@ -136,13 +136,8 @@ class StubInvocationUtilTest {
         Result result = Mockito.mock(Result.class);
         String response = "response";
         when(invoker.invoke(any(Invocation.class)))
-            .then(invocationOnMock -> {
-                Invocation invocation = (Invocation) invocationOnMock.getArguments()[0];
-                StreamObserver<Object> observer = (StreamObserver<Object>) invocation.getArguments()[1];
-                observer.onNext(response);
-                observer.onCompleted();
-                return result;
-            });
+            .then(invocationOnMock -> result);
+        when(result.recreate()).thenReturn(response);
         MethodDescriptor method = Mockito.mock(MethodDescriptor.class);
         when(method.getParameterClasses())
             .thenReturn(new Class[]{String.class});

@@ -56,9 +56,11 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
         FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
         if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
-        } else {
+        } else if(frameworkModel.getExtensionLoader(Codec.class).hasExtension(codecName)){
             return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
                 .getExtension(codecName));
+        }else {
+            return frameworkModel.getExtensionLoader(Codec2.class).getExtension("default");
         }
     }
 
