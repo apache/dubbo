@@ -153,9 +153,6 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
             if (isCancelled) {
                 this.downstream = null;
             }
-        } else {
-            subscriber.onSubscribe(EMPTY_SUBSCRIPTION);
-            subscriber.onError(new IllegalStateException(getClass().getSimpleName() + " can't be subscribed repeatedly"));
         }
     }
 

@@ -64,10 +64,7 @@ public abstract class AbstractTripleReactorSubscriber<T> implements Subscriber<T
         }
         if (this.downstream == null && DOWNSTREAM.compareAndSet(this, null, downstream)) {
             subscription.request(1);
-            return;
         }
-
-        throw new IllegalStateException(getClass().getSimpleName() + " can't be subscribed repeatedly");
     }
 
     @Override
