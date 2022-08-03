@@ -27,8 +27,6 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLongFieldUpdater;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Consumer;
 
 /**
@@ -38,22 +36,9 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractTripleReactorPublisher<T> extends CancelableStreamObserver<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
 
-    private static final Subscription EMPTY_SUBSCRIPTION = new Subscription() {
-        @Override
-        public void cancel() {
-        }
-        @Override
-        public void request(long n) {
-        }
-    };
+    private volatile boolean canRequest;
 
     private volatile long requested;
-
-    private static final AtomicLongFieldUpdater<AbstractTripleReactorPublisher> REQUESTED =
-        AtomicLongFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, "requested");
-
-    // weather CallStreamObserver#request can be called
-    private final AtomicBoolean CAN_REQUEST = new AtomicBoolean();
 
     // weather publisher has been subscribed
     private final AtomicBoolean SUBSCRIBED = new AtomicBoolean();
@@ -62,8 +47,7 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
 
     protected volatile CallStreamObserver<?> subscription;
 
-    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, CallStreamObserver> SUBSCRIPTION =
-        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, CallStreamObserver.class, "subscription");
+    private final AtomicBoolean HAS_SUBSCRIPTION = new AtomicBoolean();
 
     // cancel status
     private volatile boolean isCancelled;
@@ -76,9 +60,7 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
 
     private volatile Runnable shutdownHook;
 
-    @SuppressWarnings("rawtypes")
-    private static final AtomicReferenceFieldUpdater<AbstractTripleReactorPublisher, Runnable> SHUTDOWN_HOOK =
-        AtomicReferenceFieldUpdater.newUpdater(AbstractTripleReactorPublisher.class, Runnable.class, "shutdownHook");
+    private final AtomicBoolean CALLED_SHUT_DOWN_HOOK = new AtomicBoolean();
 
     public AbstractTripleReactorPublisher() {
     }
@@ -89,7 +71,7 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
     }
 
     protected void onSubscribe(final CallStreamObserver<?> subscription) {
-        if (subscription != null && SUBSCRIPTION.compareAndSet(this, null, subscription)) {
+        if (subscription != null && this.subscription == null && HAS_SUBSCRIPTION.compareAndSet(false, true)) {
             this.subscription = subscription;
             if (subscription instanceof ClientStreamObserver<?>) {
                 ((ClientStreamObserver<?>) subscription).disableAutoRequest();
@@ -118,8 +100,8 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
         if (isDone || isCancelled) {
             return;
         }
-        downstream.onError(throwable);
         isDone = true;
+        downstream.onError(throwable);
         doPostShutdown();
     }
 
@@ -136,7 +118,8 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
     private void doPostShutdown() {
         Runnable r = shutdownHook;
         // CAS to confirm shutdownHook will be run only once.
-        if (r != null && SHUTDOWN_HOOK.compareAndSet(this, r, null)) {
+        if (r != null && CALLED_SHUT_DOWN_HOOK.compareAndSet(false, true)) {
+            shutdownHook = null;
             r.run();
         }
     }
@@ -158,18 +141,23 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
 
     @Override
     public void request(long l) {
-        if (SUBSCRIBED.get() && CAN_REQUEST.get()) {
-            subscription.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
-        } else {
-            REQUESTED.getAndAdd(this, l);
+        synchronized (this) {
+            if (SUBSCRIBED.get() && canRequest) {
+                subscription.request(l >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) l);
+            } else {
+                requested += l;
+            }
         }
     }
 
     @Override
     public void startRequest() {
-        if (CAN_REQUEST.compareAndSet(false, true)) {
-            long count = requested;
-            subscription.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
+        synchronized (this) {
+            if (!canRequest) {
+                canRequest = true;
+                long count = requested;
+                subscription.request(count >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count);
+            }
         }
     }
 
