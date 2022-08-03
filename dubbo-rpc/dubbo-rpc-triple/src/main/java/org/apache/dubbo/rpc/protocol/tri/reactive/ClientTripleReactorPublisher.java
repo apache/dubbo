@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.ClientResponseObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
@@ -29,7 +28,7 @@ import java.util.function.Consumer;
  * It is a StreamObserver for responseStream. <br>
  * It is a Subscription for user subscriber to request and pass request to requestStream.
  */
-public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> implements ClientResponseObserver<T> {
+public class ClientTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> {
 
     public ClientTripleReactorPublisher() {
     }

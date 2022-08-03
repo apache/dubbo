@@ -175,16 +175,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     StreamObserver<Object> streamCall(ClientCall call,
         RequestMetadata metadata,
         StreamObserver<Object> responseObserver) {
-        if (responseObserver instanceof CancelableStreamObserver) {
-            final CancellationContext context = new CancellationContext();
-            ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
-            context.addListener(context1 -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
-        }
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
             responseObserver);
         StreamObserver<Object> streamObserver = call.start(metadata, listener);
-        if (responseObserver instanceof ClientResponseObserver) {
-            ((ClientResponseObserver<Object>) responseObserver).beforeStart((ClientCallToObserverAdapter<Object>) streamObserver);
+        if (responseObserver instanceof CancelableStreamObserver) {
+            final CancellationContext context = new CancellationContext();
+            CancelableStreamObserver<Object> cancelableStreamObserver = (CancelableStreamObserver<Object>) responseObserver;
+            cancelableStreamObserver.setCancellationContext(context);
+            context.addListener(context1 -> call.cancelByLocal(new IllegalStateException("Canceled by app")));
+            cancelableStreamObserver.beforeStart((ClientCallToObserverAdapter<Object>) streamObserver);
         }
         return streamObserver;
     }

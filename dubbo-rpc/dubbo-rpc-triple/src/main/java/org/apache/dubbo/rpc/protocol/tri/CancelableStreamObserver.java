@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
 public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
@@ -34,6 +35,10 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
     public void cancel(Throwable throwable) {
         cancellationContext.cancel(throwable);
+    }
+
+    public void beforeStart(final ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
+        // do nothing
     }
 
 }
