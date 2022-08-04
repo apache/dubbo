@@ -29,6 +29,8 @@ public interface ClientStreamObserver<T> extends CallStreamObserver<T> {
      * request()} may not be called before the call is started, a number of initial requests may be
      * specified.
      */
-    void disableAutoRequest();
+    default void disableAutoRequest() {
+        disableAutoFlowControl();
+    }
 
 }
