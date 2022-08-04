@@ -73,11 +73,7 @@ public abstract class AbstractTripleReactorPublisher<T> extends CancelableStream
     protected void onSubscribe(final CallStreamObserver<?> subscription) {
         if (subscription != null && this.subscription == null && HAS_SUBSCRIPTION.compareAndSet(false, true)) {
             this.subscription = subscription;
-            if (subscription instanceof ClientStreamObserver<?>) {
-                ((ClientStreamObserver<?>) subscription).disableAutoRequest();
-            } else if (subscription instanceof ServerStreamObserver<?>) {
-                ((ServerStreamObserver<?>) subscription).disableAutoInboundFlowControl();
-            }
+            subscription.disableAutoFlowControl();
             if (onSubscribe != null) {
                 onSubscribe.accept(subscription);
             }
