@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
@@ -35,6 +36,8 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
 import org.apache.curator.x.discovery.ServiceInstanceBuilder;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
 
 import java.util.Collection;
 import java.util.List;
@@ -76,6 +79,17 @@ public abstract class CuratorFrameworkUtils {
         String userInformation = connectionURL.getUserInformation();
         if (userInformation != null && userInformation.length() > 0) {
             builder = builder.authorization("digest", userInformation.getBytes());
+            builder.aclProvider(new ACLProvider() {
+                @Override
+                public List<ACL> getDefaultAcl() {
+                    return ZooDefs.Ids.CREATOR_ALL_ACL;
+                }
+
+                @Override
+                public List<ACL> getAclForPath(String path) {
+                    return ZooDefs.Ids.CREATOR_ALL_ACL;
+                }
+            });
         }
         CuratorFramework curatorFramework = builder.build();
 
