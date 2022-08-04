@@ -36,9 +36,9 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractTripleReactorPublisher<T> extends CancelableStreamObserver<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
 
-    private volatile boolean canRequest;
+    private boolean canRequest;
 
-    private volatile long requested;
+    private long requested;
 
     // weather publisher has been subscribed
     private final AtomicBoolean SUBSCRIBED = new AtomicBoolean();
