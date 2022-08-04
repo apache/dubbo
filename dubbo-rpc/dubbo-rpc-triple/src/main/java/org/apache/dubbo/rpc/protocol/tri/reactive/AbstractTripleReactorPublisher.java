@@ -18,9 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.SafeRequestObserver;
-import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
