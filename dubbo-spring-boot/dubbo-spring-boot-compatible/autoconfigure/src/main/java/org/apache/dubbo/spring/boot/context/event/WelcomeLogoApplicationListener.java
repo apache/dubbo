@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_GITHUB_URL;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_MAILING_LIST;
-import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_SPRING_BOOT_GITHUB_URL;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.LINE_SEPARATOR;
 
 /**

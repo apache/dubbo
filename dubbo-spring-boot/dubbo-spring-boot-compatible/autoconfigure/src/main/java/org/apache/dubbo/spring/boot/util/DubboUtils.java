@@ -100,17 +100,17 @@ public abstract class DubboUtils {
     /**
      * The github URL of Dubbo Spring Boot
      */
-    public static final String DUBBO_SPRING_BOOT_GITHUB_URL = "https://github.com/apache/dubbo-spring-boot-project";
+    public static final String DUBBO_SPRING_BOOT_GITHUB_URL = "https://github.com/apache/dubbo/tree/3.0/dubbo-spring-boot";
 
     /**
      * The git URL of Dubbo Spring Boot
      */
-    public static final String DUBBO_SPRING_BOOT_GIT_URL = "https://github.com/apache/dubbo-spring-boot-project.git";
+    public static final String DUBBO_SPRING_BOOT_GIT_URL = "https://github.com/apache/dubbo.git";
 
     /**
      * The issues of Dubbo Spring Boot
      */
-    public static final String DUBBO_SPRING_BOOT_ISSUES_URL = "https://github.com/apache/dubbo-spring-boot-project/issues";
+    public static final String DUBBO_SPRING_BOOT_ISSUES_URL = "https://github.com/apache/dubbo/issues";
 
     /**
      * The github URL of Dubbo
