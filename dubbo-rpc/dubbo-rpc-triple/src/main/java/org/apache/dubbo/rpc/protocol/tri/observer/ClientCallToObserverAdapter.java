@@ -77,6 +77,11 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void disableAutoRequest() {
+        disableAutoFlowControl();
+    }
+
+    @Override
+    public void disableAutoFlowControl() {
         call.setAutoRequest(false);
     }
 }

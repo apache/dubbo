@@ -106,6 +106,11 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void disableAutoInboundFlowControl() {
+        disableAutoFlowControl();
+    }
+
+    @Override
+    public void disableAutoFlowControl() {
         call.disableAutoRequestN();
     }
 
