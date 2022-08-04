@@ -97,8 +97,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             try {
                 result = Integer.parseInt(str);
             } catch (NumberFormatException e) {
-                // 1-2 Invalid registry properties.
-                logger.warn("1-2", "", "",
+                // 0-2 Invalid registry properties.
+                logger.warn("0-2", "typo in property value", "This property requires an integer value.",
                     "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
@@ -135,9 +135,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
         // keep old urls
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
+
         // create new urls
         Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
+
         if (oldURLs == null) {
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
@@ -178,6 +180,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
         List<URL> urls = new ArrayList<>(1);
         boolean isProviderPath = path.endsWith(PROVIDERS_CATEGORY);
+
         if (isProviderPath) {
             if (CollectionUtils.isNotEmpty(providers)) {
                 urls = toUrlsWithoutEmpty(consumer, providers);
