@@ -43,5 +43,12 @@ public interface CallStreamObserver<T> extends StreamObserver<T> {
      */
     void setCompression(String compression);
 
+    /**
+     * Swaps to manual flow control where no message will be delivered to {@link
+     * StreamObserver#onNext(Object)} unless it is {@link #request request()}ed. Since {@code
+     * request()} may not be called before the call is started, a number of initial requests may be
+     * specified.
+     */
+    void disableAutoFlowControl();
 
 }
