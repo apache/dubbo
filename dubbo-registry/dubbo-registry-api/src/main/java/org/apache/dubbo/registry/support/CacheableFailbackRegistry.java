@@ -98,6 +98,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 result = Integer.parseInt(str);
             } catch (NumberFormatException e) {
                 // 0-2 Property type mismatch.
+
                 logger.warn("0-2", "typo in property value", "This property requires an integer value.",
                     "Invalid registry properties configuration key " + key + ", value " + str);
             }
