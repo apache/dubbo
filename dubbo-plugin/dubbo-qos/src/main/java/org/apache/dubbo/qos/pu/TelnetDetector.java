@@ -29,6 +29,7 @@ import io.netty.util.CharsetUtil;
 public class TelnetDetector implements ProtocolDetector {
 
     private FrameworkModel frameworkModel;
+    private final int MaxSize = 2048;
 
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -36,6 +37,9 @@ public class TelnetDetector implements ProtocolDetector {
 
     @Override
     public Result detect(ChannelBuffer in) {
+        if (in.readableBytes() >= MaxSize) {
+            return Result.UNRECOGNIZED;
+        }
         // if no \n is found and in.len() is ok, NEED_MORE_DATA
         ChannelBuffer back = in.copy();
         byte[] backBytes = new byte[back.readableBytes()];

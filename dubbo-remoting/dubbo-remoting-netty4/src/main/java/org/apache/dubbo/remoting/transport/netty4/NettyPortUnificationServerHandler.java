@@ -77,8 +77,8 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         // Will use the first five bytes to detect a protocol.
-        // size of telnet command ls is 3
-        if (in.readableBytes() < 3) {
+        // size of telnet command ls is 2 bytes
+        if (in.readableBytes() < 2) {
             return;
         }
 
