@@ -27,13 +27,13 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
 
     private final StreamObserver<Object> delegate;
     private ClientCall call;
-    private Consumer<Object> onStartConsumer;
+    private Consumer<ClientCall> onStartConsumer = clientCall -> { };
 
     public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
     }
 
-    public void setOnStartConsumer(Consumer<Object> onStartConsumer) {
+    public void setOnStartConsumer(Consumer<ClientCall> onStartConsumer) {
         this.onStartConsumer = onStartConsumer;
     }
 
@@ -61,8 +61,6 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
             call.request(1);
         }
 
-        if (onStartConsumer != null) {
-            onStartConsumer.accept(call);
-        }
+        onStartConsumer.accept(call);
     }
 }
