@@ -41,4 +41,7 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
         // do nothing
     }
 
+    public void startRequest() {
+        // do nothing
+    }
 }

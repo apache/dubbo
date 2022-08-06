@@ -19,17 +19,22 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.SafeRequestObserver;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
 
     private final StreamObserver<Object> delegate;
     private ClientCall call;
+    private Consumer<Object> onStartConsumer;
 
     public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
+    }
+
+    public void setOnStartConsumer(Consumer<Object> onStartConsumer) {
+        this.onStartConsumer = onStartConsumer;
     }
 
     @Override
@@ -56,8 +61,8 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
             call.request(1);
         }
 
-        if (delegate instanceof SafeRequestObserver) {
-            ((SafeRequestObserver<Object>) delegate).startRequest();
+        if (onStartConsumer != null) {
+            onStartConsumer.accept(call);
         }
     }
 }
