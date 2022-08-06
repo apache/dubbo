@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.reactive;
 
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.SafeRequestObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
@@ -32,7 +31,7 @@ import java.util.function.Consumer;
  * 1. passing the data received by CallStreamObserver to Reactive consumer <br>
  * 2. passing the request of Reactive API to CallStreamObserver
  */
-public abstract class AbstractTripleReactorPublisher<T> extends CancelableStreamObserver<T> implements Publisher<T>, SafeRequestObserver<T>, Subscription {
+public abstract class AbstractTripleReactorPublisher<T> extends CancelableStreamObserver<T> implements Publisher<T>, Subscription {
 
     private boolean canRequest;
 
