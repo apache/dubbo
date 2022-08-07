@@ -951,6 +951,11 @@
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="enable-jvm-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable jvm metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="prometheusExporterType">
