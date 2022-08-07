@@ -22,10 +22,24 @@ import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+/**
+ * Common abstraction of Zookeeper client.
+ */
 public interface ZookeeperClient {
 
+    /**
+     * Create ZNode in Zookeeper.
+     *
+     * @param path path to ZNode
+     * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
+     */
     void create(String path, boolean ephemeral);
 
+    /**
+     * Delete ZNode.
+     *
+     * @param path path to ZNode
+     */
     void delete(String path);
 
     List<String> getChildren(String path);
@@ -33,13 +47,13 @@ public interface ZookeeperClient {
     List<String> addChildListener(String path, ChildListener listener);
 
     /**
-     * @param path:    directory. All child of path will be listened.
+     * @param path    directory. All child of path will be listened.
      * @param listener
      */
     void addDataListener(String path, DataListener listener);
 
     /**
-     * @param path:    directory. All child of path will be listened.
+     * @param path    directory. All child of path will be listened.
      * @param listener
      * @param executor another thread
      */
@@ -53,16 +67,37 @@ public interface ZookeeperClient {
 
     void removeStateListener(StateListener listener);
 
+    /**
+     * Check the Zookeeper client whether connected to server or not.
+     *
+     * @return true if connected
+     */
     boolean isConnected();
 
+    /**
+     * Close connection to Zookeeper server (cluster).
+     */
     void close();
 
     URL getUrl();
 
+    /**
+     * Create ZNode in Zookeeper with content specified.
+     *
+     * @param path path to ZNode
+     * @param content the content of ZNode
+     * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
+     */
     void create(String path, String content, boolean ephemeral);
 
     void createOrUpdate(String path, String content, boolean ephemeral, int ticket);
 
+    /**
+     * Obtain the content of a ZNode.
+     *
+     * @param path path to ZNode
+     * @return content of ZNode
+     */
     String getContent(String path);
 
     ConfigItem getConfigItem(String path);
