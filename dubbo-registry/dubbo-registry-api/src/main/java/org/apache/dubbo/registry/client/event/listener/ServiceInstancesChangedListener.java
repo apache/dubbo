@@ -168,7 +168,11 @@ public class ServiceInstancesChangedListener {
                     // cancel last retryFuture because only one retryFuture will be canceled at destroy().
                     retryFuture.cancel(true);
                 }
-                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
+                try {
+                    retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    logger.error("Error submitting async retry task.");
+                }
                 logger.warn("Address refresh try task submitted");
             }
             // return if all metadata is empty, this notification will not take effect.
