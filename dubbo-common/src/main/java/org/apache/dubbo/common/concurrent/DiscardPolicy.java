@@ -19,8 +19,7 @@ package org.apache.dubbo.common.concurrent;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 
 /**
- * A handler for rejected element that silently discards the
- * rejected element.
+ * A handler for rejected element that silently discards the rejected element.
  */
 public class DiscardPolicy<E> implements Rejector<E> {
 

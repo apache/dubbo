@@ -19,8 +19,7 @@ package org.apache.dubbo.common.concurrent;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 
 /**
- * RejectHandler, it works when you need to custom reject action in
- * {@link MemorySafeLinkedBlockingQueue}.
+ * RejectHandler, it works when you need to custom reject action in {@link MemorySafeLinkedBlockingQueue}.
  *
  * @see AbortPolicy
  * @see DiscardPolicy
@@ -29,15 +28,15 @@ import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 public interface Rejector<E> {
 
     /**
-     * Method that may be invoked by a {@link MemorySafeLinkedBlockingQueue} when
-     * {@link MemorySafeLinkedBlockingQueue#hasRemainedMemory} return true.
-     * This may occur when no more memory are available because their bounds would be exceeded.
+     * Method that may be invoked by a {@link MemorySafeLinkedBlockingQueue} when {@link MemorySafeLinkedBlockingQueue#hasRemainedMemory}
+     * return true. This may occur when no more memory are available because their bounds would be exceeded.
      *
      * <p>In the absence of other alternatives, the method may throw an unchecked
      * {@link RejectException}, which will be propagated to the caller.
      *
      * @param e     the element requested to be added
      * @param queue the queue attempting to add this element
+     *
      * @throws RejectException if there is no more memory
      */
     void reject(E e, MemorySafeLinkedBlockingQueue<E> queue);

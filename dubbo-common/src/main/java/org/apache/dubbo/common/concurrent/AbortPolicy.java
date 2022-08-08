@@ -20,8 +20,7 @@ package org.apache.dubbo.common.concurrent;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 
 /**
- * A handler for rejected element that throws a
- * {@code RejectException}.
+ * A handler for rejected element that throws a {@code RejectException}.
  */
 public class AbortPolicy<E> implements Rejector<E> {
 

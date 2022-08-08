@@ -17,26 +17,22 @@
 package org.apache.dubbo.common.concurrent;
 
 /**
- * Exception thrown by an {@link MemorySafeLinkedBlockingQueue}
- * when a element cannot be accepted.
+ * Exception thrown by an {@link MemorySafeLinkedBlockingQueue} when a element cannot be accepted.
  */
 public class RejectException extends RuntimeException {
 
     private static final long serialVersionUID = -3240015871717170195L;
 
     /**
-     * Constructs a {@code RejectException} with no detail message.
-     * The cause is not initialized, and may subsequently be
-     * initialized by a call to {@link #initCause(Throwable) initCause}.
+     * Constructs a {@code RejectException} with no detail message. The cause is not initialized, and may subsequently be initialized by a
+     * call to {@link #initCause(Throwable) initCause}.
      */
     public RejectException() {
     }
 
     /**
-     * Constructs a {@code RejectException} with the
-     * specified detail message. The cause is not initialized, and may
-     * subsequently be initialized by a call to {@link
-     * #initCause(Throwable) initCause}.
+     * Constructs a {@code RejectException} with the specified detail message. The cause is not initialized, and may subsequently be
+     * initialized by a call to {@link #initCause(Throwable) initCause}.
      *
      * @param message the detail message
      */
@@ -45,25 +41,20 @@ public class RejectException extends RuntimeException {
     }
 
     /**
-     * Constructs a {@code RejectException} with the
-     * specified detail message and cause.
+     * Constructs a {@code RejectException} with the specified detail message and cause.
      *
      * @param message the detail message
-     * @param cause   the cause (which is saved for later retrieval by the
-     *                {@link #getCause()} method)
+     * @param cause   the cause (which is saved for later retrieval by the {@link #getCause()} method)
      */
     public RejectException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * Constructs a {@code RejectException} with the
-     * specified cause.  The detail message is set to {@code (cause ==
-     * null ? null : cause.toString())} (which typically contains
-     * the class and detail message of {@code cause}).
+     * Constructs a {@code RejectException} with the specified cause.  The detail message is set to {@code (cause == null ? null :
+     * cause.toString())} (which typically contains the class and detail message of {@code cause}).
      *
-     * @param cause the cause (which is saved for later retrieval by the
-     *              {@link #getCause()} method)
+     * @param cause the cause (which is saved for later retrieval by the {@link #getCause()} method)
      */
     public RejectException(final Throwable cause) {
         super(cause);
