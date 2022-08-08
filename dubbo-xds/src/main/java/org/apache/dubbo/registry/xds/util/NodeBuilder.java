@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.registry.xds.util;
 
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.xds.istio.IstioEnv;
+
 import io.envoyproxy.envoy.config.core.v3.Node;
 
 public class NodeBuilder {
@@ -26,14 +29,14 @@ public class NodeBuilder {
 //        String podName = System.getenv("metadata.name");
 //        String podNamespace = System.getenv("metadata.namespace");
 
-        String podName = System.getenv("POD_NAME");
-        String podNamespace = System.getenv("NAMESPACE_NAME");
-        String svcName = System.getenv("SVC_NAME");
+        String podName = IstioEnv.getInstance().getPodName();
+        String podNamespace = IstioEnv.getInstance().getWorkloadNameSpace();
+        String svcName = IstioEnv.getInstance().getIstioMetaClusterId();
 
-        // id -> {POD_NAME}~{NAMESPACE_NAME}.svc.cluster.local
+        // id -> sidecar~ip~{POD_NAME}~{NAMESPACE_NAME}.svc.cluster.local
         // cluster -> {SVC_NAME}
         return Node.newBuilder()
-            .setId(podName + "~" + podNamespace + SVC_CLUSTER_LOCAL)
+            .setId("sidecar~" + NetUtils.getLocalHost() + "~" +podName + "~" + podNamespace + SVC_CLUSTER_LOCAL)
             .setCluster(svcName)
             .build();
     }

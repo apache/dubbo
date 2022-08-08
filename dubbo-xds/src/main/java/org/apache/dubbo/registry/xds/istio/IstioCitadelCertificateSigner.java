@@ -74,7 +74,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         // watch cert, Refresh every 30s
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
         scheduledThreadPool.scheduleAtFixedRate(new GenerateCertTask(), 0, 30, TimeUnit.SECONDS);
-        istioEnv = new org.apache.dubbo.registry.xds.istio.IstioEnv();
+        istioEnv = IstioEnv.getInstance();
     }
 
     @Override
