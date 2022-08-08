@@ -55,10 +55,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      */
     protected Class<?> interfaceClass;
 
-    /**
-     * client type
-     */
-    protected String client;
 
     /**
      * The url for peer-to-peer invocation
@@ -69,12 +65,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * The consumer config (default)
      */
     protected ConsumerConfig consumer;
-
-    /**
-     * Only the service provider of the specified protocol is invoked, and other protocols are ignored.
-     */
-    protected String protocol;
-
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -250,14 +240,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
     }
 
-    public String getClient() {
-        return client;
-    }
-
-    public void setClient(String client) {
-        this.client = client;
-    }
-
     @Parameter(excluded = true)
     public String getUrl() {
         return url;
@@ -273,14 +255,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public void setConsumer(ConsumerConfig consumer) {
         this.consumer = consumer;
-    }
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
     }
 
     public ServiceMetadata getServiceMetadata() {
