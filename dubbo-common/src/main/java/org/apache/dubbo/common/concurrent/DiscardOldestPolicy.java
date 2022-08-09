@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.concurrent;
 
-import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
+import java.util.Queue;
 
 /**
  * A handler for rejected element that discards the oldest element.
@@ -24,7 +24,7 @@ import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 public class DiscardOldestPolicy<E> implements Rejector<E> {
 
     @Override
-    public void reject(final E e, final MemorySafeLinkedBlockingQueue<E> queue) {
+    public void reject(final E e, final Queue<E> queue) {
         queue.poll();
         queue.offer(e);
     }

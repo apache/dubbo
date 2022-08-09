@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.concurrent;
 
-import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
+
+import java.util.Queue;
 
 /**
  * A handler for rejected element that silently discards the rejected element.
@@ -24,7 +25,7 @@ import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 public class DiscardPolicy<E> implements Rejector<E> {
 
     @Override
-    public void reject(final E e, final MemorySafeLinkedBlockingQueue<E> queue) {
+    public void reject(final E e, final Queue<E> queue) {
 
     }
 }
