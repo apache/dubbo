@@ -10,8 +10,7 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/ApacheDubbo.svg?label=Follow&style=social&logoWidth=0)](https://twitter.com/intent/follow?screen_name=ApacheDubbo)
 [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Apache Dubbo is a high-performance, Java-based open-source RPC framework. Please visit the [official site](http://dubbo.apache.org) for 
-the quick start guide and documentation, as well as the [wiki](https://github.com/apache/dubbo/wiki) for news, FAQ, and release notes.
+Apache Dubbo is a high-performance, Java-based open-source RPC framework. Please visit the [official site](http://dubbo.apache.org) for the quick start guide and documentation, as well as the [wiki](https://github.com/apache/dubbo/wiki) for news, FAQ, and release notes.
 
 We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [issue#9436: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/9436), thanks :)
 
