@@ -234,16 +234,21 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Override
     public Map<String, String> getMetaData() {
+        return getMetaData(null);
+    }
+
+    @Override
+    public Map<String, String> getMetaData(String prefix) {
         Map<String, String> metaData = new HashMap<>();
         ProviderConfig provider = this.getProvider();
-        // provider should be inited at preProcessRefresh()
+        // provider should be initialized at preProcessRefresh()
         if (isRefreshed() && provider == null) {
             throw new IllegalStateException("Provider is not initialized");
         }
         // use provider attributes as default value
-        appendAttributes(metaData, provider);
+        appendAttributes(metaData, provider, prefix);
         // Finally, put the service's attributes, overriding previous attributes
-        appendAttributes(metaData, this);
+        appendAttributes(metaData, this, prefix);
         return metaData;
     }
 

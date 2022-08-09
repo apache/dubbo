@@ -33,16 +33,18 @@ import java.lang.reflect.Method;
  */
 public class InvokerInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
+
     private final Invoker<?> invoker;
-    private ServiceModel serviceModel;
-    private URL url;
-    private String protocolServiceKey;
+
+    private final ServiceModel serviceModel;
+
+    private final String protocolServiceKey;
 
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
-        this.url = invoker.getUrl();
-        this.protocolServiceKey = this.url.getProtocolServiceKey();
-        this.serviceModel = this.url.getServiceModel();
+        URL url = invoker.getUrl();
+        this.protocolServiceKey = url.getProtocolServiceKey();
+        this.serviceModel = url.getServiceModel();
     }
 
     @Override
