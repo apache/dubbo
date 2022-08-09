@@ -34,11 +34,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private static final long serialVersionUID = 2827274711143680600L;
 
     /**
-     * Networking framework client uses: netty, mina, etc.
-     */
-    private String client;
-
-    /**
      * Consumer thread pool type: cached, fixed, limit, eager
      */
     private String threadpool;
@@ -99,14 +94,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
                 && (StringUtils.isEmpty(rmiTimeout))) {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
-    }
-    
-    public String getClient() {
-        return client;
-    }
-
-    public void setClient(String client) {
-        this.client = client;
     }
 
     public String getThreadpool() {
