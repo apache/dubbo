@@ -19,6 +19,7 @@ package org.apache.dubbo.config.annotation;
 import org.apache.dubbo.common.constants.ClusterRules;
 import org.apache.dubbo.common.constants.LoadbalanceRules;
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.config.AbstractReferenceConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.annotation.Documented;
@@ -32,7 +33,7 @@ import java.lang.annotation.Target;
  * <p>
  * <b>It is recommended to use @DubboReference on the @Bean method in the Java-config class, but not on the fields or setter methods to be injected.</b>
  * </p>
- *
+ * <p>
  * Step 1: Register ReferenceBean in Java-config class:
  * <pre class="code">
  * &#64;Configuration
@@ -50,7 +51,7 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- *
+ * <p>
  * Step 2: Inject ReferenceBean by @Autowired
  * <pre class="code">
  * public class FooController {
@@ -62,9 +63,9 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * @since 2.7.7
  * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
  * @see org.apache.dubbo.config.spring.ReferenceBean
+ * @since 2.7.7
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -103,6 +104,7 @@ public @interface DubboReference {
 
     /**
      * Whether to enable generic invocation, default value is false
+     *
      * @deprecated Do not need specify generic value, judge by injection type and interface class
      */
     @Deprecated
@@ -110,6 +112,7 @@ public @interface DubboReference {
 
     /**
      * When enable, prefer to call local service in the same JVM if it's present, default value is true
+     *
      * @deprecated using scope="local" or scope="remote" instead
      */
     @Deprecated
@@ -122,6 +125,7 @@ public @interface DubboReference {
 
     /**
      * Whether eager initialize the reference bean when all properties are set, default value is true ( null as true)
+     *
      * @see ReferenceConfigBase#shouldInit()
      */
     boolean init() default true;
@@ -270,6 +274,7 @@ public @interface DubboReference {
 
     /**
      * Application name
+     *
      * @deprecated This attribute was deprecated, use bind application/module of spring ApplicationContext
      */
     @Deprecated
@@ -321,6 +326,7 @@ public @interface DubboReference {
     /**
      * The id
      * NOTE: The id attribute is ignored when using @DubboReference on @Bean method
+     *
      * @return default value is empty
      * @since 2.7.3
      */
@@ -337,12 +343,22 @@ public @interface DubboReference {
 
     /**
      * declares which app or service this interface belongs to
+     *
      * @see RegistryConstants#PROVIDED_BY
      */
     String[] providedBy() default {};
 
     /**
+     * The service port of the provider
+     *
+     * @see AbstractReferenceConfig#providerPort
+     * @since 3.1.0
+     */
+    int providerPort() default -1;
+
+    /**
      * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+     *
      * @see org.apache.dubbo.rpc.Constants#SCOPE_LOCAL
      * @see org.apache.dubbo.rpc.Constants#SCOPE_REMOTE
      */
