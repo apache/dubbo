@@ -110,8 +110,8 @@ public final class ReactorClientCalls {
             ClientTripleReactorPublisher<TResponse> clientPublisher = new ClientTripleReactorPublisher<>(
                 s -> clientSubscriber.subscribe((CallStreamObserver<TRequest>) s),
                 clientSubscriber::cancel);
-            StubInvocationUtil.biOrClientStreamCall(invoker, methodDescriptor, clientPublisher);
-            return Mono.from(clientPublisher);
+            return Mono.from(clientPublisher).doOnSubscribe(dummy ->
+                StubInvocationUtil.biOrClientStreamCall(invoker, methodDescriptor, clientPublisher));
         } catch (Throwable throwable) {
             return Mono.error(throwable);
         }
@@ -133,8 +133,8 @@ public final class ReactorClientCalls {
             ClientTripleReactorPublisher<TResponse> clientPublisher = new ClientTripleReactorPublisher<>(
                 s -> clientSubscriber.subscribe((CallStreamObserver<TRequest>) s),
                 clientSubscriber::cancel);
-            StubInvocationUtil.biOrClientStreamCall(invoker, methodDescriptor, clientPublisher);
-            return Flux.from(clientPublisher);
+            return Flux.from(clientPublisher).doOnSubscribe(dummy ->
+                StubInvocationUtil.biOrClientStreamCall(invoker, methodDescriptor, clientPublisher));
         } catch (Throwable throwable) {
             return Flux.error(throwable);
         }
