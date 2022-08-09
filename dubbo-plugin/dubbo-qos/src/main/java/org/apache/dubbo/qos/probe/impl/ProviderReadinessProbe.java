@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.Collection;
-import java.util.List;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
@@ -46,17 +45,18 @@ public class ProviderReadinessProbe implements ReadinessProbe {
             return true;
         }
 
-        boolean hasService = false;
+        boolean hasService = false, anyOnline = false;
         for (ProviderModel providerModel : providerModelList) {
-            List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-            for (ProviderModel.RegisterStatedURL statedUrl : statedUrls) {
-                if (statedUrl.isRegistered()) {
-                    hasService = true;
-                    break;
-                }
+            if (providerModel.getModuleModel().isInternal()) {
+                continue;
             }
+            hasService = true;
+            anyOnline = anyOnline || providerModel.getStatedUrl().stream().anyMatch(ProviderModel.RegisterStatedURL::isRegistered);
         }
 
-        return hasService;
+        // no service => check pass
+        // has service and any online => check pass
+        // has service and none online => check fail
+        return !(hasService && !anyOnline);
     }
 }
