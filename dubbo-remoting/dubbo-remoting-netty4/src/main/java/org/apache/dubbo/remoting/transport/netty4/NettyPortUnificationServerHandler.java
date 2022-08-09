@@ -128,7 +128,8 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     }
 
     private boolean isSsl(ByteBuf buf) {
-        if (detectSsl) {
+        // at least 5 bytes to determine if data is encrypted
+        if (detectSsl && buf.readableBytes() >= 5) {
             return SslHandler.isEncrypted(buf);
         }
         return false;

@@ -98,6 +98,10 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             }
 
             boolean qosEnable = url.getParameter(QOS_ENABLE, true);
+            WireProtocol qosWireProtocol = frameworkModel.getExtensionLoader(WireProtocol.class).getExtension("qos");
+            if(qosWireProtocol != null) {
+                ((QosWireProtocol) qosWireProtocol).SetQosEnable(qosEnable);
+            }
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                     "Please check dubbo.application.qos.enable is configured either in system property, " +
@@ -105,10 +109,6 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
                 return;
             }
 
-            WireProtocol protocol1 = frameworkModel.getExtensionLoader(WireProtocol.class).getExtension("qos");
-            if(protocol1 != null) {
-                ((QosWireProtocol) protocol1).SetQosEnable(true);
-            }
             String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
