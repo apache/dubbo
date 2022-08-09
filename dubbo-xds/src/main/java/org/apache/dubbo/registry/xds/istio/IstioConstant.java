@@ -83,7 +83,7 @@ public class IstioConstant {
 
     public final static String ISTIO_META_CLUSTER_ID_KEY = "ISTIO_META_CLUSTER_ID";
 
-    public final static String DEFAULT_ISTIO_META_CLUSTER_ID = "kubernetes";
+    public final static String DEFAULT_ISTIO_META_CLUSTER_ID = "Kubernetes";
 
     public final static String SPIFFE = "spiffe://";
 
