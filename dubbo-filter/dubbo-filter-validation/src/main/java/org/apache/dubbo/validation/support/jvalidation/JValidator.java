@@ -290,6 +290,8 @@ public class JValidator implements Validator {
                 logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
                 throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
             }
+        } catch (ConstraintViolationException e) {
+            throw e;
         } catch (ValidationException e) {
             // only use exception's message to avoid potential serialization issue
             throw new ValidationException(e.getMessage());
