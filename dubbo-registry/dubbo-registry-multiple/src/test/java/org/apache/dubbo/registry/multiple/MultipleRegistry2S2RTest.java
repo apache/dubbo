@@ -145,7 +145,7 @@ public class MultipleRegistry2S2RTest {
 
         String path = "/dubbo/" + SERVICE2_NAME + "/providers";
         List<String> providerList = zookeeperClient.getChildren(path);
-        Assumptions.assumingThat(!providerList.isEmpty(), () -> System.out.println(providerList.get(0)));
+        Assumptions.assumeTrue(!providerList.isEmpty());
 
         final List<URL> list = new ArrayList<URL>();
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
