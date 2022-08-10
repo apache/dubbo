@@ -187,7 +187,7 @@ public class JValidatorNew implements Validator {
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
         StringBuilder builder = new StringBuilder().append(clazz.getName())
                 .append('_')
-                .append(toUpperMethoName(method.getName()))
+                .append(toUpperMethodName(method.getName()))
                 .append("Parameter");
 
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -212,7 +212,7 @@ public class JValidatorNew implements Validator {
         return false;
     }
 
-    private static String toUpperMethoName(String methodName) {
+    private static String toUpperMethodName(String methodName) {
         return methodName.substring(0, 1).toUpperCase() + methodName.substring(1);
     }
 
@@ -257,13 +257,13 @@ public class JValidatorNew implements Validator {
 
     @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
+        Set<ConstraintViolation<?>> violations = new HashSet<>();
         try {
             List<Class<?>> groups = new ArrayList<>();
             Class<?> methodClass = methodClass(methodName);
             if (methodClass != null) {
                 groups.add(methodClass);
             }
-            Set<ConstraintViolation<?>> violations = new HashSet<>();
             Method method = clazz.getMethod(methodName, parameterTypes);
             Class<?>[] methodClasses;
             if (method.isAnnotationPresent(MethodValidated.class)){
@@ -285,20 +285,20 @@ public class JValidatorNew implements Validator {
             for (Object arg : arguments) {
                 validate(violations, arg, classgroups);
             }
-
-            if (!violations.isEmpty()) {
-                logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
-                throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
-            }
         } catch (ValidationException e) {
             // only use exception's message to avoid potential serialization issue
             throw new ValidationException(e.getMessage());
+        }
+
+        if (!violations.isEmpty()) {
+            logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
+            throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }
     }
 
     private Class methodClass(String methodName) {
         Class<?> methodClass = null;
-        String methodClassName = clazz.getName() + "$" + toUpperMethoName(methodName);
+        String methodClassName = clazz.getName() + "$" + toUpperMethodName(methodName);
         Class cached = methodClassMap.get(methodClassName);
         if (cached != null) {
             return cached == clazz ? null : cached;
