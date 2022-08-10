@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -30,6 +31,8 @@ import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
@@ -37,6 +40,7 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
@@ -60,6 +64,8 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private final NacosNamingServiceWrapper namingService;
 
     private static final String NACOS_SD_USE_DEFAULT_GROUP_KEY = "dubbo.nacos-service-discovery.use-default-group";
+
+    private final ConcurrentHashMap<String, NacosEventListener> eventListeners = new ConcurrentHashMap<>();
 
     public NacosServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         super(applicationModel, registryURL);
@@ -114,18 +120,68 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         if (!instanceListeners.add(listener)) {
             return;
         }
-        execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
-            try {
-                service.subscribe(serviceName, group, e -> { // Register Nacos EventListener
-                    if (e instanceof NamingEvent) {
-                        NamingEvent event = (NamingEvent) e;
-                        handleEvent(event, listener);
-                    }
-                });
-            } catch (NacosException e) {
-                logger.error("add nacos service instances changed listener fail ", e);
+        for (String serviceName : listener.getServiceNames()) {
+            NacosEventListener nacosEventListener = eventListeners.get(serviceName);
+            if (nacosEventListener != null) {
+                nacosEventListener.addListener(listener);
+            } else {
+                try {
+                    nacosEventListener = new NacosEventListener();
+                    nacosEventListener.addListener(listener);
+                    namingService.subscribe(serviceName, group, nacosEventListener);
+                    eventListeners.put(serviceName, nacosEventListener);
+                } catch (NacosException e) {
+                    logger.error("add nacos service instances changed listener fail ", e);
+                }
             }
-        }));
+        }
+    }
+
+    @Override
+    public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
+        if (!instanceListeners.remove(listener)) {
+            return;
+        }
+        for (String serviceName : listener.getServiceNames()) {
+            NacosEventListener nacosEventListener = eventListeners.get(serviceName);
+            if (nacosEventListener != null) {
+                nacosEventListener.removeListener(listener);
+                if (nacosEventListener.isEmpty()) {
+                    eventListeners.remove(serviceName);
+                    try {
+                        namingService.unsubscribe(serviceName, group, nacosEventListener);
+                    } catch (NacosException e) {
+                        logger.error("remove nacos service instances changed listener fail ", e);
+                    }
+                }
+            }
+        }
+    }
+
+    public class NacosEventListener implements EventListener {
+        private final Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
+
+        @Override
+        public void onEvent(Event e) {
+            if (e instanceof NamingEvent) {
+                for (ServiceInstancesChangedListener listener : listeners) {
+                    NamingEvent event = (NamingEvent) e;
+                    handleEvent(event, listener);
+                }
+            }
+        }
+
+        public void addListener(ServiceInstancesChangedListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removeListener(ServiceInstancesChangedListener listener) {
+            listeners.remove(listener);
+        }
+
+        public boolean isEmpty() {
+            return listeners.isEmpty();
+        }
     }
 
     @Override
