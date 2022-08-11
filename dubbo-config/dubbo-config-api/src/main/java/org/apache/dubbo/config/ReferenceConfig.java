@@ -566,7 +566,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private void checkInvokerAvailable() throws IllegalStateException {
         if (shouldCheck() && !invoker.isAvailable()) {
-            throw new IllegalStateException("Failed to check the status of the service "
+            // 2-2 - No provider available.
+
+            IllegalStateException illegalStateException = new IllegalStateException("Failed to check the status of the service "
                     + interfaceName
                     + ". No provider available for the service "
                     + (group == null ? "" : group + "/")
@@ -576,6 +578,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     + invoker.getUrl()
                     + " to the consumer "
                     + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
+
+            logger.error("2-2", "provider not started", "", "No provider available.", illegalStateException);
+
+            throw illegalStateException;
         }
     }
 
