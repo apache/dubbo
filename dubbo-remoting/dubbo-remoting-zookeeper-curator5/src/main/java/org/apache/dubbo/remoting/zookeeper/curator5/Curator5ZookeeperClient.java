@@ -102,7 +102,7 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
                 logger.error("5-1", "Zookeeper server offline", "",
                     "Failed to connect with zookeeper", illegalStateException);
 
-                throw new IllegalStateException();
+                throw illegalStateException;
             }
 
         } catch (Exception e) {
