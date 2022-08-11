@@ -255,6 +255,8 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+        String group = DEFAULT_MAPPING_GROUP;
+
         MappingDataListener mappingDataListener = casListenerMap.get(buildListenerKey(serviceKey, group));
         if (null != mappingDataListener) {
             removeCasServiceMappingListener(serviceKey, group, listener);

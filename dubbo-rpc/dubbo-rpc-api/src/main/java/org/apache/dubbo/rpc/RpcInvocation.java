@@ -669,8 +669,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public String toString() {
         return "RpcInvocation [methodName=" + methodName + ", parameterTypes="
-            + Arrays.toString(parameterTypes) + ", arguments=" + Arrays.toString(arguments)
-            + ", attachments=" + attachments + "]";
+            + Arrays.toString(parameterTypes) + "]";
     }
 
 }
