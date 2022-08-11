@@ -45,11 +45,11 @@ public class TelnetDetector implements ProtocolDetector {
         if (in.readableBytes() >= MaxSize) {
             return Result.UNRECOGNIZED;
         }
-        Result resCommand = CommandDetect(in);
+        Result resCommand = commandDetect(in);
         if (resCommand.equals(Result.RECOGNIZED)){
             return resCommand;
         }
-        Result resAyt = TelnetAytDetect(in);
+        Result resAyt = telnetAytDetect(in);
         if (resAyt.equals(Result.RECOGNIZED)) {
             return resAyt;
         }
@@ -59,7 +59,7 @@ public class TelnetDetector implements ProtocolDetector {
         return Result.NEED_MORE_DATA;
     }
 
-    private Result CommandDetect(ChannelBuffer in) {
+    private Result commandDetect(ChannelBuffer in) {
         // detect if remote channel send a qos command to server
         ChannelBuffer back = in.copy();
         byte[] backBytes = new byte[back.readableBytes()];
@@ -75,7 +75,7 @@ public class TelnetDetector implements ProtocolDetector {
         return Result.UNRECOGNIZED;
     }
 
-    private Result TelnetAytDetect(ChannelBuffer in) {
+    private Result telnetAytDetect(ChannelBuffer in) {
         // detect if remote channel send a telnet ayt command to server
         int prefaceLen = AytPreface.readableBytes();
         int bytesRead = min(in.readableBytes(), prefaceLen);

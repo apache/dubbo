@@ -100,7 +100,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             boolean qosEnable = url.getParameter(QOS_ENABLE, true);
             WireProtocol qosWireProtocol = frameworkModel.getExtensionLoader(WireProtocol.class).getExtension("qos");
             if(qosWireProtocol != null) {
-                ((QosWireProtocol) qosWireProtocol).SetQosEnable(qosEnable);
+                ((QosWireProtocol) qosWireProtocol).setQosEnable(qosEnable);
             }
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +

@@ -40,7 +40,7 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
         super(new QosDetector());
     }
 
-    public void SetQosEnable(boolean flag) {
+    public void setQosEnable(boolean flag) {
         ((QosDetector)this.detector()).setQosEnableFlag(flag);
     }
 
