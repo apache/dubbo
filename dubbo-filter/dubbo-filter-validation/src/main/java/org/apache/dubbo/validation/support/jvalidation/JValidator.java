@@ -46,10 +46,11 @@ import javassist.bytecode.annotation.LongMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
+import org.apache.dubbo.validation.support.MethodValidatedException;
+import org.apache.dubbo.validation.support.ValidationResult;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.ValidationException;
 import javax.validation.ValidatorFactory;
@@ -257,8 +258,8 @@ public class JValidator implements Validator {
 
     @Override
     public void validate(String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Exception {
-        Set<ConstraintViolation<?>> violations = new HashSet<>();
         try {
+            Set<ConstraintViolation<?>> violations = new HashSet<>();
             List<Class<?>> groups = new ArrayList<>();
             Class<?> methodClass = methodClass(methodName);
             if (methodClass != null) {
@@ -266,7 +267,7 @@ public class JValidator implements Validator {
             }
             Method method = clazz.getMethod(methodName, parameterTypes);
             Class<?>[] methodClasses;
-            if (method.isAnnotationPresent(MethodValidated.class)){
+            if (method.isAnnotationPresent(MethodValidated.class)) {
                 methodClasses = method.getAnnotation(MethodValidated.class).value();
                 groups.addAll(Arrays.asList(methodClasses));
             }
@@ -285,14 +286,21 @@ public class JValidator implements Validator {
             for (Object arg : arguments) {
                 validate(violations, arg, classGroups);
             }
+
+            if (!violations.isEmpty()) {
+                // convert validation result
+                List<ValidationResult> validationResults = new ArrayList<>();
+                for (ConstraintViolation<?> violation : violations) {
+                    ValidationResult validationResult = new ValidationResult(violation.getInvalidValue(), violation.getPropertyPath(), violation.getMessage(), violation.getMessageTemplate(),
+                            violation.getExecutableParameters(), violation.getExecutableReturnValue());
+                    validationResults.add(validationResult);
+                }
+                logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + validationResults);
+                throw new MethodValidatedException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + validationResults, validationResults);
+            }
         } catch (ValidationException e) {
             // only use exception's message to avoid potential serialization issue
             throw new ValidationException(e.getMessage());
-        }
-
-        if (!violations.isEmpty()) {
-            logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
-            throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
         }
     }
 

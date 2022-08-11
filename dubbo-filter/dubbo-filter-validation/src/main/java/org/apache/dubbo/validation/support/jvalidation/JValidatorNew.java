@@ -53,6 +53,8 @@ import javassist.bytecode.annotation.LongMemberValue;
 import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
+import org.apache.dubbo.validation.support.MethodValidatedException;
+import org.apache.dubbo.validation.support.ValidationResult;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -275,25 +277,32 @@ public class JValidatorNew implements Validator {
             groups.add(1, clazz);
 
             // convert list to array
-            Class<?>[] classgroups = groups.toArray(new Class[groups.size()]);
+            Class<?>[] classGroups = groups.toArray(new Class[groups.size()]);
 
             Object parameterBean = getMethodParameterBean(clazz, method, arguments);
             if (parameterBean != null) {
-                violations.addAll(validator.validate(parameterBean, classgroups ));
+                violations.addAll(validator.validate(parameterBean, classGroups ));
             }
 
             for (Object arg : arguments) {
-                validate(violations, arg, classgroups);
+                validate(violations, arg, classGroups);
+            }
+            if (!violations.isEmpty()) {
+                // convert validation result
+                List<ValidationResult> validationResults = new ArrayList<>();
+                for (ConstraintViolation<?> violation : violations) {
+                    ValidationResult validationResult = new ValidationResult(violation.getInvalidValue(), violation.getPropertyPath(), violation.getMessage(), violation.getMessageTemplate(),
+                            violation.getExecutableParameters(), violation.getExecutableReturnValue());
+                    validationResults.add(validationResult);
+                }
+                logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + validationResults);
+                throw new MethodValidatedException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + validationResults, validationResults);
             }
         } catch (ValidationException e) {
             // only use exception's message to avoid potential serialization issue
             throw new ValidationException(e.getMessage());
         }
 
-        if (!violations.isEmpty()) {
-            logger.info("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations);
-            throw new ConstraintViolationException("Failed to validate service: " + clazz.getName() + ", method: " + methodName + ", cause: " + violations, violations);
-        }
     }
 
     private Class methodClass(String methodName) {
