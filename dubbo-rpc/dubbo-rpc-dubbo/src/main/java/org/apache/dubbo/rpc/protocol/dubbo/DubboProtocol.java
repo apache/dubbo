@@ -48,10 +48,12 @@ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -406,35 +408,28 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     private ExchangeClient[] getClients(URL url) {
-        // whether to share connection
-
-        boolean useShareConnect = false;
-
         int connections = url.getParameter(CONNECTIONS_KEY, 0);
-        List<ReferenceCountExchangeClient> shareClients = null;
+        // whether to share connection
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
-            useShareConnect = true;
-
             /*
              * The xml configuration should have a higher priority than properties.
              */
-            String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
-            connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigurationUtils.getProperty(url.getOrDefaultApplicationModel(), SHARE_CONNECTIONS_KEY,
-                DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
-            shareClients = getSharedClient(url, connections);
+            String shareConnectionsStr = StringUtils.isBlank(url.getParameter(SHARE_CONNECTIONS_KEY, (String) null))
+                ? ConfigurationUtils.getProperty(url.getOrDefaultApplicationModel(), SHARE_CONNECTIONS_KEY, DEFAULT_SHARE_CONNECTIONS)
+                : url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
+            connections = Integer.parseInt(shareConnectionsStr);
+
+            List<ReferenceCountExchangeClient> shareClients = getSharedClient(url, connections);
+            ExchangeClient[] clients = new ExchangeClient[connections];
+            Arrays.setAll(clients, shareClients::get);
+            return clients;
         }
 
         ExchangeClient[] clients = new ExchangeClient[connections];
         for (int i = 0; i < clients.length; i++) {
-            if (useShareConnect) {
-                clients[i] = shareClients.get(i);
-
-            } else {
-                clients[i] = initClient(url);
-            }
+            clients[i] = initClient(url);
         }
-
         return clients;
     }
 
@@ -461,6 +456,7 @@ public class DubboProtocol extends AbstractProtocol {
 
         synchronized (referenceClientMap) {
             for (; ; ) {
+                // guarantee just one thread in loading condition. And Other is waiting It had finished.
                 clients = referenceClientMap.get(key);
 
                 if (clients instanceof List) {
@@ -513,7 +509,6 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
         return typedClients;
-
     }
 
     /**
@@ -527,14 +522,10 @@ public class DubboProtocol extends AbstractProtocol {
             return false;
         }
 
-        for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
-            // As long as one client is not available, you need to replace the unavailable client with the available one.
-            if (referenceCountExchangeClient == null || referenceCountExchangeClient.getCount() <= 0 || referenceCountExchangeClient.isClosed()) {
-                return false;
-            }
-        }
-
-        return true;
+        // As long as one client is not available, you need to replace the unavailable client with the available one.
+        return referenceCountExchangeClients.stream()
+            .noneMatch(referenceCountExchangeClient -> referenceCountExchangeClient == null
+                || referenceCountExchangeClient.getCount() <= 0 || referenceCountExchangeClient.isClosed());
     }
 
     /**
@@ -546,12 +537,9 @@ public class DubboProtocol extends AbstractProtocol {
         if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
             return;
         }
-
-        for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
-            if (referenceCountExchangeClient != null) {
-                referenceCountExchangeClient.incrementAndGetCount();
-            }
-        }
+        referenceCountExchangeClients.stream()
+            .filter(Objects::nonNull)
+            .forEach(ReferenceCountExchangeClient::incrementAndGetCount);
     }
 
     /**
@@ -592,8 +580,7 @@ public class DubboProtocol extends AbstractProtocol {
      * @param url
      */
     private ExchangeClient initClient(URL url) {
-
-        /**
+        /*
          * Instance of url is InstanceAddressURL, so addParameter actually adds parameters into ServiceInstance,
          * which means params are shared among different services. Since client is shared among services this is currently not a problem.
          */
@@ -605,7 +592,6 @@ public class DubboProtocol extends AbstractProtocol {
                 " supported client type is " + StringUtils.join(url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).getSupportedExtensions(), " "));
         }
 
-        ExchangeClient client;
         try {
             // Replace InstanceAddressURL with ServiceConfigURL.
             url = new ServiceConfigURL(DubboCodec.NAME, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getAllParameters());
@@ -614,17 +600,12 @@ public class DubboProtocol extends AbstractProtocol {
             url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));
 
             // connection should be lazy
-            if (url.getParameter(LAZY_CONNECT_KEY, false)) {
-                client = new LazyConnectExchangeClient(url, requestHandler);
-            } else {
-                client = Exchangers.connect(url, requestHandler);
-            }
-
+            return url.getParameter(LAZY_CONNECT_KEY, false)
+                ? new LazyConnectExchangeClient(url, requestHandler)
+                : Exchangers.connect(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
         }
-
-        return client;
     }
 
     @Override
