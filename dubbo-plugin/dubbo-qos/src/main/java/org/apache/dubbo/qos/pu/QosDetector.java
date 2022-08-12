@@ -30,6 +30,10 @@ public class QosDetector implements ProtocolDetector {
         QosEnableFlag = qosEnableFlag;
     }
 
+    public QosDetector(FrameworkModel frameworkModel) {
+        this.telnetDetector.setFrameworkModel(frameworkModel);
+    }
+
     @Override
     public Result detect(ChannelBuffer in) {
         if(!QosEnableFlag) {
@@ -47,10 +51,6 @@ public class QosDetector implements ProtocolDetector {
             return Result.NEED_MORE_DATA;
         }
         return Result.UNRECOGNIZED;
-    }
-
-    public void setFrameWorkModel(FrameworkModel frameworkModel) {
-        this.telnetDetector.setFrameworkModel(frameworkModel);
     }
 
 }

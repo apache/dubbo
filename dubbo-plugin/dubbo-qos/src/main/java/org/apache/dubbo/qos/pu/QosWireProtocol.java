@@ -36,8 +36,8 @@ import java.util.List;
 @Activate
 public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelAware {
 
-    public QosWireProtocol() {
-        super(new QosDetector());
+    public QosWireProtocol(FrameworkModel frameworkModel) {
+        super(new QosDetector(frameworkModel));
     }
 
     public void setQosEnable(boolean flag) {
@@ -60,9 +60,4 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
 
     }
 
-    @Override
-    public void setFrameworkModel(FrameworkModel frameworkModel){
-        QosDetector detector = (QosDetector) this.detector();
-        detector.setFrameWorkModel(frameworkModel);
-    }
 }
