@@ -16,94 +16,50 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
-import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+/**
+ * one path has one zookeeperDataListener
+ */
+public class CacheListener {
 
-public class CacheListener implements DataListener {
+    private Map<String, ZookeeperDataListener> pathKeyListeners = new ConcurrentHashMap<>();
 
-    private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
-    private String rootPath;
-
-    public CacheListener(String rootPath) {
-        this.rootPath = rootPath;
+    public CacheListener() {
     }
 
-    public void addListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> listeners = keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
-        listeners.add(configurationListener);
+    public ZookeeperDataListener addListener(String pathKey, ConfigurationListener configurationListener, String key, String group) {
+        ZookeeperDataListener zookeeperDataListener = pathKeyListeners.computeIfAbsent(pathKey,
+            _pathKey -> new ZookeeperDataListener(_pathKey, key, group));
+        zookeeperDataListener.addListener(configurationListener);
+        return zookeeperDataListener;
     }
 
-    public void removeListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> listeners = keyListeners.get(key);
-        if (listeners != null) {
-            listeners.remove(configurationListener);
-        }
-    }
-
-    public Set<ConfigurationListener> getConfigurationListeners(String key) {
-        return keyListeners.get(key);
-    }
-
-    /**
-     * This is used to convert a configuration nodePath into a key
-     * TODO doc
-     *
-     * @param path
-     * @return key (nodePath less the config root path)
-     */
-    private String pathToKey(String path) {
-        if (StringUtils.isEmpty(path)) {
-            return path;
-        }
-        String groupKey = path.replace(rootPath + PATH_SEPARATOR, "").replaceAll(PATH_SEPARATOR, DOT_SEPARATOR);
-        return groupKey.substring(groupKey.indexOf(DOT_SEPARATOR) + 1);
-    }
-
-    private String getGroup(String path) {
-        if (!StringUtils.isEmpty(path)) {
-            int beginIndex = path.indexOf(rootPath + PATH_SEPARATOR);
-            if (beginIndex > -1) {
-                String remain = path.substring((rootPath + PATH_SEPARATOR).length());
-                int endIndex = remain.lastIndexOf(PATH_SEPARATOR);
-                if (endIndex > -1) {
-                    return remain.substring(0, endIndex);
-                }
+    public ZookeeperDataListener removeListener(String pathKey, ConfigurationListener configurationListener) {
+        ZookeeperDataListener zookeeperDataListener = pathKeyListeners.get(pathKey);
+        if (zookeeperDataListener != null) {
+            zookeeperDataListener.removeListener(configurationListener);
+            if (CollectionUtils.isEmpty(zookeeperDataListener.getListeners())) {
+                pathKeyListeners.remove(pathKey);
             }
         }
-        return path;
+        return zookeeperDataListener;
     }
 
+    public ZookeeperDataListener getCachedListener(String pathKey) {
+        return pathKeyListeners.get(pathKey);
+    }
 
-    @Override
-    public void dataChanged(String path, Object value, EventType eventType) {
-        ConfigChangeType changeType;
-        if (EventType.NodeCreated.equals(eventType)) {
-            changeType = ConfigChangeType.ADDED;
-        } else if (value == null) {
-            changeType = ConfigChangeType.DELETED;
-        } else {
-            changeType = ConfigChangeType.MODIFIED;
-        }
-        String key = pathToKey(path);
+    public Map<String, ZookeeperDataListener> getPathKeyListeners() {
+        return pathKeyListeners;
+    }
 
-        ConfigChangedEvent configChangeEvent = new ConfigChangedEvent(key, getGroup(path), (String) value, changeType);
-        Set<ConfigurationListener> listeners = keyListeners.get(path);
-        if (CollectionUtils.isNotEmpty(listeners)) {
-            listeners.forEach(listener -> listener.process(configChangeEvent));
-        }
+    public void clear() {
+        pathKeyListeners.clear();
     }
 }
 
