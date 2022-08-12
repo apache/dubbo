@@ -19,13 +19,9 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-/**
- *
- */
 public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
     private ZookeeperTransporter zookeeperTransporter;
@@ -35,11 +31,6 @@ public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigu
     public ZookeeperDynamicConfigurationFactory(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.zookeeperTransporter = ZookeeperTransporter.getExtension(applicationModel);
-    }
-
-    @DisableInject
-    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
-        this.zookeeperTransporter = zookeeperTransporter;
     }
 
     @Override
