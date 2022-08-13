@@ -104,6 +104,8 @@ public abstract class AbstractRegistry implements Registry {
     protected RegistryManager registryManager;
     protected ApplicationModel applicationModel;
 
+    private static final String CAUSE_MULTI_DUBBO_USING_SAME_FILE = "multiple Dubbo instance are using the same file";
+
     protected AbstractRegistry(URL url) {
         setUrl(url);
         registryManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
@@ -209,12 +211,20 @@ public abstract class AbstractRegistry implements Registry {
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
+
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
                  FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
-                    throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", " +
+
+                    IOException ioException = new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", " +
                         "ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
+
+                    // 1-9 failed to read / save registry cache file.
+                    logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
+                        "Adjust dubbo.registry.file.", ioException);
+
+                    throw ioException;
                 }
 
                 // Save
@@ -254,7 +264,7 @@ public abstract class AbstractRegistry implements Registry {
                     logger.info("Failed to save registry cache file for file overlapping lock exception, file name " + file.getName());
                 } else {
                     // 1-9 failed to read / save registry cache file.
-                    logger.warn("1-9", "multiple Dubbo instance are using the same file", "",
+                    logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
                         "Failed to save registry cache file after retrying " + MAX_RETRY_TIMES_SAVE_PROPERTIES + " times, cause: " + e.getMessage(), e);
                 }
 
@@ -270,7 +280,7 @@ public abstract class AbstractRegistry implements Registry {
             }
 
             if (!(e instanceof OverlappingFileLockException)) {
-                logger.warn("1-9", "multiple Dubbo instance are using the same file",
+                logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE,
                     "However, the retrying count limit is not exceeded. Dubbo will still try.",
                     "Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
             }
@@ -296,13 +306,13 @@ public abstract class AbstractRegistry implements Registry {
             }
         } catch (IOException e) {
             // 1-9 failed to read / save registry cache file.
-            logger.warn("1-9", "multiple Dubbo instance are using the same file", "",
+            logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
                 e.getMessage(), e);
 
         } catch (Throwable e) {
             // 1-9 failed to read / save registry cache file.
 
-            logger.warn("1-9", "multiple Dubbo instance are using the same file", "",
+            logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
                 "Failed to load registry cache file " + file, e);
         }
     }
