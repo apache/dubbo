@@ -97,7 +97,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 String generic = inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
+                    generic = getGenericValueFromRpcContext();
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -205,6 +205,14 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
         }).toArray();
     }
 
+    private String getGenericValueFromRpcContext(){
+        String generic = RpcContext.getServerAttachment().getAttachment(GENERIC_KEY);
+        if (StringUtils.isBlank(generic)){
+            generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
+        }
+        return generic;
+    }
+
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
@@ -214,7 +222,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
 
             String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
+                generic = getGenericValueFromRpcContext();
             }
 
             if (appResponse.hasException()) {
