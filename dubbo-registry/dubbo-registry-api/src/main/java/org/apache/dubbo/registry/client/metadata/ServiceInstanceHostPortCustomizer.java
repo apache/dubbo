@@ -75,7 +75,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
                     // 4-2 - Can't find an instance URL using the default preferredProtocol.
 
                     logger.warn("4-2", "typo in preferred protocol", "",
-                        "Can't find an instance URL  using the default preferredProtocol \"" + preferredProtocol + "\", " +
+                        "Can't find an instance URL using the default preferredProtocol \"" + preferredProtocol + "\", " +
                         "falling back to the strategy that pick the first found protocol. " +
                         "Please try modifying the config of dubbo.application.protocol");
 

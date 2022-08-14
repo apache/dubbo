@@ -47,18 +47,28 @@ public interface ZookeeperClient {
     List<String> addChildListener(String path, ChildListener listener);
 
     /**
-     * @param path    directory. All child of path will be listened.
-     * @param listener
+     * Attach data listener to current Zookeeper client.
+     *
+     * @param path    directory. All children of path will be listened.
+     * @param listener The data listener object.
      */
     void addDataListener(String path, DataListener listener);
 
     /**
-     * @param path    directory. All child of path will be listened.
-     * @param listener
-     * @param executor another thread
+     * Attach data listener to current Zookeeper client. The listener will be executed using the given executor.
+     *
+     * @param path    directory. All children of path will be listened.
+     * @param listener The data listener object.
+     * @param executor the executor that will execute the listener.
      */
     void addDataListener(String path, DataListener listener, Executor executor);
 
+    /**
+     * Detach data listener.
+     *
+     * @param path    directory. All listener of children of the path will be detached.
+     * @param listener The data listener object.
+     */
     void removeDataListener(String path, DataListener listener);
 
     void removeChildListener(String path, ChildListener listener);
