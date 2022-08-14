@@ -51,7 +51,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private final URL url;
     private final ExchangeHandler requestHandler;
     private final Lock connectLock = new ReentrantLock();
-    private final int warningPeriod = 5000;
+    private static final int warningPeriod = 5000;
     private final boolean needReconnect;
     private volatile ExchangeClient client;
     private final AtomicLong warningCount = new AtomicLong(0);
