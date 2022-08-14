@@ -146,7 +146,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
         ZookeeperDataListener zookeeperDataListener = cacheListener.removeListener(pathKey, listener);
-        if (CollectionUtils.isEmpty(zookeeperDataListener.getListeners())) {
+        if (zookeeperDataListener != null && CollectionUtils.isEmpty(zookeeperDataListener.getListeners())) {
             zkClient.removeDataListener(pathKey, zookeeperDataListener);
         }
     }
