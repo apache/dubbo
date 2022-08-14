@@ -23,15 +23,15 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 public class QosDetector implements ProtocolDetector {
 
     private final QosHTTP1Detector qosHTTP1Detector = new QosHTTP1Detector();
-    private final TelnetDetector telnetDetector = new TelnetDetector();
-    private boolean QosEnableFlag = false;
+    private final TelnetDetector telnetDetector;
+    private boolean QosEnableFlag = true;
 
     public void setQosEnableFlag(boolean qosEnableFlag) {
         QosEnableFlag = qosEnableFlag;
     }
 
     public QosDetector(FrameworkModel frameworkModel) {
-        this.telnetDetector.setFrameworkModel(frameworkModel);
+        this.telnetDetector = new TelnetDetector(frameworkModel);
     }
 
     @Override

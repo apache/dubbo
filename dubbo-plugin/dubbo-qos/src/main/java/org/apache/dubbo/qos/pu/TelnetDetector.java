@@ -36,7 +36,7 @@ public class TelnetDetector implements ProtocolDetector {
     private final int MaxSize = 2048;
     private final ChannelBuffer AytPreface = new HeapChannelBuffer(new byte[]{(byte) 0xff, (byte) 0xf6});
 
-    public void setFrameworkModel(FrameworkModel frameworkModel) {
+    public TelnetDetector(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
