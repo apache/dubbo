@@ -179,7 +179,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
 
         Assert.assertEquals(1, services.size());
 
-        Map<String, Object> demoServiceMeta = services.get("ServiceBean:org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAnnotationAutoConfigurationTest$DemoService:1.0.0");
+        Map<String, Object> demoServiceMeta = services.get("ServiceBean:org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAnnotationAutoConfigurationTest$DemoService:1.0.0:");
 
         Assert.assertEquals("1.0.0", demoServiceMeta.get("version"));
 

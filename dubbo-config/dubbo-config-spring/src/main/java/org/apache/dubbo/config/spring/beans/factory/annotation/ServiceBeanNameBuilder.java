@@ -95,8 +95,9 @@ public class ServiceBeanNameBuilder {
     }
 
     private static void append(StringBuilder builder, String value) {
+        builder.append(SEPARATOR);
         if (StringUtils.hasText(value)) {
-            builder.append(SEPARATOR).append(value);
+            builder.append(value);
         }
     }
 
