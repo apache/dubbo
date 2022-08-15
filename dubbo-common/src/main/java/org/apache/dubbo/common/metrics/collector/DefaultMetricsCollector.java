@@ -33,7 +33,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_TOTAL;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_SUCCEED;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_FAILED;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_PROCESSING;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_LAST;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MIN;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MAX;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_TOTAL;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_AVG;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
 
