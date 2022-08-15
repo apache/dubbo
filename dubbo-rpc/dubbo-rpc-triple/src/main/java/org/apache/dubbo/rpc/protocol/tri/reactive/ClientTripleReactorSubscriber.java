@@ -15,33 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.reactive;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 
-public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
+/**
+ * The subscriber in client to subscribe user publisher and is subscribed by ClientStreamObserver.
+ */
+public class ClientTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T> {
 
-    private CancellationContext cancellationContext;
-
-    public void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
-    }
-
-    public CancellationContext getCancellationContext() {
-        return cancellationContext;
-    }
-
-    public void cancel(Throwable throwable) {
-        cancellationContext.cancel(throwable);
-    }
-
-    public void beforeStart(final ClientCallToObserverAdapter<T> clientCallToObserverAdapter) {
-        // do nothing
-    }
-
-    public void startRequest() {
-        // do nothing
+    @Override
+    public void cancel() {
+        if (!isCanceled()) {
+            super.cancel();
+            ((ClientCallToObserverAdapter<T>) downstream).cancel(new Exception("Cancelled"));
+        }
     }
 }
