@@ -18,6 +18,8 @@ package org.apache.dubbo.common.json.impl;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 
+import com.alibaba.fastjson.serializer.SerializerFeature;
+
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -45,6 +47,6 @@ public class FastJsonImpl extends AbstractJSONImpl {
 
     @Override
     public String toJson(Object obj) {
-        return com.alibaba.fastjson.JSON.toJSONString(obj);
+        return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
     }
 }
