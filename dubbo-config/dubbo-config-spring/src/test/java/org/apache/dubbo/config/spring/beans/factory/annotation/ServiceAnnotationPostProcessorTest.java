@@ -95,7 +95,7 @@ public class ServiceAnnotationPostProcessorTest {
 
         Assertions.assertEquals(3, serviceBeansMap.size());
 
-        ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7");
+        ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7:");
 
         Assertions.assertNotNull(demoServiceBean.getMethods());
 
