@@ -339,6 +339,10 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
         return originUrl.toString() + ", overrideParams: " + overrideParams.toString();
     }
 
+    private Object readResolve() {
+        // create a new object from the deserialized one
+        return new OverrideInstanceAddressURL(this.originUrl, this.overrideParams);
+    }
     @Override
     protected OverrideInstanceAddressURL newURL(URLAddress urlAddress, URLParam urlParam) {
         return new OverrideInstanceAddressURL(originUrl, overrideParams);
