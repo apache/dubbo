@@ -1023,7 +1023,7 @@ public abstract class AbstractConfig implements Serializable {
         List<Method> methods = new ArrayList<>(beanInfo.getMethodDescriptors().length);
         for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
             Method method = methodDescriptor.getMethod();
-            if (MethodUtils.isGetter(method)) {
+            if (MethodUtils.isGetter(method) || isParametersGetter(method)) {
                 // filter non attribute
                 Parameter parameter = method.getAnnotation(Parameter.class);
                 if (parameter != null && !parameter.attribute()) {
