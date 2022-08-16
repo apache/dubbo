@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.NotifyListener;
+
+import com.alibaba.nacos.api.naming.pojo.Instance;
 
 import java.util.List;
 import java.util.Map;
@@ -30,16 +31,16 @@ import java.util.stream.Collectors;
 public class NacosAggregateListener {
     private final NotifyListener notifyListener;
     private final Set<String> serviceNames = new ConcurrentHashSet<>();
-    private final Map<String, List<URL>> serviceUrls = new ConcurrentHashMap<>();
+    private final Map<String, List<Instance>> serviceInstances = new ConcurrentHashMap<>();
 
     public NacosAggregateListener(NotifyListener notifyListener) {
         this.notifyListener = notifyListener;
     }
 
-    public List<URL> getAggregatedUrls(String serviceName, List<URL> urls) {
+    public List<Instance> saveAndAggregatedInstances(String serviceName, List<Instance> instances) {
         serviceNames.add(serviceName);
-        serviceUrls.put(serviceName, urls);
-        return serviceUrls.values().stream().flatMap(List::stream).collect(Collectors.toList());
+        serviceInstances.put(serviceName, instances);
+        return serviceInstances.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
     public NotifyListener getNotifyListener() {
@@ -59,11 +60,11 @@ public class NacosAggregateListener {
             return false;
         }
         NacosAggregateListener that = (NacosAggregateListener) o;
-        return Objects.equals(notifyListener, that.notifyListener) && Objects.equals(serviceNames, that.serviceNames) && Objects.equals(serviceUrls, that.serviceUrls);
+        return Objects.equals(notifyListener, that.notifyListener) && Objects.equals(serviceNames, that.serviceNames) && Objects.equals(serviceInstances, that.serviceInstances);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(notifyListener, serviceNames, serviceUrls);
+        return Objects.hash(notifyListener, serviceNames, serviceInstances);
     }
 }
