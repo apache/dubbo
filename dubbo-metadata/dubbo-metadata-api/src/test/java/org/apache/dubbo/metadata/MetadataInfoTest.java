@@ -22,7 +22,14 @@ import org.apache.dubbo.common.utils.JsonUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -162,6 +169,29 @@ public class MetadataInfoTest {
         metadataInfo2.addService(url2);
         System.out.println(JsonUtils.getJson().toJson(metadataInfo2));
 
+    }
+
+    @Test
+    public void testJdkSerialize() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+        MetadataInfo metadataInfo = new MetadataInfo("demo");
+        metadataInfo.addService(url);
+        objectOutputStream.writeObject(metadataInfo);
+        objectOutputStream.close();
+        byteArrayOutputStream.close();
+        byte[] bytes = byteArrayOutputStream.toByteArray();
+
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+        MetadataInfo metadataInfo2 = (MetadataInfo) objectInputStream.readObject();
+        objectInputStream.close();
+
+        Assertions.assertEquals(metadataInfo, metadataInfo2);
+        Field initiatedField = MetadataInfo.class.getDeclaredField("initiated");
+        initiatedField.setAccessible(true);
+        Assertions.assertInstanceOf(AtomicBoolean.class, initiatedField.get(metadataInfo2));
+        Assertions.assertFalse(((AtomicBoolean)initiatedField.get(metadataInfo2)).get());
     }
 
     @Test

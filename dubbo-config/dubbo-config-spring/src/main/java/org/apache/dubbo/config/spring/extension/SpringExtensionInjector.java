@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
-import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.SPI;
@@ -29,7 +28,7 @@ import java.util.Arrays;
 /**
  * SpringExtensionInjector
  */
-public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
+public class SpringExtensionInjector implements ExtensionInjector {
 
     private ApplicationContext context;
 
@@ -91,18 +90,5 @@ public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
                     Arrays.toString(beanNamesForType));
         }
         return beanFactory.getBean(beanNamesForType[0], type);
-    } 
-
-    @Override
-    public void initialize() throws IllegalStateException {
-    }
-
-    @Override
-    public void start() throws IllegalStateException {
-        // no op
-    }
-
-    @Override
-    public void destroy() {
     }
 }

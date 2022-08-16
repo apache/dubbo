@@ -22,7 +22,7 @@ package org.apache.dubbo.config.context;
  */
 public enum ConfigMode {
     /**
-     * Strict mode: accept only one config for unique config type, throw exceptions if found more than one configs for an unique config type.
+     * Strict mode: accept only one config for unique config type, throw exceptions if found more than one config for a unique config type.
      */
     STRICT,
 
@@ -32,12 +32,12 @@ public enum ConfigMode {
     OVERRIDE,
 
     /**
-     * Override mode: accept last config, override previous config
+     * Override mode: accept last config, override previous config regardless of whether the attribute of previous config is absent or not
      */
     OVERRIDE_ALL,
 
     /**
-     * Override mode: accept last config, override previous config
+     * Override mode: accept last config, override previous config only when the attribute of previous config is absent
      */
     OVERRIDE_IF_ABSENT,
 

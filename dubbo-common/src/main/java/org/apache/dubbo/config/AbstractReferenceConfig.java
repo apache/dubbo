@@ -92,6 +92,16 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     @Deprecated
     private Boolean referAsync;
 
+    /**
+     * client type
+     */
+    protected String client;
+
+    /**
+     * Only the service provider of the specified protocol is invoked, and other protocols are ignored.
+     */
+    protected String protocol;
+
     public AbstractReferenceConfig() {
     }
 
@@ -266,5 +276,21 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     @Deprecated
     public void setReferAsync(Boolean referAsync) {
         this.referAsync = referAsync;
+    }
+
+    public String getClient() {
+        return client;
+    }
+
+    public void setClient(String client) {
+        this.client = client;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 }

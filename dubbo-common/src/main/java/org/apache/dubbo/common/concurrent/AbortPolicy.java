@@ -14,33 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo;
 
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.AbstractExporter;
+package org.apache.dubbo.common.concurrent;
 
-import java.util.Map;
+import java.util.Queue;
 
 /**
- * DubboExporter
+ * A handler for rejected element that throws a {@code RejectException}.
  */
-public class DubboExporter<T> extends AbstractExporter<T> {
-
-    private final String key;
-
-    private final Map<String, Exporter<?>> exporterMap;
-
-    public DubboExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
-        super(invoker);
-        this.key = key;
-        this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
-    }
+public class AbortPolicy<E> implements Rejector<E> {
 
     @Override
-    public void afterUnExport() {
-        exporterMap.remove(key, this);
+    public void reject(final E e, final Queue<E> queue) {
+        throw new RejectException("no more memory can be used !");
     }
 
 }
