@@ -128,6 +128,9 @@ public class GenericException extends RuntimeException {
 
     public void setGenericException(String json) {
         GenericExceptionInfo info = JsonUtils.getJson().toJavaObject(json, GenericExceptionInfo.class);
+        if(info == null) {
+            return;
+        }
         this.useCause = true;
         initCause(new GenericException(info));
     }
