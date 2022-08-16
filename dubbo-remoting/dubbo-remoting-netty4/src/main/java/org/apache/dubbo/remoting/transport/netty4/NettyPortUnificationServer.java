@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.api.SslContexts;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
+import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -77,7 +78,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     private EventLoopGroup workerGroup;
 
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
-        super(url, handler);
+        super(url, ChannelHandlers.wrap(handler, url));
 
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
