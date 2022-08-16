@@ -123,7 +123,6 @@ public class FrameworkModel extends ScopeModel {
         // notify destroy and clean framework resources
         // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
         notifyDestroy();
-        checkApplicationDestroy();
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(getDesc() + " is destroyed");
