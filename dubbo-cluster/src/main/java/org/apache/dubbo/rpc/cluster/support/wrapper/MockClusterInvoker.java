@@ -17,21 +17,18 @@
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 import org.apache.dubbo.rpc.support.MockInvoker;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 
@@ -42,6 +39,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     private final Directory<T> directory;
 
@@ -135,6 +133,9 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
         Result result;
         Invoker<T> mockInvoker;
 
+        RpcInvocation rpcInvocation = (RpcInvocation)invocation;
+        rpcInvocation.setInvokeMode(RpcUtils.getInvokeMode(getUrl(),invocation));
+
         List<Invoker<T>> mockInvokers = selectMockInvoker(invocation);
         if (CollectionUtils.isEmpty(mockInvokers)) {
             mockInvoker = (Invoker<T>) new MockInvoker(getUrl(), directory.getInterface());
@@ -151,6 +152,10 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
             }
         } catch (Throwable me) {
             throw new RpcException(getMockExceptionMessage(e, me), me.getCause());
+        }
+        if (setFutureWhenSync || rpcInvocation.getInvokeMode() != InvokeMode.SYNC) {
+            // set server context
+            RpcContext.getServiceContext().setFuture(new FutureAdapter<>(((AsyncRpcResult)result).getResponseFuture()));
         }
         return result;
     }
