@@ -100,8 +100,9 @@ public class MemorySafeLinkedBlockingQueue<E> extends LinkedBlockingQueue<E> {
     public void put(final E e) throws InterruptedException {
         if (hasRemainedMemory()) {
             super.put(e);
+        } else {
+            rejector.reject(e, this);
         }
-        rejector.reject(e, this);
     }
 
     @Override
