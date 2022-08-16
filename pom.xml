@@ -127,7 +127,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.17-SNAPSHOT</revision>
+        <revision>2.7.17</revision>
     </properties>
 
     <modules>
