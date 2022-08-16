@@ -37,7 +37,7 @@ public class NacosAggregateListener {
         this.notifyListener = notifyListener;
     }
 
-    public List<Instance> saveAndAggregatedInstances(String serviceName, List<Instance> instances) {
+    public List<Instance> saveAndAggregateAllInstances(String serviceName, List<Instance> instances) {
         serviceNames.add(serviceName);
         serviceInstances.put(serviceName, instances);
         return serviceInstances.values().stream().flatMap(List::stream).collect(Collectors.toList());
