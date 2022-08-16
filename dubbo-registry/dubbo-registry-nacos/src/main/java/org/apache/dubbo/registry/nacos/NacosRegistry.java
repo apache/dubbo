@@ -573,7 +573,7 @@ public class NacosRegistry extends FailbackRegistry {
             //  Instances
             filterEnabledInstances(enabledInstances);
         }
-        List<URL> aggregatedUrls = toUrlWithEmpty(url, listener.saveAndAggregatedInstances(serviceName, enabledInstances));
+        List<URL> aggregatedUrls = toUrlWithEmpty(url, listener.saveAndAggregateAllInstances(serviceName, enabledInstances));
         NacosRegistry.this.notify(url, listener.getNotifyListener(), aggregatedUrls);
     }
 
