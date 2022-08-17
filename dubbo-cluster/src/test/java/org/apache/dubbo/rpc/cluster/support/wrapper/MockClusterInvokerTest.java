@@ -37,6 +37,8 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -157,6 +159,9 @@ public class MockClusterInvokerTest {
         invocation.setMethodName("sayHello");
         ret = cluster.invoke(invocation);
         Assertions.assertNull(ret.getValue());
+
+
+
     }
 
     @Test
@@ -589,6 +594,29 @@ public class MockClusterInvokerTest {
         Result ret = cluster.invoke(invocation);
         Assertions.assertEquals(0, ((List<User>) ret.getValue()).size());
     }
+    @Test
+    public void testMockInvokerFromOverride_Invoke_check_ListPojoAsync() throws ExecutionException, InterruptedException {
+        URL url = URL.valueOf("remote://1.2.3.4/" + IHelloService.class.getName())
+            .addParameter(REFER_KEY,
+                URL.encode(PATH_KEY + "=" + IHelloService.class.getName()
+                    + "&" + "getUsersAsync.mock=force"))
+            .addParameter("invoke_return_error", "true");
+        Invoker<IHelloService> cluster = getClusterInvoker(url);
+        //Configured with mock
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("getUsersAsync");
+        invocation.setReturnType(CompletableFuture.class);
+        Result ret = cluster.invoke(invocation);
+        CompletableFuture<List<User>> cf = null;
+        try {
+            cf = (CompletableFuture<List<User>>) ret.recreate();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        Assertions.assertEquals(2, cf.get().size());
+        Assertions.assertEquals("Tommock", cf.get().get(0).getName());
+    }
+
 
     @SuppressWarnings("unchecked")
     @Test
@@ -753,6 +781,8 @@ public class MockClusterInvokerTest {
 
         List<User> getUsers();
 
+        CompletableFuture<List<User>> getUsersAsync();
+
         void sayHello();
     }
 
@@ -793,6 +823,13 @@ public class MockClusterInvokerTest {
             return Arrays.asList(new User[]{new User(1, "Tom"), new User(2, "Jerry")});
         }
 
+        @Override
+        public CompletableFuture<List<User>> getUsersAsync() {
+            CompletableFuture<List<User>> cf=new CompletableFuture<>();
+            cf.complete(Arrays.asList(new User[]{new User(1, "Tom"), new User(2, "Jerry")}));
+            return cf;
+        }
+
         public void sayHello() {
             System.out.println("hello prety");
         }
@@ -825,6 +862,13 @@ public class MockClusterInvokerTest {
 
         public List<User> getUsers() {
             return Arrays.asList(new User[]{new User(1, "Tommock"), new User(2, "Jerrymock")});
+        }
+
+        @Override
+        public CompletableFuture<List<User>> getUsersAsync() {
+            CompletableFuture<List<User>> cf=new CompletableFuture<>();
+            cf.complete(Arrays.asList(new User[]{new User(1, "Tommock"), new User(2, "Jerrymock")}));
+            return cf;
         }
 
         public int getInt1() {
