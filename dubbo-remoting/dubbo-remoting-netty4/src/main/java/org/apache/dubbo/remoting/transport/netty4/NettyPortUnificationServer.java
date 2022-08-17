@@ -201,4 +201,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         return (InetSocketAddress) channel.localAddress();
     }
 
+    @Override
+    public boolean canHandleIdle() {
+        return true;
+    }
+
 }
