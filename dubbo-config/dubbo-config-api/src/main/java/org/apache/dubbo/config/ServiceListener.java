@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
  * Listener for service config
  */
-@SPI(scope = ExtensionScope.MODULE)
+@SPI
 public interface ServiceListener {
 
     /**
