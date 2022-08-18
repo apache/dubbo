@@ -291,22 +291,6 @@ public class ServiceConfigTest {
         });
     }
 
-//    @Test
-//    public void testMock() throws Exception {
-//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            ServiceConfig service = new ServiceConfig();
-//            service.setMock("true");
-//        });
-//    }
-//
-//    @Test
-//    public void testMock2() throws Exception {
-//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            ServiceConfig service = new ServiceConfig();
-//            service.setMock(true);
-//        });
-//    }
-
     @Test
     public void testApplicationInUrl() {
         service.export();

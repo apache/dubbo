@@ -213,8 +213,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             for (ConsumerModel consumerModel : consumerModels) {
                 try {
-                    if (consumerModel.getDestroyCaller() != null) {
-                        consumerModel.getDestroyCaller().call();
+                    if (consumerModel.getDestroyRunner() != null) {
+                        consumerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
                     logger.error("Unable to destroy consumerModel.", t);
@@ -224,8 +224,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
             for (ProviderModel providerModel : exportedServices) {
                 try {
-                    if (providerModel.getDestroyCaller() != null) {
-                        providerModel.getDestroyCaller().call();
+                    if (providerModel.getDestroyRunner() != null) {
+                        providerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
                     logger.error("Unable to destroy providerModel.", t);

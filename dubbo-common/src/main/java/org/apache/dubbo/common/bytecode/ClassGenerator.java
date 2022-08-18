@@ -51,7 +51,7 @@ public final class ClassGenerator {
 
     private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);
     private static final String SIMPLE_NAME_TAG = "<init>";
-    private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<ClassLoader, ClassPool>(); //ClassLoader - ClassPool
+    private static final Map<ClassLoader, ClassPool> POOL_MAP = new ConcurrentHashMap<>(); //ClassLoader - ClassPool
     private ClassPool mPool;
     private CtClass mCtc;
     private String mClassName;
@@ -131,7 +131,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addInterface(String cn) {
         if (mInterfaces == null) {
-            mInterfaces = new HashSet<String>();
+            mInterfaces = new HashSet<>();
         }
         mInterfaces.add(cn);
         return this;
@@ -153,7 +153,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addField(String code) {
         if (mFields == null) {
-            mFields = new ArrayList<String>();
+            mFields = new ArrayList<>();
         }
         mFields.add(code);
         return this;
@@ -177,7 +177,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addMethod(String code) {
         if (mMethods == null) {
-            mMethods = new ArrayList<String>();
+            mMethods = new ArrayList<>();
         }
         mMethods.add(code);
         return this;
@@ -192,12 +192,14 @@ public final class ClassGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(modifier(mod)).append(' ').append(ReflectUtils.getName(rt)).append(' ').append(name);
         sb.append('(');
-        for (int i = 0; i < pts.length; i++) {
-            if (i > 0) {
-                sb.append(',');
+        if (ArrayUtils.isNotEmpty(pts)) {
+            for (int i = 0; i < pts.length; i++) {
+                if (i > 0) {
+                    sb.append(',');
+                }
+                sb.append(ReflectUtils.getName(pts[i]));
+                sb.append(" arg").append(i);
             }
-            sb.append(ReflectUtils.getName(pts[i]));
-            sb.append(" arg").append(i);
         }
         sb.append(')');
         if (ArrayUtils.isNotEmpty(ets)) {
@@ -222,7 +224,7 @@ public final class ClassGenerator {
         String desc = name + ReflectUtils.getDescWithoutMethodName(m);
         addMethod(':' + desc);
         if (mCopyMethods == null) {
-            mCopyMethods = new ConcurrentHashMap<String, Method>(8);
+            mCopyMethods = new ConcurrentHashMap<>(8);
         }
         mCopyMethods.put(desc, m);
         return this;
@@ -230,7 +232,7 @@ public final class ClassGenerator {
 
     public ClassGenerator addConstructor(String code) {
         if (mConstructors == null) {
-            mConstructors = new LinkedList<String>();
+            mConstructors = new LinkedList<>();
         }
         mConstructors.add(code);
         return this;
@@ -269,7 +271,7 @@ public final class ClassGenerator {
         String desc = ReflectUtils.getDesc(c);
         addConstructor(":" + desc);
         if (mCopyConstructors == null) {
-            mCopyConstructors = new ConcurrentHashMap<String, Constructor<?>>(4);
+            mCopyConstructors = new ConcurrentHashMap<>(4);
         }
         mCopyConstructors.put(desc, c);
         return this;
@@ -398,7 +400,7 @@ public final class ClassGenerator {
         return getCtClass(c.getDeclaringClass()).getConstructor(ReflectUtils.getDesc(c));
     }
 
-    public static interface DC {
+    public interface DC {
 
     } // dynamic class tag interface.
 }

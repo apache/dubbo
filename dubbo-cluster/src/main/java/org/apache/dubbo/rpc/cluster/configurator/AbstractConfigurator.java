@@ -43,7 +43,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 
 /**
- * AbstractOverrideConfigurator
+ * AbstractConfigurator
  */
 public abstract class AbstractConfigurator implements Configurator {
 
