@@ -32,6 +32,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.MULTIPORT_ENDPOINTS;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
 /**
@@ -70,6 +71,7 @@ public class DefaultServiceInstance implements ServiceInstance {
      */
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
+    private transient List<MultiPortEndpoint> multiEndpoints;
     private transient ApplicationModel applicationModel;
     private transient InstanceAddressURL instanceAddressURL = null;
 
@@ -239,9 +241,22 @@ public class DefaultServiceInstance implements ServiceInstance {
         return endpoints;
     }
 
+    public List<MultiPortEndpoint> getMultiEndpoints() {
+        if (multiEndpoints == null) {
+            multiEndpoints = new LinkedList<>(JsonUtils.getJson().toJavaList(metadata.get(MULTIPORT_ENDPOINTS), MultiPortEndpoint.class));
+        }
+        return multiEndpoints;
+    }
+
     public DefaultServiceInstance copyFrom(Endpoint endpoint) {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
+        return copyOfInstance;
+    }
+
+    public DefaultServiceInstance copyFrom(MultiPortEndpoint endpoint, Integer i) {
+        DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
+        copyOfInstance.setPort(endpoint.getPorts()[i]);
         return copyOfInstance;
     }
 
@@ -363,6 +378,35 @@ public class DefaultServiceInstance implements ServiceInstance {
 
         public void setPort(int port) {
             this.port = port;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+    }
+
+    public static class MultiPortEndpoint {
+        Integer[] ports;
+        String protocol;
+
+        public MultiPortEndpoint() {
+        }
+
+        public MultiPortEndpoint(Integer[] ports, String protocol) {
+            this.ports = ports;
+            this.protocol = protocol;
+        }
+
+        public Integer[] getPorts() {
+            return ports;
+        }
+
+        public void setPorts(Integer[] ports) {
+            this.ports = ports;
         }
 
         public String getProtocol() {

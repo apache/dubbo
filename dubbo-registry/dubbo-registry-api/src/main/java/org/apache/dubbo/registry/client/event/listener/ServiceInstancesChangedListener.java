@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -362,8 +363,16 @@ public class ServiceInstancesChangedListener {
         List<URL> urls = new ArrayList<>();
         for (String r : revisions) {
             for (ServiceInstance i : revisionToInstances.get(r)) {
-                // different protocols may have ports specified in meta
-                if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
+
+                if (ServiceInstanceMetadataUtils.hasMultiEndpoints(i)) {
+                    DefaultServiceInstance.MultiPortEndpoint endpoint = ServiceInstanceMetadataUtils.getMultiEndpoint(i, protocol);
+                    if (endpoint != null && ArrayUtils.isNotEmpty(endpoint.getPorts())) {
+                        for (int j = 0; j < endpoint.getPorts().length; j++) {
+                            urls.add(((DefaultServiceInstance) i).copyFrom(endpoint, j).toURL(endpoint.getProtocol()));
+                        }
+                        continue;
+                    }
+                } else if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
                     if (endpoint != null && endpoint.getPort() != i.getPort()) {
                         urls.add(((DefaultServiceInstance) i).copyFrom(endpoint).toURL(endpoint.getProtocol()));
