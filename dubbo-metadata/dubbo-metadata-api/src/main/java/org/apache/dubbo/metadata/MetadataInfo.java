@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -197,6 +198,7 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
     }
 
+    @Transient
     public String getContent() {
         return this.rawMetadataInfo;
     }
@@ -432,6 +434,11 @@ public class MetadataInfo implements Serializable {
         return new MetadataInfo(app, revision, services, initiated, extendParams, instanceParams, updated, subscribedServiceURLs, exportedServiceURLs, loader);
     }
 
+    private Object readResolve() {
+        // create a new object from the deserialized one, in order to call constructor
+        return new MetadataInfo(this.app, this.revision, this.services);
+    }
+
     public static class ServiceInfo implements Serializable {
         private String name;
         private String group;
@@ -641,6 +648,7 @@ public class MetadataInfo implements Serializable {
             this.params = params;
         }
 
+        @Transient
         public Map<String, String> getAllParams() {
             if (consumerParams != null) {
                 Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));

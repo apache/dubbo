@@ -37,10 +37,6 @@ public class ExtensionDirectorTest {
     String testAppSrvName = "testAppSrv";
     String testMdSrvName = "testMdSrv";
 
-    String testAppProviderName = "testAppProvider";
-    String testModuleProviderName = "testModuleProvider";
-    String testFrameworkProviderName = "testFrameworkProvider";
-
     @Test
     public void testInheritanceAndScope() {
 
@@ -144,16 +140,16 @@ public class ExtensionDirectorTest {
 
     @Test
     public void testModelDataIsolation() {
-//Model Tree
-//├─frameworkModel1
-//│  ├─applicationModel11
-//│  │  ├─moduleModel111
-//│  │  └─moduleModel112
-//│  └─applicationModel12
-//│     └─moduleModel121
-//└─frameworkModel2
-//   └─applicationModel21
-//      └─moduleModel211
+        //Model Tree
+        //├─frameworkModel1
+        //│  ├─applicationModel11
+        //│  │  ├─moduleModel111
+        //│  │  └─moduleModel112
+        //│  └─applicationModel12
+        //│     └─moduleModel121
+        //└─frameworkModel2
+        //   └─applicationModel21
+        //      └─moduleModel211
 
         FrameworkModel frameworkModel1 = new FrameworkModel();
         ApplicationModel applicationModel11 = new ApplicationModel(frameworkModel1);

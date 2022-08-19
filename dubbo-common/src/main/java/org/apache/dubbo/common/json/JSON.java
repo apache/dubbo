@@ -18,6 +18,7 @@ package org.apache.dubbo.common.json;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 public interface JSON {
     boolean isSupport();
@@ -27,4 +28,25 @@ public interface JSON {
     <T> List<T> toJavaList(String json, Class<T> clazz);
 
     String toJson(Object obj);
+
+    List<?> getList(Map<String, ?> obj, String key);
+
+    List<Map<String, ?>> getListOfObjects(Map<String, ?> obj, String key);
+
+    List<String> getListOfStrings(Map<String, ?> obj, String key);
+
+    Map<String, ?> getObject(Map<String, ?> obj, String key);
+
+    Double getNumberAsDouble(Map<String, ?> obj, String key);
+
+    Integer getNumberAsInteger(Map<String, ?> obj, String key);
+
+    Long getNumberAsLong(Map<String, ?> obj, String key);
+
+    String getString(Map<String, ?> obj, String key);
+
+    List<Map<String, ?>> checkObjectList(List<?> rawList);
+
+    List<String> checkStringList(List<?> rawList);
+
 }

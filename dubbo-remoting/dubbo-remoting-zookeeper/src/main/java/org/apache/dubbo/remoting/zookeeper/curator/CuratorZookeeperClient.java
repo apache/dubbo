@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.zookeeper.StateListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
@@ -42,6 +43,8 @@ import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.Charset;
@@ -79,6 +82,17 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             String userInformation = url.getUserInformation();
             if (StringUtils.isNotEmpty(userInformation)) {
                 builder = builder.authorization("digest", userInformation.getBytes());
+                builder.aclProvider(new ACLProvider() {
+                    @Override
+                    public List<ACL> getDefaultAcl() {
+                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                    }
+
+                    @Override
+                    public List<ACL> getAclForPath(String path) {
+                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                    }
+                });
             }
             client = builder.build();
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));

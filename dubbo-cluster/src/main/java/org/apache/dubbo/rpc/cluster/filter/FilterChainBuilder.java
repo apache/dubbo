@@ -192,6 +192,7 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult = filterInvoker.invoke(invocation);
             asyncResult.whenCompleteWithContext((r, t) -> {
+                RuntimeException filterRuntimeException = null;
                 for (int i = filters.size() - 1; i >= 0; i--) {
                     FILTER filter = filters.get(i);
                     try {
@@ -218,13 +219,17 @@ public interface FilterChainBuilder {
                                 listener.onError(t, filterInvoker, invocation);
                             }
                         }
-                    } catch (Throwable filterThrowable) {
+                    } catch (RuntimeException runtimeException) {
                         LOGGER.error(String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug(String.format("Whole filter list is: %s", filters.stream().map(tmpFilter -> tmpFilter.getClass().getSimpleName()).collect(Collectors.toList())));
                         }
-                        throw filterThrowable;
+                        filterRuntimeException = runtimeException;
+                        t = runtimeException;
                     }
+                }
+                if (filterRuntimeException != null) {
+                    throw filterRuntimeException;
                 }
             });
 

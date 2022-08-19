@@ -61,6 +61,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
@@ -103,13 +104,15 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
+
+        boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         // Start file save timer
         String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
             reportServerURL.getApplication() + "-" +
             replace(reportServerURL.getAddress(), ":", "-") + CACHE;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
-        if (ConfigUtils.isNotEmpty(filename)) {
+        if (localCacheEnabled && ConfigUtils.isNotEmpty(filename)) {
             file = new File(filename);
             if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                 if (!file.getParentFile().mkdirs()) {

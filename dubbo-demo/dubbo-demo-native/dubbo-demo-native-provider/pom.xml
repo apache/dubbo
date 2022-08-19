@@ -101,7 +101,7 @@
                     <plugin>
                         <groupId>org.apache.dubbo</groupId>
                         <artifactId>dubbo-native-plugin</artifactId>
-                        <version>${revision}</version>
+                        <version>${project.version}</version>
                         <executions>
                             <execution>
                                 <phase>process-sources</phase>

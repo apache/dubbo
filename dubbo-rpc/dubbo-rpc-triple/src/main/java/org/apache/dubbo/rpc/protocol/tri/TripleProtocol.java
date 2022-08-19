@@ -95,8 +95,7 @@ public class TripleProtocol extends AbstractProtocol {
             @Override
             public void afterUnExport() {
                 pathResolver.remove(url.getServiceKey());
-                pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(),
-                    invoker);
+                pathResolver.remove(url.getServiceModel().getServiceModel().getInterfaceName());
                 // set service status
                 triBuiltinService.getHealthStatusManager()
                     .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);

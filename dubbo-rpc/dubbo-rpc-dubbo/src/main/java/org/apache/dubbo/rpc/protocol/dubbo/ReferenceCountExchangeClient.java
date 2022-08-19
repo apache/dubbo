@@ -43,7 +43,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
-    private final Integer warningPeriod = 50;
+    private static final Integer warningPeriod = 50;
     private ExchangeClient client;
     private int shutdownWaitTime = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 
@@ -202,9 +202,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
             logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
         }
 
-        /**
-         * the order of judgment in the if statement cannot be changed.
-         */
+        // the order of judgment in the if statement cannot be changed.
         if (!(client instanceof LazyConnectExchangeClient)) {
             client = new LazyConnectExchangeClient(url, client.getExchangeHandler());
         }

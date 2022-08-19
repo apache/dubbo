@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.0.10-SNAPSHOT</revision>
+        <revision>3.0.11-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -519,6 +519,22 @@
                             </systemProperties>
                             <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
                             <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk9-compile</id>
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
                         </configuration>
                     </plugin>
                 </plugins>
