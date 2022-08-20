@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,6 +36,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -102,17 +104,25 @@ public class AccessLogFilter implements Filter {
                 .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
                 .scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
         }
+        Optional<AccessLogData> optionalAccessLogData = Optional.empty();
+        String accessLogKey = null;
         try {
-            String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
+            accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
-                AccessLogData logData = AccessLogData.newLogData();
-                logData.buildAccessLogData(invoker, inv);
-                log(accessLogKey, logData);
+                optionalAccessLogData = Optional.of(buildAccessLogData(invoker, inv));
             }
         } catch (Throwable t) {
             logger.warn("Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")", t);
         }
-        return invoker.invoke(inv);
+        try {
+            return invoker.invoke(inv);
+        } finally {
+            String finalAccessLogKey = accessLogKey;
+            optionalAccessLogData.ifPresent(logData -> {
+                logData.setOutTime(new Date());
+                log(finalAccessLogKey, logData);
+            });
+        }
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
