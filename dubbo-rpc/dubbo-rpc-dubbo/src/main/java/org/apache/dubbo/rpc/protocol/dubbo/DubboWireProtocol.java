@@ -35,6 +35,12 @@ public class DubboWireProtocol extends AbstractWireProtocol {
     @Override
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
         List<ChannelHandler> handlers = new ArrayList<>();
+        // operator(for now nettyOperator)'s duties
+        // 1. config codec2 for the protocol(load by extension loader)
+        // 2. config handlers passed by wire protocol
+        // ( for triple, some h2 netty handler and logic handler to handle connection;
+        //   for dubbo, nothing, an empty handlers is used to trigger operator logic)
+        // 3. config Dubbo Inner handler(for dubbo protocol, this handler handles connection)
         operator.configChannelHandler(handlers);
     }
 }
