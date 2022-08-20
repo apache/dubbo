@@ -94,6 +94,8 @@ final class NettyChannel extends AbstractChannel {
             if (ret == null) {
                 ret = nettyChannel;
             }
+        } else {
+            ret.markActive(true);
         }
         return ret;
     }

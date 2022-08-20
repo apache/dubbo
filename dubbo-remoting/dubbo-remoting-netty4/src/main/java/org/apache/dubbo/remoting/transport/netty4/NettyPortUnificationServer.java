@@ -39,11 +39,9 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslContext;
 import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -65,9 +63,6 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyPortUnificationServer.class);
-
-    private final DefaultChannelGroup channels = new DefaultChannelGroup(
-        GlobalEventExecutor.INSTANCE);
 
     private final int serverShutdownTimeoutMills;
     /**
@@ -134,7 +129,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     final ChannelPipeline p = ch.pipeline();
                     final NettyPortUnificationServerHandler puHandler;
                     puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
-                        channels, NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels);
+                        NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels);
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
@@ -153,7 +148,6 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     @Override
     public void doClose(){
-        final long st = System.currentTimeMillis();
 
         try {
             if (channel != null) {
@@ -162,10 +156,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                 channel = null;
             }
 
-            channels.close().await(serverShutdownTimeoutMills);
-            final long cost = System.currentTimeMillis() - st;
-            logger.info("Port unification server closed. cost:" + cost);
-        } catch (InterruptedException e) {
+        } catch (Throwable e) {
             logger.warn("Interrupted while shutting down", e);
         }
 
@@ -217,7 +208,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     @Override
     public Channel getChannel(InetSocketAddress remoteAddress) {
-        return null;
+        return dubboChannels.get(NetUtils.toAddressString(remoteAddress));
     }
 
     public InetSocketAddress getLocalAddress() {
