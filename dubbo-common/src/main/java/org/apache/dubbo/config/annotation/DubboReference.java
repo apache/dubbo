@@ -368,4 +368,12 @@ public @interface DubboReference {
      * Weather the reference is refer asynchronously
      */
     boolean referAsync() default false;
+
+    /**
+     * unload Cluster related in mesh mode
+     *
+     * @see ReferenceConfigBase#unloadClusterRelated
+     * @since 3.1.0
+     */
+    boolean unloadClusterRelated() default false;
 }

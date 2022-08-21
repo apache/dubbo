@@ -568,4 +568,9 @@ public interface CommonConstants {
      */
     String DEFAULT_CLUSTER_DOMAIN = "cluster.local";
 
+    /**
+     * @since 3.1.0
+     */
+    String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
+
 }
