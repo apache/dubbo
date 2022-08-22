@@ -72,4 +72,14 @@ public class ServiceBeanNameBuilderTest {
                 builder.build());
     }
 
+    @Test
+    public void testServiceNameBuild() {
+        ServiceBeanNameBuilder vBuilder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
+        String vBeanName = vBuilder.version("DUBBO").build();
+
+        ServiceBeanNameBuilder gBuilder = ServiceBeanNameBuilder.create(INTERFACE_CLASS, environment);
+        String gBeanName = gBuilder.group("DUBBO").build();
+
+        Assertions.assertNotEquals(vBeanName, gBeanName);
+    }
 }

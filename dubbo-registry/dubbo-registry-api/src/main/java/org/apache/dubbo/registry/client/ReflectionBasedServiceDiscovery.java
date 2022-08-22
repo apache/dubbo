@@ -185,7 +185,6 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
-        doUnregister(serviceInstance);
         // notify empty message to consumer
         metadataService.exportInstanceMetadata("");
         metadataService.getInstanceMetadataChangedListenerMap().forEach((consumerId, listener) -> listener.onEvent(""));

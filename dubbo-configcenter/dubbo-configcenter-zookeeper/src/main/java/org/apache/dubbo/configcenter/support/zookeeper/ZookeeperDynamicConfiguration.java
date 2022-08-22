@@ -29,15 +29,12 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- *
- */
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
@@ -51,7 +48,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
 
-        this.cacheListener = new CacheListener(rootPath);
+        this.cacheListener = new CacheListener();
 
         final String threadName = this.getClass().getSimpleName();
         this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
@@ -63,7 +60,16 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();
         if (!isConnected) {
-            throw new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
+
+            IllegalStateException illegalStateException =
+                new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
+
+            if (logger != null) {
+                logger.error("5-1", "configuration server offline", "",
+                    "Failed to connect with zookeeper", illegalStateException);
+            }
+
+            throw illegalStateException;
         }
     }
 
@@ -78,6 +84,13 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doClose() throws Exception {
+        // remove data listener
+        Map<String, ZookeeperDataListener> pathKeyListeners = cacheListener.getPathKeyListeners();
+        for (Map.Entry<String, ZookeeperDataListener> entry : pathKeyListeners.entrySet()) {
+            zkClient.removeDataListener(entry.getKey(), entry.getValue());
+        }
+        cacheListener.clear();
+
         // zkClient is shared in framework, should not close it here
         // zkClient.close();
         // See: org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
@@ -129,17 +142,21 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
-    protected void doAddListener(String pathKey, ConfigurationListener listener) {
-        cacheListener.addListener(pathKey, listener);
-        zkClient.addDataListener(pathKey, cacheListener, executor);
+    protected void doAddListener(String pathKey, ConfigurationListener listener, String key, String group) {
+        ZookeeperDataListener cachedListener = cacheListener.getCachedListener(pathKey);
+        if (cachedListener != null) {
+            cachedListener.addListener(listener);
+        } else {
+            ZookeeperDataListener addedListener = cacheListener.addListener(pathKey, listener, key, group);
+            zkClient.addDataListener(pathKey, addedListener, executor);
+        }
     }
 
     @Override
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
-        cacheListener.removeListener(pathKey, listener);
-        Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
-        if (CollectionUtils.isEmpty(configurationListeners)) {
-            zkClient.removeDataListener(pathKey, cacheListener);
+        ZookeeperDataListener zookeeperDataListener = cacheListener.removeListener(pathKey, listener);
+        if (zookeeperDataListener != null && CollectionUtils.isEmpty(zookeeperDataListener.getListeners())) {
+            zkClient.removeDataListener(pathKey, zookeeperDataListener);
         }
     }
 }

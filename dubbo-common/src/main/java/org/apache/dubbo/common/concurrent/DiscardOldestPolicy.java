@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.common.concurrent;
 
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.Codec2;
-import org.apache.dubbo.remoting.buffer.ChannelBuffer;
-import java.io.IOException;
+import java.util.Queue;
 
-public class DefaultTriCodec implements Codec2 {
-
-    @Override
-    public void encode(Channel channel, ChannelBuffer buffer, Object message) throws IOException {
-
-    }
+/**
+ * A handler for rejected element that discards the oldest element.
+ */
+public class DiscardOldestPolicy<E> implements Rejector<E> {
 
     @Override
-    public Object decode(Channel channel, ChannelBuffer buffer) throws IOException {
-        return null;
+    public void reject(final E e, final Queue<E> queue) {
+        queue.poll();
+        queue.offer(e);
     }
 }

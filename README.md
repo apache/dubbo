@@ -32,8 +32,8 @@ We are now collecting Dubbo user info to help us to improve Dubbo further. Kindl
 The following code snippet comes from [Dubbo Samples](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into the `dubbo-samples-api` subdirectory before proceeding.
 
 ```bash
-# git clone https://github.com/apache/dubbo-samples.git
-# cd dubbo-samples/dubbo-samples-api
+git clone https://github.com/apache/dubbo-samples.git
+cd dubbo-samples/dubbo-samples-api
 ```
 
 There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
@@ -42,7 +42,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>3.0.8</dubbo.version>
+    <dubbo.version>3.0.10</dubbo.version>
 </properties>
 
 <dependencies>
@@ -124,8 +124,8 @@ public class Application {
 ### Build and run the provider
 
 ```bash
-# mvn clean package
-# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.samples.provider.Application exec:java
+mvn clean package
+mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.samples.provider.Application exec:java
 ```
 
 ### Call remote service in the consumer
@@ -158,8 +158,8 @@ public class Application {
 ### Build and run the consumer
 
 ```bash
-# mvn clean package
-# mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.samples.client.Application exec:java
+mvn clean package
+mvn -Djava.net.preferIPv4Stack=true -Dexec.mainClass=org.apache.dubbo.samples.client.Application exec:java
 ```
 
 The consumer will print out `hi, dubbo` on the screen.

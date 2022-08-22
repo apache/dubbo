@@ -49,7 +49,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -69,7 +70,10 @@ import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
 import static org.apache.dubbo.registry.Constants.USER_HOME;
 
 /**
- * AbstractRegistry. (SPI, Prototype, ThreadSafe)
+ * <p>
+ * Provides a fail-safe registry service backed by cache file. The consumer/provider can still find each other when registry center crashed.
+ *
+ * (SPI, Prototype, ThreadSafe)
  */
 public abstract class AbstractRegistry implements Registry {
 
@@ -79,6 +83,8 @@ public abstract class AbstractRegistry implements Registry {
     private static final String URL_SPLIT = "\\s+";
     // Max times to retry to save properties to local cache file
     private static final int MAX_RETRY_TIMES_SAVE_PROPERTIES = 3;
+    // Default interval in millisecond for saving properties to local cache file
+    private static final long DEFAULT_INTERVAL_SAVE_PROPERTIES = 500L;
 
     // Log output
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -86,7 +92,7 @@ public abstract class AbstractRegistry implements Registry {
     // Local disk cache, where the special key value.registries records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();
     // File cache timing writing
-    private final ExecutorService registryCacheExecutor;
+    private final ScheduledExecutorService registryCacheExecutor;
     private final AtomicLong lastCacheChanged = new AtomicLong();
     private final AtomicInteger savePropertiesRetryTimes = new AtomicInteger();
     private final Set<URL> registered = new ConcurrentHashSet<>();
@@ -101,28 +107,47 @@ public abstract class AbstractRegistry implements Registry {
     protected RegistryManager registryManager;
     protected ApplicationModel applicationModel;
 
-    public AbstractRegistry(URL url) {
+    private static final String CAUSE_MULTI_DUBBO_USING_SAME_FILE = "multiple Dubbo instance are using the same file";
+
+    protected AbstractRegistry(URL url) {
         setUrl(url);
         registryManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
         localCacheEnabled = url.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         registryCacheExecutor = url.getOrDefaultFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
+            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
         if (localCacheEnabled) {
             // Start file save timer
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
+
             String defaultFilename = System.getProperty(USER_HOME) + DUBBO_REGISTRY + url.getApplication() +
                 "-" + url.getAddress().replaceAll(":", "-") + CACHE;
+
             String filename = url.getParameter(FILE_KEY, defaultFilename);
             File file = null;
+
             if (ConfigUtils.isNotEmpty(filename)) {
                 file = new File(filename);
                 if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
                     if (!file.getParentFile().mkdirs()) {
-                        throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+
+                        IllegalArgumentException illegalArgumentException = new IllegalArgumentException(
+                            "Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+
+                        if (logger != null) {
+                            // 1-9 failed to read / save registry cache file.
+
+                            logger.error("1-9", "cache directory inaccessible",
+                                "Try adjusting permission of the directory.",
+                                "failed to create directory", illegalArgumentException);
+                        }
+
+                        throw illegalArgumentException;
                     }
                 }
             }
+
             this.file = file;
+
             // When starting the subscription center,
             // we need to read the local cache file for future Registry fault tolerance processing.
             loadProperties();
@@ -189,13 +214,22 @@ public abstract class AbstractRegistry implements Registry {
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
+
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
                  FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
-                    throw new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", " +
+
+                    IOException ioException = new IOException("Can not lock the registry cache file " + file.getAbsolutePath() + ", " +
                         "ignore and retry later, maybe multi java process use the file, please config: dubbo.registry.file=xxx.properties");
+
+                    // 1-9 failed to read / save registry cache file.
+                    logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
+                        "Adjust dubbo.registry.file.", ioException);
+
+                    throw ioException;
                 }
+
                 // Save
                 try {
                     if (!file.exists()) {
@@ -226,26 +260,30 @@ public abstract class AbstractRegistry implements Registry {
             }
         } catch (Throwable e) {
             savePropertiesRetryTimes.incrementAndGet();
+
             if (savePropertiesRetryTimes.get() >= MAX_RETRY_TIMES_SAVE_PROPERTIES) {
                 if (e instanceof OverlappingFileLockException) {
                     // fix #9341, ignore OverlappingFileLockException
                     logger.info("Failed to save registry cache file for file overlapping lock exception, file name " + file.getName());
                 } else {
                     // 1-9 failed to read / save registry cache file.
-                    logger.warn("1-9", "multiple Dubbo instance are using the same file", "",
+                    logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
                         "Failed to save registry cache file after retrying " + MAX_RETRY_TIMES_SAVE_PROPERTIES + " times, cause: " + e.getMessage(), e);
                 }
+
                 savePropertiesRetryTimes.set(0);
                 return;
             }
+
             if (version < lastCacheChanged.get()) {
                 savePropertiesRetryTimes.set(0);
                 return;
             } else {
-                registryCacheExecutor.execute(() -> doSaveProperties(lastCacheChanged.incrementAndGet()));
+                registryCacheExecutor.schedule(() -> doSaveProperties(lastCacheChanged.incrementAndGet()), DEFAULT_INTERVAL_SAVE_PROPERTIES, TimeUnit.MILLISECONDS);
             }
+
             if (!(e instanceof OverlappingFileLockException)) {
-                logger.warn("1-9", "multiple Dubbo instance are using the same file",
+                logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE,
                     "However, the retrying count limit is not exceeded. Dubbo will still try.",
                     "Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
             }
@@ -271,13 +309,13 @@ public abstract class AbstractRegistry implements Registry {
             }
         } catch (IOException e) {
             // 1-9 failed to read / save registry cache file.
-            logger.warn("1-9", "multiple Dubbo instance are using the same file", "",
+            logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
                 e.getMessage(), e);
 
         } catch (Throwable e) {
             // 1-9 failed to read / save registry cache file.
 
-            logger.warn("1-9", "multiple Dubbo instance are using the same file", "",
+            logger.warn("1-9", CAUSE_MULTI_DUBBO_USING_SAME_FILE, "",
                 "Failed to load registry cache file " + file, e);
         }
     }
@@ -442,7 +480,7 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     /**
-     * Notify changes from the Provider side.
+     * Notify changes from the provider side.
      *
      * @param url      consumer side url
      * @param listener listener
@@ -481,6 +519,7 @@ public abstract class AbstractRegistry implements Registry {
             List<URL> categoryList = entry.getValue();
             categoryNotified.put(category, categoryList);
             listener.notify(categoryList);
+
             // We will update our cache file after each notification.
             // When our Registry has a subscribed failure due to network jitter, we can return at least the existing cache URL.
             if (localCacheEnabled) {
@@ -512,7 +551,7 @@ public abstract class AbstractRegistry implements Registry {
             if (syncSaveFile) {
                 doSaveProperties(version);
             } else {
-                registryCacheExecutor.execute(() -> doSaveProperties(version));
+                registryCacheExecutor.schedule(() -> doSaveProperties(version), DEFAULT_INTERVAL_SAVE_PROPERTIES, TimeUnit.MILLISECONDS);
             }
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);

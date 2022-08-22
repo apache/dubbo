@@ -21,7 +21,8 @@ import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 public interface ServerStreamObserver<T> extends CallStreamObserver<T> {
 
-
-    void disableAutoInboundFlowControl();
+    default void disableAutoInboundFlowControl() {
+        disableAutoFlowControl();
+    }
 
 }

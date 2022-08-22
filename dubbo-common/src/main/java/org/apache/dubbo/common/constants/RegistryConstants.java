@@ -103,6 +103,13 @@ public interface RegistryConstants {
     String PROVIDED_BY = "provided-by";
 
     /**
+     * The provider tri port
+     *
+     * @since 3.1.0
+     */
+    String PROVIDER_PORT = "provider-port";
+
+    /**
      * The request size of service instances
      *
      * @since 2.7.5

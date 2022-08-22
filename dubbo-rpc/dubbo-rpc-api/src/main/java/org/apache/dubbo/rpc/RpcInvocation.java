@@ -77,7 +77,7 @@ public class RpcInvocation implements Invocation, Serializable {
      */
     private Map<String, Object> attachments;
 
-    private transient Lock attachmentLock = new ReentrantLock();
+    private final transient Lock attachmentLock = new ReentrantLock();
 
     /**
      * Only used on the caller side, will not appear on the wire.
@@ -669,8 +669,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public String toString() {
         return "RpcInvocation [methodName=" + methodName + ", parameterTypes="
-            + Arrays.toString(parameterTypes) + ", arguments=" + Arrays.toString(arguments)
-            + ", attachments=" + attachments + "]";
+            + Arrays.toString(parameterTypes) + "]";
     }
 
 }

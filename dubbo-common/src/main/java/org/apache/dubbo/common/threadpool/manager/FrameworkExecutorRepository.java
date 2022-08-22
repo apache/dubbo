@@ -91,7 +91,7 @@ public class FrameworkExecutorRepository implements Disposable {
 
     /**
      * Returns a scheduler from the scheduler list, call this method whenever you need a scheduler for a cron job.
-     * If your cron cannot burden the possible schedule delay caused by sharing the same scheduler, please consider define a dedicate one.
+     * If your cron cannot burden the possible schedule delay caused by sharing the same scheduler, please consider define a dedicated one.
      *
      * @return ScheduledExecutorService
      */

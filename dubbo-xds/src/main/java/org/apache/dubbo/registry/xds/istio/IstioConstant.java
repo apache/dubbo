@@ -46,6 +46,10 @@ public class IstioConstant {
      */
     public final static String KUBERNETES_SA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
 
+    public final static String KUBERNETES_CA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
+
+    public final static String KUBERNETES_NAMESPACE_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
+
     public final static String RSA_KEY_SIZE_KEY = "RSA_KEY_SIZE";
 
     public final static String DEFAULT_RSA_KEY_SIZE = "2048";
@@ -79,7 +83,7 @@ public class IstioConstant {
 
     public final static String ISTIO_META_CLUSTER_ID_KEY = "ISTIO_META_CLUSTER_ID";
 
-    public final static String DEFAULT_ISTIO_META_CLUSTER_ID = "kubernetes";
+    public final static String DEFAULT_ISTIO_META_CLUSTER_ID = "Kubernetes";
 
     public final static String SPIFFE = "spiffe://";
 

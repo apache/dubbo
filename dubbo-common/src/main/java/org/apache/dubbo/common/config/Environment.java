@@ -112,6 +112,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      * @deprecated only for ut
      */
     @Deprecated
+    @DisableInject
     public void setLocalMigrationRule(String localMigrationRule) {
         this.localMigrationRule = localMigrationRule;
     }

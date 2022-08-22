@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
@@ -32,11 +33,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCES
 public class ConsumerConfig extends AbstractReferenceConfig {
 
     private static final long serialVersionUID = 2827274711143680600L;
-
-    /**
-     * Networking framework client uses: netty, mina, etc.
-     */
-    private String client;
 
     /**
      * Consumer thread pool type: cached, fixed, limit, eager
@@ -83,6 +79,12 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Boolean referBackground;
 
+    /**
+     * enable mesh mode
+     * @since 3.1.0
+     */
+    private Boolean meshEnable;
+
 
     public ConsumerConfig() {
     }
@@ -99,14 +101,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
                 && (StringUtils.isEmpty(rmiTimeout))) {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
-    }
-    
-    public String getClient() {
-        return client;
-    }
-
-    public void setClient(String client) {
-        this.client = client;
     }
 
     public String getThreadpool() {
@@ -182,5 +176,14 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     @Deprecated
     public void setReferBackground(Boolean referBackground) {
         this.referBackground = referBackground;
+    }
+
+    @Parameter(key = MESH_ENABLE)
+    public Boolean getMeshEnable() {
+        return meshEnable;
+    }
+
+    public void setMeshEnable(Boolean meshEnable) {
+        this.meshEnable = meshEnable;
     }
 }

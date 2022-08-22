@@ -402,7 +402,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     }
 
     @Override
-    protected void doAddListener(String pathKey, ConfigurationListener listener) {
+    protected void doAddListener(String pathKey, ConfigurationListener listener, String key, String group) {
         doInListener(pathKey, (configFilePath, listeners) -> {
             if (listeners.isEmpty()) { // If no element, it indicates watchService was registered before
                 ThrowableConsumer.execute(configFilePath, configFile -> {

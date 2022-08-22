@@ -47,6 +47,10 @@ public class NacosNamingServiceWrapper {
         namingService.subscribe(handleInnerSymbol(serviceName), group, eventListener);
     }
 
+    public void unsubscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
+        namingService.unsubscribe(handleInnerSymbol(serviceName), group, eventListener);
+    }
+
     public List<Instance> getAllInstances(String serviceName, String group) throws NacosException {
         return namingService.getAllInstances(handleInnerSymbol(serviceName), group);
     }

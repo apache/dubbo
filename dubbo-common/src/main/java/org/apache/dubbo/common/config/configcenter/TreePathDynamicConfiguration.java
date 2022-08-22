@@ -94,7 +94,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
     @Override
     public final void addListener(String key, String group, ConfigurationListener listener) {
         String pathKey = buildPathKey(group, key);
-        doAddListener(pathKey, listener);
+        doAddListener(pathKey, listener, key, group);
     }
 
     @Override
@@ -111,7 +111,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
 
     protected abstract Collection<String> doGetConfigKeys(String groupPath);
 
-    protected abstract void doAddListener(String pathKey, ConfigurationListener listener);
+    protected abstract void doAddListener(String pathKey, ConfigurationListener listener, String key, String group);
 
     protected abstract void doRemoveListener(String pathKey, ConfigurationListener listener);
 

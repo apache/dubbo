@@ -21,14 +21,20 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
 
     private final StreamObserver<Object> delegate;
     private ClientCall call;
+    private Consumer<ClientCall> onStartConsumer = clientCall -> { };
 
     public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
         this.delegate = delegate;
+    }
+
+    public void setOnStartConsumer(Consumer<ClientCall> onStartConsumer) {
+        this.onStartConsumer = onStartConsumer;
     }
 
     @Override
@@ -54,5 +60,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
         if (call.isAutoRequest()) {
             call.request(1);
         }
+
+        onStartConsumer.accept(call);
     }
 }

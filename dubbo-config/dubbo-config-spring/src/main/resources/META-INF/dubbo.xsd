@@ -239,6 +239,12 @@
                             <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provider-port" type="xsd:integer">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ declares provider service port. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="router" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -1178,6 +1184,11 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="mesh-enable" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Enable mesh mode. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>

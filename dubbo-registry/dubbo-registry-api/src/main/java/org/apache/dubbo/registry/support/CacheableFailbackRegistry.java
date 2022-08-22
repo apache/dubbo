@@ -62,7 +62,14 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_P
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
 /**
- * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
+ * <p>
+ * Based on FailbackRegistry, it adds a URLAddress and URLParam cache to save RAM space.
+ *
+ * <p>
+ * It's useful for registries whose sdk returns raw string as provider instance. For example, Zookeeper and etcd.
+ *
+ * @see org.apache.dubbo.registry.support.FailbackRegistry
+ * @see org.apache.dubbo.registry.support.AbstractRegistry
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CacheableFailbackRegistry.class);
@@ -71,16 +78,18 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
     protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+
     private ScheduledExecutorService cacheRemovalScheduler;
     private int cacheRemovalTaskIntervalInMillis;
     private int cacheClearWaitingThresholdInMillis;
+
     private Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
     private Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, String> extraParameters;
     protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new ConcurrentHashMap<>();
 
-    public CacheableFailbackRegistry(URL url) {
+    protected CacheableFailbackRegistry(URL url) {
         super(url);
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
@@ -97,8 +106,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             try {
                 result = Integer.parseInt(str);
             } catch (NumberFormatException e) {
-                // 1-2 Invalid registry properties.
-                logger.warn("1-2", "", "",
+                // 0-2 Property type mismatch.
+
+                logger.warn("0-2", "typo in property value", "This property requires an integer value.",
                     "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
@@ -113,7 +123,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected void evictURLCache(URL url) {
         Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(url);
         try {
-            if (oldURLs != null && oldURLs.size() > 0) {
+            if (oldURLs != null && !oldURLs.isEmpty()) {
                 logger.info("Evicting urls for service " + url.getServiceKey() + ", size " + oldURLs.size());
                 Long currentTimestamp = System.currentTimeMillis();
                 for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
@@ -126,8 +136,18 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 }
             }
         } catch (Exception e) {
+            // It seems that the most possible statement that causes exception is the 'schedule()' method.
+
+            // The executor that FrameworkExecutorRepository.nextScheduledExecutor() method returns
+            // is made by Executors.newSingleThreadScheduledExecutor().
+
+            // After observing the code of ScheduledThreadPoolExecutor.delayedExecute,
+            // it seems that it only throws RejectedExecutionException when the thread pool is shutdown.
+
+            // When? FrameworkExecutorRepository gets destroyed.
+
             // 1-3: URL evicting failed.
-            logger.warn("1-3", "", "",
+            logger.warn("1-3", "thread pool getting destroyed", "",
                 "Failed to evict url for " + url.getServiceKey(), e);
         }
     }
@@ -135,9 +155,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
         // keep old urls
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
+
         // create new urls
         Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
+
         if (oldURLs == null) {
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
@@ -178,6 +200,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
         List<URL> urls = new ArrayList<>(1);
         boolean isProviderPath = path.endsWith(PROVIDERS_CATEGORY);
+
         if (isProviderPath) {
             if (CollectionUtils.isNotEmpty(providers)) {
                 urls = toUrlsWithoutEmpty(consumer, providers);
@@ -212,11 +235,13 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     protected ServiceAddressURL createURL(String rawProvider, URL consumerURL, Map<String, String> extraParameters) {
         boolean encoded = true;
+
         // use encoded value directly to avoid URLDecoder.decode allocation.
         int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
         if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not show, mark as not encoded.
             encoded = false;
         }
+
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
         if (parts.length <= 1) {
             // 1-5 Received URL without any parameters.
@@ -228,7 +253,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         String rawAddress = parts[0];
         String rawParams = parts[1];
+
+        // Workaround for 'effectively final': duplicate the encoded variable.
         boolean isEncoded = encoded;
+
         URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
@@ -236,9 +264,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         param.setTimestamp(System.currentTimeMillis());
 
         ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
+
         if (isMatch(consumerURL, cachedURL)) {
             return cachedURL;
         }
+
         return null;
     }
 
@@ -328,7 +358,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
-
+    /**
+     * The cached URL removal task, which will be run on a scheduled thread pool. (It will be run after a delay.)
+     */
     private class RemovalTask implements Runnable {
         @Override
         public void run() {

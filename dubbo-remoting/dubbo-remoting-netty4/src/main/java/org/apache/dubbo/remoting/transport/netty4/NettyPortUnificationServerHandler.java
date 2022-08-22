@@ -20,8 +20,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
@@ -44,16 +46,19 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private final SslContext sslCtx;
     private final URL url;
+    private final ChannelHandler handler;
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
 
     public NettyPortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
-                                             List<WireProtocol> protocols, ChannelGroup channels) {
+                                             List<WireProtocol> protocols, ChannelGroup channels,
+                                             ChannelHandler handler) {
         this.url = url;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
         this.detectSsl = detectSsl;
         this.channels = channels;
+        this.handler = handler;
     }
 
     @Override
@@ -70,8 +75,10 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)
         throws Exception {
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         // Will use the first five bytes to detect a protocol.
-        if (in.readableBytes() < 5) {
+        // size of telnet command ls is 2 bytes
+        if (in.readableBytes() < 2) {
             return;
         }
 
@@ -87,7 +94,8 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
-                        protocol.configServerPipeline(url, ctx.pipeline(), sslCtx);
+                        ChannelOperator operator = new NettyConfigOperator(channel, handler);
+                        protocol.configServerProtocolHandler(url, operator);
                         ctx.pipeline().remove(this);
                     case NEED_MORE_DATA:
                         return;
@@ -115,12 +123,13 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
         ChannelPipeline p = ctx.pipeline();
         p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
         p.addLast("unificationA",
-            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols, channels));
+            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols, channels, handler));
         p.remove(this);
     }
 
     private boolean isSsl(ByteBuf buf) {
-        if (detectSsl) {
+        // at least 5 bytes to determine if data is encrypted
+        if (detectSsl && buf.readableBytes() >= 5) {
             return SslHandler.isEncrypted(buf);
         }
         return false;

@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.zookeeper.StateListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.NodeCache;
@@ -40,6 +41,8 @@ import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.Charset;
@@ -56,7 +59,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5ZookeeperClient.NodeCacheListenerImpl, Curator5ZookeeperClient.CuratorWatcherImpl> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(Curator5ZookeeperClient.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Curator5ZookeeperClient.class);
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
@@ -75,14 +78,33 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             String userInformation = url.getUserInformation();
             if (userInformation != null && userInformation.length() > 0) {
                 builder = builder.authorization("digest", userInformation.getBytes());
+                builder.aclProvider(new ACLProvider() {
+                    @Override
+                    public List<ACL> getDefaultAcl() {
+                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                    }
+
+                    @Override
+                    public List<ACL> getAclForPath(String path) {
+                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                    }
+                });
             }
             client = builder.build();
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));
             client.start();
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
+
             if (!connected) {
-                throw new IllegalStateException("zookeeper not connected");
+                IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected");
+
+                // 5-1 Failed to connect to configuration center.
+                logger.error("5-1", "Zookeeper server offline", "",
+                    "Failed to connect with zookeeper", illegalStateException);
+
+                throw illegalStateException;
             }
+
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

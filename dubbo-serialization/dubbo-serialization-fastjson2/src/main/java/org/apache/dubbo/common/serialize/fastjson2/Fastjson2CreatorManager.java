@@ -31,7 +31,7 @@ public class Fastjson2CreatorManager implements ScopeClassLoaderListener<Framewo
     /**
      * An empty classLoader used when classLoader is system classLoader. Prevent the NPE.
      */
-    private final static ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {};
+    private static final ClassLoader SYSTEM_CLASSLOADER_KEY = new ClassLoader() {};
 
     private final Map<ClassLoader, ObjectReaderCreatorASM> readerMap = new ConcurrentHashMap<>();
     private final Map<ClassLoader, ObjectWriterCreatorASM> writerMap = new ConcurrentHashMap<>();

@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CacheableFailbackRegistryTest {
+class CacheableFailbackRegistryTest {
 
     static String service;
     static URL serviceUrl;
@@ -70,7 +70,7 @@ public class CacheableFailbackRegistryTest {
     }
 
     @Test
-    public void testFullURLCache() {
+    void testFullURLCache() {
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
@@ -101,7 +101,7 @@ public class CacheableFailbackRegistryTest {
     }
 
     @Test
-    public void testURLAddressCache() {
+    void testURLAddressCache() {
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
@@ -127,7 +127,7 @@ public class CacheableFailbackRegistryTest {
     }
 
     @Test
-    public void testURLParamCache() {
+    void testURLParamCache() {
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
@@ -153,7 +153,7 @@ public class CacheableFailbackRegistryTest {
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
@@ -193,7 +193,7 @@ public class CacheableFailbackRegistryTest {
     }
 
     @Test
-    public void testEmptyProtection() {
+    void testEmptyProtection() {
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         final AtomicReference<List<URL>> currentUrls = new AtomicReference<>();
         final List<URL> EMPTY_LIST = new ArrayList<>();
@@ -239,6 +239,4 @@ public class CacheableFailbackRegistryTest {
         assertEquals(EMPTY_LIST, currentUrls.get());
 
     }
-
-
 }

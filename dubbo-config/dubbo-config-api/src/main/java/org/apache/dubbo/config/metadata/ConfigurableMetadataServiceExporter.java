@@ -46,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 /**
  * Export metadata service
@@ -123,8 +124,12 @@ public class ConfigurableMetadataServiceExporter {
                     // metadata service may export before normal service export, it.hasNext() will return false.
                     // so need use specified protocol port.
                     if (it.hasNext()) {
-                        String addr = it.next().getAddress();
-                        String rawPort = addr.substring(addr.indexOf(":") + 1);
+                        ProtocolServer server = it.next();
+                        String rawPort = server.getUrl().getParameter(BIND_PORT_KEY);
+                        if (rawPort == null) {
+                            String addr = server.getAddress();
+                            rawPort = addr.substring(addr.indexOf(":") + 1);
+                        }
                         protocolConfig.setPort(Integer.parseInt(rawPort));
                     } else {
                         Integer protocolPort = getProtocolConfig(specifiedProtocol).getPort();
