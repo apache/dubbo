@@ -39,3 +39,6 @@ github:
     3.0:
       # only disable force push
       foo: bar
+    3.1:
+      # only disable force push
+      foo: bar
