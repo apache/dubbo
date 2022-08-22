@@ -400,7 +400,7 @@ public final class ClassGenerator {
         return getCtClass(c.getDeclaringClass()).getConstructor(ReflectUtils.getDesc(c));
     }
 
-    public interface DC {
+    public static interface DC {
 
     } // dynamic class tag interface.
 }
