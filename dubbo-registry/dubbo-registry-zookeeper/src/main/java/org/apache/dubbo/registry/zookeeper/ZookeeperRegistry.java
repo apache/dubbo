@@ -185,6 +185,14 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 try {
                     List<URL> urls = new ArrayList<>();
 
+                    /*
+                        Iterate over the category value in URL.
+                        With default settings, the path variable can be when url is a consumer URL:
+
+                            /dubbo/[service name]/providers,
+                            /dubbo/[service name]/configurators
+                            /dubbo/[service name]/routers
+                    */
                     for (String path : toCategoriesPath(url)) {
                         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                         ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
@@ -193,9 +201,13 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                             ((RegistryChildListenerImpl) zkListener).setLatch(latch);
                         }
 
+                        // create "directories".
                         zkClient.create(path, false);
+
+                        // Add children (i.e. service items).
                         List<String> children = zkClient.addChildListener(path, zkListener);
                         if (children != null) {
+                            // The invocation point that may cause 1-1.
                             urls.addAll(toUrlsWithEmpty(url, path, children));
                         }
                     }
@@ -321,6 +333,11 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         return UrlUtils.isMatch(subscribeUrl, providerUrl);
     }
 
+    /**
+     * Triggered when children get changed. It will be invoked by implementation of CuratorWatcher.
+     *
+     * 'org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
+     */
     private class RegistryChildListenerImpl implements ChildListener {
         private final ZookeeperRegistryNotifier notifier;
         private volatile CountDownLatch latch;
@@ -336,11 +353,13 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
         @Override
         public void childChanged(String path, List<String> children) {
+            // Notify 'notifiers' one by one.
             try {
                 latch.await();
             } catch (InterruptedException e) {
                 logger.warn("Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
             }
+
             notifier.notify(path, children);
         }
     }

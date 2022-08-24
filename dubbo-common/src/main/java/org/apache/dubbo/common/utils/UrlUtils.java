@@ -412,7 +412,7 @@ public class UrlUtils {
         // If the category of provider URL does not match the category of consumer URL.
         // Usually, the provider URL's category is empty, and the default category ('providers') is present.
         // Hence, the category of the provider URL is 'providers'.
-        // Through observing of the Zookeeper registry, I found that the category of the consumer URL is 'consumers'.
+        // Through observing of debugging process, I found that the category of the consumer URL is 'providers,configurators,routers'.
         if (!isMatchCategory(providerUrl.getCategory(DEFAULT_CATEGORY), consumerUrl.getCategory(DEFAULT_CATEGORY))) {
             return false;
         }

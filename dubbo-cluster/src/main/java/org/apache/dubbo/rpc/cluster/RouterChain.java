@@ -241,6 +241,7 @@ public class RouterChain<T> {
         RouterSnapshotNode<T> commonRouterNode = new RouterSnapshotNode<T>("CommonRouter", resultInvokers.clone());
         parentNode.appendNode(commonRouterNode);
         List<Invoker<T>> commonRouterResult = resultInvokers;
+
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
