@@ -20,9 +20,87 @@ public interface MetricsConstants {
 
     String PROTOCOL_PROMETHEUS = "prometheus";
 
-    String AGGREGATION_ENABLE = "aggregation.enable";
+    String TAG_IP = "ip";
 
-    String AGGREGATION_BUCKET_NUM = "aggregation.bucket.num";
+    String TAG_HOSTNAME = "hostname";
 
-    String AGGREGATION_TIME_WINDOW_SECONDS = "aggregation.time.window.seconds";
+    String TAG_APPLICATION_NAME = "application.name";
+
+    String TAG_INTERFACE_KEY = "interface";
+
+    String TAG_METHOD_KEY = "method";
+
+    String TAG_GROUP_KEY = "group";
+
+    String TAG_VERSION_KEY = "version";
+
+    String ENABLE_JVM_METRICS_KEY = "enable.jvm.metrics";
+
+    String AGGREGATION_COLLECTOR_KEY = "aggregation";
+
+    String AGGREGATION_ENABLED_KEY = "aggregation.enabled";
+
+    String AGGREGATION_BUCKET_NUM_KEY = "aggregation.bucket.num";
+
+    String AGGREGATION_TIME_WINDOW_SECONDS_KEY = "aggregation.time.window.seconds";
+
+    String PROMETHEUS_EXPORTER_ENABLED_KEY = "prometheus.exporter.enabled";
+
+    String PROMETHEUS_EXPORTER_ENABLE_HTTP_SERVICE_DISCOVERY_KEY = "prometheus.exporter.enable.http.service.discovery";
+
+    String PROMETHEUS_EXPORTER_HTTP_SERVICE_DISCOVERY_URL_KEY = "prometheus.exporter.http.service.discovery.url";
+
+    String PROMETHEUS_EXPORTER_METRICS_PORT_KEY = "prometheus.exporter.metrics.port";
+
+    String PROMETHEUS_EXPORTER_METRICS_PATH_KEY = "prometheus.exporter.metrics.path";
+
+    String PROMETHEUS_PUSHGATEWAY_ENABLED_KEY = "prometheus.pushgateway.enabled";
+
+    String PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY = "prometheus.pushgateway.base.url";
+
+    String PROMETHEUS_PUSHGATEWAY_USERNAME_KEY = "prometheus.pushgateway.username";
+
+    String PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY = "prometheus.pushgateway.password";
+
+    String PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY = "prometheus.pushgateway.push.interval";
+
+    String PROMETHEUS_PUSHGATEWAY_JOB_KEY = "prometheus.pushgateway.job";
+
+    int PROMETHEUS_DEFAULT_METRICS_PORT = 20888;
+
+    String PROMETHEUS_DEFAULT_METRICS_PATH = "/metrics";
+
+    int PROMETHEUS_DEFAULT_PUSH_INTERVAL = 30;
+
+    String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
+
+    String[] METRIC_REQUESTS_TOTAL = new String[]{ "requests.total", "Total Requests" };
+
+    String[] METRIC_REQUESTS_SUCCEED = new String[]{ "requests.succeed", "Succeed Requests" };
+
+    String[] METRIC_REQUESTS_FAILED = new String[]{ "requests.failed", "Failed Requests" };
+
+    String[] METRIC_REQUESTS_PROCESSING = new String[]{ "requests.processing", "Processing Requests" };
+
+    String[] METRIC_REQUESTS_TOTAL_AGG = new String[]{ "requests.total.aggregate", "Aggregated Total Requests" };
+
+    String[] METRIC_REQUESTS_SUCCEED_AGG = new String[]{ "requests.succeed.aggregate", "Aggregated Succeed Requests" };
+
+    String[] METRIC_REQUESTS_FAILED_AGG = new String[]{ "requests.failed.aggregate", "Aggregated Failed Requests" };
+
+    String[] METRIC_QPS = new String[]{ "qps", "Query Per Seconds" };
+
+    String[] METRIC_RT_LAST = new String[]{ "rt.last", "Last Response Time" };
+
+    String[] METRIC_RT_MIN = new String[]{ "rt.min", "Min Response Time" };
+
+    String[] METRIC_RT_MAX = new String[]{ "rt.max", "Max Response Time" };
+
+    String[] METRIC_RT_TOTAL = new String[]{ "rt.total", "Total Response Time" };
+
+    String[] METRIC_RT_AVG = new String[]{ "rt.avg", "Average Response Time" };
+
+    String[] METRIC_RT_P99 = new String[]{ "rt.p99", "Response Time P99" };
+
+    String[] METRIC_RT_P95 = new String[]{ "rt.p95", "Response Time P95" };
 }
