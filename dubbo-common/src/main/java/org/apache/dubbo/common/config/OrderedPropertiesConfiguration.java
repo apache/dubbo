@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-public class OrderedPropertiesConfiguration implements Configuration{
+public class OrderedPropertiesConfiguration implements Configuration {
     private Properties properties;
     private ModuleModel moduleModel;
 

@@ -58,6 +58,7 @@ public class MetadataUtils {
         if (getMetadataReports(applicationModel).size() == 0) {
             String msg = "Remote Metadata Report Server is not provided or unavailable, will stop registering service definition to remote center!";
             logger.warn(msg);
+            return;
         }
 
         try {

@@ -64,7 +64,7 @@ public abstract class AbstractProxyTest {
     public void testGetInvoker() throws Exception {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
-        DemoService origin = new org.apache.dubbo.rpc.support.DemoServiceImpl();
+        DemoService origin = new DemoServiceImpl();
 
         Invoker<DemoService> invoker = factory.getInvoker(new DemoServiceImpl(), DemoService.class, url);
 

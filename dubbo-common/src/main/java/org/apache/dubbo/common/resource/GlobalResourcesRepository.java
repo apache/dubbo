@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Global resources repository between all framework models.
+ * Global resource repository between all framework models.
  * It will be destroyed only after all framework model is destroyed.
  */
 public class GlobalResourcesRepository {
@@ -59,16 +59,22 @@ public class GlobalResourcesRepository {
      * @param disposable
      */
     public static void registerGlobalDisposable(Disposable disposable) {
-        synchronized (GlobalResourcesRepository.class) {
-            if (!globalReusedDisposables.contains(disposable)) {
-                globalReusedDisposables.add(disposable);
+        if (!globalReusedDisposables.contains(disposable)) {
+            synchronized (GlobalResourcesRepository.class) {
+                if (!globalReusedDisposables.contains(disposable)) {
+                    globalReusedDisposables.add(disposable);
+                }
             }
         }
     }
 
     public void removeGlobalDisposable(Disposable disposable) {
-        synchronized (GlobalResourcesRepository.class) {
-            this.globalReusedDisposables.remove(disposable);
+        if (globalReusedDisposables.contains(disposable)) {
+            synchronized (GlobalResourcesRepository.class) {
+                if (globalReusedDisposables.contains(disposable)) {
+                    this.globalReusedDisposables.remove(disposable);
+                }
+            }
         }
     }
 
@@ -125,14 +131,24 @@ public class GlobalResourcesRepository {
      * Register a one-off disposable, the disposable is removed automatically on first shutdown.
      * @param disposable
      */
-    public synchronized void registerDisposable(Disposable disposable) {
+    public void registerDisposable(Disposable disposable) {
         if (!oneoffDisposables.contains(disposable)) {
-            oneoffDisposables.add(disposable);
+            synchronized (this) {
+                if (!oneoffDisposables.contains(disposable)) {
+                    oneoffDisposables.add(disposable);
+                }
+            }
         }
     }
 
-    public synchronized void removeDisposable(Disposable disposable) {
-        this.oneoffDisposables.remove(disposable);
+    public void removeDisposable(Disposable disposable) {
+        if (oneoffDisposables.contains(disposable)) {
+            synchronized (this) {
+                if (oneoffDisposables.contains(disposable)) {
+                    oneoffDisposables.remove(disposable);
+                }
+            }
+        }
     }
 
 
