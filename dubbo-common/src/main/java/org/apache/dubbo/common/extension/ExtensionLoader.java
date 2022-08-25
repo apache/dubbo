@@ -524,8 +524,9 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
-     * will be thrown.
+     * Find the extension with the given name.
+     *
+     * @throws IllegalStateException If the specified extension is not found.
      */
     public T getExtension(String name) {
         T extension = getExtension(name, true);

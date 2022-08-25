@@ -294,10 +294,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 continue;
             }
             if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
-                logger.error(new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
+
+                // 4-1 - Unsupported protocol
+
+                logger.error("4-1", "protocol extension does not installed", "", "Unsupported protocol.",
+                    new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
                     " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
                     " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
                     getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+
                 continue;
             }
 

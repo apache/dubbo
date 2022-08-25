@@ -158,15 +158,21 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         // create new urls
         Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
+
+        // remove 'release', 'dubbo', 'methods', timestamp, 'dubbo.tag' parameter
+        // in consumer URL.
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
 
         if (oldURLs == null) {
             for (String rawProvider : providers) {
+                // remove timestamp in provider url.
                 rawProvider = stripOffVariableKeys(rawProvider);
+
+                // create DubboServiceAddress object using provider url, consumer url, and extra parameters.
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
                     // 1-1: Address invalid.
-                    logger.warn("1-1", "", "",
+                    logger.warn("1-1", "mismatch of service group and version settings", "",
                         "Invalid address, failed to parse into URL " + rawProvider);
 
                     continue;
@@ -174,14 +180,14 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 newURLs.put(rawProvider, cachedURL);
             }
         } else {
-            // maybe only default , or "env" + default
+            // maybe only default, or "env" + default
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
                 ServiceAddressURL cachedURL = oldURLs.remove(rawProvider);
                 if (cachedURL == null) {
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
-                        logger.warn("1-1", "", "",
+                        logger.warn("1-1", "mismatch of service group and version settings", "",
                             "Invalid address, failed to parse into URL " + rawProvider);
 
                         continue;
@@ -233,16 +239,31 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return urls;
     }
 
+    /**
+     * Create DubboServiceAddress object using provider url, consumer url, and extra parameters.
+     *
+     * @param rawProvider provider url string
+     * @param consumerURL URL object of consumer
+     * @param extraParameters extra parameters
+     * @return created DubboServiceAddressURL object
+     */
     protected ServiceAddressURL createURL(String rawProvider, URL consumerURL, Map<String, String> extraParameters) {
+
         boolean encoded = true;
 
         // use encoded value directly to avoid URLDecoder.decode allocation.
         int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
-        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not show, mark as not encoded.
+
+        if (paramStartIdx == -1) {
+            // if ENCODED_QUESTION_MARK does not show, mark as not encoded.
             encoded = false;
         }
 
+        // split by (encoded) question mark.
+        // part[0] => protocol + ip address + interface.
+        // part[1] => parameters (metadata).
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
+
         if (parts.length <= 1) {
             // 1-5 Received URL without any parameters.
             logger.warn("1-5", "", "",
@@ -257,16 +278,18 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         // Workaround for 'effectively final': duplicate the encoded variable.
         boolean isEncoded = encoded;
 
+        // PathURLAddress if it's using dubbo protocol.
         URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
         URLParam param = stringParam.computeIfAbsent(rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
         param.setTimestamp(System.currentTimeMillis());
 
-        ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
+        // create service URL using cached address, param, and consumer URL.
+        ServiceAddressURL cachedServiceAddressURL = createServiceURL(address, param, consumerURL);
 
-        if (isMatch(consumerURL, cachedURL)) {
-            return cachedURL;
+        if (isMatch(consumerURL, cachedServiceAddressURL)) {
+            return cachedServiceAddressURL;
         }
 
         return null;
