@@ -438,6 +438,8 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
+    String CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
+
     String ROUTER_KEY = "router";
 
     String EXPORT_ASYNC_KEY = "export-async";
