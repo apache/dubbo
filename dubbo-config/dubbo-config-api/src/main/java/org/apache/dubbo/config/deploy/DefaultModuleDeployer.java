@@ -129,10 +129,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         // initialize，maybe deadlock applicationDeployer lock & moduleDeployer lock
         applicationDeployer.initialize();
 
-        return startImpl();
+        return startSync();
     }
 
-    public synchronized Future startImpl() throws IllegalStateException {
+    public synchronized Future startSync() throws IllegalStateException {
         if (isStopping() || isStopped() || isFailed()) {
             throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
         }
