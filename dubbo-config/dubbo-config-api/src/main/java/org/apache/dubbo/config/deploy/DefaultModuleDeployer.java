@@ -125,7 +125,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    public synchronized Future start() throws IllegalStateException {
+    public Future start() throws IllegalStateException {
+        // initialize，maybe deadlock applicationDeployer lock & moduleDeployer lock
+        applicationDeployer.initialize();
+
+        return startSync();
+    }
+
+    private synchronized Future startSync() throws IllegalStateException {
         if (isStopping() || isStopped() || isFailed()) {
             throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
         }
@@ -137,8 +144,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             onModuleStarting();
 
-            // initialize
-            applicationDeployer.initialize();
+
             initialize();
 
             // export services
