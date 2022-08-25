@@ -74,33 +74,63 @@ public interface MetricsConstants {
 
     String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
 
-    String[] METRIC_REQUESTS_TOTAL = new String[]{ "requests.total", "Total Requests" };
+    String METRIC_REQUESTS_TOTAL_NAME = "requests.total";
 
-    String[] METRIC_REQUESTS_SUCCEED = new String[]{ "requests.succeed", "Succeed Requests" };
+    String METRIC_REQUESTS_TOTAL_DESC = "Total Requests";
 
-    String[] METRIC_REQUESTS_FAILED = new String[]{ "requests.failed", "Failed Requests" };
+    String METRIC_REQUESTS_SUCCEED_NAME = "requests.succeed";
 
-    String[] METRIC_REQUESTS_PROCESSING = new String[]{ "requests.processing", "Processing Requests" };
+    String METRIC_REQUESTS_SUCCEED_DESC = "Succeed Requests";
 
-    String[] METRIC_REQUESTS_TOTAL_AGG = new String[]{ "requests.total.aggregate", "Aggregated Total Requests" };
+    String METRIC_REQUESTS_FAILED_NAME = "requests.failed";
 
-    String[] METRIC_REQUESTS_SUCCEED_AGG = new String[]{ "requests.succeed.aggregate", "Aggregated Succeed Requests" };
+    String METRIC_REQUESTS_FAILED_DESC = "Failed Requests";
 
-    String[] METRIC_REQUESTS_FAILED_AGG = new String[]{ "requests.failed.aggregate", "Aggregated Failed Requests" };
+    String METRIC_REQUESTS_PROCESSING_NAME = "requests.processing";
 
-    String[] METRIC_QPS = new String[]{ "qps", "Query Per Seconds" };
+    String METRIC_REQUESTS_PROCESSING_DESC = "Processing Requests";
 
-    String[] METRIC_RT_LAST = new String[]{ "rt.last", "Last Response Time" };
+    String METRIC_REQUESTS_TOTAL_AGG_NAME = "requests.total.aggregate";
 
-    String[] METRIC_RT_MIN = new String[]{ "rt.min", "Min Response Time" };
+    String METRIC_REQUESTS_TOTAL_AGG_DESC = "Aggregated Total Requests";
 
-    String[] METRIC_RT_MAX = new String[]{ "rt.max", "Max Response Time" };
+    String METRIC_REQUESTS_SUCCEED_AGG_NAME = "requests.succeed.aggregate";
 
-    String[] METRIC_RT_TOTAL = new String[]{ "rt.total", "Total Response Time" };
+    String METRIC_REQUESTS_SUCCEED_AGG_DESC = "Aggregated Succeed Requests";
 
-    String[] METRIC_RT_AVG = new String[]{ "rt.avg", "Average Response Time" };
+    String METRIC_REQUESTS_FAILED_AGG_NAME = "requests.failed.aggregate";
 
-    String[] METRIC_RT_P99 = new String[]{ "rt.p99", "Response Time P99" };
+    String METRIC_REQUESTS_FAILED_AGG_DESC = "Aggregated Failed Requests";
 
-    String[] METRIC_RT_P95 = new String[]{ "rt.p95", "Response Time P95" };
+    String METRIC_QPS_NAME = "qps";
+
+    String METRIC_QPS_DESC = "Query Per Seconds";
+
+    String METRIC_RT_LAST_NAME = "rt.last";
+
+    String METRIC_RT_LAST_DESC = "Last Response Time";
+
+    String METRIC_RT_MIN_NAME = "rt.min";
+
+    String METRIC_RT_MIN_DESC = "Min Response Time";
+
+    String METRIC_RT_MAX_NAME = "rt.max";
+
+    String METRIC_RT_MAX_DESC = "Max Response Time";
+
+    String METRIC_RT_TOTAL_NAME = "rt.total";
+
+    String METRIC_RT_TOTAL_DESC = "Total Response Time";
+
+    String METRIC_RT_AVG_NAME = "rt.avg";
+
+    String METRIC_RT_AVG_DESC = "Average Response Time";
+
+    String METRIC_RT_P99_NAME = "rt.p99";
+
+    String METRIC_RT_P99_DESC = "Response Time P99";
+
+    String METRIC_RT_P95_NAME = "rt.p95";
+
+    String METRIC_RT_P95_DESC = "Response Time P95";
 }

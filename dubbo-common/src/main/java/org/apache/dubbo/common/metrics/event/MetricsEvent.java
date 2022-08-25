@@ -28,8 +28,9 @@ public abstract class MetricsEvent {
     protected transient Object source;
 
     public MetricsEvent(Object source) {
-        if (source == null)
+        if (source == null) {
             throw new IllegalArgumentException("null source");
+        }
 
         this.source = source;
     }

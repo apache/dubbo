@@ -33,10 +33,6 @@ public class MetricSample {
     private MetricsCategory category;
     private String baseUnit;
 
-    public MetricSample(String[] nameAndDesc, Map<String, String> tags, Type type, MetricsCategory category) {
-        this(nameAndDesc[0], nameAndDesc[1], tags, type, category, null);
-    }
-
     public MetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category) {
         this(name, description, tags, type, category, null);
     }
