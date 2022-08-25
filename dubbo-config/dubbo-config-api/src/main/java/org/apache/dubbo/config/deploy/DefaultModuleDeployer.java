@@ -129,56 +129,58 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         // initialize，maybe deadlock applicationDeployer lock & moduleDeployer lock
         applicationDeployer.initialize();
 
-        synchronized (this) {
-            if (isStopping() || isStopped() || isFailed()) {
-                throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
-            }
+        return startImpl();
+    }
 
-            try {
-                if (isStarting() || isStarted()) {
-                    return startFuture;
-                }
-
-                onModuleStarting();
-
-
-                initialize();
-
-                // export services
-                exportServices();
-
-                // prepare application instance
-                // exclude internal module to avoid wait itself
-                if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
-                    applicationDeployer.prepareInternalModule();
-                }
-
-                // refer services
-                referServices();
-
-                // if no async export/refer services, just set started
-                if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
-                    onModuleStarted();
-                } else {
-                    frameworkExecutorRepository.getSharedExecutor().submit(() -> {
-                        try {
-                            // wait for export finish
-                            waitExportFinish();
-                            // wait for refer finish
-                            waitReferFinish();
-                        } catch (Throwable e) {
-                            logger.warn("wait for export/refer services occurred an exception", e);
-                        } finally {
-                            onModuleStarted();
-                        }
-                    });
-                }
-            } catch (Throwable e) {
-                onModuleFailed(getIdentifier() + " start failed: " + e, e);
-                throw e;
-            }
-            return startFuture;
+    public synchronized Future startImpl() throws IllegalStateException {
+        if (isStopping() || isStopped() || isFailed()) {
+            throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
         }
+
+        try {
+            if (isStarting() || isStarted()) {
+                return startFuture;
+            }
+
+            onModuleStarting();
+
+
+            initialize();
+
+            // export services
+            exportServices();
+
+            // prepare application instance
+            // exclude internal module to avoid wait itself
+            if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
+                applicationDeployer.prepareInternalModule();
+            }
+
+            // refer services
+            referServices();
+
+            // if no async export/refer services, just set started
+            if (asyncExportingFutures.isEmpty() && asyncReferringFutures.isEmpty()) {
+                onModuleStarted();
+            } else {
+                frameworkExecutorRepository.getSharedExecutor().submit(() -> {
+                    try {
+                        // wait for export finish
+                        waitExportFinish();
+                        // wait for refer finish
+                        waitReferFinish();
+                    } catch (Throwable e) {
+                        logger.warn("wait for export/refer services occurred an exception", e);
+                    } finally {
+                        onModuleStarted();
+                    }
+                });
+            }
+        } catch (Throwable e) {
+            onModuleFailed(getIdentifier() + " start failed: " + e, e);
+            throw e;
+        }
+        return startFuture;
     }
 
     @Override
