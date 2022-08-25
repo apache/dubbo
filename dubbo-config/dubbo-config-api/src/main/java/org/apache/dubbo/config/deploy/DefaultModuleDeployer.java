@@ -132,7 +132,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         return startSync();
     }
 
-    public synchronized Future startSync() throws IllegalStateException {
+    private synchronized Future startSync() throws IllegalStateException {
         if (isStopping() || isStopped() || isFailed()) {
             throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
         }
