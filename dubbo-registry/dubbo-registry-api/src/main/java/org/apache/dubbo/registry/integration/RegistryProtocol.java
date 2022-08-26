@@ -150,7 +150,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     protected Protocol protocol;
     protected ProxyFactory proxyFactory;
-    //protected RegistryFactory registryFactory;
 
     private ConcurrentMap<URL, ReExportTask> reExportFailedTasks = new ConcurrentHashMap<>();
     private HashedWheelTimer retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReexportTimer", true), DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
@@ -179,11 +178,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
-
-    // Cannot inject registryFactory (application scope) into protocol (framework scope)
-//    public void setRegistryFactory(RegistryFactory registryFactory) {
-//        this.registryFactory = registryFactory;
-//    }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
