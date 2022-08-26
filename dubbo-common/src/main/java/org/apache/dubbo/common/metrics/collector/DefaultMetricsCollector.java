@@ -22,6 +22,7 @@ import org.apache.dubbo.common.metrics.event.RTEvent;
 import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
+import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -34,24 +35,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_TOTAL_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_TOTAL_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_SUCCEED_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_SUCCEED_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_FAILED_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_FAILED_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_PROCESSING_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_PROCESSING_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_LAST_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_LAST_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MIN_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MIN_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MAX_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MAX_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_TOTAL_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_TOTAL_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_AVG_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_AVG_DESC;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
 
@@ -181,24 +164,24 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_TOTAL_NAME, METRIC_REQUESTS_TOTAL_DESC, k.getTags(), REQUESTS, v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_SUCCEED_NAME, METRIC_REQUESTS_SUCCEED_DESC, k.getTags(), REQUESTS, v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_FAILED_NAME, METRIC_REQUESTS_FAILED_DESC, k.getTags(), REQUESTS, v::get)));
-        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_PROCESSING_NAME, METRIC_REQUESTS_PROCESSING_DESC, k.getTags(), REQUESTS, v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL, k.getTags(), REQUESTS, v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED, k.getTags(), REQUESTS, v::get)));
+        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_PROCESSING, k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectRT(List<MetricSample> list) {
-        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_RT_LAST_NAME, METRIC_RT_LAST_DESC, k.getTags(), RT, v::get)));
-        minRT.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_RT_MIN_NAME, METRIC_RT_MIN_DESC, k.getTags(), RT, v::get)));
-        maxRT.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_RT_MAX_NAME, METRIC_RT_MAX_DESC, k.getTags(), RT, v::get)));
+        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_LAST, k.getTags(), RT, v::get)));
+        minRT.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_MIN, k.getTags(), RT, v::get)));
+        maxRT.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_MAX, k.getTags(), RT, v::get)));
 
         totalRT.forEach((k, v) -> {
-            list.add(new GaugeMetricSample(METRIC_RT_TOTAL_NAME, METRIC_RT_TOTAL_DESC, k.getTags(), RT, v::get));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_TOTAL, k.getTags(), RT, v::get));
 
             AtomicLong avg = avgRT.get(k);
             AtomicLong count = rtCount.get(k);
             avg.set(v.get() / count.get());
-            list.add(new GaugeMetricSample(METRIC_RT_AVG_NAME, METRIC_RT_AVG_DESC, k.getTags(), RT, avg::get));
+            list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_AVG, k.getTags(), RT, avg::get));
         });
     }
 }

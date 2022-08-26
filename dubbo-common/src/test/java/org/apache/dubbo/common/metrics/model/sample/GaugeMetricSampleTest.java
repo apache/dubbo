@@ -55,5 +55,7 @@ public class GaugeMetricSampleTest {
         Assertions.assertEquals(sample.getCategory(), category);
         Assertions.assertEquals(sample.getBaseUnit(), baseUnit);
         Assertions.assertEquals(sample.getSupplier().get(), 1);
+        sample.setSupplier(() -> 2);
+        Assertions.assertEquals(sample.getSupplier().get(), 2);
     }
 }
