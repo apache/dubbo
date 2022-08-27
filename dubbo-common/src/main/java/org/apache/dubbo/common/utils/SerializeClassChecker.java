@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -36,6 +38,7 @@ public class SerializeClassChecker {
 
     private static volatile SerializeClassChecker INSTANCE = null;
 
+    private final boolean OPEN_CHECK_CLASS;
     private final boolean BLOCK_ALL_CLASS_EXCEPT_ALLOW;
     private final Set<String> CLASS_DESERIALIZE_ALLOWED_SET = new ConcurrentHashSet<>();
     private final Set<String> CLASS_DESERIALIZE_BLOCKED_SET = new ConcurrentHashSet<>();
@@ -47,7 +50,11 @@ public class SerializeClassChecker {
     private final AtomicLong counter = new AtomicLong(0);
 
     private SerializeClassChecker() {
-        String blockAllClassExceptAllow = System.getProperty(CLASS_DESERIALIZE_BLOCK_ALL, "false");
+        String openCheckClass = ConfigurationUtils.getProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "true");
+        OPEN_CHECK_CLASS = Boolean.parseBoolean(openCheckClass);
+
+        String blockAllClassExceptAllow = ConfigurationUtils.getProperty(CLASS_DESERIALIZE_BLOCK_ALL, "false");
+        
         BLOCK_ALL_CLASS_EXCEPT_ALLOW = Boolean.parseBoolean(blockAllClassExceptAllow);
 
         String[] lines;
@@ -70,8 +77,8 @@ public class SerializeClassChecker {
             logger.error("Failed to load blocked class list! Will ignore default blocked list.", e);
         }
 
-        String allowedClassList = System.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim().toLowerCase(Locale.ROOT);
-        String blockedClassList = System.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim().toLowerCase(Locale.ROOT);
+        String allowedClassList = ConfigurationUtils.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim().toLowerCase(Locale.ROOT);
+        String blockedClassList = ConfigurationUtils.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim().toLowerCase(Locale.ROOT);
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -111,6 +118,10 @@ public class SerializeClassChecker {
      * @param name class name ( all are convert to lower case )
      */
     public void validateClass(String name) {
+        if(!OPEN_CHECK_CLASS){
+            return;
+        }
+
         name = name.toLowerCase(Locale.ROOT);
         if (CACHE == CLASS_ALLOW_LFU_CACHE.get(name)) {
             return;
