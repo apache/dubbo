@@ -81,6 +81,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SVC;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
+import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -505,6 +506,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private boolean checkMeshConfig(Map<String, String> referenceParameters) {
         if (!"true".equals(referenceParameters.getOrDefault(MESH_ENABLE, "false"))) {
+            // In mesh mode, unloadClusterRelated can only be false.
+            referenceParameters.put(UNLOAD_CLUSTER_RELATED, "false");
             return false;
         }
 
@@ -598,7 +601,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
             invoker = protocolSPI.refer(interfaceClass, curUrl);
-            if (!UrlUtils.isRegistry(curUrl)) {
+            // registry url, mesh-enable and unloadClusterRelated is true, not need Cluster.
+            if (!UrlUtils.isRegistry(curUrl) &&
+                    !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);
                 invoker = Cluster.getCluster(scopeModel, Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);

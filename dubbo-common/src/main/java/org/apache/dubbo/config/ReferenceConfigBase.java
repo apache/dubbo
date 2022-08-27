@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 
 /**
  * ReferenceConfig
@@ -65,6 +66,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * The consumer config (default)
      */
     protected ConsumerConfig consumer;
+
+    /**
+     * In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
+     * Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar.
+     */
+    protected Boolean unloadClusterRelated;
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -255,6 +262,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public void setConsumer(ConsumerConfig consumer) {
         this.consumer = consumer;
+    }
+
+    @Parameter(key = UNLOAD_CLUSTER_RELATED)
+    public Boolean getUnloadClusterRelated() {
+        return unloadClusterRelated;
+    }
+
+    public void setUnloadClusterRelated(Boolean unloadClusterRelated) {
+        this.unloadClusterRelated = unloadClusterRelated;
     }
 
     public ServiceMetadata getServiceMetadata() {
