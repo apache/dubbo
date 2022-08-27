@@ -26,7 +26,7 @@ public enum MetricsKey {
     METRIC_REQUESTS_TOTAL_AGG("requests.total.aggregate", "Aggregated Total Requests"),
     METRIC_REQUESTS_SUCCEED_AGG("requests.succeed.aggregate", "Aggregated Succeed Requests"),
     METRIC_REQUESTS_FAILED_AGG("requests.failed.aggregate", "Aggregated Failed Requests"),
-    METRIC_QPS_NAME("qps", "Query Per Seconds"),
+    METRIC_QPS("qps", "Query Per Seconds"),
     METRIC_RT_LAST("rt.last", "Last Response Time"),
     METRIC_RT_MIN("rt.min", "Min Response Time"),
     METRIC_RT_MAX("rt.max", "Max Response Time"),
