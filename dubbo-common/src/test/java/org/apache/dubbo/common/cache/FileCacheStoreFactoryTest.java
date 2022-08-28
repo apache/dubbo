@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 class FileCacheStoreFactoryTest {
@@ -64,29 +62,6 @@ class FileCacheStoreFactoryTest {
         FileCacheStore store3 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
         Assertions.assertNotNull(store3.getCacheFilePath());
         store3.destroy();
-    }
-
-    @Test
-    void testInaccessiblePath() {
-        String homePath = System.getProperty("user.home");
-        String destPath = homePath + File.separator + ".dubbo-ia";
-
-        File destPathFileObject = new File(destPath);
-        Path destPathPathObject = destPathFileObject.toPath();
-
-        try {
-            if (destPathFileObject.isFile()) {
-                Files.delete(destPathPathObject);
-            }
-
-            Files.createFile(destPathPathObject);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            FileCacheStoreFactory.getInstance(homePath + File.separator + ".dubbo-ia", "cache-test", true);
-        });
     }
 
     private String getDirectoryOfClassPath() throws URISyntaxException {
