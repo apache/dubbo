@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * ListenerInvoker
@@ -45,18 +46,9 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         }
         this.invoker = invoker;
         this.listeners = listeners;
-        if (CollectionUtils.isNotEmpty(listeners)) {
-            for (InvokerListener listener : listeners) {
-                if (listener != null) {
-                    try {
-                        listener.referred(invoker);
-                    } catch (Throwable t) {
-                        logger.error(t.getMessage(), t);
-                    }
-                }
-            }
-        }
+        listenerEvent(listener -> listener.referred(invoker));
     }
+
 
     @Override
     public Class<T> getInterface() {
@@ -88,17 +80,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         try {
             invoker.destroy();
         } finally {
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                for (InvokerListener listener : listeners) {
-                    if (listener != null) {
-                        try {
-                            listener.destroyed(invoker);
-                        } catch (Throwable t) {
-                            logger.error(t.getMessage(), t);
-                        }
-                    }
-                }
-            }
+            listenerEvent(listener -> listener.destroyed(invoker));
         }
     }
 
@@ -108,5 +90,24 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
 
     public List<InvokerListener> getListeners() {
         return listeners;
+    }
+
+    private void listenerEvent(Consumer<InvokerListener> consumer) {
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            RuntimeException exception = null;
+            for (InvokerListener listener : listeners) {
+                if (listener != null) {
+                    try {
+                        consumer.accept(listener);
+                    } catch (RuntimeException t) {
+                        logger.error(t.getMessage(), t);
+                        exception = t;
+                    }
+                }
+            }
+            if (exception != null) {
+                throw exception;
+            }
+        }
     }
 }
