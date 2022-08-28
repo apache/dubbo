@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.cache;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -134,22 +135,29 @@ public final class FileCacheStoreFactory {
      * @return a file object
      */
     private static FileCacheStore getFile(String name, boolean enableFileCache) {
-        if(!enableFileCache) {
+        if (!enableFileCache) {
             return FileCacheStore.Empty.getInstance(name);
         }
+
         try {
             FileCacheStore.Builder builder = FileCacheStore.newBuilder();
             tryFileLock(builder, name);
             File file = new File(name);
+
             if (!file.exists()) {
-                file.createNewFile();
+                Path pathObjectOfFile = file.toPath();
+                Files.createFile(pathObjectOfFile);
             }
 
             builder.cacheFilePath(name)
                 .cacheFile(file);
+
             return builder.build();
         } catch (Throwable t) {
-            logger.info("Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+
+            logger.warn("0-3", "inaccessible of cache path", "",
+                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+
             return FileCacheStore.Empty.getInstance(name);
         }
     }
@@ -179,7 +187,7 @@ public final class FileCacheStoreFactory {
         builder.directoryLock(dirLock).lockFile(lockFile);
     }
 
-    protected static void removeCache(String cacheFileName) {
+    static void removeCache(String cacheFileName) {
         cacheMap.remove(cacheFileName);
     }
 
@@ -187,7 +195,7 @@ public final class FileCacheStoreFactory {
      * for unit test only
      */
     @Deprecated
-    protected static Map<String, FileCacheStore> getCacheMap() {
+    static Map<String, FileCacheStore> getCacheMap() {
         return cacheMap;
     }
 
