@@ -2,6 +2,9 @@ name: Build and Test For Dubbo 3.1
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
 env:
   FORK_COUNT: 2
   FAIL_FAST: 0
