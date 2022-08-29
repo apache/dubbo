@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -49,7 +49,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
  * Router chain
  */
 public class RouterChain<T> {
-    private static final Logger logger = LoggerFactory.getLogger(RouterChain.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RouterChain.class);
 
     /**
      * full list of addresses from registry, classified by method name.
@@ -297,7 +297,7 @@ public class RouterChain<T> {
                 if (routerSnapshotSwitcher.isEnable()) {
                     routerSnapshotSwitcher.setSnapshot(message);
                 }
-                logger.warn(message);
+                logger.warn("2-2","No provider available after route for the service","",message);
             }
         } else {
             if (logger.isInfoEnabled()) {
@@ -345,7 +345,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error("Error trying to stop router " + router.getClass(), e);
+                logger.error("2-3","route stop failed","","Error trying to stop router " + router.getClass(),e);
             }
         }
         routers = Collections.emptyList();
@@ -355,7 +355,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error("Error trying to stop stateRouter " + router.getClass(), e);
+                logger.error("2-3","StateRouter stop failed","","Error trying to stop StateRouter " + router.getClass(),e);
             }
         }
         stateRouters = Collections.emptyList();
