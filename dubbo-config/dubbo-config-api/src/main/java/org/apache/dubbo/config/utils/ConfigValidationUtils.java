@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
@@ -143,7 +143,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class ConfigValidationUtils {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigValidationUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidationUtils.class);
     /**
      * The maximum length of a <b>parameter's value</b>
      */
@@ -726,12 +726,14 @@ public class ConfigValidationUtils {
             return;
         }
         if (value.length() > maxlength) {
-            logger.error("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
+            logger.error("5-17", "the value content is too long", "", "Parameter value format error. Invalid " +
+                property + "=\"" + value + "\" is longer than " + maxlength);
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                logger.error("Invalid " + property + "=\"" + value + "\" contains illegal " +
+                logger.error("5-17", "the value content is illegal character", "", "Parameter value format error. Invalid " +
+                    property + "=\"" + value + "\" contains illegal " +
                     "character, only digit, letter, '-', '_' or '.' is legal.");
             }
         }

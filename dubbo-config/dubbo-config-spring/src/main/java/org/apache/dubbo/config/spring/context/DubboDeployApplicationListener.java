@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
@@ -44,7 +44,7 @@ import org.springframework.core.Ordered;
  */
 public class DubboDeployApplicationListener implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, Ordered {
 
-    private static final Logger logger = LoggerFactory.getLogger(DubboDeployApplicationListener.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboDeployApplicationListener.class);
 
     private ApplicationContext applicationContext;
 
@@ -130,7 +130,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
                 moduleModel.destroy();
             }
         } catch (Exception e) {
-            logger.error("An error occurred when stop dubbo module: " + e.getMessage(), e);
+            logger.error("5-20", "", "", "Unexpected error occurred when stop dubbo module: " + e.getMessage(), e);
         }
         // remove context bind cache
         DubboSpringInitializer.remove(event.getApplicationContext());
