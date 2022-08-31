@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -59,7 +59,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_STICKY;
  */
 public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractClusterInvoker.class);
 
     protected Directory<T> directory;
 
@@ -213,11 +213,11 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                         //Avoid collision
                         invoker = invokers.get((index + 1) % invokers.size());
                     } catch (Exception e) {
-                        logger.warn(e.getMessage() + " may because invokers list dynamic change, ignore.", e);
+                        logger.warn("2-5","select invokers exception","",e.getMessage() + " may because invokers list dynamic change, ignore.",e);
                     }
                 }
             } catch (Throwable t) {
-                logger.error("cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url", t);
+                logger.error("2-5","failed to reselect invokers","","cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url",t);
             }
         }
 
