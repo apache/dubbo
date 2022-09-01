@@ -138,8 +138,8 @@ public final class NetUtils {
 
     /**
      * Check the port whether is in use in os
-     * @param port
-     * @return
+     * @param port port to check
+     * @return true if it's occupied
      */
     public static boolean isPortInUsed(int port) {
         try (ServerSocket ignored = new ServerSocket(port)) {
@@ -150,10 +150,24 @@ public final class NetUtils {
         return true;
     }
 
+    /**
+     * Tells whether the port to test is an invalid port.
+     *
+     * @implNote Numeric comparison only.
+     * @param port port to test
+     * @return true if invalid
+     */
     public static boolean isInvalidPort(int port) {
         return port < MIN_PORT || port > MAX_PORT;
     }
 
+    /**
+     * Tells whether the address to test is an invalid address.
+     *
+     * @implNote Pattern matching only.
+     * @param address address to test
+     * @return true if invalid
+     */
     public static boolean isValidAddress(String address) {
         return ADDRESS_PATTERN.matcher(address).matches();
     }
@@ -243,8 +257,10 @@ public final class NetUtils {
 
         InetAddress address = getLocalAddress();
         if (address != null) {
-            return HOST_ADDRESS = address.getHostAddress();
+            HOST_ADDRESS = address.getHostAddress();
+            return HOST_ADDRESS;
         }
+
         return LOCALHOST_VALUE;
     }
 
@@ -536,19 +552,24 @@ public final class NetUtils {
         return sb.toString();
     }
 
+    @SuppressWarnings("deprecation")
     public static void joinMulticastGroup(MulticastSocket multicastSocket, InetAddress multicastAddress) throws
         IOException {
         setInterface(multicastSocket, multicastAddress instanceof Inet6Address);
+
+        // For the deprecation notice: the equivalent only appears in JDK 9+.
         multicastSocket.setLoopbackMode(false);
         multicastSocket.joinGroup(multicastAddress);
     }
 
+    @SuppressWarnings("deprecation")
     public static void setInterface(MulticastSocket multicastSocket, boolean preferIpv6) throws IOException {
         boolean interfaceSet = false;
         for (NetworkInterface networkInterface : getValidNetworkInterfaces()) {
-            Enumeration addresses = networkInterface.getInetAddresses();
+            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+
             while (addresses.hasMoreElements()) {
-                InetAddress address = (InetAddress) addresses.nextElement();
+                InetAddress address = addresses.nextElement();
                 if (preferIpv6 && address instanceof Inet6Address) {
                     try {
                         if (address.isReachable(100)) {
@@ -618,7 +639,7 @@ public final class NetUtils {
             splitCharacter = SPLIT_IPV6_CHARACTER;
         }
         String[] mask = pattern.split(splitCharacter);
-        //check format of pattern
+        // check format of pattern
         checkHostPattern(pattern, mask, isIpv4);
 
         host = inetAddress.getHostAddress();
@@ -633,6 +654,7 @@ public final class NetUtils {
         }
 
         String[] ipAddress = host.split(splitCharacter);
+
         for (int i = 0; i < mask.length; i++) {
             if ("*".equals(mask[i]) || mask[i].equals(ipAddress[i])) {
                 continue;
