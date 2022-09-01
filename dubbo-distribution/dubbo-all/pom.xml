@@ -311,6 +311,20 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-kubernetes</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-xds</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
 
         <!-- Transitive dependencies -->
@@ -444,6 +458,8 @@
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
                                     <include>org.apache.dubbo:dubbo-serialization</include>
                                     <include>org.apache.dubbo:dubbo-compiler</include>
+                                    <include>org.apache.dubbo:dubbo-kubernetes</include>
+                                    <include>org.apache.dubbo:dubbo-xds</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
