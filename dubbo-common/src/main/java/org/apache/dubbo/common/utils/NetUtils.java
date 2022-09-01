@@ -57,11 +57,25 @@ import static org.apache.dubbo.common.utils.CollectionUtils.first;
 /**
  * IP and Port Helper for RPC
  */
-public class NetUtils {
+public final class NetUtils {
+
+    /**
+     * Forbids instantiation.
+     */
+    private NetUtils() {
+        throw new UnsupportedOperationException("No instance of 'NetUtils' for you! ");
+    }
 
     private static Logger logger;
 
     static {
+        /*
+            DO NOT replace this logger to error type aware logger (or fail-safe logger), since its
+            logging method calls NetUtils.getLocalHost().
+
+            According to issue #4992, getLocalHost() method will be endless recursively invoked when network disconnected.
+        */
+
         logger = LoggerFactory.getLogger(NetUtils.class);
         if (logger instanceof FailsafeLogger) {
             logger = ((FailsafeLogger) logger).getLogger();
@@ -96,15 +110,16 @@ public class NetUtils {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
 
-    public synchronized static int getAvailablePort() {
+    public static synchronized int getAvailablePort() {
         int randomPort = getRandomPort();
         return getAvailablePort(randomPort);
     }
 
-    public synchronized static int getAvailablePort(int port) {
-         if (port < MIN_PORT) {
+    public static synchronized int getAvailablePort(int port) {
+        if (port < MIN_PORT) {
             return MIN_PORT;
         }
+
         for (int i = port; i < MAX_PORT; i++) {
             if (USED_PORT.get(i)) {
                 continue;
@@ -352,7 +367,7 @@ public class NetUtils {
                 try {                     
                     matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
                 } catch (PatternSyntaxException e) {
-                    // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
+                    // if trimIgnoredInterface is an invalid regular expression, a PatternSyntaxException will be thrown out
                     logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
                 } finally {
                     if (matched) {
