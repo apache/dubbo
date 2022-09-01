@@ -55,6 +55,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.protocol.name=dubbo",
         "dubbo.protocol.port=20880",
         "dubbo.metrics.protocol=prometheus",
+        "dubbo.metrics.my-metrics.enable-jvm-metrics=true",
         "dubbo.metrics.prometheus.exporter.enabled=true",
         "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
         "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
@@ -107,6 +108,7 @@ public class SpringBootConfigPropsTest {
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
+        Assertions.assertTrue(metricsConfig.getEnableJvmMetrics());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
         Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
