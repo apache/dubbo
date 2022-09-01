@@ -61,7 +61,7 @@ public class MetricsFilterTest {
         applicationModel.getApplicationConfigManager().setApplication(config);
 
         invocation = new RpcInvocation();
-        filter =  new MetricsFilter();
+        filter = new MetricsFilter();
 
         collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         filter.setApplicationModel(applicationModel);
@@ -132,7 +132,7 @@ public class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{ String.class });
+        invocation.setParameterTypes(new Class[]{String.class});
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
@@ -152,7 +152,7 @@ public class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{ String.class });
+        invocation.setParameterTypes(new Class[]{String.class});
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
@@ -172,7 +172,7 @@ public class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         invocation.setTargetServiceUniqueName(INTERFACE_NAME);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{ String.class });
+        invocation.setParameterTypes(new Class[]{String.class});
 
         filter.invoke(invoker, invocation);
         Map<String, MetricSample> metricsMap = getMetricsMap();
@@ -189,7 +189,7 @@ public class MetricsFilterTest {
     private void initParam() {
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{ String.class });
+        invocation.setParameterTypes(new Class[]{String.class});
     }
 
     private Map<String, MetricSample> getMetricsMap() {

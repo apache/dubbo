@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.cluster.merger;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.TypeUtils;
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class MergerFactory implements ScopeModelAware {
 
-    private static final Logger logger = LoggerFactory.getLogger(MergerFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MergerFactory.class);
 
     private ConcurrentMap<Class<?>, Merger<?>> MERGER_CACHE = new ConcurrentHashMap<Class<?>, Merger<?>>();
     private ScopeModel scopeModel;
@@ -73,7 +73,7 @@ public class MergerFactory implements ScopeModelAware {
             Merger m = scopeModel.getExtensionLoader(Merger.class).getExtension(name);
             Class<?> actualTypeArg = getActualTypeArgument(m.getClass());
             if (actualTypeArg == null) {
-                logger.warn("Failed to get actual type argument from merger " + m.getClass().getName());
+                logger.warn("2-4","load merger config failed","","Failed to get actual type argument from merger " + m.getClass().getName());
                 continue;
             }
             MERGER_CACHE.putIfAbsent(actualTypeArg, m);
