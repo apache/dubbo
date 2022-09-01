@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -53,7 +53,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
  */
 public class ConfigurableMetadataServiceExporter {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private MetadataServiceDelegation metadataService;
 
@@ -139,7 +139,7 @@ public class ConfigurableMetadataServiceExporter {
                     }
                 }
             } catch (Exception e) {
-                logger.error("Failed to find any valid " + specifiedProtocol + " protocol, will use random port to export metadata service.");
+                logger.error("5-16", "invalid specified " + specifiedProtocol + "  protocol", "", "Failed to find any valid protocol, will use random port to export metadata service.", e);
             }
         } else {
             protocolConfig.setPort(port);
