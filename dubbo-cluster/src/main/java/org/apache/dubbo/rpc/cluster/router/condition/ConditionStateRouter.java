@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.condition;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -61,7 +61,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     public static final String NAME = "condition";
 
-    private static final Logger logger = LoggerFactory.getLogger(ConditionStateRouter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractStateRouter.class);
     protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected static Pattern ARGUMENTS_PATTERN = Pattern.compile("arguments\\[([0-9]+)\\]");
     protected Map<String, MatchPair> whenCondition;
@@ -202,8 +202,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 return invokers;
             }
             if (thenCondition == null) {
-                logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
-                if (needToPrintMessage) {
+                logger.warn("2-6","condition state router thenCondition is empt","","The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());                if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: ThenCondition is empty.");
                 }
                 return BitList.emptyList();
@@ -217,15 +216,14 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 }
                 return result;
             } else if (this.isForce()) {
-                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
-
+                logger.warn("2-6","execute condition state router result list is empty. and force=true","","The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
                 }
                 return result;
             }
         } catch (Throwable t) {
-            logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
+            logger.error("2-7","execute condition state router exception","","Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(),t);
         }
         if (needToPrintMessage) {
             messageHolder.set("Directly return. Reason: Error occurred ( or result is empty ).");
@@ -325,7 +323,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 return true;
             }
         } catch (Exception e) {
-            logger.warn("Arguments match failed, matchPair[]" + matchPair + "] invocation[" + invocation + "]", e);
+            logger.warn("2-7","condition state router arguments match failed","","Arguments match failed, matchPair[]" + matchPair + "] invocation[" + invocation + "]",e);
         }
 
         return false;
