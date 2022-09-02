@@ -78,7 +78,7 @@ public class SpringStatusChecker implements StatusChecker {
             while (cls != null && method == null) {
                 try {
                     method = cls.getDeclaredMethod("getConfigLocations", new Class<?>[0]);
-                } catch (NoSuchMethodException | UnsupportedOperationException  t) {
+                } catch (NoSuchMethodException t) {
                     cls = cls.getSuperclass();
                 }
             }
@@ -96,10 +96,12 @@ public class SpringStatusChecker implements StatusChecker {
                     }
                 }
             }
-        } catch (UnsupportedOperationException t) {
-            logger.debug(t.getMessage(), t);
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            if (t.getCause() instanceof UnsupportedOperationException){
+                logger.debug(t.getMessage(), t);
+            }else {
+                logger.warn(t.getMessage(), t);
+            }
         }
         return new Status(level, buf.toString());
     }
