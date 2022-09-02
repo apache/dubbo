@@ -21,6 +21,7 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -34,8 +35,7 @@ public class DubboCodecSupport {
         if (serializationTypeObj != null) {
             return CodecSupport.getSerializationById((byte) serializationTypeObj);
         }
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
     }
 
     public static Serialization getResponseSerialization(URL url, AppResponse appResponse) {
@@ -47,7 +47,6 @@ public class DubboCodecSupport {
                 return CodecSupport.getSerializationById((byte) serializationTypeObj);
             }
         }
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
     }
 }

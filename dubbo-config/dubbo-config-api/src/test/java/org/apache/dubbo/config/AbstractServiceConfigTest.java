@@ -177,6 +177,13 @@ public class AbstractServiceConfigTest {
         assertThat(serviceConfig.getSerialization(), equalTo("serialization"));
     }
 
+    @Test
+    public void testPreferSerialization() throws Exception {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setPreferSerialization("fastjson2");
+        assertThat(serviceConfig.getSerialization(), equalTo("fastjson2"));
+    }
+
 
     private static class ServiceConfig extends AbstractServiceConfig {
 

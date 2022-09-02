@@ -20,16 +20,11 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CompatibleTypeUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.rpc.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 /**
  * CompatibleFilter make the remote method's return value compatible to invoker's version of object.
@@ -63,7 +58,7 @@ public class CompatibleFilter implements Filter, Filter.Listener {
                     Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
                     Class<?> type = method.getReturnType();
                     Object newValue;
-                    String serialization = invoker.getUrl().getParameter(SERIALIZATION_KEY);
+                    String serialization = UrlUtils.serializationOrDefault(invoker.getUrl());
                     if ("json".equals(serialization) || "fastjson".equals(serialization)) {
                         // If the serialization key is json or fastjson
                         Type gtype = method.getGenericReturnType();

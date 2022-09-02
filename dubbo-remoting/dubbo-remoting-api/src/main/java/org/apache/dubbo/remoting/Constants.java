@@ -79,6 +79,11 @@ public interface Constants {
 
     String SERIALIZATION_KEY = "serialization";
 
+    /**
+     * Prefer serialization
+     */
+    String PREFER_SERIALIZATION_KEY = "prefer_serialization";
+
     String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
 
     String CODEC_KEY = "codec";
