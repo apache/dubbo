@@ -21,7 +21,6 @@ import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
 
 /**
  * OverrideConfigurator
- *
  */
 public class OverrideConfigurator extends AbstractConfigurator {
 
