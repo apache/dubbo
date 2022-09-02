@@ -32,7 +32,11 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
@@ -54,7 +58,10 @@ public class CodecSupport {
             Serialization serialization = extensionLoader.getExtension(name);
             byte idByte = serialization.getContentTypeId();
             if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
-                logger.error("Serialization extension " + serialization.getClass().getName() + " has duplicate id to Serialization extension " + ID_SERIALIZATION_MAP.get(idByte).getClass().getName() + ", ignore this Serialization extension");
+                logger.error("Serialization extension " + serialization.getClass().getName()
+                        + " has duplicate id to Serialization extension "
+                        + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
+                        + ", ignore this Serialization extension");
                 continue;
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
@@ -166,6 +173,13 @@ public class CodecSupport {
 
     }
 
+    /**
+     * Is Match
+     *
+     * @param url url
+     * @param id  id
+     * @return boolean
+     */
     private static boolean isMatch(URL url, Byte id) {
         Byte localId;
         for (String serialization : UrlUtils.allSerializations(url)) {
