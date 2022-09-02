@@ -154,7 +154,7 @@ public class DubboInvokerAvailableTest {
     /**
      * The test prefer serialization
      *
-     * @throws Exception 异常
+     * @throws Exception Exception
      */
     @Test
     public void testPreferSerialization() throws Exception {
