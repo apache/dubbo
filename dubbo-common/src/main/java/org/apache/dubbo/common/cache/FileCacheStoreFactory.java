@@ -90,6 +90,8 @@ public final class FileCacheStoreFactory {
             try {
                 Files.createDirectories(path);
             } catch (IOException e) {
+                // 0-3 - cache path inaccessible
+
                 logger.error("0-3", "inaccessible of cache path", "",
                     "Cache store path can't be created: ", e);
 
