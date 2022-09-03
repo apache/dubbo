@@ -21,7 +21,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -48,7 +48,7 @@ import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
  */
 public class TagStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
-    private static final Logger logger = LoggerFactory.getLogger(TagStateRouter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
 
     private TagRouterRule tagRouterRule;
@@ -72,8 +72,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 this.tagRouterRule = TagRuleParser.parse(event.getContent());
             }
         } catch (Exception e) {
-            logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the " +
-                "rule matches with the template, the raw rule is:\n ", e);
+            logger.error("2-11","Failed to parse the raw tag router rule","","Failed to parse the raw tag router rule and it will not take effect, please check if the " +
+                "rule matches with the template, the raw rule is:\n ",e);
         }
     }
 
@@ -235,7 +235,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                     return true;
                 }
             } catch (Exception e) {
-                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+                logger.error("2-11","tag route address is invalid","","The format of ip address is invalid in tag route. Address :" + address,e);
             }
         }
         return false;
@@ -256,7 +256,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         String providerApplication = url.getRemoteApplication();
 
         if (StringUtils.isEmpty(providerApplication)) {
-            logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application " +
+            logger.error("2-12","tag router get providerApplication is empty","","TagRouter must getConfig from or subscribe to a specific application, but the application " +
                 "in this TagRouter is not specified.");
             return;
         }
