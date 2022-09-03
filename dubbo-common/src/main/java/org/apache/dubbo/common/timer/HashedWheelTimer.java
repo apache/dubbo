@@ -52,14 +52,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
  * You can increase or decrease the accuracy of the execution timing by
  * specifying smaller or larger tick duration in the constructor.  In most
  * network applications, I/O timeout does not need to be accurate.  Therefore,
- * the default tick duration is 100 milliseconds and you will not need to try
+ * the default tick duration is 100 milliseconds, and you will not need to try
  * different configurations in most cases.
  *
  * <h3>Ticks per Wheel (Wheel Size)</h3>
  * <p>
  * {@link HashedWheelTimer} maintains a data structure called 'wheel'.
  * To put simply, a wheel is a hash table of {@link TimerTask}s whose hash
- * function is 'dead line of the task'.  The default number of ticks per wheel
+ * function is 'deadline of the task'.  The default number of ticks per wheel
  * (i.e. the size of the wheel) is 512.  You could specify a larger value
  * if you are going to schedule a lot of timeouts.
  *
