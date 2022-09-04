@@ -57,11 +57,25 @@ import static org.apache.dubbo.common.utils.CollectionUtils.first;
 /**
  * IP and Port Helper for RPC
  */
-public class NetUtils {
+public final class NetUtils {
+
+    /**
+     * Forbids instantiation.
+     */
+    private NetUtils() {
+        throw new UnsupportedOperationException("No instance of 'NetUtils' for you! ");
+    }
 
     private static Logger logger;
 
     static {
+        /*
+            DO NOT replace this logger to error type aware logger (or fail-safe logger), since its
+            logging method calls NetUtils.getLocalHost().
+
+            According to issue #4992, getLocalHost() method will be endless recursively invoked when network disconnected.
+        */
+
         logger = LoggerFactory.getLogger(NetUtils.class);
         if (logger instanceof FailsafeLogger) {
             logger = ((FailsafeLogger) logger).getLogger();
@@ -96,15 +110,16 @@ public class NetUtils {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
 
-    public synchronized static int getAvailablePort() {
+    public static synchronized int getAvailablePort() {
         int randomPort = getRandomPort();
         return getAvailablePort(randomPort);
     }
 
-    public synchronized static int getAvailablePort(int port) {
-         if (port < MIN_PORT) {
+    public static synchronized int getAvailablePort(int port) {
+        if (port < MIN_PORT) {
             return MIN_PORT;
         }
+
         for (int i = port; i < MAX_PORT; i++) {
             if (USED_PORT.get(i)) {
                 continue;
@@ -123,8 +138,8 @@ public class NetUtils {
 
     /**
      * Check the port whether is in use in os
-     * @param port
-     * @return
+     * @param port port to check
+     * @return true if it's occupied
      */
     public static boolean isPortInUsed(int port) {
         try (ServerSocket ignored = new ServerSocket(port)) {
@@ -135,10 +150,24 @@ public class NetUtils {
         return true;
     }
 
+    /**
+     * Tells whether the port to test is an invalid port.
+     *
+     * @implNote Numeric comparison only.
+     * @param port port to test
+     * @return true if invalid
+     */
     public static boolean isInvalidPort(int port) {
         return port < MIN_PORT || port > MAX_PORT;
     }
 
+    /**
+     * Tells whether the address to test is an invalid address.
+     *
+     * @implNote Pattern matching only.
+     * @param address address to test
+     * @return true if invalid
+     */
     public static boolean isValidAddress(String address) {
         return ADDRESS_PATTERN.matcher(address).matches();
     }
@@ -228,8 +257,10 @@ public class NetUtils {
 
         InetAddress address = getLocalAddress();
         if (address != null) {
-            return HOST_ADDRESS = address.getHostAddress();
+            HOST_ADDRESS = address.getHostAddress();
+            return HOST_ADDRESS;
         }
+
         return LOCALHOST_VALUE;
     }
 
@@ -352,7 +383,7 @@ public class NetUtils {
                 try {                     
                     matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
                 } catch (PatternSyntaxException e) {
-                    // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
+                    // if trimIgnoredInterface is an invalid regular expression, a PatternSyntaxException will be thrown out
                     logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
                 } finally {
                     if (matched) {
@@ -521,19 +552,24 @@ public class NetUtils {
         return sb.toString();
     }
 
+    @SuppressWarnings("deprecation")
     public static void joinMulticastGroup(MulticastSocket multicastSocket, InetAddress multicastAddress) throws
         IOException {
         setInterface(multicastSocket, multicastAddress instanceof Inet6Address);
+
+        // For the deprecation notice: the equivalent only appears in JDK 9+.
         multicastSocket.setLoopbackMode(false);
         multicastSocket.joinGroup(multicastAddress);
     }
 
+    @SuppressWarnings("deprecation")
     public static void setInterface(MulticastSocket multicastSocket, boolean preferIpv6) throws IOException {
         boolean interfaceSet = false;
         for (NetworkInterface networkInterface : getValidNetworkInterfaces()) {
-            Enumeration addresses = networkInterface.getInetAddresses();
+            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+
             while (addresses.hasMoreElements()) {
-                InetAddress address = (InetAddress) addresses.nextElement();
+                InetAddress address = addresses.nextElement();
                 if (preferIpv6 && address instanceof Inet6Address) {
                     try {
                         if (address.isReachable(100)) {
@@ -603,7 +639,7 @@ public class NetUtils {
             splitCharacter = SPLIT_IPV6_CHARACTER;
         }
         String[] mask = pattern.split(splitCharacter);
-        //check format of pattern
+        // check format of pattern
         checkHostPattern(pattern, mask, isIpv4);
 
         host = inetAddress.getHostAddress();
@@ -618,6 +654,7 @@ public class NetUtils {
         }
 
         String[] ipAddress = host.split(splitCharacter);
+
         for (int i = 0; i < mask.length; i++) {
             if ("*".equals(mask[i]) || mask[i].equals(ipAddress[i])) {
                 continue;

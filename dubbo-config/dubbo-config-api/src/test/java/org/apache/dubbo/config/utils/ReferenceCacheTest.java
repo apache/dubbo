@@ -83,23 +83,23 @@ public class ReferenceCacheTest {
         assertEquals(value, cache.get("group1/org.apache.dubbo.config.utils.service.FooService:1.0.0", FooService.class));
     }
 
-//    @Test
-//    public void testGetCacheDiffName() throws Exception {
-//        ReferenceCache cache = ReferenceCache.getCache();
-//        MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
-//        assertEquals(0L, config.getCounter());
-//        cache.get(config);
-//        assertTrue(config.isGetMethodRun());
-//        assertEquals(1L, config.getCounter());
-//
-//        cache = ReferenceCache.getCache("foo");
-//        config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
-//        assertEquals(1L, config.getCounter());
-//        cache.get(config);
-//        // still init for the same ReferenceConfig if the cache is different
-//        assertTrue(config.isGetMethodRun());
-//        assertEquals(2L, config.getCounter());
-//    }
+    @Test
+    public void testGetCacheDiffName() throws Exception {
+        SimpleReferenceCache cache = SimpleReferenceCache.getCache();
+        MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        assertEquals(0L, config.getCounter());
+        cache.get(config);
+        assertTrue(config.isGetMethodRun());
+        assertEquals(1L, config.getCounter());
+
+        cache = SimpleReferenceCache.getCache("foo");
+        config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
+        assertEquals(1L, config.getCounter());
+        cache.get(config);
+        // still init for the same ReferenceConfig if the cache is different
+        assertTrue(config.isGetMethodRun());
+        assertEquals(2L, config.getCounter());
+    }
 
     @Test
     public void testDestroy() throws Exception {

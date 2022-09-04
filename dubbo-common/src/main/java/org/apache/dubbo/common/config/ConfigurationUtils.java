@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
@@ -47,7 +48,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 /**
  * Utilities for manipulating configurations from different sources
  */
-public class ConfigurationUtils {
+public final class ConfigurationUtils {
+
+    /**
+     * Forbids instantiation.
+     */
+    private ConfigurationUtils() {
+        throw new UnsupportedOperationException("No instance of 'ConfigurationUtils' for you! ");
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
     private static final List<String> securityKey;
 
@@ -75,13 +84,12 @@ public class ConfigurationUtils {
      *
      * @return
      */
-
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
         return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
-     * Used to get an composite property value.
+     * Used to get a composite property value.
      * <p>
      * Also see {@link Environment#getConfiguration()}
      *

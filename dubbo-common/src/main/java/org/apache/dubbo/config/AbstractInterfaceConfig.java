@@ -173,7 +173,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String ondisconnect;
 
     /**
-     * The metrics configuration
+     * The metadata report configuration
      */
     protected MetadataReportConfig metadataReportConfig;
 
@@ -223,11 +223,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-        // remove this config from old ConfigManager
-//        if (oldScopeModel != null && oldScopeModel instanceof ModuleModel) {
-//            ((ModuleModel)oldScopeModel).getConfigManager().removeConfig(this);
-//        }
-
         // change referenced config's scope model
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
         if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
@@ -287,8 +282,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
+
      * To obtain the method list in the port, use reflection when in native mode and javaassist otherwise.
-     *
      * @param interfaceClass
      * @return
      */
@@ -456,7 +451,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
 
         try {
-            //Check if the localClass a constructor with parameter who's type is interfaceClass
+            //Check if the localClass a constructor with parameter whose type is interfaceClass
             ReflectUtils.findConstructor(localClass, interfaceClass);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() +
@@ -596,7 +591,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public void setProxy(String proxy) {
-
         this.proxy = proxy;
     }
 
