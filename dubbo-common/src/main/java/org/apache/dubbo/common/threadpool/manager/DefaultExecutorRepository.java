@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY;
@@ -83,8 +84,14 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(getExecutorKey(url), k -> new ConcurrentHashMap<>());
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
+
+        String protocol = url.getProtocol();
+        if (StringUtils.isEmpty(protocol)) {
+            protocol = DEFAULT_PROTOCOL;
+        }
+
         if (url.getParameter(THREAD_NAME_KEY) == null) {
-            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-" + portKey);
+            url = url.putAttribute(THREAD_NAME_KEY, protocol + "-protocol-" + portKey);
         }
         URL finalUrl = url;
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));

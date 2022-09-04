@@ -40,7 +40,8 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
 /**
- * FailbackRegistry. (SPI, Prototype, ThreadSafe)
+ * A template implementation of registry service that provides auto-retry ability.
+ * (SPI, Prototype, ThreadSafe)
  */
 public abstract class FailbackRegistry extends AbstractRegistry {
 

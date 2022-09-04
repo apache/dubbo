@@ -60,7 +60,16 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();
         if (!isConnected) {
-            throw new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
+
+            IllegalStateException illegalStateException =
+                new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
+
+            if (logger != null) {
+                logger.error("5-1", "configuration server offline", "",
+                    "Failed to connect with zookeeper", illegalStateException);
+            }
+
+            throw illegalStateException;
         }
     }
 

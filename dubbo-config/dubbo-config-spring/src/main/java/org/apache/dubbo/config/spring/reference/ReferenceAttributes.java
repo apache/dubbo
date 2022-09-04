@@ -52,6 +52,8 @@ public interface ReferenceAttributes {
 
     String PROVIDED_BY = "providedBy";
 
+    String PROVIDER_PORT = "providerPort";
+
     String URL = "url";
 
     String CLIENT = "client";

@@ -15,11 +15,11 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.ErrorHandler;
 import org.springframework.util.SocketUtils;
@@ -43,7 +43,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
     /**
      * Logger.
      */
-    private static final Logger logger = LoggerFactory.getLogger(EmbeddedZooKeeper.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EmbeddedZooKeeper.class);
 
     /**
      * ZooKeeper client port. This will be determined dynamically upon startup.
@@ -238,7 +238,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 if (errorHandler != null) {
                     errorHandler.handleError(e);
                 } else {
-                    logger.error("Exception running embedded ZooKeeper", e);
+                    logger.error("5-19", "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
                 }
             }
         }

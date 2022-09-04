@@ -64,9 +64,16 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGIST
 public class UrlUtils {
 
     /**
+     * Forbids the instantiation.
+     */
+    private UrlUtils() {
+        throw new UnsupportedOperationException("No instance of 'UrlUtils' for you! ");
+    }
+
+    /**
      * in the url string,mark the param begin
      */
-    private final static String URL_PARAM_STARTING_SYMBOL = "?";
+    private static final String URL_PARAM_STARTING_SYMBOL = "?";
 
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (StringUtils.isEmpty(address)) {
@@ -212,7 +219,8 @@ public class UrlUtils {
     }
 
     public static Map<String, String> convertSubscribe(Map<String, String> subscribe) {
-        Map<String, String> newSubscribe = new HashMap<String, String>();
+        Map<String, String> newSubscribe = new HashMap<>();
+
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
             String serviceName = entry.getKey();
             String serviceQuery = entry.getValue();
@@ -234,11 +242,13 @@ public class UrlUtils {
                 newSubscribe.put(serviceName, serviceQuery);
             }
         }
+
         return newSubscribe;
     }
 
     public static Map<String, Map<String, String>> revertRegister(Map<String, Map<String, String>> register) {
-        Map<String, Map<String, String>> newRegister = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> newRegister = new HashMap<>();
+
         for (Map.Entry<String, Map<String, String>> entry : register.entrySet()) {
             String serviceName = entry.getKey();
             Map<String, String> serviceUrls = entry.getValue();
@@ -265,11 +275,14 @@ public class UrlUtils {
                 newRegister.put(serviceName, serviceUrls);
             }
         }
+
         return newRegister;
     }
 
     public static Map<String, String> revertSubscribe(Map<String, String> subscribe) {
-        Map<String, String> newSubscribe = new HashMap<String, String>();
+
+        Map<String, String> newSubscribe = new HashMap<>();
+
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
             String serviceName = entry.getKey();
             String serviceQuery = entry.getValue();
@@ -385,32 +398,47 @@ public class UrlUtils {
     public static boolean isMatch(URL consumerUrl, URL providerUrl) {
         String consumerInterface = consumerUrl.getServiceInterface();
         String providerInterface = providerUrl.getServiceInterface();
-        //FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I think it's ok to add this condition.
+
+        // FIXME accept providerUrl with '*' as interface name, after carefully thought about all possible scenarios I think it's ok to add this condition.
+
+        // Return false if the consumer interface is not equals the provider interface,
+        // except one of the interface configurations is equals '*' (i.e. any value).
         if (!(ANY_VALUE.equals(consumerInterface)
             || ANY_VALUE.equals(providerInterface)
             || StringUtils.isEquals(consumerInterface, providerInterface))) {
             return false;
         }
 
-        if (!isMatchCategory(providerUrl.getCategory(DEFAULT_CATEGORY),
-            consumerUrl.getCategory(DEFAULT_CATEGORY))) {
+        // If the category of provider URL does not match the category of consumer URL.
+        // Usually, the provider URL's category is empty, and the default category ('providers') is present.
+        // Hence, the category of the provider URL is 'providers'.
+        // Through observing of debugging process, I found that the category of the consumer URL is 'providers,configurators,routers'.
+        if (!isMatchCategory(providerUrl.getCategory(DEFAULT_CATEGORY), consumerUrl.getCategory(DEFAULT_CATEGORY))) {
             return false;
         }
+
+        // If the provider is not enabled, return false.
         if (!providerUrl.getParameter(ENABLED_KEY, true)
             && !ANY_VALUE.equals(consumerUrl.getParameter(ENABLED_KEY))) {
             return false;
         }
 
+        // Obtain consumer's group, version and classifier.
         String consumerGroup = consumerUrl.getGroup();
         String consumerVersion = consumerUrl.getVersion();
         String consumerClassifier = consumerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
 
+        // Obtain provider's group, version and classifier.
         String providerGroup = providerUrl.getGroup();
         String providerVersion = providerUrl.getVersion();
         String providerClassifier = providerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
-        return (ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
-            && (ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
-            && (consumerClassifier == null || ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
+
+        // If Group, Version, Classifier all matches, return true.
+        boolean groupMatches = ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup);
+        boolean versionMatches = ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion);
+        boolean classifierMatches = consumerClassifier == null || ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier);
+
+        return groupMatches && versionMatches && classifierMatches;
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {

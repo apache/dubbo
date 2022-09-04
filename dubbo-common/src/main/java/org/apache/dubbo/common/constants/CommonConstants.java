@@ -438,6 +438,8 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
+    String CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
+
     String ROUTER_KEY = "router";
 
     String EXPORT_ASYNC_KEY = "export-async";
@@ -545,5 +547,32 @@ public interface CommonConstants {
     String OPTIMIZER_KEY = "optimizer";
 
     String PREFER_JSON_FRAMEWORK_NAME = "dubbo.json-framework.prefer";
+
+    /**
+     * @since 3.1.0
+     */
+    String MESH_ENABLE = "mesh-enable";
+
+    /**
+     * @since 3.1.0
+     */
+    Integer DEFAULT_MESH_PORT = 80;
+
+    /**
+     * @since 3.1.0
+     */
+    String SVC = ".svc.";
+
+    /**
+     * Domain name suffix used inside k8s.
+     *
+     * @since 3.1.0
+     */
+    String DEFAULT_CLUSTER_DOMAIN = "cluster.local";
+
+    /**
+     * @since 3.1.0
+     */
+    String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
 }

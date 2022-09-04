@@ -51,20 +51,6 @@ public class SpringStatusChecker implements StatusChecker {
 
     @Override
     public Status check() {
-        // TODO It seems to be ok with GenericWebApplicationContext, need further confirmation
-//        ApplicationContext context = null;
-//        for (ApplicationContext c : SpringExtensionInjector.getContexts()) {
-//            // [Issue] SpringStatusChecker execute errors on non-XML Spring configuration
-//            // issue : https://github.com/apache/dubbo/issues/3615
-//            if(c instanceof GenericWebApplicationContext) { // ignore GenericXmlApplicationContext
-//                continue;
-//            }
-//
-//            if (c != null) {
-//                context = c;
-//                break;
-//            }
-//        }
 
         if (applicationContext == null && applicationModel != null) {
             SpringExtensionInjector springExtensionInjector = SpringExtensionInjector.get(applicationModel);
@@ -110,10 +96,12 @@ public class SpringStatusChecker implements StatusChecker {
                     }
                 }
             }
-        } catch (UnsupportedOperationException t) {
-            logger.debug(t.getMessage(), t);
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            if (t.getCause() instanceof UnsupportedOperationException){
+                logger.debug(t.getMessage(), t);
+            }else {
+                logger.warn(t.getMessage(), t);
+            }
         }
         return new Status(level, buf.toString());
     }

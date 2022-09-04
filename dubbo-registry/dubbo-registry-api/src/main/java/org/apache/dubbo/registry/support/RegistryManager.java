@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * Application Level, used to collect Registries
  */
 public class RegistryManager {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegistryManager.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(RegistryManager.class);
 
     private ApplicationModel applicationModel;
 
@@ -124,8 +124,11 @@ public class RegistryManager {
 
     protected Registry getDefaultNopRegistryIfDestroyed() {
         if (destroyed.get()) {
-            LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
+            // 1-12 Failed to fetch (server) instance since the registry instances have been destroyed.
+            LOGGER.warn("1-12", "misuse of the methods", "",
+                "All registry instances have been destroyed, failed to fetch any instance. " +
                 "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
+
             return DEFAULT_NOP_REGISTRY;
         }
         return null;

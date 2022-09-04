@@ -29,7 +29,9 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -41,11 +43,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,14 +63,52 @@ public class NacosServiceDiscoveryTest {
 
     private static final String LOCALHOST = "127.0.0.1";
 
-    private URL registryUrl;
+    protected URL registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
 
     private NacosServiceDiscovery nacosServiceDiscovery;
 
     private NacosNamingServiceWrapper namingServiceWrapper;
 
+    protected String group = DEFAULT_GROUP;
+
     private DefaultServiceInstance createServiceInstance(String serviceName, String host, int port) {
         return new DefaultServiceInstance(serviceName, host, port, ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
+    }
+
+    public static class NacosServiceDiscoveryGroupTest1 extends NacosServiceDiscoveryTest {
+        public NacosServiceDiscoveryGroupTest1() {
+            super();
+            group = "test-group1";
+            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort()).addParameter("group", group);
+        }
+    }
+
+    public static class NacosServiceDiscoveryGroupTest2 extends NacosServiceDiscoveryTest {
+        public NacosServiceDiscoveryGroupTest2() {
+            super();
+            group = "test-group2";
+            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort()).addParameter("group", group);
+        }
+    }
+
+
+
+    public static class NacosServiceDiscoveryGroupTest3 extends NacosServiceDiscoveryTest {
+        public NacosServiceDiscoveryGroupTest3() {
+            super();
+            group = DEFAULT_GROUP;
+            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort()).addParameter("group", "test-group3");
+        }
+
+        @BeforeAll
+        public static void beforeClass() {
+            System.setProperty("dubbo.nacos-service-discovery.use-default-group", "true");
+        }
+
+        @AfterAll
+        public static void afterClass() {
+            System.clearProperty("dubbo.nacos-service-discovery.use-default-group");
+        }
     }
 
     @BeforeEach
@@ -75,7 +116,6 @@ public class NacosServiceDiscoveryTest {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
 
-        this.registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
         registryUrl.setScopeModel(applicationModel);
 
 //        this.nacosServiceDiscovery = new NacosServiceDiscovery(SERVICE_NAME, registryUrl);
@@ -97,45 +137,32 @@ public class NacosServiceDiscoveryTest {
         // register
         nacosServiceDiscovery.doRegister(serviceInstance);
 
-        List<Instance> instances = new ArrayList<>();
-        Instance instance1 = new Instance();
-        Instance instance2 = new Instance();
-        Instance instance3 = new Instance();
+        ArgumentCaptor<Instance> instanceCaptor = ArgumentCaptor.forClass(Instance.class);
+        verify(namingServiceWrapper, times(1)).registerInstance(any(), eq(group), instanceCaptor.capture());
 
-        instances.add(instance1);
-        instances.add(instance2);
-        instances.add(instance3);
-
-        ArgumentCaptor<Instance> instance = ArgumentCaptor.forClass(Instance.class);
-        verify(namingServiceWrapper, times(1)).registerInstance(any(), any(), instance.capture());
-
-        when(namingServiceWrapper.getAllInstances(anyString(), anyString())).thenReturn(instances);
-        assertEquals(3, namingServiceWrapper.getAllInstances(anyString(), anyString()).size());
+        Instance capture = instanceCaptor.getValue();
+        assertEquals(SERVICE_NAME, capture.getServiceName());
+        assertEquals(LOCALHOST, capture.getIp());
+        assertEquals(serviceInstance.getPort(), capture.getPort());
     }
 
     @Test
     public void testDoUnRegister() throws NacosException {
         // register
-        nacosServiceDiscovery.register(URL.valueOf("dubbo://10.0.2.3:20880/DemoService?interface=DemoService"));
-        nacosServiceDiscovery.register();
-
-        List<Instance> instances = new ArrayList<>();
-        Instance instance1 = new Instance();
-        Instance instance2 = new Instance();
-        Instance instance3 = new Instance();
-
-        instances.add(instance1);
-        instances.add(instance2);
-        instances.add(instance3);
-
-        ArgumentCaptor<Instance> instance = ArgumentCaptor.forClass(Instance.class);
-        verify(namingServiceWrapper, times(1)).registerInstance(any(), any(), instance.capture());
-
-        when(namingServiceWrapper.getAllInstances(anyString(), anyString())).thenReturn(instances);
-        assertEquals(3, namingServiceWrapper.getAllInstances(anyString(), anyString()).size());
+        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
+        // register
+        nacosServiceDiscovery.doRegister(serviceInstance);
 
         // unRegister
-        nacosServiceDiscovery.unregister();
+        nacosServiceDiscovery.doUnregister(serviceInstance);
+
+        ArgumentCaptor<Instance> instanceCaptor = ArgumentCaptor.forClass(Instance.class);
+        verify(namingServiceWrapper, times(1)).deregisterInstance(any(), eq(group), instanceCaptor.capture());
+
+        Instance capture = instanceCaptor.getValue();
+        assertEquals(SERVICE_NAME, capture.getServiceName());
+        assertEquals(LOCALHOST, capture.getIp());
+        assertEquals(serviceInstance.getPort(), capture.getPort());
     }
 
     @Test
@@ -145,7 +172,7 @@ public class NacosServiceDiscoveryTest {
         nacosServiceDiscovery.doRegister(serviceInstance);
 
         ArgumentCaptor<Instance> instance = ArgumentCaptor.forClass(Instance.class);
-        verify(namingServiceWrapper, times(1)).registerInstance(any(), any(), instance.capture());
+        verify(namingServiceWrapper, times(1)).registerInstance(any(), eq(group), instance.capture());
 
         String serviceNameWithoutVersion = "providers:org.apache.dubbo.registry.nacos.NacosService:default";
         String serviceName = "providers:org.apache.dubbo.registry.nacos.NacosService:1.0.0:default";
@@ -154,7 +181,7 @@ public class NacosServiceDiscoveryTest {
         serviceNames.add(serviceName);
         ListView<String> result = new ListView<>();
         result.setData(serviceNames);
-        when(namingServiceWrapper.getServicesOfServer(anyInt(), anyInt(), anyString())).thenReturn(result);
+        when(namingServiceWrapper.getServicesOfServer(anyInt(), anyInt(), eq(group))).thenReturn(result);
         Set<String> services = nacosServiceDiscovery.getServices();
         assertEquals(2, services.size());
     }

@@ -31,8 +31,13 @@ import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.MetricsReporterFactory;
+import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.metrics.service.MetricsService;
+import org.apache.dubbo.common.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -42,6 +47,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
@@ -73,6 +79,7 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
@@ -84,7 +91,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  */
 public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationModel> implements ApplicationDeployer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultApplicationDeployer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationDeployer.class);
 
     private final ApplicationModel applicationModel;
 
@@ -99,6 +106,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
     private volatile boolean hasPreparedInternalModule = false;
+
+    private volatile MetricsServiceExporter metricsServiceExporter;
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
@@ -190,6 +199,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             // @since 2.7.8
             startMetadataCenter();
+
+            initMetricsReporter();
+
+            initMetricsService();
 
             initialized = true;
 
@@ -289,6 +302,26 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         metadataReportInstance.init(validMetadataReportConfigs);
         if (!metadataReportInstance.inited()) {
             throw new IllegalStateException(String.format("%s MetadataConfigs found, but none of them is valid.", metadataReportConfigs.size()));
+        }
+    }
+
+    private void initMetricsService() {
+        this.metricsServiceExporter = getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+        metricsServiceExporter.init();
+    }
+
+    private void initMetricsReporter() {
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
+        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
+        if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
+            collector.setCollectEnabled(true);
+            String protocol = metricsConfig.getProtocol();
+            if (StringUtils.isNotEmpty(protocol)) {
+                MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+                MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+                metricsReporter.init();
+            }
         }
     }
 
@@ -605,6 +638,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
+        // export MetricsService
+        exportMetricsService();
+
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -715,6 +751,26 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return factory.getDynamicConfiguration(connectionURL);
     }
 
+    /**
+     * export {@link MetricsService}
+     */
+    private void exportMetricsService() {
+        metricsServiceExporter.export();
+    }
+
+    /**
+     * unexport {@link MetricsService}
+     */
+    private void unexportMetricsService() {
+        if (metricsServiceExporter != null) {
+            try {
+                metricsServiceExporter.unexport();
+            } catch (Exception ignored) {
+                // ignored
+            }
+        }
+    }
+
     private volatile boolean registered;
 
     private void registerServiceInstance() {
@@ -722,7 +778,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
-            logger.error("Register instance error", e);
+            logger.error("5-11", "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
@@ -738,7 +794,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                 } catch (Exception e) {
                     if (!applicationModel.isDestroyed()) {
-                        logger.error("Refresh instance and metadata error", e);
+                        logger.error("5-12", "", "", "Refresh instance and metadata error.", e);
                     }
                 }
             }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
@@ -773,6 +829,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 asyncMetadataFuture.cancel(true);
             }
             unregisterServiceInstance();
+            unexportMetricsService();
         }
     }
 
@@ -957,7 +1014,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                 }
             } catch (Exception e) {
-                logger.error("refresh meta and instance failed: " + e.getMessage(), e);
+                logger.error("5-12", "", "", "Refresh instance and metadata error.", e);
             }
         } finally {
             // complete future

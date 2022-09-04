@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.ProtocolServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -43,7 +44,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -220,10 +220,10 @@ public class ServiceDiscoveryRegistryTest {
         // check different protocol
         Map<String, Set<ServiceInstancesChangedListener.NotifyListenerWithKey>> serviceListeners = multiAppsInstanceListener.getServiceListeners();
         assertEquals(2, serviceListeners.size());
-        assertEquals(1, serviceListeners.get(url.getProtocolServiceKey()).size());
-        assertEquals(1, serviceListeners.get(url2.getProtocolServiceKey()).size());
-        String protocolServiceKey = url2.getServiceKey() + GROUP_CHAR_SEPARATOR + url2.getParameter(PROTOCOL_KEY, DUBBO);
-        assertTrue(serviceListeners.get(url2.getProtocolServiceKey()).contains(new ServiceInstancesChangedListener.NotifyListenerWithKey(protocolServiceKey, testServiceListener2)));
+        assertEquals(1, serviceListeners.get(url.getServiceKey()).size());
+        assertEquals(1, serviceListeners.get(url2.getServiceKey()).size());
+        ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey(url2.getServiceInterface(), url2.getVersion(), url2.getGroup(), url2.getParameter(PROTOCOL_KEY, DUBBO));
+        assertTrue(serviceListeners.get(url2.getServiceKey()).contains(new ServiceInstancesChangedListener.NotifyListenerWithKey(protocolServiceKey, testServiceListener2)));
     }
 
     /**

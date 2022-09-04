@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -51,7 +51,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * Each service discovery is bond to one application.
  */
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
-    private final Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
 
     protected final String serviceName;
@@ -67,28 +67,27 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected ApplicationModel applicationModel;
 
     public AbstractServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
-        this(applicationModel.getApplicationName(), registryURL);
-        this.applicationModel = applicationModel;
+        this(applicationModel, applicationModel.getApplicationName(), registryURL);
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         metadataType = metadataReportInstance.getMetadataType();
         this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
-//        if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataReportInstance.getMetadataType())) {
-//            this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
-//        } else {
-//            this.metadataReport = metadataReportInstance.getNopMetadataReport();
-//        }
     }
 
     public AbstractServiceDiscovery(String serviceName, URL registryURL) {
-        this.applicationModel = ApplicationModel.defaultModel();
-        this.registryURL = registryURL;
+        this(ApplicationModel.defaultModel(), serviceName, registryURL);
+    }
+
+    private AbstractServiceDiscovery(ApplicationModel applicationModel, String serviceName, URL registryURL) {
+        this.applicationModel = applicationModel;
         this.serviceName = serviceName;
+        this.registryURL = registryURL;
         this.metadataInfo = new MetadataInfo(serviceName);
         boolean localCacheEnabled = registryURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         this.metaCacheManager = new MetaCacheManager(localCacheEnabled, getCacheNameSuffix(),
             applicationModel.getFrameworkModel().getBeanFactory()
-            .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
+                .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
+
 
     @Override
     public synchronized void register() throws RuntimeException {

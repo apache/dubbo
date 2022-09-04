@@ -239,6 +239,12 @@
                             <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provider-port" type="xsd:integer">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ declares provider service port. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="router" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -1017,6 +1023,11 @@
                         <xsd:documentation><![CDATA[ The thread pool queue size. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="mesh-enable" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Enable mesh mode. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1057,6 +1068,14 @@
                 <xsd:attribute name="protocol" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The service protocol. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="unloadClusterRelated" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
+                            Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar. ]]>
+                        </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>

@@ -239,6 +239,12 @@
                             <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provider-port" type="xsd:integer">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ declares provider service port. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="router" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -946,6 +952,11 @@
                 <xsd:documentation><![CDATA[ The metrics protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="enable-jvm-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable jvm metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
@@ -1180,6 +1191,11 @@
                             <![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="mesh-enable" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Enable mesh mode. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1227,6 +1243,14 @@
                         <xsd:documentation>
                             <![CDATA[ The service names that the Dubbo interface subscribed.
                             If it is a multiple-values, the content will be a comma-delimited String. ]]>
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="unloadClusterRelated" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
+                            Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar. ]]>
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>

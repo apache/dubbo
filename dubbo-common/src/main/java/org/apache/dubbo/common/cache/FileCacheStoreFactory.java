@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.common.cache;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.File;
@@ -25,6 +26,8 @@ import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,12 +38,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * ClassLoader Level static share.
  * Prevent FileCacheStore being operated in multi-application
  */
-public class FileCacheStoreFactory {
-    private final static Logger logger = LoggerFactory.getLogger(FileCacheStoreFactory.class);
+public final class FileCacheStoreFactory {
+
+    /**
+     * Forbids instantiation.
+     */
+    private FileCacheStoreFactory() {
+        throw new UnsupportedOperationException("No instance of 'FileCacheStoreFactory' for you! ");
+    }
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStoreFactory.class);
     private static final Map<String, FileCacheStore> cacheMap = new ConcurrentHashMap<>();
 
     private static final String SUFFIX = ".dubbo.cache";
-    private static final char ESCAPE = '%';
+    private static final char ESCAPE_MARK = '%';
     private static final Set<Character> LEGAL_CHARACTERS = Collections.unmodifiableSet(new HashSet<Character>(){{
         // - $ . _ 0-9 a-z A-Z
         add('-');
@@ -64,6 +75,7 @@ public class FileCacheStoreFactory {
 
     public static FileCacheStore getInstance(String basePath, String cacheName, boolean enableFileCache) {
         if (basePath == null) {
+            // default case: ~/.dubbo
             basePath = System.getProperty("user.home") + File.separator + ".dubbo";
         }
         if (basePath.endsWith(File.separator)) {
@@ -71,9 +83,20 @@ public class FileCacheStoreFactory {
         }
 
         File candidate = new File(basePath);
+        Path path = candidate.toPath();
+
         // ensure cache store path exists
-        if (!candidate.isDirectory() && !candidate.mkdirs()) {
-            throw new RuntimeException("Cache store path can't be created: " + candidate);
+        if (!candidate.isDirectory()) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                // 0-3 - cache path inaccessible
+
+                logger.error("0-3", "inaccessible of cache path", "",
+                    "Cache store path can't be created: ", e);
+
+                throw new RuntimeException("Cache store path can't be created: " + candidate, e);
+            }
         }
 
         cacheName = safeName(cacheName);
@@ -83,7 +106,7 @@ public class FileCacheStoreFactory {
 
         String cacheFilePath = basePath + File.separator + cacheName;
 
-        return cacheMap.computeIfAbsent(cacheFilePath, (k) -> getFile(k, enableFileCache));
+        return cacheMap.computeIfAbsent(cacheFilePath, k -> getFile(k, enableFileCache));
     }
 
     /**
@@ -100,7 +123,7 @@ public class FileCacheStoreFactory {
             if (LEGAL_CHARACTERS.contains(c)) {
                 sb.append(c);
             } else {
-                sb.append(ESCAPE);
+                sb.append(ESCAPE_MARK);
                 sb.append(String.format("%04x", (int) c));
             }
         }
@@ -114,22 +137,29 @@ public class FileCacheStoreFactory {
      * @return a file object
      */
     private static FileCacheStore getFile(String name, boolean enableFileCache) {
-        if(!enableFileCache) {
+        if (!enableFileCache) {
             return FileCacheStore.Empty.getInstance(name);
         }
+
         try {
             FileCacheStore.Builder builder = FileCacheStore.newBuilder();
             tryFileLock(builder, name);
             File file = new File(name);
+
             if (!file.exists()) {
-                file.createNewFile();
+                Path pathObjectOfFile = file.toPath();
+                Files.createFile(pathObjectOfFile);
             }
 
             builder.cacheFilePath(name)
                 .cacheFile(file);
+
             return builder.build();
         } catch (Throwable t) {
-            logger.info("Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+
+            logger.warn("0-3", "inaccessible of cache path", "",
+                "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
+
             return FileCacheStore.Empty.getInstance(name);
         }
     }
@@ -159,7 +189,7 @@ public class FileCacheStoreFactory {
         builder.directoryLock(dirLock).lockFile(lockFile);
     }
 
-    protected static void removeCache(String cacheFileName) {
+    static void removeCache(String cacheFileName) {
         cacheMap.remove(cacheFileName);
     }
 
@@ -167,7 +197,7 @@ public class FileCacheStoreFactory {
      * for unit test only
      */
     @Deprecated
-    protected static Map<String, FileCacheStore> getCacheMap() {
+    static Map<String, FileCacheStore> getCacheMap() {
         return cacheMap;
     }
 

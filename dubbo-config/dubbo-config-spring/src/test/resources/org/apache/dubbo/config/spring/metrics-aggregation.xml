@@ -24,7 +24,7 @@
     <!-- current application configuration -->
     <dubbo:application name="demo-consumer" />
 
-    <dubbo:metrics>
+    <dubbo:metrics enable-jvm-metrics="true">
         <dubbo:aggregation enabled="true" bucket-num="5" time-window-seconds="120" />
     </dubbo:metrics>
 

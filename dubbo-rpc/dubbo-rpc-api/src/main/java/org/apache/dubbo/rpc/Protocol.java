@@ -25,7 +25,35 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Protocol. (API/SPI, Singleton, ThreadSafe)
+ * RPC Protocol extension interface, which encapsulates the details of remote invocation. <br /><br />
+ *
+ * <p>Conventions:
+ *
+ * <li>
+ *     When user invokes the 'invoke()' method in object that the method 'refer()' returns,
+ *     the protocol needs to execute the 'invoke()' method of Invoker object that received by 'export()' method,
+ *     which should have the same URL.
+ * </li>
+ *
+ * <li>
+ *     Invoker that returned by 'refer()' is implemented by the protocol. The remote invocation request should be sent by that Invoker.
+ * </li>
+ *
+ * <li>
+ *     The invoker that 'export()' receives will be implemented by framework. Protocol implementation should not care with that.
+ * </li>
+ *
+ * <p>Attentions:
+ *
+ * <li>
+ *     The Protocol implementation does not care the transparent proxy. The invoker will be converted to business interface by other layer.
+ * </li>
+ *
+ * <li>
+ *     The protocol doesn't need to be backed by TCP connection. It can also be backed by file sharing or inter-process communication.
+ * </li>
+ *
+ * (API/SPI, Singleton, ThreadSafe)
  */
 @SPI(value = "dubbo", scope = ExtensionScope.FRAMEWORK)
 public interface Protocol {

@@ -46,7 +46,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         try {
             cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
             Map<String, String> properties = cacheStore.loadCache(entrySize);
-            logger.info("Successfully loaded mapping cache from file " + fileName + ", entries " + properties.size());
+            logger.info("Successfully loaded " + getName() + " cache from file " + fileName + ", entries " + properties.size());
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();

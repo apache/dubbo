@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
@@ -39,7 +40,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  */
 public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeModelAware {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRegistryFactory.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractRegistryFactory.class);
 
     private RegistryManager registryManager;
     protected ApplicationModel applicationModel;
@@ -69,9 +70,11 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
             .removeAttribute(EXPORT_KEY)
             .removeAttribute(REFER_KEY)
             .build();
+
         String key = createRegistryCacheKey(url);
         Registry registry = null;
         boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+
         // Lock the registry access process to ensure a single instance of the registry
         registryManager.getRegistryLock().lock();
         try {
@@ -81,11 +84,13 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
             if (null != defaultNopRegistry) {
                 return defaultNopRegistry;
             }
+
             registry = registryManager.getRegistry(key);
             if (registry != null) {
                 return registry;
             }
-            //create registry by spi/ioc
+
+            // create registry by spi/ioc
             registry = createRegistry(url);
             if (check && registry == null) {
                 throw new IllegalStateException("Can not create registry " + url);
@@ -98,7 +103,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
             if (check) {
                 throw new RuntimeException("Can not create registry " + url, e);
             } else {
-                LOGGER.warn("Failed to obtain or create registry ", e);
+                // 1-11 Failed to obtain or create registry (service) object.
+                LOGGER.warn("1-11", "", "",
+                    "Failed to obtain or create registry ", e);
             }
         } finally {
             // Release the lock

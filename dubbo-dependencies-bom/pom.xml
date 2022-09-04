@@ -99,6 +99,7 @@
         <httpclient_version>4.5.13</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.83</fastjson_version>
+        <fastjson2_version>2.0.7</fastjson2_version>
         <zookeeper_version>3.4.14</zookeeper_version>
         <curator_version>4.2.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
@@ -129,6 +130,9 @@
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
         <envoy_api_version>0.1.23</envoy_api_version>
+        <micrometer.version>1.7.4</micrometer.version>
+        <t_digest.version>3.3</t_digest.version>
+        <prometheus_client.version>0.10.0</prometheus_client.version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -175,7 +179,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.21</commons_compress_version>
-        <revision>3.0.12-SNAPSHOT</revision>
+        <revision>3.1.1-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -227,6 +231,11 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.fastjson2</groupId>
+                <artifactId>fastjson2</artifactId>
+                <version>${fastjson2_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.zookeeper</groupId>
@@ -766,6 +775,32 @@
                 <artifactId>snappy-java</artifactId>
                 <version>${snappy_java_version}</version>
                 <optional>true</optional>
+            </dependency>
+            <!-- metrics related dependencies-->
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tdunning</groupId>
+                <artifactId>t-digest</artifactId>
+                <version>${t_digest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>simpleclient</artifactId>
+                <version>${prometheus_client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>simpleclient_pushgateway</artifactId>
+                <version>${prometheus_client.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
