@@ -92,7 +92,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Compilable compilable = (Compilable) engine;
             function = compilable.compile(rule);
         } catch (ScriptException e) {
-            logger.error("","script route rule invalid","","script route error, rule has been ignored. rule: " + rule +
+            logger.error("2-15","script route rule invalid","","script route error, rule has been ignored. rule: " + rule +
                 ", url: " + RpcContext.getServiceContext().getUrl(),e);
         }
     }
