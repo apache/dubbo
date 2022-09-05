@@ -224,7 +224,7 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
     /**
      * The prefer serialization type
      *
-     * @param preferSerialization 喜欢序列化
+     * @param preferSerialization prefer serialization type
      * @return {@link B}
      */
     public B preferSerialization(String preferSerialization) {
