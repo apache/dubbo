@@ -22,8 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.io.ByteArrayInputStream;
