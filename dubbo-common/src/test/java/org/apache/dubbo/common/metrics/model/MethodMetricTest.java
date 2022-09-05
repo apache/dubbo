@@ -23,7 +23,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 

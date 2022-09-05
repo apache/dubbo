@@ -164,6 +164,11 @@ class NetUtilsTest {
     }
 
     @Test
+    public void testGetLocalHostName() throws Exception {
+        assertNotNull(NetUtils.getLocalHostName());
+    }
+
+    @Test
     void testGetIpByHost() throws Exception {
         assertThat(NetUtils.getIpByHost("localhost"), equalTo("127.0.0.1"));
         assertThat(NetUtils.getIpByHost("dubbo.local"), equalTo("dubbo.local"));
