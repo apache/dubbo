@@ -654,6 +654,24 @@ public class AbstractConfigTest {
         Assertions.assertNotEquals(protocol1, protocol2);
     }
 
+    @Test
+    void testRegistryConfigEquals() {
+        RegistryConfig hangzhou = new RegistryConfig();
+        hangzhou.setAddress("nacos://localhost:8848");
+        HashMap<String, String> parameters = new HashMap<>();
+        parameters.put("namespace", "hangzhou");
+        hangzhou.setParameters(parameters);
+
+        RegistryConfig shanghai = new RegistryConfig();
+        shanghai.setAddress("nacos://localhost:8848");
+        parameters = new HashMap<>();
+        parameters.put("namespace", "shanghai");
+
+        shanghai.setParameters(parameters);
+
+        Assertions.assertNotEquals(hangzhou, shanghai);
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.ANNOTATION_TYPE})
     public @interface ConfigField {

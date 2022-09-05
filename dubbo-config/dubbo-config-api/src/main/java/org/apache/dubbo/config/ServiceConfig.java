@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -97,7 +97,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private static final long serialVersionUID = 7868244018230856253L;
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ServiceConfig.class);
 
     /**
      * A random port cache, the different protocols who have no port specified have different random port
@@ -181,7 +181,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn("Unexpected error occured when unexport " + exporter, t);
+                    logger.warn("5-7", "", "", "Unexpected error occurred when unexport " + exporter, t);
                 }
             }
             exporters.clear();
@@ -242,7 +242,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     doExport();
                 } catch (Exception e) {
-                    logger.error("Failed to export service config: " + interfaceName, e);
+                    logger.error("5-9", "configuration server disconnected", "", "Failed to (async)export service config: " + interfaceName, e);
                 }
             }, getDelay(), TimeUnit.MILLISECONDS);
     }
@@ -258,10 +258,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     if (succeeded) {
                         logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
                     } else {
-                        logger.error("Failed register interface application mapping for service " + url.getServiceKey());
+                        logger.error("5-10", "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
                     }
                 } catch (Exception e) {
-                    logger.error("Failed register interface application mapping for service " + url.getServiceKey(), e);
+                    logger.error("5-10", "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
                 }
             }
         });
@@ -447,7 +447,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
             String[] methods = methods(interfaceClass);
             if (methods.length == 0) {
-                logger.warn("No method found in service interface " + interfaceClass.getName());
+                logger.warn("5-4", "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
@@ -831,7 +831,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
-            logger.warn("Use random available port(" + port + ") for protocol " + protocol);
+            logger.warn("5-8", "", "", "Use random available port(" + port + ") for protocol " + protocol);
         }
     }
 

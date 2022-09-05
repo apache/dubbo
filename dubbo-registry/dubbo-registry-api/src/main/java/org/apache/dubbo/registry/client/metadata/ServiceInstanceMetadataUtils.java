@@ -18,10 +18,11 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
@@ -56,7 +58,7 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
  * @since 2.7.5
  */
 public class ServiceInstanceMetadataUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInstanceMetadataUtils.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ServiceInstanceMetadataUtils.class);
 
     /**
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
@@ -118,8 +120,10 @@ public class ServiceInstanceMetadataUtils {
      * @return <code>null</code> if not exits
      */
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+        return Optional.ofNullable(serviceInstance.getServiceMetadata())
+            .map(MetadataInfo::getRevision)
+            .filter(StringUtils::isNotEmpty)
+            .orElse(serviceInstance.getMetadata(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
     }
 
     /**

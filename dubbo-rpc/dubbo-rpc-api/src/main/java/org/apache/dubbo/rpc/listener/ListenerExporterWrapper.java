@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * ListenerExporter
@@ -42,22 +43,7 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         }
         this.exporter = exporter;
         this.listeners = listeners;
-        if (CollectionUtils.isNotEmpty(listeners)) {
-            RuntimeException exception = null;
-            for (ExporterListener listener : listeners) {
-                if (listener != null) {
-                    try {
-                        listener.exported(this);
-                    } catch (RuntimeException t) {
-                        logger.error(t.getMessage(), t);
-                        exception = t;
-                    }
-                }
-            }
-            if (exception != null) {
-                throw exception;
-            }
-        }
+        listenerEvent(listener -> listener.exported(this));
     }
 
     @Override
@@ -70,23 +56,26 @@ public class ListenerExporterWrapper<T> implements Exporter<T> {
         try {
             exporter.unexport();
         } finally {
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                RuntimeException exception = null;
-                for (ExporterListener listener : listeners) {
-                    if (listener != null) {
-                        try {
-                            listener.unexported(this);
-                        } catch (RuntimeException t) {
-                            logger.error(t.getMessage(), t);
-                            exception = t;
-                        }
-                    }
-                }
-                if (exception != null) {
-                    throw exception;
-                }
-            }
+            listenerEvent(listener -> listener.unexported(this));
         }
     }
 
+    private void listenerEvent(Consumer<ExporterListener> consumer) {
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            RuntimeException exception = null;
+            for (ExporterListener listener : listeners) {
+                if (listener != null) {
+                    try {
+                        consumer.accept(listener);
+                    } catch (RuntimeException t) {
+                        logger.error(t.getMessage(), t);
+                        exception = t;
+                    }
+                }
+            }
+            if (exception != null) {
+                throw exception;
+            }
+        }
+    }
 }

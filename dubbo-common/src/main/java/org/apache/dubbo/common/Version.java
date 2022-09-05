@@ -79,7 +79,7 @@ public final class Version {
      *         a value greater than {@code 0} if {@code version1 > version2}
      */
     public static int compare(String version1, String version2) {
-        return Integer.compare (getIntVersion(version1), getIntVersion(version2));
+        return Integer.compare(getIntVersion(version1), getIntVersion(version2));
     }
 
     /**
@@ -89,10 +89,8 @@ public final class Version {
         if (StringUtils.isEmpty(version)) {
             return false;
         }
-        if (getIntVersion(version) >= 2070000) {
-            return true;
-        }
-        return false;
+
+        return getIntVersion(version) >= 2070000;
     }
 
     /**

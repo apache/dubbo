@@ -146,7 +146,12 @@ class URL implements Serializable {
     public URL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
         this.urlAddress = urlAddress;
         this.urlParam = null == urlParam ? URLParam.parse(new HashMap<>()) : urlParam;
-        this.attributes = (attributes != null ? attributes.isEmpty() ? null : attributes : null);
+
+        if (attributes != null && !attributes.isEmpty()) {
+            this.attributes = attributes;
+        } else {
+            this.attributes = null;
+        }
     }
 
     public URL(String protocol, String host, int port) {

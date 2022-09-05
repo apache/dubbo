@@ -17,8 +17,9 @@
 package org.apache.dubbo.registry.zookeeper.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
@@ -77,7 +78,7 @@ public abstract class CuratorFrameworkUtils {
             .connectString(connectionURL.getBackupAddress())
             .retryPolicy(buildRetryPolicy(connectionURL));
         String userInformation = connectionURL.getUserInformation();
-        if (userInformation != null && userInformation.length() > 0) {
+        if (StringUtils.isNotEmpty(userInformation)) {
             builder = builder.authorization("digest", userInformation.getBytes());
             builder.aclProvider(new ACLProvider() {
                 @Override
@@ -169,7 +170,7 @@ public abstract class CuratorFrameworkUtils {
     }
 
     private static class CuratorConnectionStateListener implements ConnectionStateListener {
-        private static final Logger logger = LoggerFactory.getLogger(CuratorConnectionStateListener.class);
+        private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CuratorConnectionStateListener.class);
         private final long UNKNOWN_SESSION_ID = -1L;
         protected final int DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
         protected final int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;

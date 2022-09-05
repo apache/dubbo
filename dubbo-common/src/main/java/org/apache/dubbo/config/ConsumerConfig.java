@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import static org.apache.dubbo.common.constants.CommonConstants.MESH_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
@@ -77,6 +78,12 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean referBackground;
+
+    /**
+     * enable mesh mode
+     * @since 3.1.0
+     */
+    private Boolean meshEnable;
 
 
     public ConsumerConfig() {
@@ -169,5 +176,14 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     @Deprecated
     public void setReferBackground(Boolean referBackground) {
         this.referBackground = referBackground;
+    }
+
+    @Parameter(key = MESH_ENABLE)
+    public Boolean getMeshEnable() {
+        return meshEnable;
+    }
+
+    public void setMeshEnable(Boolean meshEnable) {
+        this.meshEnable = meshEnable;
     }
 }

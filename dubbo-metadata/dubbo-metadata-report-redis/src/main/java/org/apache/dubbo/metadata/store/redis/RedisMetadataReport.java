@@ -52,8 +52,8 @@ import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
  */
 public class RedisMetadataReport extends AbstractMetadataReport {
 
-    private final static String REDIS_DATABASE_KEY = "database";
-    private final static Logger logger = LoggerFactory.getLogger(RedisMetadataReport.class);
+    private static final String REDIS_DATABASE_KEY = "database";
+    private static final Logger logger = LoggerFactory.getLogger(RedisMetadataReport.class);
 
     // protected , for test
     protected JedisPool pool;
@@ -66,7 +66,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         super(url);
         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         if (url.getParameter(CLUSTER_KEY, false)) {
-            jedisClusterNodes = new HashSet<HostAndPort>();
+            jedisClusterNodes = new HashSet<>();
             List<URL> urls = url.getBackupUrls();
             for (URL tmpUrl : urls) {
                 jedisClusterNodes.add(new HostAndPort(tmpUrl.getHost(), tmpUrl.getPort()));
@@ -103,7 +103,7 @@ public class RedisMetadataReport extends AbstractMetadataReport {
         if (StringUtils.isEmpty(content)) {
             return Collections.emptyList();
         }
-        return new ArrayList<String>(Arrays.asList(URL.decode(content)));
+        return new ArrayList<>(Arrays.asList(URL.decode(content)));
     }
 
     @Override

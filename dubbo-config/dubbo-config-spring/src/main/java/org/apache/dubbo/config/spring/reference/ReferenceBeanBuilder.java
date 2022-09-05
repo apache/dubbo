@@ -198,6 +198,11 @@ public class ReferenceBeanBuilder {
         return this;
     }
 
+    public ReferenceBeanBuilder setProviderPort(Integer providerPort) {
+        attributes.put(ReferenceAttributes.PROVIDER_PORT, providerPort);
+        return this;
+    }
+
 //    public ReferenceBeanBuilder setRouter(String router) {
 //        attributes.put(ReferenceAttributes.ROUTER, router);
 //        return this;

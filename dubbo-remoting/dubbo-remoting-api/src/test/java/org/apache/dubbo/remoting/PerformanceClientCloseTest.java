@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
@@ -45,7 +46,7 @@ public class PerformanceClientCloseTest  {
         }
         final String server = System.getProperty("server", "127.0.0.1:9911");
         final String transporter = PerformanceUtils.getProperty(Constants.TRANSPORTER_KEY, Constants.DEFAULT_TRANSPORTER);
-        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+        final String serialization = PerformanceUtils.getProperty(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
         final int timeout = PerformanceUtils.getIntProperty(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         final int concurrent = PerformanceUtils.getIntProperty("concurrent", 1);
         final int runs = PerformanceUtils.getIntProperty("runs", Integer.MAX_VALUE);

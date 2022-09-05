@@ -68,4 +68,12 @@ public class LoggerFactoryTest {
 
         assertThat(logger1, is(logger2));
     }
+
+    @Test
+    public void shouldReturnSameErrorTypeAwareLogger() {
+        ErrorTypeAwareLogger logger1 = LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
+        ErrorTypeAwareLogger logger2 = LoggerFactory.getErrorTypeAwareLogger(this.getClass().getName());
+
+        assertThat(logger1, is(logger2));
+    }
 }

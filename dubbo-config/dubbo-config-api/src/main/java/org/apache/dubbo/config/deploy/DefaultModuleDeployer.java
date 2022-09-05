@@ -22,7 +22,7 @@ import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployListener;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -51,7 +51,7 @@ import java.util.concurrent.Future;
  */
 public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> implements ModuleDeployer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultModuleDeployer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultModuleDeployer.class);
 
     private final List<CompletableFuture<?>> asyncExportingFutures = new ArrayList<>();
 
@@ -223,7 +223,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         consumerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
-                    logger.error("Unable to destroy consumerModel.", t);
+                    logger.error("5-13", "there are problems with the custom implementation.", "", "Unable to destroy model: consumerModel.", t);
                 }
             }
 
@@ -234,7 +234,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         providerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
-                    logger.error("Unable to destroy providerModel.", t);
+                    logger.error("5-13", "there are problems with the custom implementation.", "", "Unable to destroy model: providerModel.", t);
                 }
             }
             serviceRepository.destroy();
@@ -265,7 +265,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleFailed(String msg, Throwable ex) {
         try {
             setFailed(ex);
-            logger.error(msg, ex);
+            logger.error("5-14", "", "", "Model start failed: " + msg, ex);
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
         } finally {
             completeStartFuture(false);
@@ -333,7 +333,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         exportedServices.add(sc);
                     }
                 } catch (Throwable t) {
-                    logger.error(getIdentifier() + " export async catch error : " + t.getMessage(), t);
+                    logger.error("5-9", "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                 }
             }, executor);
 
@@ -380,7 +380,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                             try {
                                 referenceCache.get(rc);
                             } catch (Throwable t) {
-                                logger.error(getIdentifier() + " refer async catch error : " + t.getMessage(), t);
+                                logger.error("5-9", "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                             }
                         }, executor);
 
@@ -390,7 +390,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     }
                 }
             } catch (Throwable t) {
-                logger.error(getIdentifier() + " refer catch error.");
+                logger.error("5-15", "", "", "Model reference failed: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                 referenceCache.destroy(rc);
                 throw t;
             }

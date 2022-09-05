@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
@@ -66,7 +66,7 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
  */
 public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final ServiceDiscovery serviceDiscovery;
 
@@ -299,8 +299,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
         serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
-        String protocolServiceKey = url.getProtocolServiceKey();
-        logger.info(String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, protocolServiceKey));
+        String serviceKey = url.getServiceKey();
+        logger.info(String.format("Trying to subscribe from apps %s for service key %s, ", serviceNamesKey, serviceKey));
 
         // register ServiceInstancesChangedListener
         Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
@@ -322,7 +322,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             if (!serviceInstancesChangedListener.isDestroyed()) {
                 serviceInstancesChangedListener.setUrl(url);
                 listener.addServiceListener(serviceInstancesChangedListener);
-                serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
+                serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
             } else {
                 logger.info(String.format("Listener of %s has been destroyed by another thread.", serviceNamesKey));
@@ -348,7 +348,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     private class DefaultMappingListener implements MappingListener {
-        private final Logger logger = LoggerFactory.getLogger(DefaultMappingListener.class);
+        private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMappingListener.class);
         private final URL url;
         private Set<String> oldApps;
         private NotifyListener listener;
@@ -398,7 +398,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                             Lock appSubscriptionLock = getAppSubscription(appKey);
                             try {
                                 appSubscriptionLock.lock();
-                                oldListener.removeListener(url.getProtocolServiceKey(), listener);
+                                oldListener.removeListener(url.getServiceKey(), listener);
                                 if (!oldListener.hasListeners()) {
                                     oldListener.destroy();
                                     removeAppSubscriptionLock(appKey);

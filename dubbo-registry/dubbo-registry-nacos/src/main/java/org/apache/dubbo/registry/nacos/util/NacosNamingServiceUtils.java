@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.nacos.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -39,7 +39,9 @@ import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
+import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 
@@ -50,8 +52,8 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
  */
 public class NacosNamingServiceUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(NacosNamingServiceUtils.class);
-    private static String NACOS_GROUP_KEY = "nacos.group";
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
+    private static final String NACOS_GROUP_KEY = "nacos.group";
 
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
@@ -88,6 +90,19 @@ public class NacosNamingServiceUtils {
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
         return serviceInstance;
+    }
+
+    /**
+     * The group of {@link NamingService} to register
+     *
+     * @param connectionURL {@link URL connection url}
+     * @return non-null, "default" as default
+     * @since 2.7.5
+     */
+    public static String getGroup(URL connectionURL) {
+        // Compatible with nacos grouping via group.
+        String group = connectionURL.getParameter(GROUP_KEY, DEFAULT_GROUP);
+        return connectionURL.getParameter(NACOS_GROUP_KEY, group);
     }
 
     /**

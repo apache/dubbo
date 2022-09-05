@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.MetadataService;
@@ -58,7 +58,7 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
  */
 public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     public static final String NAME = "standard";
 
@@ -111,8 +111,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             .addParameter(THREADPOOL_KEY, "cached")
             .addParameter(THREADS_KEY, "100")
             .addParameter(CORE_THREADS_KEY, "2")
-                .addParameter(RETRIES_KEY, 0);
-
+            .addParameter(RETRIES_KEY, 0);
 
         // add parameters
         params.forEach(urlBuilder::addParameter);
@@ -125,17 +124,31 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     private URL generateUrlWithoutMetadata(String serviceName, String host, Integer instancePort) {
         Integer port = metadataServicePort;
         if (port == null || port < 1) {
-            logger.warn("Metadata Service Port is not provided, since DNS is not able to negotiate the metadata port " +
-                    "between Provider and Consumer, will try to use instance port as the default metadata port.");
+
+            // 1-18 - Metadata Service Port should be specified for consumer.
+
+            logger.warn("1-18", "missing configuration of metadata service port", "",
+                "Metadata Service Port is not provided. Since DNS is not able to negotiate the metadata port " +
+                    "between Provider and Consumer, Dubbo will try using instance port as the default metadata port.");
+
             port = instancePort;
         }
 
         if (port == null || port < 1) {
+
+            // 1-18 - Metadata Service Port should be specified for consumer.
+
             String message = "Metadata Service Port should be specified for consumer. " +
                     "Please set dubbo.application.metadataServicePort and " +
                     "make sure it has been set on provider side. " +
                     "ServiceName: " + serviceName + " Host: " + host;
-            throw new IllegalStateException(message);
+
+            IllegalStateException illegalStateException = new IllegalStateException(message);
+
+            logger.error("1-18", "missing configuration of metadata service port", "",
+                message, illegalStateException);
+
+            throw illegalStateException;
         }
 
         URLBuilder urlBuilder = new URLBuilder()

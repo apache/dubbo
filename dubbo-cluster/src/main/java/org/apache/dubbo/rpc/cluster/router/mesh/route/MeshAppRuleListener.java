@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.route;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleDispatcher;
@@ -43,7 +43,7 @@ import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.S
 
 public class MeshAppRuleListener implements ConfigurationListener {
 
-    public static final Logger logger = LoggerFactory.getLogger(MeshAppRuleListener.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MeshAppRuleListener.class);
 
     private final MeshRuleDispatcher meshRuleDispatcher;
 
@@ -78,17 +78,17 @@ public class MeshAppRuleListener implements ConfigurationListener {
                     if (ruleType != null) {
                         groupMap.computeIfAbsent(ruleType, (k)-> new LinkedList<>()).add(resultMap);
                     } else {
-                        logger.error("Unable to get rule type from raw rule. " +
+                        logger.error("2-13","receive mesh app route rule is invalid","","Unable to get rule type from raw rule. " +
                             "Probably the metadata.name is absent. App Name: " + appName + " RawRule: " + configInfo);
                     }
                 } else {
-                    logger.error("Rule format is unacceptable. App Name: " + appName + " RawRule: " + configInfo);
+                    logger.error("2-13","receive mesh app route rule is invalid","","Rule format is unacceptable. App Name: " + appName + " RawRule: " + configInfo);
                 }
             }
 
             ruleMapHolder = groupMap;
         } catch (Exception e) {
-            logger.error("[MeshAppRule] parse failed: " + configInfo, e);
+            logger.error("2-13","failed to receive mesh app route rule","","[MeshAppRule] parse failed: " + configInfo,e);
         }
         if (ruleMapHolder != null) {
             meshRuleDispatcher.post(ruleMapHolder);

@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
@@ -62,24 +62,34 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_P
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
 /**
- * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
+ * <p>
+ * Based on FailbackRegistry, it adds a URLAddress and URLParam cache to save RAM space.
+ *
+ * <p>
+ * It's useful for registries whose sdk returns raw string as provider instance. For example, Zookeeper and etcd.
+ *
+ * @see org.apache.dubbo.registry.support.FailbackRegistry
+ * @see org.apache.dubbo.registry.support.AbstractRegistry
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
-    private static final Logger logger = LoggerFactory.getLogger(CacheableFailbackRegistry.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CacheableFailbackRegistry.class);
+
     private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
 
     protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
     protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+
     private ScheduledExecutorService cacheRemovalScheduler;
     private int cacheRemovalTaskIntervalInMillis;
     private int cacheClearWaitingThresholdInMillis;
+
     private Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
     private Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, String> extraParameters;
     protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new ConcurrentHashMap<>();
 
-    public CacheableFailbackRegistry(URL url) {
+    protected CacheableFailbackRegistry(URL url) {
         super(url);
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
@@ -96,7 +106,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             try {
                 result = Integer.parseInt(str);
             } catch (NumberFormatException e) {
-                logger.warn("Invalid registry properties configuration key " + key + ", value " + str);
+                // 0-2 Property type mismatch.
+
+                logger.warn("0-2", "typo in property value", "This property requires an integer value.",
+                    "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
         return result;
@@ -110,7 +123,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected void evictURLCache(URL url) {
         Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(url);
         try {
-            if (oldURLs != null && oldURLs.size() > 0) {
+            if (oldURLs != null && !oldURLs.isEmpty()) {
                 logger.info("Evicting urls for service " + url.getServiceKey() + ", size " + oldURLs.size());
                 Long currentTimestamp = System.currentTimeMillis();
                 for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
@@ -123,35 +136,60 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 }
             }
         } catch (Exception e) {
-            logger.warn("Failed to evict url for " + url.getServiceKey(), e);
+            // It seems that the most possible statement that causes exception is the 'schedule()' method.
+
+            // The executor that FrameworkExecutorRepository.nextScheduledExecutor() method returns
+            // is made by Executors.newSingleThreadScheduledExecutor().
+
+            // After observing the code of ScheduledThreadPoolExecutor.delayedExecute,
+            // it seems that it only throws RejectedExecutionException when the thread pool is shutdown.
+
+            // When? FrameworkExecutorRepository gets destroyed.
+
+            // 1-3: URL evicting failed.
+            logger.warn("1-3", "thread pool getting destroyed", "",
+                "Failed to evict url for " + url.getServiceKey(), e);
         }
     }
 
     protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
         // keep old urls
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
+
         // create new urls
         Map<String, ServiceAddressURL> newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
+
+        // remove 'release', 'dubbo', 'methods', timestamp, 'dubbo.tag' parameter
+        // in consumer URL.
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
+
         if (oldURLs == null) {
             for (String rawProvider : providers) {
+                // remove timestamp in provider url.
                 rawProvider = stripOffVariableKeys(rawProvider);
+
+                // create DubboServiceAddress object using provider url, consumer url, and extra parameters.
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
-                    logger.warn("Invalid address, failed to parse into URL " + rawProvider);
+                    // 1-1: Address invalid.
+                    logger.warn("1-1", "mismatch of service group and version settings", "",
+                        "Invalid address, failed to parse into URL " + rawProvider);
+
                     continue;
                 }
                 newURLs.put(rawProvider, cachedURL);
             }
         } else {
-            // maybe only default , or "env" + default
+            // maybe only default, or "env" + default
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
                 ServiceAddressURL cachedURL = oldURLs.remove(rawProvider);
                 if (cachedURL == null) {
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
-                        logger.warn("Invalid address, failed to parse into URL " + rawProvider);
+                        logger.warn("1-1", "mismatch of service group and version settings", "",
+                            "Invalid address, failed to parse into URL " + rawProvider);
+
                         continue;
                     }
                 }
@@ -168,6 +206,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
         List<URL> urls = new ArrayList<>(1);
         boolean isProviderPath = path.endsWith(PROVIDERS_CATEGORY);
+
         if (isProviderPath) {
             if (CollectionUtils.isNotEmpty(providers)) {
                 urls = toUrlsWithoutEmpty(consumer, providers);
@@ -186,7 +225,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             String category = i < 0 ? path : path.substring(i + 1);
             if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
                 if (PROVIDERS_CATEGORY.equals(category)) {
-                    logger.warn("Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
+                    logger.warn("1-4", "", "",
+                        "Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
                 }
                 URL empty = URLBuilder.from(consumer)
                     .setProtocol(EMPTY_PROTOCOL)
@@ -199,32 +239,59 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return urls;
     }
 
+    /**
+     * Create DubboServiceAddress object using provider url, consumer url, and extra parameters.
+     *
+     * @param rawProvider provider url string
+     * @param consumerURL URL object of consumer
+     * @param extraParameters extra parameters
+     * @return created DubboServiceAddressURL object
+     */
     protected ServiceAddressURL createURL(String rawProvider, URL consumerURL, Map<String, String> extraParameters) {
+
         boolean encoded = true;
+
         // use encoded value directly to avoid URLDecoder.decode allocation.
         int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
-        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not show, mark as not encoded.
+
+        if (paramStartIdx == -1) {
+            // if ENCODED_QUESTION_MARK does not show, mark as not encoded.
             encoded = false;
         }
+
+        // split by (encoded) question mark.
+        // part[0] => protocol + ip address + interface.
+        // part[1] => parameters (metadata).
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
+
         if (parts.length <= 1) {
-            logger.warn("Received url without any parameters " + rawProvider);
+            // 1-5 Received URL without any parameters.
+            logger.warn("1-5", "", "",
+                "Received url without any parameters " + rawProvider);
+
             return DubboServiceAddressURL.valueOf(rawProvider, consumerURL);
         }
 
         String rawAddress = parts[0];
         String rawParams = parts[1];
+
+        // Workaround for 'effectively final': duplicate the encoded variable.
         boolean isEncoded = encoded;
+
+        // PathURLAddress if it's using dubbo protocol.
         URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
         URLParam param = stringParam.computeIfAbsent(rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
         param.setTimestamp(System.currentTimeMillis());
 
-        ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
-        if (isMatch(consumerURL, cachedURL)) {
-            return cachedURL;
+        // create service URL using cached address, param, and consumer URL.
+        ServiceAddressURL cachedServiceAddressURL = createServiceURL(address, param, consumerURL);
+
+        if (isMatch(consumerURL, cachedServiceAddressURL)) {
+            return cachedServiceAddressURL;
         }
+
         return null;
     }
 
@@ -314,7 +381,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
-
+    /**
+     * The cached URL removal task, which will be run on a scheduled thread pool. (It will be run after a delay.)
+     */
     private class RemovalTask implements Runnable {
         @Override
         public void run() {
@@ -341,7 +410,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                     }
                 }
             } catch (Throwable t) {
-                logger.error("Error occurred when clearing cached URLs", t);
+                // 1-6 Error when clearing cached URLs.
+
+                logger.error("1-6", "", "",
+                    "Error occurred when clearing cached URLs", t);
+
             } finally {
                 semaphore.release();
             }

@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
@@ -33,7 +33,7 @@ import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.M
 
 public class MeshRuleManager {
 
-    public static final Logger logger = LoggerFactory.getLogger(MeshRuleManager.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MeshRuleManager.class);
 
     private final ConcurrentHashMap<String, MeshAppRuleListener> APP_RULE_LISTENERS = new ConcurrentHashMap<>();
 
@@ -63,7 +63,7 @@ public class MeshRuleManager {
                 meshAppRuleListener.receiveConfigInfo(rawConfig);
             }
         } catch (Throwable throwable) {
-            logger.error("get MeshRuleManager app rule failed.", throwable);
+            logger.error("2-13","failed to get mesh app route rule","","get MeshRuleManager app rule failed.",throwable);
         }
 
         ruleRepository.addListener(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, meshAppRuleListener);

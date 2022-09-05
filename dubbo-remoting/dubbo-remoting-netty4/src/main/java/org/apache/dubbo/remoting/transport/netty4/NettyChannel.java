@@ -273,4 +273,7 @@ final class NettyChannel extends AbstractChannel {
         return "NettyChannel [channel=" + channel + "]";
     }
 
+    public Channel getNioChannel() {
+        return channel;
+    }
 }

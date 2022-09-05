@@ -47,7 +47,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     }
 
 
-    private boolean isTerminated() {
+    public boolean isTerminated() {
         return terminated;
     }
 
@@ -105,7 +105,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     }
 
     @Override
-    public void disableAutoInboundFlowControl() {
+    public void disableAutoFlowControl() {
         call.disableAutoRequestN();
     }
 

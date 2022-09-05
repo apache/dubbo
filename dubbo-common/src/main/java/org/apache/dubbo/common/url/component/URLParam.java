@@ -978,7 +978,7 @@ public class URLParam {
      *
      * @param params   params map added into URLParam
      * @param rawParam original rawParam string, directly add to rawParam field,
-     *                 will not effect real key-pairs store in URLParam.
+     *                 will not affect real key-pairs store in URLParam.
      *                 Please make sure it can correspond with params or will
      *                 cause unexpected result when calling {@link URLParam#getRawParam()}
      *                 and {@link URLParam#toString()} ()}. If you not sure, you can call
