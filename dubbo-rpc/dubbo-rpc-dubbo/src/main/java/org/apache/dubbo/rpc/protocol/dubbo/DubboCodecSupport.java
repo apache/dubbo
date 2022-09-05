@@ -18,8 +18,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.AppResponse;
