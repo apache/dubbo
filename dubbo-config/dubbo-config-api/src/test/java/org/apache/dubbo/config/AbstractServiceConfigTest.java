@@ -180,8 +180,8 @@ public class AbstractServiceConfigTest {
     @Test
     public void testPreferSerialization() throws Exception {
         ServiceConfig serviceConfig = new ServiceConfig();
-        serviceConfig.setPreferSerialization("fastjson2");
-        assertThat(serviceConfig.getSerialization(), equalTo("fastjson2"));
+        serviceConfig.setPreferSerialization("preferSerialization");
+        assertThat(serviceConfig.getPreferSerialization(), equalTo("preferSerialization"));
     }
 
 
