@@ -33,7 +33,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
-import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -73,7 +72,6 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_HEARTBEAT;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_CLIENT;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_KEY;
-import static org.apache.dubbo.remoting.Constants.IS_PU_SERVER_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
@@ -336,7 +334,6 @@ public class DubboProtocol extends AbstractProtocol {
         String key = url.getAddress();
         // client can export a service which only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
-
         if (isServer) {
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
@@ -374,16 +371,11 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Unsupported server type: " + transporter + ", url: " + url);
         }
 
-        RemotingServer server;
-        boolean isPuServerKey = url.getParameter(IS_PU_SERVER_KEY, false);
-        if(isPuServerKey) {
-            server = PortUnificationExchanger.bind(url, requestHandler);
-        }else  {
-            try {
-                server = Exchangers.bind(url, requestHandler);
-            } catch (RemotingException e) {
-                throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
-            }
+        ExchangeServer server;
+        try {
+            server = Exchangers.bind(url, requestHandler);
+        } catch (RemotingException e) {
+            throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
         }
 
         transporter = url.getParameter(CLIENT_KEY);

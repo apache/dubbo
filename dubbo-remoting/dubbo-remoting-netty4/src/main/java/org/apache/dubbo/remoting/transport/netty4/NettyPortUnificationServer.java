@@ -90,7 +90,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     @Override
     public void addNewURL(URL url, ChannelHandler handler) {
-        super.addNewURL(url, ChannelHandlers.wrap(handler, url));
+        getUrlMapper().put(url.getProtocol(), url);
+        getHandlerMapper().put(url.getProtocol(), ChannelHandlers.wrap(handler, url));
     }
 
     @Override
@@ -108,6 +109,10 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     @Override
     public void doOpen() {
+        if (channel != null ){
+            // abstract server call this method directly.
+            return;
+        }
         bootstrap = new ServerBootstrap();
 
         bossGroup = NettyEventLoopFactory.eventLoopGroup(1, EVENT_LOOP_BOSS_POOL_NAME);

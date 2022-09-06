@@ -25,7 +25,6 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
@@ -109,7 +108,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                         URL localURL = this.urlMapper.get(protocol.protocolName());
                         channel.setUrl(localURL);
                         NettyConfigOperator operator = new NettyConfigOperator(channel, localHandler);
-                        protocol.configServerProtocolHandler(url, operator);
+                        protocol.configServerProtocolHandler(localURL, operator);
                         ctx.pipeline().remove(this);
                     case NEED_MORE_DATA:
                         return;

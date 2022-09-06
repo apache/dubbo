@@ -42,10 +42,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         return protocols;
     }
 
-    public void addNewURL(URL url, ChannelHandler handler) {
-        this.urlMapper.put(url.getProtocol(), url);
-        this.handlerMapper.put(url.getProtocol(), handler);
-    }
+    abstract public void addNewURL(URL url, ChannelHandler handler);
 
     protected Map<String, URL> getUrlMapper() {
         // this getter is just used by implementation of this class

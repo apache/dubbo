@@ -592,6 +592,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private URL exportRemote(URL url, List<URL> registryURLs) {
+        String extProtocol = url.getParameter("ext.protocol", "");
+        url = URLBuilder.from(url).
+            addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+            // avoid recursive function call
+            removeParameter("ext.protocol").
+            build();
+
+        if (!extProtocol.equals("")) {
+            URL extURL = URLBuilder.from(url).
+                setProtocol(extProtocol).
+                build();
+            exportRemote(extURL, registryURLs);
+        }
+
         if (CollectionUtils.isNotEmpty(registryURLs)) {
             for (URL registryURL : registryURLs) {
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
@@ -633,17 +647,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             doExportUrl(url, true);
-        }
-
-        String extProtocol = url.getParameter("ext.protocol", "");
-        if (!extProtocol.equals("")) {
-            URL extURL = URLBuilder.from(url).
-                setProtocol(extProtocol).
-                addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                build();
-            // avoid recursive function call
-            extURL = extURL.removeParameter("ext.protocol");
-            exportRemote(extURL, registryURLs);
         }
 
         return url;
