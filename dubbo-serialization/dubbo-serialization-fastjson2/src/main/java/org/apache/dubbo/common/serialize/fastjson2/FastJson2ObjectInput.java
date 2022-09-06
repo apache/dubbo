@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
+import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.serialize.ObjectInput;
 
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONReader;
+import com.alibaba.fastjson2.JSONWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,11 +34,15 @@ public class FastJson2ObjectInput implements ObjectInput {
 
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
+    private final Fastjson2SecurityManager fastjson2SecurityManager;
+
     private volatile ClassLoader classLoader;
     private final InputStream is;
 
-    public FastJson2ObjectInput(Fastjson2CreatorManager fastjson2CreatorManager, InputStream in) {
+    public FastJson2ObjectInput(Fastjson2CreatorManager fastjson2CreatorManager,
+                                Fastjson2SecurityManager fastjson2SecurityManager, InputStream in) {
         this.fastjson2CreatorManager = fastjson2CreatorManager;
+        this.fastjson2SecurityManager = fastjson2SecurityManager;
         this.classLoader = Thread.currentThread().getContextClassLoader();
         this.is = in;
         fastjson2CreatorManager.setCreator(classLoader);
@@ -107,7 +113,7 @@ public class FastJson2ObjectInput implements ObjectInput {
         if (read != length) {
             throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
-        return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+        return (T) JSONB.parseObject(bytes, Object.class, fastjson2SecurityManager.getSecurityFilter(),
             JSONReader.Feature.UseDefaultConstructorAsPossible,
             JSONReader.Feature.UseNativeObject,
             JSONReader.Feature.FieldBased);
@@ -123,7 +129,7 @@ public class FastJson2ObjectInput implements ObjectInput {
         if (read != length) {
             throw new IllegalArgumentException("deserialize failed. expected read length: " + length + " but actual read: " + read);
         }
-        return (T) JSONB.parseObject(bytes, Object.class, JSONReader.Feature.SupportAutoType,
+        return (T) JSONB.parseObject(bytes, Object.class, fastjson2SecurityManager.getSecurityFilter(),
             JSONReader.Feature.UseDefaultConstructorAsPossible,
             JSONReader.Feature.UseNativeObject,
             JSONReader.Feature.FieldBased);

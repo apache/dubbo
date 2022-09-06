@@ -39,8 +39,11 @@ public class FastJson2Serialization implements Serialization {
 
     private final Fastjson2CreatorManager fastjson2CreatorManager;
 
+    private final Fastjson2SecurityManager fastjson2SecurityManager;
+
     public FastJson2Serialization(FrameworkModel frameworkModel) {
         this.fastjson2CreatorManager = frameworkModel.getBeanFactory().getBean(Fastjson2CreatorManager.class);
+        this.fastjson2SecurityManager = frameworkModel.getBeanFactory().getBean(Fastjson2SecurityManager.class);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class FastJson2Serialization implements Serialization {
 
     @Override
     public ObjectInput deserialize(URL url, InputStream input) throws IOException {
-        return new FastJson2ObjectInput(fastjson2CreatorManager, input);
+        return new FastJson2ObjectInput(fastjson2CreatorManager, fastjson2SecurityManager, input);
     }
 
 }

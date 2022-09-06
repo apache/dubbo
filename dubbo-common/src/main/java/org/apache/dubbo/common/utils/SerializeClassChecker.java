@@ -118,34 +118,45 @@ public class SerializeClassChecker {
      * @param name class name ( all are convert to lower case )
      */
     public void validateClass(String name) {
+        validateClass(name, true);
+    }
+
+    public boolean validateClass(String name, boolean failOnError) {
         if(!OPEN_CHECK_CLASS){
-            return;
+            return true;
         }
 
         name = name.toLowerCase(Locale.ROOT);
         if (CACHE == CLASS_ALLOW_LFU_CACHE.get(name)) {
-            return;
+            return true;
         }
 
         if (CACHE == CLASS_BLOCK_LFU_CACHE.get(name)) {
-            error(name);
+            if (failOnError) {
+                error(name);
+            }
+            return false;
         }
 
         for (String allowedPrefix : CLASS_DESERIALIZE_ALLOWED_SET) {
             if (name.startsWith(allowedPrefix)) {
                 CLASS_ALLOW_LFU_CACHE.put(name, CACHE);
-                return;
+                return true;
             }
         }
 
         for (String blockedPrefix : CLASS_DESERIALIZE_BLOCKED_SET) {
             if (BLOCK_ALL_CLASS_EXCEPT_ALLOW || name.startsWith(blockedPrefix)) {
                 CLASS_BLOCK_LFU_CACHE.put(name, CACHE);
-                error(name);
+                if (failOnError) {
+                    error(name);
+                }
+                return false;
             }
         }
 
         CLASS_ALLOW_LFU_CACHE.put(name, CACHE);
+        return true;
     }
 
     private void error(String name) {
