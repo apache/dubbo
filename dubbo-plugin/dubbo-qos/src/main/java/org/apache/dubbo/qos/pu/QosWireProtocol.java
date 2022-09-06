@@ -60,4 +60,9 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
 
     }
 
+    @Override
+    public String protocolName() {
+        return "qos";
+    }
+
 }

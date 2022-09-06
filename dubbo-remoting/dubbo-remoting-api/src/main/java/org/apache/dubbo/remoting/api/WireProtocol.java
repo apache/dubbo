@@ -34,4 +34,6 @@ public interface WireProtocol {
     void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
 
     void close();
+
+    String protocolName();
 }
