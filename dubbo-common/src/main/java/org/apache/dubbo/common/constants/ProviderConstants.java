@@ -22,7 +22,7 @@ package org.apache.dubbo.common.constants;
 public interface ProviderConstants {
 
     /**
-     * Default prefer serialization
+     * Default prefer serialization,multiple separated by commas
      */
-    String DEFAULT_PREFER_SERIALIZATION = "fastjson2,hessian2";
+    String DEFAULT_PREFER_SERIALIZATION = "hessian2";
 }
