@@ -23,9 +23,15 @@ import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractPortUnificationServer extends AbstractServer {
     private final List<WireProtocol> protocols;
+
+    private final Map<String, URL> urlMapper = new ConcurrentHashMap<>();
+
+    private final Map<String, ChannelHandler> handlerMapper = new ConcurrentHashMap<>();
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -36,4 +42,18 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         return protocols;
     }
 
+    public void addNewURL(URL url, ChannelHandler handler) {
+        this.urlMapper.put(url.getProtocol(), url);
+        this.handlerMapper.put(url.getProtocol(), handler);
+    }
+
+    protected Map<String, URL> getUrlMapper() {
+        // this getter is just used by implementation of this class
+        return urlMapper;
+    }
+
+    public Map<String, ChannelHandler> getHandlerMapper() {
+        // this getter is just used by implementation of this class
+        return handlerMapper;
+    }
 }

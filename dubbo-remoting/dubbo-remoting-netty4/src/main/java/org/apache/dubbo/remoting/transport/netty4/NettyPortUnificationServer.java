@@ -89,6 +89,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
+    public void addNewURL(URL url, ChannelHandler handler) {
+        super.addNewURL(url, ChannelHandlers.wrap(handler, url));
+    }
+
+    @Override
     public void close() {
         if (channel != null) {
             doClose();
@@ -129,7 +134,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     final ChannelPipeline p = ch.pipeline();
                     final NettyPortUnificationServerHandler puHandler;
                     puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
-                        NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels);
+                        NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels, urlMapper, handlerMapper);
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
