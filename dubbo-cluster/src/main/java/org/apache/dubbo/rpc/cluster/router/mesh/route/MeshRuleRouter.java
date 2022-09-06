@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -58,7 +58,7 @@ import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.V
 
 public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implements MeshRuleListener {
 
-    public static final Logger logger = LoggerFactory.getLogger(MeshRuleRouter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MeshRuleRouter.class);
 
     private final Map<String, String> sourcesLabels;
     private volatile BitList<Invoker<T>> invokerList = BitList.emptyList();
@@ -308,7 +308,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 appToVDGroup.put(appName, vsDestinationGroup);
             }
         } catch (Throwable t) {
-            logger.error("Error occurred when parsing rule component.", t);
+            logger.error("2-13","failed to parse mesh route rule","","Error occurred when parsing rule component.",t);
         }
 
         computeSubset(appToVDGroup);

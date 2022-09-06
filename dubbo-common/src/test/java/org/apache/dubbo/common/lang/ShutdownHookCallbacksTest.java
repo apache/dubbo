@@ -53,7 +53,7 @@ public class ShutdownHookCallbacksTest {
 
     @AfterEach
     public void destroy() {
-        callbacks.clear();
+        callbacks.destroy();
         assertTrue(callbacks.getCallbacks().isEmpty());
     }
 }

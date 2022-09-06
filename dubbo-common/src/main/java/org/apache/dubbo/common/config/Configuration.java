@@ -55,7 +55,7 @@ public interface Configuration {
     }
 
     default int getInt(String key) {
-        Integer i = this.getInteger(key, (Integer) null);
+        Integer i = this.getInteger(key, null);
         if (i != null) {
             return i;
         } else {
@@ -64,7 +64,7 @@ public interface Configuration {
     }
 
     default int getInt(String key, int defaultValue) {
-        Integer i = this.getInteger(key, (Integer) null);
+        Integer i = this.getInteger(key, null);
         return i == null ? defaultValue : i;
     }
 

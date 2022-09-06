@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.script;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -61,7 +61,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     public static final String NAME = "SCRIPT_ROUTER";
     private static final int SCRIPT_ROUTER_DEFAULT_PRIORITY = 0;
-    private static final Logger logger = LoggerFactory.getLogger(ScriptStateRouter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ScriptStateRouter.class);
 
     private static final Map<String, ScriptEngine> ENGINES = new ConcurrentHashMap<>();
 
@@ -92,8 +92,8 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Compilable compilable = (Compilable) engine;
             function = compilable.compile(rule);
         } catch (ScriptException e) {
-            logger.error("route error, rule has been ignored. rule: " + rule +
-                    ", url: " + RpcContext.getServiceContext().getUrl(), e);
+            logger.error("2-15","script route rule invalid","","script route error, rule has been ignored. rule: " + rule +
+                ", url: " + RpcContext.getServiceContext().getUrl(),e);
         }
     }
 
@@ -136,8 +136,8 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             try {
                 return function.eval(bindings);
             } catch (ScriptException e) {
-                logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
-                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+                logger.error("2-15","Scriptrouter exec script error","","Script route error, rule has been ignored. rule: " + rule + ", method:" +
+                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(),e);
                 return invokers;
             }
         }, accessControlContext));

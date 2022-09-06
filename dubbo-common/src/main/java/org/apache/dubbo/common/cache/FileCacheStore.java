@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.cache;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
@@ -30,6 +30,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,7 +43,7 @@ import java.util.Map;
  * All items in local file are of human friendly format.
  */
 public class FileCacheStore {
-    private static final Logger logger = LoggerFactory.getLogger(FileCacheStore.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStore.class);
 
     private String cacheFilePath;
     private File cacheFile;
@@ -123,8 +125,13 @@ public class FileCacheStore {
     }
 
     private static void deleteFile(File f) {
-        if (!f.delete()) {
-            logger.debug("Failed to delete file " + f.getAbsolutePath());
+
+        Path pathOfFile = f.toPath();
+
+        try {
+            Files.delete(pathOfFile);
+        } catch (IOException ioException) {
+            logger.debug("Failed to delete file " + f.getAbsolutePath(), ioException);
         }
     }
 
@@ -179,6 +186,9 @@ public class FileCacheStore {
         }
     }
 
+    /**
+     * An empty (or fallback) implementation of FileCacheStore. Used when cache file creation failed.
+     */
     protected static class Empty extends FileCacheStore {
 
         private Empty(String cacheFilePath) {
@@ -196,9 +206,13 @@ public class FileCacheStore {
 
         @Override
         public void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
+            // No-op.
         }
     }
 
+    /**
+     * A BufferedWriter which limits the length (in bytes). When limit exceed, this writer stops writing.
+     */
     private static class LimitedLengthBufferedWriter extends BufferedWriter {
 
         private long remainSize;

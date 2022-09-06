@@ -38,7 +38,7 @@ public class ProviderModel extends ServiceModel {
     /**
      * The url of the reference service
      */
-    private List<URL> serviceUrls = new ArrayList<URL>();
+    private List<URL> serviceUrls = new ArrayList<>();
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,

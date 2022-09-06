@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * The shutdown hook thread to do the clean up stuff.
+ * The shutdown hook thread to do the cleanup stuff.
  * This is a singleton in order to ensure there is only one shutdown hook registered.
  * Because {@link ApplicationShutdownHooks} use {@link java.util.IdentityHashMap}
  * to store the shutdown hooks.
@@ -58,14 +58,14 @@ public class DubboShutdownHook extends Thread {
         Assert.notNull(this.applicationModel, "ApplicationModel is null");
         ignoreListenShutdownHook = Boolean.parseBoolean(ConfigurationUtils.getProperty(applicationModel, CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK));
         if (ignoreListenShutdownHook) {
-            logger.info("dubbo.shutdownHook.listenIgnore configured, will ignore add shutdown hook to jvm.");
+            logger.info(CommonConstants.IGNORE_LISTEN_SHUTDOWN_HOOK + " configured, will ignore add shutdown hook to jvm.");
         }
     }
 
     @Override
     public void run() {
 
-        if (destroyed.compareAndSet(false, true) && !ignoreListenShutdownHook) {
+        if (!ignoreListenShutdownHook && destroyed.compareAndSet(false, true)) {
             if (logger.isInfoEnabled()) {
                 logger.info("Run shutdown hook now.");
             }
@@ -82,7 +82,7 @@ public class DubboShutdownHook extends Thread {
      * Register the ShutdownHook
      */
     public void register() {
-        if (registered.compareAndSet(false, true) && !ignoreListenShutdownHook) {
+        if (!ignoreListenShutdownHook && registered.compareAndSet(false, true)) {
             try {
                 Runtime.getRuntime().addShutdownHook(this);
             } catch (IllegalStateException e) {
@@ -97,7 +97,7 @@ public class DubboShutdownHook extends Thread {
      * Unregister the ShutdownHook
      */
     public void unregister() {
-        if (registered.compareAndSet(true, false) && !ignoreListenShutdownHook) {
+        if (!ignoreListenShutdownHook && registered.compareAndSet(true, false)) {
             if (this.isAlive()) {
                 // DubboShutdownHook thread is running
                 return;

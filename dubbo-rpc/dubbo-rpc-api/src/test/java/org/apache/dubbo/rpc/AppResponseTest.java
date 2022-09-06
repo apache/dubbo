@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -39,9 +40,7 @@ public class AppResponseTest {
     @Test
     public void testAppResponseWithEmptyStackTraceException() {
         Throwable throwable = buildEmptyStackTraceException();
-        if (throwable == null) {
-            return;
-        }
+        assumeFalse(throwable == null);
         AppResponse appResponse = new AppResponse(throwable);
 
         StackTraceElement[] stackTrace = appResponse.getException().getStackTrace();
@@ -66,9 +65,7 @@ public class AppResponseTest {
     @Test
     public void testSetExceptionWithEmptyStackTraceException() {
         Throwable throwable = buildEmptyStackTraceException();
-        if (throwable == null) {
-            return;
-        }
+        assumeFalse(throwable == null);
         AppResponse appResponse = new AppResponse();
         appResponse.setException(throwable);
 
