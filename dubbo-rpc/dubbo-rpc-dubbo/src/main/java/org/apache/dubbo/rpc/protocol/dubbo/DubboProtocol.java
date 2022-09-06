@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -366,7 +367,6 @@ public class DubboProtocol extends AbstractProtocol {
             // enable heartbeat by default
             .addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT))
             .addParameter(CODEC_KEY, DubboCodec.NAME)
-            .addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString())
             .build();
 
         String transporter = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER);
@@ -374,11 +374,16 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException("Unsupported server type: " + transporter + ", url: " + url);
         }
 
-        ExchangeServer server;
-        try {
-            server = Exchangers.bind(url, requestHandler);
-        } catch (RemotingException e) {
-            throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
+        RemotingServer server;
+        boolean isPuServerKey = url.getParameter(IS_PU_SERVER_KEY, false);
+        if(isPuServerKey) {
+            server = PortUnificationExchanger.bind(url, requestHandler);
+        }else  {
+            try {
+                server = Exchangers.bind(url, requestHandler);
+            } catch (RemotingException e) {
+                throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);
+            }
         }
 
         transporter = url.getParameter(CLIENT_KEY);

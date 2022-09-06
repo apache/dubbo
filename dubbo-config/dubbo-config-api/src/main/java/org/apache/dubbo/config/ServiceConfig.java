@@ -84,6 +84,7 @@ import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.IS_PU_SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
@@ -638,6 +639,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!extProtocol.equals("")) {
             URL extURL = URLBuilder.from(url).
                 setProtocol(extProtocol).
+                addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
                 build();
             // avoid recursive function call
             extURL = extURL.removeParameter("ext.protocol");
