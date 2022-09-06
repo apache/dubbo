@@ -634,6 +634,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             doExportUrl(url, true);
         }
 
+        String extProtocol = url.getParameter("ext.protocol", "");
+        if (!extProtocol.equals("")) {
+            URL extURL = URLBuilder.from(url).
+                setProtocol(extProtocol).
+                build();
+            // avoid recursive function call
+            extURL = extURL.removeParameter("ext.protocol");
+            exportRemote(extURL, registryURLs);
+        }
 
         return url;
     }
