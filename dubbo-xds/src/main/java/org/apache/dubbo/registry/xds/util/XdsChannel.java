@@ -16,24 +16,27 @@
  */
 package org.apache.dubbo.registry.xds.util;
 
+import io.grpc.ManagedChannel;
+import io.grpc.netty.shaded.io.netty.channel.epoll.EpollDomainSocketChannel;
+import io.grpc.netty.shaded.io.netty.channel.epoll.EpollEventLoopGroup;
+import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
-
 import io.envoyproxy.envoy.service.discovery.v3.AggregatedDiscoveryServiceGrpc;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
-
-import javax.net.ssl.SSLException;
+import org.apache.dubbo.registry.xds.util.bootstrap.Bootstrapper;
+import org.apache.dubbo.registry.xds.util.bootstrap.BootstrapperImpl;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -46,17 +49,30 @@ public class XdsChannel {
     protected XdsChannel(URL url) {
         ManagedChannel managedChannel = null;
         try {
-            XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
-                .getExtension(url.getParameter("signer", "istio"));
-            XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
-            SslContext context = GrpcSslContexts.forClient()
-                .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
-                    new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
-                .build();
-            managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
-                .build();
-        } catch (SSLException e) {
+            if(!url.getParameter("useAgent",false)) {
+                XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
+                    .getExtension(url.getParameter("signer", "istio"));
+                XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
+                SslContext context = GrpcSslContexts.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                    .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
+                        new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                    .build();
+                managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
+                    .build();
+            }
+            else {
+                BootstrapperImpl bootstrapper = new BootstrapperImpl();
+                Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
+                URLAddress address =URLAddress.parse(bootstrapInfo.servers().get(0).target(),null, false);
+                EpollEventLoopGroup elg = new EpollEventLoopGroup();
+                managedChannel = NettyChannelBuilder.forAddress(new DomainSocketAddress("/" + address.getPath()))
+                    .eventLoopGroup(elg)
+                    .channelType(EpollDomainSocketChannel.class)
+                    .usePlaintext()
+                    .build();
+            }
+        } catch (Exception e) {
             logger.error("Error occurred when creating gRPC channel to control panel.", e);
         }
         channel = managedChannel;
