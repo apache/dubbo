@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
@@ -36,7 +36,7 @@ import java.util.List;
  *
  */
 public class FailsafeClusterInvoker<T> extends AbstractClusterInvoker<T> {
-    private static final Logger logger = LoggerFactory.getLogger(FailsafeClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailsafeClusterInvoker.class);
 
     public FailsafeClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -49,7 +49,7 @@ public class FailsafeClusterInvoker<T> extends AbstractClusterInvoker<T> {
             Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
             return invokeWithContext(invoker, invocation);
         } catch (Throwable e) {
-            logger.error("Failsafe ignore exception: " + e.getMessage(), e);
+            logger.error("2-8","Failsafe for provider exception","","Failsafe ignore exception: " + e.getMessage(),e);
             return AsyncRpcResult.newDefaultAsyncResult(null, null, invocation); // ignore
         }
     }
