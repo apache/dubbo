@@ -175,4 +175,23 @@ public class MultipleRegistry2S2RTest {
         Assertions.assertEquals("empty", list.get(0).getProtocol());
     }
 
+    @Test
+    public void testAggregation() {
+        List<URL> result = new ArrayList<URL>();
+        List<URL> listToAggregate = new ArrayList<URL>();
+        URL url1= URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        URL url2= URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        listToAggregate.add(url1);
+        listToAggregate.add(url2);
+
+        URL registryURL = URL.valueOf("mock://127.0.0.1/RegistryService?attachments=zone=hangzhou,tag=middleware&enable-empty-protection=false");
+
+        MultipleRegistry.MultipleNotifyListenerWrapper.aggregateRegistryUrls(result, listToAggregate, registryURL);
+
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals(2, result.get(0).getParameters().size());
+        Assertions.assertEquals("hangzhou", result.get(0).getParameter("zone"));
+        Assertions.assertEquals("middleware", result.get(1).getParameter("tag"));
+    }
+
 }

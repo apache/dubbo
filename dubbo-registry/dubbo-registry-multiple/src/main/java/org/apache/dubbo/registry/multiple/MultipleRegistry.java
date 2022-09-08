@@ -310,7 +310,7 @@ public class MultipleRegistry extends AbstractRegistry {
                 notifyURLs.add(emptyURL);
             }
 
-            LOGGER.info("Aggregated url size " + notifyURLs.size());
+            LOGGER.info("Aggregated provider url size " + notifyURLs.size());
             this.notify(notifyURLs);
         }
 
@@ -323,21 +323,26 @@ public class MultipleRegistry extends AbstractRegistry {
          * @param singleURLs single registry url list
          * @param registryURL single registry configuration url
          */
-        private void aggregateRegistryUrls(List<URL> notifyURLs, List<URL> singleURLs, URL registryURL) {
+        public static void aggregateRegistryUrls(List<URL> notifyURLs, List<URL> singleURLs, URL registryURL) {
             String registryAttachments = registryURL.getParameter("attachments");
             if (StringUtils.isNotBlank(registryAttachments)) {
                 LOGGER.info("Registry attachments " + registryAttachments + " found, will append to provider urls, urls size " + singleURLs.size());
                 String[] pairs = registryAttachments.split(COMMA_SEPARATOR);
+                Map<String, String> attachments = new HashMap<>(pairs.length);
                 for (String rawPair : pairs) {
                    String[] keyValuePair = rawPair.split("=");
-                   if (keyValuePair.length != 2) {
+                   if (keyValuePair.length == 2) {
                        String key = keyValuePair[0];
                        String value = keyValuePair[1];
-                       for (URL tmpUrl : singleURLs) {
-                           tmpUrl = tmpUrl.addParameterIfAbsent(key, value);
-                           notifyURLs.add(tmpUrl);
-                       }
+                       attachments.put(key, value);
                    }
+                }
+
+                for (URL tmpUrl : singleURLs) {
+                    for (Map.Entry<String, String> entry : attachments.entrySet()) {
+                        tmpUrl = tmpUrl.addParameterIfAbsent(entry.getKey(), entry.getValue());
+                    }
+                    notifyURLs.add(tmpUrl);
                 }
             } else {
                 LOGGER.info("Single registry " + registryURL + " has url size " + singleURLs.size());
