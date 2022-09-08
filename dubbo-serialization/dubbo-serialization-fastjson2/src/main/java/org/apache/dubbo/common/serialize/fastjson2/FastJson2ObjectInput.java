@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.serialize.ObjectInput;
 
 import com.alibaba.fastjson2.JSONB;
 import com.alibaba.fastjson2.JSONReader;
-import com.alibaba.fastjson2.JSONWriter;
 
 import java.io.IOException;
 import java.io.InputStream;
