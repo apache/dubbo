@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.utils.AllowClassNotifyListener;
-import org.apache.dubbo.common.utils.SerializeClassChecker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.lang.reflect.Field;
@@ -27,14 +25,14 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class SecurityManager {
+public class SerializeSecurityManager {
     private final Set<String> allowedPrefix = new LinkedHashSet<>();
 
     private final SerializeClassChecker checker = SerializeClassChecker.getInstance();
 
     private final Set<AllowClassNotifyListener> listeners;
 
-    public SecurityManager(FrameworkModel frameworkModel) {
+    public SerializeSecurityManager(FrameworkModel frameworkModel) {
         listeners = frameworkModel.getExtensionLoader(AllowClassNotifyListener.class).getSupportedExtensionInstances();
         allowedPrefix.add("org.apache.dubbo");
     }

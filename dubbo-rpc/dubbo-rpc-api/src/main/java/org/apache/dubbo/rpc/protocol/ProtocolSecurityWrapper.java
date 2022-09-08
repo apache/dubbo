@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.SecurityManager;
+import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -53,9 +53,9 @@ public class ProtocolSecurityWrapper implements Protocol {
         ScopeModel scopeModel = invoker.getUrl().getScopeModel();
         Optional.ofNullable(serviceModel).map(ServiceModel::getServiceInterfaceClass)
             .ifPresent((interfaceClass) -> {
-                SecurityManager securityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
-                    .getBeanFactory().getBean(SecurityManager.class);
-                securityManager.registerInterface(interfaceClass);
+                SerializeSecurityManager serializeSecurityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
+                    .getBeanFactory().getBean(SerializeSecurityManager.class);
+                serializeSecurityManager.registerInterface(interfaceClass);
             });
         return protocol.export(invoker);
     }
@@ -64,12 +64,12 @@ public class ProtocolSecurityWrapper implements Protocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         ServiceModel serviceModel = url.getServiceModel();
         ScopeModel scopeModel = url.getScopeModel();
-        SecurityManager securityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
-            .getBeanFactory().getBean(SecurityManager.class);
+        SerializeSecurityManager serializeSecurityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
+            .getBeanFactory().getBean(SerializeSecurityManager.class);
 
         Optional.ofNullable(serviceModel).map(ServiceModel::getServiceInterfaceClass)
-            .ifPresent(securityManager::registerInterface);
-        securityManager.registerInterface(type);
+            .ifPresent(serializeSecurityManager::registerInterface);
+        serializeSecurityManager.registerInterface(type);
 
         return protocol.refer(type, url);
     }
