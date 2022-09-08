@@ -277,7 +277,7 @@ public class NacosRegistry extends FailbackRegistry {
         if (isAdminProtocol(url)) {
             shutdownServiceNamesLookup();
         } else {
-                Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
+            Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
             if (listenerMap == null) {
                 logger.warn(String.format("No aggregate listener found for url %s, this service might have already been unsubscribed.", url));
                 return;
