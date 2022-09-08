@@ -44,12 +44,37 @@ public class NacosInstanceManageUtil {
      */
     private static final Map<String, Set<String>> CORRESPONDING_SERVICE_NAMES_MAP = Maps.newConcurrentMap();
 
+    /**
+     * service key -> subscribed serviceName list
+     */
+    private static final Map<String, Set<String>> SUBSCRIBED_SERVICE_NAMES_MAP = Maps.newConcurrentMap();
+
+    public static void setSubscribedServiceNames(String serviceKey, Set<String> serviceNames) {
+        SUBSCRIBED_SERVICE_NAMES_MAP.put(serviceKey, serviceNames);
+    }
+
+    public static Set<String> getSubscribedServiceNames(String removeSubscribedServiceNames) {
+        return SUBSCRIBED_SERVICE_NAMES_MAP.get(removeSubscribedServiceNames);
+    }
+
+    public static Set<String> removeSubscribedServiceNames(String serviceKey) {
+        return SUBSCRIBED_SERVICE_NAMES_MAP.remove(serviceKey);
+    }
+
     public static void setCorrespondingServiceNames(String serviceName, Set<String> serviceNames) {
         CORRESPONDING_SERVICE_NAMES_MAP.put(serviceName, serviceNames);
     }
 
+    public static Set<String> getCorrespondingServiceNames(String serviceName) {
+        return CORRESPONDING_SERVICE_NAMES_MAP.get(serviceName);
+    }
+
     public static void initOrRefreshServiceInstanceList(String serviceName, List<Instance> instanceList) {
         SERVICE_INSTANCE_LIST_MAP.put(serviceName, instanceList);
+    }
+
+    public static Set<String> removeCorrespondingServiceNames(String serviceName) {
+        return SUBSCRIBED_SERVICE_NAMES_MAP.remove(serviceName);
     }
 
     public static List<Instance> getAllCorrespondingServiceInstanceList(String serviceName) {

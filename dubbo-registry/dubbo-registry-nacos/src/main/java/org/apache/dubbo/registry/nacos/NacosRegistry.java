@@ -214,6 +214,9 @@ public class NacosRegistry extends FailbackRegistry {
                 NacosInstanceManageUtil.setCorrespondingServiceNames(serviceName, serviceNames);
             }
         }
+        // save subscribed dataIds for unsubscription usage later
+        NacosInstanceManageUtil.setSubscribedServiceNames(url.getServiceKey(), serviceNames);
+
         doSubscribe(url, nacosAggregateListener, serviceNames);
     }
 
@@ -279,9 +282,13 @@ public class NacosRegistry extends FailbackRegistry {
             Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
             NacosAggregateListener nacosAggregateListener = listenerMap.remove(listener);
             if (nacosAggregateListener != null) {
-                Set<String> serviceNames = getServiceNames(url, nacosAggregateListener);
+                Set<String> serviceNames = NacosInstanceManageUtil.getSubscribedServiceNames(url.getServiceKey());
                 try {
                     doUnsubscribe(url, nacosAggregateListener, serviceNames);
+                    NacosInstanceManageUtil.removeSubscribedServiceNames(url.getServiceKey());
+                    for (String serviceName : serviceNames) {
+                        NacosInstanceManageUtil.removeSubscribedServiceNames(serviceName);
+                    }
                 } catch (NacosException e) {
                     logger.error("Failed to unsubscribe " + url + " to nacos " + getUrl() + ", cause: " + e.getMessage(), e);
                 }
