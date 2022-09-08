@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.common.utils.reflect;
+
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -31,8 +34,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInheritedTypes;
-import static org.apache.dubbo.common.utils.MemberUtils.isPrivate;
-import static org.apache.dubbo.common.utils.MemberUtils.isStatic;
+import static org.apache.dubbo.common.utils.reflect.MemberUtils.isPrivate;
+import static org.apache.dubbo.common.utils.reflect.MemberUtils.isStatic;
 import static org.apache.dubbo.common.utils.ReflectUtils.EMPTY_CLASS_ARRAY;
 import static org.apache.dubbo.common.utils.ReflectUtils.resolveTypes;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
@@ -43,7 +46,10 @@ import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
  *
  * @since 2.7.2
  */
-public interface MethodUtils {
+public final class MethodUtils {
+    private MethodUtils() {
+        throw new UnsupportedOperationException("No instance of 'MethodUtils' for you! ");
+    }
 
     /**
      * Return {@code true} if the provided method is a set method.
@@ -52,7 +58,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is setter method
      */
-    static boolean isSetter(Method method) {
+    public static boolean isSetter(Method method) {
         return method.getName().startsWith("set")
                 && !"set".equals(method.getName())
                 && Modifier.isPublic(method.getModifiers())
@@ -67,7 +73,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is getter method
      */
-    static boolean isGetter(Method method) {
+    public static boolean isGetter(Method method) {
         String name = method.getName();
         return (name.startsWith("get") || name.startsWith("is"))
                 && !"get".equals(name) && !"is".equals(name)
@@ -84,7 +90,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is meta method
      */
-    static boolean isMetaMethod(Method method) {
+    public static boolean isMetaMethod(Method method) {
         String name = method.getName();
         if (!(name.startsWith("get") || name.startsWith("is"))) {
             return false;
@@ -115,7 +121,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is deprecated method
      */
-    static boolean isDeprecated(Method method) {
+    public static boolean isDeprecated(Method method) {
         return method.getAnnotation(Deprecated.class) != null;
     }
 
@@ -127,7 +133,7 @@ public interface MethodUtils {
      * @return non-null
      * @since 2.7.6
      */
-    static Predicate<Method> excludedDeclaredClass(Class<?> declaredClass) {
+    public static Predicate<Method> excludedDeclaredClass(Class<?> declaredClass) {
         return method -> !Objects.equals(declaredClass, method.getDeclaringClass());
     }
 
@@ -141,7 +147,7 @@ public interface MethodUtils {
      * @return non-null read-only {@link List}
      * @since 2.7.6
      */
-    static List<Method> getMethods(Class<?> declaringClass, boolean includeInheritedTypes, boolean publicOnly,
+    public static List<Method> getMethods(Class<?> declaringClass, boolean includeInheritedTypes, boolean publicOnly,
                                    Predicate<Method>... methodsToFilter) {
 
         if (declaringClass == null || declaringClass.isPrimitive()) {
@@ -180,7 +186,7 @@ public interface MethodUtils {
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      * @since 2.7.6
      */
-    static List<Method> getDeclaredMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static List<Method> getDeclaredMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
         return getMethods(declaringClass, false, false, methodsToFilter);
     }
 
@@ -193,7 +199,7 @@ public interface MethodUtils {
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      * @since 2.7.6
      */
-    static List<Method> getMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static List<Method> getMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
         return getMethods(declaringClass, false, true, methodsToFilter);
     }
 
@@ -206,7 +212,7 @@ public interface MethodUtils {
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      * @since 2.7.6
      */
-    static List<Method> getAllDeclaredMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static List<Method> getAllDeclaredMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
         return getMethods(declaringClass, true, false, methodsToFilter);
     }
 
@@ -219,11 +225,11 @@ public interface MethodUtils {
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      * @since 2.7.6
      */
-    static List<Method> getAllMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static List<Method> getAllMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
         return getMethods(declaringClass, true, true, methodsToFilter);
     }
 
-//    static List<Method> getOverriderMethods(Class<?> implementationClass, Class<?>... superTypes) {
+//    public static List<Method> getOverriderMethods(Class<?> implementationClass, Class<?>... superTypes) {
 
 //
 
@@ -237,7 +243,7 @@ public interface MethodUtils {
      * @return if not found, return <code>null</code>
      * @since 2.7.6
      */
-    static Method findMethod(Class type, String methodName) {
+    public static Method findMethod(Class type, String methodName) {
         return findMethod(type, methodName, EMPTY_CLASS_ARRAY);
     }
 
@@ -250,7 +256,7 @@ public interface MethodUtils {
      * @return if not found, return <code>null</code>
      * @since 2.7.6
      */
-    static Method findMethod(Class type, String methodName, Class<?>... parameterTypes) {
+    public static Method findMethod(Class type, String methodName, Class<?>... parameterTypes) {
         Method method = null;
         try {
             if (type != null && isNotEmpty(methodName)) {
@@ -271,7 +277,7 @@ public interface MethodUtils {
      * @return the target method's execution result
      * @since 2.7.6
      */
-    static <T> T invokeMethod(Object object, String methodName, Object... methodParameters) {
+    public static <T> T invokeMethod(Object object, String methodName, Object... methodParameters) {
         Class type = object.getClass();
         Class[] parameterTypes = resolveTypes(methodParameters);
         Method method = findMethod(type, methodName, parameterTypes);
@@ -309,7 +315,7 @@ public interface MethodUtils {
      * @jls 9.4.1 Inheritance and Overriding
      * @see Elements#overrides(ExecutableElement, ExecutableElement, TypeElement)
      */
-    static boolean overrides(Method overrider, Method overridden) {
+    public static boolean overrides(Method overrider, Method overridden) {
 
         if (overrider == null || overridden == null) {
             return false;
@@ -373,7 +379,7 @@ public interface MethodUtils {
      * @param overrider the overrider {@link Method method}
      * @return if found, the overrider <code>method</code>, or <code>null</code>
      */
-    static Method findNearestOverriddenMethod(Method overrider) {
+    public static Method findNearestOverriddenMethod(Method overrider) {
         Class<?> declaringClass = overrider.getDeclaringClass();
         Method overriddenMethod = null;
         for (Class<?> inheritedType : getAllInheritedTypes(declaringClass)) {
@@ -392,7 +398,7 @@ public interface MethodUtils {
      * @param declaringClass the class that is declaring the overridden {@link Method method}
      * @return if found, the overrider <code>method</code>, or <code>null</code>
      */
-    static Method findOverriddenMethod(Method overrider, Class<?> declaringClass) {
+    public static Method findOverriddenMethod(Method overrider, Class<?> declaringClass) {
         List<Method> matchedMethods = getAllMethods(declaringClass, method -> overrides(overrider, method));
         return matchedMethods.isEmpty() ? null : matchedMethods.get(0);
     }
@@ -404,7 +410,7 @@ public interface MethodUtils {
      * @param method method
      * @return fieldName
      */
-    static String extractFieldName(Method method) {
+    public static String extractFieldName(Method method) {
         List<String> emptyFieldMethod = Arrays.asList("is", "get", "getObject", "getClass");
         String methodName = method.getName();
         String fieldName = "";
@@ -435,7 +441,7 @@ public interface MethodUtils {
      * @param targetObj the object the method is invoked from
      * @return double value
      */
-    static double invokeAndReturnDouble(Method method, Object targetObj) {
+    public static double invokeAndReturnDouble(Method method, Object targetObj) {
         try {
             return method != null ? (double) method.invoke(targetObj) : Double.NaN;
         } catch (Exception e) {
@@ -450,7 +456,7 @@ public interface MethodUtils {
      * @param targetObj the object the method is invoked from
      * @return long value
      */
-    static long invokeAndReturnLong(Method method, Object targetObj) {
+    public static long invokeAndReturnLong(Method method, Object targetObj) {
         try {
             return method != null ? (long) method.invoke(targetObj) : -1;
         } catch (Exception e) {

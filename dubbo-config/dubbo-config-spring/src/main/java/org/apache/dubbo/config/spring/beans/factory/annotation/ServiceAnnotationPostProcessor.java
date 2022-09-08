@@ -79,8 +79,8 @@ import java.util.Set;
 
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
-import static org.apache.dubbo.common.utils.AnnotationUtils.findAnnotation;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.filterDefaultValues;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;

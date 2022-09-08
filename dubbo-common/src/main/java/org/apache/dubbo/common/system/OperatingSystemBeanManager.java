@@ -19,7 +19,7 @@ package org.apache.dubbo.common.system;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.reflect.MethodUtils;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;

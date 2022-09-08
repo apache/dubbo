@@ -19,7 +19,7 @@ package org.apache.dubbo.config.spring.schema;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.reflect.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;

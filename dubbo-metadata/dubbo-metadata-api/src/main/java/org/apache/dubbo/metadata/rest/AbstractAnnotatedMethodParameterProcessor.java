@@ -20,7 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-import static org.apache.dubbo.common.utils.AnnotationUtils.getValue;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.getValue;
 import static org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor.buildDefaultValue;
 
 /**

@@ -40,12 +40,12 @@ import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
-import static org.apache.dubbo.common.utils.AnnotationUtils.isAnyAnnotationPresent;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.isAnyAnnotationPresent;
 import static org.apache.dubbo.common.utils.ClassUtils.forName;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInterfaces;
-import static org.apache.dubbo.common.utils.MethodUtils.excludedDeclaredClass;
-import static org.apache.dubbo.common.utils.MethodUtils.getAllMethods;
-import static org.apache.dubbo.common.utils.MethodUtils.overrides;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.excludedDeclaredClass;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.getAllMethods;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.overrides;
 
 /**
  * The abstract {@link ServiceRestMetadataResolver} class to provider some template methods assemble the instance of

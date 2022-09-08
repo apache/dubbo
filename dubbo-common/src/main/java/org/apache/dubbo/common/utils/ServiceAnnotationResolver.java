@@ -25,7 +25,7 @@ import java.util.List;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
-import static org.apache.dubbo.common.utils.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.ClassUtils.isGenericClass;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;

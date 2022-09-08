@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.utils;
 
 
+import org.apache.dubbo.common.utils.reflect.MethodUtils;
+
 import java.lang.reflect.Method;
 
 /**
@@ -116,7 +118,7 @@ public class ClassHelper {
     }
 
     /**
-     * @see org.apache.dubbo.common.utils.MethodUtils#isSetter(Method)
+     * @see MethodUtils#isSetter(Method)
      * @deprecated Replace to <code>MethodUtils#isSetter(Method)</code>
      */
     public static boolean isSetter(Method method) {
@@ -124,7 +126,7 @@ public class ClassHelper {
     }
 
     /**
-     * @see org.apache.dubbo.common.utils.MethodUtils#isGetter(Method) (Method)
+     * @see MethodUtils#isGetter(Method) (Method)
      * @deprecated Replace to <code>MethodUtils#isGetter(Method)</code>
      */
     public static boolean isGetter(Method method) {

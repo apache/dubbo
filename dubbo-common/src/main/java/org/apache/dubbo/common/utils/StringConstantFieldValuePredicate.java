@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import static java.lang.reflect.Modifier.isFinal;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
-import static org.apache.dubbo.common.utils.FieldUtils.getFieldValue;
+import static org.apache.dubbo.common.utils.reflect.FieldUtils.getFieldValue;
 
 /**
  * The constant field value {@link Predicate} for the specified {@link Class}

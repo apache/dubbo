@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.common.utils.reflect;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -27,15 +27,19 @@ import java.lang.reflect.Modifier;
  *
  * @since 2.7.6
  */
-public interface MemberUtils {
+public final class MemberUtils {
+
+    private MemberUtils() {
+        throw new UnsupportedOperationException("No instance of 'MemberUtils' for you! ");
+    }
 
     /**
      * check the specified {@link Member member} is static or not ?
      *
      * @param member {@link Member} instance, e.g, {@link Constructor}, {@link Method} or {@link Field}
-     * @return Iff <code>member</code> is static one, return <code>true</code>, or <code>false</code>
+     * @return If <code>member</code> is static one, return <code>true</code>, or <code>false</code>
      */
-    static boolean isStatic(Member member) {
+    public static boolean isStatic(Member member) {
         return member != null && Modifier.isStatic(member.getModifiers());
     }
 
@@ -43,9 +47,9 @@ public interface MemberUtils {
      * check the specified {@link Member member} is private or not ?
      *
      * @param member {@link Member} instance, e.g, {@link Constructor}, {@link Method} or {@link Field}
-     * @return Iff <code>member</code> is private one, return <code>true</code>, or <code>false</code>
+     * @return If <code>member</code> is private one, return <code>true</code>, or <code>false</code>
      */
-    static boolean isPrivate(Member member) {
+    public static boolean isPrivate(Member member) {
         return member != null && Modifier.isPrivate(member.getModifiers());
     }
 
@@ -55,7 +59,7 @@ public interface MemberUtils {
      * @param member {@link Member} instance, e.g, {@link Constructor}, {@link Method} or {@link Field}
      * @return Iff <code>member</code> is public one, return <code>true</code>, or <code>false</code>
      */
-    static boolean isPublic(Member member) {
+    public static boolean isPublic(Member member) {
         return member != null && Modifier.isPublic(member.getModifiers());
     }
 

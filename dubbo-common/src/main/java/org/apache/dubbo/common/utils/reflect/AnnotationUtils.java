@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.common.utils.reflect;
+
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -43,15 +46,19 @@ import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInheritedTypes;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
-import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
-import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.findMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.invokeMethod;
 
 /**
  * Commons Annotation Utilities class
  *
  * @since 2.7.6
  */
-public interface AnnotationUtils {
+public final class AnnotationUtils {
+
+    private AnnotationUtils() {
+        throw new UnsupportedOperationException("No instance of 'AnnotationUtils' for you! ");
+    }
 
     /**
      * Resolve the annotation type by the annotated element and resolved class name
@@ -61,7 +68,7 @@ public interface AnnotationUtils {
      * @param <A>                 the type of annotation
      * @return If resolved, return the type of annotation, or <code>null</code>
      */
-    static <A extends Annotation> Class<A> resolveAnnotationType(AnnotatedElement annotatedElement,
+    public static <A extends Annotation> Class<A> resolveAnnotationType(AnnotatedElement annotatedElement,
                                                                  String annotationClassName) {
         ClassLoader classLoader = annotatedElement.getClass().getClassLoader();
         Class<?> annotationType = resolveClass(annotationClassName, classLoader);
@@ -78,7 +85,7 @@ public interface AnnotationUtils {
      * @return if <code>annotatedElement</code> is the {@link Class}, return <code>true</code>, or <code>false</code>
      * @see ElementType#TYPE
      */
-    static boolean isType(AnnotatedElement annotatedElement) {
+    public static boolean isType(AnnotatedElement annotatedElement) {
         return annotatedElement instanceof Class;
     }
 
@@ -89,7 +96,7 @@ public interface AnnotationUtils {
      * @param annotationType the expected annotation type
      * @return if same, return <code>true</code>, or <code>false</code>
      */
-    static boolean isSameType(Annotation annotation, Class<? extends Annotation> annotationType) {
+    public static boolean isSameType(Annotation annotation, Class<? extends Annotation> annotationType) {
         if (annotation == null || annotationType == null) {
             return false;
         }
@@ -102,7 +109,7 @@ public interface AnnotationUtils {
      * @param excludedAnnotationType excluded annotation type
      * @return non-null
      */
-    static Predicate<Annotation> excludedType(Class<? extends Annotation> excludedAnnotationType) {
+    public static Predicate<Annotation> excludedType(Class<? extends Annotation> excludedAnnotationType) {
         return annotation -> !isSameType(annotation, excludedAnnotationType);
     }
 
@@ -115,7 +122,7 @@ public interface AnnotationUtils {
      * @return the attribute value
      * @throws IllegalArgumentException If the attribute name can't be found
      */
-    static <T> T getAttribute(Annotation annotation, String attributeName) throws IllegalArgumentException {
+    public static <T> T getAttribute(Annotation annotation, String attributeName) throws IllegalArgumentException {
         return annotation == null ? null : invokeMethod(annotation, attributeName);
     }
 
@@ -127,7 +134,7 @@ public interface AnnotationUtils {
      * @return the value of "value" attribute
      * @throws IllegalArgumentException If the attribute name can't be found
      */
-    static <T> T getValue(Annotation annotation) throws IllegalArgumentException {
+    public static <T> T getValue(Annotation annotation) throws IllegalArgumentException {
         return getAttribute(annotation, "value");
     }
 
@@ -141,7 +148,7 @@ public interface AnnotationUtils {
      * @return the {@link Annotation} if found
      * @throws ClassCastException If the {@link Annotation annotation} type that client requires can't match actual type
      */
-    static <A extends Annotation> A getAnnotation(AnnotatedElement annotatedElement, String annotationClassName)
+    public static <A extends Annotation> A getAnnotation(AnnotatedElement annotatedElement, String annotationClassName)
             throws ClassCastException {
         Class<? extends Annotation> annotationType = resolveAnnotationType(annotatedElement, annotationClassName);
         if (annotationType == null) {
@@ -158,7 +165,7 @@ public interface AnnotationUtils {
      * @param annotationsToFilter the annotations to filter
      * @return non-null read-only {@link List}
      */
-    static List<Annotation> getDeclaredAnnotations(AnnotatedElement annotatedElement,
+    public static List<Annotation> getDeclaredAnnotations(AnnotatedElement annotatedElement,
                                                    Predicate<Annotation>... annotationsToFilter) {
         if (annotatedElement == null) {
             return emptyList();
@@ -175,7 +182,7 @@ public interface AnnotationUtils {
      * @param annotationsToFilter the annotations to filter
      * @return non-null read-only {@link List}
      */
-    static List<Annotation> getAllDeclaredAnnotations(AnnotatedElement annotatedElement,
+    public static List<Annotation> getAllDeclaredAnnotations(AnnotatedElement annotatedElement,
                                                       Predicate<Annotation>... annotationsToFilter) {
         if (isType(annotatedElement)) {
             return getAllDeclaredAnnotations((Class) annotatedElement, annotationsToFilter);
@@ -192,7 +199,7 @@ public interface AnnotationUtils {
      * @param annotationsToFilter the annotations to filter
      * @return non-null read-only {@link List}
      */
-    static List<Annotation> getAllDeclaredAnnotations(Class<?> type, Predicate<Annotation>... annotationsToFilter) {
+    public static List<Annotation> getAllDeclaredAnnotations(Class<?> type, Predicate<Annotation>... annotationsToFilter) {
 
         if (type == null) {
             return emptyList();
@@ -223,7 +230,7 @@ public interface AnnotationUtils {
      * @param metaAnnotationsToFilter the meta annotations to filter
      * @return non-null read-only {@link List}
      */
-    static List<Annotation> getMetaAnnotations(Class<? extends Annotation> annotationType,
+    public static List<Annotation> getMetaAnnotations(Class<? extends Annotation> annotationType,
                                                Predicate<Annotation>... metaAnnotationsToFilter) {
         return getDeclaredAnnotations(annotationType,
                 // Excludes the Java native annotation types or it causes the stack overflow, e.g,
@@ -243,7 +250,7 @@ public interface AnnotationUtils {
      * @param annotationsToFilter the annotations to filter
      * @return non-null read-only {@link List}
      */
-    static List<Annotation> getAllMetaAnnotations(Class<? extends Annotation> annotationType,
+    public static List<Annotation> getAllMetaAnnotations(Class<? extends Annotation> annotationType,
                                                   Predicate<Annotation>... annotationsToFilter) {
 
         List<Annotation> allMetaAnnotations = new LinkedList<>();
@@ -268,7 +275,7 @@ public interface AnnotationUtils {
      * @param <A>                 the required type of annotation
      * @return If found, return first matched-type {@link Annotation annotation}, or <code>null</code>
      */
-    static <A extends Annotation> A findAnnotation(AnnotatedElement annotatedElement, String annotationClassName) {
+    public static <A extends Annotation> A findAnnotation(AnnotatedElement annotatedElement, String annotationClassName) {
         return findAnnotation(annotatedElement, resolveAnnotationType(annotatedElement, annotationClassName));
     }
 
@@ -280,7 +287,7 @@ public interface AnnotationUtils {
      * @param <A>              the required type of annotation
      * @return If found, return first matched-type {@link Annotation annotation}, or <code>null</code>
      */
-    static <A extends Annotation> A findAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
+    public static <A extends Annotation> A findAnnotation(AnnotatedElement annotatedElement, Class<A> annotationType) {
         return (A) filterFirst(getAllDeclaredAnnotations(annotatedElement), a -> isSameType(a, annotationType));
     }
 
@@ -292,7 +299,7 @@ public interface AnnotationUtils {
      * @param <A>                the type of required annotation
      * @return if found, return all matched results, or get an {@link Collections#emptyList() empty list}
      */
-    static <A extends Annotation> List<A> findMetaAnnotations(Class<? extends Annotation> annotationType,
+    public static <A extends Annotation> List<A> findMetaAnnotations(Class<? extends Annotation> annotationType,
                                                               Class<A> metaAnnotationType) {
         return (List<A>) getAllMetaAnnotations(annotationType, a -> isSameType(a, metaAnnotationType));
     }
@@ -305,7 +312,7 @@ public interface AnnotationUtils {
      * @param <A>                the type of required annotation
      * @return if found, return all matched results, or get an {@link Collections#emptyList() empty list}
      */
-    static <A extends Annotation> List<A> findMetaAnnotations(AnnotatedElement annotatedElement,
+    public static <A extends Annotation> List<A> findMetaAnnotations(AnnotatedElement annotatedElement,
                                                               Class<A> metaAnnotationType) {
         List<A> metaAnnotations = new LinkedList<>();
 
@@ -324,7 +331,7 @@ public interface AnnotationUtils {
      * @param <A>                     the type of required annotation
      * @return {@link #findMetaAnnotation(Class, Class)}
      */
-    static <A extends Annotation> A findMetaAnnotation(AnnotatedElement annotatedElement,
+    public static <A extends Annotation> A findMetaAnnotation(AnnotatedElement annotatedElement,
                                                        String metaAnnotationClassName) {
         return findMetaAnnotation(annotatedElement, resolveAnnotationType(annotatedElement, metaAnnotationClassName));
     }
@@ -339,7 +346,7 @@ public interface AnnotationUtils {
      * If it requires more result, please consider to use {@link #findMetaAnnotations(Class, Class)}
      * @see #findMetaAnnotations(Class, Class)
      */
-    static <A extends Annotation> A findMetaAnnotation(Class<? extends Annotation> annotationType,
+    public static <A extends Annotation> A findMetaAnnotation(Class<? extends Annotation> annotationType,
                                                        Class<A> metaAnnotationType) {
         return first(findMetaAnnotations(annotationType, metaAnnotationType));
     }
@@ -354,7 +361,7 @@ public interface AnnotationUtils {
      * If it requires more result, please consider to use {@link #findMetaAnnotations(AnnotatedElement, Class)}
      * @see #findMetaAnnotations(AnnotatedElement, Class)
      */
-    static <A extends Annotation> A findMetaAnnotation(AnnotatedElement annotatedElement, Class<A> metaAnnotationType) {
+    public static <A extends Annotation> A findMetaAnnotation(AnnotatedElement annotatedElement, Class<A> metaAnnotationType) {
         return first(findMetaAnnotations(annotatedElement, metaAnnotationType));
     }
 
@@ -366,7 +373,7 @@ public interface AnnotationUtils {
      * @param annotationTypes the specified annotation types
      * @return If the specified annotation types are present, return <code>true</code>, or <code>false</code>
      */
-    static boolean isAnnotationPresent(Class<?> type,
+    public static boolean isAnnotationPresent(Class<?> type,
                                        boolean matchAll,
                                        Class<? extends Annotation>... annotationTypes) {
 
@@ -395,7 +402,7 @@ public interface AnnotationUtils {
      * @param annotationType the class of annotation
      * @return If the specified annotation type is present, return <code>true</code>, or <code>false</code>
      */
-    static boolean isAnnotationPresent(Class<?> type, Class<? extends Annotation> annotationType) {
+    public static boolean isAnnotationPresent(Class<?> type, Class<? extends Annotation> annotationType) {
         return isAnnotationPresent(type, true, annotationType);
     }
 
@@ -406,7 +413,7 @@ public interface AnnotationUtils {
      * @param annotationClassName the class name of annotation
      * @return If any specified annotation types are present, return <code>true</code>
      */
-    static boolean isAnnotationPresent(AnnotatedElement annotatedElement, String annotationClassName) {
+    public static boolean isAnnotationPresent(AnnotatedElement annotatedElement, String annotationClassName) {
         ClassLoader classLoader = annotatedElement.getClass().getClassLoader();
         Class<?> resolvedType = resolveClass(annotationClassName, classLoader);
         if (!Annotation.class.isAssignableFrom(resolvedType)) {
@@ -422,7 +429,7 @@ public interface AnnotationUtils {
      * @param annotationType   the class of annotation
      * @return If any specified annotation types are present, return <code>true</code>
      */
-    static boolean isAnnotationPresent(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
+    public static boolean isAnnotationPresent(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
         if (isType(annotatedElement)) {
             return isAnnotationPresent((Class) annotatedElement, annotationType);
         } else {
@@ -438,7 +445,7 @@ public interface AnnotationUtils {
      * @param annotationTypes the specified annotation types
      * @return If the specified annotation types are present, return <code>true</code>, or <code>false</code>
      */
-    static boolean isAllAnnotationPresent(Class<?> type, Class<? extends Annotation>... annotationTypes) {
+    public static boolean isAllAnnotationPresent(Class<?> type, Class<? extends Annotation>... annotationTypes) {
         return isAnnotationPresent(type, true, annotationTypes);
     }
 
@@ -449,7 +456,7 @@ public interface AnnotationUtils {
      * @param annotationTypes the specified annotation types
      * @return If any specified annotation types are present, return <code>true</code>
      */
-    static boolean isAnyAnnotationPresent(Class<?> type,
+    public static boolean isAnyAnnotationPresent(Class<?> type,
                                           Class<? extends Annotation>... annotationTypes) {
         return isAnnotationPresent(type, false, annotationTypes);
     }
@@ -464,7 +471,7 @@ public interface AnnotationUtils {
      * @return <code>null</code> if not found
      * @since 2.7.9
      */
-    static <T> T getDefaultValue(Annotation annotation, String attributeName) {
+    public static <T> T getDefaultValue(Annotation annotation, String attributeName) {
         return getDefaultValue(annotation.annotationType(), attributeName);
     }
 
@@ -477,7 +484,7 @@ public interface AnnotationUtils {
      * @return <code>null</code> if not found
      * @since 2.7.9
      */
-    static <T> T getDefaultValue(Class<? extends Annotation> annotationType, String attributeName) {
+    public static <T> T getDefaultValue(Class<? extends Annotation> annotationType, String attributeName) {
         Method method = findMethod(annotationType, attributeName);
         return (T) (method == null ? null : method.getDefaultValue());
     }
@@ -488,7 +495,7 @@ public interface AnnotationUtils {
      * @param attributes
      * @return
      */
-    static Map<String, Object> filterDefaultValues(Class<? extends Annotation> annotationType, Map<String, Object> attributes) {
+    public static Map<String, Object> filterDefaultValues(Class<? extends Annotation> annotationType, Map<String, Object> attributes) {
         Map<String, Object> filteredAttributes = new LinkedHashMap<>(attributes.size());
         attributes.forEach((key,val) -> {
             if (!Objects.deepEquals(val, getDefaultValue(annotationType, key))) {
@@ -509,7 +516,7 @@ public interface AnnotationUtils {
      * @param attributes
      * @return
      */
-    static Map<String, Object> filterDefaultValues(Annotation annotation, Map<String, Object> attributes) {
+    public static Map<String, Object> filterDefaultValues(Annotation annotation, Map<String, Object> attributes) {
         return filterDefaultValues(annotation.annotationType(), attributes);
     }
 
@@ -518,7 +525,7 @@ public interface AnnotationUtils {
      * @param annotation
      * @return
      */
-    static Map<String, Object> getAttributes(Annotation annotation, boolean filterDefaultValue) {
+    public static Map<String, Object> getAttributes(Annotation annotation, boolean filterDefaultValue) {
         Class<?> annotationType = annotation.annotationType();
         Method[] methods = annotationType.getMethods();
         Map<String, Object> attributes = new LinkedHashMap<>(methods.length);

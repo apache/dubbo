@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.utils.reflect.MemberUtils;
+
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.utils.MemberUtils.isPrivate;
-import static org.apache.dubbo.common.utils.MemberUtils.isPublic;
-import static org.apache.dubbo.common.utils.MemberUtils.isStatic;
+import static org.apache.dubbo.common.utils.reflect.MemberUtils.isPrivate;
+import static org.apache.dubbo.common.utils.reflect.MemberUtils.isPublic;
+import static org.apache.dubbo.common.utils.reflect.MemberUtils.isStatic;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

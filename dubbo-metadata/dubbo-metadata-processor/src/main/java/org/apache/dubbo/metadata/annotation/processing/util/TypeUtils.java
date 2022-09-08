@@ -52,7 +52,7 @@ import static javax.lang.model.element.ElementKind.INTERFACE;
 import static org.apache.dubbo.common.function.Predicates.EMPTY_ARRAY;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.function.Streams.filterFirst;
-import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.invokeMethod;
 
 /**
  * The utilities class for type in the package "javax.lang.model.*"

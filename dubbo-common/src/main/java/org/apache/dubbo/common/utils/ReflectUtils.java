@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.utils.reflect.MethodUtils;
+
 import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtMethod;

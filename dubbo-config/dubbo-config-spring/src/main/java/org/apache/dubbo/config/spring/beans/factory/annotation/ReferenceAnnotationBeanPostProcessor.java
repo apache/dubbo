@@ -64,7 +64,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
-import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.filterDefaultValues;
 import static org.springframework.util.StringUtils.hasText;
 
 /**

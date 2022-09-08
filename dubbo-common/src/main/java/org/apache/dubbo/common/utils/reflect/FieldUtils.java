@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.common.utils.reflect;
 
 import java.lang.reflect.Field;
 
@@ -25,16 +25,19 @@ import static org.apache.dubbo.common.utils.ClassUtils.getAllInheritedTypes;
  *
  * @since 2.7.6
  */
-public interface FieldUtils {
+public final class FieldUtils {
+    private FieldUtils() {
+        throw new UnsupportedOperationException("No instance of 'FieldUtils' for you! ");
+    }
 
     /**
      * Like the {@link Class#getDeclaredField(String)} method without throwing any {@link Exception}
      *
      * @param declaredClass the declared class
      * @param fieldName     the name of {@link Field}
-     * @return if field can't be found, return <code>null</code>
+     * @return if the field can't be found, return <code>null</code>
      */
-    static Field getDeclaredField(Class<?> declaredClass, String fieldName) {
+    public static Field getDeclaredField(Class<?> declaredClass, String fieldName) {
         try {
             Field[] fields = declaredClass.getDeclaredFields();
             for (int i = 0; i < fields.length; i++) {
@@ -53,9 +56,9 @@ public interface FieldUtils {
      *
      * @param declaredClass the declared class
      * @param fieldName     the name of {@link Field}
-     * @return if can't be found, return <code>null</code>
+     * @return if the field can't be found, return <code>null</code>
      */
-    static Field findField(Class<?> declaredClass, String fieldName) {
+    public static Field findField(Class<?> declaredClass, String fieldName) {
         Field field = getDeclaredField(declaredClass, fieldName);
         if (field != null) {
             return field;
@@ -79,9 +82,9 @@ public interface FieldUtils {
      *
      * @param object    the object whose field should be modified
      * @param fieldName the name of {@link Field}
-     * @return if can't be found, return <code>null</code>
+     * @return if the field can't be found, return <code>null</code>
      */
-    static Field findField(Object object, String fieldName) {
+    public static Field findField(Object object, String fieldName) {
         return findField(object.getClass(), fieldName);
     }
 
@@ -92,7 +95,7 @@ public interface FieldUtils {
      * @param fieldName the name of {@link Field}
      * @return the value of  the specified {@link Field}
      */
-    static Object getFieldValue(Object object, String fieldName) {
+    public static Object getFieldValue(Object object, String fieldName) {
         return getFieldValue(object, findField(object, fieldName));
     }
 
@@ -103,8 +106,11 @@ public interface FieldUtils {
      * @param field  {@link Field}
      * @return the value of  the specified {@link Field}
      */
-    static <T> T getFieldValue(Object object, Field field) {
+    @SuppressWarnings("deprecation")
+    public static <T> T getFieldValue(Object object, Field field) {
+        // For deprecation notice: the replacement canAccess() only appears in JDK 9+.
         boolean accessible = field.isAccessible();
+
         Object value = null;
         try {
             if (!accessible) {
@@ -115,6 +121,7 @@ public interface FieldUtils {
         } finally {
             field.setAccessible(accessible);
         }
+
         return (T) value;
     }
 
@@ -126,7 +133,7 @@ public interface FieldUtils {
      * @param value     the value of field to be set
      * @return the previous value of the specified {@link Field}
      */
-    static <T> T setFieldValue(Object object, String fieldName, T value) {
+    public static <T> T setFieldValue(Object object, String fieldName, T value) {
         return setFieldValue(object, findField(object, fieldName), value);
     }
 
@@ -138,7 +145,8 @@ public interface FieldUtils {
      * @param value  the value of field to be set
      * @return the previous value of the specified {@link Field}
      */
-    static <T> T setFieldValue(Object object, Field field, T value) {
+    @SuppressWarnings("deprecation")
+    public static <T> T setFieldValue(Object object, Field field, T value) {
         boolean accessible = field.isAccessible();
         Object previousValue = null;
         try {

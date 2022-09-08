@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.utils.reflect.FieldUtils;
+
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.utils.FieldUtils.findField;
-import static org.apache.dubbo.common.utils.FieldUtils.getDeclaredField;
-import static org.apache.dubbo.common.utils.FieldUtils.getFieldValue;
-import static org.apache.dubbo.common.utils.FieldUtils.setFieldValue;
+import static org.apache.dubbo.common.utils.reflect.FieldUtils.findField;
+import static org.apache.dubbo.common.utils.reflect.FieldUtils.getDeclaredField;
+import static org.apache.dubbo.common.utils.reflect.FieldUtils.getFieldValue;
+import static org.apache.dubbo.common.utils.reflect.FieldUtils.setFieldValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 

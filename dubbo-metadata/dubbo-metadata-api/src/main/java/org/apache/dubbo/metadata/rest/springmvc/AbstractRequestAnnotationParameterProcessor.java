@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.springmvc;
 
-import org.apache.dubbo.common.utils.AnnotationUtils;
+import org.apache.dubbo.common.utils.reflect.AnnotationUtils;
 import org.apache.dubbo.metadata.rest.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor;
 
@@ -24,7 +24,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.util.Objects;
 
-import static org.apache.dubbo.common.utils.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.common.utils.reflect.AnnotationUtils.getAttribute;
 
 /**
  * The abstract {@link AnnotatedMethodParameterProcessor} implementation for Spring Web MVC's @Request*

@@ -16,21 +16,23 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.utils.reflect.MethodUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
-import static org.apache.dubbo.common.utils.MethodUtils.excludedDeclaredClass;
-import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
-import static org.apache.dubbo.common.utils.MethodUtils.findNearestOverriddenMethod;
-import static org.apache.dubbo.common.utils.MethodUtils.findOverriddenMethod;
-import static org.apache.dubbo.common.utils.MethodUtils.getAllDeclaredMethods;
-import static org.apache.dubbo.common.utils.MethodUtils.getAllMethods;
-import static org.apache.dubbo.common.utils.MethodUtils.getDeclaredMethods;
-import static org.apache.dubbo.common.utils.MethodUtils.getMethods;
-import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
-import static org.apache.dubbo.common.utils.MethodUtils.overrides;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.excludedDeclaredClass;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.findMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.findNearestOverriddenMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.findOverriddenMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.getAllDeclaredMethods;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.getAllMethods;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.getDeclaredMethods;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.getMethods;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.invokeMethod;
+import static org.apache.dubbo.common.utils.reflect.MethodUtils.overrides;
 
 public class MethodUtilsTest {
 
