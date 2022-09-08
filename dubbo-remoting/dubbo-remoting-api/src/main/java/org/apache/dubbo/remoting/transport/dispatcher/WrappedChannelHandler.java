@@ -75,15 +75,19 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     }
 
     protected void sendFeedback(Channel channel, Request request, Throwable t) throws RemotingException {
-        if (request.isTwoWay()) {
-            String msg = "Server side(" + url.getIp() + "," + url.getPort()
-                    + ") thread pool is exhausted, detail msg:" + t.getMessage();
-            Response response = new Response(request.getId(), request.getVersion());
-            response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
-            response.setErrorMessage(msg);
-            channel.send(response);
+
+        if (!request.isTwoWay()) {
             return;
         }
+
+        String msg = "Server side(" + url.getIp() + "," + url.getPort()
+                + ") thread pool is exhausted, detail msg:" + t.getMessage();
+
+        Response response = new Response(request.getId(), request.getVersion());
+        response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+        response.setErrorMessage(msg);
+
+        channel.send(response);
     }
 
     @Override
@@ -140,12 +144,16 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
         // note: url.getOrDefaultApplicationModel() may create new application model
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
+
         ExecutorRepository executorRepository =
                 applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+
         ExecutorService executor = executorRepository.getExecutor(url);
+
         if (executor == null) {
             executor = executorRepository.createExecutorIfAbsent(url);
         }
+
         return executor;
     }
 
@@ -153,6 +161,5 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public ExecutorService getExecutorService() {
         return getSharedExecutorService();
     }
-
 
 }

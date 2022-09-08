@@ -73,7 +73,9 @@ public class FileCacheStore {
             }
 
             if (count > entrySize) {
-                logger.warn("Cache file was truncated for exceeding the maximum entry size " + entrySize);
+                logger.warn("0-4", "mis-configuration of system properties",
+                    "Check Java system property 'dubbo.mapping.cache.entrySize' and 'dubbo.meta.cache.entrySize'.",
+                    "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }
         } catch (IOException e) {
             logger.warn("Load cache failed ", e);
