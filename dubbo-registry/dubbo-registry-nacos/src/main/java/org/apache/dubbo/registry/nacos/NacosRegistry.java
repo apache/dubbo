@@ -287,7 +287,7 @@ public class NacosRegistry extends FailbackRegistry {
                     doUnsubscribe(url, nacosAggregateListener, serviceNames);
                     NacosInstanceManageUtil.removeSubscribedServiceNames(url.getServiceKey());
                     for (String serviceName : serviceNames) {
-                        NacosInstanceManageUtil.removeSubscribedServiceNames(serviceName);
+                        NacosInstanceManageUtil.getCorrespondingServiceNames(serviceName);
                     }
                 } catch (NacosException e) {
                     logger.error("Failed to unsubscribe " + url + " to nacos " + getUrl() + ", cause: " + e.getMessage(), e);
