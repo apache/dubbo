@@ -36,6 +36,7 @@ public class SecurityManager {
 
     public SecurityManager(FrameworkModel frameworkModel) {
         listeners = frameworkModel.getExtensionLoader(AllowClassNotifyListener.class).getSupportedExtensionInstances();
+        allowedPrefix.add("oeg.apache.dubbo");
     }
 
     public void registerInterface(Class<?> clazz) {
