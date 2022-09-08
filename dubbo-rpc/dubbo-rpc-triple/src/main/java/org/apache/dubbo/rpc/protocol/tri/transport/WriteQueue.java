@@ -34,7 +34,6 @@ public class WriteQueue {
     private final Channel channel;
     private final Queue<QueuedCommand> queue;
     private final AtomicBoolean scheduled;
-    private volatile boolean rst;
 
     public WriteQueue(Channel channel) {
         this.channel = channel;
@@ -51,19 +50,12 @@ public class WriteQueue {
     }
 
     public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
-        ChannelFuture future = enqueue(command);
-        if (rst) {
-            this.rst = true;
-        }
-        return future;
+        return enqueue(command);
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {
         if (!channel.isActive()) {
             return channel.newFailedFuture(new IOException("channel is closed"));
-        }
-        if (rst) {
-            return channel.newFailedFuture(new IOException("channel has reset"));
         }
         ChannelPromise promise = command.promise();
         if (promise == null) {

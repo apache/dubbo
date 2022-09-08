@@ -17,6 +17,15 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2FrameStream;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -30,19 +39,8 @@ import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
 
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -61,6 +59,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private final WriteQueue writeQueue;
     private Deframer deframer;
     private final Channel parent;
+    private Http2FrameStream http2FrameStream;
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
@@ -76,31 +75,23 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     public TripleClientStream(FrameworkModel frameworkModel,
         Executor executor,
         Channel parent,
-        ClientStream.Listener listener) {
+        ClientStream.Listener listener,
+        WriteQueue writeQueue) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
-        this.writeQueue = createWriteQueue(parent);
+        this.writeQueue = writeQueue;
+        initHttp2Stream(parent);
     }
 
-    private WriteQueue createWriteQueue(Channel parent) {
-        final Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
-        final Future<Http2StreamChannel> future = bootstrap.open().syncUninterruptibly();
-        if (!future.isSuccess()) {
-            throw new IllegalStateException("Create remote stream failed. channel:" + parent);
-        }
-        final Http2StreamChannel channel = future.getNow();
-        channel.pipeline()
-            .addLast(new TripleCommandOutBoundHandler())
-            .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
-        channel.closeFuture()
-            .addListener(f -> transportException(f.cause()));
-        return new WriteQueue(channel);
+    private void initHttp2Stream(Channel parent) {
+        Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
+        Http2StreamChannel channel = bootstrap.open().syncUninterruptibly().getNow();
+        channel.pipeline().addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
+        channel.closeFuture().addListener(f -> transportException(f.cause()));
+        this.http2FrameStream = channel.stream();
     }
 
-    public void close() {
-        writeQueue.close();
-    }
 
     public ChannelFuture sendHeader(Http2Headers headers) {
         if (this.writeQueue == null) {
@@ -108,6 +99,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             return parent.newFailedFuture(new IllegalStateException("Stream already closed"));
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
+        headerCmd.setHttp2FrameStream(http2FrameStream);
         return writeQueue.enqueue(headerCmd).addListener(future -> {
             if (!future.isSuccess()) {
                 transportException(future.cause());
@@ -123,6 +115,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
         final CancelQueueCommand cmd = CancelQueueCommand.createCommand(Http2Error.CANCEL);
+        cmd.setHttp2FrameStream(http2FrameStream);
         return this.writeQueue.enqueue(cmd, true);
     }
 
@@ -136,6 +129,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     public ChannelFuture sendMessage(byte[] message, int compressFlag, boolean eos) {
         final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,
             compressFlag);
+        cmd.setHttp2FrameStream(http2FrameStream);
         return this.writeQueue.enqueue(cmd)
             .addListener(future -> {
                     if (!future.isSuccess()) {
@@ -157,6 +151,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     @Override
     public ChannelFuture halfClose() {
         final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
+        cmd.setHttp2FrameStream(http2FrameStream);
         return this.writeQueue.enqueue(cmd);
     }
 
@@ -177,7 +172,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         private Http2Headers trailers;
 
         void handleH2TransportError(TriRpcStatus status) {
-            writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.NO_ERROR), true);
+            writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.NO_ERROR).setHttp2FrameStream(http2FrameStream));
             finishProcess(status, null);
         }
 
@@ -310,7 +305,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             executor.execute(() -> {
                 if (endStream) {
                     if (!halfClosed) {
-                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL),
+                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL).setHttp2FrameStream(http2FrameStream),
                             true);
                     }
                     onTrailersReceived(headers);

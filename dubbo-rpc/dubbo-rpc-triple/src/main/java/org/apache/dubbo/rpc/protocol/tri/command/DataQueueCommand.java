@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.Http2FrameStream;
 
 public class DataQueueCommand extends QueuedCommand {
 
@@ -44,13 +45,13 @@ public class DataQueueCommand extends QueuedCommand {
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (data == null) {
-            ctx.write(new DefaultHttp2DataFrame(endStream), promise);
+            ctx.write(new DefaultHttp2DataFrame(endStream).stream(http2FrameStream), promise);
         } else {
             ByteBuf buf = ctx.alloc().buffer();
             buf.writeByte(compressFlag);
             buf.writeInt(data.length);
             buf.writeBytes(data);
-            ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
+            ctx.write(new DefaultHttp2DataFrame(buf, endStream).stream(http2FrameStream), promise);
         }
     }
 

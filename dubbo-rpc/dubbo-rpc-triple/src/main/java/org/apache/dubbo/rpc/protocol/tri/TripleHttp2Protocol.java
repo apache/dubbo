@@ -37,9 +37,9 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2FrameLogger;
@@ -47,6 +47,8 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
+
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -126,13 +128,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             .frameLogger(SERVER_LOGGER)
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
-            new ChannelInitializer<Channel>() {
+            new ChannelInitializer<Http2StreamChannel>() {
                 @Override
-                protected void initChannel(Channel ch) {
+                protected void initChannel(Http2StreamChannel ch) {
                     final ChannelPipeline p = ch.pipeline();
+                    WriteQueue writeQueue = new WriteQueue(ch);
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
-                        headFilters));
+                        headFilters, ch, writeQueue));
                 }
             });
         List<ChannelHandler> handlers = new ArrayList<>();
@@ -170,6 +173,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler, new TripleTailHandler());
+        pipeline.addLast(codec, handler, new TripleCommandOutBoundHandler(), new TripleTailHandler());
     }
 }

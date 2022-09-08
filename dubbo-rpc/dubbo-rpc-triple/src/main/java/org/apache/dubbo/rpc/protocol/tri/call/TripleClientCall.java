@@ -38,6 +38,7 @@ import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private final Connection connection;
     private final Executor executor;
     private final FrameworkModel frameworkModel;
+    private final WriteQueue writeQueue;
     private RequestMetadata requestMetadata;
     private ClientStream stream;
     private ClientCall.Listener listener;
@@ -60,10 +62,11 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean done;
 
     public TripleClientCall(Connection connection, Executor executor,
-        FrameworkModel frameworkModel) {
+                            FrameworkModel frameworkModel, WriteQueue writeQueue) {
         this.connection = connection;
         this.executor = executor;
         this.frameworkModel = frameworkModel;
+        this.writeQueue= writeQueue;
     }
 
 
@@ -270,7 +273,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         this.requestMetadata = metadata;
         this.listener = responseListener;
         this.stream = new TripleClientStream(frameworkModel, executor, connection.getChannel(),
-            this);
+            this, writeQueue);
         return new ClientCallToObserverAdapter<>(this);
     }
 

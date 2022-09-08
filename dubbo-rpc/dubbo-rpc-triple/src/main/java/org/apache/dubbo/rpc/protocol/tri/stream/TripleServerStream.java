@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.Http2FrameStream;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -47,7 +49,6 @@ import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -80,22 +81,27 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private volatile boolean reset;
     private ServerStream.Listener listener;
     private final InetSocketAddress remoteAddress;
-    private final Channel channel;
     private Deframer deframer;
 
-    public TripleServerStream(Channel channel,
+    private final Http2StreamChannel http2StreamChannel;
+
+    private final Http2FrameStream http2FrameStream;
+
+    public TripleServerStream(Http2StreamChannel channel,
                               FrameworkModel frameworkModel,
                               Executor executor,
                               PathResolver pathResolver,
                               String acceptEncoding,
-                              List<HeaderFilter> filters) {
+                              List<HeaderFilter> filters,
+                              WriteQueue writeQueue) {
         super(executor, frameworkModel);
-        this.channel = channel;
         this.pathResolver = pathResolver;
         this.acceptEncoding = acceptEncoding;
         this.filters = filters;
-        this.writeQueue = new WriteQueue(channel);
+        this.writeQueue = writeQueue;
         this.remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        this.http2StreamChannel = channel;
+        this.http2FrameStream = channel.stream();
     }
 
     @Override
@@ -109,24 +115,23 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     }
 
     public ChannelFuture reset(Http2Error cause) {
-        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause), true);
+        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause).setHttp2FrameStream(http2FrameStream));
     }
 
     @Override
     public ChannelFuture sendHeader(Http2Headers headers) {
         if (reset) {
-            return writeQueue.failure(
-                new IllegalStateException("Stream already reset, no more headers allowed"));
+            return http2StreamChannel.newFailedFuture(new IllegalStateException("Stream already reset, no more headers allowed"));
         }
         if (headerSent) {
-            return writeQueue.failure(new IllegalStateException("Header already sent"));
+            return http2StreamChannel.newFailedFuture(new IllegalStateException("Header already sent"));
         }
         if (trailersSent) {
-            return writeQueue.failure(new IllegalStateException("Trailers already sent"));
+            return http2StreamChannel.newFailedFuture(new IllegalStateException("Trailers already sent"));
         }
         headerSent = true;
 
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false))
+        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false).setHttp2FrameStream(http2FrameStream))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -137,7 +142,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     @Override
     public Future<?> cancelByLocal(TriRpcStatus status) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Cancel stream:%s by local: %s", channel, status));
+            LOGGER.debug(String.format("Cancel stream:%s by local: %s", http2StreamChannel, status));
         }
         return reset(Http2Error.CANCEL);
     }
@@ -159,7 +164,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
         trailersSent = true;
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true))
+        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true).setHttp2FrameStream(http2FrameStream))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -224,7 +229,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return writeQueue.failure(
                 new IllegalStateException("Trailers already sent, no more body allowed"));
         }
-        return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag));
+        return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag).setHttp2FrameStream(http2FrameStream));
     }
 
     /**
@@ -238,8 +243,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders( headers, false).setHttp2FrameStream(http2FrameStream));
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true).setHttp2FrameStream(http2FrameStream));
     }
 
     /**

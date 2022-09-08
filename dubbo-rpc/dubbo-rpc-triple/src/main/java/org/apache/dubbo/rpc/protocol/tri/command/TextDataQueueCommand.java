@@ -41,6 +41,6 @@ public class TextDataQueueCommand extends QueuedCommand {
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), data);
-        ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
+        ctx.write(new DefaultHttp2DataFrame(buf, endStream).stream(http2FrameStream), promise);
     }
 }

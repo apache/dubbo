@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -31,7 +32,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
-import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 
@@ -39,9 +39,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
-
-    private static final AttributeKey<TripleServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
-        "tri_server_stream");
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -51,11 +48,14 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private final Executor executor;
     private final List<HeaderFilter> filters;
     private final String acceptEncoding;
+    private final TripleServerStream tripleServerStream;
 
     public TripleHttp2FrameServerHandler(
         FrameworkModel frameworkModel,
         Executor executor,
-        List<HeaderFilter> filters) {
+        List<HeaderFilter> filters,
+        Http2StreamChannel channel,
+        WriteQueue writeQueue) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
         this.filters = filters;
@@ -63,6 +63,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions());
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
+        tripleServerStream = new TripleServerStream(channel, frameworkModel, executor, pathResolver, acceptEncoding, filters, writeQueue);
     }
 
     @Override
@@ -87,8 +88,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
-        final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
-            .get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (tripleServerStream != null) {
             tripleServerStream.transportObserver.cancelByRemote(frame.errorCode());
@@ -102,24 +101,14 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
         TriRpcStatus status = TriRpcStatus.getStatus(cause,
             "Provider's error:\n" + cause.getMessage());
-        final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
-            .get();
-        if (tripleServerStream != null) {
-            tripleServerStream.cancelByLocal(status);
-        }
+        tripleServerStream.cancelByLocal(status);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-        final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
-            .get();
         tripleServerStream.transportObserver.onData(msg.content(), msg.isEndStream());
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        TripleServerStream tripleServerStream = new TripleServerStream(ctx.channel(),
-            frameworkModel, executor,
-            pathResolver, acceptEncoding, filters);
-        ctx.channel().attr(SERVER_STREAM_KEY).set(tripleServerStream);
         tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }
 
