@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -71,6 +72,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
         } else if (msg instanceof Http2DataFrame) {
             onDataRead(ctx, (Http2DataFrame) msg);
+            ctx.write(new DefaultHttp2WindowUpdateFrame(((Http2DataFrame) msg).initialFlowControlledBytes()).stream(((Http2DataFrame) msg).stream()));
         } else if (msg instanceof ReferenceCounted) {
             // ignored
             ReferenceCountUtil.release(msg);
