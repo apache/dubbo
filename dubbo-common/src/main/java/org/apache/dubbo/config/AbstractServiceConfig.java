@@ -133,7 +133,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * <p>
      * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
      */
-    private String preferSerialization; // default:fastjson2,hessian2
+    private String preferSerialization; // default:hessian2
 
     /**
      * Weather the service is export asynchronously
