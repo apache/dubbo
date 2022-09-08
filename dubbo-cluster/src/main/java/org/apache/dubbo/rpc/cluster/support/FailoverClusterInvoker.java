@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -46,7 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
  */
 public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(FailoverClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailoverClusterInvoker.class);
 
     public FailoverClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -79,15 +79,15 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result result = invokeWithContext(invoker, invocation);
                 if (le != null && logger.isWarnEnabled()) {
-                    logger.warn("Although retry the method " + methodName
-                            + " in the service " + getInterface().getName()
-                            + " was successful by the provider " + invoker.getUrl().getAddress()
-                            + ", but there have been failed providers " + providers
-                            + " (" + providers.size() + "/" + copyInvokers.size()
-                            + ") from the registry " + directory.getUrl().getAddress()
-                            + " on the consumer " + NetUtils.getLocalHost()
-                            + " using the dubbo version " + Version.getVersion() + ". Last error is: "
-                            + le.getMessage(), le);
+                    logger.warn("2-16","failed to retry do invoke","","Although retry the method " + methodName
+                        + " in the service " + getInterface().getName()
+                        + " was successful by the provider " + invoker.getUrl().getAddress()
+                        + ", but there have been failed providers " + providers
+                        + " (" + providers.size() + "/" + copyInvokers.size()
+                        + ") from the registry " + directory.getUrl().getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost()
+                        + " using the dubbo version " + Version.getVersion() + ". Last error is: "
+                        + le.getMessage(),le);
                 }
                 success = true;
                 return result;
