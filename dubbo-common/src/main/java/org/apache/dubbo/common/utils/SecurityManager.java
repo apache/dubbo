@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.security;
+package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
 import org.apache.dubbo.common.utils.SerializeClassChecker;

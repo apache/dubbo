@@ -33,6 +33,7 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
         ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
         beanFactory.registerBean(FrameworkExecutorRepository.class);
         beanFactory.registerBean(ConverterUtil.class);
+        beanFactory.registerBean(SecurityManager.class);
     }
 
     @Override

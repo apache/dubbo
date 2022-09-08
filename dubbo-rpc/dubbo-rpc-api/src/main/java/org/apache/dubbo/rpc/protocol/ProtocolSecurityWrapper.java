@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.security;
+package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.SecurityManager;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -31,10 +32,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Activate(order = 200)
-public class SecurityProtocolWrapper implements Protocol {
+public class ProtocolSecurityWrapper implements Protocol {
     private final Protocol protocol;
 
-    public SecurityProtocolWrapper(Protocol protocol) {
+    public ProtocolSecurityWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");
         }

@@ -1,1 +1,0 @@
-security=org.apache.dubbo.config.security.SecurityProtocolWrapper
