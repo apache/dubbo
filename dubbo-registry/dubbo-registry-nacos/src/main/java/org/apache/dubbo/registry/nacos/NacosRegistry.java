@@ -277,7 +277,7 @@ public class NacosRegistry extends FailbackRegistry {
         if (isAdminProtocol(url)) {
             shutdownServiceNamesLookup();
         } else {
-            Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
+                Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
             if (listenerMap == null) {
                 logger.warn(String.format("No aggregate listener found for url %s, this service might have already been unsubscribed.", url));
                 return;
@@ -288,7 +288,7 @@ public class NacosRegistry extends FailbackRegistry {
                 try {
                     doUnsubscribe(url, nacosAggregateListener, serviceNames);
                     for (String serviceName : serviceNames) {
-                        NacosInstanceManageUtil.getCorrespondingServiceNames(serviceName);
+                        NacosInstanceManageUtil.removeCorrespondingServiceNames(serviceName);
                     }
                 } catch (NacosException e) {
                     logger.error("Failed to unsubscribe " + url + " to nacos " + getUrl() + ", cause: " + e.getMessage(), e);
