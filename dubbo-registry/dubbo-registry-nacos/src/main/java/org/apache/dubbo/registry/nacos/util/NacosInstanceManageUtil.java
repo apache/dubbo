@@ -48,10 +48,6 @@ public class NacosInstanceManageUtil {
         CORRESPONDING_SERVICE_NAMES_MAP.put(serviceName, serviceNames);
     }
 
-    public static Set<String> getCorrespondingServiceNames(String serviceName) {
-        return CORRESPONDING_SERVICE_NAMES_MAP.get(serviceName);
-    }
-
     public static void initOrRefreshServiceInstanceList(String serviceName, List<Instance> instanceList) {
         SERVICE_INSTANCE_LIST_MAP.put(serviceName, instanceList);
     }
