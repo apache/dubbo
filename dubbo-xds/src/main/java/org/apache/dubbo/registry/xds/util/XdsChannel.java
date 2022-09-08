@@ -44,12 +44,14 @@ public class XdsChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(XdsChannel.class);
 
+    private static final String USE_AGENT = "use-agent";
+
     private final ManagedChannel channel;
 
     protected XdsChannel(URL url) {
         ManagedChannel managedChannel = null;
         try {
-            if(!url.getParameter("useAgent",false)) {
+            if(!url.getParameter(USE_AGENT,false)) {
                 XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
                     .getExtension(url.getParameter("signer", "istio"));
                 XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
