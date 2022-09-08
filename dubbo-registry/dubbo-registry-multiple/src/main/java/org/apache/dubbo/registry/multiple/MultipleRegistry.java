@@ -308,9 +308,11 @@ public class MultipleRegistry extends AbstractRegistry {
             // if no notify URL, add empty protocol URL
             if (emptyURL != null && notifyURLs.isEmpty()) {
                 notifyURLs.add(emptyURL);
+                LOGGER.info("No provider after aggregation, notify url with EMPTY protocol.");
+            } else {
+                LOGGER.info("Aggregated provider url size " + notifyURLs.size());
             }
 
-            LOGGER.info("Aggregated provider url size " + notifyURLs.size());
             this.notify(notifyURLs);
         }
 
