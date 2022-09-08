@@ -22,6 +22,7 @@ import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -89,8 +90,9 @@ public class MetricsFilterTest {
 
         try {
             filter.invoke(invoker, invocation);
-        } catch (Exception ignore) {
-
+        } catch (Exception e) {
+            Assertions.assertTrue(e instanceof RpcException);
+            filter.onError(e, invoker, invocation);
         }
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
@@ -112,7 +114,10 @@ public class MetricsFilterTest {
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
         initParam();
 
-        filter.invoke(invoker, invocation);
+        Result result = filter.invoke(invoker, invocation);
+
+        filter.onResponse(result, invoker, invocation);
+
         Map<String, MetricSample> metricsMap = getMetricsMap();
         Assertions.assertFalse(metricsMap.containsKey("requests.failed"));
         Assertions.assertTrue(metricsMap.containsKey("requests.succeed"));
@@ -134,7 +139,11 @@ public class MetricsFilterTest {
         invocation.setMethodName(METHOD_NAME);
         invocation.setParameterTypes(new Class[]{String.class});
 
-        filter.invoke(invoker, invocation);
+        Result result = filter.invoke(invoker, invocation);
+
+        filter.onResponse(result, invoker, invocation);
+
+
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
         MetricSample sample = metricsMap.get("requests.succeed");
@@ -154,7 +163,11 @@ public class MetricsFilterTest {
         invocation.setMethodName(METHOD_NAME);
         invocation.setParameterTypes(new Class[]{String.class});
 
-        filter.invoke(invoker, invocation);
+        Result result = filter.invoke(invoker, invocation);
+
+        filter.onResponse(result, invoker, invocation);
+
+
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
         MetricSample sample = metricsMap.get("requests.succeed");
@@ -174,7 +187,10 @@ public class MetricsFilterTest {
         invocation.setMethodName(METHOD_NAME);
         invocation.setParameterTypes(new Class[]{String.class});
 
-        filter.invoke(invoker, invocation);
+        Result result = filter.invoke(invoker, invocation);
+
+        filter.onResponse(result, invoker, invocation);
+
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
         MetricSample sample = metricsMap.get("requests.succeed");
