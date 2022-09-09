@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.filter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+
+import java.util.function.Consumer;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
@@ -49,21 +50,24 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
-        collectorExecutor.beforeExecute();
+        collect(invocation, MetricsCollectExecutor::beforeExecute);
 
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
-        collectorExecutor.postExecute();
+        collect(invocation, MetricsCollectExecutor::postExecute);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        collect(invocation,collector-> collector.throwExecute(t));
+    }
+
+
+    private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
         MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
-        collectorExecutor.throwExecute(t);
+        execute.accept(collectorExecutor);
     }
 }

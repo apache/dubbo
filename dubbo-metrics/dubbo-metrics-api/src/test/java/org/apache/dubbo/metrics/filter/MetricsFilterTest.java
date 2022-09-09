@@ -143,7 +143,6 @@ public class MetricsFilterTest {
 
         filter.onResponse(result, invoker, invocation);
 
-
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
         MetricSample sample = metricsMap.get("requests.succeed");
@@ -166,7 +165,6 @@ public class MetricsFilterTest {
         Result result = filter.invoke(invoker, invocation);
 
         filter.onResponse(result, invoker, invocation);
-
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
