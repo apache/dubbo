@@ -52,7 +52,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -364,7 +363,7 @@ public abstract class AbstractConfig implements Serializable {
      */
     protected static Map<String, String> convert(Map<String, String> parameters, String prefix) {
         if (parameters == null || parameters.isEmpty()) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
 
         Map<String, String> result = new HashMap<>();

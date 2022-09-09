@@ -20,6 +20,7 @@ import io.netty.util.concurrent.EventExecutorGroup;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
@@ -149,51 +150,22 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doConnect() throws Throwable {
-        long start = System.currentTimeMillis();
-        ChannelFuture future = bootstrap.connect(getConnectAddress());
         try {
-            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
-
-            if (ret && future.isSuccess()) {
-                Channel newChannel = future.channel();
+            String ipv6Address = NetUtils.getLocalHostV6();
+            InetSocketAddress connectAddress;
+            //first try ipv6 address
+            if (ipv6Address != null && getUrl().getParameter(CommonConstants.IPV6_KEY) != null) {
+                connectAddress = new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
                 try {
-                    // Close old channel
-                    // copy reference
-                    Channel oldChannel = NettyClient.this.channel;
-                    if (oldChannel != null) {
-                        try {
-                            if (logger.isInfoEnabled()) {
-                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
-                            }
-                            oldChannel.close();
-                        } finally {
-                            NettyChannel.removeChannelIfDisconnected(oldChannel);
-                        }
-                    }
-                } finally {
-                    if (NettyClient.this.isClosed()) {
-                        try {
-                            if (logger.isInfoEnabled()) {
-                                logger.info("Close new netty channel " + newChannel + ", because the client closed.");
-                            }
-                            newChannel.close();
-                        } finally {
-                            NettyClient.this.channel = null;
-                            NettyChannel.removeChannelIfDisconnected(newChannel);
-                        }
-                    } else {
-                        NettyClient.this.channel = newChannel;
-                    }
+                    doConnect(connectAddress);
+                    return;
+                } catch (Throwable throwable) {
+                    //ignore
                 }
-            } else if (future.cause() != null) {
-                throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
-            } else {
-                throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + " client-side timeout "
-                        + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
             }
+
+            connectAddress = getConnectAddress();
+            doConnect(connectAddress);
         } finally {
             // just add new valid channel to NettyChannel's cache
             if (!isConnected()) {
@@ -216,6 +188,53 @@ public class NettyClient extends AbstractClient {
         // can't shut down nioEventLoopGroup because the method will be invoked when closing one channel but not a client,
         // but when and how to close the nioEventLoopGroup ?
         // nioEventLoopGroup.shutdownGracefully();
+    }
+
+    private void doConnect(InetSocketAddress serverAddress) throws RemotingException {
+        long start = System.currentTimeMillis();
+        ChannelFuture future = bootstrap.connect(serverAddress);
+        boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
+
+        if (ret && future.isSuccess()) {
+            Channel newChannel = future.channel();
+            try {
+                // Close old channel
+                // copy reference
+                Channel oldChannel = NettyClient.this.channel;
+                if (oldChannel != null) {
+                    try {
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
+                        }
+                        oldChannel.close();
+                    } finally {
+                        NettyChannel.removeChannelIfDisconnected(oldChannel);
+                    }
+                }
+            } finally {
+                if (NettyClient.this.isClosed()) {
+                    try {
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Close new netty channel " + newChannel + ", because the client closed.");
+                        }
+                        newChannel.close();
+                    } finally {
+                        NettyClient.this.channel = null;
+                        NettyChannel.removeChannelIfDisconnected(newChannel);
+                    }
+                } else {
+                    NettyClient.this.channel = newChannel;
+                }
+            }
+        } else if (future.cause() != null) {
+            throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
+                + serverAddress + ", error message is:" + future.cause().getMessage(), future.cause());
+        } else {
+            throw new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
+                + serverAddress + " client-side timeout "
+                + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
+                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+        }
     }
 
     @Override

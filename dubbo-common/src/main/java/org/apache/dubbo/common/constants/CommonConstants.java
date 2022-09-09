@@ -392,6 +392,8 @@ public interface CommonConstants {
 
     String PROTOCOL_SERVER = "server";
 
+    String IPV6_KEY = "ipv6";
+
     /**
      * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
      *

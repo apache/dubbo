@@ -82,6 +82,7 @@ public class NetUtils {
 
     private static final Map<String, String> HOST_NAME_CACHE = new LRUCache<>(1000);
     private static volatile InetAddress LOCAL_ADDRESS = null;
+    private static volatile Inet6Address LOCAL_ADDRESS_V6 = null;
 
     private static final String SPLIT_IPV4_CHARACTER = "\\.";
     private static final String SPLIT_IPV6_CHARACTER = ":";
@@ -102,7 +103,7 @@ public class NetUtils {
     }
 
     public synchronized static int getAvailablePort(int port) {
-         if (port < MIN_PORT) {
+        if (port < MIN_PORT) {
             return MIN_PORT;
         }
         for (int i = port; i < MAX_PORT; i++) {
@@ -123,6 +124,7 @@ public class NetUtils {
 
     /**
      * Check the port whether is in use in os
+     *
      * @param port
      * @return
      */
@@ -221,6 +223,8 @@ public class NetUtils {
 
     private static volatile String HOST_ADDRESS;
 
+    private static volatile String HOST_ADDRESS_V6;
+
     public static String getLocalHost() {
         if (HOST_ADDRESS != null) {
             return HOST_ADDRESS;
@@ -228,9 +232,41 @@ public class NetUtils {
 
         InetAddress address = getLocalAddress();
         if (address != null) {
+            if (address instanceof Inet6Address) {
+                String ipv6AddressString = address.getHostAddress();
+                if (ipv6AddressString.contains("%")) {
+                    ipv6AddressString = ipv6AddressString.substring(0, ipv6AddressString.indexOf("%"));
+                }
+                HOST_ADDRESS = ipv6AddressString;
+                return HOST_ADDRESS;
+            }
+
             return HOST_ADDRESS = address.getHostAddress();
         }
         return LOCALHOST_VALUE;
+    }
+
+    public static String getLocalHostV6() {
+        if (StringUtils.isNotEmpty(HOST_ADDRESS_V6)) {
+            return HOST_ADDRESS_V6;
+        }
+        //avoid to search network interface card many times
+        if("".equals(HOST_ADDRESS_V6)){
+            return null;
+        }
+
+        Inet6Address address = getLocalAddressV6();
+        if (address != null) {
+            String ipv6AddressString = address.getHostAddress();
+            if (ipv6AddressString.contains("%")) {
+                ipv6AddressString = ipv6AddressString.substring(0, ipv6AddressString.indexOf("%"));
+            }
+
+            HOST_ADDRESS_V6 = ipv6AddressString;
+            return HOST_ADDRESS_V6;
+        }
+        HOST_ADDRESS_V6 = "";
+        return null;
     }
 
     public static String filterLocalHost(String host) {
@@ -275,6 +311,15 @@ public class NetUtils {
         }
         InetAddress localAddress = getLocalAddress0();
         LOCAL_ADDRESS = localAddress;
+        return localAddress;
+    }
+
+    public static Inet6Address getLocalAddressV6() {
+        if (LOCAL_ADDRESS_V6 != null) {
+            return LOCAL_ADDRESS_V6;
+        }
+        Inet6Address localAddress = getLocalAddress0V6();
+        LOCAL_ADDRESS_V6 = localAddress;
         return localAddress;
     }
 
@@ -324,8 +369,32 @@ public class NetUtils {
             logger.warn(e);
         }
 
+        localAddress = getLocalAddressV6();
 
         return localAddress;
+    }
+
+    private static Inet6Address getLocalAddress0V6() {
+        // @since 2.7.6, choose the {@link NetworkInterface} first
+        try {
+            NetworkInterface networkInterface = findNetworkInterface();
+            Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                InetAddress address = addresses.nextElement();
+                if (address instanceof Inet6Address) {
+                    if (!address.isLoopbackAddress() //filter 127.x.x.x
+                        && !address.isAnyLocalAddress() // filter 0.0.0.0
+                        && !address.isLinkLocalAddress() //filter 169.254.0.0/16
+                        && address.getHostAddress().contains(":")) {//filter IPv6
+                        return (Inet6Address) address;
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            logger.warn(e);
+        }
+
+        return null;
     }
 
     /**
@@ -349,7 +418,7 @@ public class NetUtils {
             for (String ignoredInterface : ignoredInterfaces.split(",")) {
                 String trimIgnoredInterface = ignoredInterface.trim();
                 boolean matched = false;
-                try {                     
+                try {
                     matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
                 } catch (PatternSyntaxException e) {
                     // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
@@ -697,6 +766,30 @@ public class NetUtils {
             return Integer.parseInt(ipSegment);
         }
         return Integer.parseInt(ipSegment, 16);
+    }
+
+
+    public static boolean isIPV6URLStdFormat(String ip) {
+        if ((ip.charAt(0) == '[' && ip.indexOf(']') > 2)) {
+            return true;
+        } else if (ip.indexOf(":") != ip.lastIndexOf(":")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static String getLegalIP(String ip) {
+        //ipv6 [::FFFF:129.144.52.38]:80
+        int ind;
+        if ((ip.charAt(0) == '[' && (ind = ip.indexOf(']')) > 2)) {
+            String nhost = ip;
+            ip = nhost.substring(0, ind + 1);
+            ip = ip.substring(1, ind);
+            return ip;
+        } else {
+            return ip;
+        }
     }
 
 }
