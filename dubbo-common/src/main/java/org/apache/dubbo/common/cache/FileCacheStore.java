@@ -78,7 +78,9 @@ public class FileCacheStore {
                     "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }
         } catch (IOException e) {
-            logger.warn("Load cache failed ", e);
+            logger.warn("0-3", "inaccessible of cache path", "",
+                "Load cache failed ", e);
+
             throw e;
         }
         return properties;
@@ -92,6 +94,9 @@ public class FileCacheStore {
                 directoryLock.channel().close();
                 deleteFile(lockFile);
             } catch (IOException e) {
+                logger.error("0-3", "inaccessible of cache path", "",
+                    "Failed to release cache path's lock file:" + lockFile, e);
+
                 throw new RuntimeException("Failed to release cache path's lock file:" + lockFile, e);
             }
         }
@@ -106,23 +111,30 @@ public class FileCacheStore {
                  new LimitedLengthBufferedWriter(
                      new OutputStreamWriter(
                          new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8), maxFileSize)) {
+
             bw.write("#" + comment);
             bw.newLine();
             bw.write("#" + new Date());
             bw.newLine();
+
             for (Map.Entry<String, String> e : properties.entrySet()) {
                 String key = e.getKey();
                 String val = e.getValue();
                 bw.write(key + "=" + val);
                 bw.newLine();
             }
+
             bw.flush();
+
             long remainSize = bw.getRemainSize();
             if (remainSize < 0) {
-                logger.info("Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
+                logger.warn("0-5", "mis-configuration of system properties",
+                    "Check Java system property 'dubbo.mapping.cache.maxFileSize' and 'dubbo.meta.cache.maxFileSize'.",
+                    "Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
             }
         } catch (IOException e) {
-            logger.warn("Update cache error.");
+            logger.warn("0-3", "inaccessible of cache path", "",
+                "Update cache error.", e);
         }
     }
 
