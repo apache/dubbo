@@ -24,17 +24,17 @@ import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_S
 
 public class MetricsCollectExecutor {
 
-    private DefaultMetricsCollector collector;
+    private final DefaultMetricsCollector collector;
 
-    private Invocation              invocation;
+    private final Invocation              invocation;
 
-    private String                  interfaceName;
+    private String                        interfaceName;
 
-    private String                  methodName;
+    private String                        methodName;
 
-    private String                  group;
+    private String                        group;
 
-    private String                  version;
+    private String                        version;
 
 
     public MetricsCollectExecutor(DefaultMetricsCollector collector, Invocation invocation) {
