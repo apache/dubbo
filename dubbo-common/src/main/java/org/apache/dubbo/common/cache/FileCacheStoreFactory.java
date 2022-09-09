@@ -183,7 +183,7 @@ public final class FileCacheStoreFactory {
         }
 
         if (dirLock == null) {
-            throw new PathNotExclusiveException(fileName + " is not exclusive.");
+            throw new PathNotExclusiveException(fileName + " is not exclusive. Maybe multiple Dubbo instances are using the same folder.");
         }
 
         builder.directoryLock(dirLock).lockFile(lockFile);
