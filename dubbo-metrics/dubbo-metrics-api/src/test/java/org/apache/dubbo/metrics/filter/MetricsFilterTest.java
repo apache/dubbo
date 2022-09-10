@@ -17,7 +17,20 @@
 
 package org.apache.dubbo.metrics.filter;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.AppResponse;
@@ -30,15 +43,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class MetricsFilterTest {
 
@@ -100,6 +104,35 @@ public class MetricsFilterTest {
         Assertions.assertFalse(metricsMap.containsKey("requests.succeed"));
 
         MetricSample sample = metricsMap.get("requests.failed");
+        Map<String, String> tags = sample.getTags();
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
+        Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
+        Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
+        Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
+    }
+
+
+    @Test
+    public void testBusinessFailedRequests() {
+        collector.setCollectEnabled(true);
+
+        given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.BIZ_EXCEPTION));
+        initParam();
+
+        try {
+            filter.invoke(invoker, invocation);
+        } catch (Exception e) {
+            Assertions.assertTrue(e instanceof RpcException);
+            filter.onError(e, invoker, invocation);
+        }
+
+        Map<String, MetricSample> metricsMap = getMetricsMap();
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED.getName()));
+        Assertions.assertFalse(metricsMap.containsKey("requests.succeed"));
+
+        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED.getName());
+
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);

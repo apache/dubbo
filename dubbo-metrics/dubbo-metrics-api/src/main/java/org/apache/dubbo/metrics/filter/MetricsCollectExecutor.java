@@ -61,7 +61,12 @@ public class MetricsCollectExecutor {
 
     public void throwExecute(Throwable throwable){
         if (throwable instanceof RpcException) {
-            collector.increaseFailedRequests(interfaceName, methodName, group, version);
+            RpcException rpcException = (RpcException)throwable;
+            if (rpcException.isBiz()) {
+                collector.businessFailedRequests(interfaceName, methodName, group, version);
+            }else{
+                collector.increaseFailedRequests(interfaceName, methodName, group, version);
+            }
         }
         endExecute(()-> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
