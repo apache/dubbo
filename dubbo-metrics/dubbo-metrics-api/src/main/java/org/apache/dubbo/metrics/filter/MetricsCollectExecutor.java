@@ -16,25 +16,24 @@
  */
 
 package org.apache.dubbo.metrics.filter;
-import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_START_TIME;
+
+import java.util.function.Supplier;
+
+import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
 
 public class MetricsCollectExecutor {
 
     private final DefaultMetricsCollector collector;
-
-    private final Invocation              invocation;
-
-    private String                        interfaceName;
-
-    private String                        methodName;
-
-    private String                        group;
-
-    private String                        version;
+    private final Invocation    invocation;
+    private String  interfaceName;
+    private String  methodName;
+    private String  group;
+    private String  version;
 
 
     public MetricsCollectExecutor(DefaultMetricsCollector collector, Invocation invocation) {
@@ -51,8 +50,12 @@ public class MetricsCollectExecutor {
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
-    public void postExecute() {
-        collector.increaseSucceedRequests(interfaceName, methodName, group, version);
+    public void postExecute(Result result) {
+        if (result.hasException()) {
+            this.throwExecute(result.getException());
+            return;
+        }
+		collector.increaseSucceedRequests(interfaceName, methodName, group, version);
         endExecute();
     }
 
@@ -60,15 +63,20 @@ public class MetricsCollectExecutor {
         if (throwable instanceof RpcException) {
             collector.increaseFailedRequests(interfaceName, methodName, group, version);
         }
-        endExecute();
+        endExecute(()-> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
 
     private void endExecute(){
-        Long endTime = System.currentTimeMillis();
-        Long beginTime = Long.class.cast(invocation.get(METRIC_FILTER_START_TIME));
-        Long rt = endTime - beginTime;
+        this.endExecute(() -> true);
+    }
 
-        collector.addRT(interfaceName, methodName, group, version, rt);
+    private void endExecute(Supplier<Boolean> rtStat){
+        if (rtStat.get()) {
+            Long endTime = System.currentTimeMillis();
+            Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
+            Long rt = endTime - beginTime;
+            collector.addRT(interfaceName, methodName, group, version, rt);
+        }
         collector.decreaseProcessingRequests(interfaceName, methodName, group, version);
     }
 

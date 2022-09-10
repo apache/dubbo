@@ -56,8 +56,8 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     }
 
     @Override
-    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, MetricsCollectExecutor::postExecute);
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        collect(invocation, collector->collector.postExecute(result));
     }
 
     @Override
