@@ -52,6 +52,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
+
 public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -163,7 +165,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                     // 1-7 - Failed to notify registry event.
                     // The updating of metadata to consumer is a type of registry event.
 
-                    logger.warn("1-7", "consumer is offline", "",
+                    logger.warn(REGISTRY_FAILED_NOTIFY_EVENT, "consumer is offline", "",
                         "Notify to consumer error, removing listener.");
 
                     // remove listener if consumer is offline
