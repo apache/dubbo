@@ -22,7 +22,6 @@ public enum MetricsKey {
     METRIC_REQUESTS_TOTAL("requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("requests.succeed", "Succeed Requests"),
     METRIC_REQUESTS_FAILED("requests.failed", "Failed Requests"),
-
     METRIC_REQUEST_BUSINESS_FAILED("requests.business.failed","Failed Business Requests"),
     METRIC_REQUESTS_PROCESSING("requests.processing", "Processing Requests"),
     METRIC_REQUESTS_TOTAL_AGG("requests.total.aggregate", "Aggregated Total Requests"),
