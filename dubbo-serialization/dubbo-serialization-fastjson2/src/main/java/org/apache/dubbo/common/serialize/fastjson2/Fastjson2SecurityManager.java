@@ -21,6 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.SerializeCheckStatus;
+import org.apache.dubbo.common.utils.SerializeSecurityManager;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
 import com.alibaba.fastjson2.filter.Filter;
@@ -31,12 +33,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.alibaba.fastjson2.util.TypeUtils.loadClass;
 
-public class Fastjson2SecurityManager {
+public class Fastjson2SecurityManager implements AllowClassNotifyListener {
     private Filter securityFilter = new Handler(AllowClassNotifyListener.DEFAULT_STATUS, new String[0]);
 
     private final static Logger logger = LoggerFactory.getLogger(Fastjson2SecurityManager.class);
 
     private final static Set<String> warnedClasses = new ConcurrentHashSet<>(1);
+
+    public Fastjson2SecurityManager(FrameworkModel frameworkModel) {
+        SerializeSecurityManager securityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
+        securityManager.registerListener(this);
+    }
 
     public void notify(SerializeCheckStatus status, Set<String> prefixList) {
         this.securityFilter = new Handler(status, prefixList.toArray(new String[0]));

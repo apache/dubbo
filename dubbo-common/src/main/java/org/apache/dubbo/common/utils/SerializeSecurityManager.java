@@ -45,13 +45,11 @@ public class SerializeSecurityManager {
 
     private final SerializeClassChecker checker = SerializeClassChecker.getInstance();
 
-    private final Set<AllowClassNotifyListener> listeners;
+    private final Set<AllowClassNotifyListener> listeners = new ConcurrentHashSet<>();
 
     private volatile SerializeCheckStatus checkStatus = AllowClassNotifyListener.DEFAULT_STATUS;
 
     public SerializeSecurityManager(FrameworkModel frameworkModel) {
-        listeners = frameworkModel.getExtensionLoader(AllowClassNotifyListener.class).getSupportedExtensionInstances();
-
         try {
             Set<ClassLoader> classLoaders = frameworkModel.getClassLoaders();
             List<URL> urls = ClassLoaderResourceLoader.loadResources(SERIALIZE_ALLOW_LIST_FILE_PATH, classLoaders)
@@ -76,8 +74,6 @@ public class SerializeSecurityManager {
         } catch (InterruptedException e) {
             logger.error("Failed to load allow class list! Will ignore allow list from configuration.", e);
         }
-
-        notifyListeners();
     }
 
     public void registerInterface(Class<?> clazz) {
@@ -205,6 +201,11 @@ public class SerializeSecurityManager {
         if (modified) {
             notifyListeners();
         }
+    }
+
+    public void registerListener(AllowClassNotifyListener listener) {
+        listeners.add(listener);
+        listener.notify(checkStatus, allowedPrefix);
     }
 
     private void notifyListeners() {

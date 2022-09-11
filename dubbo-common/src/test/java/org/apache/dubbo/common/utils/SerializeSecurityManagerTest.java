@@ -34,6 +34,7 @@ public class SerializeSecurityManagerTest {
     @Test
     public void test() {
         SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+        ssm.registerListener(new TestAllowClassNotifyListener());
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.HashMap"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.DemoInterface"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface1"));
@@ -45,6 +46,7 @@ public class SerializeSecurityManagerTest {
     @Test
     public void addToAllow() {
         SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+        ssm.registerListener(new TestAllowClassNotifyListener());
         Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
         Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
@@ -72,6 +74,7 @@ public class SerializeSecurityManagerTest {
     @Test
     public void testRegister1() {
         SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+        ssm.registerListener(new TestAllowClassNotifyListener());
 
         ssm.registerInterface(DemoService1.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService1"));
@@ -99,6 +102,7 @@ public class SerializeSecurityManagerTest {
     @Test
     public void testRegister2() {
         SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+        ssm.registerListener(new TestAllowClassNotifyListener());
 
         ssm.registerInterface(DemoService2.class);
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService2"));
