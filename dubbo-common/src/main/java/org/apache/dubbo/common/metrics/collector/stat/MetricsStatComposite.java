@@ -32,23 +32,11 @@ public class MetricsStatComposite{
     private final List<MetricsListener> listeners;
     private static volatile MetricsStatComposite INSTANCE;
 
-    private MetricsStatComposite(String applicationName, List<MetricsListener> listeners){
+    public MetricsStatComposite(String applicationName, List<MetricsListener> listeners){
         this.applicationName = applicationName;
         this.listeners = listeners;
         this.init();
     }
-
-    public static MetricsStatComposite getInstance(String applicationName, List<MetricsListener> listeners) {
-        if (INSTANCE == null) {
-            synchronized (MetricsStatComposite.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new MetricsStatComposite(applicationName, listeners);
-                }
-            }
-        }
-        return INSTANCE;
-    }
-
 
     public MetricsStatHandler getHandler(StatType statType) {
         return stats.get(statType);
