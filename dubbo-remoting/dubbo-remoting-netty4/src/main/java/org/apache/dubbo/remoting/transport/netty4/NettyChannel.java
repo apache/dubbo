@@ -177,7 +177,7 @@ final class NettyChannel extends AbstractChannel {
         }
         if (!success) {
             throw new RemotingException(this, "Failed to send message " + PayloadDropper.getRequestWithoutData(message) + " to " + getRemoteAddress()
-                + "in timeout(" + timeout + "ms) limit");
+                    + "in timeout(" + timeout + "ms) limit");
         }
     }
 

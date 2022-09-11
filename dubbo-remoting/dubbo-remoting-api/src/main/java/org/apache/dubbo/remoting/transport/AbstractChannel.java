@@ -35,8 +35,8 @@ public abstract class AbstractChannel extends AbstractPeer implements Channel {
     public void send(Object message, boolean sent) throws RemotingException {
         if (isClosed()) {
             throw new RemotingException(this, "Failed to send message "
-                + (message == null ? "" : message.getClass().getName()) + ":" + PayloadDropper.getRequestWithoutData(message)
-                + ", cause: Channel closed. channel: " + getLocalAddress() + " -> " + getRemoteAddress());
+                    + (message == null ? "" : message.getClass().getName()) + ":" + PayloadDropper.getRequestWithoutData(message)
+                    + ", cause: Channel closed. channel: " + getLocalAddress() + " -> " + getRemoteAddress());
         }
     }
 

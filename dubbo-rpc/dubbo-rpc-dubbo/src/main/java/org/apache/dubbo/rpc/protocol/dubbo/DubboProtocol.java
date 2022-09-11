@@ -367,6 +367,8 @@ public class DubboProtocol extends AbstractProtocol {
             // enable heartbeat by default
             .addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT))
             .addParameter(CODEC_KEY, DubboCodec.NAME)
+            //todo
+            // enable pu server by default, this config should be closed when merging
             .addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString())
             .build();
 
