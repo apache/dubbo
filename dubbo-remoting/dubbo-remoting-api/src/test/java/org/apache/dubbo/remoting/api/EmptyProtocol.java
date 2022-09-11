@@ -42,4 +42,9 @@ public class EmptyProtocol implements WireProtocol {
     public void close() {
 
     }
+
+    @Override
+    public String protocolName() {
+        return "empty";
+    }
 }

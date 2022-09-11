@@ -60,4 +60,10 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
 
     }
 
+    @Override
+    public String protocolName() {
+        // this result is useless, for in qos pipeline config, url isn't needed.
+        return "qos";
+    }
+
 }

@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -100,6 +101,11 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     @Override
     public void close() {
         super.close();
+    }
+
+    @Override
+    public String protocolName() {
+        return CommonConstants.TRIPLE;
     }
 
     @Override
