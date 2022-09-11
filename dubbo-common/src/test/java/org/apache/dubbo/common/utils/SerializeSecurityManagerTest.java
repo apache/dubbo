@@ -18,7 +18,8 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import com.service.DemoService;
+import com.service.DemoService1;
+import com.service.DemoService2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -61,11 +62,37 @@ public class SerializeSecurityManagerTest {
     }
 
     @Test
-    public void testRegister() {
+    public void testRegister1() {
         SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
 
-        ssm.registerInterface(DemoService.class);
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService"));
+        ssm.registerInterface(DemoService1.class);
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService1"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo1"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo2"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo3"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo4"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo5"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo6"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo7"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo8"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Simple"));
+
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(List.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Set.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Map.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(LinkedList.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Vector.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(HashSet.class.getName()));
+
+    }
+
+
+    @Test
+    public void testRegister2() {
+        SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+
+        ssm.registerInterface(DemoService2.class);
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService2"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo1"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo2"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo3"));

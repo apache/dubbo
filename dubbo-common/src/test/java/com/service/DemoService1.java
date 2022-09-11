@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-public interface DemoService<T extends Demo8> {
+public interface DemoService1<T extends Demo8> {
     Demo1 getDemo1();
 
     void setDemo2(Demo2 demo2);
