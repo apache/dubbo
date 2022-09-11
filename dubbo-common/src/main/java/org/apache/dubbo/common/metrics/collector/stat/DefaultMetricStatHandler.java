@@ -23,10 +23,7 @@ import java.util.function.BiConsumer;
 
 import org.apache.dubbo.common.metrics.model.MethodMetric;
 
-/**
- * @author jojocodex
- * @version @Id: AbstractMetricStat.java, v 0.1 2022年09月11日 01:24 jojocodex Exp $
- */
+
 public class DefaultMetricStatHandler implements MetricsStatHandler {
 
     private final String applicationName;
