@@ -62,7 +62,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.applicationName = applicationModel.getApplicationName();
-        this.stats = new MetricsStatComposite(applicationName, listeners);
+        this.stats = MetricsStatComposite.getInstance(applicationName, listeners);
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

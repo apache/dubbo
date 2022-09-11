@@ -25,18 +25,30 @@ import org.apache.dubbo.common.metrics.event.MetricsEvent;
 import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
-import org.apache.dubbo.common.utils.Assert;
 public class MetricsStatComposite{
 
     public Map<StatType, MetricsStatHandler> stats = new ConcurrentHashMap<>();
-    private final String                     applicationName;
-    private final List<MetricsListener>               listeners;
+    private final String applicationName;
+    private final List<MetricsListener> listeners;
+    private static volatile MetricsStatComposite INSTANCE;
 
-    public MetricsStatComposite(String applicationName, List<MetricsListener> listeners){
+    private MetricsStatComposite(String applicationName, List<MetricsListener> listeners){
         this.applicationName = applicationName;
         this.listeners = listeners;
         this.init();
     }
+
+    public static MetricsStatComposite getInstance(String applicationName, List<MetricsListener> listeners) {
+        if (INSTANCE == null) {
+            synchronized (MetricsStatComposite.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new MetricsStatComposite(applicationName, listeners);
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
 
     public MetricsStatHandler getHandler(StatType statType) {
         return stats.get(statType);
@@ -72,11 +84,6 @@ public class MetricsStatComposite{
         });
 
         stats.put(StatType.PROCESSING, new DefaultMetricStatHandler(applicationName));
-    }
-
-    public void execute(StatType statType, String interfaceName, String methodName, String group, String version) {
-        MetricsStatHandler handler = stats.get(statType);
-        Assert.notNull(handler, "metric stat handler is null");
     }
 
     private void publishEvent(MetricsEvent event) {
