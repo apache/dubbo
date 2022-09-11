@@ -177,7 +177,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
         doExecute(StatType.PROCESSING, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_PROCESSING, k.getTags(), REQUESTS, v::get))));
 
-        doExecute(StatType.PROCESSING, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(StatType.BUSINESS_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, k.getTags(), REQUESTS, v::get))));
     }
 
