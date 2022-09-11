@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.List;
@@ -51,7 +52,9 @@ public class ProtocolSecurityWrapper implements Protocol {
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         ServiceModel serviceModel = invoker.getUrl().getServiceModel();
         ScopeModel scopeModel = invoker.getUrl().getScopeModel();
-        Optional.ofNullable(serviceModel).map(ServiceModel::getServiceInterfaceClass)
+        Optional.ofNullable(serviceModel)
+            .map(ServiceModel::getServiceModel)
+            .map(ServiceDescriptor::getServiceInterfaceClass)
             .ifPresent((interfaceClass) -> {
                 SerializeSecurityManager serializeSecurityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
                     .getBeanFactory().getBean(SerializeSecurityManager.class);
@@ -67,7 +70,9 @@ public class ProtocolSecurityWrapper implements Protocol {
         SerializeSecurityManager serializeSecurityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
             .getBeanFactory().getBean(SerializeSecurityManager.class);
 
-        Optional.ofNullable(serviceModel).map(ServiceModel::getServiceInterfaceClass)
+        Optional.ofNullable(serviceModel)
+            .map(ServiceModel::getServiceModel)
+            .map(ServiceDescriptor::getServiceInterfaceClass)
             .ifPresent(serializeSecurityManager::registerInterface);
         serializeSecurityManager.registerInterface(type);
 
