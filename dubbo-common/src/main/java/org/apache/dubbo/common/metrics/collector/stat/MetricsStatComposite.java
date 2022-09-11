@@ -31,7 +31,7 @@ import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
 public class MetricsStatComposite{
 
-    public Map<StatType, MetricsStatHandler> stats = new ConcurrentHashMap<>();
+    public Map<RequestEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
 
     private final Map<MethodMetric, AtomicLong>     lastRT = new ConcurrentHashMap<>();
     private final Map<MethodMetric, LongAccumulator> minRT  = new ConcurrentHashMap<>();
@@ -52,7 +52,7 @@ public class MetricsStatComposite{
         this.init();
     }
 
-    public MetricsStatHandler getHandler(StatType statType) {
+    public MetricsStatHandler getHandler(RequestEvent.Type statType) {
         return stats.get(statType);
     }
 
@@ -108,34 +108,34 @@ public class MetricsStatComposite{
     }
 
     private void init() {
-        stats.put(StatType.TOTAL, new DefaultMetricStatHandler(applicationName){
+        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricStatHandler(applicationName){
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL));
             }
         });
 
-        stats.put(StatType.SUCCEED, new DefaultMetricStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.SUCCEED, new DefaultMetricStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.SUCCEED));
             }
         });
 
-        stats.put(StatType.FAILED, new DefaultMetricStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.FAILED, new DefaultMetricStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.FAILED));
             }
         });
 
-        stats.put(StatType.BUSINESS_FAILED, new DefaultMetricStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.BUSINESS_FAILED, new DefaultMetricStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.BUSINESS_FAILED));
             }
         });
 
-        stats.put(StatType.PROCESSING, new DefaultMetricStatHandler(applicationName));
+        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricStatHandler(applicationName));
     }
 }

@@ -30,7 +30,7 @@ import java.util.function.Function;
 
 import org.apache.dubbo.common.metrics.collector.stat.MetricsStatComposite;
 import org.apache.dubbo.common.metrics.collector.stat.MetricsStatHandler;
-import org.apache.dubbo.common.metrics.collector.stat.StatType;
+import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
@@ -69,13 +69,13 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void increaseTotalRequests(String interfaceName, String methodName, String group, String version) {
-        doExecute(StatType.TOTAL,statHandler-> {
+        doExecute(RequestEvent.Type.TOTAL,statHandler-> {
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }
 
     public void increaseSucceedRequests(String interfaceName, String methodName, String group, String version) {
-        doExecute(StatType.SUCCEED,statHandler->{
+        doExecute(RequestEvent.Type.SUCCEED,statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }
@@ -84,25 +84,25 @@ public class DefaultMetricsCollector implements MetricsCollector {
                                        String methodName,
                                        String group,
                                        String version) {
-        doExecute(StatType.FAILED,statHandler->{
+        doExecute(RequestEvent.Type.FAILED,statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }
 
     public void businessFailedRequests(String interfaceName, String methodName, String group, String version) {
-        doExecute(StatType.BUSINESS_FAILED,statHandler->{
+        doExecute(RequestEvent.Type.BUSINESS_FAILED,statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }
 
     public void increaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
-        doExecute(StatType.PROCESSING,statHandler-> {
+        doExecute(RequestEvent.Type.PROCESSING,statHandler-> {
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }
 
     public void decreaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
-        doExecute(StatType.PROCESSING,statHandler-> {
+        doExecute(RequestEvent.Type.PROCESSING,statHandler-> {
             statHandler.decrease(interfaceName, methodName, group, version);
         });
     }
@@ -121,21 +121,21 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     private void collectRequests(List<MetricSample> list) {
-        doExecute(StatType.TOTAL, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(RequestEvent.Type.TOTAL, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL, k.getTags(), REQUESTS, v::get))));
 
-        doExecute(StatType.SUCCEED, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(RequestEvent.Type.SUCCEED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get))));
 
-        doExecute(StatType.FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(RequestEvent.Type.FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map->{
                 map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED, k.getTags(), REQUESTS, v::get)));
             });
 
-        doExecute(StatType.PROCESSING, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(RequestEvent.Type.PROCESSING, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_PROCESSING, k.getTags(), REQUESTS, v::get))));
 
-        doExecute(StatType.BUSINESS_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(RequestEvent.Type.BUSINESS_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, k.getTags(), REQUESTS, v::get))));
     }
 
@@ -153,18 +153,18 @@ public class DefaultMetricsCollector implements MetricsCollector {
             list.add(new GaugeMetricSample(MetricsKey.METRIC_RT_AVG, k.getTags(), RT, avg::get));
         });
     }
-    private <T> Optional<T> doExecute(StatType statType, Function<MetricsStatHandler,T> statExecutor) {
+    private <T> Optional<T> doExecute(RequestEvent.Type requestType, Function<MetricsStatHandler,T> statExecutor) {
         if (isCollectEnabled()) {
-            MetricsStatHandler handler = stats.getHandler(statType);
+            MetricsStatHandler handler = stats.getHandler(requestType);
             T result =  statExecutor.apply(handler);
             return Optional.ofNullable(result);
         }
         return Optional.empty();
     }
 
-    private void doExecute(StatType statType, Consumer<MetricsStatHandler> statExecutor) {
+    private void doExecute(RequestEvent.Type requestType, Consumer<MetricsStatHandler> statExecutor) {
         if (isCollectEnabled()) {
-            MetricsStatHandler handler = stats.getHandler(statType);
+            MetricsStatHandler handler = stats.getHandler(requestType);
              statExecutor.accept(handler);
         }
     }
