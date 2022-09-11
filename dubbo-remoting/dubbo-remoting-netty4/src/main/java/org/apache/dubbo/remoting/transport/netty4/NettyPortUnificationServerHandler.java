@@ -104,8 +104,8 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
-                        ChannelHandler localHandler = this.handlerMapper.get(protocol.protocolName());
-                        URL localURL = this.urlMapper.get(protocol.protocolName());
+                        ChannelHandler localHandler = this.handlerMapper.getOrDefault(protocol.protocolName(), handler);
+                        URL localURL = this.urlMapper.getOrDefault(protocol.protocolName(), url);
                         channel.setUrl(localURL);
                         NettyConfigOperator operator = new NettyConfigOperator(channel, localHandler);
                         protocol.configServerProtocolHandler(url, operator);
