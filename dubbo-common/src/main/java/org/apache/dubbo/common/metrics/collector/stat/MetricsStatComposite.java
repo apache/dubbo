@@ -42,8 +42,6 @@ public class MetricsStatComposite{
         return stats.get(statType);
     }
 
-
-
     private void init() {
         stats.put(StatType.TOTAL, new DefaultMetricStatHandler(applicationName){
             @Override
@@ -74,7 +72,6 @@ public class MetricsStatComposite{
         });
 
         stats.put(StatType.PROCESSING, new DefaultMetricStatHandler(applicationName));
-
     }
 
     public void execute(StatType statType, String interfaceName, String methodName, String group, String version) {
@@ -82,12 +79,9 @@ public class MetricsStatComposite{
         Assert.notNull(handler, "metric stat handler is null");
     }
 
-
-
     private void publishEvent(MetricsEvent event) {
         for (MetricsListener listener : listeners) {
             listener.onEvent(event);
         }
     }
-
 }
