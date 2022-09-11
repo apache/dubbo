@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
 import com.alibaba.fastjson2.filter.Filter;
+import com.alibaba.fastjson2.util.TypeUtils;
 
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +77,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
                     Class<?> localClass = loadClassDirectly(typeName);
                     if (localClass != null) {
                         if (status == SerializeCheckStatus.WARN && warnedClasses.add(typeName)) {
-                            logger.error("[Serialization Security] Serialized class " + typeName + " is not in allow list. " +
+                            logger.error("[Serialization Security] Serialized class " + localClass.getName() + " is not in allow list. " +
                                 "Current mode is `WARN`, will allow to deserialize it by default. " +
                                 "Dubbo will set to `STRICT` mode by default in the future. " +
                                 "Please add it into security/serialize.allowlist or follow FAQ to configure it.");
@@ -92,14 +93,20 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
             Class<?> clazz = classCache.get(typeName);
 
             if (clazz == null) {
+                clazz = TypeUtils.getMapping(typeName);
+            }
+
+            if (clazz == null) {
                 clazz = loadClass(typeName);
-                if (clazz != null) {
-                    Class<?> origin = classCache.putIfAbsent(typeName, clazz);
-                    if (origin != null) {
-                        clazz = origin;
-                    }
+            }
+
+            if (clazz != null) {
+                Class<?> origin = classCache.putIfAbsent(typeName, clazz);
+                if (origin != null) {
+                    clazz = origin;
                 }
             }
+
 
             return clazz;
         }
