@@ -35,7 +35,7 @@ public class PortUnificationExchanger {
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
-        return servers.computeIfAbsent(url.getAddress(), addr -> {
+        servers.computeIfAbsent(url.getAddress(), addr -> {
             final AbstractPortUnificationServer server;
             try {
                 server = getTransporter(url).bind(url, handler);
@@ -45,6 +45,12 @@ public class PortUnificationExchanger {
             // server.bind();
             return server;
         });
+
+        servers.computeIfPresent(url.getAddress(), (addr, server) -> {
+            ((AbstractPortUnificationServer) server).addNewURL(url, handler);
+            return server;
+        });
+        return servers.get(url.getAddress());
     }
 
     public static void close() {
