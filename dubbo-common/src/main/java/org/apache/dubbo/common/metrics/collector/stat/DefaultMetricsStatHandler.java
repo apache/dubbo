@@ -24,12 +24,12 @@ import java.util.function.BiConsumer;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
 
 
-public class DefaultMetricStatHandler implements MetricsStatHandler {
+public class DefaultMetricsStatHandler implements MetricsStatHandler {
 
     private final String applicationName;
     private final Map<MethodMetric, AtomicLong> counts = new ConcurrentHashMap<>();
 
-    public DefaultMetricStatHandler(String applicationName) {
+    public DefaultMetricsStatHandler(String applicationName) {
         this.applicationName = applicationName;
     }
 

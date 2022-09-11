@@ -32,17 +32,14 @@ import org.apache.dubbo.common.metrics.model.MethodMetric;
 public class MetricsStatComposite{
 
     public Map<RequestEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
-
     private final Map<MethodMetric, AtomicLong>     lastRT = new ConcurrentHashMap<>();
     private final Map<MethodMetric, LongAccumulator> minRT  = new ConcurrentHashMap<>();
     private final Map<MethodMetric, LongAccumulator> maxRT  = new ConcurrentHashMap<>();
     private final Map<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
     private final Map<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
     private final Map<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
-
     private final String applicationName;
     private final List<MetricsListener> listeners;
-
     private DefaultMetricsCollector collector;
 
     public MetricsStatComposite(String applicationName, DefaultMetricsCollector collector){
@@ -76,12 +73,6 @@ public class MetricsStatComposite{
         return this.rtCount;
     }
 
-    private void publishEvent(MetricsEvent event) {
-        for (MetricsListener listener : listeners) {
-            listener.onEvent(event);
-        }
-    }
-
     public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
         if (collector.isCollectEnabled()) {
             MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
@@ -108,34 +99,40 @@ public class MetricsStatComposite{
     }
 
     private void init() {
-        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricStatHandler(applicationName){
+        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricsStatHandler(applicationName){
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL));
             }
         });
 
-        stats.put(RequestEvent.Type.SUCCEED, new DefaultMetricStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.SUCCEED, new DefaultMetricsStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.SUCCEED));
             }
         });
 
-        stats.put(RequestEvent.Type.FAILED, new DefaultMetricStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.FAILED, new DefaultMetricsStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.FAILED));
             }
         });
 
-        stats.put(RequestEvent.Type.BUSINESS_FAILED, new DefaultMetricStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.BUSINESS_FAILED, new DefaultMetricsStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.BUSINESS_FAILED));
             }
         });
 
-        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricStatHandler(applicationName));
+        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler(applicationName));
+    }
+
+    private void publishEvent(MetricsEvent event) {
+        for (MetricsListener listener : listeners) {
+            listener.onEvent(event);
+        }
     }
 }
