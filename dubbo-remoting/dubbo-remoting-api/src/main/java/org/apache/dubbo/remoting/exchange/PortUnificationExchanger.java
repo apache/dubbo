@@ -34,8 +34,8 @@ public class PortUnificationExchanger {
     private static final Logger log = LoggerFactory.getLogger(PortUnificationExchanger.class);
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
 
-    public static void bind(URL url, ChannelHandler handler) {
-        servers.computeIfAbsent(url.getAddress(), addr -> {
+    public static RemotingServer bind(URL url, ChannelHandler handler) {
+        return servers.computeIfAbsent(url.getAddress(), addr -> {
             final AbstractPortUnificationServer server;
             try {
                 server = getTransporter(url).bind(url, handler);

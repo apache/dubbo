@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -29,6 +30,7 @@ import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.api.SslContexts;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
+import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -44,7 +46,10 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -75,9 +80,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     private io.netty.channel.Channel channel;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
+    private final Map<String, Channel> dubboChannels = new ConcurrentHashMap<>();
+
 
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
-        super(url, handler);
+        super(url, ChannelHandlers.wrap(handler, url));
 
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
@@ -127,7 +134,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     final ChannelPipeline p = ch.pipeline();
                     final NettyPortUnificationServerHandler puHandler;
                     puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
-                        channels, NettyPortUnificationServer.this);
+                        channels, NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels);
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
@@ -162,6 +169,21 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
             logger.warn("Interrupted while shutting down", e);
         }
 
+        try {
+            Collection<Channel> channels = getChannels();
+            if (CollectionUtils.isNotEmpty(channels)) {
+                for (Channel channel : channels) {
+                    try {
+                        channel.close();
+                    } catch (Throwable e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
+
         for (WireProtocol protocol : getProtocols()) {
             protocol.close();
         }
@@ -188,7 +210,9 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     @Override
     public Collection<Channel> getChannels() {
-        return null;
+        Collection<Channel> chs = new ArrayList<>(this.dubboChannels.size());
+        chs.addAll(this.dubboChannels.values());
+        return chs;
     }
 
     @Override
@@ -198,6 +222,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
     public InetSocketAddress getLocalAddress() {
         return (InetSocketAddress) channel.localAddress();
+    }
+
+    @Override
+    public boolean canHandleIdle() {
+        return true;
     }
 
 }
