@@ -38,27 +38,35 @@ public class SerializeSecurityManagerTest {
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.DemoInterface"));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface1"));
         Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
+
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
     }
 
     @Test
     public void addToAllow() {
         SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
         Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
         ssm.addToAllow("com.sun.Interface2");
         Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
         ssm.addToAllow("java.util.Interface1");
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.Interface1"));
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
         ssm.addToAllow("java.util.package.Interface1");
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("java.util.package.Interface1"));
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
         ssm.addToAllow("com.example.Interface2");
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.Interface2"));
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
 
         ssm.addToAllow("com.example.package.Interface1");
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.package"));
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
     }
 
     @Test
@@ -84,6 +92,7 @@ public class SerializeSecurityManagerTest {
         Assertions.assertTrue(ssm.getAllowedPrefix().contains(Vector.class.getName()));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains(HashSet.class.getName()));
 
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
     }
 
 
@@ -110,5 +119,6 @@ public class SerializeSecurityManagerTest {
         Assertions.assertTrue(ssm.getAllowedPrefix().contains(Vector.class.getName()));
         Assertions.assertTrue(ssm.getAllowedPrefix().contains(HashSet.class.getName()));
 
+        Assertions.assertEquals(ssm.getAllowedPrefix(), TestAllowClassNotifyListener.getPrefixList());
     }
 }
