@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2.dubbo;
+package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
-
-public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
+public class Hessian2ClassLoaderListener implements ScopeClassLoaderListener<FrameworkModel> {
     @Override
-    protected SerializerFactory createSerializerFactory() {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
-        hessian2SerializerFactory.setAllowNonSerializable(Boolean.parseBoolean(System.getProperty("dubbo.hessian.allowNonSerializable", "false")));
-        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
-        return hessian2SerializerFactory;
+    public void onAddClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
+        // noop
+    }
+
+    @Override
+    public void onRemoveClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
+        Hessian2FactoryManager hessian2FactoryManager = scopeModel.getBeanFactory().getBean(Hessian2FactoryManager.class);
+        hessian2FactoryManager.onRemoveClassLoader(classLoader);
     }
 }

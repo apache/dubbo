@@ -16,18 +16,26 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-public class Hessian2SerializerFactory extends SerializerFactory {
-
-    private Hessian2AllowClassManager hessian2AllowClassManager;
-
-    public Hessian2SerializerFactory(Hessian2AllowClassManager hessian2AllowClassManager) {
-        this.hessian2AllowClassManager = hessian2AllowClassManager;
+public class Hessian2ScopeModelInitializer implements ScopeModelInitializer {
+    @Override
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        beanFactory.registerBean(Hessian2FactoryManager.class);
     }
 
     @Override
-    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
-        return hessian2AllowClassManager.loadClass(getClassLoader(), className);
+    public void initializeApplicationModel(ApplicationModel applicationModel) {
+
+    }
+
+    @Override
+    public void initializeModuleModel(ModuleModel moduleModel) {
+
     }
 }
