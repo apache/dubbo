@@ -1241,14 +1241,6 @@
                         </xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="unloadClusterRelated" type="xsd:boolean">
-                    <xsd:annotation>
-                        <xsd:documentation>
-                            <![CDATA[ In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
-                            Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar. ]]>
-                        </xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1276,6 +1268,11 @@
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The service port. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="ext-protocol" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ extra protocol.]]]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="threadpool" type="xsd:string">

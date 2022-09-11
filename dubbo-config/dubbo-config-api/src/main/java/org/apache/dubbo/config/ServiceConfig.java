@@ -83,6 +83,7 @@ import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.IS_PU_SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
@@ -580,6 +581,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+                // export to extra protocol is used in remote export
+                String extProtocol = url.getParameter("ext.protocol", "");
+                if (!extProtocol.equals("")) {
+                    URL extURL = URLBuilder.from(url).
+                        setProtocol(extProtocol).
+                        addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                        build();
+                    // avoid recursive function call
+                    extURL = extURL.removeParameter("ext.protocol");
+                    extURL = exportRemote(extURL, registryURLs);
+                    if (!isGeneric(generic) && !getScopeModel().isInternal()) {
+                        MetadataUtils.publishServiceDefinition(extURL, providerModel.getServiceModel(), getApplicationModel());
+                    }
+                    url = URLBuilder.from(url).
+                        addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                        build();
+                }
+
                 url = exportRemote(url, registryURLs);
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                     MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
