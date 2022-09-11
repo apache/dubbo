@@ -42,6 +42,9 @@ public class Hessian2AllowClassManager implements AllowClassNotifyListener {
             long hashCode = MAGIC_HASH_CODE;
             for (int j = 0; j < name.length(); ++j) {
                 char ch = name.charAt(j);
+                if (ch == '$') {
+                    ch = '.';
+                }
                 hashCode ^= ch;
                 hashCode *= MAGIC_PRIME;
             }
@@ -76,7 +79,14 @@ public class Hessian2AllowClassManager implements AllowClassNotifyListener {
         }
 
         if (checkStatus == SerializeCheckStatus.STRICT) {
-            throw new ClassNotFoundException(className);
+            String msg = "[Serialization Security] Serialized class " + className + " is not in allow list. " +
+                "Current mode is `STRICT`, will disallow to deserialize it by default. " +
+                "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
+            if (warnedClasses.add(className)) {
+                logger.error(msg);
+            }
+
+            throw new IllegalArgumentException(msg);
         } else {
             Class<?> clazz = Class.forName(className, false, classLoader);
             if (warnedClasses.add(className)) {
