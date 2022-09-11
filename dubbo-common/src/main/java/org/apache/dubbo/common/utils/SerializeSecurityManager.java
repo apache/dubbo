@@ -75,6 +75,8 @@ public class SerializeSecurityManager {
         } catch (InterruptedException e) {
             logger.error("Failed to load allow class list! Will ignore allow list from configuration.", e);
         }
+
+        notifyListeners();
     }
 
     public void registerInterface(Class<?> clazz) {
@@ -186,9 +188,7 @@ public class SerializeSecurityManager {
             className.startsWith("sun.") || className.startsWith("jdk.")) {
             modified = allowedPrefix.add(className);
             if (modified) {
-                for (AllowClassNotifyListener listener : listeners) {
-                    listener.notify(allowedPrefix);
-                }
+                notifyListeners();
             }
             return;
         }
@@ -202,9 +202,13 @@ public class SerializeSecurityManager {
         }
 
         if (modified) {
-            for (AllowClassNotifyListener listener : listeners) {
-                listener.notify(allowedPrefix);
-            }
+            notifyListeners();
+        }
+    }
+
+    private void notifyListeners() {
+        for (AllowClassNotifyListener listener : listeners) {
+            listener.notify(allowedPrefix);
         }
     }
 
