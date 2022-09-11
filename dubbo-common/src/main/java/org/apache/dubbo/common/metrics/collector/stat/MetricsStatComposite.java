@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 
+import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.event.MetricsEvent;
 import org.apache.dubbo.common.metrics.event.RTEvent;
 import org.apache.dubbo.common.metrics.event.RequestEvent;
@@ -42,9 +43,12 @@ public class MetricsStatComposite{
     private final String applicationName;
     private final List<MetricsListener> listeners;
 
-    public MetricsStatComposite(String applicationName, List<MetricsListener> listeners){
+    private DefaultMetricsCollector collector;
+
+    public MetricsStatComposite(String applicationName, DefaultMetricsCollector collector){
         this.applicationName = applicationName;
-        this.listeners = listeners;
+        this.listeners = collector.getListener();
+        this.collector = collector;
         this.init();
     }
 
@@ -79,28 +83,28 @@ public class MetricsStatComposite{
     }
 
     public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
+        if (collector.isCollectEnabled()) {
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
 
-        MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
+            AtomicLong last = lastRT.computeIfAbsent(metric, k -> new AtomicLong());
+            last.set(responseTime);
 
-        AtomicLong last = lastRT.computeIfAbsent(metric, k -> new AtomicLong());
-        last.set(responseTime);
+            LongAccumulator min = minRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
+            min.accumulate(responseTime);
 
-        LongAccumulator min = minRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
-        min.accumulate(responseTime);
+            LongAccumulator max = maxRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
+            max.accumulate(responseTime);
 
-        LongAccumulator max = maxRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
-        max.accumulate(responseTime);
+            AtomicLong total = totalRT.computeIfAbsent(metric, k -> new AtomicLong());
+            total.addAndGet(responseTime);
 
-        AtomicLong total = totalRT.computeIfAbsent(metric, k -> new AtomicLong());
-        total.addAndGet(responseTime);
+            AtomicLong count = rtCount.computeIfAbsent(metric, k -> new AtomicLong());
+            count.incrementAndGet();
 
-        AtomicLong count = rtCount.computeIfAbsent(metric, k -> new AtomicLong());
-        count.incrementAndGet();
+            avgRT.computeIfAbsent(metric, k -> new AtomicLong());
 
-        avgRT.computeIfAbsent(metric, k -> new AtomicLong());
-
-        publishEvent(new RTEvent(metric, responseTime));
-
+            publishEvent(new RTEvent(metric, responseTime));
+        }
     }
 
     private void init() {

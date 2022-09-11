@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.apache.dubbo.common.metrics.collector.stat.MetricsStatComposite;
@@ -48,7 +49,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.stats = new MetricsStatComposite(applicationModel.getApplicationName(), listeners);
+        this.stats = new MetricsStatComposite(applicationModel.getApplicationName(), this);
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -63,17 +64,19 @@ public class DefaultMetricsCollector implements MetricsCollector {
         listeners.add(listener);
     }
 
+    public List<MetricsListener> getListener() {
+        return this.listeners;
+    }
+
     public void increaseTotalRequests(String interfaceName, String methodName, String group, String version) {
         doExecute(StatType.TOTAL,statHandler-> {
             statHandler.increase(interfaceName, methodName, group, version);
-            return null;
         });
     }
 
     public void increaseSucceedRequests(String interfaceName, String methodName, String group, String version) {
         doExecute(StatType.SUCCEED,statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
-            return null;
         });
     }
 
@@ -83,35 +86,29 @@ public class DefaultMetricsCollector implements MetricsCollector {
                                        String version) {
         doExecute(StatType.FAILED,statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
-            return null;
         });
     }
 
     public void businessFailedRequests(String interfaceName, String methodName, String group, String version) {
         doExecute(StatType.BUSINESS_FAILED,statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
-            return null;
         });
     }
 
     public void increaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
         doExecute(StatType.PROCESSING,statHandler-> {
             statHandler.increase(interfaceName, methodName, group, version);
-            return null;
         });
     }
 
     public void decreaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
         doExecute(StatType.PROCESSING,statHandler-> {
             statHandler.decrease(interfaceName, methodName, group, version);
-            return null;
         });
     }
 
     public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
-        if (isCollectEnabled()) {
-            stats.addRT(interfaceName, methodName, group, version, responseTime);
-        }
+        stats.addRT(interfaceName, methodName, group, version, responseTime);
     }
 
     @Override
@@ -163,5 +160,12 @@ public class DefaultMetricsCollector implements MetricsCollector {
             return Optional.ofNullable(result);
         }
         return Optional.empty();
+    }
+
+    private void doExecute(StatType statType, Consumer<MetricsStatHandler> statExecutor) {
+        if (isCollectEnabled()) {
+            MetricsStatHandler handler = stats.getHandler(statType);
+             statExecutor.accept(handler);
+        }
     }
 }
