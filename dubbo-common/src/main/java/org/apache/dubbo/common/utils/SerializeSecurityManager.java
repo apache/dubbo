@@ -18,15 +18,26 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
 
 public class SerializeSecurityManager {
     private final Set<String> allowedPrefix = new LinkedHashSet<>();
+
+    private final static Logger logger = LoggerFactory.getLogger(SerializeSecurityManager.class);
 
     private final SerializeClassChecker checker = SerializeClassChecker.getInstance();
 
@@ -34,7 +45,31 @@ public class SerializeSecurityManager {
 
     public SerializeSecurityManager(FrameworkModel frameworkModel) {
         listeners = frameworkModel.getExtensionLoader(AllowClassNotifyListener.class).getSupportedExtensionInstances();
-        allowedPrefix.add("org.apache.dubbo");
+
+        try {
+            Set<ClassLoader> classLoaders = frameworkModel.getClassLoaders();
+            List<URL> urls = ClassLoaderResourceLoader.loadResources(SERIALIZE_ALLOW_LIST_FILE_PATH, classLoaders)
+                .values()
+                .stream()
+                .flatMap(Set::stream)
+                .collect(Collectors.toList());
+            for (URL u : urls) {
+                try {
+                    String[] lines = IOUtils.readLines(u.openStream());
+                    for (String line : lines) {
+                        line = line.trim();
+                        if (StringUtils.isEmpty(line) || line.startsWith("#")) {
+                            continue;
+                        }
+                        allowedPrefix.add(line);
+                    }
+                } catch (IOException e) {
+                    logger.error("Failed to load allow class list! Will ignore allow lis from " + u, e);
+                }
+            }
+        } catch (InterruptedException e) {
+            logger.error("Failed to load allow class list! Will ignore allow list from configuration.", e);
+        }
     }
 
     public void registerInterface(Class<?> clazz) {
@@ -80,7 +115,7 @@ public class SerializeSecurityManager {
         }
     }
 
-    private void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
+    protected void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
         if (markedClass.contains(clazz)) {
             return;
         }
@@ -107,7 +142,7 @@ public class SerializeSecurityManager {
         }
     }
 
-    private void addToAllow(String className) {
+    protected void addToAllow(String className) {
         if (!checker.validateClass(className, false)) {
             return;
         }
@@ -141,4 +176,7 @@ public class SerializeSecurityManager {
         }
     }
 
+    protected Set<String> getAllowedPrefix() {
+        return allowedPrefix;
+    }
 }
