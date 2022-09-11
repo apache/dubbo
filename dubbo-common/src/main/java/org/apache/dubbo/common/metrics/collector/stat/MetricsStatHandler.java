@@ -15,33 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.event;
+package org.apache.dubbo.common.metrics.collector.stat;
 
-/**
- * RequestEvent.
- */
-public class RequestEvent extends MetricsEvent {
-    private Type type;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
-    public RequestEvent(Object source, Type type) {
-        super(source);
-        this.type = type;
-    }
+import org.apache.dubbo.common.metrics.model.MethodMetric;
 
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public enum Type {
-        TOTAL,
-        SUCCEED,
-        FAILED,
-        BUSINESS_FAILED,
-
-        PROCESSING
-    }
+public interface MetricsStatHandler {
+    Map<MethodMetric, AtomicLong> get();
+    void increase(String interfaceName, String methodName, String group, String version);
+    void decrease(String interfaceName, String methodName, String group, String version);
 }
