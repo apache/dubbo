@@ -18,11 +18,16 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import com.service.DemoService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.net.URL;
-import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 
 public class SerializeSecurityManagerTest {
     @Test
@@ -53,6 +58,30 @@ public class SerializeSecurityManagerTest {
 
         ssm.addToAllow("com.example.package.Interface1");
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.example.package"));
+    }
+
+    @Test
+    public void testRegister() {
+        SerializeSecurityManager ssm = new SerializeSecurityManager(FrameworkModel.defaultModel());
+
+        ssm.registerInterface(DemoService.class);
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.DemoService"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo1"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo2"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo3"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo4"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo5"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo6"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo7"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Demo8"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.pojo.Simple"));
+
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(List.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Set.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Map.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(LinkedList.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(Vector.class.getName()));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains(HashSet.class.getName()));
 
     }
 }

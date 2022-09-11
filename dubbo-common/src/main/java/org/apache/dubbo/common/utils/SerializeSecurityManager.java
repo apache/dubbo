@@ -23,8 +23,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -88,18 +93,14 @@ public class SerializeSecurityManager {
 
             Type[] genericParameterTypes = method.getGenericParameterTypes();
             for (Type genericParameterType : genericParameterTypes) {
-                if (genericParameterType instanceof Class) {
-                    checkClass(markedClass, (Class<?>) genericParameterType);
-                }
+                checkType(markedClass, genericParameterType);
             }
 
             Class<?> returnType = method.getReturnType();
             checkClass(markedClass, returnType);
 
             Type genericReturnType = method.getGenericReturnType();
-            if (genericReturnType instanceof Class) {
-                checkClass(markedClass, (Class<?>) genericReturnType);
-            }
+            checkType(markedClass, genericReturnType);
 
             Class<?>[] exceptionTypes = method.getExceptionTypes();
             for (Class<?> exceptionType : exceptionTypes) {
@@ -108,14 +109,40 @@ public class SerializeSecurityManager {
 
             Type[] genericExceptionTypes = method.getGenericExceptionTypes();
             for (Type genericExceptionType : genericExceptionTypes) {
-                if (genericExceptionType instanceof Class) {
-                    checkClass(markedClass, (Class<?>) genericExceptionType);
-                }
+                checkType(markedClass, genericExceptionType);
             }
         }
     }
 
-    protected void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
+    private void checkType(Set<Class<?>> markedClass, Type type) {
+        if (type instanceof Class) {
+            checkClass(markedClass, (Class<?>) type);
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            checkClass(markedClass, (Class<?>) parameterizedType.getRawType());
+            for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
+                checkType(markedClass, actualTypeArgument);
+            }
+        } else if (type instanceof GenericArrayType) {
+            GenericArrayType genericArrayType = (GenericArrayType) type;
+            checkType(markedClass, genericArrayType.getGenericComponentType());
+        } else if (type instanceof TypeVariable) {
+            TypeVariable typeVariable = (TypeVariable) type;
+            for (Type bound : typeVariable.getBounds()) {
+                checkType(markedClass, bound);
+            }
+        } else if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            for (Type bound : wildcardType.getUpperBounds()) {
+                checkType(markedClass, bound);
+            }
+            for (Type bound : wildcardType.getLowerBounds()) {
+                checkType(markedClass, bound);
+            }
+        }
+    }
+
+    private void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
         if (markedClass.contains(clazz)) {
             return;
         }
@@ -137,8 +164,13 @@ public class SerializeSecurityManager {
         Field[] fields = clazz.getDeclaredFields();
 
         for (Field field : fields) {
-            Class<?> fieldClass = field.getDeclaringClass();
+            if (Modifier.isTransient(field.getModifiers())) {
+                continue;
+            }
+
+            Class<?> fieldClass = field.getType();
             checkClass(markedClass, fieldClass);
+            checkType(markedClass, field.getGenericType());
         }
     }
 
