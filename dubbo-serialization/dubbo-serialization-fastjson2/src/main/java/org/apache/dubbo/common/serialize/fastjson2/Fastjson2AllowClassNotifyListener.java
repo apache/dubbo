@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.serialize.fastjson2;
 
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
+import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Set;
@@ -29,8 +30,8 @@ public class Fastjson2AllowClassNotifyListener implements AllowClassNotifyListen
     }
 
     @Override
-    public void notify(Set<String> prefixList) {
+    public void notify(SerializeCheckStatus status, Set<String> prefixList) {
         Fastjson2SecurityManager fastjson2SecurityManager = frameworkModel.getBeanFactory().getBean(Fastjson2SecurityManager.class);
-        fastjson2SecurityManager.notify(prefixList);
+        fastjson2SecurityManager.notify(status, prefixList);
     }
 }

@@ -47,6 +47,8 @@ public class SerializeSecurityManager {
 
     private final Set<AllowClassNotifyListener> listeners;
 
+    private volatile SerializeCheckStatus checkStatus = AllowClassNotifyListener.DEFAULT_STATUS;
+
     public SerializeSecurityManager(FrameworkModel frameworkModel) {
         listeners = frameworkModel.getExtensionLoader(AllowClassNotifyListener.class).getSupportedExtensionInstances();
 
@@ -207,7 +209,7 @@ public class SerializeSecurityManager {
 
     private void notifyListeners() {
         for (AllowClassNotifyListener listener : listeners) {
-            listener.notify(allowedPrefix);
+            listener.notify(checkStatus, allowedPrefix);
         }
     }
 

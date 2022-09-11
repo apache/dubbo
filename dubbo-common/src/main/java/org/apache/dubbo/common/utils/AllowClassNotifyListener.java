@@ -24,5 +24,7 @@ import java.util.Set;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface AllowClassNotifyListener {
 
-    void notify(Set<String> prefixList);
+    SerializeCheckStatus DEFAULT_STATUS = SerializeCheckStatus.STRICT;
+
+    void notify(SerializeCheckStatus status, Set<String> prefixList);
 }

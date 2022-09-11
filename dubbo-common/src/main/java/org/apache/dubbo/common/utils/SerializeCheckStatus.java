@@ -16,18 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-public class TestAllowClassNotifyListener implements AllowClassNotifyListener {
-    private final static AtomicReference<Set<String>> prefixList = new AtomicReference<>();
-
-    @Override
-    public void notify(SerializeCheckStatus status, Set<String> prefixList) {
-        TestAllowClassNotifyListener.prefixList.set(prefixList);
-    }
-
-    public static Set<String> getPrefixList() {
-        return prefixList.get();
-    }
+public enum SerializeCheckStatus {
+    DISABLED,
+    WARN,
+    STRICT,
 }
