@@ -17,4 +17,8 @@
 #
 #
 java.util.HashMap
+java.lang.RuntimeException
+java.util.Collections$UnmodifiableList
+java.util.concurrent.ConcurrentHashMap
+java.lang.StackTraceElement
 org.apache.dubbo
