@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
@@ -30,6 +23,7 @@ import org.apache.dubbo.common.compiler.support.JavassistCompiler;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
@@ -52,6 +46,14 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
+
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -1037,6 +1039,11 @@ public class ReferenceConfigTest {
     @Test
     @DisabledForJreRange(min = JRE.JAVA_16)
     public void testDifferentClassLoaderRequest() throws Exception {
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
+        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderService.class);
+        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderServiceRequest.class);
+        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderServiceResult.class);
+        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderServiceImpl.class);
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -1045,7 +1052,7 @@ public class ReferenceConfigTest {
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
 
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
-        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
         ModuleModel moduleModel = new ModuleModel(applicationModel);
 
