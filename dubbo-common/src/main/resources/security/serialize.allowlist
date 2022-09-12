@@ -21,4 +21,7 @@ java.lang.RuntimeException
 java.util.Collections$UnmodifiableList
 java.util.concurrent.ConcurrentHashMap
 java.lang.StackTraceElement
+java.lang.Class
+java.util.BitSet
+java.util.Collections$UnmodifiableMap
 org.apache.dubbo
