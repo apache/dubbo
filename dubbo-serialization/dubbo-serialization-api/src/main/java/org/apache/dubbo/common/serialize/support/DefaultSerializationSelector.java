@@ -21,7 +21,7 @@ public class DefaultSerializationSelector {
 
     private final static String DEFAULT_REMOTING_SERIALIZATION_PROPERTY_KEY = "DUBBO_DEFAULT_SERIALIZATION";
 
-    private final static String DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "hessian2";
+    private final static String DEFAULT_REMOTING_SERIALIZATION_PROPERTY = "fastjson2";
 
     private final static String DEFAULT_REMOTING_SERIALIZATION;
 
