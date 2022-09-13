@@ -160,7 +160,6 @@
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
         <module>dubbo-native-plugin</module>
-        <module>dubbo-reactive</module>
     </modules>
 
     <dependencyManagement>
