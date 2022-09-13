@@ -59,7 +59,7 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
         final Map<String, Class<?>> classCache = new ConcurrentHashMap<>(16, 0.75f, 1);
 
         public Handler(SerializeCheckStatus status, String[] acceptNames) {
-            super(acceptNames);
+            super(true, acceptNames);
             this.status = status;
         }
 
