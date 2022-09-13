@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 /**
  * The Subscriber in server to passing the data produced by user publisher to responseStream.
  */
-public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T>{
+public class ServerTripleReactorSubscriber<T> extends AbstractTripleReactorSubscriber<T> {
 
     @Override
     public void subscribe(CallStreamObserver<T> downstream) {
