@@ -23,7 +23,6 @@ import org.apache.dubbo.common.compiler.support.JavassistCompiler;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
@@ -1040,10 +1039,6 @@ public class ReferenceConfigTest {
     @DisabledForJreRange(min = JRE.JAVA_16)
     public void testDifferentClassLoaderRequest() throws Exception {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
-        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderService.class);
-        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderServiceRequest.class);
-        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderServiceResult.class);
-        frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class).registerInterface(MultiClassLoaderServiceImpl.class);
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
