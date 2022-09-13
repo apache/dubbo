@@ -78,6 +78,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void doDestroy() throws Exception {
         this.namingService.shutdown();
+        this.eventListeners.clear();
     }
 
     @Override
