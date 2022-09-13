@@ -40,6 +40,7 @@ import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -216,7 +217,7 @@ public abstract class AbstractRegistry implements Registry {
             }
 
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                 FileChannel channel = raf.getChannel()) {
+                FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
 
@@ -321,6 +322,12 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     public List<URL> getCacheUrls(URL url) {
+        Map<String, List<URL>> categoryNotified = notified.get(url);
+        if (CollectionUtils.isNotEmptyMap(categoryNotified)) {
+            List<URL> urls = categoryNotified.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+            return urls;
+        }
+
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();

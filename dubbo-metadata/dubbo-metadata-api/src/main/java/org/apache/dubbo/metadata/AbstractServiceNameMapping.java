@@ -24,7 +24,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,7 +49,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
-public abstract class AbstractServiceNameMapping implements ServiceNameMapping, ScopeModelAware {
+public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected ApplicationModel applicationModel;
     private final MappingCacheManager mappingCacheManager;
@@ -71,11 +70,6 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
             applicationModel.tryGetApplicationName(),
             applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
-    }
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
     }
 
     /**
