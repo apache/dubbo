@@ -18,6 +18,7 @@ package org.apache.dubbo.common.serialize.hessian2;
 
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
@@ -31,6 +32,13 @@ import java.lang.reflect.Type;
 public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     private final Hessian2Input mH2i;
     private final Hessian2FactoryManager hessian2FactoryManager;
+
+    @Deprecated
+    public Hessian2ObjectInput(InputStream is) {
+        mH2i = new Hessian2Input(is);
+        this.hessian2FactoryManager = FrameworkModel.defaultModel().getBeanFactory().getOrRegisterBean(Hessian2FactoryManager.class);
+        mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+    }
 
     public Hessian2ObjectInput(InputStream is, Hessian2FactoryManager hessian2FactoryManager) {
         mH2i = new Hessian2Input(is);
