@@ -584,24 +584,31 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 // export to extra protocol is used in remote export
                 String extProtocol = url.getParameter("ext.protocol", "");
                 List<String> protocols = new ArrayList<>();
-                protocols.add(url.getProtocol());
+                // export original url
+                url = URLBuilder.from(url).
+                    addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                    removeParameter("ext.protocol").
+                    build();
+                url = exportRemote(url, registryURLs);
+                if (!isGeneric(generic) && !getScopeModel().isInternal()) {
+                    MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
+                }
 
                 if (!extProtocol.equals("")) {
                     String[] extProtocols = extProtocol.split(",", -1);
                     protocols.addAll(Arrays.asList(extProtocols));
                 }
-
+                // export extra protocols
                 for(String protocol : protocols) {
                     if(!protocol.equals("")){
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
-                            addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                            removeParameter("ext.protocol").
                             build();
                         localUrl = exportRemote(localUrl, registryURLs);
                         if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                             MetadataUtils.publishServiceDefinition(localUrl, providerModel.getServiceModel(), getApplicationModel());
                         }
+                        this.urls.add(localUrl);
                     }
                 }
             }
