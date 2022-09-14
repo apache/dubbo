@@ -277,6 +277,9 @@ public class NacosRegistry extends FailbackRegistry {
             shutdownServiceNamesLookup();
         } else {
             Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
+            if (listenerMap == null) {
+                return;
+            }
             NacosAggregateListener nacosAggregateListener = listenerMap.remove(listener);
             if (nacosAggregateListener != null) {
                 Set<String> serviceNames = getServiceNames(url, nacosAggregateListener);
