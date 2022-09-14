@@ -135,7 +135,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
                     final NettyPortUnificationServerHandler puHandler;
                     puHandler = new NettyPortUnificationServerHandler(getUrl(), sslContext, true, getProtocols(),
                         NettyPortUnificationServer.this, NettyPortUnificationServer.this.dubboChannels,
-                        getUrlMapper(), getHandlerMapper());
+                        getSupportedUrls(), getSupportedHandlers());
                     p.addLast("negotiation-protocol", puHandler);
                 }
             });
