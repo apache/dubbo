@@ -59,6 +59,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -82,6 +83,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private ServerStream.Listener listener;
     private final InetSocketAddress remoteAddress;
     private Deframer deframer;
+    private boolean rst = false;
 
     private final Http2StreamChannel http2StreamChannel;
 
@@ -115,6 +117,13 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     }
 
     public ChannelFuture reset(Http2Error cause) {
+        if (!http2StreamChannel.isActive()) {
+            return http2StreamChannel.newFailedFuture(new IOException("channel is closed"));
+        }
+        if (rst) {
+            return http2StreamChannel.newFailedFuture(new IOException("channel has reset"));
+        }
+        this.rst = true;
         return writeQueue.enqueue(CancelQueueCommand.createCommand(cause).setHttp2FrameStream(http2FrameStream));
     }
 
@@ -156,11 +165,10 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
     private ChannelFuture sendTrailers(Http2Headers trailers) {
         if (reset) {
-            return writeQueue.failure(
-                new IllegalStateException("Stream already reset, no more trailers allowed"));
+            return http2StreamChannel.newFailedFuture(new IllegalStateException("Stream already reset, no more trailers allowed"));
         }
         if (trailersSent) {
-            return writeQueue.failure(new IllegalStateException("Trailers already sent"));
+            return http2StreamChannel.newFailedFuture(new IllegalStateException("Trailers already sent"));
         }
         headerSent = true;
         trailersSent = true;
@@ -218,15 +226,15 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     @Override
     public ChannelFuture sendMessage(byte[] message, int compressFlag) {
         if (reset) {
-            return writeQueue.failure(
+            return http2StreamChannel.newFailedFuture(
                 new IllegalStateException("Stream already reset, no more body allowed"));
         }
         if (!headerSent) {
-            return writeQueue.failure(
+            return http2StreamChannel.newFailedFuture(
                 new IllegalStateException("Headers did not sent before send body"));
         }
         if (trailersSent) {
-            return writeQueue.failure(
+            return http2StreamChannel.newFailedFuture(
                 new IllegalStateException("Trailers already sent, no more body allowed"));
         }
         return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag).setHttp2FrameStream(http2FrameStream));

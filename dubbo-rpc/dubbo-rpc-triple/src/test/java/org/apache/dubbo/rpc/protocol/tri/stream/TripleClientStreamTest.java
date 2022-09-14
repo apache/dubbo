@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -69,8 +70,10 @@ class TripleClientStreamTest {
         WriteQueue writeQueue = mock(WriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
+        Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
+        when(http2StreamChannel.isActive()).thenReturn(true);
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
-            ImmediateEventExecutor.INSTANCE, writeQueue, listener);
+            ImmediateEventExecutor.INSTANCE, writeQueue, listener, http2StreamChannel);
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;

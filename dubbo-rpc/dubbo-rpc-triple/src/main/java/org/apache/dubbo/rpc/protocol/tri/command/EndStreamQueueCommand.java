@@ -29,6 +29,6 @@ public class EndStreamQueueCommand extends QueuedCommand {
 
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2DataFrame(true).stream(http2FrameStream));
+        ctx.write(new DefaultHttp2DataFrame(true).stream(http2FrameStream), promise);
     }
 }
