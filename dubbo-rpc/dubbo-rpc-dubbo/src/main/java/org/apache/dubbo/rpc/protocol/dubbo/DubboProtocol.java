@@ -73,7 +73,6 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_HEARTBEAT;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_CLIENT;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_KEY;
-import static org.apache.dubbo.remoting.Constants.IS_PU_SERVER_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_REMOTING_SERVER;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
@@ -367,9 +366,6 @@ public class DubboProtocol extends AbstractProtocol {
             // enable heartbeat by default
             .addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT))
             .addParameter(CODEC_KEY, DubboCodec.NAME)
-            //todo
-            // enable pu server by default, this config should be closed when merging
-            .addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString())
             .build();
 
         String transporter = url.getParameter(SERVER_KEY, DEFAULT_REMOTING_SERVER);
