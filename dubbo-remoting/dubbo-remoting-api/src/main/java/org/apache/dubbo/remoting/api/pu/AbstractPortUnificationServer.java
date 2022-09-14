@@ -56,7 +56,7 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
     In PuServerExchanger.bind, this method is called with ConcurrentHashMap.computeIfPresent to register messages to
     this supportedUrls and supportedHandlers
      */
-    public void addNewURL(URL url, ChannelHandler handler) {
+    public void addNewService(URL url, ChannelHandler handler) {
         this.supportedUrls.put(url.getProtocol(), url);
         this.supportedHandlers.put(url.getProtocol(), handler);
     }
