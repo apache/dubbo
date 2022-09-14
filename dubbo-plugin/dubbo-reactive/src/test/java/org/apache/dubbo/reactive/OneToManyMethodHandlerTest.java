@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.reactive;
+package org.apache.dubbo.reactive;
 
+import org.apache.dubbo.reactive.handler.OneToManyMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.reactive.handler.OneToManyMethodHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

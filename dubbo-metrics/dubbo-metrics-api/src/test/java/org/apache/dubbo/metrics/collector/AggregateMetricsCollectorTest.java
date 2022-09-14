@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -81,6 +82,7 @@ public class AggregateMetricsCollectorTest {
         defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
         defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
         defaultCollector.increaseFailedRequests(interfaceName, methodName, group, version);
+        defaultCollector.businessFailedRequests(interfaceName,methodName,group,version);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -101,6 +103,8 @@ public class AggregateMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get("requests.total.aggregate"), 1L);
         Assertions.assertEquals(sampleMap.get("requests.succeed.aggregate"), 1L);
         Assertions.assertEquals(sampleMap.get("requests.failed.aggregate"), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
+
         Assertions.assertTrue(sampleMap.containsKey("qps"));
     }
 

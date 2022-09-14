@@ -14,25 +14,20 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-parent</artifactId>
+        <artifactId>dubbo-plugin</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-plugin</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>dubbo-reactive</artifactId>
+    <packaging>jar</packaging>
 
-    <name>dubbo-plugin</name>
-    <description>The registry module of dubbo project</description>
-    <modules>
-        <module>dubbo-qos</module>
-        <module>dubbo-auth</module>
-        <module>dubbo-reactive</module>
-    </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
@@ -40,9 +35,17 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-check</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
+            <artifactId>dubbo-rpc-triple</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
         </dependency>
     </dependencies>
+
 </project>
