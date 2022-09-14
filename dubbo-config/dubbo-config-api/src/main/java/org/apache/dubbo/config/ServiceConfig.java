@@ -583,25 +583,26 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 // export to extra protocol is used in remote export
                 String extProtocol = url.getParameter("ext.protocol", "");
+                List<String> protocols = new ArrayList<>();
+                protocols.add(url.getProtocol());
+
                 if (!extProtocol.equals("")) {
-                    URL extURL = URLBuilder.from(url).
-                        setProtocol(extProtocol).
-                        addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                        build();
-                    // avoid recursive function call
-                    extURL = extURL.removeParameter("ext.protocol");
-                    extURL = exportRemote(extURL, registryURLs);
-                    if (!isGeneric(generic) && !getScopeModel().isInternal()) {
-                        MetadataUtils.publishServiceDefinition(extURL, providerModel.getServiceModel(), getApplicationModel());
-                    }
-                    url = URLBuilder.from(url).
-                        addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                        build();
+                    String[] extProtocols = extProtocol.split(",", -1);
+                    protocols.addAll(Arrays.asList(extProtocols));
                 }
 
-                url = exportRemote(url, registryURLs);
-                if (!isGeneric(generic) && !getScopeModel().isInternal()) {
-                    MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
+                for(String protocol : protocols) {
+                    if(!protocol.equals("")){
+                        URL localUrl = URLBuilder.from(url).
+                            setProtocol(protocol).
+                            addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                            removeParameter("ext.protocol").
+                            build();
+                        localUrl = exportRemote(localUrl, registryURLs);
+                        if (!isGeneric(generic) && !getScopeModel().isInternal()) {
+                            MetadataUtils.publishServiceDefinition(localUrl, providerModel.getServiceModel(), getApplicationModel());
+                        }
+                    }
                 }
             }
         }
