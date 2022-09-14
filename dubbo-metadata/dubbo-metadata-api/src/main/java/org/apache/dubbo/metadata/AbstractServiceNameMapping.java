@@ -72,6 +72,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
     }
 
+    // just for test
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
      *
