@@ -18,7 +18,6 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -1081,5 +1080,14 @@ public class URLTest {
 
         URL urlWithoutUserInformation = URL.valueOf("10.20.130.230:20880/context/path?version=1.0.0&application=app1");
         assertEquals("10.20.130.230:20880", urlWithoutUserInformation.getAuthority());
+    }
+
+
+    @Test
+    public void testIPV6() {
+        URL url = URL.valueOf("dubbo://[2408:4004:194:8896:3e8a:82ae:814a:398]:20881?name=apache");
+        assertEquals("[2408:4004:194:8896:3e8a:82ae:814a:398]", url.getHost());
+        assertEquals(20881, url.getPort());
+        assertEquals("apache", url.getParameter("name"));
     }
 }
