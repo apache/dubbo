@@ -76,6 +76,7 @@ java.time.LocalDate
 java.time.LocalDateTime
 java.time.LocalTime
 java.util.ArrayList
+java.util.Arrays$ArrayList
 java.util.BitSet
 java.util.Calendar
 java.util.Collections$EmptyList
