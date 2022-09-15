@@ -113,7 +113,6 @@ public class FastJson2ObjectInput implements ObjectInput {
         }
         return (T) JSONB.parseObject(bytes, Object.class, fastjson2SecurityManager.getSecurityFilter(),
             JSONReader.Feature.UseDefaultConstructorAsPossible,
-            JSONReader.Feature.SupportClassForName,
             JSONReader.Feature.ErrorOnNoneSerializable,
             JSONReader.Feature.UseNativeObject,
             JSONReader.Feature.FieldBased);
@@ -131,7 +130,6 @@ public class FastJson2ObjectInput implements ObjectInput {
         }
         return (T) JSONB.parseObject(bytes, Object.class, fastjson2SecurityManager.getSecurityFilter(),
             JSONReader.Feature.UseDefaultConstructorAsPossible,
-            JSONReader.Feature.SupportClassForName,
             JSONReader.Feature.ErrorOnNoneSerializable,
             JSONReader.Feature.UseNativeObject,
             JSONReader.Feature.FieldBased);
