@@ -823,6 +823,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }
+            unexportMetricsService();
         }
     }
 
