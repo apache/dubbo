@@ -1066,19 +1066,6 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.serialize.hessian2.dubbo.DefaultHessian2FactoryInitializer",
-    "allPublicMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "name": "org.apache.dubbo.common.serialize.hessian2.dubbo.WhitelistHessian2FactoryInitializer"
-  },
-  {
     "name": "org.apache.dubbo.common.status.reporter.FrameworkStatusReportService",
     "methods": [
       {

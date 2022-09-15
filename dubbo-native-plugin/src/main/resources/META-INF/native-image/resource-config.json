@@ -29,9 +29,6 @@
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.serialize.Serialization\\E"
       },
       {
-        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.serialize.hessian2.dubbo.Hessian2FactoryInitializer\\E"
-      },
-      {
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool\\E"
       },
       {

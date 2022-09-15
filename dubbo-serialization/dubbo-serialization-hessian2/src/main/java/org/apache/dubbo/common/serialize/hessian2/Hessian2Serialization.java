@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,12 @@ import static org.apache.dubbo.common.serialize.Constants.HESSIAN2_SERIALIZATION
  */
 public class Hessian2Serialization implements Serialization {
 
+    private final Hessian2FactoryManager hessian2FactoryManager;
+
+    public Hessian2Serialization(FrameworkModel frameworkModel) {
+        hessian2FactoryManager = frameworkModel.getBeanFactory().getBean(Hessian2FactoryManager.class);
+    }
+
     @Override
     public byte getContentTypeId() {
         return HESSIAN2_SERIALIZATION_ID;
@@ -48,12 +55,12 @@ public class Hessian2Serialization implements Serialization {
 
     @Override
     public ObjectOutput serialize(URL url, OutputStream out) throws IOException {
-        return new Hessian2ObjectOutput(out);
+        return new Hessian2ObjectOutput(out, hessian2FactoryManager);
     }
 
     @Override
     public ObjectInput deserialize(URL url, InputStream is) throws IOException {
-        return new Hessian2ObjectInput(is);
+        return new Hessian2ObjectInput(is, hessian2FactoryManager);
     }
 
 }

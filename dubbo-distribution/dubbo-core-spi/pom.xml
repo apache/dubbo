@@ -277,7 +277,7 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.serialize.hessian2.dubbo.Hessian2FactoryInitializer
+                                        META-INF/dubbo/internal/org.apache.dubbo.common.utils.AllowClassNotifyListener
                                     </resource>
                                 </transformer>
                                 <transformer
