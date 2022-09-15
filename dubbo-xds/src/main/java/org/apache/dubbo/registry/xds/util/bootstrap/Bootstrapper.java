@@ -32,8 +32,8 @@ public abstract class Bootstrapper {
         throw new UnsupportedOperationException();
     }
 
-    abstract static class ServerInfo {
-        abstract String target();
+    public abstract static class ServerInfo {
+        public abstract String target();
 
         abstract ChannelCredentials channelCredentials();
 
@@ -50,9 +50,9 @@ public abstract class Bootstrapper {
     }
 
     public abstract static class BootstrapInfo {
-        abstract List<ServerInfo> servers();
+        public abstract List<ServerInfo> servers();
 
-        abstract Map<String, CertificateProviderInfo> certProviders();
+        public abstract Map<String, CertificateProviderInfo> certProviders();
 
         public abstract Node node();
 

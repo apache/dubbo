@@ -235,21 +235,6 @@ public class ProtocolConfig extends AbstractConfig {
         }
     }
 
-//    @Override
-//    public List<String> getPrefixes() {
-//        List<String> prefixes = new ArrayList<>();
-//        if (StringUtils.hasText(this.getId())) {
-//            // dubbo.protocols.{protocol-id}
-//            prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getId());
-//        } else if (StringUtils.hasText(this.getName()) && !StringUtils.isEquals(this.getId(), this.getName())) {
-//            // dubbo.protocols.{protocol-name}
-//            prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getName());
-//        }
-//        // dubbo.protocol
-//        prefixes.add(getTypePrefix());
-//        return prefixes;
-//    }
-
     @Parameter(excluded = true)
     public String getName() {
         return name;

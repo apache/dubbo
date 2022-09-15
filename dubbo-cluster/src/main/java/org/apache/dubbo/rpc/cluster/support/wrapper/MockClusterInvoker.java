@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -45,7 +45,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
 public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MockClusterInvoker.class);
     private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     private final Directory<T> directory;
@@ -102,7 +102,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith(FORCE_KEY)) {
             if (logger.isWarnEnabled()) {
-                logger.warn("force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + getUrl());
+                logger.warn("2-17","force mock","","force-mock: " + invocation.getMethodName() + " force-mock enabled , url : " + getUrl());
             }
             //force:direct mock
             result = doMockInvoke(invocation, null);
@@ -127,7 +127,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
                 }
 
                 if (logger.isWarnEnabled()) {
-                    logger.warn("fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + getUrl(), e);
+                    logger.warn("2-17","failed to mock invoke","","fail-mock: " + invocation.getMethodName() + " fail-mock enabled , url : " + getUrl(),e);
                 }
                 result = doMockInvoke(invocation, e);
             }

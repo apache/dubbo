@@ -33,7 +33,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Start from 2.7.0+, export and refer will only be executed when Spring is fully initialized, and each Config bean will get refreshed on the start of the export and refer process.
+ * Starting from 2.7.0+, export and refer will only be executed when Spring is fully initialized.
+ * <p>
+ * Each Config bean will get refreshed on the start of the exporting and referring process.
+ * <p>
  * So it's ok for this bean not to be the first Dubbo Config bean being initialized.
  * <p>
  */
