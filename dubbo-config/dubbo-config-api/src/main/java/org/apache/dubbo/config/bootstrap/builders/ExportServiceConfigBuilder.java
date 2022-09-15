@@ -21,7 +21,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getApplicationConfig;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +36,6 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -161,6 +159,7 @@ public class ExportServiceConfigBuilder<T> {
         logger.info("Using " + this.protocol + " protocol to export "+interfaceClass.getName()+" service on port " + protocolConfig.getPort());
 
         ApplicationConfig applicationConfig = getApplicationConfig();
+
         ServiceConfig<T> serviceConfig = new ServiceConfig<>();
         serviceConfig.setScopeModel(applicationModel.getInternalModule());
         serviceConfig.setApplication(applicationConfig);
@@ -174,7 +173,7 @@ public class ExportServiceConfigBuilder<T> {
         serviceConfig.setInterface(interfaceClass);
         serviceConfig.setRef(this.ref);
         serviceConfig.setGroup(applicationConfig.getName());
-        serviceConfig.setVersion(MetadataService.VERSION);
+        serviceConfig.setVersion("1.0.0");
 
         serviceConfig.setExecutes(100); // max tasks running at the same time
         Map<String, String> threadParams = new HashMap<>();
@@ -200,6 +199,11 @@ public class ExportServiceConfigBuilder<T> {
 
     protected ExportServiceConfigBuilder<T> getThis() {
         return this;
+    }
+
+
+    private ApplicationConfig getApplicationConfig() {
+        return applicationModel.getApplicationConfigManager().getApplication().get();
     }
 
 }
