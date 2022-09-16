@@ -176,12 +176,12 @@ public class ExportServiceConfigBuilder<T> {
         serviceConfig.setVersion("1.0.0");
 
         serviceConfig.setExecutes(100); // max tasks running at the same time
-        Map<String, String> threadParams = new HashMap<>();
-        threadParams.put(THREADPOOL_KEY, "cached");
-        threadParams.put(THREADS_KEY, "100");
-        threadParams.put(CORE_THREADS_KEY, "2");
+        Map<String, String> params = new HashMap<>();
+        params.put(THREADPOOL_KEY, "cached");
+        params.put(THREADS_KEY, "100");
+        params.put(CORE_THREADS_KEY, "2");
 
-        serviceConfig.setParameters(threadParams);
+        serviceConfig.setParameters(params);
 
         if (this.serviceConfigBuilder != null) {
             this.serviceConfigBuilder.accept(serviceConfig);

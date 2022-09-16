@@ -682,6 +682,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void exportMetricsService() {
         metricsServiceExporter.export();
     }
+
     private void unexportMetricsService() {
         if (metricsServiceExporter != null) {
             try {
