@@ -47,7 +47,7 @@ public class PortUnificationExchanger {
         });
 
         servers.computeIfPresent(url.getAddress(), (addr, server) -> {
-            ((AbstractPortUnificationServer) server).addNewService(url, handler);
+            ((AbstractPortUnificationServer) server).addSupportedProtocol(url, handler);
             return server;
         });
         return servers.get(url.getAddress());

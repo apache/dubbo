@@ -89,8 +89,8 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
-    public void addNewService(URL url, ChannelHandler handler) {
-        super.addNewService(url, ChannelHandlers.wrap(handler, url));
+    public void addSupportedProtocol(URL url, ChannelHandler handler) {
+        super.addSupportedProtocol(url, ChannelHandlers.wrap(handler, url));
     }
 
     @Override
