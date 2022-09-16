@@ -23,7 +23,7 @@ import org.apache.dubbo.common.config.Configuration;
 /**
  * Dynamic Configuration
  * <br/>
- * From the use scenario internally inside framework, there're mainly three kinds of methods:
+ * From the use scenario internally inside framework, there are mainly three kinds of methods:
  * <ol>
  * <li>{@link #getProperties(String, String, long)}, get configuration file from Config Center at start up.</li>
  * <li>{@link #addListener(String, String, ConfigurationListener)}/ {@link #removeListener(String, String, ConfigurationListener)}
