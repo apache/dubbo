@@ -32,6 +32,9 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -790,6 +793,22 @@ public class PojoUtilsTest {
         assertEquals(parent.getFeatures().get("divorce"), "false");
         assertEquals(parent.getFeatures().get("money"), "0");
         assertEquals(parent.getFeatures().get("height"), "177cm");
+    }
+
+    @Test
+    public void testJava8Time() {
+        
+        Object localDateTimeGen = PojoUtils.generalize(LocalDateTime.now());
+        Object localDateTime = PojoUtils.realize(localDateTimeGen, LocalDateTime.class);
+        assertEquals(localDateTimeGen, localDateTime.toString());
+
+        Object localDateGen = PojoUtils.generalize(LocalDate.now());
+        Object localDate = PojoUtils.realize(localDateGen, LocalDate.class);
+        assertEquals(localDateGen, localDate.toString());
+
+        Object localTimeGen = PojoUtils.generalize(LocalTime.now());
+        Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
+        assertEquals(localTimeGen, localTime.toString());
     }
 
     public enum Day {
