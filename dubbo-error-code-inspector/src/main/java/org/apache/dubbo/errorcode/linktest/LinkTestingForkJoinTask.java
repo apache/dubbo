@@ -1,0 +1,81 @@
+package org.apache.dubbo.errorcode.linktest;
+
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.RecursiveTask;
+
+/**
+ * Link testing (fork-join) task.
+ */
+public class LinkTestingForkJoinTask extends RecursiveTask<Map<String, Boolean>> {
+
+    private static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
+
+    private static final int THRESHOLD = 10;
+
+    private final int start;
+
+    private final int end;
+
+    private final List<String> url;
+
+    public LinkTestingForkJoinTask(int start, int end, List<String> url) {
+        this.start = start;
+        this.end = end;
+        this.url = url;
+    }
+
+    @Override
+    protected Map<String, Boolean> compute() {
+
+        if (end - start >= THRESHOLD) {
+
+            int middle = (start + end) / 2;
+
+            LinkTestingForkJoinTask left = new LinkTestingForkJoinTask(start, middle, url);
+            LinkTestingForkJoinTask right = new LinkTestingForkJoinTask(middle, end, url);
+
+            left.fork();
+            right.fork();
+
+            Map<String, Boolean> leftR = left.join();
+            Map<String, Boolean> rightR = right.join();
+
+            Map<String, Boolean> result = new HashMap<String, Boolean>(end - start);
+
+            result.putAll(leftR);
+            result.putAll(rightR);
+
+            return result;
+
+        } else {
+
+            HashMap<String, Boolean> result = new HashMap<>();
+
+            for (int i = start; i < end; i++) {
+
+                HttpGet getRequest = new HttpGet(url.get(i));
+                getRequest.addHeader("Accept-Language", "zh-CN");
+
+                try {
+
+                    try (CloseableHttpResponse resp = HTTP_CLIENT.execute(getRequest)) {
+                        result.put(url.get(i), resp.getStatusLine().getStatusCode() == 200);
+                    }
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            return result;
+        }
+    }
+}
