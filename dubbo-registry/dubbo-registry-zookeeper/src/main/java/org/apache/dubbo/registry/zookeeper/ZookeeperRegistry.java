@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +118,29 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     @Override
     public void destroy() {
         super.destroy();
+
+        // remove child listener
+        Set<URL> urls = zkListeners.keySet();
+        for (URL url : urls) {
+            ConcurrentMap<NotifyListener, ChildListener> map = zkListeners.get(url);
+            if (CollectionUtils.isEmptyMap(map)) {
+                continue;
+            }
+            Collection<ChildListener> childListeners = map.values();
+            if (CollectionUtils.isEmpty(childListeners)) {
+                continue;
+            }
+            if (ANY_VALUE.equals(url.getServiceInterface())) {
+                String root = toRootPath();
+                childListeners.stream().forEach(childListener -> zkClient.removeChildListener(root, childListener));
+            } else {
+                for (String path : toCategoriesPath(url)) {
+                    childListeners.stream().forEach(childListener -> zkClient.removeChildListener(path, childListener));
+                }
+            }
+        }
+        zkListeners.clear();
+
         // Just release zkClient reference, but can not close zk client here for zk client is shared somewhere else.
         // See org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
         zkClient = null;
@@ -225,6 +249,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
+        super.doUnsubscribe(url, listener);
         checkDestroyed();
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {

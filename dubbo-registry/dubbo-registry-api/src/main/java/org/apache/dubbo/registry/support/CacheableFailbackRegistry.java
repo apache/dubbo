@@ -129,7 +129,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected void evictURLCache(URL url) {
         Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(url);
         try {
-            if (oldURLs != null && !oldURLs.isEmpty()) {
+            if (CollectionUtils.isNotEmptyMap(oldURLs)) {
                 logger.info("Evicting urls for service " + url.getServiceKey() + ", size " + oldURLs.size());
                 Long currentTimestamp = System.currentTimeMillis();
                 for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
@@ -171,7 +171,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         if (oldURLs == null) {
             for (String rawProvider : providers) {
-                // remove timestamp in provider url.
+                // remove VARIABLE_KEYS(timestamp,pid..) in provider url.
                 rawProvider = stripOffVariableKeys(rawProvider);
 
                 // create DubboServiceAddress object using provider url, consumer url, and extra parameters.

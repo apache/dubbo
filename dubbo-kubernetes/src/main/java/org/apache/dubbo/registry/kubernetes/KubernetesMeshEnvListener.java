@@ -21,8 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshEnvListener;
 
-import com.google.gson.Gson;
-import io.fabric8.kubernetes.api.model.ListOptionsBuilder;
+import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
@@ -30,7 +29,6 @@ import io.fabric8.kubernetes.client.WatcherException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -81,24 +79,27 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
         try {
             Watch watch = kubernetesClient
-                .customResource(
-                    MeshConstant.getVsDefinition())
-                .watch(namespace, appName, null, new ListOptionsBuilder().build(), new Watcher<String>() {
-                    @Override
-                    public void eventReceived(Action action, String resource) {
-                        logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action + " Resource:" + resource);
-
-                        if (action == Action.ADDED || action == Action.MODIFIED) {
-                            Map drRuleMap = new Gson().fromJson(resource, Map.class);
-                            String vsRule = new Yaml(new SafeConstructor()).dump(drRuleMap);
-                            vsAppCache.put(appName, vsRule);
-                            if (drAppCache.containsKey(appName)) {
-                                notifyListener(vsRule, appName, drAppCache.get(appName));
+                    .genericKubernetesResources(
+                            MeshConstant.getVsDefinition())
+                    .inNamespace(namespace)
+                    .withName(appName)
+                    .watch(new Watcher<GenericKubernetesResource>() {
+                        @Override
+                        public void eventReceived(Action action, GenericKubernetesResource resource) {
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action + " Resource:" + resource);
                             }
-                        } else {
-                            appRuleListenerMap.get(appName).receiveConfigInfo("");
+
+                            if (action == Action.ADDED || action == Action.MODIFIED) {
+                                String vsRule = new Yaml(new SafeConstructor()).dump(resource);
+                                vsAppCache.put(appName, vsRule);
+                                if (drAppCache.containsKey(appName)) {
+                                    notifyListener(vsRule, appName, drAppCache.get(appName));
+                                }
+                            } else {
+                                appRuleListenerMap.get(appName).receiveConfigInfo("");
+                            }
                         }
-                    }
 
                     @Override
                     public void onClose(WatcherException cause) {
@@ -107,15 +108,17 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                 });
             vsAppWatch.put(appName, watch);
             try {
-                Map<String, Object> vsRule = kubernetesClient
-                    .customResource(
-                        MeshConstant.getVsDefinition())
-                    .get(namespace, appName);
+                GenericKubernetesResource vsRule = kubernetesClient
+                        .genericKubernetesResources(
+                                MeshConstant.getVsDefinition())
+                        .inNamespace(namespace)
+                        .withName(appName)
+                        .get();
                 vsAppCache.put(appName, new Yaml(new SafeConstructor()).dump(vsRule));
             } catch (Throwable ignore) {
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error occurred when listen kubernetes crd.", e);
         }
     }
@@ -134,42 +137,47 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
         try {
             Watch watch = kubernetesClient
-                .customResource(
-                    MeshConstant.getDrDefinition())
-                .watch(namespace, appName, null, new ListOptionsBuilder().build(), new Watcher<String>() {
-                    @Override
-                    public void eventReceived(Action action, String resource) {
-                        logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action + " Resource:" + resource);
-
-                        if (action == Action.ADDED || action == Action.MODIFIED) {
-                            Map drRuleMap = new Gson().fromJson(resource, Map.class);
-                            String drRule = new Yaml(new SafeConstructor()).dump(drRuleMap);
-
-                            drAppCache.put(appName, drRule);
-                            if (vsAppCache.containsKey(appName)) {
-                                notifyListener(vsAppCache.get(appName), appName, drRule);
+                    .genericKubernetesResources(
+                            MeshConstant.getDrDefinition())
+                    .inNamespace(namespace)
+                    .withName(appName)
+                    .watch(new Watcher<GenericKubernetesResource>() {
+                        @Override
+                        public void eventReceived(Action action, GenericKubernetesResource resource) {
+                            if (logger.isInfoEnabled()) {
+                                logger.info("Received VS Rule notification. AppName: " + appName + " Action:" + action + " Resource:" + resource);
                             }
-                        } else {
-                            appRuleListenerMap.get(appName).receiveConfigInfo("");
-                        }
-                    }
 
-                    @Override
-                    public void onClose(WatcherException cause) {
-                        // ignore
-                    }
-                });
+                            if (action == Action.ADDED || action == Action.MODIFIED) {
+                                String drRule = new Yaml(new SafeConstructor()).dump(resource);
+
+                                drAppCache.put(appName, drRule);
+                                if (vsAppCache.containsKey(appName)) {
+                                    notifyListener(vsAppCache.get(appName), appName, drRule);
+                                }
+                            } else {
+                                appRuleListenerMap.get(appName).receiveConfigInfo("");
+                            }
+                        }
+
+                        @Override
+                        public void onClose(WatcherException cause) {
+                            // ignore
+                        }
+                    });
             drAppWatch.put(appName, watch);
             try {
-                Map<String, Object> drRule = kubernetesClient
-                    .customResource(
-                        MeshConstant.getDrDefinition())
-                    .get(namespace, appName);
+                GenericKubernetesResource drRule = kubernetesClient
+                        .genericKubernetesResources(
+                                MeshConstant.getDrDefinition())
+                        .inNamespace(namespace)
+                        .withName(appName)
+                        .get();
                 drAppCache.put(appName, new Yaml(new SafeConstructor()).dump(drRule));
             } catch (Throwable ignore) {
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error occurred when listen kubernetes crd.", e);
         }
     }

@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
@@ -151,8 +152,33 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doConnect() throws Throwable {
+        try {
+            String ipv6Address = NetUtils.getLocalHostV6();
+            InetSocketAddress connectAddress;
+            //first try ipv6 address
+            if (ipv6Address != null && getUrl().getParameter(CommonConstants.IPV6_KEY) != null) {
+                connectAddress = new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
+                try {
+                    doConnect(connectAddress);
+                    return;
+                } catch (Throwable throwable) {
+                    //ignore
+                }
+            }
+
+            connectAddress = getConnectAddress();
+            doConnect(connectAddress);
+        } finally {
+            // just add new valid channel to NettyChannel's cache
+            if (!isConnected()) {
+                //future.cancel(true);
+            }
+        }
+    }
+
+    private void doConnect(InetSocketAddress serverAddress) throws RemotingException {
         long start = System.currentTimeMillis();
-        ChannelFuture future = bootstrap.connect(getConnectAddress());
+        ChannelFuture future = bootstrap.connect(serverAddress);
         try {
             boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
 
@@ -194,7 +220,7 @@ public class NettyClient extends AbstractClient {
                 // 6-1 Failed to connect to provider server by other reason.
 
                 RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + cause.getMessage(), cause);
+                        + serverAddress + ", error message is:" + cause.getMessage(), cause);
 
                 logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "",
                     "Failed to connect to provider server by other reason.", cause);
@@ -206,7 +232,7 @@ public class NettyClient extends AbstractClient {
                 // 6-2 Client-side timeout
 
                 RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + " client-side timeout "
+                        + serverAddress + " client-side timeout "
                         + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
 

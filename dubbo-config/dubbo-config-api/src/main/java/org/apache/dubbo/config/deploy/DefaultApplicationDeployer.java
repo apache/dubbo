@@ -766,15 +766,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
+            unregisterServiceInstance();
             destroyRegistries();
-            destroyServiceDiscoveries();
             destroyMetadataReports();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }
-            unregisterServiceInstance();
         }
     }
 

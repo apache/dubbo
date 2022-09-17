@@ -28,6 +28,7 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -559,6 +560,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // export service
         String host = findConfiguredHosts(protocolConfig, provider, params);
+        if (NetUtils.isIPV6URLStdFormat(host)) {
+            if (!host.contains("[")) {
+                host = "[" + host + "]";
+            }
+        } else if (NetUtils.getLocalHostV6() != null) {
+            String ipv6Host = NetUtils.getLocalHostV6();
+            params.put(CommonConstants.IPV6_KEY, ipv6Host);
+        }
+
         Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
 

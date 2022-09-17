@@ -15,27 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.reactive;
+package org.apache.dubbo.reactive;
 
-import org.apache.dubbo.rpc.protocol.tri.reactive.handler.OneToOneMethodHandler;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 
 /**
- * Unit test for OneToOneMethodHandler
+ * Used in ManyToOne and ManyToMany in server. <br>
+ * It is a Publisher for user subscriber to subscribe. <br>
+ * It is a StreamObserver for requestStream. <br>
+ * It is a Subscription for user subscriber to request and pass request to responseStream.
  */
-public final class OneToOneMethodHandlerTest {
+public class ServerTripleReactorPublisher<T> extends AbstractTripleReactorPublisher<T> {
 
-    @Test
-    public void testInvoke() throws ExecutionException, InterruptedException {
-        String request = "request";
-        OneToOneMethodHandler<String, String> handler = new OneToOneMethodHandler<>(requestMono ->
-            requestMono.map(r -> r + "Test"));
-        CompletableFuture<?> future = handler.invoke(new Object[]{request});
-        assertEquals("requestTest", future.get());
+    public ServerTripleReactorPublisher(CallStreamObserver<?> callStreamObserver) {
+        super.onSubscribe(callStreamObserver);
     }
 }
