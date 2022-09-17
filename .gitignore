@@ -48,3 +48,6 @@ dubbo-demo/dubbo-demo-triple/build/*
 
 # global registry center
 .tmp
+
+# Error code inspection result.
+/dubbo-error-code-inspector/error-inspection-result.txt
