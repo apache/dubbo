@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.errorcode.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ public final class FileUtils {
         try (Stream<Path> filesStream = Files.walk(Paths.get(rootPath))) {
             targetFolders = filesStream.filter(x -> !x.toFile().isFile())
                     .filter(x -> x.toString().contains("classes") && !x.toString().contains("test-classes"))
-                    .filter(x -> x.toString().contains("\\org\\apache\\dubbo"))
+                    .filter(x -> x.toString().contains("\\org\\apache\\dubbo".replace('\\', File.separatorChar)))
                     .collect(Collectors.toList());
 
             return targetFolders;
