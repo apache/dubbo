@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -48,8 +47,6 @@ public class Main {
     private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(16, 32, 2, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
 
     private static final ErrorCodeExtractor ERROR_CODE_EXTRACTOR = new JavassistConstantPoolErrorCodeExtractor();
-
-    private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
 
     public static void main(String[] args) {
 
@@ -92,7 +89,6 @@ public class Main {
 
         EXECUTOR.shutdown();
         LinkTestingForkJoinTask.closeHttpClient();
-        FORK_JOIN_POOL.shutdown();
     }
 
     private static void handleSinglePackageFolder(Map<Path, List<String>> fileBasedCodes, List<String> codes, CountDownLatch countDownLatch, Path folder) {
