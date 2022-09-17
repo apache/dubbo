@@ -290,13 +290,27 @@ jobs:
     env:
       JAVA_VER: 8
     steps:
+      - uses: actions/checkout@v2
+      - name: "Set up JDK 8"
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+
+      - uses: actions/cache@v2
+        name: "Cache local Maven repository"
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: "Inspect links of error codes"
         run: |
-          cd ${{ github.workspace }}/dubbo/dubbo-error-code-inspector
+          cd dubbo-error-code-inspector
           ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
 
       - name: "Upload error code inspection result"
         uses: actions/upload-artifact@v2
         with:
           name: "error-inspection-result.txt"
-          path: ${{ github.workspace }}/dubbo/dubbo-error-code-inspector/error-inspection-result.txt
+          path: dubbo-error-code-inspector/error-inspection-result.txt
