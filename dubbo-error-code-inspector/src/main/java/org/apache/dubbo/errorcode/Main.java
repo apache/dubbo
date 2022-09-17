@@ -50,6 +50,8 @@ public class Main {
 
     public static void main(String[] args) {
 
+        System.out.println("Directory to inspect: " + args[0]);
+
         long millis1 = System.currentTimeMillis();
 
         List<Path> targetFolders = FileUtils.getAllClassFilePaths(args[0]);
