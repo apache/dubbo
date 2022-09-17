@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.errorcode.linktest;
 
+import org.apache.dubbo.errorcode.util.ErrorUrlUtils;
+
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -26,7 +28,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
+import java.util.stream.Collectors;
 
 /**
  * Link testing (fork-join) task.
@@ -42,6 +47,8 @@ public class LinkTestingForkJoinTask extends RecursiveTask<Map<String, Boolean>>
     private final int end;
 
     private final List<String> url;
+
+    private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
 
     public LinkTestingForkJoinTask(int start, int end, List<String> url) {
         this.start = start;
@@ -65,7 +72,7 @@ public class LinkTestingForkJoinTask extends RecursiveTask<Map<String, Boolean>>
             Map<String, Boolean> leftR = left.join();
             Map<String, Boolean> rightR = right.join();
 
-            Map<String, Boolean> result = new HashMap<String, Boolean>(end - start);
+            Map<String, Boolean> result = new HashMap<>(end - start);
 
             result.putAll(leftR);
             result.putAll(rightR);
@@ -94,5 +101,28 @@ public class LinkTestingForkJoinTask extends RecursiveTask<Map<String, Boolean>>
 
             return result;
         }
+    }
+
+    public static void closeHttpClient() {
+        try {
+            HTTP_CLIENT.close();
+            FORK_JOIN_POOL.shutdown();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<String> findDocumentMissingErrorCodes(List<String> codes) {
+
+        List<String> urls = codes.stream().distinct().sorted().map(ErrorUrlUtils::getErrorUrl).collect(Collectors.toList());
+        LinkTestingForkJoinTask firstTask = new LinkTestingForkJoinTask(0, urls.size(), urls);
+
+        Set<Map.Entry<String, Boolean>> linkResults = FORK_JOIN_POOL.invoke(firstTask).entrySet();
+
+        return linkResults.stream()
+            .filter(e -> !e.getValue())
+            .map(Map.Entry::getKey)
+            .map(ErrorUrlUtils::getErrorCodeThroughErrorUrl)
+            .collect(Collectors.toList());
     }
 }

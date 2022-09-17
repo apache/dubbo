@@ -50,4 +50,9 @@ public final class ErrorUrlUtils {
 
         return String.format(INSTRUCTIONS_URL, errorCodeSegments[0], errorCodeSegments[1]);
     }
+
+    public static String getErrorCodeThroughErrorUrl(String link) {
+        return link.replace("https://dubbo.apache.org/faq/", "")
+            .replace("/", "-");
+    }
 }

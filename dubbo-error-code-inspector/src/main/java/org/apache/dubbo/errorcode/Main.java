@@ -20,7 +20,6 @@ package org.apache.dubbo.errorcode;
 import org.apache.dubbo.errorcode.extractor.ErrorCodeExtractor;
 import org.apache.dubbo.errorcode.extractor.JavassistConstantPoolErrorCodeExtractor;
 import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
-import org.apache.dubbo.errorcode.util.ErrorUrlUtils;
 import org.apache.dubbo.errorcode.util.FileUtils;
 
 import java.io.IOException;
@@ -48,44 +47,20 @@ public class Main {
 
     private static final ErrorCodeExtractor ERROR_CODE_EXTRACTOR = new JavassistConstantPoolErrorCodeExtractor();
 
-    private static final ForkJoinPool FORK_JOIN_POOL = ForkJoinPool.commonPool();
+    private static final ForkJoinPool FORK_JOIN_POOL = new ForkJoinPool();
 
     public static void main(String[] args) {
 
         long millis1 = System.currentTimeMillis();
 
         List<Path> targetFolders = FileUtils.getAllClassFilePaths(args[0]);
-
         Map<Path, List<String>> fileBasedCodes = new HashMap<>(1024);
-
         List<String> codes = Collections.synchronizedList(new ArrayList<>(30));
 
         CountDownLatch countDownLatch = new CountDownLatch(targetFolders.size());
 
         for (Path folder : targetFolders) {
-            EXECUTOR.submit(() -> {
-                try (Stream<Path> classFilesStream = Files.walk(folder)) {
-                    List<Path> classFiles = classFilesStream.filter(x -> x.toFile().isFile()).collect(Collectors.toList());
-
-                    classFiles.forEach(x -> {
-
-                        List<String> fileBasedCodesErrorCodeList = new ArrayList<String>(4);
-                        List<String> extractedCodeList = ERROR_CODE_EXTRACTOR.getErrorCodes(x.toString());
-
-                        if (!extractedCodeList.isEmpty()) {
-                            fileBasedCodesErrorCodeList.addAll(extractedCodeList.stream().distinct().collect(Collectors.toList()));
-                            fileBasedCodes.put(x, fileBasedCodesErrorCodeList);
-
-                            codes.addAll(extractedCodeList);
-                        }
-                    });
-
-                } catch (IOException ignored) {
-                    // ignored.
-                } finally {
-                    countDownLatch.countDown();
-                }
-            });
+            EXECUTOR.submit(() -> handleSinglePackageFolder(fileBasedCodes, codes, countDownLatch, folder));
         }
 
         try {
@@ -98,17 +73,37 @@ public class Main {
         long millis2 = System.currentTimeMillis();
         System.out.println(millis2 - millis1);
 
-        System.out.println("FINAL RESULT: " + codes.stream().distinct().sorted().collect(Collectors.toList()));
-        System.out.println(testLinks(codes).entrySet().stream().filter(e -> !e.getValue()).collect(Collectors.toList()));
+        System.out.println("All error codes: " + codes.stream().distinct().sorted().collect(Collectors.toList()));
+
+        List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
+        System.out.println("Error codes which document links are not reachable: " + linksNotReachable);
 
         EXECUTOR.shutdown();
+        LinkTestingForkJoinTask.closeHttpClient();
+        FORK_JOIN_POOL.shutdown();
     }
 
-    private static Map<String, Boolean> testLinks(List<String> codes) {
+    private static void handleSinglePackageFolder(Map<Path, List<String>> fileBasedCodes, List<String> codes, CountDownLatch countDownLatch, Path folder) {
+        try (Stream<Path> classFilesStream = Files.walk(folder)) {
+            List<Path> classFiles = classFilesStream.filter(x -> x.toFile().isFile()).collect(Collectors.toList());
 
-        List<String> urls = codes.stream().distinct().sorted().map(ErrorUrlUtils::getErrorUrl).collect(Collectors.toList());
-        LinkTestingForkJoinTask firstTask = new LinkTestingForkJoinTask(0, urls.size(), urls);
+            classFiles.forEach(x -> {
 
-        return FORK_JOIN_POOL.invoke(firstTask);
+                List<String> fileBasedCodesErrorCodeList = new ArrayList<>(4);
+                List<String> extractedCodeList = ERROR_CODE_EXTRACTOR.getErrorCodes(x.toString());
+
+                if (!extractedCodeList.isEmpty()) {
+                    fileBasedCodesErrorCodeList.addAll(extractedCodeList.stream().distinct().collect(Collectors.toList()));
+                    fileBasedCodes.put(x, fileBasedCodesErrorCodeList);
+
+                    codes.addAll(extractedCodeList);
+                }
+            });
+
+        } catch (IOException ignored) {
+            // ignored.
+        } finally {
+            countDownLatch.countDown();
+        }
     }
 }
