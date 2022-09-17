@@ -282,3 +282,21 @@ jobs:
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
+
+  error-code-inspecting:
+    needs: [build-source]
+    if: always()
+    runs-on: ubuntu-18.04
+    env:
+      JAVA_VER: 8
+    steps:
+      - name: "Inspect links of error codes"
+        run: |
+          cd ./dubbo/dubbo-error-code-inspector
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+
+      - name: "Upload error code inspection result"
+        uses: actions/upload-artifact@v2
+        with:
+          name: "error-inspection-result.txt"
+          path: ${{ github.workspace }}/dubbo/dubbo-error-code-inspector/error-inspection-result.txt
