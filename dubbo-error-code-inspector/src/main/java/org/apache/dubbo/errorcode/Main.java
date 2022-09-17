@@ -23,8 +23,10 @@ import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
 import org.apache.dubbo.errorcode.util.FileUtils;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +79,16 @@ public class Main {
 
         List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
         System.out.println("Error codes which document links are not reachable: " + linksNotReachable);
+
+        try (PrintStream printStream = new PrintStream(Files.newOutputStream(Paths.get(System.getProperty("user.dir"), "error-inspection-result.txt")))) {
+
+            printStream.println("All error codes: " + codes.stream().distinct().sorted().collect(Collectors.toList()));
+            printStream.println();
+            printStream.println("Error codes which document links are not reachable: " + linksNotReachable);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         EXECUTOR.shutdown();
         LinkTestingForkJoinTask.closeHttpClient();
