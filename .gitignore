@@ -51,3 +51,6 @@ dubbo-demo/dubbo-demo-triple/build/*
 
 # Error code inspection result.
 error-inspection-result.txt
+
+# Workaround of regarding *.jcls file as source.
+dubbo-error-code-inspector/src/test/resources/FileCacheStore.jcls
