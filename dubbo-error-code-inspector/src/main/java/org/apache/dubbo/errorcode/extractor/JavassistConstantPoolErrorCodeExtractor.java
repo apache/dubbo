@@ -46,8 +46,16 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
 
     @Override
     public List<String> getErrorCodes(String classFilePath) {
-        List<String> codes;
 
+        ClassFile clsF = openClassFile(classFilePath);
+        ConstPool cp = clsF.getConstPool();
+
+        List<String> cpItems = getConstPoolStringItems(cp);
+
+        return cpItems.stream().filter(x -> ERROR_CODE_PATTERN.matcher(x).matches()).collect(Collectors.toList());
+    }
+
+    private ClassFile openClassFile(String classFilePath) {
         try (FileChannel fileChannel = FileChannel.open(Paths.get(classFilePath))) {
 
             ByteBuffer byteBuffer = ByteBuffer.allocate((int) fileChannel.size());
@@ -55,26 +63,30 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
 
             byte[] clsB = byteBuffer.array();
 
-            ClassFile clsF = new ClassFile(new DataInputStream(new ByteArrayInputStream(clsB)));
-            ConstPool cp = clsF.getConstPool();
-
-            List<String> cpItems = getConstPoolStringItems(cp);
-
-            codes = cpItems.stream().filter(x -> ERROR_CODE_PATTERN.matcher(x).matches()).collect(Collectors.toList());
+            return new ClassFile(new DataInputStream(new ByteArrayInputStream(clsB)));
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
-        return codes;
+    private List<Object> getConstPoolItems(ConstPool cp) {
+        List<Object> objects = new ArrayList<>(cp.getSize());
+
+        for (int i = 0; i < cp.getSize(); i++) {
+            objects.add(getItem(cp, i));
+        }
+
+        return objects;
     }
 
     private List<String> getConstPoolStringItems(ConstPool cp) {
-        List<String> objects = new ArrayList<>(cp.getSize());
+        List<Object> objects = getConstPoolItems(cp);
+        List<String> stringItems = new ArrayList<>(cp.getSize());
 
-        for (int i = 0; i < cp.getSize(); i++) {
-            Object item = getItem(cp, i);
-            Field stringField = null;
+        for (Object item : objects) {
+
+            Field stringField;
 
             if (item != null) {
                 stringField = getStringFieldInConstPoolItems(item);
@@ -83,7 +95,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
                     continue;
                 }
 
-                Object fieldData = null;
+                Object fieldData;
 
                 try {
                     fieldData = stringField.get(item);
@@ -92,12 +104,12 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
                 }
 
                 if (fieldData.getClass() == String.class) {
-                    objects.add((String) fieldData);
+                    stringItems.add((String) fieldData);
                 }
             }
         }
 
-        return objects;
+        return stringItems;
     }
 
     private static Field getStringFieldInConstPoolItems(Object item) {
@@ -128,7 +140,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
 
         if (getItemMethodCache == null) {
             Class<ConstPool> cpc = ConstPool.class;
-            Method getItemMethod = null;
+            Method getItemMethod;
             try {
                 getItemMethod = cpc.getDeclaredMethod("getItem", int.class);
                 getItemMethod.setAccessible(true);
