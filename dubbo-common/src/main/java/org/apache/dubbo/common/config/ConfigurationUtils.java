@@ -239,7 +239,11 @@ public final class ConfigurationUtils {
         }
 
         if (CollectionUtils.isNotEmptyMap(configMap)) {
-            for(Map.Entry<String, V> entry : configMap.entrySet()) {
+            Map<String,V> copy ;
+            synchronized (configMap){
+                copy = new HashMap<>(configMap);
+            }
+            for(Map.Entry<String, V> entry : copy.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
@@ -276,7 +280,11 @@ public final class ConfigurationUtils {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
-        for (Map.Entry<String, V> entry : configMap.entrySet()) {
+        Map<String,V> copy ;
+        synchronized (configMap){
+            copy = new HashMap<>(configMap);
+        }
+        for (Map.Entry<String, V> entry : copy.entrySet()) {
             String key = entry.getKey();
             if (StringUtils.startsWithIgnoreCase(key, prefix)
                 && key.length() > prefix.length()
@@ -311,7 +319,11 @@ public final class ConfigurationUtils {
         }
         Set<String> ids = new LinkedHashSet<>();
         for (Map<String, V> configMap : configMaps) {
-            for (Map.Entry<String, V> entry : configMap.entrySet()) {
+            Map<String,V> copy ;
+            synchronized (configMap){
+                copy = new HashMap<>(configMap);
+            }
+            for (Map.Entry<String, V> entry : copy.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
