@@ -109,11 +109,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         done = true;
         final TriRpcStatus detailStatus;
         final TriRpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
-        if (statusFromTrailers != null) {
-            detailStatus = statusFromTrailers;
-        } else {
-            detailStatus = status;
-        }
+//        if (statusFromTrailers != null) {
+//            detailStatus = statusFromTrailers;
+//        } else {
+//            detailStatus = status;
+//        }
+        detailStatus = status;
         try {
             listener.onClose(detailStatus, StreamUtils.toAttachments(attachments));
         } catch (Throwable t) {

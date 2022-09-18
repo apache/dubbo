@@ -43,6 +43,8 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
             result.setValue(appResponse);
+        } else if (status.cause != null) {
+            result.setException(status.cause);
         } else {
             result.setException(status.asException());
         }

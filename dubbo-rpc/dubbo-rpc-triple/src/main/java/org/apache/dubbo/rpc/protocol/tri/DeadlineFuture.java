@@ -127,12 +127,13 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         if (isDone() || isCancelled() || isCompletedExceptionally()) {
             return;
         }
-        if (status.isOk()) {
-            this.complete(appResponse);
-        } else {
-            this.completeExceptionally(
-                status.appendDescription("RemoteAddress:" + address).asException());
-        }
+        this.complete(appResponse);
+//        if (status.isOk()) {
+//            this.complete(appResponse);
+//        } else {
+//            this.completeExceptionally(
+//                status.appendDescription("RemoteAddress:" + address).asException());
+//        }
 
         // the result is returning, but the caller thread may still waiting
         // to avoid endless waiting for whatever reason, notify caller thread to return.

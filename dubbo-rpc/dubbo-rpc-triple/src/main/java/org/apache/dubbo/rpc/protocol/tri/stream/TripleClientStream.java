@@ -17,8 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.TripleExceptionWrapperUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
@@ -64,9 +67,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
-        Executor executor,
-        WriteQueue writeQueue,
-        ClientStream.Listener listener) {
+                       Executor executor,
+                       WriteQueue writeQueue,
+                       ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = null;
         this.listener = listener;
@@ -74,9 +77,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
-        Executor executor,
-        Channel parent,
-        ClientStream.Listener listener) {
+                              Executor executor,
+                              Channel parent,
+                              ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
@@ -283,7 +286,23 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getHeader());
             TriRpcStatus status = intStatus == null ? null : TriRpcStatus.fromCode(intStatus);
             if (status != null) {
-                final CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader());
+                CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader());
+                CharSequence messageException = trailers.get(TripleHeaderEnum.EXCEPTION_KEY.getHeader());
+                if (messageException != null) {
+                    String decodeMessageException = TriRpcStatus.decodeMessage(messageException.toString());
+                    byte[] decodeMessageExceptionByte = StreamUtils.decodeASCIIByte(decodeMessageException);
+                    TripleExceptionWrapperUtils tripleExceptionWrapperUtils = TripleExceptionWrapperUtils.
+                        init(null, URL.valueOf("TEST"));
+                    Object messageExceptionObj = null;
+                    try {
+                        messageExceptionObj = tripleExceptionWrapperUtils.unPackRequest(decodeMessageExceptionByte);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    status =  intStatus == null ? null : new TriRpcStatus(TriRpcStatus.Code.fromCode(intStatus),
+                        (Throwable) messageExceptionObj,
+                        null);
+                }
                 if (message != null) {
                     final String description = TriRpcStatus.decodeMessage(message.toString());
                     status = status.withDescription(description);

@@ -21,13 +21,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.HeaderFilter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.PathResolver;
-import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleExceptionWrapperUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.call.ReflectionAbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.call.StubAbstractServerCall;
@@ -58,6 +56,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -190,6 +189,19 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 StreamUtils.encodeBase64ASCII(status.toByteArray()));
             return headers;
         }
+
+        URL url = URL.valueOf("TEST");
+        TripleExceptionWrapperUtils tripleExceptionWrapperUtils = TripleExceptionWrapperUtils.init(throwable, url);
+        try {
+            byte[] exceptionBytes = tripleExceptionWrapperUtils.packRequest(throwable);
+            String exceptionMessage = StreamUtils.encodeBase64ASCII(exceptionBytes);
+            exceptionMessage = TriRpcStatus.encodeMessage(exceptionMessage);
+            headers.set(TripleHeaderEnum.EXCEPTION_KEY.getHeader(),
+                exceptionMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         DebugInfo debugInfo = DebugInfo.newBuilder()
             .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 6))
             // can not use now
