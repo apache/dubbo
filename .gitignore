@@ -50,4 +50,4 @@ dubbo-demo/dubbo-demo-triple/build/*
 .tmp
 
 # Error code inspection result.
-/dubbo-error-code-inspector/error-inspection-result.txt
+error-inspection-result.txt
