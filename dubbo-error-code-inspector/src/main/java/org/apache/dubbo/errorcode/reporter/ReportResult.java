@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Info here.
+ * Inspection results to Reporters.
  */
 public class ReportResult {
     private List<String> allErrorCodes;

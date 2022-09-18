@@ -26,9 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Info here.
- *
- * @author Andy Cheung
+ * File outputting reporter.
  */
 public class FileOutputReporter implements Reporter {
     @Override

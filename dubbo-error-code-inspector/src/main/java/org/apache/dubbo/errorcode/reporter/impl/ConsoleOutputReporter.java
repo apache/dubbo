@@ -21,7 +21,7 @@ import org.apache.dubbo.errorcode.reporter.ReportResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
 
 /**
- * Info here.
+ * Console output reporter.
  */
 public class ConsoleOutputReporter implements Reporter {
     @Override
