@@ -42,4 +42,18 @@ class JavassistConstantPoolCodeExtractorTest {
 
         Assertions.assertTrue(ERROR_CODE_EXTRACTOR.getErrorCodes(resourceFilePath).contains("0-4"));
     }
+
+    @Test
+    void testGettingIllegalInvocations() {
+        String resourceFilePath = getClass().getClassLoader().getResource("FileCacheStore.jcls").toString();
+
+        if (resourceFilePath.startsWith("file:/")) {
+            resourceFilePath = resourceFilePath.replace("file:/", "");
+        }
+
+        // Illegal invocations:
+        // 'logger.warn("Load cache failed ", e);'
+        // 'logger.warn("Update cache error.");'
+        Assertions.assertEquals(2, ERROR_CODE_EXTRACTOR.getIllegalLoggerMethodInvocations(resourceFilePath).size());
+    }
 }

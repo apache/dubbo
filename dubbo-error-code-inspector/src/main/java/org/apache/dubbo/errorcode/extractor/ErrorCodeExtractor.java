@@ -28,4 +28,6 @@ public interface ErrorCodeExtractor {
     Pattern ERROR_CODE_PATTERN = Pattern.compile("\\d+-\\d+");
 
     List<String> getErrorCodes(String classFilePath);
+
+    List<MethodDefinition> getIllegalLoggerMethodInvocations(String classFilePath);
 }

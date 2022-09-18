@@ -37,7 +37,7 @@ public final class ErrorUrlUtils {
             return "";
         }
 
-        String[] segments = trimmedString.split("[-]");
+        String[] segments = trimmedString.split("-");
 
         int[] errorCodeSegments = new int[2];
 

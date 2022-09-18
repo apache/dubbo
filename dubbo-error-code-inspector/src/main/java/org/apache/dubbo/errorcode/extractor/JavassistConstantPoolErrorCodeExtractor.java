@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +54,88 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         List<String> cpItems = getConstPoolStringItems(cp);
 
         return cpItems.stream().filter(x -> ERROR_CODE_PATTERN.matcher(x).matches()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MethodDefinition> getIllegalLoggerMethodInvocations(String classFilePath) {
+
+        ClassFile cf = openClassFile(classFilePath);
+        List<Object> cpi = getConstPoolItems(cf.getConstPool());
+
+        List<Integer> interfaceMethodRefIndices = cpi.stream().filter(x -> {
+            try {
+                if (x == null) return false;
+                return x.getClass() == Class.forName("javassist.bytecode.InterfaceMethodrefInfo");
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+        }).map(this::getIndexFieldInConstPoolItems).collect(Collectors.toList());
+
+        List<MethodDefinition> methodDefinitions = new ArrayList<>();
+
+        for (int index : interfaceMethodRefIndices) {
+            ConstPool cp = cf.getConstPool();
+
+            MethodDefinition methodDefinition = new MethodDefinition();
+            methodDefinition.setClassName(
+                cp.getInterfaceMethodrefClassName(index)
+            );
+
+            methodDefinition.setMethodName(
+                cp.getUtf8Info(
+                    cp.getNameAndTypeName(
+                        cp.getInterfaceMethodrefNameAndType(index)
+                    )
+                )
+            );
+
+            methodDefinition.setArguments(
+                cp.getUtf8Info(
+                    cp.getNameAndTypeDescriptor(
+                        cp.getInterfaceMethodrefNameAndType(index)
+                    )
+                )
+            );
+
+            methodDefinitions.add(methodDefinition);
+        }
+
+        Predicate<MethodDefinition> legacyLoggerClass = x -> x.getClassName().equals("org.apache.dubbo.common.logger.Logger");
+        Predicate<MethodDefinition> errorTypeAwareLoggerClass = x -> x.getClassName().equals("org.apache.dubbo.common.logger.ErrorTypeAwareLogger");
+        Predicate<MethodDefinition> loggerClass = legacyLoggerClass.or(errorTypeAwareLoggerClass);
+
+        return methodDefinitions.stream()
+            .filter(loggerClass)
+            .filter(x -> x.getMethodName().equals("warn") || x.getMethodName().equals("error"))
+            .filter(x -> x.getArguments().split(";").length < 4)
+            .collect(Collectors.toList());
+    }
+
+    private int getIndexFieldInConstPoolItems(Object item) {
+        // Searches in super classes recursively.
+        Field indexField = getDeclaredFieldRecursively(item.getClass(), "index");
+
+        try {
+            return (int) indexField.get(item);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Field getDeclaredFieldRecursively(Class cls, String name) {
+        try {
+            // Searches in super classes recursively.
+            Field indexField = cls.getDeclaredField(name);
+            indexField.setAccessible(true);
+
+            return indexField;
+        } catch (NoSuchFieldException e) {
+            if (cls == Object.class) {
+                return null;
+            }
+
+            return getDeclaredFieldRecursively(cls.getSuperclass(), name);
+        }
     }
 
     private ClassFile openClassFile(String classFilePath) {
