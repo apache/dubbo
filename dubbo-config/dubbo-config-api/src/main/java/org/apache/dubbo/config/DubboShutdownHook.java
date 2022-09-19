@@ -25,6 +25,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_SHUTDOWN_HOOK;
+
 /**
  * The shutdown hook thread to do the cleanup stuff.
  * This is a singleton in order to ensure there is only one shutdown hook registered.
@@ -86,9 +88,9 @@ public class DubboShutdownHook extends Thread {
             try {
                 Runtime.getRuntime().addShutdownHook(this);
             } catch (IllegalStateException e) {
-                logger.warn("5-2", "", "", "register shutdown hook failed: " + e.getMessage(), e);
+                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
             } catch (Exception e) {
-                logger.warn("5-2", "", "", "register shutdown hook failed: " + e.getMessage(), e);
+                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "register shutdown hook failed: " + e.getMessage(), e);
             }
         }
     }
@@ -105,9 +107,9 @@ public class DubboShutdownHook extends Thread {
             try {
                 Runtime.getRuntime().removeShutdownHook(this);
             } catch (IllegalStateException e) {
-                logger.warn("5-2", "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
+                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
             } catch (Exception e) {
-                logger.warn("5-2", "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
+                logger.warn(CONFIG_FAILED_SHUTDOWN_HOOK, "", "", "unregister shutdown hook failed: " + e.getMessage(), e);
             }
         }
     }

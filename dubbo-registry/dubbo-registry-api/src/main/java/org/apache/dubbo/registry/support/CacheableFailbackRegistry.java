@@ -56,6 +56,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_MISSPELLING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CLEAR_CACHED_URLS;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
@@ -108,7 +114,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             } catch (NumberFormatException e) {
                 // 0-2 Property type mismatch.
 
-                logger.warn("0-2", "typo in property value", "This property requires an integer value.",
+                logger.warn(COMMON_PROPERTY_MISSPELLING, "typo in property value", "This property requires an integer value.",
                     "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }
@@ -147,7 +153,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             // When? FrameworkExecutorRepository gets destroyed.
 
             // 1-3: URL evicting failed.
-            logger.warn("1-3", "thread pool getting destroyed", "",
+            logger.warn(REGISTRY_FAILED_URL_EVICTING, "thread pool getting destroyed", "",
                 "Failed to evict url for " + url.getServiceKey(), e);
         }
     }
@@ -172,7 +178,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
                     // 1-1: Address invalid.
-                    logger.warn("1-1", "mismatch of service group and version settings", "",
+                    logger.warn(REGISTRY_ADDRESS_INVALID, "mismatch of service group and version settings", "",
                         "Invalid address, failed to parse into URL " + rawProvider);
 
                     continue;
@@ -187,7 +193,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 if (cachedURL == null) {
                     cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                     if (cachedURL == null) {
-                        logger.warn("1-1", "mismatch of service group and version settings", "",
+                        logger.warn(REGISTRY_ADDRESS_INVALID, "mismatch of service group and version settings", "",
                             "Invalid address, failed to parse into URL " + rawProvider);
 
                         continue;
@@ -225,7 +231,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             String category = i < 0 ? path : path.substring(i + 1);
             if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
                 if (PROVIDERS_CATEGORY.equals(category)) {
-                    logger.warn("1-4", "", "",
+                    logger.warn(REGISTRY_EMPTY_ADDRESS, "", "",
                         "Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
                 }
                 URL empty = URLBuilder.from(consumer)
@@ -266,7 +272,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         if (parts.length <= 1) {
             // 1-5 Received URL without any parameters.
-            logger.warn("1-5", "", "",
+            logger.warn(REGISTRY_NO_PARAMETERS_URL, "", "",
                 "Received url without any parameters " + rawProvider);
 
             return DubboServiceAddressURL.valueOf(rawProvider, consumerURL);
@@ -412,7 +418,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             } catch (Throwable t) {
                 // 1-6 Error when clearing cached URLs.
 
-                logger.error("1-6", "", "",
+                logger.error(REGISTRY_FAILED_CLEAR_CACHED_URLS, "", "",
                     "Error occurred when clearing cached URLs", t);
 
             } finally {

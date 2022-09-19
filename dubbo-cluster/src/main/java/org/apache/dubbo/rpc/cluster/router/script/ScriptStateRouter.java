@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_SCRIPT_EXCEPTION;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_SCRIPT_TYPE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
@@ -92,7 +93,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             Compilable compilable = (Compilable) engine;
             function = compilable.compile(rule);
         } catch (ScriptException e) {
-            logger.error("2-15","script route rule invalid","","script route error, rule has been ignored. rule: " + rule +
+            logger.error(CLUSTER_SCRIPT_EXCEPTION,"script route rule invalid","","script route error, rule has been ignored. rule: " + rule +
                 ", url: " + RpcContext.getServiceContext().getUrl(),e);
         }
     }
@@ -136,7 +137,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
             try {
                 return function.eval(bindings);
             } catch (ScriptException e) {
-                logger.error("2-15","Scriptrouter exec script error","","Script route error, rule has been ignored. rule: " + rule + ", method:" +
+                logger.error(CLUSTER_SCRIPT_EXCEPTION,"Scriptrouter exec script error","","Script route error, rule has been ignored. rule: " + rule + ", method:" +
                     invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(),e);
                 return invokers;
             }

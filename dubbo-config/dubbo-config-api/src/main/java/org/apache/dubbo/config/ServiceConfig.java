@@ -71,6 +71,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNEXPORT_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_USE_RANDOM_PORT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
@@ -182,7 +187,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn("5-7", "", "", "Unexpected error occurred when unexport " + exporter, t);
+                    logger.warn(CONFIG_UNEXPORT_ERROR, "", "", "Unexpected error occurred when unexport " + exporter, t);
                 }
             }
             exporters.clear();
@@ -243,7 +248,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     doExport();
                 } catch (Exception e) {
-                    logger.error("5-9", "configuration server disconnected", "", "Failed to (async)export service config: " + interfaceName, e);
+                    logger.error(CONFIG_FAILED_EXPORT_SERVICE, "configuration server disconnected", "", "Failed to (async)export service config: " + interfaceName, e);
                 }
             }, getDelay(), TimeUnit.MILLISECONDS);
     }
@@ -259,10 +264,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     if (succeeded) {
                         logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
                     } else {
-                        logger.error("5-10", "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
+                        logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
                     }
                 } catch (Exception e) {
-                    logger.error("5-10", "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
+                    logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
                 }
             }
         });
@@ -448,7 +453,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
             String[] methods = methods(interfaceClass);
             if (methods.length == 0) {
-                logger.warn("5-4", "", "", "No method found in service interface: " + interfaceClass.getName());
+                logger.warn(CONFIG_NO_METHOD_FOUND, "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
@@ -841,7 +846,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
-            logger.warn("5-8", "", "", "Use random available port(" + port + ") for protocol " + protocol);
+            logger.warn(CONFIG_USE_RANDOM_PORT, "", "", "Use random available port(" + port + ") for protocol " + protocol);
         }
     }
 
