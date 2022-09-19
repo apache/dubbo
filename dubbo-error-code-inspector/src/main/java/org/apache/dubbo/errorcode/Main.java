@@ -19,6 +19,7 @@ package org.apache.dubbo.errorcode;
 
 import org.apache.dubbo.errorcode.extractor.ErrorCodeExtractor;
 import org.apache.dubbo.errorcode.extractor.JavassistConstantPoolErrorCodeExtractor;
+import org.apache.dubbo.errorcode.extractor.MethodDefinition;
 import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
 import org.apache.dubbo.errorcode.reporter.ReportResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
@@ -36,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -85,10 +87,17 @@ public class Main {
         Map<Path, List<String>> fileBasedCodes = new HashMap<>(1024);
         List<String> codes = Collections.synchronizedList(new ArrayList<>(30));
 
+        Map<String, List<MethodDefinition>> illegalLoggerMethodInvocations = new ConcurrentHashMap<>(256);
+
         CountDownLatch countDownLatch = new CountDownLatch(targetFolders.size());
 
         for (Path folder : targetFolders) {
-            EXECUTOR.submit(() -> handleSinglePackageFolder(fileBasedCodes, codes, countDownLatch, folder));
+            EXECUTOR.submit(() -> handleSinglePackageFolder(
+                fileBasedCodes,
+                codes,
+                illegalLoggerMethodInvocations,
+                countDownLatch,
+                folder));
         }
 
         try {
@@ -104,16 +113,30 @@ public class Main {
         List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
 
         ReportResult reportResult = new ReportResult();
-        reportResult.setAllErrorCodes(codes.stream().distinct().sorted().collect(Collectors.toList()));
+
+        reportResult.setAllErrorCodes(
+            codes.stream()
+                .distinct()
+                .sorted().collect(Collectors.toList()));
+
         reportResult.setLinkNotReachableErrorCodes(linksNotReachable);
+
+        reportResult.setIllegalInvocations(
+            illegalLoggerMethodInvocations.entrySet()
+                .stream()
+                .filter(e -> !e.getValue().isEmpty())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
         REPORTERS.forEach(x -> x.report(reportResult));
 
-        EXECUTOR.shutdown();
-        LinkTestingForkJoinTask.closeHttpClient();
+        cleanUp();
     }
 
-    private static void handleSinglePackageFolder(Map<Path, List<String>> fileBasedCodes, List<String> codes, CountDownLatch countDownLatch, Path folder) {
+    private static void handleSinglePackageFolder(Map<Path, List<String>> fileBasedCodes,
+                                                  List<String> codes,
+                                                  Map<String, List<MethodDefinition>> illegalLoggerMethodInvocation,
+                                                  CountDownLatch countDownLatch,
+                                                  Path folder) {
         try (Stream<Path> classFilesStream = Files.walk(folder)) {
             List<Path> classFiles = classFilesStream.filter(x -> x.toFile().isFile()).collect(Collectors.toList());
 
@@ -121,6 +144,7 @@ public class Main {
 
                 List<String> fileBasedCodesErrorCodeList = new ArrayList<>(4);
                 List<String> extractedCodeList = ERROR_CODE_EXTRACTOR.getErrorCodes(x.toString());
+                illegalLoggerMethodInvocation.put(x.toString(), ERROR_CODE_EXTRACTOR.getIllegalLoggerMethodInvocations(x.toString()));
 
                 if (!extractedCodeList.isEmpty()) {
                     fileBasedCodesErrorCodeList.addAll(extractedCodeList.stream().distinct().collect(Collectors.toList()));
@@ -135,5 +159,10 @@ public class Main {
         } finally {
             countDownLatch.countDown();
         }
+    }
+
+    private static void cleanUp() {
+        EXECUTOR.shutdown();
+        LinkTestingForkJoinTask.closeHttpClient();
     }
 }

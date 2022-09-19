@@ -59,10 +59,10 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
     @Override
     public List<MethodDefinition> getIllegalLoggerMethodInvocations(String classFilePath) {
 
-        ClassFile cf = openClassFile(classFilePath);
-        List<Object> cpi = getConstPoolItems(cf.getConstPool());
+        ClassFile classFile = openClassFile(classFilePath);
+        List<Object> constPoolItems = getConstPoolItems(classFile.getConstPool());
 
-        List<Integer> interfaceMethodRefIndices = cpi.stream().filter(x -> {
+        List<Integer> interfaceMethodRefIndices = constPoolItems.stream().filter(x -> {
             try {
                 if (x == null) return false;
                 return x.getClass() == Class.forName("javassist.bytecode.InterfaceMethodrefInfo");
@@ -74,7 +74,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         List<MethodDefinition> methodDefinitions = new ArrayList<>();
 
         for (int index : interfaceMethodRefIndices) {
-            ConstPool cp = cf.getConstPool();
+            ConstPool cp = classFile.getConstPool();
 
             MethodDefinition methodDefinition = new MethodDefinition();
             methodDefinition.setClassName(
@@ -112,7 +112,6 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
     }
 
     private int getIndexFieldInConstPoolItems(Object item) {
-        // Searches in super classes recursively.
         Field indexField = getDeclaredFieldRecursively(item.getClass(), "index");
 
         try {
@@ -122,9 +121,15 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         }
     }
 
+    /**
+     * Searches (a private) field in super classes recursively.
+     *
+     * @param cls the actual type
+     * @param name the field name
+     * @return the corresponding Field object, or null if the field does not exist.
+     */
     private static Field getDeclaredFieldRecursively(Class cls, String name) {
         try {
-            // Searches in super classes recursively.
             Field indexField = cls.getDeclaredField(name);
             indexField.setAccessible(true);
 
@@ -195,6 +200,12 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         return stringItems;
     }
 
+    /**
+     * Obtain the 'string' field in Utf8Info and StringInfo.
+     *
+     * @param item The instance of Utf8Info and StringInfo.
+     * @return 'string' field's value
+     */
     private static Field getStringFieldInConstPoolItems(Object item) {
         if (stringFieldCache.containsKey(item.getClass())) {
             return stringFieldCache.get(item.getClass());

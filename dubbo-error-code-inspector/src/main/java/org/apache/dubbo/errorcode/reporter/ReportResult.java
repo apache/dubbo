@@ -17,8 +17,10 @@
 
 package org.apache.dubbo.errorcode.reporter;
 
+import org.apache.dubbo.errorcode.extractor.MethodDefinition;
+
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 /**
  * Inspection results to Reporters.
@@ -28,7 +30,18 @@ public class ReportResult {
 
     private List<String> linkNotReachableErrorCodes;
 
+    private Map<String, List<MethodDefinition>> illegalInvocations;
+
     // Generated methods, re-generate them if necessary.
+
+    public ReportResult() {
+    }
+
+    public ReportResult(List<String> allErrorCodes, List<String> linkNotReachableErrorCodes, Map<String, List<MethodDefinition>> illegalInvocations) {
+        this.allErrorCodes = allErrorCodes;
+        this.linkNotReachableErrorCodes = linkNotReachableErrorCodes;
+        this.illegalInvocations = illegalInvocations;
+    }
 
     public List<String> getAllErrorCodes() {
         return allErrorCodes;
@@ -46,6 +59,14 @@ public class ReportResult {
         this.linkNotReachableErrorCodes = linkNotReachableErrorCodes;
     }
 
+    public Map<String, List<MethodDefinition>> getIllegalInvocations() {
+        return illegalInvocations;
+    }
+
+    public void setIllegalInvocations(Map<String, List<MethodDefinition>> illegalInvocations) {
+        this.illegalInvocations = illegalInvocations;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -53,15 +74,16 @@ public class ReportResult {
 
         ReportResult that = (ReportResult) o;
 
-        if (!Objects.equals(allErrorCodes, that.allErrorCodes))
-            return false;
-        return Objects.equals(linkNotReachableErrorCodes, that.linkNotReachableErrorCodes);
+        if (!allErrorCodes.equals(that.allErrorCodes)) return false;
+        if (!linkNotReachableErrorCodes.equals(that.linkNotReachableErrorCodes)) return false;
+        return illegalInvocations.equals(that.illegalInvocations);
     }
 
     @Override
     public int hashCode() {
-        int result = allErrorCodes != null ? allErrorCodes.hashCode() : 0;
-        result = 31 * result + (linkNotReachableErrorCodes != null ? linkNotReachableErrorCodes.hashCode() : 0);
+        int result = allErrorCodes.hashCode();
+        result = 31 * result + linkNotReachableErrorCodes.hashCode();
+        result = 31 * result + illegalInvocations.hashCode();
         return result;
     }
 }

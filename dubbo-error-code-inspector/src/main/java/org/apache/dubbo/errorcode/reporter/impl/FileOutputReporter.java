@@ -36,6 +36,8 @@ public class FileOutputReporter implements Reporter {
             printStream.println("All error codes: " + reportResult.getAllErrorCodes());
             printStream.println();
             printStream.println("Error codes which document links are not reachable: " + reportResult.getLinkNotReachableErrorCodes());
+            printStream.println();
+            printStream.println(StringifyUtil.generateIllegalInvocationString(reportResult));
 
         } catch (IOException e) {
             throw new RuntimeException(e);

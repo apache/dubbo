@@ -27,7 +27,9 @@ public class ConsoleOutputReporter implements Reporter {
     @Override
     public void report(ReportResult reportResult) {
         System.out.println("All error codes: " + reportResult.getAllErrorCodes());
-
+        System.out.println();
         System.out.println("Error codes which document links are not reachable: " + reportResult.getLinkNotReachableErrorCodes());
+        System.out.println();
+        System.out.println(StringifyUtil.generateIllegalInvocationString(reportResult));
     }
 }
