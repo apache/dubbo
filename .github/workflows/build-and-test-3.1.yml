@@ -285,15 +285,20 @@ jobs:
 
   error-code-inspecting:
     if: always()
-    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-20.04, windows-2022 ]
+        jdk: [ 8, 11, 17 ]
+    runs-on: ${{ matrix.os }}
     env:
-      JAVA_VER: 17
+      JAVA_VER: ${{ matrix.jdk }}
     steps:
       - uses: actions/checkout@v2
-      - name: "Set up JDK 8"
+      - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: ${{ matrix.jdk }}
 
       - uses: actions/cache@v2
         name: "Cache local Maven repository"
@@ -306,6 +311,20 @@ jobs:
       - name: "Compile Dubbo"
         run: |
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+
+      - name: "Test with Maven in Ubuntu Platform"
+        timeout-minutes: 70
+        if: ${{ startsWith( matrix.os, 'ubuntu') }}
+        run: |
+          cd dubbo-error-code-inspector
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -DskipTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+
+      - name: "Test with Maven in Windows Platform"
+        timeout-minutes: 90
+        if: ${{ startsWith( matrix.os, 'windows') }}
+        run: |
+          cd dubbo-error-code-inspector
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -DskipTests=false -D"checkstyle.skip=false" -D"checkstyle_unix.skip=true" -D"rat.skip=false" -D"maven.javadoc.skip=true"
 
       - name: "Inspect links of error codes"
         run: |
