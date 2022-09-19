@@ -308,8 +308,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: "Compile Dubbo"
-        if: ${{ startsWith( matrix.os, 'windows') || (startsWith( matrix.os, 'ubuntu') && startsWith( matrix.jdk, '17')) }}
+      - name: "Compile Dubbo (Linux)"
+        if: ${{ startsWith( matrix.os, 'ubuntu') && startsWith( matrix.jdk, '17') }}
+        run: |
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+
+      - name: "Compile Dubbo (Windows)"
+        if: ${{ startsWith( matrix.os, 'windows') }}
         run: |
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
 
