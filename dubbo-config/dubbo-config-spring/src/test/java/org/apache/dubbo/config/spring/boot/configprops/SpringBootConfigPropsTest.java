@@ -99,6 +99,7 @@ public class SpringBootConfigPropsTest {
     @Autowired
     private ModuleModel moduleModel;
 
+
     @Test
     public void testConfigProps() {
 
