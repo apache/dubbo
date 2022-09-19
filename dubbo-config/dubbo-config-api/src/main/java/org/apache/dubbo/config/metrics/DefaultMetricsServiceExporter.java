@@ -52,7 +52,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
         MetricsConfig metricsConfig = applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null) {
-            if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
+            if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) &&  metricsService == null) {
                 ExtensionLoader<MetricsService> extensionLoader = applicationModel.getExtensionLoader(MetricsService.class);
                 if (!extensionLoader.hasExtension(MetricsService.DEFAULT_EXTENSION_NAME)) {
                     throw new IllegalStateException("Metrics config exist, but the dubbo-metrics-api dependency is missing. Please check your project dependencies.");
