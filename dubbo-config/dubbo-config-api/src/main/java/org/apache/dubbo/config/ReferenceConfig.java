@@ -81,6 +81,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SVC;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -244,7 +249,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 invoker.destroy();
             }
         } catch (Throwable t) {
-            logger.warn("5-3", "", "", "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
+            logger.warn(CONFIG_FAILED_DESTROY_INVOKER, "", "", "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
         }
         invoker = null;
         ref = null;
@@ -308,7 +313,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     invoker.destroy();
                 }
             } catch (Throwable destroy) {
-                logger.warn("5-3", "", "", "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
+                logger.warn(CONFIG_FAILED_DESTROY_INVOKER, "", "", "Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
             }
             if (consumerModel != null) {
                 ModuleServiceRepository repository = getScopeModel().getServiceRepository();
@@ -326,7 +331,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 t.getMessage().contains("No provider available for the service")) {
 
                 // 2-2 - No provider available.
-                logger.error("2-2", "server crashed", "", "No provider available.", t);
+                logger.error(CLUSTER_NO_VALID_PROVIDER, "server crashed", "", "No provider available.", t);
             }
 
             throw t;
@@ -381,7 +386,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
             String[] methods = methods(interfaceClass);
             if (methods.length == 0) {
-                logger.warn("5-4", "", "", "No method found in service interface: " + interfaceClass.getName());
+                logger.warn(CONFIG_NO_METHOD_FOUND, "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), COMMA_SEPARATOR));
@@ -477,7 +482,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         String podNamespace;
         if (StringUtils.isEmpty(System.getenv("POD_NAMESPACE"))) {
             if (logger.isWarnEnabled()) {
-                logger.warn("5-5", "", "", "Can not get env variable: POD_NAMESPACE, it may not be running in the K8S environment , " +
+                logger.warn(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "Can not get env variable: POD_NAMESPACE, it may not be running in the K8S environment , " +
                     "finally use 'default' replace.");
             }
             podNamespace = "default";
@@ -655,7 +660,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     + " to the consumer "
                     + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
 
-            logger.error("2-2", "provider not started", "", "No provider available.", illegalStateException);
+            logger.error(CLUSTER_NO_VALID_PROVIDER, "provider not started", "", "No provider available.", illegalStateException);
 
             throw illegalStateException;
         }
@@ -683,7 +688,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         if (ProtocolUtils.isGeneric(generic)) {
             if (interfaceClass != null && !interfaceClass.equals(GenericService.class)) {
-                logger.warn("5-6", "", "", String.format("Found conflicting attributes for interface type: [interfaceClass=%s] and [generic=%s], " +
+                logger.warn(CONFIG_PROPERTY_CONFLICT, "", "", String.format("Found conflicting attributes for interface type: [interfaceClass=%s] and [generic=%s], " +
                         "because the 'generic' attribute has higher priority than 'interfaceClass', so change 'interfaceClass' to '%s'. " +
                         "Note: it will make this reference bean as a candidate bean of type '%s' instead of '%s' when resolving dependency in Spring.",
                     interfaceClass.getName(), generic, GenericService.class.getName(), GenericService.class.getName(), interfaceClass.getName()));

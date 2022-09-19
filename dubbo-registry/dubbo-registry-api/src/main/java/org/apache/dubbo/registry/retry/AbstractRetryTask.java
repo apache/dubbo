@@ -28,6 +28,7 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EXECUTE_RETRYING_TASK;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_TIMES;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
@@ -116,7 +117,7 @@ public abstract class AbstractRetryTask implements TimerTask {
             // 1-13 - failed to execute the retrying task.
 
             logger.warn(
-                "1-13", "registry center offline", "Check the registry server.",
+                REGISTRY_EXECUTE_RETRYING_TASK, "registry center offline", "Check the registry server.",
                 "Final failed to execute task " + taskName + ", url: " + url + ", retry " + retryTimes + " times.");
 
             return;
@@ -130,7 +131,7 @@ public abstract class AbstractRetryTask implements TimerTask {
 
             // 1-13 - failed to execute the retrying task.
 
-            logger.warn("1-13", "registry center offline", "Check the registry server.",
+            logger.warn(REGISTRY_EXECUTE_RETRYING_TASK, "registry center offline", "Check the registry server.",
                 "Failed to execute task " + taskName + ", url: " + url + ", waiting for again, cause:" + t.getMessage(), t);
 
             // reput this task when catch exception.

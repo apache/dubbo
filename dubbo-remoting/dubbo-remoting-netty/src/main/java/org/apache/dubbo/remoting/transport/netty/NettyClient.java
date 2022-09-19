@@ -39,6 +39,9 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+
 /**
  * NettyClient.
  */
@@ -127,7 +130,7 @@ public class NettyClient extends AbstractClient {
                         + getRemoteAddress() + ", error message is:" + cause.getMessage(), cause);
 
                 // 6-1 - Failed to connect to provider server by other reason.
-                logger.error("6-1", "network disconnected", "", "Failed to connect to provider server by other reason.", cause);
+                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "", "Failed to connect to provider server by other reason.", cause);
 
                 throw remotingException;
             } else {
@@ -138,7 +141,7 @@ public class NettyClient extends AbstractClient {
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
 
                 // 6-2 - Client-side timeout.
-                logger.error("6-2", "provider crash", "", "Client-side timeout.", remotingException);
+                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "", "Client-side timeout.", remotingException);
 
                 throw remotingException;
             }
