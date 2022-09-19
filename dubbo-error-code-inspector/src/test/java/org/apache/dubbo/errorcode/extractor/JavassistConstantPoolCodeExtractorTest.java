@@ -20,12 +20,16 @@ package org.apache.dubbo.errorcode.extractor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.regex.Pattern;
+
 /**
  * Unit tests of JavassistConstantPoolCodeExtractor.
  */
 class JavassistConstantPoolCodeExtractorTest {
 
     private static final JavassistConstantPoolErrorCodeExtractor ERROR_CODE_EXTRACTOR = new JavassistConstantPoolErrorCodeExtractor();
+
+    private static final Pattern WINDOWS_PATH_PATTERN = Pattern.compile("file:/\\w:/.*");
 
     /**
      * Use a pre-compiled class file to check error code.
@@ -36,8 +40,10 @@ class JavassistConstantPoolCodeExtractorTest {
     void testGettingErrorCodes() {
         String resourceFilePath = getClass().getClassLoader().getResource("FileCacheStore.jcls").toString();
 
-        if (resourceFilePath.startsWith("file:/")) {
+        if (WINDOWS_PATH_PATTERN.matcher(resourceFilePath).matches()) {
             resourceFilePath = resourceFilePath.replace("file:/", "");
+        } else {
+            resourceFilePath = resourceFilePath.replace("file:", "");
         }
 
         Assertions.assertTrue(ERROR_CODE_EXTRACTOR.getErrorCodes(resourceFilePath).contains("0-4"));
@@ -47,8 +53,10 @@ class JavassistConstantPoolCodeExtractorTest {
     void testGettingIllegalInvocations() {
         String resourceFilePath = getClass().getClassLoader().getResource("FileCacheStore.jcls").toString();
 
-        if (resourceFilePath.startsWith("file:/")) {
+        if (WINDOWS_PATH_PATTERN.matcher(resourceFilePath).matches()) {
             resourceFilePath = resourceFilePath.replace("file:/", "");
+        } else {
+            resourceFilePath = resourceFilePath.replace("file:", "");
         }
 
         // Illegal invocations:
