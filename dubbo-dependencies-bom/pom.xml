@@ -126,13 +126,15 @@
         <fst_version>2.48-jdk-6</fst_version>
         <avro_version>1.8.2</avro_version>
         <apollo_client_version>1.8.0</apollo_client_version>
-        <snakeyaml_version>1.29</snakeyaml_version>
+        <snakeyaml_version>1.31</snakeyaml_version>
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
         <envoy_api_version>0.1.23</envoy_api_version>
         <micrometer.version>1.7.4</micrometer.version>
         <t_digest.version>3.3</t_digest.version>
         <prometheus_client.version>0.10.0</prometheus_client.version>
+        <reactive.version>1.0.4</reactive.version>
+        <reactor.version>3.4.19</reactor.version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -157,7 +159,7 @@
         <eureka.version>1.9.12</eureka.version>
 
         <!-- Fabric8 for Kubernetes -->
-        <fabric8_kubernetes_version>5.3.2</fabric8_kubernetes_version>
+        <fabric8_kubernetes_version>6.1.1</fabric8_kubernetes_version>
 
         <!-- Alibaba -->
         <alibaba_spring_context_support_version>1.0.8</alibaba_spring_context_support_version>
@@ -801,6 +803,17 @@
                 <groupId>io.prometheus</groupId>
                 <artifactId>simpleclient_pushgateway</artifactId>
                 <version>${prometheus_client.version}</version>
+            </dependency>
+            <!-- reactive related dependencies -->
+            <dependency>
+                <groupId>org.reactivestreams</groupId>
+                <artifactId>reactive-streams</artifactId>
+                <version>${reactive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-core</artifactId>
+                <version>${reactor.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

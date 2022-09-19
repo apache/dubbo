@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.reactive.calls;
+package org.apache.dubbo.reactive.calls;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.reactive.ServerTripleReactorPublisher;
+import org.apache.dubbo.reactive.ServerTripleReactorSubscriber;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-import org.apache.dubbo.rpc.protocol.tri.reactive.ServerTripleReactorPublisher;
-import org.apache.dubbo.rpc.protocol.tri.reactive.ServerTripleReactorSubscriber;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

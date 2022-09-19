@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class InstantiationStrategy {
 
-    private ScopeModelAccessor scopeModelAccessor;
+    private final ScopeModelAccessor scopeModelAccessor;
 
     public InstantiationStrategy() {
         this(null);
@@ -43,6 +43,7 @@ public class InstantiationStrategy {
         this.scopeModelAccessor = scopeModelAccessor;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T instantiate(Class<T> type) throws ReflectiveOperationException {
 
         // should not use default constructor directly, maybe also has another constructor matched scope model arguments
@@ -55,7 +56,7 @@ public class InstantiationStrategy {
         }
 
         // 2. use matched constructor if found
-        List<Constructor> matchedConstructors = new ArrayList<>();
+        List<Constructor<?>> matchedConstructors = new ArrayList<>();
         Constructor<?>[] declaredConstructors = type.getConstructors();
         for (Constructor<?> constructor : declaredConstructors) {
             if (isMatched(constructor)) {
@@ -71,7 +72,7 @@ public class InstantiationStrategy {
         // 1. the only matched constructor with parameters
         // 2. default constructor if absent
 
-        Constructor targetConstructor;
+        Constructor<?> targetConstructor;
         if (matchedConstructors.size() > 1) {
             throw new IllegalArgumentException("Expect only one but found " +
                 matchedConstructors.size() + " matched constructors for type: " + type.getName() +
@@ -85,7 +86,7 @@ public class InstantiationStrategy {
         }
 
         // create instance with arguments
-        Class[] parameterTypes = targetConstructor.getParameterTypes();
+        Class<?>[] parameterTypes = targetConstructor.getParameterTypes();
         Object[] args = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             args[i] = getArgumentValueForType(parameterTypes[i]);
@@ -106,7 +107,7 @@ public class InstantiationStrategy {
         return ScopeModel.class.isAssignableFrom(parameterType);
     }
 
-    private Object getArgumentValueForType(Class parameterType) {
+    private Object getArgumentValueForType(Class<?> parameterType) {
         // get scope mode value
         if (scopeModelAccessor != null) {
             if (parameterType == ScopeModel.class) {

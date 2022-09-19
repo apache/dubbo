@@ -325,6 +325,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-reactive</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
 
         <!-- Transitive dependencies -->
@@ -432,6 +439,7 @@
                                     <include>org.apache.dubbo:dubbo-native</include>
                                     <include>org.apache.dubbo:dubbo-plugin</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
+                                    <include>org.apache.dubbo:dubbo-reactive</include>
                                     <include>org.apache.dubbo:dubbo-registry-api</include>
                                     <include>org.apache.dubbo:dubbo-registry-multicast</include>
                                     <include>org.apache.dubbo:dubbo-registry-multiple</include>

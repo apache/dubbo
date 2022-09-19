@@ -37,6 +37,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT;
+
 /**
  * Local file interaction class that can back different caches.
  * <p>
@@ -73,7 +75,7 @@ public class FileCacheStore {
             }
 
             if (count > entrySize) {
-                logger.warn("0-4", "mis-configuration of system properties",
+                logger.warn(COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT, "mis-configuration of system properties",
                     "Check Java system property 'dubbo.mapping.cache.entrySize' and 'dubbo.meta.cache.entrySize'.",
                     "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }

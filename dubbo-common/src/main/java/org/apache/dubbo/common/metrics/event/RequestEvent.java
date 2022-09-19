@@ -40,6 +40,8 @@ public class RequestEvent extends MetricsEvent {
         TOTAL,
         SUCCEED,
         FAILED,
+        BUSINESS_FAILED,
+
         PROCESSING
     }
 }

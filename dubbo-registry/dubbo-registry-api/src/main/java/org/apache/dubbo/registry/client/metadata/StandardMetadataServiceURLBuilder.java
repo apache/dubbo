@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_MISSING_METADATA_CONFIG_PORT;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
@@ -127,7 +128,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
             // 1-18 - Metadata Service Port should be specified for consumer.
 
-            logger.warn("1-18", "missing configuration of metadata service port", "",
+            logger.warn(REGISTRY_MISSING_METADATA_CONFIG_PORT, "missing configuration of metadata service port", "",
                 "Metadata Service Port is not provided. Since DNS is not able to negotiate the metadata port " +
                     "between Provider and Consumer, Dubbo will try using instance port as the default metadata port.");
 
@@ -145,7 +146,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
             IllegalStateException illegalStateException = new IllegalStateException(message);
 
-            logger.error("1-18", "missing configuration of metadata service port", "",
+            logger.error(REGISTRY_MISSING_METADATA_CONFIG_PORT, "missing configuration of metadata service port", "",
                 message, illegalStateException);
 
             throw illegalStateException;

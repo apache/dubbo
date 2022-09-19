@@ -43,6 +43,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_STOP;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 /**
@@ -297,7 +299,7 @@ public class RouterChain<T> {
                 if (routerSnapshotSwitcher.isEnable()) {
                     routerSnapshotSwitcher.setSnapshot(message);
                 }
-                logger.warn("2-2","No provider available after route for the service","",message);
+                logger.warn(CLUSTER_NO_VALID_PROVIDER,"No provider available after route for the service","",message);
             }
         } else {
             if (logger.isInfoEnabled()) {
@@ -345,7 +347,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error("2-3","route stop failed","","Error trying to stop router " + router.getClass(),e);
+                logger.error(CLUSTER_FAILED_STOP,"route stop failed","","Error trying to stop router " + router.getClass(),e);
             }
         }
         routers = Collections.emptyList();
@@ -355,7 +357,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error("2-3","StateRouter stop failed","","Error trying to stop StateRouter " + router.getClass(),e);
+                logger.error(CLUSTER_FAILED_STOP,"StateRouter stop failed","","Error trying to stop StateRouter " + router.getClass(),e);
             }
         }
         stateRouters = Collections.emptyList();

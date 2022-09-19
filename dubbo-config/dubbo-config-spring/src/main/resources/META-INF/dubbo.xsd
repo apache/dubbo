@@ -1278,6 +1278,11 @@
                 <xsd:documentation><![CDATA[ The service port. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="ext-protocol" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ extra protocol.]]]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="threadpool" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>

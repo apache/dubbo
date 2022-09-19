@@ -91,6 +91,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public synchronized void register() throws RuntimeException {
+        if (isDestroy) {
+            return;
+        }
         this.serviceInstance = createServiceInstance(this.metadataInfo);
         if (!isValidInstance(this.serviceInstance)) {
             logger.warn("No valid instance found, stop registering instance address to registry.");
@@ -134,6 +137,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public synchronized void unregister() throws RuntimeException {
+        if (isDestroy) {
+            return;
+        }
         // fixme, this metadata info might still being shared by other instances
 //        unReportMetadata(this.metadataInfo);
         if (!isValidInstance(this.serviceInstance)) {
