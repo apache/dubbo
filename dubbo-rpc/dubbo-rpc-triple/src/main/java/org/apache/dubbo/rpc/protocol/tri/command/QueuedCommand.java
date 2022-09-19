@@ -20,11 +20,11 @@ package org.apache.dubbo.rpc.protocol.tri.command;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2FrameStream;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public abstract class QueuedCommand {
 
-    protected Http2FrameStream http2FrameStream;
+    protected Http2StreamChannel http2StreamChannel;
 
     private ChannelPromise promise;
 
@@ -54,13 +54,13 @@ public abstract class QueuedCommand {
         }
     }
 
-    public Http2FrameStream getHttp2FrameStream() {
-        return http2FrameStream;
+    public QueuedCommand http2StreamChannel(Http2StreamChannel http2StreamChannel) {
+        this.http2StreamChannel = http2StreamChannel;
+        return this;
     }
 
-    public QueuedCommand setHttp2FrameStream(Http2FrameStream http2FrameStream) {
-        this.http2FrameStream = http2FrameStream;
-        return this;
+    public Http2StreamChannel http2StreamChannel() {
+        return http2StreamChannel;
     }
 
     public abstract void doSend(ChannelHandlerContext ctx, ChannelPromise promise);

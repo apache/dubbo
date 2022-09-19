@@ -127,12 +127,13 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        WriteQueue writeQueue = new WriteQueue();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Http2StreamChannel>() {
                 @Override
                 protected void initChannel(Http2StreamChannel ch) {
                     final ChannelPipeline p = ch.pipeline();
-                    WriteQueue writeQueue = new WriteQueue(ch);
+                    writeQueue.setChannelIfAbsent(ch.parent());
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
                         headFilters, ch, writeQueue));
@@ -173,6 +174,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler, new TripleCommandOutBoundHandler(), new TripleTailHandler());
+        pipeline.addLast(codec, handler, new TripleTailHandler());
     }
 }

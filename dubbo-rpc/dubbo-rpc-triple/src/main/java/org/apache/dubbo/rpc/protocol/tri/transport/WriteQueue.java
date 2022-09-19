@@ -31,14 +31,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class WriteQueue {
 
     static final int DEQUE_CHUNK_SIZE = 128;
-    private final Channel channel;
+    private volatile Channel channel;
     private final Queue<QueuedCommand> queue;
     private final AtomicBoolean scheduled;
+
+    public WriteQueue() {
+        this(null);
+    }
 
     public WriteQueue(Channel channel) {
         this.channel = channel;
         queue = new ConcurrentLinkedQueue<>();
         scheduled = new AtomicBoolean(false);
+    }
+
+    public WriteQueue setChannelIfAbsent(Channel channel) {
+        if (this.channel == null) {
+            synchronized (this) {
+                if (this.channel == null) {
+                    this.channel = channel;
+                }
+            }
+        }
+        return this;
     }
 
     public ChannelFuture success() {
@@ -59,7 +74,7 @@ public class WriteQueue {
         }
         ChannelPromise promise = command.promise();
         if (promise == null) {
-            promise = channel.newPromise();
+            promise = command.http2StreamChannel().newPromise();
             command.promise(promise);
         }
         queue.add(command);
@@ -83,7 +98,7 @@ public class WriteQueue {
             int i = 0;
             boolean flushedOnce = false;
             while ((cmd = queue.poll()) != null) {
-                cmd.run(channel);
+                cmd.run(cmd.http2StreamChannel());
                 i++;
                 if (i == DEQUE_CHUNK_SIZE) {
                     i = 0;
