@@ -117,7 +117,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return checkResult;
         }
         this.rst = true;
-        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause).http2StreamChannel(http2StreamChannel));
+        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause).channel(http2StreamChannel));
     }
 
     @Override
@@ -136,7 +136,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return checkResult;
         }
         headerSent = true;
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false).http2StreamChannel(http2StreamChannel))
+        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false).channel(http2StreamChannel))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -172,7 +172,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
         trailersSent = true;
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true).http2StreamChannel(http2StreamChannel))
+        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true).channel(http2StreamChannel))
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -241,7 +241,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         if (!checkResult.isSuccess()) {
             return checkResult;
         }
-        return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag).http2StreamChannel(http2StreamChannel));
+        return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag).channel(http2StreamChannel));
     }
 
     /**
@@ -259,8 +259,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders( headers, false).http2StreamChannel(http2StreamChannel));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true).http2StreamChannel(http2StreamChannel));
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders( headers, false).channel(http2StreamChannel));
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true).channel(http2StreamChannel));
     }
 
     /**

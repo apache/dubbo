@@ -72,6 +72,7 @@ class TripleClientStreamTest {
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
+        when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
             ImmediateEventExecutor.INSTANCE, writeQueue, listener, http2StreamChannel);
 

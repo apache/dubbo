@@ -71,13 +71,13 @@ public class WriteQueueTest {
     public void test() throws Exception {
 
         WriteQueue writeQueue = new WriteQueue(channel);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0));
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0).channel(channel));
         TriRpcStatus status = TriRpcStatus.UNKNOWN
                 .withCause(new RpcException())
                 .withDescription("Encode Response data error");
-        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
+        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL).channel(channel));
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true).channel(channel));
 
         while (writeMethodCalledTimes.get() != 4) {
             Thread.sleep(50);
@@ -100,9 +100,9 @@ public class WriteQueueTest {
         // test deque chunk size
         writeMethodCalledTimes.set(0);
         for (int i = 0; i < DEQUE_CHUNK_SIZE; i++) {
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
         }
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
         while (writeMethodCalledTimes.get() != (DEQUE_CHUNK_SIZE + 1)) {
             Thread.sleep(50);
         }

@@ -74,7 +74,9 @@ public class WriteQueue {
         }
         ChannelPromise promise = command.promise();
         if (promise == null) {
-            promise = command.http2StreamChannel().newPromise();
+            Channel ch = command.channel();
+            ch = ch == null ? channel: ch;
+            promise = ch.newPromise();
             command.promise(promise);
         }
         queue.add(command);
@@ -98,7 +100,7 @@ public class WriteQueue {
             int i = 0;
             boolean flushedOnce = false;
             while ((cmd = queue.poll()) != null) {
-                cmd.run(cmd.http2StreamChannel());
+                cmd.run(cmd.channel());
                 i++;
                 if (i == DEQUE_CHUNK_SIZE) {
                     i = 0;
