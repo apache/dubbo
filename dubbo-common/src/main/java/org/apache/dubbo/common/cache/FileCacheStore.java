@@ -37,7 +37,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
 /**
@@ -76,7 +77,7 @@ public class FileCacheStore {
             }
 
             if (count > entrySize) {
-                logger.warn(COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT, "mis-configuration of system properties",
+                logger.warn(COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED, "mis-configuration of system properties",
                     "Check Java system property 'dubbo.mapping.cache.entrySize' and 'dubbo.meta.cache.entrySize'.",
                     "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }
@@ -131,12 +132,12 @@ public class FileCacheStore {
 
             long remainSize = bw.getRemainSize();
             if (remainSize < 0) {
-                logger.warn("0-5", "mis-configuration of system properties",
+                logger.warn(COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED, "mis-configuration of system properties",
                     "Check Java system property 'dubbo.mapping.cache.maxFileSize' and 'dubbo.meta.cache.maxFileSize'.",
                     "Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
             }
         } catch (IOException e) {
-            logger.warn("0-3", "inaccessible of cache path", "",
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Update cache error.", e);
         }
     }
