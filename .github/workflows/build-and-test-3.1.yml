@@ -285,14 +285,9 @@ jobs:
 
   error-code-inspecting:
     if: always()
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-20.04, windows-2022 ]
-        jdk: [ 8, 11, 17 ]
+    runs-on: ubuntu-20.04
     env:
-      JAVA_VER: ${{ matrix.jdk }}
+      JAVA_VER: 17
     steps:
       - uses: actions/checkout@v2
       - name: "Set up JDK 8"
