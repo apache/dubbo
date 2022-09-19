@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
 /**
  * Local file interaction class that can back different caches.
@@ -80,7 +81,7 @@ public class FileCacheStore {
                     "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }
         } catch (IOException e) {
-            logger.warn("0-3", "inaccessible of cache path", "",
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Load cache failed ", e);
 
             throw e;
@@ -96,7 +97,7 @@ public class FileCacheStore {
                 directoryLock.channel().close();
                 deleteFile(lockFile);
             } catch (IOException e) {
-                logger.error("0-3", "inaccessible of cache path", "",
+                logger.error(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                     "Failed to release cache path's lock file:" + lockFile, e);
 
                 throw new RuntimeException("Failed to release cache path's lock file:" + lockFile, e);
