@@ -131,6 +131,9 @@ public class ContextFilter implements Filter, Filter.Listener {
             return invoker.invoke(invocation);
         } finally {
             context.clearAfterEachInvoke(true);
+            if (context.isAsyncStarted()) {
+                removeContext();
+            }
         }
     }
 
