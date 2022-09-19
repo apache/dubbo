@@ -323,9 +323,11 @@ jobs:
       - name: "Test with Maven in Windows Platform"
         timeout-minutes: 90
         if: ${{ startsWith( matrix.os, 'windows') }}
+
+        # Disable rat checking in Windows platform since it causes problems.
         run: |
           cd dubbo-error-code-inspector
-          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -DskipTests=false -D"checkstyle.skip=false" -D"checkstyle_unix.skip=true" -D"rat.skip=false" -D"maven.javadoc.skip=true"
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -DskipTests=false -D"checkstyle.skip=false" -D"checkstyle_unix.skip=true" -D"rat.skip=true" -D"maven.javadoc.skip=true"
 
       - name: "Inspect links of error codes"
         if: ${{ startsWith( matrix.os, 'ubuntu') && startsWith( matrix.jdk, '17') }}
@@ -334,6 +336,7 @@ jobs:
           ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
 
       - name: "Upload error code inspection result"
+        if: ${{ startsWith( matrix.os, 'ubuntu') && startsWith( matrix.jdk, '17') }}
         uses: actions/upload-artifact@v2
         with:
           name: "error-inspection-result.txt"
