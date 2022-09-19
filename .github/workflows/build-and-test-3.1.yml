@@ -316,7 +316,7 @@ jobs:
       - name: "Compile Dubbo (Windows)"
         if: ${{ startsWith( matrix.os, 'windows') }}
         run: |
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -DskipTests=true -DskipIntegrationTests=true -D"checkstyle.skip=true" -D"checkstyle_unix.skip=true" -D"rat.skip=true" -D"maven.javadoc.skip=true"
 
       - name: "Test with Maven in Ubuntu Platform"
         timeout-minutes: 70
