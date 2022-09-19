@@ -44,6 +44,12 @@
             <artifactId>dubbo-metrics-prometheus</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-metrics-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
