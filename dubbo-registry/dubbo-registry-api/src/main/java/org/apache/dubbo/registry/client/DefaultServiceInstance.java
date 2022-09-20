@@ -71,7 +71,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
     private transient ApplicationModel applicationModel;
-    private transient InstanceAddressURL instanceAddressURL = null;
+    private transient Map<String, InstanceAddressURL> instanceAddressURL;
 
     public DefaultServiceInstance() {
     }
@@ -291,10 +291,15 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public InstanceAddressURL toURL(String protocol) {
-        if (instanceAddressURL == null) {
-            instanceAddressURL = new InstanceAddressURL(this, serviceMetadata, protocol);
+        if(instanceAddressURL == null) {
+            instanceAddressURL = new HashMap<>();
         }
-        return instanceAddressURL;
+        InstanceAddressURL result = instanceAddressURL.getOrDefault(protocol, null);
+        if (result == null) {
+            instanceAddressURL.put(protocol, new InstanceAddressURL(this, serviceMetadata, protocol));
+            result = instanceAddressURL.get(protocol);
+        }
+        return result;
     }
 
     @Override
