@@ -37,7 +37,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
 /**
  * Local file interaction class that can back different caches.
@@ -75,12 +77,14 @@ public class FileCacheStore {
             }
 
             if (count > entrySize) {
-                logger.warn(COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT, "mis-configuration of system properties",
+                logger.warn(COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED, "mis-configuration of system properties",
                     "Check Java system property 'dubbo.mapping.cache.entrySize' and 'dubbo.meta.cache.entrySize'.",
                     "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }
         } catch (IOException e) {
-            logger.warn("Load cache failed ", e);
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Load cache failed ", e);
+
             throw e;
         }
         return properties;
@@ -94,6 +98,9 @@ public class FileCacheStore {
                 directoryLock.channel().close();
                 deleteFile(lockFile);
             } catch (IOException e) {
+                logger.error(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                    "Failed to release cache path's lock file:" + lockFile, e);
+
                 throw new RuntimeException("Failed to release cache path's lock file:" + lockFile, e);
             }
         }
@@ -108,23 +115,30 @@ public class FileCacheStore {
                  new LimitedLengthBufferedWriter(
                      new OutputStreamWriter(
                          new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8), maxFileSize)) {
+
             bw.write("#" + comment);
             bw.newLine();
             bw.write("#" + new Date());
             bw.newLine();
+
             for (Map.Entry<String, String> e : properties.entrySet()) {
                 String key = e.getKey();
                 String val = e.getValue();
                 bw.write(key + "=" + val);
                 bw.newLine();
             }
+
             bw.flush();
+
             long remainSize = bw.getRemainSize();
             if (remainSize < 0) {
-                logger.info("Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
+                logger.warn(COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED, "mis-configuration of system properties",
+                    "Check Java system property 'dubbo.mapping.cache.maxFileSize' and 'dubbo.meta.cache.maxFileSize'.",
+                    "Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
             }
         } catch (IOException e) {
-            logger.warn("Update cache error.");
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Update cache error.", e);
         }
     }
 
