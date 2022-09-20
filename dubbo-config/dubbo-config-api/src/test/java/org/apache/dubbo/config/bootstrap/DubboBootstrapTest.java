@@ -268,18 +268,13 @@ public class DubboBootstrapTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("bootstrap-test");
         applicationConfig.setMetadataServicePort(availablePort);
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-        try{
-            bootstrap.application(applicationConfig)
-                .registry(new RegistryConfig(zkServerAddress))
-                .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-                .service(service)
-                .start();
+        bootstrap.application(applicationConfig)
+            .registry(new RegistryConfig(zkServerAddress))
+            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+            .service(service)
+            .start();
 
-            assertMetadataService(bootstrap, availablePort, true);
-        }catch(Exception ex){
-            System.out.println("");
-        }
-
+        assertMetadataService(bootstrap, availablePort, true);
     }
 
     @Test
