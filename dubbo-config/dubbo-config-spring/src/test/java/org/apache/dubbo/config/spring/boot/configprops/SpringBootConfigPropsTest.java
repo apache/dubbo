@@ -54,7 +54,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.registry.address = zookeeper://127.0.0.1:2181",
         "dubbo.protocol.name=dubbo",
         "dubbo.protocol.port=20880",
-        "dubbo.application.metrics-service-protocol=dubbo",
+        "dubbo.application.metrics-service-protocol=tri",
         "dubbo.application.metrics-service-port=9999",
         "dubbo.metrics.protocol=prometheus",
         "dubbo.metrics.enable-jvm-metrics=true",

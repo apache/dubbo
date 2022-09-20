@@ -166,6 +166,7 @@ public class ExportServiceConfigBuilder<T> {
 
         RegistryConfig registryConfig = new RegistryConfig("N/A");
         registryConfig.setId(this.registryId);
+        registryConfig.setScopeModel(this.applicationModel);
 
         serviceConfig.setRegistry(registryConfig);
 
