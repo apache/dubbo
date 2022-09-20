@@ -52,6 +52,10 @@ public class NacosInstanceManageUtil {
         SERVICE_INSTANCE_LIST_MAP.put(serviceName, instanceList);
     }
 
+    public static Set<String> removeCorrespondingServiceNames(String serviceName) {
+        return CORRESPONDING_SERVICE_NAMES_MAP.remove(serviceName);
+    }
+
     public static List<Instance> getAllCorrespondingServiceInstanceList(String serviceName) {
         if (!CORRESPONDING_SERVICE_NAMES_MAP.containsKey(serviceName)) {
             return Lists.newArrayList();

@@ -168,7 +168,7 @@
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.15.3</test_container_version>
         <etcd_launcher_version>0.5.3</etcd_launcher_version>
-        <hessian_lite_version>3.2.12</hessian_lite_version>
+        <hessian_lite_version>3.2.13</hessian_lite_version>
         <swagger_version>1.5.24</swagger_version>
 
         <snappy_java_version>1.1.8.4</snappy_java_version>
