@@ -259,8 +259,17 @@ public class RpcUtils {
         return timeout;
     }
 
+    public static long getTimeoutFromInvocation(Invocation invocation, long defaultTimeout) {
+        long timeout = defaultTimeout;
+        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_KEY);
+        if (genericTimeout != null) {
+            timeout = convertToNumber(genericTimeout, defaultTimeout);
+        }
+        return timeout;
+    }
+
     private static long convertToNumber(Object obj, long defaultTimeout) {
-        long timeout = 0;
+        long timeout = defaultTimeout;
         try {
             if (obj instanceof String) {
                 timeout = Long.parseLong((String) obj);
