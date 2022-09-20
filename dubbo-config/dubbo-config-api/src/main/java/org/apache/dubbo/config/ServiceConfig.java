@@ -28,6 +28,7 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -70,6 +71,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNEXPORT_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_USE_RANDOM_PORT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
@@ -83,6 +89,7 @@ import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.IS_PU_SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
@@ -181,7 +188,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn("5-7", "", "", "Unexpected error occurred when unexport " + exporter, t);
+                    logger.warn(CONFIG_UNEXPORT_ERROR, "", "", "Unexpected error occurred when unexport " + exporter, t);
                 }
             }
             exporters.clear();
@@ -242,7 +249,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     doExport();
                 } catch (Exception e) {
-                    logger.error("5-9", "configuration server disconnected", "", "Failed to (async)export service config: " + interfaceName, e);
+                    logger.error(CONFIG_FAILED_EXPORT_SERVICE, "configuration server disconnected", "", "Failed to (async)export service config: " + interfaceName, e);
                 }
             }, getDelay(), TimeUnit.MILLISECONDS);
     }
@@ -258,10 +265,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     if (succeeded) {
                         logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
                     } else {
-                        logger.error("5-10", "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
+                        logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
                     }
                 } catch (Exception e) {
-                    logger.error("5-10", "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
+                    logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
                 }
             }
         });
@@ -447,7 +454,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
             String[] methods = methods(interfaceClass);
             if (methods.length == 0) {
-                logger.warn("5-4", "", "", "No method found in service interface: " + interfaceClass.getName());
+                logger.warn(CONFIG_NO_METHOD_FOUND, "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
                 map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
@@ -554,6 +561,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // export service
         String host = findConfiguredHosts(protocolConfig, provider, params);
+        if (NetUtils.isIPV6URLStdFormat(host)) {
+            if (!host.contains("[")) {
+                host = "[" + host + "]";
+            }
+        } else if (NetUtils.getLocalHostV6() != null) {
+            String ipv6Host = NetUtils.getLocalHostV6();
+            params.put(CommonConstants.IPV6_KEY, ipv6Host);
+        }
+
         Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
 
@@ -580,9 +596,35 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
+                // export to extra protocol is used in remote export
+                String extProtocol = url.getParameter("ext.protocol", "");
+                List<String> protocols = new ArrayList<>();
+                // export original url
+                url = URLBuilder.from(url).
+                    addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                    removeParameter("ext.protocol").
+                    build();
                 url = exportRemote(url, registryURLs);
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                     MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
+                }
+
+                if (!extProtocol.equals("")) {
+                    String[] extProtocols = extProtocol.split(",", -1);
+                    protocols.addAll(Arrays.asList(extProtocols));
+                }
+                // export extra protocols
+                for(String protocol : protocols) {
+                    if(!protocol.equals("")){
+                        URL localUrl = URLBuilder.from(url).
+                            setProtocol(protocol).
+                            build();
+                        localUrl = exportRemote(localUrl, registryURLs);
+                        if (!isGeneric(generic) && !getScopeModel().isInternal()) {
+                            MetadataUtils.publishServiceDefinition(localUrl, providerModel.getServiceModel(), getApplicationModel());
+                        }
+                        this.urls.add(localUrl);
+                    }
                 }
             }
         }
@@ -831,7 +873,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
-            logger.warn("5-8", "", "", "Use random available port(" + port + ") for protocol " + protocol);
+            logger.warn(CONFIG_USE_RANDOM_PORT, "", "", "Use random available port(" + port + ") for protocol " + protocol);
         }
     }
 

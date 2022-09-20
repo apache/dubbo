@@ -43,6 +43,7 @@ public class URLStrParserTest {
         testCases.add("dubbo://192.168.1.1/" + RandomString.make(10240));
         testCases.add("file:/path/to/file.txt");
         testCases.add("dubbo://fe80:0:0:0:894:aeec:f37d:23e1%en0/path?abc=abc");
+        testCases.add("dubbo://[fe80:0:0:0:894:aeec:f37d:23e1]:20880/path?abc=abc");
 
         errorDecodedCases.add("dubbo:192.168.1.1");
         errorDecodedCases.add("://192.168.1.1");

@@ -735,7 +735,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String toDescString() {
-            return this.getMatchKey() + path + new TreeMap<>(getParams());
+            return this.getMatchKey() + port + path + new TreeMap<>(getParams());
         }
 
         public void addParameter(String key, String value) {

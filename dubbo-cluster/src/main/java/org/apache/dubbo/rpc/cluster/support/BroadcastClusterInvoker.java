@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_ERROR_RESPONSE;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
@@ -76,7 +77,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     Throwable resultException = result.getException();
                     if (null != resultException) {
                         exception = getRpcException(result.getException());
-                        logger.warn("2-8","provider return error response","",exception.getMessage(),exception);
+                        logger.warn(CLUSTER_ERROR_RESPONSE,"provider return error response","",exception.getMessage(),exception);
                         failIndex++;
                         if (failIndex == failThresholdIndex) {
                             break;
@@ -85,7 +86,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
             } catch (Throwable e) {
                 exception = getRpcException(e);
-                logger.warn("2-8","provider return error response","",exception.getMessage(),exception);
+                logger.warn(CLUSTER_ERROR_RESPONSE,"provider return error response","",exception.getMessage(),exception);
                 failIndex++;
                 if (failIndex == failThresholdIndex) {
                     break;

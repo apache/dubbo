@@ -45,6 +45,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_EXEC_CONDITION_ROUTER;
 import static org.apache.dubbo.rpc.cluster.Constants.ADDRESS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
@@ -54,7 +56,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
  * ConditionRouter
  * It supports the conditional routing configured by "override://", in 2.6.x,
  * refer to https://dubbo.apache.org/en/docs/v2.7/user/examples/routing-rule/ .
- * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouter}
+ * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceStateRouter}
  * and {@link AppStateRouter}
  * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
@@ -202,7 +204,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 return invokers;
             }
             if (thenCondition == null) {
-                logger.warn("2-6","condition state router thenCondition is empt","","The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());                if (needToPrintMessage) {
+                logger.warn(CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,"condition state router thenCondition is empty","","The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());                if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: ThenCondition is empty.");
                 }
                 return BitList.emptyList();
@@ -216,14 +218,14 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 }
                 return result;
             } else if (this.isForce()) {
-                logger.warn("2-6","execute condition state router result list is empty. and force=true","","The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
+                logger.warn(CLUSTER_CONDITIONAL_ROUTE_LIST_EMPTY,"execute condition state router result list is empty. and force=true","","The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 if (needToPrintMessage) {
                     messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
                 }
                 return result;
             }
         } catch (Throwable t) {
-            logger.error("2-7","execute condition state router exception","","Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(),t);
+            logger.error(CLUSTER_FAILED_EXEC_CONDITION_ROUTER,"execute condition state router exception","","Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(),t);
         }
         if (needToPrintMessage) {
             messageHolder.set("Directly return. Reason: Error occurred ( or result is empty ).");
@@ -323,7 +325,7 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
                 return true;
             }
         } catch (Exception e) {
-            logger.warn("2-7","condition state router arguments match failed","","Arguments match failed, matchPair[]" + matchPair + "] invocation[" + invocation + "]",e);
+            logger.warn(CLUSTER_FAILED_EXEC_CONDITION_ROUTER,"condition state router arguments match failed","","Arguments match failed, matchPair[]" + matchPair + "] invocation[" + invocation + "]",e);
         }
 
         return false;
