@@ -163,9 +163,11 @@ public class ExportServiceConfigBuilder<T> {
         ServiceConfig<T> serviceConfig = new ServiceConfig<>();
         serviceConfig.setScopeModel(applicationModel.getInternalModule());
         serviceConfig.setApplication(applicationConfig);
+
         RegistryConfig registryConfig = new RegistryConfig("N/A");
+        registryConfig.setId(this.registryId);
+
         serviceConfig.setRegistry(registryConfig);
-        serviceConfig.setId(this.registryId);
 
         serviceConfig.setRegister(false);
         serviceConfig.setProtocol(protocolConfig);
