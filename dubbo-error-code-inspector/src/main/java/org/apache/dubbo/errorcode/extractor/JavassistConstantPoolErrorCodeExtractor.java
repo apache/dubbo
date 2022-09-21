@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.errorcode.extractor;
 
+import org.apache.dubbo.errorcode.model.MethodDefinition;
+
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 

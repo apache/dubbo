@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.errorcode.extractor;
+package org.apache.dubbo.errorcode.model;
 
 /**
  * Represents a method definition.

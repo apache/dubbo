@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.errorcode.reporter;
 
-import org.apache.dubbo.errorcode.extractor.MethodDefinition;
+import org.apache.dubbo.errorcode.model.MethodDefinition;
 
 import java.util.List;
 import java.util.Map;

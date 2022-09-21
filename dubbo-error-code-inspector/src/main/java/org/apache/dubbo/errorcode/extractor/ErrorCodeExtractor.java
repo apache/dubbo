@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.errorcode.extractor;
 
+import org.apache.dubbo.errorcode.model.MethodDefinition;
+
 import java.util.List;
 import java.util.regex.Pattern;
 

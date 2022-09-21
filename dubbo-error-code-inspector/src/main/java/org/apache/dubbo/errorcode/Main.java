@@ -19,7 +19,7 @@ package org.apache.dubbo.errorcode;
 
 import org.apache.dubbo.errorcode.extractor.ErrorCodeExtractor;
 import org.apache.dubbo.errorcode.extractor.JavassistConstantPoolErrorCodeExtractor;
-import org.apache.dubbo.errorcode.extractor.MethodDefinition;
+import org.apache.dubbo.errorcode.model.MethodDefinition;
 import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
 import org.apache.dubbo.errorcode.reporter.ReportResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
