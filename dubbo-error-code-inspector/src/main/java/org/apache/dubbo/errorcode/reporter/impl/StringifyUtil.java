@@ -19,8 +19,8 @@ package org.apache.dubbo.errorcode.reporter.impl;
 
 import org.apache.dubbo.errorcode.model.MethodDefinition;
 import org.apache.dubbo.errorcode.reporter.InspectionResult;
+import org.apache.dubbo.errorcode.util.FileUtils;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -41,11 +41,7 @@ final class StringifyUtil {
 
             String key = entry.getKey();
 
-            illegalInvocationReportStringBuilder.append(
-                key.substring(key.indexOf("org\\apache\\dubbo\\".replace('\\', File.separatorChar)))
-                    .replace("\\", ".")
-                    .replace(".class", "")
-            );
+            illegalInvocationReportStringBuilder.append(FileUtils.getSourceFilePathFromClassFilePath(key));
 
             illegalInvocationReportStringBuilder.append(": ");
 
