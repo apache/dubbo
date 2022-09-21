@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.errorcode.reporter.impl;
 
-import org.apache.dubbo.errorcode.reporter.ReportResult;
+import org.apache.dubbo.errorcode.reporter.InspectionResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
 
 import java.io.IOException;
@@ -30,14 +30,14 @@ import java.nio.file.Paths;
  */
 public class FileOutputReporter implements Reporter {
     @Override
-    public void report(ReportResult reportResult) {
+    public void report(InspectionResult inspectionResult) {
         try (PrintStream printStream = new PrintStream(Files.newOutputStream(Paths.get(System.getProperty("user.dir"), "error-inspection-result.txt")))) {
 
-            printStream.println("All error codes: " + reportResult.getAllErrorCodes());
+            printStream.println("All error codes: " + inspectionResult.getAllErrorCodes());
             printStream.println();
-            printStream.println("Error codes which document links are not reachable: " + reportResult.getLinkNotReachableErrorCodes());
+            printStream.println("Error codes which document links are not reachable: " + inspectionResult.getLinkNotReachableErrorCodes());
             printStream.println();
-            printStream.println(StringifyUtil.generateIllegalInvocationString(reportResult));
+            printStream.println(StringifyUtil.generateIllegalInvocationString(inspectionResult));
 
         } catch (IOException e) {
             throw new RuntimeException(e);

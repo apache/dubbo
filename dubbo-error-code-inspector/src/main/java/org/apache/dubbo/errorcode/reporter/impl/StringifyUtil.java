@@ -18,7 +18,7 @@
 package org.apache.dubbo.errorcode.reporter.impl;
 
 import org.apache.dubbo.errorcode.model.MethodDefinition;
-import org.apache.dubbo.errorcode.reporter.ReportResult;
+import org.apache.dubbo.errorcode.reporter.InspectionResult;
 
 import java.io.File;
 import java.util.List;
@@ -32,12 +32,12 @@ final class StringifyUtil {
         throw new UnsupportedOperationException("No instance of StringifyUtil for you! ");
     }
 
-    static String generateIllegalInvocationString(ReportResult reportResult) {
+    static String generateIllegalInvocationString(InspectionResult inspectionResult) {
         StringBuilder illegalInvocationReportStringBuilder = new StringBuilder();
         illegalInvocationReportStringBuilder.append("Illegal logger method invocations: ");
         illegalInvocationReportStringBuilder.append('\n');
 
-        for (Map.Entry<String, List<MethodDefinition>> entry : reportResult.getIllegalInvocations().entrySet()) {
+        for (Map.Entry<String, List<MethodDefinition>> entry : inspectionResult.getIllegalInvocations().entrySet()) {
 
             String key = entry.getKey();
 

@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * Inspection results to Reporters.
  */
-public class ReportResult {
+public class InspectionResult {
     private List<String> allErrorCodes;
 
     private List<String> linkNotReachableErrorCodes;
@@ -34,10 +34,10 @@ public class ReportResult {
 
     // Generated methods, re-generate them if necessary.
 
-    public ReportResult() {
+    public InspectionResult() {
     }
 
-    public ReportResult(List<String> allErrorCodes, List<String> linkNotReachableErrorCodes, Map<String, List<MethodDefinition>> illegalInvocations) {
+    public InspectionResult(List<String> allErrorCodes, List<String> linkNotReachableErrorCodes, Map<String, List<MethodDefinition>> illegalInvocations) {
         this.allErrorCodes = allErrorCodes;
         this.linkNotReachableErrorCodes = linkNotReachableErrorCodes;
         this.illegalInvocations = illegalInvocations;
@@ -72,7 +72,7 @@ public class ReportResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ReportResult that = (ReportResult) o;
+        InspectionResult that = (InspectionResult) o;
 
         if (!allErrorCodes.equals(that.allErrorCodes)) return false;
         if (!linkNotReachableErrorCodes.equals(that.linkNotReachableErrorCodes)) return false;

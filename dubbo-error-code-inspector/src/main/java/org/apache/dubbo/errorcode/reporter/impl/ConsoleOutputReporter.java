@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.errorcode.reporter.impl;
 
-import org.apache.dubbo.errorcode.reporter.ReportResult;
+import org.apache.dubbo.errorcode.reporter.InspectionResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
 
 /**
@@ -25,11 +25,11 @@ import org.apache.dubbo.errorcode.reporter.Reporter;
  */
 public class ConsoleOutputReporter implements Reporter {
     @Override
-    public void report(ReportResult reportResult) {
-        System.out.println("All error codes: " + reportResult.getAllErrorCodes());
+    public void report(InspectionResult inspectionResult) {
+        System.out.println("All error codes: " + inspectionResult.getAllErrorCodes());
         System.out.println();
-        System.out.println("Error codes which document links are not reachable: " + reportResult.getLinkNotReachableErrorCodes());
+        System.out.println("Error codes which document links are not reachable: " + inspectionResult.getLinkNotReachableErrorCodes());
         System.out.println();
-        System.out.println(StringifyUtil.generateIllegalInvocationString(reportResult));
+        System.out.println(StringifyUtil.generateIllegalInvocationString(inspectionResult));
     }
 }

@@ -21,5 +21,5 @@ package org.apache.dubbo.errorcode.reporter;
  * Reporter interface. It transfers the report result to multiple places (e.g. GitHub PR comment, text report, etc.).
  */
 public interface Reporter {
-    void report(ReportResult reportResult);
+    void report(InspectionResult inspectionResult);
 }

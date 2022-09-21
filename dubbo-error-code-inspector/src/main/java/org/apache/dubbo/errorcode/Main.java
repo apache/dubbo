@@ -21,7 +21,7 @@ import org.apache.dubbo.errorcode.extractor.ErrorCodeExtractor;
 import org.apache.dubbo.errorcode.extractor.JavassistConstantPoolErrorCodeExtractor;
 import org.apache.dubbo.errorcode.model.MethodDefinition;
 import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
-import org.apache.dubbo.errorcode.reporter.ReportResult;
+import org.apache.dubbo.errorcode.reporter.InspectionResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
 import org.apache.dubbo.errorcode.reporter.impl.ConsoleOutputReporter;
 import org.apache.dubbo.errorcode.reporter.impl.FileOutputReporter;
@@ -116,28 +116,28 @@ public class Main {
 
         List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
 
-        ReportResult reportResult = new ReportResult();
+        InspectionResult inspectionResult = new InspectionResult();
 
-        reportResult.setAllErrorCodes(
+        inspectionResult.setAllErrorCodes(
             codes.stream()
                 .distinct()
                 .sorted().collect(Collectors.toList()));
 
-        reportResult.setLinkNotReachableErrorCodes(linksNotReachable);
+        inspectionResult.setLinkNotReachableErrorCodes(linksNotReachable);
 
-        reportResult.setIllegalInvocations(
+        inspectionResult.setIllegalInvocations(
             illegalLoggerMethodInvocations.entrySet()
                 .stream()
                 .filter(e -> !e.getValue().isEmpty())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
-        REPORTERS.forEach(x -> x.report(reportResult));
+        REPORTERS.forEach(x -> x.report(inspectionResult));
 
         cleanUp();
 
         if (REPORT_AS_ERROR) {
-            if (!reportResult.getIllegalInvocations().isEmpty() ||
-                !reportResult.getLinkNotReachableErrorCodes().isEmpty()) {
+            if (!inspectionResult.getIllegalInvocations().isEmpty() ||
+                !inspectionResult.getLinkNotReachableErrorCodes().isEmpty()) {
 
                 throw new IllegalStateException("Invalid situation occurred, check console or log for details;");
             }
