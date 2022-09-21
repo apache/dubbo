@@ -57,6 +57,10 @@ public class Main {
     private static final List<Class<? extends Reporter>> REPORTER_CLASSES =
         Arrays.asList(ConsoleOutputReporter.class, FileOutputReporter.class);
 
+    private static final boolean REPORT_AS_ERROR =
+        Boolean.getBoolean("dubbo.eci.report-as-error") ||
+        Boolean.parseBoolean(System.getenv("dubbo.eci.report-as-error"));
+
     private static final List<Reporter> REPORTERS;
 
     static {
@@ -130,6 +134,17 @@ public class Main {
         REPORTERS.forEach(x -> x.report(reportResult));
 
         cleanUp();
+
+        if (REPORT_AS_ERROR) {
+            if (!reportResult.getIllegalInvocations().isEmpty() ||
+                !reportResult.getLinkNotReachableErrorCodes().isEmpty()) {
+
+                throw new IllegalStateException("Invalid situation occurred, check console or log for details;");
+            } else {
+
+                System.out.println("Tolerance mode enabled, will not throw exception.");
+            }
+        }
     }
 
     private static void handleSinglePackageFolder(Map<Path, List<String>> fileBasedCodes,
@@ -165,4 +180,6 @@ public class Main {
         EXECUTOR.shutdown();
         LinkTestingForkJoinTask.closeHttpClient();
     }
+
+
 }
