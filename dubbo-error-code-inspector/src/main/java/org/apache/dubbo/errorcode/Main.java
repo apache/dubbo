@@ -140,10 +140,9 @@ public class Main {
                 !reportResult.getLinkNotReachableErrorCodes().isEmpty()) {
 
                 throw new IllegalStateException("Invalid situation occurred, check console or log for details;");
-            } else {
-
-                System.out.println("Tolerance mode enabled, will not throw exception.");
             }
+        } else {
+            System.out.println("Tolerance mode enabled, will not throw exception.");
         }
     }
 
