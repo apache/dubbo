@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
+
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
  */
@@ -74,7 +76,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
                     // 4-2 - Can't find an instance URL using the default preferredProtocol.
 
-                    logger.warn("4-2", "typo in preferred protocol", "",
+                    logger.warn(PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER, "typo in preferred protocol", "",
                         "Can't find an instance URL using the default preferredProtocol \"" + preferredProtocol + "\", " +
                         "falling back to the strategy that pick the first found protocol. " +
                         "Please try modifying the config of dubbo.application.protocol");

@@ -137,7 +137,7 @@ public class MetadataUtils {
 
         Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
-        url.setServiceModel(consumerModel);
+        url = url.setServiceModel(consumerModel);
 
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, url);
 

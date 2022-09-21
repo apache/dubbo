@@ -14,32 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.common.URL;
 
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.ssl.SslContext;
+import java.util.ArrayList;
+import java.util.List;
 
-public abstract class AbstractWireProtocol implements WireProtocol {
-
-    private final ProtocolDetector detector;
-
-    public AbstractWireProtocol(ProtocolDetector detector) {
-        this.detector = detector;
-    }
+public class Hello1ServiceImpl implements HelloService {
 
     @Override
-    public ProtocolDetector detector() {
-        return detector;
-    }
-
-    @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-
-    }
-
-    @Override
-    public void close() {
+    public List<String> hellos() {
+        List<String> res = new ArrayList<>();
+        res.add("consumer-hello-1");
+        return res;
     }
 }

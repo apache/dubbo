@@ -200,6 +200,11 @@ public class ProtocolConfig extends AbstractConfig {
 
     private Boolean sslEnabled;
 
+    /*
+     * Extra Protocol for this service, using Port Unification Server
+     */
+    private String extProtocol;
+
     public ProtocolConfig() {
     }
 
@@ -551,4 +556,11 @@ public class ProtocolConfig extends AbstractConfig {
         return StringUtils.isNotEmpty(name);
     }
 
+    public String getExtProtocol() {
+        return extProtocol;
+    }
+
+    public void setExtProtocol(String extProtocol) {
+        this.extProtocol = extProtocol;
+    }
 }

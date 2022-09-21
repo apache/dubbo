@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
+
 /**
  * Abstract router which listens to dynamic configuration
  */
@@ -75,7 +77,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
                 routerRule = ConditionRuleParser.parse(event.getContent());
                 generateConditions(routerRule);
             } catch (Exception e) {
-                logger.error("2-15","Failed to parse the raw condition rule","","Failed to parse the raw condition rule and it will not take effect, please check " +
+                logger.error(CLUSTER_FAILED_RULE_PARSING,"Failed to parse the raw condition rule","","Failed to parse the raw condition rule and it will not take effect, please check " +
                     "if the condition rule matches with the template, the raw rule is:\n " + event.getContent(),e);
             }
         }

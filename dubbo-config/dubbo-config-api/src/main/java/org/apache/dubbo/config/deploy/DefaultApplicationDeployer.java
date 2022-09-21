@@ -73,6 +73,8 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
@@ -722,7 +724,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
-            logger.error("5-11", "configuration server disconnected", "", "Register instance error.", e);
+            logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
@@ -738,7 +740,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                 } catch (Exception e) {
                     if (!applicationModel.isDestroyed()) {
-                        logger.error("5-12", "", "", "Refresh instance and metadata error.", e);
+                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
                     }
                 }
             }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
@@ -956,7 +958,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                 }
             } catch (Exception e) {
-                logger.error("5-12", "", "", "Refresh instance and metadata error.", e);
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
             }
         } finally {
             // complete future
