@@ -18,6 +18,8 @@
 package org.apache.dubbo.errorcode.extractor;
 
 import org.apache.dubbo.errorcode.model.MethodDefinition;
+import org.apache.dubbo.errorcode.util.FileUtils;
+import org.apache.dubbo.errorcode.util.ReflectUtils;
 
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
@@ -28,9 +30,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +113,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
     }
 
     private int getIndexFieldInConstPoolItems(Object item) {
-        Field indexField = getDeclaredFieldRecursively(item.getClass(), "index");
+        Field indexField = ReflectUtils.getDeclaredFieldRecursively(item.getClass(), "index");
 
         try {
             return (int) indexField.get(item);
@@ -123,38 +122,10 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         }
     }
 
-    /**
-     * Searches (a private) field in super classes recursively.
-     *
-     * @param cls the actual type
-     * @param name the field name
-     * @return the corresponding Field object, or null if the field does not exist.
-     */
-    private static Field getDeclaredFieldRecursively(Class cls, String name) {
-        try {
-            Field indexField = cls.getDeclaredField(name);
-            indexField.setAccessible(true);
-
-            return indexField;
-        } catch (NoSuchFieldException e) {
-            if (cls == Object.class) {
-                return null;
-            }
-
-            return getDeclaredFieldRecursively(cls.getSuperclass(), name);
-        }
-    }
-
     private ClassFile openClassFile(String classFilePath) {
-        try (FileChannel fileChannel = FileChannel.open(Paths.get(classFilePath))) {
-
-            ByteBuffer byteBuffer = ByteBuffer.allocate((int) fileChannel.size());
-            fileChannel.read(byteBuffer);
-
-            byte[] clsB = byteBuffer.array();
-
+        try {
+            byte[] clsB = FileUtils.openFileAsByteArray(classFilePath);
             return new ClassFile(new DataInputStream(new ByteArrayInputStream(clsB)));
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
