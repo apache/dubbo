@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
+public final class BootstrapInfoImpl extends Bootstrapper.BootstrapInfo {
 
     private final List<Bootstrapper.ServerInfo> servers;
 

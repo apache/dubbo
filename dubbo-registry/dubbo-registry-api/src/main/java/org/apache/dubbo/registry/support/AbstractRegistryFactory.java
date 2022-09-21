@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CREATE_INSTANCE;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -104,7 +105,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
                 throw new RuntimeException("Can not create registry " + url, e);
             } else {
                 // 1-11 Failed to obtain or create registry (service) object.
-                LOGGER.warn("1-11", "", "",
+                LOGGER.warn(REGISTRY_FAILED_CREATE_INSTANCE, "", "",
                     "Failed to obtain or create registry ", e);
             }
         } finally {

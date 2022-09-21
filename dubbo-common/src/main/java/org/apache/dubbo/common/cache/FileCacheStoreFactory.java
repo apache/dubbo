@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
+
 /**
  * ClassLoader Level static share.
  * Prevent FileCacheStore being operated in multi-application
@@ -92,7 +94,7 @@ public final class FileCacheStoreFactory {
             } catch (IOException e) {
                 // 0-3 - cache path inaccessible
 
-                logger.error("0-3", "inaccessible of cache path", "",
+                logger.error(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                     "Cache store path can't be created: ", e);
 
                 throw new RuntimeException("Cache store path can't be created: " + candidate, e);
@@ -157,7 +159,7 @@ public final class FileCacheStoreFactory {
             return builder.build();
         } catch (Throwable t) {
 
-            logger.warn("0-3", "inaccessible of cache path", "",
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                 "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, t);
 
             return FileCacheStore.Empty.getInstance(name);

@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.reactive.handler;
+package org.apache.dubbo.reactive.handler;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.reactive.calls.ReactorServerCalls;
+import org.apache.dubbo.reactive.calls.ReactorServerCalls;
 import org.apache.dubbo.rpc.stub.StubMethodHandler;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,21 +27,22 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
- * The handler of ManyToOne() method for stub invocation.
+ * The handler of OneToMany() method for stub invocation.
  */
-public class ManyToOneMethodHandler<T, R> implements StubMethodHandler<T, R> {
+public class OneToManyMethodHandler<T, R> implements StubMethodHandler<T, R> {
 
-    private final Function<Flux<T>, Mono<R>> func;
+    private final Function<Mono<T>, Flux<R>> func;
 
-    public ManyToOneMethodHandler(Function<Flux<T>, Mono<R>> func) {
+    public OneToManyMethodHandler(Function<Mono<T>, Flux<R>> func) {
         this.func = func;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public CompletableFuture<StreamObserver<T>> invoke(Object[] arguments) {
-        CallStreamObserver<R> responseObserver = (CallStreamObserver<R>) arguments[0];
-        StreamObserver<T> requestObserver = ReactorServerCalls.manyToOne(responseObserver, func);
-        return CompletableFuture.completedFuture(requestObserver);
+    public CompletableFuture<?> invoke(Object[] arguments) {
+        T request = (T) arguments[0];
+        StreamObserver<R> responseObserver = (StreamObserver<R>) arguments[1];
+        ReactorServerCalls.oneToMany(request, responseObserver, func);
+        return CompletableFuture.completedFuture(null);
     }
 }

@@ -97,7 +97,9 @@ public class ContextFilter implements Filter, Filter.Listener {
 
         RpcContext context = RpcContext.getServerAttachment();
 //                .setAttachments(attachments)  // merged from dubbox
-        context.setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+        if (context.getLocalAddress() == null) {
+            context.setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+        }
 
         String remoteApplication = invocation.getAttachment(REMOTE_APPLICATION_KEY);
         if (StringUtils.isNotEmpty(remoteApplication)) {

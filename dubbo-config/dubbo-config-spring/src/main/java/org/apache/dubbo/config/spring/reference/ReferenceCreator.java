@@ -95,7 +95,9 @@ public class ReferenceCreator {
         configureBean(configBean);
 
         if (logger.isInfoEnabled()) {
-            logger.info("The configBean[type:" + configBean.getClass().getSimpleName() + "] has been built.");
+            logger.info("The configBean[type:" +
+                configBean.getClass().getSimpleName() + "<" + defaultInterfaceClass.getTypeName() + ">" +
+                "] has been built.");
         }
 
         return configBean;
@@ -121,14 +123,6 @@ public class ReferenceCreator {
             configBean.setMonitor(monitorConfig);
         }
     }
-
-//    private void configureApplicationConfig(ReferenceConfig configBean) {
-//        String applicationConfigId = getAttribute(attributes, "application");
-//        if (StringUtils.hasText(applicationConfigId)) {
-//            ApplicationConfig applicationConfig = getConfig(applicationConfigId, ApplicationConfig.class);
-//            configBean.setApplication(applicationConfig);
-//        }
-//    }
 
     private void configureModuleConfig(ReferenceConfig configBean) {
         String moduleConfigId = getAttribute(attributes, "module");

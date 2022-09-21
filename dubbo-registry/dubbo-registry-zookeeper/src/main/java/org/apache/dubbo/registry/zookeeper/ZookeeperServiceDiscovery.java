@@ -192,9 +192,9 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 logger.error("Trying to recover from new zkClient session failed, path is " + path + ", error msg: " + e.getMessage());
             }
 
-            List<ServiceInstance> instances = this.getInstances(serviceName);
+            List<ServiceInstance> instances = this.getInstances(watcher.getServiceName());
             for (ServiceInstancesChangedListener listener : listeners) {
-                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
+                listener.onEvent(new ServiceInstancesChangedEvent(watcher.getServiceName(), instances));
             }
             latch.countDown();
         });

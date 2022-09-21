@@ -41,6 +41,8 @@ import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_EMPTY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TAG_ROUTE_INVALID;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 
 /**
@@ -72,7 +74,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 this.tagRouterRule = TagRuleParser.parse(event.getContent());
             }
         } catch (Exception e) {
-            logger.error("2-11","Failed to parse the raw tag router rule","","Failed to parse the raw tag router rule and it will not take effect, please check if the " +
+            logger.error(CLUSTER_TAG_ROUTE_INVALID,"Failed to parse the raw tag router rule","","Failed to parse the raw tag router rule and it will not take effect, please check if the " +
                 "rule matches with the template, the raw rule is:\n ",e);
         }
     }
@@ -235,7 +237,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                     return true;
                 }
             } catch (Exception e) {
-                logger.error("2-11","tag route address is invalid","","The format of ip address is invalid in tag route. Address :" + address,e);
+                logger.error(CLUSTER_TAG_ROUTE_INVALID,"tag route address is invalid","","The format of ip address is invalid in tag route. Address :" + address,e);
             }
         }
         return false;
@@ -256,7 +258,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         String providerApplication = url.getRemoteApplication();
 
         if (StringUtils.isEmpty(providerApplication)) {
-            logger.error("2-12","tag router get providerApplication is empty","","TagRouter must getConfig from or subscribe to a specific application, but the application " +
+            logger.error(CLUSTER_TAG_ROUTE_EMPTY,"tag router get providerApplication is empty","","TagRouter must getConfig from or subscribe to a specific application, but the application " +
                 "in this TagRouter is not specified.");
             return;
         }

@@ -1075,30 +1075,23 @@ public class ExtensionLoader<T> {
             List<String> newContentList = getResourceContent(resourceURL);
             String clazz;
             for (String line : newContentList) {
-                final int ci = line.indexOf('#');
-                if (ci >= 0) {
-                    line = line.substring(0, ci);
-                }
-                line = line.trim();
-                if (line.length() > 0) {
-                    try {
-                        String name = null;
-                        int i = line.indexOf('=');
-                        if (i > 0) {
-                            name = line.substring(0, i).trim();
-                            clazz = line.substring(i + 1).trim();
-                        } else {
-                            clazz = line;
-                        }
-                        if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages) && isIncluded(clazz, includedPackages)
-                            && !isExcludedByClassLoader(clazz, classLoader, onlyExtensionClassLoaderPackages)) {
-                            loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
-                        }
-                    } catch (Throwable t) {
-                        IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type +
-                            ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
-                        exceptions.put(line, e);
+                try {
+                    String name = null;
+                    int i = line.indexOf('=');
+                    if (i > 0) {
+                        name = line.substring(0, i).trim();
+                        clazz = line.substring(i + 1).trim();
+                    } else {
+                        clazz = line;
                     }
+                    if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages) && isIncluded(clazz, includedPackages)
+                        && !isExcludedByClassLoader(clazz, classLoader, onlyExtensionClassLoaderPackages)) {
+                        loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
+                    }
+                } catch (Throwable t) {
+                    IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type +
+                        ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
+                    exceptions.put(line, e);
                 }
             }
         } catch (Throwable t) {
