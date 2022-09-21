@@ -19,6 +19,8 @@ package org.apache.dubbo.errorcode.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,5 +50,41 @@ public final class FileUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static byte[] openFileAsByteArray(String filePath) {
+        try (FileChannel fileChannel = FileChannel.open(Paths.get(filePath))) {
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate((int) fileChannel.size());
+            fileChannel.read(byteBuffer);
+
+            return byteBuffer.array();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String openFileAsString(String filePath) {
+        return new String(openFileAsByteArray(filePath));
+    }
+
+    public static String getSourceFilePathFromClassFilePath(String classFilePath) {
+
+        String classesPathString = "\\target\\classes\\".replace("\\", File.separator);
+        String sourcesPathString = "\\src\\main\\java\\".replace("\\", File.separator);
+
+        String sourceFilePathByReplace = classFilePath.replace(classesPathString, sourcesPathString)
+            .replace(".class", ".java");
+
+        // Inner classes.
+        if (sourceFilePathByReplace.lastIndexOf('$') != -1) {
+            int dollarCharIndex = sourceFilePathByReplace.lastIndexOf('$');
+            String outerClassPath = sourceFilePathByReplace.substring(0, dollarCharIndex);
+
+            return outerClassPath + ".java";
+        }
+
+        return sourceFilePathByReplace;
     }
 }
