@@ -22,13 +22,14 @@ import org.apache.dubbo.errorcode.model.LoggerMethodInvocation;
 import java.util.List;
 
 /**
- * Info here.
+ * Locator of invalid logger invocation, which locates the line of the invalid logger invocation.
  */
 public interface InvalidLoggerInvocationLocator {
     /**
+     * Locate the row of invalid logger invocations.
      *
-     * @param classFile
-     * @return
+     * @param classFile path to the class file
+     * @return location of invalid logger method invocation.
      */
     List<LoggerMethodInvocation> locateInvalidLoggerInvocation(String classFile);
 }

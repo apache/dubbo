@@ -25,12 +25,12 @@ import java.util.List;
 public class LoggerMethodInvocation {
     private String loggerMethodInvocationCode;
 
-    private List<String> occurredLines;
+    private List<Integer> occurredLines;
 
     public LoggerMethodInvocation() {
     }
 
-    public LoggerMethodInvocation(String loggerMethodInvocationCode, List<String> occurredLines) {
+    public LoggerMethodInvocation(String loggerMethodInvocationCode, List<Integer> occurredLines) {
         this.loggerMethodInvocationCode = loggerMethodInvocationCode;
         this.occurredLines = occurredLines;
     }
@@ -69,11 +69,11 @@ public class LoggerMethodInvocation {
         this.loggerMethodInvocationCode = loggerMethodInvocationCode;
     }
 
-    public List<String> getOccurredLines() {
+    public List<Integer> getOccurredLines() {
         return occurredLines;
     }
 
-    public void setOccurredLines(List<String> occurredLines) {
+    public void setOccurredLines(List<Integer> occurredLines) {
         this.occurredLines = occurredLines;
     }
 }

@@ -18,15 +18,11 @@
 package org.apache.dubbo.errorcode.extractor;
 
 import org.apache.dubbo.errorcode.model.MethodDefinition;
-import org.apache.dubbo.errorcode.util.FileUtils;
 import org.apache.dubbo.errorcode.util.ReflectUtils;
 
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -49,7 +45,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
     @Override
     public List<String> getErrorCodes(String classFilePath) {
 
-        ClassFile clsF = openClassFile(classFilePath);
+        ClassFile clsF = JavassistUtils.openClassFile(classFilePath);
         ConstPool cp = clsF.getConstPool();
 
         List<String> cpItems = getConstPoolStringItems(cp);
@@ -60,7 +56,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
     @Override
     public List<MethodDefinition> getIllegalLoggerMethodInvocations(String classFilePath) {
 
-        ClassFile classFile = openClassFile(classFilePath);
+        ClassFile classFile = JavassistUtils.openClassFile(classFilePath);
         List<Object> constPoolItems = getConstPoolItems(classFile.getConstPool());
 
         List<Integer> interfaceMethodRefIndices = constPoolItems.stream().filter(x -> {
@@ -118,15 +114,6 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         try {
             return (int) indexField.get(item);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ClassFile openClassFile(String classFilePath) {
-        try {
-            byte[] clsB = FileUtils.openFileAsByteArray(classFilePath);
-            return new ClassFile(new DataInputStream(new ByteArrayInputStream(clsB)));
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

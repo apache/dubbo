@@ -18,9 +18,12 @@
 package org.apache.dubbo.errorcode;
 
 import org.apache.dubbo.errorcode.extractor.ErrorCodeExtractor;
+import org.apache.dubbo.errorcode.extractor.InvalidLoggerInvocationLocator;
 import org.apache.dubbo.errorcode.extractor.JavassistConstantPoolErrorCodeExtractor;
-import org.apache.dubbo.errorcode.model.MethodDefinition;
+import org.apache.dubbo.errorcode.extractor.JdtBasedInvalidLoggerInvocationLocator;
 import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
+import org.apache.dubbo.errorcode.model.LoggerMethodInvocation;
+import org.apache.dubbo.errorcode.model.MethodDefinition;
 import org.apache.dubbo.errorcode.reporter.InspectionResult;
 import org.apache.dubbo.errorcode.reporter.Reporter;
 import org.apache.dubbo.errorcode.reporter.impl.ConsoleOutputReporter;
@@ -53,6 +56,8 @@ public class Main {
     private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(16, 32, 2, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
 
     private static final ErrorCodeExtractor ERROR_CODE_EXTRACTOR = new JavassistConstantPoolErrorCodeExtractor();
+
+    private static final InvalidLoggerInvocationLocator INVALID_LOGGER_INVOCATION_LOCATOR = new JdtBasedInvalidLoggerInvocationLocator();
 
     private static final List<Class<? extends Reporter>> REPORTER_CLASSES =
         Arrays.asList(ConsoleOutputReporter.class, FileOutputReporter.class);
@@ -114,6 +119,23 @@ public class Main {
         long millis2 = System.currentTimeMillis();
         System.out.println(millis2 - millis1);
 
+
+        Map<String, List<MethodDefinition>> illegalInvocationClassesAndLoggerMethods = illegalLoggerMethodInvocations.entrySet()
+            .stream()
+            .filter(e -> !e.getValue().isEmpty())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<String, List<LoggerMethodInvocation>> invalidLoggerMethodInvocationLocations = new HashMap<>();
+
+//        Set<String> illegalInvocationClasses = illegalInvocationClassesAndLoggerMethods.keySet();
+//        illegalInvocationClasses.forEach(x ->
+//            invalidLoggerMethodInvocationLocations.put(
+//                x, INVALID_LOGGER_INVOCATION_LOCATOR.locateInvalidLoggerInvocation(x)
+//            )
+//        );
+//
+//        System.out.println(invalidLoggerMethodInvocationLocations);
+
         List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
 
         InspectionResult inspectionResult = new InspectionResult();
@@ -125,11 +147,7 @@ public class Main {
 
         inspectionResult.setLinkNotReachableErrorCodes(linksNotReachable);
 
-        inspectionResult.setIllegalInvocations(
-            illegalLoggerMethodInvocations.entrySet()
-                .stream()
-                .filter(e -> !e.getValue().isEmpty())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        inspectionResult.setIllegalInvocations(illegalInvocationClassesAndLoggerMethods);
 
         REPORTERS.forEach(x -> x.report(inspectionResult));
 
