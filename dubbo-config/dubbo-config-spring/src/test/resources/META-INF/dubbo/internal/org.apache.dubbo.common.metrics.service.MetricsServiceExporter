@@ -1,1 +1,1 @@
-default=org.apache.dubbo.config.metrics.DefaultMetricsServiceExporter
+default=org.apache.dubbo.config.deploy.metrics.DefaultMetricsServiceExporter
