@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -32,6 +33,11 @@ import java.util.Set;
 public class CompatibleTypeUtils {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * the text to parse such as "2007-12-03T10:15:30"
+     */
+    private static final int ISO_LOCAL_DATE_TIME_MIN_LEN = 19;
 
     private CompatibleTypeUtils() {
     }
@@ -127,7 +133,12 @@ public class CompatibleTypeUtils {
                 if (StringUtils.isEmpty(string)) {
                     return null;
                 }
-                return LocalDateTime.parse(string).toLocalTime();
+                
+                if (string.length() >= ISO_LOCAL_DATE_TIME_MIN_LEN) {
+                    return LocalDateTime.parse(string).toLocalTime();
+                } else {
+                    return LocalTime.parse(string);
+                }
             }
             if (type == Class.class) {
                 try {
