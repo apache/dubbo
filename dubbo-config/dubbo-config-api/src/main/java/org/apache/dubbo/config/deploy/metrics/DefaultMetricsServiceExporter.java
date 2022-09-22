@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.metrics;
+package org.apache.dubbo.config.deploy.metrics;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METRICS_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METRICS_SERVICE_PROTOCOL_KEY;
