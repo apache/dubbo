@@ -17,11 +17,18 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 
 /**
  *
@@ -168,4 +175,16 @@ public interface ExecutorRepository {
      */
     @Deprecated
     ExecutorService getMappingRefreshingExecutor();
+
+    static ExecutorRepository getInstance(ApplicationModel applicationModel) {
+        ExtensionLoader<ExecutorRepository> extensionLoader = applicationModel.getExtensionLoader(ExecutorRepository.class);
+        String mode = getMode(applicationModel);
+        return StringUtils.isNotEmpty(mode) ? extensionLoader.getExtension(mode) : extensionLoader.getDefaultExtension();
+    }
+
+    static String getMode(ApplicationModel applicationModel) {
+        Optional<ApplicationConfig> optional = applicationModel.getApplicationConfigManager().getApplication();
+        return optional.map(ApplicationConfig::getExecutorManagementMode).orElse(EXECUTOR_MANAGEMENT_MODE_DEFAULT);
+    }
+
 }

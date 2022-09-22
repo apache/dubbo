@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * AbstractBuilder
@@ -106,6 +107,11 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
      * The serialization type
      */
     private String serialization;
+
+    /**
+     * used for thread pool isolation between services
+     */
+    private Executor executor;
 
     public B version(String version) {
         this.version = version;
@@ -211,8 +217,13 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         return getThis();
     }
 
-    public  B serialization(String serialization) {
+    public B serialization(String serialization) {
         this.serialization = serialization;
+        return getThis();
+    }
+
+    public B executor(Executor executor) {
+        this.executor = executor;
         return getThis();
     }
 
@@ -267,6 +278,9 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         }
         if (!StringUtils.isEmpty(serialization)) {
             instance.setSerialization(serialization);
+        }
+        if (executor != null) {
+            instance.setExecutor(executor);
         }
     }
 }

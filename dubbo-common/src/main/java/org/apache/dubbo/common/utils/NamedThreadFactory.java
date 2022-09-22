@@ -60,4 +60,9 @@ public class NamedThreadFactory implements ThreadFactory {
     public ThreadGroup getThreadGroup() {
         return mGroup;
     }
+
+    // for test
+    public AtomicInteger getThreadNum() {
+        return mThreadNum;
+    }
 }

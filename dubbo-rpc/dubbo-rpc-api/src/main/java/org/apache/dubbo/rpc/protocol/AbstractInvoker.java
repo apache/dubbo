@@ -295,9 +295,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
             return new ThreadlessExecutor();
         }
-        return url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
-            .getExecutor(url);
+        return ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutor(url);
     }
 
     /**

@@ -51,9 +51,7 @@ class TripleInvokerTest {
         when(connection.getChannel())
             .thenReturn(channel);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
-        ExecutorService executorService = url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
+        ExecutorService executorService = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
             .createExecutorIfAbsent(url);
         TripleClientCall call = Mockito.mock(TripleClientCall.class);
         StreamObserver streamObserver = Mockito.mock(StreamObserver.class);

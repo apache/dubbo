@@ -38,6 +38,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROT
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -203,6 +205,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     private Boolean enableEmptyProtection;
 
+    /**
+     * thread pool management: default/isolation
+     */
+    private String executorManagementMode;
+
     public ApplicationConfig() {
     }
 
@@ -232,6 +239,9 @@ public class ApplicationConfig extends AbstractConfig {
                 LOGGER.warn("Failed to get the hostname of current instance.", e);
                 hostname = "UNKNOWN";
             }
+        }
+        if (executorManagementMode == null) {
+            executorManagementMode = EXECUTOR_MANAGEMENT_MODE_DEFAULT;
         }
     }
 
@@ -572,6 +582,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setStartupProbe(String startupProbe) {
         this.startupProbe = startupProbe;
+    }
+
+    public void setExecutorManagementMode(String executorManagementMode) {
+        this.executorManagementMode = executorManagementMode;
+    }
+
+    @Parameter(key = EXECUTOR_MANAGEMENT_MODE)
+    public String getExecutorManagementMode() {
+        return executorManagementMode;
     }
 
     @Override

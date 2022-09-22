@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleExecutorSupport;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -125,14 +126,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        TripleExecutorSupport tripleExecutorSupport = new TripleExecutorSupport(url);
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Channel>() {
                 @Override
                 protected void initChannel(Channel ch) {
                     final ChannelPipeline p = ch.pipeline();
                     p.addLast(new TripleCommandOutBoundHandler());
-                    p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
-                        headFilters));
+                    p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, headFilters, tripleExecutorSupport));
                 }
             });
         List<ChannelHandler> handlers = new ArrayList<>();
@@ -147,9 +148,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
 
     private Executor lookupExecutor(URL url) {
-        return url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().getExecutor(url);
+        return ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutor(url);
     }
 
     @Override

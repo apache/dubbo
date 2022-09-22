@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
- * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
+ * Consider implementing {@code Lifecycle} to enable executors shutdown when the process stops.
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
@@ -60,7 +60,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private volatile ExecutorService serviceReferExecutor;
 
-    private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConcurrentMap<String, ExecutorService>> data = new ConcurrentHashMap<>();
 
     private final Object LOCK = new Object();
     private ExtensionAccessor extensionAccessor;
@@ -81,27 +81,38 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      */
     @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(getExecutorKey(url), k -> new ConcurrentHashMap<>());
-        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
+        Map<String, ExecutorService> executors = data.computeIfAbsent(getExecutorKey(url), k -> new ConcurrentHashMap<>());
 
-        String protocol = url.getProtocol();
-        if (StringUtils.isEmpty(protocol)) {
-            protocol = DEFAULT_PROTOCOL;
-        }
+        String executorCacheKey = getExecutorSecondKey(url);
 
-        if (url.getParameter(THREAD_NAME_KEY) == null) {
-            url = url.putAttribute(THREAD_NAME_KEY, protocol + "-protocol-" + portKey);
-        }
+        url = setThreadNameIfAbsent(url, executorCacheKey);
+
         URL finalUrl = url;
-        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));
+        ExecutorService executor = executors.computeIfAbsent(executorCacheKey, k -> createExecutor(finalUrl));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
-            executors.remove(portKey);
+            executors.remove(executorCacheKey);
             executor = createExecutor(url);
-            executors.put(portKey, executor);
+            executors.put(executorCacheKey, executor);
         }
         return executor;
+    }
+
+    protected URL setThreadNameIfAbsent(URL url, String executorCacheKey) {
+        if (url.getParameter(THREAD_NAME_KEY) == null) {
+            String protocol = url.getProtocol();
+            if (StringUtils.isEmpty(protocol)) {
+                protocol = DEFAULT_PROTOCOL;
+            }
+            url = url.putAttribute(THREAD_NAME_KEY, protocol + "-protocol-" + executorCacheKey);
+        }
+        return url;
+    }
+
+    protected String getExecutorSecondKey(URL url) {
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
+        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
+        return String.valueOf(portKey);
     }
 
     /**
@@ -121,13 +132,13 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         return executorKey;
     }
 
-    private ExecutorService createExecutor(URL url) {
+    protected ExecutorService createExecutor(URL url) {
         return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
     @Override
     public ExecutorService getExecutor(URL url) {
-        Map<Integer, ExecutorService> executors = data.get(getExecutorKey(url));
+        Map<String, ExecutorService> executors = data.get(getExecutorKey(url));
 
         /*
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
@@ -141,10 +152,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         }
 
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        ExecutorService executor = executors.get(portKey);
+        String executorCacheKey = getExecutorSecondKey(url);
+        ExecutorService executor = executors.get(executorCacheKey);
         if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
-            executors.remove(portKey);
+            executors.remove(executorCacheKey);
             // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
             executor = null;
             logger.info("Executor for " + url + " is shutdown.");

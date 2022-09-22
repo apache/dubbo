@@ -48,17 +48,17 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         TripleHttp2FrameServerHandler.class);
     private final PathResolver pathResolver;
     private final FrameworkModel frameworkModel;
-    private final Executor executor;
     private final List<HeaderFilter> filters;
+    private final TripleExecutorSupport tripleExecutorSupport;
     private final String acceptEncoding;
 
     public TripleHttp2FrameServerHandler(
         FrameworkModel frameworkModel,
-        Executor executor,
-        List<HeaderFilter> filters) {
+        List<HeaderFilter> filters,
+        TripleExecutorSupport tripleExecutorSupport) {
         this.frameworkModel = frameworkModel;
-        this.executor = executor;
         this.filters = filters;
+        this.tripleExecutorSupport = tripleExecutorSupport;
         this.acceptEncoding = String.join(",",
             frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions());
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
@@ -116,6 +116,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
+        Executor executor = tripleExecutorSupport.getExecutor(msg.headers());
         TripleServerStream tripleServerStream = new TripleServerStream(ctx.channel(),
             frameworkModel, executor,
             pathResolver, acceptEncoding, filters);

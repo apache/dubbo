@@ -162,7 +162,7 @@ public final class DubboBootstrap {
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getModelEnvironment();
 
-        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
         applicationDeployer = applicationModel.getDeployer();
         // listen deploy events
         applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
