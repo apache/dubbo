@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * Collection utilities.
  */
-public class CollectionUtil {
+public final class CollectionUtil {
     private CollectionUtil() {
         throw new UnsupportedOperationException("No instance of CollectionUtil for you! ");
     }

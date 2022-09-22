@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.errorcode;
 
+import org.apache.dubbo.errorcode.config.ErrorCodeInspectorConfig;
 import org.apache.dubbo.errorcode.extractor.ErrorCodeExtractor;
 import org.apache.dubbo.errorcode.extractor.InvalidLoggerInvocationLocator;
 import org.apache.dubbo.errorcode.extractor.JavassistConstantPoolErrorCodeExtractor;
@@ -25,21 +26,18 @@ import org.apache.dubbo.errorcode.linktest.LinkTestingForkJoinTask;
 import org.apache.dubbo.errorcode.model.LoggerMethodInvocation;
 import org.apache.dubbo.errorcode.model.MethodDefinition;
 import org.apache.dubbo.errorcode.reporter.InspectionResult;
-import org.apache.dubbo.errorcode.reporter.Reporter;
-import org.apache.dubbo.errorcode.reporter.impl.ConsoleOutputReporter;
-import org.apache.dubbo.errorcode.reporter.impl.FileOutputReporter;
 import org.apache.dubbo.errorcode.util.FileUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -59,36 +57,12 @@ public class Main {
 
     private static final InvalidLoggerInvocationLocator INVALID_LOGGER_INVOCATION_LOCATOR = new JdtBasedInvalidLoggerInvocationLocator();
 
-    private static final List<Class<? extends Reporter>> REPORTER_CLASSES =
-        Arrays.asList(ConsoleOutputReporter.class, FileOutputReporter.class);
-
-    private static final boolean REPORT_AS_ERROR =
-        Boolean.getBoolean("dubbo.eci.report-as-error") ||
-        Boolean.parseBoolean(System.getenv("dubbo.eci.report-as-error"));
-
-    private static final List<Reporter> REPORTERS;
-
-    static {
-        List<Reporter> tempReporters = new ArrayList<>();
-
-        for (Class<? extends Reporter> cls : REPORTER_CLASSES) {
-            try {
-                Reporter r = cls.getConstructor().newInstance();
-
-                tempReporters.add(r);
-
-            } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
-                     IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        REPORTERS = Collections.unmodifiableList(tempReporters);
-    }
+    private static String directoryToInspect;
 
     public static void main(String[] args) {
 
-        System.out.println("Directory to inspect: " + args[0]);
+        directoryToInspect = args[0];
+        System.out.println("Directory to inspect: " + directoryToInspect);
 
         long millis1 = System.currentTimeMillis();
 
@@ -127,14 +101,14 @@ public class Main {
 
         Map<String, List<LoggerMethodInvocation>> invalidLoggerMethodInvocationLocations = new HashMap<>();
 
-//        Set<String> illegalInvocationClasses = illegalInvocationClassesAndLoggerMethods.keySet();
-//        illegalInvocationClasses.forEach(x ->
-//            invalidLoggerMethodInvocationLocations.put(
-//                x, INVALID_LOGGER_INVOCATION_LOCATOR.locateInvalidLoggerInvocation(x)
-//            )
-//        );
-//
-//        System.out.println(invalidLoggerMethodInvocationLocations);
+        Set<String> illegalInvocationClasses = illegalInvocationClassesAndLoggerMethods.keySet();
+        illegalInvocationClasses.forEach(x ->
+            invalidLoggerMethodInvocationLocations.put(
+                x, INVALID_LOGGER_INVOCATION_LOCATOR.locateInvalidLoggerInvocation(x)
+            )
+        );
+
+        System.out.println(invalidLoggerMethodInvocationLocations);
 
         List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
 
@@ -149,11 +123,11 @@ public class Main {
 
         inspectionResult.setIllegalInvocations(illegalInvocationClassesAndLoggerMethods);
 
-        REPORTERS.forEach(x -> x.report(inspectionResult));
+        ErrorCodeInspectorConfig.REPORTERS.forEach(x -> x.report(inspectionResult));
 
         cleanUp();
 
-        if (REPORT_AS_ERROR) {
+        if (ErrorCodeInspectorConfig.REPORT_AS_ERROR) {
             if (!inspectionResult.getIllegalInvocations().isEmpty() ||
                 !inspectionResult.getLinkNotReachableErrorCodes().isEmpty()) {
 
@@ -169,8 +143,13 @@ public class Main {
                                                   Map<String, List<MethodDefinition>> illegalLoggerMethodInvocation,
                                                   CountDownLatch countDownLatch,
                                                   Path folder) {
+
         try (Stream<Path> classFilesStream = Files.walk(folder)) {
-            List<Path> classFiles = classFilesStream.filter(x -> x.toFile().isFile()).collect(Collectors.toList());
+
+            List<Path> classFiles = classFilesStream
+                .filter(x -> x.toFile().isFile())
+                .filter(x -> !ErrorCodeInspectorConfig.EXCLUSIONS.contains(Paths.get(directoryToInspect).relativize(x).toString()))
+                .collect(Collectors.toList());
 
             classFiles.forEach(x -> {
 
@@ -197,6 +176,4 @@ public class Main {
         EXECUTOR.shutdown();
         LinkTestingForkJoinTask.closeHttpClient();
     }
-
-
 }

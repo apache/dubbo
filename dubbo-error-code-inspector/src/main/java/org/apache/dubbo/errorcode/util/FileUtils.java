@@ -24,7 +24,10 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +35,10 @@ import java.util.stream.Stream;
  * Utilities of iterating file.
  */
 public final class FileUtils {
+
+    private static final Pattern WINDOWS_PATH_PATTERN = Pattern.compile("file:/\\w:/.*");
+
+
     private FileUtils() {
         throw new UnsupportedOperationException("No instance of FileUtils for you! ");
     }
@@ -41,9 +48,9 @@ public final class FileUtils {
 
         try (Stream<Path> filesStream = Files.walk(Paths.get(rootPath))) {
             targetFolders = filesStream.filter(x -> !x.toFile().isFile())
-                    .filter(x -> x.toString().contains("classes") && !x.toString().contains("test-classes"))
-                    .filter(x -> x.toString().contains("\\org\\apache\\dubbo".replace('\\', File.separatorChar)))
-                    .collect(Collectors.toList());
+                .filter(x -> x.toString().contains("classes") && !x.toString().contains("test-classes"))
+                .filter(x -> x.toString().contains("\\org\\apache\\dubbo".replace('\\', File.separatorChar)))
+                .collect(Collectors.toList());
 
             return targetFolders;
 
@@ -86,5 +93,40 @@ public final class FileUtils {
         }
 
         return sourceFilePathByReplace;
+    }
+
+    public static List<String> loadConfigurationFileInResources(String path) {
+        String resourceFilePath = getResourceFilePath(path);
+
+        List<String> lines = new ArrayList<>();
+
+        try (FileChannel channel = FileChannel.open(Paths.get(resourceFilePath));
+             Scanner scanner = new Scanner(channel)) {
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine().trim();
+
+                if (!line.startsWith("#") && !line.isEmpty()) {
+                    lines.add(line);
+                }
+            }
+
+            return lines;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getResourceFilePath(String path) {
+        String resourceFilePath = FileUtils.class.getClassLoader().getResource(path).toString();
+
+        if (WINDOWS_PATH_PATTERN.matcher(resourceFilePath).matches()) {
+            resourceFilePath = resourceFilePath.replace("file:/", "");
+        } else {
+            resourceFilePath = resourceFilePath.replace("file:", "");
+        }
+
+        return resourceFilePath;
     }
 }

@@ -34,10 +34,14 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -48,6 +52,7 @@ import static org.apache.dubbo.errorcode.util.CollectionUtil.mapOf;
 /**
  * Locator of invalid logger invocation based on Eclipse JDT.
  */
+@SuppressWarnings("unchecked")
 public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvocationLocator {
 
     private static final String JDT_CORE_COMPILER_SOURCE_PROPERTY_KEY = "org.eclipse.jdt.core.compiler.source";
@@ -105,7 +110,7 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
             }
         });
 
-        return invalidInvocations;
+        return invalidInvocations.stream().distinct().collect(Collectors.toList());
     }
 
     private static Map<String, List<Integer>> getLineOfLoggerInvocations(Pattern pattern, String sourceText) {
@@ -137,7 +142,9 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
 
                 Block ast = (Block) astParserInLoop.createAST(null);
 
-                if (ast.statements().isEmpty()) {
+                // Filter out comments.
+                if (ast.statements().isEmpty() && !nextLine.startsWith("//")) {
+                    // Syntax error, hence no statement presents.
                     notFullyInterpreted = 1;
                 }
 
@@ -151,22 +158,28 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
             previousLine = nextLine;
         }
 
-        lineOfInvocation = lineOfInvocation.entrySet().stream().collect(Collectors.toMap(e -> {
-            astParserInLoop.setSource(e.getKey().toCharArray());
-            astParserInLoop.setKind(ASTParser.K_STATEMENTS);
-            astParserInLoop.setCompilerOptions(mapOf(JDT_CORE_COMPILER_SOURCE_PROPERTY_KEY, JDT_CORE_COMPILER_SOURCE_VERSION));
+        // Filter out comment statement.
+        lineOfInvocation = lineOfInvocation
+            .entrySet()
+            .stream()
+            .filter(e -> !e.getKey().startsWith("//"))
+            .collect(Collectors.toMap(e -> {
+                // Convert the source string to JDT-compatible string.
 
-            List<ExpressionStatement> stmts = ((Block) astParserInLoop.createAST(null)).statements();
+                astParserInLoop.setSource(e.getKey().toCharArray());
+                astParserInLoop.setKind(ASTParser.K_STATEMENTS);
+                astParserInLoop.setCompilerOptions(mapOf(JDT_CORE_COMPILER_SOURCE_PROPERTY_KEY, JDT_CORE_COMPILER_SOURCE_VERSION));
 
-            return stmts.get(0).getExpression().toString();
+                List<ExpressionStatement> stmts = ((Block) astParserInLoop.createAST(null)).statements();
 
-        }, Map.Entry::getValue));
+                return stmts.get(0).getExpression().toString();
+
+            }, Map.Entry::getValue));
 
         return lineOfInvocation;
     }
 
     private static String getLoggerFieldName(String classFile) {
-        // TODO Logger field appears in the super class.
         ClassFile clsF = JavassistUtils.openClassFile(classFile);
         List<FieldInfo> fields = clsF.getFields();
 
@@ -174,7 +187,7 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
         Predicate<FieldInfo> legacyLogger = x -> x.getDescriptor().equals("Lorg/apache/dubbo/common/logger/Logger;");
         Predicate<FieldInfo> loggerType = etaLogger.or(legacyLogger);
 
-        return fields.stream()
+        List<FieldDefinition> fieldNameCollection = fields.stream()
             .filter(loggerType)
             .map(x -> {
                 FieldDefinition def = new FieldDefinition();
@@ -184,6 +197,35 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
                 def.setFieldType(x.getDescriptor());
 
                 return def;
-            }).collect(Collectors.toList()).get(0).getFieldName();
+            }).collect(Collectors.toList());
+
+        if (fieldNameCollection.isEmpty()) {
+            // Logger field is in the super class.
+
+            String superClass = clsF.getSuperclass();
+
+            if (Objects.equals(superClass, Object.class.getName())) {
+                return "logger";
+            }
+
+            String superClassSimpleName = superClass.substring(superClass.lastIndexOf('.') + 1);
+            System.out.println(classFile);
+
+            String classFileFolderPath = Paths.get(classFile).getParent().toString();
+            String superClassClassFile = classFileFolderPath + File.separator + superClassSimpleName + ".class";
+
+            if (!Files.exists(Paths.get(superClassClassFile))) {
+                // The field is in the different module or package.
+
+                // Since walking over the project has a really poor performance,
+                // just return the most frequently used field name...
+
+                return "logger";
+            }
+
+            return getLoggerFieldName(superClassClassFile);
+        }
+
+        return fieldNameCollection.get(0).getFieldName();
     }
 }

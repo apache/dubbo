@@ -24,12 +24,8 @@ import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -38,17 +34,13 @@ import java.util.stream.Collectors;
  */
 public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtractor {
 
-    private static final Map<Class, Field> stringFieldCache = new HashMap<>(2, 1);
-
-    private static Method getItemMethodCache = null;
-
     @Override
     public List<String> getErrorCodes(String classFilePath) {
 
         ClassFile clsF = JavassistUtils.openClassFile(classFilePath);
         ConstPool cp = clsF.getConstPool();
 
-        List<String> cpItems = getConstPoolStringItems(cp);
+        List<String> cpItems = JavassistUtils.getConstPoolStringItems(cp);
 
         return cpItems.stream().filter(x -> ERROR_CODE_PATTERN.matcher(x).matches()).collect(Collectors.toList());
     }
@@ -57,7 +49,7 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
     public List<MethodDefinition> getIllegalLoggerMethodInvocations(String classFilePath) {
 
         ClassFile classFile = JavassistUtils.openClassFile(classFilePath);
-        List<Object> constPoolItems = getConstPoolItems(classFile.getConstPool());
+        List<Object> constPoolItems = JavassistUtils.getConstPoolItems(classFile.getConstPool());
 
         List<Integer> interfaceMethodRefIndices = constPoolItems.stream().filter(x -> {
             try {
@@ -118,98 +110,4 @@ public class JavassistConstantPoolErrorCodeExtractor implements ErrorCodeExtract
         }
     }
 
-    private List<Object> getConstPoolItems(ConstPool cp) {
-        List<Object> objects = new ArrayList<>(cp.getSize());
-
-        for (int i = 0; i < cp.getSize(); i++) {
-            objects.add(getItem(cp, i));
-        }
-
-        return objects;
-    }
-
-    private List<String> getConstPoolStringItems(ConstPool cp) {
-        List<Object> objects = getConstPoolItems(cp);
-        List<String> stringItems = new ArrayList<>(cp.getSize());
-
-        for (Object item : objects) {
-
-            Field stringField;
-
-            if (item != null) {
-                stringField = getStringFieldInConstPoolItems(item);
-
-                if (stringField == null) {
-                    continue;
-                }
-
-                Object fieldData;
-
-                try {
-                    fieldData = stringField.get(item);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("Javassist internal field changed.", e);
-                }
-
-                if (fieldData.getClass() == String.class) {
-                    stringItems.add((String) fieldData);
-                }
-            }
-        }
-
-        return stringItems;
-    }
-
-    /**
-     * Obtain the 'string' field in Utf8Info and StringInfo.
-     *
-     * @param item The instance of Utf8Info and StringInfo.
-     * @return 'string' field's value
-     */
-    private static Field getStringFieldInConstPoolItems(Object item) {
-        if (stringFieldCache.containsKey(item.getClass())) {
-            return stringFieldCache.get(item.getClass());
-        } else {
-            try {
-                Field stringField = item.getClass().getDeclaredField("string");
-                stringField.setAccessible(true);
-                stringFieldCache.put(item.getClass(), stringField);
-
-                return stringField;
-            } catch (NoSuchFieldException ignored) {
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Calls ConstPool.getItem() method reflectively.
-     *
-     * @param cp The ConstPool object.
-     * @param index The index of items.
-     * @return The XXXInfo Object. Since it's invisible, return Object instead.
-     */
-    private Object getItem(ConstPool cp, int index) {
-
-        if (getItemMethodCache == null) {
-            Class<ConstPool> cpc = ConstPool.class;
-            Method getItemMethod;
-            try {
-                getItemMethod = cpc.getDeclaredMethod("getItem", int.class);
-                getItemMethod.setAccessible(true);
-
-                getItemMethodCache = getItemMethod;
-
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Javassist internal method changed.", e);
-            }
-        }
-
-        try {
-            return getItemMethodCache.invoke(cp, index);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException("Javassist internal method changed.", e);
-        }
-    }
 }
