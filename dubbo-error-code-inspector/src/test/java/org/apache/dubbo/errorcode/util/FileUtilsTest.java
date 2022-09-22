@@ -28,7 +28,7 @@ class FileUtilsTest {
     void testLoadConfigurationFileInResources() {
         Assertions.assertTrue(
             FileUtils.loadConfigurationFileInResources("exclusions.cfg")
-                .contains("dubbo-common\\target\\classes\\org\\apache\\dubbo\\common\\logger\\support\\FailsafeLogger.java"));
+                .contains("dubbo-common\\target\\classes\\org\\apache\\dubbo\\common\\logger\\support\\FailsafeLogger.class"));
     }
 
     @Test
