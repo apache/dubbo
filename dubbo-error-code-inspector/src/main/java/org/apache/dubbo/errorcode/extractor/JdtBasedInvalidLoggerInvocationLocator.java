@@ -69,7 +69,7 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
 
         Map<String, List<Integer>> lineOfInvocation = getLineOfLoggerInvocations(pattern, sourceText);
 
-        ASTParser astParser = ASTParser.newParser(AST.getJLSLatest());
+        ASTParser astParser = ASTParser.newParser(AST.JLS_Latest);
         astParser.setSource(sourceText.toCharArray());
         astParser.setKind(ASTParser.K_COMPILATION_UNIT);
         astParser.setCompilerOptions(
@@ -118,7 +118,7 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
 
         Map<String, List<Integer>> lineOfInvocation = new HashMap<>();
 
-        ASTParser astParserInLoop = ASTParser.newParser(AST.getJLSLatest());
+        ASTParser astParserInLoop = ASTParser.newParser(AST.JLS_Latest);
 
         String previousLine = "";
 
