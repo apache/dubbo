@@ -17,12 +17,12 @@
 package org.apache.dubbo.qos.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +44,12 @@ public class QosProtocolWrapperTest {
     private Invoker invoker = mock(Invoker.class);
     private Protocol protocol = mock(Protocol.class);
     private QosProtocolWrapper wrapper;
+
+    private URL triUrl = Mockito.mock(URL.class);
+    private Invoker triInvoker = mock(Invoker.class);
+    private Protocol triProtocol = mock(Protocol.class);
+    private QosProtocolWrapper triWrapper;
+
     private Server server;
 
     @BeforeEach
@@ -51,12 +57,25 @@ public class QosProtocolWrapperTest {
         when(url.getParameter(QOS_ENABLE, true)).thenReturn(true);
         when(url.getParameter(QOS_HOST)).thenReturn("localhost");
         when(url.getParameter(QOS_PORT, 22222)).thenReturn(12345);
-        when(url.getParameter(ACCEPT_FOREIGN_IP, true)).thenReturn(false);
-        when(invoker.getUrl()).thenReturn(url);
+        when(url.getParameter(ACCEPT_FOREIGN_IP, "false")).thenReturn("false");
         when(url.getProtocol()).thenReturn(REGISTRY_PROTOCOL);
-        server = FrameworkModel.defaultModel().getBeanFactory().getBean(Server.class);
+        when(invoker.getUrl()).thenReturn(url);
+
         wrapper = new QosProtocolWrapper(protocol);
         wrapper.setFrameworkModel(FrameworkModel.defaultModel());
+
+        // url2 use tri protocol and qos.accept.foreign.ip=true
+        when(triUrl.getParameter(QOS_ENABLE, true)).thenReturn(true);
+        when(triUrl.getParameter(QOS_HOST)).thenReturn("localhost");
+        when(triUrl.getParameter(QOS_PORT, 22222)).thenReturn(12345);
+        when(triUrl.getParameter(ACCEPT_FOREIGN_IP, "false")).thenReturn("true");
+        when(triUrl.getProtocol()).thenReturn(CommonConstants.TRIPLE);
+        when(triInvoker.getUrl()).thenReturn(triUrl);
+
+        triWrapper = new QosProtocolWrapper(triProtocol);
+        triWrapper.setFrameworkModel(FrameworkModel.defaultModel());
+
+        server = FrameworkModel.defaultModel().getBeanFactory().getBean(Server.class);
     }
 
     @AfterEach
@@ -85,5 +104,24 @@ public class QosProtocolWrapperTest {
         assertThat(server.getPort(), is(12345));
         assertThat(server.isAcceptForeignIp(), is(false));
         verify(protocol).refer(BaseCommand.class, url);
+    }
+
+    @Test
+    public void testMultiProtocol() throws Exception {
+        //tri protocol start first, acceptForeignIp = true
+        triWrapper.export(triInvoker);
+        assertThat(server.isStarted(), is(true));
+        assertThat(server.getHost(), is("localhost"));
+        assertThat(server.getPort(), is(12345));
+        assertThat(server.isAcceptForeignIp(), is(true));
+        verify(triProtocol).export(triInvoker);
+
+        //next registry protocol server still acceptForeignIp=true even though wrapper invoker url set false
+        wrapper.export(invoker);
+        assertThat(server.isStarted(), is(true));
+        assertThat(server.getHost(), is("localhost"));
+        assertThat(server.getPort(), is(12345));
+        assertThat(server.isAcceptForeignIp(), is(true));
+        verify(protocol).export(invoker);
     }
 }
