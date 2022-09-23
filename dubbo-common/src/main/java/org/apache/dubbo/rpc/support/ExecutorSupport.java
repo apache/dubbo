@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.support;
 
+import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -39,8 +40,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
  * <br/>
  * 2.If EXECUTOR_MANAGEMENT_MODE is the isolation, when multiple services are exposed, it means that there are multiple urls,
  * but only one url(ExecutorSupport#url) will remain in the end(Because the server will only open it once according to the address cache).
- * so the thread pool cannot be obtained according to this url. It is necessary to decode the tripleTuple according to
- * the request body(see ExecutorSupport#getTripleTuple method), so that we can obtain the isolation thread pool according to the tripleTuple.
+ * so the thread pool cannot be obtained according to this url. It is necessary to decode the serviceKey according to
+ * the request body(see ExecutorSupport#getServiceKey method), so that we can obtain the isolation thread pool according to the serviceKey.
  */
 public abstract class ExecutorSupport {
     private Executor defaultExecutor;
@@ -63,21 +64,21 @@ public abstract class ExecutorSupport {
         if (defaultExecutor != null) {
             return defaultExecutor;
         }
-        TripleTuple tripleTuple = getTripleTuple(data);
-        if (!isValid(tripleTuple)) {
+        ServiceKey serviceKey = getServiceKey(data);
+        if (!isValid(serviceKey)) {
             return null;
         }
-        String interfaceName = tripleTuple.getInterfaceName();
-        String version = tripleTuple.getVersion();
-        String group = tripleTuple.getGroup();
-        String serviceKey = URL.buildKey(interfaceName, group, version);
-        if (executorMap.containsKey(serviceKey)) {
-            return executorMap.get(serviceKey);
+        String interfaceName = serviceKey.getInterfaceName();
+        String version = serviceKey.getVersion();
+        String group = serviceKey.getGroup();
+        String cachedKey = URL.buildKey(interfaceName, group, version);
+        if (executorMap.containsKey(cachedKey)) {
+            return executorMap.get(cachedKey);
         }
 
         synchronized (this) {
-            if (executorMap.containsKey(serviceKey)) {
-                return executorMap.get(serviceKey);
+            if (executorMap.containsKey(cachedKey)) {
+                return executorMap.get(cachedKey);
             }
             Map<String, String> parameters = url.getParameters();
             parameters.put(GROUP_KEY, group);
@@ -85,7 +86,7 @@ public abstract class ExecutorSupport {
             parameters.put(VERSION_KEY, version);
             ServiceConfigURL tmpURL = new ServiceConfigURL(url.getProtocol(), url.getHost(), url.getPort(), interfaceName, parameters);
             ExecutorService executor = executorRepository.getExecutor(tmpURL);
-            executorMap.put(serviceKey, executor);
+            executorMap.put(cachedKey, executor);
             return executor;
         }
     }
@@ -94,10 +95,10 @@ public abstract class ExecutorSupport {
         executorMap.clear();
     }
 
-    private boolean isValid(TripleTuple tuple) {
-        return tuple != null && StringUtils.isNotEmpty(tuple.getInterfaceName());
+    private boolean isValid(ServiceKey serviceKey) {
+        return serviceKey != null && StringUtils.isNotEmpty(serviceKey.getInterfaceName());
     }
 
-    protected abstract TripleTuple getTripleTuple(Object data);
+    protected abstract ServiceKey getServiceKey(Object data);
 
 }

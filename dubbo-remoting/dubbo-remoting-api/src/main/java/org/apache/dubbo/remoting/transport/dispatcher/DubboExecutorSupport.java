@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.remoting.transport.dispatcher;
 
+import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.support.ExecutorSupport;
-import org.apache.dubbo.rpc.support.TripleTuple;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class DubboExecutorSupport extends ExecutorSupport {
     }
 
     @Override
-    protected TripleTuple getTripleTuple(Object data) {
+    protected ServiceKey getServiceKey(Object data) {
         if (!(data instanceof Request)) {
             return null;
         }
@@ -48,12 +48,12 @@ public class DubboExecutorSupport extends ExecutorSupport {
             Request request = (Request) data;
             Method method = request.getData().getClass().getMethod(INVOCATION_GET_ATTACHMENTS_METHOD);
             Map<String, String> attachments = (Map<String, String>) method.invoke(request.getData());
-            String serviceName = attachments.get(PATH_KEY);
+            String interfaceName = attachments.get(PATH_KEY);
             String version = attachments.get(VERSION_KEY);
             String group = attachments.get(GROUP_KEY);
-            return new TripleTuple(serviceName, version, group);
+            return new ServiceKey(interfaceName, version, group);
         } catch (Throwable e) {
-            logger.error("failed to get TripleTuple, maybe the build rule for data is wrong, data = " + data, e);
+            logger.error("failed to get service key, maybe the build rule for data is wrong, data = " + data, e);
         }
 
         return null;

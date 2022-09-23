@@ -17,12 +17,12 @@
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import io.netty.handler.codec.http2.Http2Headers;
+import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.support.ExecutorSupport;
-import org.apache.dubbo.rpc.support.TripleTuple;
 
 public class TripleExecutorSupport extends ExecutorSupport {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleExecutorSupport.class);
@@ -32,7 +32,7 @@ public class TripleExecutorSupport extends ExecutorSupport {
     }
 
     @Override
-    protected TripleTuple getTripleTuple(Object data) {
+    protected ServiceKey getServiceKey(Object data) {
         if (!(data instanceof Http2Headers)) {
             return null;
         }
@@ -46,9 +46,9 @@ public class TripleExecutorSupport extends ExecutorSupport {
                 headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
             String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ?
                 headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
-            return new TripleTuple(interfaceName, version, group);
+            return new ServiceKey(interfaceName, version, group);
         } catch (Throwable e) {
-            logger.error("failed to get TripleTuple, maybe the build rule for data is wrong, data = " + data, e);
+            logger.error("failed to get service key, maybe the build rule for data is wrong, data = " + data, e);
         }
 
         return null;

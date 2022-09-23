@@ -42,7 +42,7 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
     }
 
     @Override
-    protected String getExecutorSecondKey(URL url) {
+    protected String getProviderKey(URL url) {
         return url.getServiceKey();
     }
 

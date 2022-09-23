@@ -109,10 +109,22 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         return url;
     }
 
-    protected String getExecutorSecondKey(URL url) {
-        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        return String.valueOf(portKey);
+    private String getExecutorSecondKey(URL url) {
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            return getConsumerKey(url);
+        } else {
+            return getProviderKey(url);
+        }
+    }
+
+    private String getConsumerKey(URL url) {
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE
+        return String.valueOf(Integer.MAX_VALUE);
+    }
+
+    protected String getProviderKey(URL url) {
+        // Provider's executor is sharing by protocol.
+        return String.valueOf(url.getPort());
     }
 
     /**
