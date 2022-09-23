@@ -80,7 +80,7 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
         TypeDeclaration type = types.get(0);
 
         List<LoggerMethodInvocation> invalidInvocations = new ArrayList<>();
-        Map<String, List<Integer>> finalLineOfInvocation = lineOfInvocation;
+
         type.accept(new ASTVisitor() {
             @Override
             public boolean visit(MethodInvocation node) {
@@ -99,7 +99,7 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
                             LoggerMethodInvocation loggerMethodInvocation = new LoggerMethodInvocation();
 
                             loggerMethodInvocation.setLoggerMethodInvocationCode(node.toString());
-                            loggerMethodInvocation.setOccurredLines(finalLineOfInvocation.get(node.toString()));
+                            loggerMethodInvocation.setOccurredLines(lineOfInvocation.get(node.toString()));
 
                             invalidInvocations.add(loggerMethodInvocation);
                         }
