@@ -64,12 +64,14 @@ public class Main {
         directoryToInspect = args[0];
         System.out.println("Directory to inspect: " + directoryToInspect);
 
+        // Step 1
+        System.out.println("Scanning error codes and detecting invalid logger invocation...");
+
         long millis1 = System.currentTimeMillis();
 
         List<Path> targetFolders = FileUtils.getAllClassFilePaths(args[0]);
         Map<Path, List<String>> fileBasedCodes = new HashMap<>(1024);
         List<String> codes = Collections.synchronizedList(new ArrayList<>(30));
-
         Map<String, List<MethodDefinition>> illegalLoggerMethodInvocations = new ConcurrentHashMap<>(256);
 
         CountDownLatch countDownLatch = new CountDownLatch(targetFolders.size());
@@ -91,8 +93,11 @@ public class Main {
         }
 
         long millis2 = System.currentTimeMillis();
-        System.out.println(millis2 - millis1);
+        System.out.println("Milliseconds elapsed: " + (millis2 - millis1));
 
+        // Step 2
+        System.out.println("Locating illegal logger method invocations...");
+        millis1 = System.currentTimeMillis();
 
         Map<String, List<MethodDefinition>> illegalInvocationClassesAndLoggerMethods = illegalLoggerMethodInvocations.entrySet()
             .stream()
@@ -108,20 +113,24 @@ public class Main {
             )
         );
 
-        System.out.println(invalidLoggerMethodInvocationLocations);
+        millis2 = System.currentTimeMillis();
+        System.out.println("Milliseconds elapsed: " + (millis2 - millis1));
+
+        // Step 3
+        System.out.println("Finding error codes that document links are not reachable...");
+        millis1 = System.currentTimeMillis();
 
         List<String> linksNotReachable = LinkTestingForkJoinTask.findDocumentMissingErrorCodes(codes);
 
-        InspectionResult inspectionResult = new InspectionResult();
+        millis2 = System.currentTimeMillis();
+        System.out.println("Milliseconds elapsed: " + (millis2 - millis1));
+        System.out.println();
 
-        inspectionResult.setAllErrorCodes(
-            codes.stream()
-                .distinct()
-                .sorted().collect(Collectors.toList()));
-
-        inspectionResult.setLinkNotReachableErrorCodes(linksNotReachable);
-
-        inspectionResult.setIllegalInvocations(illegalInvocationClassesAndLoggerMethods);
+        InspectionResult inspectionResult = getInspectionResult(
+            codes,
+            illegalInvocationClassesAndLoggerMethods,
+            invalidLoggerMethodInvocationLocations,
+            linksNotReachable);
 
         ErrorCodeInspectorConfig.REPORTERS.forEach(x -> x.report(inspectionResult));
 
@@ -136,6 +145,21 @@ public class Main {
         } else {
             System.out.println("Tolerance mode enabled, will not throw exception.");
         }
+    }
+
+    private static InspectionResult getInspectionResult(List<String> codes, Map<String, List<MethodDefinition>> illegalInvocationClassesAndLoggerMethods, Map<String, List<LoggerMethodInvocation>> invalidLoggerMethodInvocationLocations, List<String> linksNotReachable) {
+        InspectionResult inspectionResult = new InspectionResult();
+
+        inspectionResult.setAllErrorCodes(
+            codes.stream()
+                .distinct()
+                .sorted().collect(Collectors.toList()));
+
+        inspectionResult.setLinkNotReachableErrorCodes(linksNotReachable);
+        inspectionResult.setIllegalInvocations(illegalInvocationClassesAndLoggerMethods);
+        inspectionResult.setInvalidLoggerMethodInvocationLocations(invalidLoggerMethodInvocationLocations);
+
+        return inspectionResult;
     }
 
     private static void handleSinglePackageFolder(Map<Path, List<String>> fileBasedCodes,

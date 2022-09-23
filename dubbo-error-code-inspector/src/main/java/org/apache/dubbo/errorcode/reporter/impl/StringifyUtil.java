@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.errorcode.reporter.impl;
 
+import org.apache.dubbo.errorcode.model.LoggerMethodInvocation;
 import org.apache.dubbo.errorcode.model.MethodDefinition;
 import org.apache.dubbo.errorcode.reporter.InspectionResult;
 import org.apache.dubbo.errorcode.util.FileUtils;
@@ -44,21 +45,16 @@ final class StringifyUtil {
             illegalInvocationReportStringBuilder.append(FileUtils.getSourceFilePathFromClassFilePath(key));
 
             illegalInvocationReportStringBuilder.append(": ");
+            illegalInvocationReportStringBuilder.append("\n");
 
-            for (int i = 0; i < entry.getValue().size(); i++) {
+            List<LoggerMethodInvocation> loggerMethodInvocations = inspectionResult.getInvalidLoggerMethodInvocationLocations().get(key);
 
-                MethodDefinition methodDefinition = entry.getValue().get(i);
-
-                illegalInvocationReportStringBuilder
-                    .append(methodDefinition.getClassName())
-                    .append("#")
-                    .append(methodDefinition.getMethodName())
-                    .append(":")
-                    .append(methodDefinition.getArguments());
-
-                if (i != entry.getValue().size() - 1) {
-                    illegalInvocationReportStringBuilder.append(", ");
-                }
+            for (LoggerMethodInvocation mi : loggerMethodInvocations) {
+                illegalInvocationReportStringBuilder.append("Line ");
+                illegalInvocationReportStringBuilder.append(mi.getOccurredLines());
+                illegalInvocationReportStringBuilder.append(": ");
+                illegalInvocationReportStringBuilder.append(mi.getLoggerMethodInvocationCode());
+                illegalInvocationReportStringBuilder.append('\n');
             }
 
             illegalInvocationReportStringBuilder.append('\n');

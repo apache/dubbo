@@ -209,7 +209,6 @@ public class JdtBasedInvalidLoggerInvocationLocator implements InvalidLoggerInvo
             }
 
             String superClassSimpleName = superClass.substring(superClass.lastIndexOf('.') + 1);
-            System.out.println(classFile);
 
             String classFileFolderPath = Paths.get(classFile).getParent().toString();
             String superClassClassFile = classFileFolderPath + File.separator + superClassSimpleName + ".class";
