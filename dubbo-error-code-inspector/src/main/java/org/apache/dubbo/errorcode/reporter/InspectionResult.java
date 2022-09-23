@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.errorcode.reporter;
 
+import org.apache.dubbo.errorcode.model.LoggerMethodInvocation;
 import org.apache.dubbo.errorcode.model.MethodDefinition;
 
 import java.util.List;
@@ -32,16 +33,9 @@ public class InspectionResult {
 
     private Map<String, List<MethodDefinition>> illegalInvocations;
 
+    private Map<String, List<LoggerMethodInvocation>> invalidLoggerMethodInvocationLocations;
+
     // Generated methods, re-generate them if necessary.
-
-    public InspectionResult() {
-    }
-
-    public InspectionResult(List<String> allErrorCodes, List<String> linkNotReachableErrorCodes, Map<String, List<MethodDefinition>> illegalInvocations) {
-        this.allErrorCodes = allErrorCodes;
-        this.linkNotReachableErrorCodes = linkNotReachableErrorCodes;
-        this.illegalInvocations = illegalInvocations;
-    }
 
     public List<String> getAllErrorCodes() {
         return allErrorCodes;
@@ -67,6 +61,14 @@ public class InspectionResult {
         this.illegalInvocations = illegalInvocations;
     }
 
+    public Map<String, List<LoggerMethodInvocation>> getInvalidLoggerMethodInvocationLocations() {
+        return invalidLoggerMethodInvocationLocations;
+    }
+
+    public void setInvalidLoggerMethodInvocationLocations(Map<String, List<LoggerMethodInvocation>> invalidLoggerMethodInvocationLocations) {
+        this.invalidLoggerMethodInvocationLocations = invalidLoggerMethodInvocationLocations;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -76,7 +78,8 @@ public class InspectionResult {
 
         if (!allErrorCodes.equals(that.allErrorCodes)) return false;
         if (!linkNotReachableErrorCodes.equals(that.linkNotReachableErrorCodes)) return false;
-        return illegalInvocations.equals(that.illegalInvocations);
+        if (!illegalInvocations.equals(that.illegalInvocations)) return false;
+        return invalidLoggerMethodInvocationLocations.equals(that.invalidLoggerMethodInvocationLocations);
     }
 
     @Override
@@ -84,6 +87,17 @@ public class InspectionResult {
         int result = allErrorCodes.hashCode();
         result = 31 * result + linkNotReachableErrorCodes.hashCode();
         result = 31 * result + illegalInvocations.hashCode();
+        result = 31 * result + invalidLoggerMethodInvocationLocations.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "InspectionResult{" +
+            "allErrorCodes=" + allErrorCodes +
+            ", linkNotReachableErrorCodes=" + linkNotReachableErrorCodes +
+            ", illegalInvocations=" + illegalInvocations +
+            ", invalidLoggerMethodInvocationLocations=" + invalidLoggerMethodInvocationLocations +
+            '}';
     }
 }
