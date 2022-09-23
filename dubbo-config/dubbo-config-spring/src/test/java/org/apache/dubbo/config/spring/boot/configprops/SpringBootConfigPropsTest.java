@@ -51,11 +51,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
     properties = {
         "dubbo.application.NAME = dubbo-demo-application",
         "dubbo.module.name = dubbo-demo-module",
-        "dubbo.registry.address = zookeeper://127.0.0.1:2181",
+        "dubbo.registry.address = zookeeper://192.168.99.100:32770",
         "dubbo.protocol.name=dubbo",
         "dubbo.protocol.port=20880",
-        "dubbo.application.metrics-service-protocol=tri",
-        "dubbo.application.metrics-service-port=9999",
         "dubbo.metrics.protocol=prometheus",
         "dubbo.metrics.enable-jvm-metrics=true",
         "dubbo.metrics.prometheus.exporter.enabled=true",
@@ -66,11 +64,11 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.metrics.aggregation.enabled=true",
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
-        "dubbo.monitor.address=zookeeper://127.0.0.1:2181",
+        "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
         "dubbo.Config-center.address=${zookeeper.connection.address.1}",
         "dubbo.config-Center.group=group1",
         "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
-//        "dubbo.METADATA-REPORT.username=User",
+        "dubbo.METADATA-REPORT.username=User",
         "dubbo.provider.host=127.0.0.1",
         "dubbo.consumer.client=netty"
     },
@@ -99,7 +97,6 @@ public class SpringBootConfigPropsTest {
     @Autowired
     private ModuleModel moduleModel;
 
-
     @Test
     public void testConfigProps() {
 
@@ -107,11 +104,10 @@ public class SpringBootConfigPropsTest {
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
         MonitorConfig monitorConfig = configManager.getMonitor().get();
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181", monitorConfig.getAddress());
+        Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
-        Assertions.assertTrue(metricsConfig.getEnableJvmMetrics());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
         Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
         Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
@@ -130,7 +126,7 @@ public class SpringBootConfigPropsTest {
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         Assertions.assertEquals(1, defaultRegistries.size());
         RegistryConfig registryConfig = defaultRegistries.get(0);
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181", registryConfig.getAddress());
+        Assertions.assertEquals("zookeeper://192.168.99.100:32770", registryConfig.getAddress());
 
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
@@ -142,7 +138,7 @@ public class SpringBootConfigPropsTest {
         Assertions.assertEquals(1, metadataConfigs.size());
         MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
         Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
-      //  Assertions.assertEquals("User", reportConfig.getUsername());
+        Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs
         ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();

@@ -682,7 +682,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void exportMetricsService() {
-        metricsServiceExporter.export();
+        try {
+            metricsServiceExporter.export();
+        } catch (Exception e) {
+            logger.error("exportMetricsService an exception occurred when handle starting event", e);
+        }
     }
 
     private void unexportMetricsService() {
