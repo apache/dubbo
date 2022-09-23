@@ -3,7 +3,7 @@ name: Build and Test For Dubbo 3.1
 on: [push, pull_request, workflow_dispatch]
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FORK_COUNT: 2
@@ -18,6 +18,22 @@ env:
     '
 
 jobs:
+  license:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fix License Header
+        uses: apache/skywalking-eyes/header@main
+        with:
+          mode: fix
+      - name: Apply License Header Changes
+        uses: EndBug/add-and-commit@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          author_name: License Bot
+          author_email: license_bot@github.com
+          message: 'Automatic application of license header'
   build-source:
     runs-on: ubuntu-18.04
     outputs:
