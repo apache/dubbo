@@ -37,6 +37,10 @@ class JdtBasedInvalidLoggerInvocationLocatorTest {
 
     private static final String MOCK_SOURCE_HAS_INVALID_INVOCATION = "mock-source/dubbo-xds/target/classes/org/apache/dubbo/registry/xds/util/protocol/AbstractProtocol.class";
 
+    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_SUPER_CLASS = "mock-source/dubbo-common/target/classes/org/apache/dubbo/config/AbstractMethodConfig.class";
+
+    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_GRAND_SUPER_CLASS = "mock-source/dubbo-common/target/classes/org/apache/dubbo/config/AbstractInterfaceConfig.class";
+
     @Test
     void testSourceHasInvalidInvocation() {
 
@@ -64,6 +68,34 @@ class JdtBasedInvalidLoggerInvocationLocatorTest {
 
         Assertions.assertTrue(
             methodInvocationList.isEmpty()
+        );
+    }
+
+    @Test
+    void testLoggerFieldAppearsInSuperClass() {
+
+        String mockSourceAbsolutePath = FileUtils.getResourceFilePath(MOCK_SOURCE_LOGGING_FIELD_IN_SUPER_CLASS)
+            .replace("/", File.separator);
+
+        List<LoggerMethodInvocation> methodInvocationList = LOCATOR.locateInvalidLoggerInvocation(mockSourceAbsolutePath);
+
+        Assertions.assertTrue(
+            methodInvocationList.isEmpty()
+        );
+    }
+
+    @Test
+    void testLoggerFieldAppearsInGrandSuperClass() {
+
+        String mockSourceAbsolutePath = FileUtils.getResourceFilePath(MOCK_SOURCE_LOGGING_FIELD_IN_GRAND_SUPER_CLASS)
+            .replace("/", File.separator);
+
+        List<LoggerMethodInvocation> methodInvocationList = LOCATOR.locateInvalidLoggerInvocation(mockSourceAbsolutePath);
+
+        Assertions.assertTrue(
+            methodInvocationList
+                .stream()
+                .anyMatch(x -> x.getLoggerMethodInvocationCode().equals("logger.warn(msg)"))
         );
     }
 }
