@@ -37,4 +37,9 @@ class ErrorUrlUtilsTest {
         Assertions.assertEquals("", ErrorUrlUtils.getErrorUrl("12"));
         Assertions.assertEquals("", ErrorUrlUtils.getErrorUrl("X"));
     }
+
+    @Test
+    void testGetErrorCodeThroughErrorUrl() {
+        Assertions.assertEquals("4-1", ErrorUrlUtils.getErrorCodeThroughErrorUrl("https://dubbo.apache.org/faq/4/1"));
+    }
 }
