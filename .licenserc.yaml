@@ -1,0 +1,82 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    content: |
+      Licensed to the Apache Software Foundation (ASF) under one or more
+      contributor license agreements.  See the NOTICE file distributed with
+      this work for additional information regarding copyright ownership.
+      The ASF licenses this file to You under the Apache License, Version 2.0
+      (the "License"); you may not use this file except in compliance with
+      the License.  You may obtain a copy of the License at
+      
+          http://www.apache.org/licenses/LICENSE-2.0
+      
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+  paths-ignore:
+    - '**/*.versionsBackup'
+    - '**/.idea/'
+    - '**/*.iml'
+    - '**/.settings/*'
+    - '**/.classpath'
+    - '**/.project'
+    - '**/target/**'
+    - '**/generated/**'
+    - '**/*.log'
+    - '**/codestyle/*'
+    - '**/resources/META-INF/**'
+    - '**/resources/mockito-extensions/**'
+    - '**/*.proto'
+    - '**/*.cache'
+    - '**/*.txt'
+    - '**/*.load'
+    - '**/*.flex'
+    - '**/*.fc'
+    - '**/*.javascript'
+    - '**/*.properties'
+    - '**/*.thrift'
+    - '**/*.sh'
+    - '**/*.bat'
+    - '**/*.md'
+    - '**/*.svg'
+    - '**/*.png'
+    - '**/*.json'
+    - '**/*.conf'
+    - '**/*.ftl'
+    - '**/*.tpl'
+    - '**/*.factories'
+    - '**/*.handlers'
+    - '**/*.schemas'
+    - '**/*.nojekyll'
+    - '.git/'
+    - '.github/**'
+    - '**/.gitignore'
+    - '**/.helmignore'
+    - '.repository/'
+    - 'compiler/**'
+    - '.gitmodules'
+    - '.mvn'
+    - 'mvnw'
+    - 'mvnw.cmd'
+    - 'LICENSE'
+    - 'NOTICE'
+    - 'CNAME'
+    - 'Jenkinsfile'
+    - '**/vendor/**'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/Timeout.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/Timer.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/TimerTask.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java'
+    - 'dubbo-config/dubbo-config-spring/src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java'
+
+  comment: on-failure
+
+  license-location-threshold: 130
