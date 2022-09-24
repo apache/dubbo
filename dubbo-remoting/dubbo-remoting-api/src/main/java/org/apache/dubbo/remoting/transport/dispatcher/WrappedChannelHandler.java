@@ -126,14 +126,22 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
             } else {
                 ExecutorService executor = responseFuture.getExecutor();
                 if (executor == null || executor.isShutdown()) {
-                    executor = getSharedExecutorService();
+                    executor = getSharedExecutorService(msg);
                 }
                 return executor;
             }
         } else {
-            Executor executor = executorSupport.getExecutor(msg);
-            return executor != null ? (ExecutorService) executor : getSharedExecutorService();
+            return getSharedExecutorService(msg);
         }
+    }
+
+    /**
+     * @param msg  msg is the network message body, executorSupport.getExecutor needs it, and gets important information from it to get executor
+     * @return
+     */
+    public ExecutorService getSharedExecutorService(Object msg) {
+        Executor executor = executorSupport.getExecutor(msg);
+        return executor != null ? (ExecutorService) executor : getSharedExecutorService();
     }
 
     /**
