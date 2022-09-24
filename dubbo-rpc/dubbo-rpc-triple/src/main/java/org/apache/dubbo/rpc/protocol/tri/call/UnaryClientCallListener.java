@@ -42,8 +42,12 @@ public class UnaryClientCallListener implements ClientCall.Listener {
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
-            result.setValue(appResponse);
-        } else {
+            if (appResponse instanceof Exception) {
+                result.setException((Exception) appResponse);
+            } else {
+                result.setValue(appResponse);
+            }
+         } else {
             result.setException(status.asException());
         }
         future.received(status, result);

@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -69,6 +70,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     private Compressor compressor;
     private boolean headerSent;
     private boolean closed;
+    private boolean isExceptionMessage = false;
     CancellationContext cancellationContext;
     protected MethodDescriptor methodDescriptor;
     protected PackableMethod packableMethod;
@@ -131,6 +133,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     private void doSendMessage(Object message) {
         if (closed) {
             return;
+        }
+        if (message instanceof Exception) {
+            this.isExceptionMessage = true;
         }
         if (!headerSent) {
             sendHeader();
@@ -253,6 +258,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         if (acceptEncoding != null) {
             headers.set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncoding);
+        }
+        if (isExceptionMessage) {
+            headers.set(TripleHeaderEnum.TRI_EXCEPTION_FLAG.getHeader(), ExceptionUtils.TRIPLE_EXCEPTION);
         }
         if (compressor != null) {
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),

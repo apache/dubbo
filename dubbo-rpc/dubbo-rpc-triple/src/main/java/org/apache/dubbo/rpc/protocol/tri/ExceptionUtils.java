@@ -29,6 +29,8 @@ public class ExceptionUtils {
 
     private static final int NOT_FOUND = -1;
 
+    public static final String TRIPLE_EXCEPTION = "1";
+
     public static String getStackTrace(final Throwable throwable) {
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw, true);
