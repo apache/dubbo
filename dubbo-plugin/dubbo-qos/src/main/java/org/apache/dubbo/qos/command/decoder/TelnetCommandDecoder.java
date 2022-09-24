@@ -27,15 +27,23 @@ public class TelnetCommandDecoder {
         if (!StringUtils.isBlank(str)) {
             String[] array = str.split("(?<![\\\\]) ");
             if (array.length > 0) {
-                String name = array[0];
                 String[] targetArgs = new String[array.length - 1];
                 System.arraycopy(array, 1, targetArgs, 0, array.length - 1);
+                String name = array[0].trim();
+                if (name.equals("invoke") && array.length > 2) {
+                    targetArgs = reBuildInvokeCmdArgs(str);
+                }
                 commandContext = CommandContextFactory.newInstance( name, targetArgs,false);
                 commandContext.setOriginRequest(str);
             }
         }
 
         return commandContext;
+    }
+
+    private static String[] reBuildInvokeCmdArgs(String originCmd) {
+        String cmd = originCmd.trim();
+        return new String[] {cmd.substring(cmd.indexOf(" ") + 1).trim()};
     }
 
 }
