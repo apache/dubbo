@@ -18,6 +18,8 @@ package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
+import org.apache.dubbo.rpc.executor.IsolationExecutorSupportFactory;
 
 import java.util.concurrent.ExecutorService;
 
@@ -53,5 +55,10 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
             return (ExecutorService) executor;
         }
         return super.createExecutor(url);
+    }
+
+    @Override
+    public ExecutorSupport getExecutorSupport(URL url) {
+        return IsolationExecutorSupportFactory.getIsolationExecutorSupport(url);
     }
 }

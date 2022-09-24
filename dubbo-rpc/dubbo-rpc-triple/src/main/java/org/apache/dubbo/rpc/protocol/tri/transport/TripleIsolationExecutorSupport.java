@@ -22,12 +22,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.support.ExecutorSupport;
+import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
 
-public class TripleExecutorSupport extends ExecutorSupport {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleExecutorSupport.class);
+public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
 
-    public TripleExecutorSupport(URL url) {
+    public TripleIsolationExecutorSupport(URL url) {
         super(url);
     }
 

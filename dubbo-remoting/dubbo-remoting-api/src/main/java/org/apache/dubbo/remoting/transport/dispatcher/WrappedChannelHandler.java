@@ -29,7 +29,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.support.ExecutorSupport;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +47,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
-        this.executorSupport = new DubboExecutorSupport(url);
+        this.executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
     }
 
     public void close() {

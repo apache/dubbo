@@ -31,6 +31,8 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.executor.DefaultExecutorSupport;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,6 +69,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private final ApplicationModel applicationModel;
     private final FrameworkExecutorRepository frameworkExecutorRepository;
+    private ExecutorSupport executorSupport;
 
     public DefaultExecutorRepository(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -418,5 +421,13 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     @Override
     public ExecutorService getMappingRefreshingExecutor() {
         return frameworkExecutorRepository.getMappingRefreshingExecutor();
+    }
+
+    @Override
+    public ExecutorSupport getExecutorSupport(URL url) {
+        if (executorSupport == null) {
+            executorSupport = new DefaultExecutorSupport(url);
+        }
+        return executorSupport;
     }
 }

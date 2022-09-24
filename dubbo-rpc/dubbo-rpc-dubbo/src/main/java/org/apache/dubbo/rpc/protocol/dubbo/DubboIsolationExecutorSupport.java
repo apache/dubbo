@@ -14,27 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.dispatcher;
+package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.rpc.support.ExecutorSupport;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-public class DubboExecutorSupport extends ExecutorSupport {
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboExecutorSupport.class);
-    private static final String INVOCATION_GET_ATTACHMENTS_METHOD = "getAttachments";
+public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboIsolationExecutorSupport.class);
 
-    public DubboExecutorSupport(URL url) {
+    public DubboIsolationExecutorSupport(URL url) {
         super(url);
     }
 
@@ -46,8 +45,11 @@ public class DubboExecutorSupport extends ExecutorSupport {
 
         try {
             Request request = (Request) data;
-            Method method = request.getData().getClass().getMethod(INVOCATION_GET_ATTACHMENTS_METHOD);
-            Map<String, String> attachments = (Map<String, String>) method.invoke(request.getData());
+            if (request.getData() == null || !(request.getData() instanceof Invocation)) {
+                return null;
+            }
+            Invocation inv = (Invocation) request.getData();
+            Map<String, String> attachments = inv.getAttachments();
             String interfaceName = attachments.get(PATH_KEY);
             String version = attachments.get(VERSION_KEY);
             String group = attachments.get(GROUP_KEY);

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -175,6 +176,8 @@ public interface ExecutorRepository {
      */
     @Deprecated
     ExecutorService getMappingRefreshingExecutor();
+
+    ExecutorSupport getExecutorSupport(URL url);
 
     static ExecutorRepository getInstance(ApplicationModel applicationModel) {
         ExtensionLoader<ExecutorRepository> extensionLoader = applicationModel.getExtensionLoader(ExecutorRepository.class);

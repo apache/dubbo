@@ -34,6 +34,7 @@ import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -49,16 +50,16 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private final PathResolver pathResolver;
     private final FrameworkModel frameworkModel;
     private final List<HeaderFilter> filters;
-    private final TripleExecutorSupport tripleExecutorSupport;
+    private final ExecutorSupport executorSupport;
     private final String acceptEncoding;
 
     public TripleHttp2FrameServerHandler(
         FrameworkModel frameworkModel,
         List<HeaderFilter> filters,
-        TripleExecutorSupport tripleExecutorSupport) {
+        ExecutorSupport executorSupport) {
         this.frameworkModel = frameworkModel;
         this.filters = filters;
-        this.tripleExecutorSupport = tripleExecutorSupport;
+        this.executorSupport = executorSupport;
         this.acceptEncoding = String.join(",",
             frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions());
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
@@ -116,7 +117,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
-        Executor executor = tripleExecutorSupport.getExecutor(msg.headers());
+        Executor executor = executorSupport.getExecutor(msg.headers());
         TripleServerStream tripleServerStream = new TripleServerStream(ctx.channel(),
             frameworkModel, executor,
             pathResolver, acceptEncoding, filters);

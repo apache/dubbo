@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.rpc.executor;
 
 import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
@@ -28,42 +28,24 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-/**
- * The role of ExecutorSupport is to obtain the executor(thread pool) of the service provider.
- * <br/>
- * 1.If EXECUTOR_MANAGEMENT_MODE is the default, it is obtained in the original way.(i.e. DefaultExecutorRepository)
- * <br/>
- * 2.If EXECUTOR_MANAGEMENT_MODE is the isolation, when multiple services are exposed, it means that there are multiple urls,
- * but only one url(ExecutorSupport#url) will remain in the end(Because the server will only open it once according to the address cache).
- * so the thread pool cannot be obtained according to this url. It is necessary to decode the serviceKey according to
- * the request body(see ExecutorSupport#getServiceKey method), so that we can obtain the isolation thread pool according to the serviceKey.
- */
-public abstract class ExecutorSupport {
-    private Executor defaultExecutor;
+public abstract class AbstractIsolationExecutorSupport implements ExecutorSupport {
     private final URL url;
     private final ExecutorRepository executorRepository;
     private final Map<String, Executor> executorMap;
 
-    public ExecutorSupport(URL url) {
+    public AbstractIsolationExecutorSupport(URL url) {
         this.url = url;
         this.executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
-        String mode = ExecutorRepository.getMode(url.getOrDefaultApplicationModel());
-        if (EXECUTOR_MANAGEMENT_MODE_DEFAULT.equals(mode)) {
-            this.defaultExecutor = executorRepository.getExecutor(url);
-        }
         this.executorMap = new HashMap<>();
         GlobalResourcesRepository.getInstance().registerDisposable(this::destroy);
     }
 
     public Executor getExecutor(Object data) {
-        if (defaultExecutor != null) {
-            return defaultExecutor;
-        }
+
         ServiceKey serviceKey = getServiceKey(data);
         if (!isValid(serviceKey)) {
             return null;
@@ -100,5 +82,4 @@ public abstract class ExecutorSupport {
     }
 
     protected abstract ServiceKey getServiceKey(Object data);
-
 }
