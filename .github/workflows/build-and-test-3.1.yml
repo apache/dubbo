@@ -282,3 +282,35 @@ jobs:
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
+
+  intergration-benchmark:
+    runs-on: ubuntu-18.04
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        target: [ "dubbo-fastjson","dubbo-gson","dubbo-grpc","dubbo-hessianlite","dubbo-kryo","dubbo-native-hessian","dubbo-protobuf-json","dubbo-triple" ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+          repository: 'apache/dubbo-benchmark'
+          ref: master
+      - name: Prepare base
+        run: mvn clean package -DskipTests=true -pl benchmark-base,client-base,server-base
+      - name: Start server
+        run: ./benchmark.sh ${{ matrix.target }}-server &
+      - name: Wait server ready
+        run: sleep 20
+      - name: Run benchmark
+        run: ./benchmark.sh -a "--warmupIterations=1 --warmupTime=1 --measurementIterations=1 --measurementTime=1" ${{ matrix.target }}-client > ${{ matrix.target }}-output.txt
+      - name: Kill jobs
+        run: jobs -p | grep -o -E '\s\d+\s' | xargs kill || true
+      - name: Save output
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target }}-output
+          path: ${{ matrix.target }}-output.txt
