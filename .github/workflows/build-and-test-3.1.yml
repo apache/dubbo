@@ -284,9 +284,9 @@ jobs:
         run: ./test/scripts/merge-test-results.sh
 
   intergration-benchmark:
+    needs: [build-source]
     runs-on: ubuntu-18.04
     timeout-minutes: 30
-
     strategy:
       matrix:
         target: [ "dubbo-fastjson","dubbo-gson","dubbo-grpc","dubbo-hessianlite","dubbo-kryo","dubbo-native-hessian","dubbo-protobuf-json","dubbo-triple" ]
@@ -300,7 +300,18 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
-
+      - name: "Cache local Maven repository"
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: "Restore Dubbo cache"
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
       - name: Prepare base
         run: mvn clean package -DskipTests=true -pl benchmark-base,client-base,server-base
       - name: Start server
