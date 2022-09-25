@@ -307,13 +307,13 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Prepare base
+        run: mvn clean package -DskipTests=true -pl benchmark-base,client-base,server-base
       - name: "Restore Dubbo cache"
         uses: actions/cache@v2
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
-      - name: Prepare base
-        run: mvn clean package -DskipTests=true -pl benchmark-base,client-base,server-base
       - name: Start server
         run: ./benchmark.sh ${{ matrix.target }}-server &
       - name: Wait server ready
