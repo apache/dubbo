@@ -25,6 +25,7 @@ public class TelnetCommandDecoder {
     public static final CommandContext decode(String str) {
         CommandContext commandContext = null;
         if (!StringUtils.isBlank(str)) {
+            str = str.trim();
             String[] array = str.split("(?<![\\\\]) ");
             if (array.length > 0) {
                 String[] targetArgs = new String[array.length - 1];
@@ -41,8 +42,7 @@ public class TelnetCommandDecoder {
         return commandContext;
     }
 
-    private static String[] reBuildInvokeCmdArgs(String originCmd) {
-        String cmd = originCmd.trim();
+    private static String[] reBuildInvokeCmdArgs(String cmd) {
         return new String[] {cmd.substring(cmd.indexOf(" ") + 1).trim()};
     }
 
