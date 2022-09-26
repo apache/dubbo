@@ -18,6 +18,14 @@ env:
     '
 
 jobs:
+  license:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check License
+        uses: apache/skywalking-eyes@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build-source:
     runs-on: ubuntu-20.04
     outputs:
