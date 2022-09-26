@@ -306,7 +306,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 17
-      - name: "Listings":
+      - name: "Listings"
         run: |
           ls
           ls ./dubbo
