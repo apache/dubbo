@@ -300,6 +300,11 @@ jobs:
           ref: main
           path: "./dubbo-test-tools"
 
+      - name: "Set up JDK 17"
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
       - name: "Run Error Code Inspecting"
         run: |
           ${{ github.workspace }}/dubbo-test-tools/mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
