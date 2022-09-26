@@ -33,13 +33,15 @@ class JdtBasedInvalidLoggerInvocationLocatorTest {
 
     private static final JdtBasedInvalidLoggerInvocationLocator LOCATOR = new JdtBasedInvalidLoggerInvocationLocator();
 
-    private static final String MOCK_SOURCE_NO_INVALID_INVOCATION = "mock-source/dubbo-common/target/classes/org/apache/dubbo/common/cache/FileCacheStore.class";
+    private static final String MOCK_SOURCE_NO_INVALID_INVOCATION = "mock-source/testing-mock-source/target/classes/org/apache/dubbo/errorcode/mock/NoInvalidInvocationSubClass.class";
 
-    private static final String MOCK_SOURCE_HAS_INVALID_INVOCATION = "mock-source/dubbo-xds/target/classes/org/apache/dubbo/registry/xds/util/protocol/AbstractProtocol.class";
+    private static final String MOCK_SOURCE_HAS_INVALID_INVOCATION = "mock-source/testing-mock-source/target/classes/org/apache/dubbo/errorcode/mock/ParentClass.class";
 
-    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_SUPER_CLASS = "mock-source/dubbo-common/target/classes/org/apache/dubbo/config/AbstractMethodConfig.class";
+    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_SUPER_CLASS = "mock-source/testing-mock-source/target/classes/org/apache/dubbo/errorcode/mock/SubClass.class";
 
-    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_GRAND_SUPER_CLASS = "mock-source/dubbo-common/target/classes/org/apache/dubbo/config/AbstractInterfaceConfig.class";
+    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_GRAND_SUPER_CLASS = "mock-source/testing-mock-source/target/classes/org/apache/dubbo/errorcode/mock/GrandChildClass.class";
+
+    private static final String MOCK_SOURCE_LOGGING_FIELD_IN_SUPER_CLASS_IN_DIFFERENT_PACKAGE = "mock-source/testing-mock-source/target/classes/org/apache/dubbo/errorcode/mock/diffpack/DifferentPackageSubClass.class";
 
     @Test
     void testSourceHasInvalidInvocation() {
@@ -54,7 +56,7 @@ class JdtBasedInvalidLoggerInvocationLocatorTest {
         Assertions.assertTrue(
             methodInvocationList
                 .stream()
-                .anyMatch(x -> x.getLoggerMethodInvocationCode().equals("logger.error(\"xDS Client received error message! detail:\",t)"))
+                .anyMatch(x -> x.getLoggerMethodInvocationCode().equals("logger.warn(\"Testing in ParentClass! \")"))
         );
     }
 
@@ -80,7 +82,9 @@ class JdtBasedInvalidLoggerInvocationLocatorTest {
         List<LoggerMethodInvocation> methodInvocationList = LOCATOR.locateInvalidLoggerInvocation(mockSourceAbsolutePath);
 
         Assertions.assertTrue(
-            methodInvocationList.isEmpty()
+            methodInvocationList
+                .stream()
+                .anyMatch(x -> x.getLoggerMethodInvocationCode().equals("logger.warn(\"Testing in SubClass! \")"))
         );
     }
 
@@ -96,6 +100,20 @@ class JdtBasedInvalidLoggerInvocationLocatorTest {
             methodInvocationList
                 .stream()
                 .anyMatch(x -> x.getLoggerMethodInvocationCode().equals("logger.warn(msg)"))
+        );
+    }
+
+    @Test
+    void testLoggerFieldAppearsInDifferentPackage() {
+        String mockSourceAbsolutePath = FileUtils.getResourceFilePath(MOCK_SOURCE_LOGGING_FIELD_IN_SUPER_CLASS_IN_DIFFERENT_PACKAGE)
+            .replace("/", File.separator);
+
+        List<LoggerMethodInvocation> methodInvocationList = LOCATOR.locateInvalidLoggerInvocation(mockSourceAbsolutePath);
+
+        Assertions.assertTrue(
+            methodInvocationList
+                .stream()
+                .anyMatch(x -> x.getLoggerMethodInvocationCode().equals("logger.warn(\"Testing in DifferentPackageSubClass! \")"))
         );
     }
 }
