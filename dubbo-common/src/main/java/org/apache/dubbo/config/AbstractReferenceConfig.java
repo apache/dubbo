@@ -27,6 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_NAMESPACE;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_PORT;
 
 /**
@@ -89,6 +90,12 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      * @since 3.1.0
      */
     protected Integer providerPort;
+
+    /**
+     * assign the namespace that provider belong to
+     * @since 3.1.1
+     */
+    protected String providerNamespace;
 
     protected String router;
 
@@ -273,6 +280,15 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setProviderPort(Integer providerPort) {
         this.providerPort = providerPort;
+    }
+
+    @Parameter(key = PROVIDER_NAMESPACE)
+    public String getProviderNamespace() {
+        return providerNamespace;
+    }
+
+    public void setProviderNamespace(String providerNamespace) {
+        this.providerNamespace = providerNamespace;
     }
 
     @Parameter(key = ROUTER_KEY, append = true)
