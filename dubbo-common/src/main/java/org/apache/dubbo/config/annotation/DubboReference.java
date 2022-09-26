@@ -357,6 +357,13 @@ public @interface DubboReference {
     int providerPort() default -1;
 
     /**
+     * assign the namespace that provider belong to
+     * @see AbstractReferenceConfig#providerNamespace
+     * @since 3.1.1
+     */
+    String providerNamespace() default "";
+
+    /**
      * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
      *
      * @see org.apache.dubbo.rpc.Constants#SCOPE_LOCAL
