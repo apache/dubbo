@@ -146,10 +146,11 @@ public class AdaptivePowerOfTwoChoice extends AbstractLoadBalance implements Sco
             return leastWeight(invokers.get(0),invokers.get(1),invocation,averageLatency);
 
         int pos1 = ThreadLocalRandom.current().nextInt(length);
-        int pos2 = ThreadLocalRandom.current().nextInt(length);
+        int pos2 = ThreadLocalRandom.current().nextInt(length - 1);
 
-        while(pos1 == pos2)
-            pos2 = ThreadLocalRandom.current().nextInt(length);
+        if(pos2 >= pos1){
+            pos2 = pos2 + 1;
+        }
 
         Invoker<T> result = leastWeight(invokers.get(pos1),invokers.get(pos2),invocation,averageLatency);
 
