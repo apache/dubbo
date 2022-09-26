@@ -298,7 +298,7 @@ jobs:
         with:
           repository: 'win120a/dubbo-test-tools'
           ref: main
-          path: "/dubbo-test-tools"
+          path: "./dubbo-test-tools"
 
       - name: "Run Error Code Inspecting"
         run: |
