@@ -295,6 +295,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        path: "./dubbo
       - uses: actions/checkout@v2
         with:
           repository: 'win120a/dubbo-test-tools'
@@ -305,7 +306,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 17
-
+      - name: "Listings":
+        run: |
+          ls
+          ls ./dubbo
+          ls ./dubbo-test-tools
       - name: "Run Error Code Inspecting"
         run: |
           cd dubbo-test-tools/dubbo-error-code-inspector
