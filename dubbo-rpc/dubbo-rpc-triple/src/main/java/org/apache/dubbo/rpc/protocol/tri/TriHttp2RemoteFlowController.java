@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -19,10 +20,8 @@ import io.netty.handler.codec.http2.*;
 import io.netty.util.internal.UnstableApi;
 import io.netty.util.internal.logging.InternalLogger;
 import io.netty.util.internal.logging.InternalLoggerFactory;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
-
 import static io.netty.handler.codec.http2.Http2CodecUtil.*;
 import static io.netty.handler.codec.http2.Http2Error.*;
 import static io.netty.handler.codec.http2.Http2Exception.streamError;
