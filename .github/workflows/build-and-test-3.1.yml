@@ -297,6 +297,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: "./dubbo"
+          
       - uses: actions/checkout@v2
         with:
           repository: 'win120a/dubbo-test-tools'
@@ -311,12 +312,17 @@ jobs:
       - name: "Compile Dubbo (Linux)"
         run: |
           cd ${{ github.workspace }}/dubbo
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
 
       - name: "Run Error Code Inspecting"
         env:
           "dubbo.eci.report-as-error": false
         run: |
           cd ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector
-          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
           
+      - name: "Upload error code inspection result"
+        uses: actions/upload-artifact@v2
+        with:
+          name: "error-inspection-result"
+          path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
