@@ -16,7 +16,12 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri;
-
+import io.netty.handler.codec.http2.Http2FrameLogger;
+import io.netty.handler.codec.http2.Http2FrameCodec;
+import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
+import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.codec.http2.Http2MultiplexHandler;
+import io.netty.util.AttributeKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -40,11 +45,6 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2FrameCodec;
-import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
-import io.netty.handler.codec.http2.Http2FrameLogger;
-import io.netty.handler.codec.http2.Http2MultiplexHandler;
-import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
 
@@ -71,7 +71,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private static final int DEFAULT_MAX_HEADER_LIST_SIZE = KIB_32;
     private static final int DEFAULT_SETTING_HEADER_LIST_SIZE = 4096;
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
-    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
+ //   private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
+    private static final int DEFAULT_WINDOW_INIT_SIZE = 65540;
 
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
@@ -125,11 +126,18 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        //增加自定义流控
+        codec.connection().local().flowController(new TriHttp2LocalFlowController(codec.connection()));
+        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
+
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Channel>() {
                 @Override
                 protected void initChannel(Channel ch) {
                     final ChannelPipeline p = ch.pipeline();
+                    AttributeKey key = AttributeKey.valueOf("tri-connection");
+                    ch.attr(key).set(codec.connection());
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
                         headFilters));
@@ -168,6 +176,11 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
+        //增加自定义流控
+        codec.connection().local().flowController(new TriHttp2LocalFlowController(codec.connection()));
+        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
+
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new TripleClientHandler(frameworkModel));
         pipeline.addLast(codec, handler, new TripleTailHandler());

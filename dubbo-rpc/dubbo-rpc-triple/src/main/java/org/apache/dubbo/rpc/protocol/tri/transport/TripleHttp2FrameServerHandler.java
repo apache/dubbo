@@ -16,7 +16,10 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
-
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -28,9 +31,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2HeadersFrame;
-import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
@@ -71,6 +71,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
         } else if (msg instanceof Http2DataFrame) {
             onDataRead(ctx, (Http2DataFrame) msg);
+            //服务端读完数据，更新流控窗口
+            Http2Connection connection = (Http2Connection)ctx.channel().attr(AttributeKey.valueOf("tri-connection")).get();
+            connection.local().flowController().consumeBytes(connection.stream(((Http2DataFrame) msg).stream().id()),((Http2DataFrame) msg).initialFlowControlledBytes());
         } else if (msg instanceof ReferenceCounted) {
             // ignored
             ReferenceCountUtil.release(msg);
