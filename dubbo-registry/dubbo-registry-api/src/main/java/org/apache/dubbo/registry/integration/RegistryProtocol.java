@@ -59,10 +59,7 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -835,7 +832,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         protected void notifyOverrides() {
-            overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
+            Collection<List<NotifyListener>> listenersList = overrideListeners.values();
+            for (List<NotifyListener> listeners : listenersList) {
+                listeners.forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
+            }
         }
 
         public Map<URL, List<NotifyListener>> getOverrideListeners() {
