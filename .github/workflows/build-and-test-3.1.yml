@@ -295,7 +295,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        path: "./dubbo
+        path: "./dubbo"
       - uses: actions/checkout@v2
         with:
           repository: 'win120a/dubbo-test-tools'
