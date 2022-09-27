@@ -300,7 +300,7 @@ jobs:
           
       - uses: actions/checkout@v2
         with:
-          repository: 'win120a/dubbo-test-tools'
+          repository: 'apache/dubbo-test-tools'
           ref: main
           path: "./dubbo-test-tools"
 
