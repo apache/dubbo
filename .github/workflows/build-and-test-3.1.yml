@@ -313,7 +313,7 @@ jobs:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
       - name: Update Dubbo Version
-        run: ./prepare.sh ${{needs.build-source.outputs.version}}
+        run: ./prepare.sh "${{needs.build-source.outputs.version}}"
       - name: Prepare base
         run: mvn clean package -DskipTests=true -pl benchmark-base,client-base,server-base
       - name: Start server
