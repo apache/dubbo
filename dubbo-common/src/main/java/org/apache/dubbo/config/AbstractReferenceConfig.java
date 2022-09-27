@@ -26,7 +26,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_NAMESPACE;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_PORT;
 
 /**
  * AbstractConsumerConfig
