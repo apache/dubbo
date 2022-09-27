@@ -294,7 +294,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: 'apache/dubbo-benchmark'
-          ref: master
+          ref: intergration-benchmark
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
@@ -312,9 +312,10 @@ jobs:
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+      - name: Update Dubbo Version
+        run: ./prepare.sh ${{needs.build-source.outputs.version}}
       - name: Prepare base
         run: mvn clean package -DskipTests=true -pl benchmark-base,client-base,server-base
-
       - name: Start server
         run: ./benchmark.sh ${{ matrix.target }}-server &
       - name: Wait server ready
