@@ -115,5 +115,9 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-triple</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-qos</artifactId>
+        </dependency>
     </dependencies>
 </project>

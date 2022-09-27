@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.qos.annotation;
 
-import org.apache.dubbo.qos.annotation.QosServer;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@QosServer
-public class Application {
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider.xml");
-        context.start();
-        System.in.read();
-    }
+/**
+ * Prompt to add dubbo qos dependency. If you know qos dependency is needed or it has been added,
+ * you don't have to write this annotation.
+ */
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
+public @interface QosServer {
 }
