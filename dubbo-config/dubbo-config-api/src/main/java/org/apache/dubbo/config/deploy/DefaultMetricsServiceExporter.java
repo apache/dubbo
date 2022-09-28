@@ -16,15 +16,12 @@
  */
 package org.apache.dubbo.config.deploy;
 
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_SERVICE_PORT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.metrics.service.MetricsService;
 import org.apache.dubbo.common.metrics.service.MetricsServiceExporter;
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
@@ -71,8 +68,8 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
             if (!isExported()) {
                 ServiceConfig<MetricsService> serviceConfig = InternalServiceConfigBuilder.<MetricsService>newBuilder(applicationModel)
                     .interfaceClass(MetricsService.class)
-                    .protocol(getApplicationConfig().getMetricsServiceProtocol(), METRICS_SERVICE_PROTOCOL_KEY)
-                    .port(getApplicationConfig().getMetricsServicePort(), METRICS_SERVICE_PORT_KEY)
+                    .protocol(getMetricsConfig().getExportServiceProtocol())
+                    .port(getMetricsConfig().getExportServicePort())
                     .ref(metricsService)
                     .registryId("internal-metrics-registry")
                     .build();
@@ -106,8 +103,8 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
         return this;
     }
 
-    private ApplicationConfig getApplicationConfig() {
-        return applicationModel.getApplicationConfigManager().getApplication().get();
+    private MetricsConfig getMetricsConfig() {
+        return applicationModel.getApplicationConfigManager().getMetrics().get();
     }
 
     private boolean isExported() {

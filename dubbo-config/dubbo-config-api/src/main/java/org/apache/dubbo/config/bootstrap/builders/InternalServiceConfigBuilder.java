@@ -78,8 +78,9 @@ public class InternalServiceConfigBuilder<T> {
     }
     
     public InternalServiceConfigBuilder<T> protocol(String protocol, String key) {
-        if (StringUtils.isEmpty(protocol)) {
+        if (StringUtils.isEmpty(protocol) && StringUtils.isNotBlank(key)) {
             Map<String, String> params = getApplicationConfig().getParameters();
+
             if (CollectionUtils.isNotEmptyMap(params)) {
                 protocol = getApplicationConfig().getParameters().get(key);
             }
@@ -88,6 +89,16 @@ public class InternalServiceConfigBuilder<T> {
 
         return getThis();
     }
+
+    public InternalServiceConfigBuilder<T> protocol(String protocol) {
+        this.protocol(protocol, null);
+        return getThis();
+    }
+
+    public InternalServiceConfigBuilder<T> port(Integer specPort) {
+        return port(specPort,null);
+    }
+
 
     public InternalServiceConfigBuilder<T> port(Integer specPort, String key) {
         Assert.notEmptyString(this.protocol,"export protocol is null");
@@ -98,7 +109,7 @@ public class InternalServiceConfigBuilder<T> {
             return getThis();
         }
         Map<String, String> params = getApplicationConfig().getParameters();
-        if (CollectionUtils.isNotEmptyMap(params)) {
+        if (CollectionUtils.isNotEmptyMap(params) && StringUtils.isNotBlank(key)) {
             String rawPort = getApplicationConfig().getParameters().get(key);
             if (StringUtils.isNotEmpty(rawPort)) {
                 specPort = Integer.parseInt(rawPort);

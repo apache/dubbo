@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * MetricsConfig
@@ -58,6 +58,11 @@ public class MetricsConfig extends AbstractConfig {
      */
     @Nested
     private AggregationConfig aggregation;
+
+    private String exportServiceProtocol;
+
+    private Integer exportServicePort;
+
 
     public MetricsConfig() {
     }
@@ -115,6 +120,22 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setAggregation(AggregationConfig aggregation) {
         this.aggregation = aggregation;
+    }
+
+    public String getExportServiceProtocol() {
+        return exportServiceProtocol;
+    }
+
+    public void setExportServiceProtocol(String exportServiceProtocol) {
+        this.exportServiceProtocol = exportServiceProtocol;
+    }
+
+    public Integer getExportServicePort() {
+        return exportServicePort;
+    }
+
+    public void setExportServicePort(Integer exportServicePort) {
+        this.exportServicePort = exportServicePort;
     }
 }
 
