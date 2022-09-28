@@ -27,7 +27,7 @@ import org.apache.dubbo.common.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.bootstrap.builders.ExportServiceConfigBuilder;
+import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -69,7 +69,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     public MetricsServiceExporter export() {
         if (metricsService != null) {
             if (!isExported()) {
-                ServiceConfig<MetricsService> serviceConfig = ExportServiceConfigBuilder.<MetricsService>newServiceBuilder(applicationModel)
+                ServiceConfig<MetricsService> serviceConfig = InternalServiceConfigBuilder.<MetricsService>newBuilder(applicationModel)
                     .interfaceClass(MetricsService.class)
                     .protocol(getApplicationConfig().getMetricsServiceProtocol(), METRICS_SERVICE_PROTOCOL_KEY)
                     .port(getApplicationConfig().getMetricsServicePort(), METRICS_SERVICE_PORT_KEY)

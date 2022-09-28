@@ -40,7 +40,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class ExportServiceConfigBuilder<T> {
+public class InternalServiceConfigBuilder<T> {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
@@ -50,37 +50,33 @@ public class ExportServiceConfigBuilder<T> {
     private String registryId;
     private Class<T> interfaceClass;
     private T   ref;
-    private Consumer<ServiceConfig<T>> serviceConfigBuilder;
 
-    private ExportServiceConfigBuilder(ApplicationModel applicationModel) {
+    private InternalServiceConfigBuilder(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
     }
 
-    public static <T> ExportServiceConfigBuilder<T> newServiceBuilder(ApplicationModel applicationModel) {
-        return new ExportServiceConfigBuilder<>(applicationModel);
+    public static <T> InternalServiceConfigBuilder<T> newBuilder(ApplicationModel applicationModel) {
+        return new InternalServiceConfigBuilder<>(applicationModel);
     }
 
-    public ExportServiceConfigBuilder<T> serviceBuilder(Consumer<ServiceConfig<T>> serviceConfigConsumer){
-        this.serviceConfigBuilder = serviceConfigConsumer;
-        return getThis();
-    }
 
-    public ExportServiceConfigBuilder<T> interfaceClass(Class<T> interfaceClass) {
+
+    public InternalServiceConfigBuilder<T> interfaceClass(Class<T> interfaceClass) {
         this.interfaceClass = interfaceClass;
         return getThis();
     }
 
-    public ExportServiceConfigBuilder<T> ref(T ref) {
+    public InternalServiceConfigBuilder<T> ref(T ref) {
         this.ref = ref;
         return getThis();
     }
 
-    public ExportServiceConfigBuilder<T> registryId(String registryId) {
+    public InternalServiceConfigBuilder<T> registryId(String registryId) {
         this.registryId = registryId;
         return getThis();
     }
     
-    public ExportServiceConfigBuilder<T> protocol(String protocol, String key) {
+    public InternalServiceConfigBuilder<T> protocol(String protocol, String key) {
         if (StringUtils.isEmpty(protocol)) {
             Map<String, String> params = getApplicationConfig().getParameters();
             if (CollectionUtils.isNotEmptyMap(params)) {
@@ -92,7 +88,7 @@ public class ExportServiceConfigBuilder<T> {
         return getThis();
     }
 
-    public ExportServiceConfigBuilder<T> port(Integer specPort, String key) {
+    public InternalServiceConfigBuilder<T> port(Integer specPort, String key) {
         Assert.notEmptyString(this.protocol,"export protocol is null");
         Assert.notNull(this.interfaceClass,"export interfaceClass is null");
 
@@ -149,7 +145,7 @@ public class ExportServiceConfigBuilder<T> {
     }
 
 
-    public ServiceConfig<T> build(){
+    public ServiceConfig<T> build(Consumer<ServiceConfig<T>> configConsumer){
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(this.protocol);
         protocolConfig.setPort(this.port);
@@ -186,10 +182,16 @@ public class ExportServiceConfigBuilder<T> {
 
         serviceConfig.setParameters(params);
 
-        if (this.serviceConfigBuilder != null) {
-            this.serviceConfigBuilder.accept(serviceConfig);
+        if (null != configConsumer) {
+            configConsumer.accept(serviceConfig);
         }
+
         return serviceConfig;
+    }
+
+
+    public ServiceConfig<T> build(){
+        return build(null);
     }
 
     private void nullAssert() {
@@ -200,7 +202,7 @@ public class ExportServiceConfigBuilder<T> {
         Assert.notNull(ref,"export service registryId is null");
     }
 
-    protected ExportServiceConfigBuilder<T> getThis() {
+    protected InternalServiceConfigBuilder<T> getThis() {
         return this;
     }
 

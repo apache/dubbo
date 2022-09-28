@@ -30,7 +30,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.bootstrap.builders.ExportServiceConfigBuilder;
+import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -54,14 +54,13 @@ public class ConfigurableMetadataServiceExporter {
 
     public synchronized ConfigurableMetadataServiceExporter export() {
         if (serviceConfig == null || !isExported()) {
-            this.serviceConfig = ExportServiceConfigBuilder.<MetadataService>newServiceBuilder(applicationModel)
+            this.serviceConfig = InternalServiceConfigBuilder.<MetadataService>newBuilder(applicationModel)
                 .interfaceClass(MetadataService.class)
                 .protocol(getApplicationConfig().getMetadataServiceProtocol(), METADATA_SERVICE_PROTOCOL_KEY)
                 .port(getApplicationConfig().getMetadataServicePort(), METADATA_SERVICE_PORT_KEY)
                 .registryId("internal-metadata-registry")
                 .ref(metadataService)
-                .serviceBuilder(builder -> builder.setMethods(generateMethodConfig()))
-                .build();
+                .build(configConsumer -> configConsumer.setMethods(generateMethodConfig()));
 
             // export
             serviceConfig.export();
