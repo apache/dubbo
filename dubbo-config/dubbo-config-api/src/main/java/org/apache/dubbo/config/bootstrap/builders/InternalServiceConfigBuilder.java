@@ -144,7 +144,6 @@ public class InternalServiceConfigBuilder<T> {
         return applicationModel.getApplicationConfigManager().getProtocol(protocol).get();
     }
 
-
     public ServiceConfig<T> build(Consumer<ServiceConfig<T>> configConsumer){
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(this.protocol);
@@ -189,11 +188,9 @@ public class InternalServiceConfigBuilder<T> {
         return serviceConfig;
     }
 
-
     public ServiceConfig<T> build(){
         return build(null);
     }
-
     private void nullAssert() {
         Assert.notNull(port, "export service port is null");
         Assert.notNull(protocol, "export service protocol is null");
@@ -205,7 +202,6 @@ public class InternalServiceConfigBuilder<T> {
     protected InternalServiceConfigBuilder<T> getThis() {
         return this;
     }
-
 
     private ApplicationConfig getApplicationConfig() {
         return applicationModel.getApplicationConfigManager().getApplication().get();
