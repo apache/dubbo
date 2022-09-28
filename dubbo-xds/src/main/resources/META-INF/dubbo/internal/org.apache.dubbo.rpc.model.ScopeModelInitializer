@@ -1,0 +1,1 @@
+xds-route=org.apache.dubbo.rpc.cluster.router.xds.XdsScopeModelInitializer
