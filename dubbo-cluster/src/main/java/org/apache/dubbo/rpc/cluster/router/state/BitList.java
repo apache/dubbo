@@ -122,6 +122,9 @@ public class BitList<E> extends AbstractList<E> {
      */
     public BitList<E> and(BitList<E> target) {
         rootSet.and(target.rootSet);
+        if (target.getTailList() != null) {
+            target.getTailList().forEach(this::addToTailList);
+        }
         return this;
     }
 
