@@ -20,6 +20,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_SERVICE_CONFIG_ERROR;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 import java.util.HashMap;
@@ -131,7 +132,8 @@ public class InternalServiceConfigBuilder<T> {
                     }
                 }
             } catch (Exception e) {
-                logger.error("5-16", "invalid specified " + protocol + "  protocol", "", "Failed to find any valid protocol, will use random port to export metadata service.");
+                logger.error(INTERNAL_SERVICE_CONFIG_ERROR, "invalid specified " + port + "  port, error "+e.getMessage(),
+                    "", "Failed to find any valid protocol, will use random port to export  service.",e);
             }
         }
         if (this.port == null) {
@@ -196,7 +198,7 @@ public class InternalServiceConfigBuilder<T> {
         Assert.notNull(protocol, "export service protocol is null");
         Assert.notNull(interfaceClass, "export service interfaceClass is null");
         Assert.notNull(ref,"export service ref is null");
-        Assert.notNull(ref,"export service registryId is null");
+        Assert.notNull(registryId,"export service registryId is null");
     }
 
     protected InternalServiceConfigBuilder<T> getThis() {
