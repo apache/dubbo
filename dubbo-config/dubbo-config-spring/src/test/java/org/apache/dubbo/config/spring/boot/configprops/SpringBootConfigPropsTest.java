@@ -55,6 +55,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.protocol.name=dubbo",
         "dubbo.protocol.port=20880",
         "dubbo.metrics.protocol=prometheus",
+        "dubbo.metrics.enable-jvm-metrics=true",
         "dubbo.metrics.prometheus.exporter.enabled=true",
         "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
         "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",

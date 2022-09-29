@@ -33,6 +33,10 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.MetricsReporterFactory;
+import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -42,6 +46,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
@@ -75,6 +80,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_P
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
@@ -105,6 +111,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
     private final DubboShutdownHook dubboShutdownHook;
+
+    private volatile MetricsServiceExporter metricsServiceExporter;
+
     private final Object stateLock = new Object();
     private final Object startLock = new Object();
     private final Object destroyLock = new Object();
@@ -189,6 +198,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             loadApplicationConfigs();
 
             initModuleDeployers();
+
+
+            initMetricsReporter();
+
+            initMetricsService();
 
             // @since 2.7.8
             startMetadataCenter();
@@ -328,6 +342,27 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 });
         }
     }
+
+    private void initMetricsService() {
+        this.metricsServiceExporter = getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+        metricsServiceExporter.init();
+    }
+
+    private void initMetricsReporter() {
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
+        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
+        if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
+            collector.setCollectEnabled(true);
+            String protocol = metricsConfig.getProtocol();
+            if (StringUtils.isNotEmpty(protocol)) {
+                MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+                MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+                metricsReporter.init();
+            }
+        }
+    }
+
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
@@ -611,6 +646,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
 
+        // export MetricsService
+        exportMetricsService();
+
         if (isRegisterConsumerInstance()) {
             exportMetadataService();
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
@@ -639,6 +677,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 } catch (Exception e) {
                     logger.warn("wait for internal module startup failed: " + e.getMessage(), e);
                 }
+            }
+        }
+    }
+
+    private void exportMetricsService() {
+        try {
+            metricsServiceExporter.export();
+        } catch (Exception e) {
+            logger.error("exportMetricsService an exception occurred when handle starting event", e);
+        }
+    }
+
+    private void unexportMetricsService() {
+        if (metricsServiceExporter != null) {
+            try {
+                metricsServiceExporter.unexport();
+            } catch (Exception ignored) {
+                // ignored
             }
         }
     }
@@ -766,6 +822,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
+            unexportMetricsService();
+
             unregisterServiceInstance();
             destroyRegistries();
             destroyMetadataReports();
@@ -774,6 +832,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }
+
         }
     }
 
