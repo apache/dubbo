@@ -29,18 +29,18 @@ class TriDecoderTest {
     @Test
     public void decode() {
         final RecordListener listener = new RecordListener();
-        TriDecoder decoder = new TriDecoder(DeCompressor.NONE, listener);
+        TriDecoder decoder = new TriDecoder(DeCompressor.NONE, listener,null);
         final ByteBuf buf = Unpooled.buffer();
         buf.writeByte(0);
         buf.writeInt(1);
         buf.writeByte(2);
-        decoder.deframe(buf);
+    //    decoder.deframe(buf);
         final ByteBuf buf2 = Unpooled.buffer();
         buf2.writeByte(0);
         buf2.writeInt(2);
         buf2.writeByte(2);
         buf2.writeByte(3);
-        decoder.deframe(buf2);
+//   /     decoder.deframe(buf2);
         Assertions.assertEquals(0, listener.dataCount);
         decoder.request(1);
         Assertions.assertEquals(1, listener.dataCount);

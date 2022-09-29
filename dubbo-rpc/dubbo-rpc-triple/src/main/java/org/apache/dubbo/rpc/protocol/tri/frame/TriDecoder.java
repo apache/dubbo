@@ -17,10 +17,12 @@
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2FrameStream;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
-
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -37,23 +39,38 @@ public class TriDecoder implements Deframer {
     private boolean inDelivery = false;
     private boolean closing;
     private boolean closed;
-
+    private Http2Connection connection;
     private int requiredLength = HEADER_LENGTH;
+
+    private int flowControlledBytes;
+
+    private Http2FrameStream stream;
 
     private GrpcDecodeState state = GrpcDecodeState.HEADER;
 
-    public TriDecoder(DeCompressor decompressor, Listener listener) {
+    public TriDecoder(DeCompressor decompressor, Listener listener,Http2Connection connection) {
         this.decompressor = decompressor;
         this.listener = listener;
+        this.connection = connection;
     }
 
     @Override
-    public void deframe(ByteBuf data) {
+    public void deframe(Http2DataFrame msg) {
         if (closing || closed) {
             // ignored
             return;
         }
-        accumulate.addComponent(true, data);
+        final int bytes = msg.initialFlowControlledBytes();
+
+        // It is important that we increment the flowControlledBytes before we call fireChannelRead(...)
+        // as it may cause a read() that will call updateLocalWindowIfNeeded() and we need to ensure
+        // in this case that we accounted for it.
+        //
+        // See https://github.com/netty/netty/issues/9663
+        flowControlledBytes += bytes;
+        stream = msg.stream();
+      //  new DefaultHttp2WindowUpdateFrame(bytes).stream(stream);
+        accumulate.addComponent(true, msg.content());
         deliver();
     }
 
@@ -100,6 +117,7 @@ public class TriDecoder implements Deframer {
                     accumulate.clear();
                     accumulate.release();
                     listener.close();
+                    stream=null;
                 }
             }
         } finally {
@@ -135,9 +153,11 @@ public class TriDecoder implements Deframer {
         // There is no reliable way to get the uncompressed size per message when it's compressed,
         // because the uncompressed bytes are provided through an InputStream whose total size is
         // unknown until all bytes are read, and we don't know when it happens.
-        byte[] stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
-
-        listener.onRawMessage(stream);
+        byte[] streams = compressedFlag ? getCompressedBody() : getUncompressedBody();
+        int bytes = flowControlledBytes;
+        flowControlledBytes = 0;
+        //  new DefaultHttp2WindowUpdateFrame(bytes).stream(stream);
+        listener.onRawMessage(streams,new DefaultHttp2WindowUpdateFrame(bytes).stream(stream),connection);
 
         // Done with this frame, begin processing the next header.
         state = GrpcDecodeState.HEADER;
@@ -163,7 +183,7 @@ public class TriDecoder implements Deframer {
 
     public interface Listener {
 
-        void onRawMessage(byte[] data);
+        void onRawMessage(byte[] data, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection);
 
         void close();
 

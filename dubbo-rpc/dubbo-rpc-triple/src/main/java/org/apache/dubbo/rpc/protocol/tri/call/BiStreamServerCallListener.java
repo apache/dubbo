@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -26,6 +30,8 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     private StreamObserver<Object> requestObserver;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BiStreamServerCallListener.class);
 
     public BiStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
         ServerCallToObserverAdapter<Object> responseObserver) {
@@ -40,13 +46,22 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message,DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }
         requestObserver.onNext(message);
         if (responseObserver.isAutoRequestN()) {
             responseObserver.request(1);
+        }
+        //stream add flowcontrol update windowsize
+        if(null != stream && null != connection.stream(stream.stream().id())){
+            System.out.println("AbstractServerCallListener invoke: " + stream.stream().id());
+            try {
+                connection.local().flowController().consumeBytes(connection.stream(stream.stream().id()), stream.windowSizeIncrement());
+            }catch (Exception e){
+                LOGGER.error("flowcontroller failed ", e);
+            }
         }
     }
 

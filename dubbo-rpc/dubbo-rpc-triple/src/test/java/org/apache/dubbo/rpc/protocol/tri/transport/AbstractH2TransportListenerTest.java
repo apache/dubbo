@@ -20,6 +20,8 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,12 +36,12 @@ class AbstractH2TransportListenerTest {
     void headersToMap() {
         AbstractH2TransportListener listener = new AbstractH2TransportListener() {
             @Override
-            public void onHeader(Http2Headers headers, boolean endStream) {
+            public void onHeader(Http2Headers headers, boolean endStream, Http2Connection connection) {
 
             }
 
             @Override
-            public void onData(ByteBuf data, boolean endStream) {
+            public void onData(Http2DataFrame msg, boolean endStream){
 
             }
 

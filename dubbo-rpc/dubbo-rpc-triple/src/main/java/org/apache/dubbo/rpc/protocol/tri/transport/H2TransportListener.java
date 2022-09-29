@@ -16,8 +16,8 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
-
-import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 
 /**
@@ -32,15 +32,15 @@ public interface H2TransportListener {
      * @param headers   metadata KV paris
      * @param endStream whether this data should terminate the stream
      */
-    void onHeader(Http2Headers headers, boolean endStream);
+    void onHeader(Http2Headers headers, boolean endStream, Http2Connection connection);
 
     /**
      * Transport data
      *
-     * @param data      raw byte array
+     * @param msg      raw byte array
      * @param endStream whether this data should terminate the stream
      */
-    void onData(ByteBuf data, boolean endStream);
+    void onData(Http2DataFrame msg, boolean endStream);
 
 
     void cancelByRemote(long errorCode);

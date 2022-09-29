@@ -36,12 +36,6 @@ import io.netty.handler.codec.http2.Http2Exception.StreamException;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.UnstableApi;
 
-/**
- * Basic implementation of {@link Http2LocalFlowController}.
- * <p>
- * This class is <strong>NOT</strong> thread safe. The assumption is all methods must be invoked from a single thread.
- * Typically this thread is the event loop thread for the {@link ChannelHandlerContext} managed by this class.
- */
 @UnstableApi
 public class TriHttp2LocalFlowController implements Http2LocalFlowController {
     /**
@@ -61,19 +55,6 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
         this(connection, DEFAULT_WINDOW_UPDATE_RATIO, false);
     }
 
-    /**
-     * Constructs a controller with the given settings.
-     *
-     * @param connection the connection state.
-     * @param windowUpdateRatio the window percentage below which to send a {@code WINDOW_UPDATE}.
-     * @param autoRefillConnectionWindow if {@code true}, effectively disables the connection window
-     * in the flow control algorithm as they will always refill automatically without requiring the
-     * application to consume the bytes. When enabled, the maximum bytes you must be prepared to
-     * queue is proportional to {@code maximum number of concurrent streams * the initial window
-     * size per stream}
-     * (<a href="https://tools.ietf.org/html/rfc7540#section-6.5.2">SETTINGS_MAX_CONCURRENT_STREAMS</a>
-     * <a href="https://tools.ietf.org/html/rfc7540#section-6.5.2">SETTINGS_INITIAL_WINDOW_SIZE</a>).
-     */
     public TriHttp2LocalFlowController(Http2Connection connection,
                                            float windowUpdateRatio,
                                            boolean autoRefillConnectionWindow) {
@@ -183,8 +164,8 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
         if (numBytes == 0) {
             return false;
         }
-        //判断从tripleServerHandler过来的消费流量才更新stream的流量窗口，从原生过来处理不再执行流量窗口更新
-        if(!Thread.currentThread().getStackTrace()[2].getClassName().endsWith("TripleHttp2FrameServerHandler")){
+        //use triple flowcontroller
+        if(!(Thread.currentThread().getStackTrace()[2].getClassName().endsWith("BiStreamServerCallListener") || Thread.currentThread().getStackTrace()[2].getClassName().endsWith("AbstractServerCallListener"))){
             return false;
         }
         // Streams automatically consume all remaining bytes when they are closed, so just ignore
@@ -486,6 +467,11 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
                     "Attempting to return too many bytes for stream %d", stream.id());
             }
 
+            System.out.println("send window update id: " + stream.id() + " size: " + deltaWindowSize);
+            StackTraceElement[] str = Thread.currentThread().getStackTrace();
+            for(int i = 0; i< 15; i++){
+                System.out.println("send window update id: " + stream.id() + " class: " + str[i].getClassName());
+            }
             // Send a window update for the stream/connection.
             frameWriter.writeWindowUpdate(ctx, stream.id(), deltaWindowSize, ctx.newPromise());
         }

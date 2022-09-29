@@ -126,16 +126,18 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
-        //增加自定义流控
+        //add triple flowcontroller
         codec.connection().local().flowController(new TriHttp2LocalFlowController(codec.connection()));
         codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection()));
         codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
+
 
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Channel>() {
                 @Override
                 protected void initChannel(Channel ch) {
                     final ChannelPipeline p = ch.pipeline();
+                    //add connection to channel  to flowcontrol
                     AttributeKey key = AttributeKey.valueOf("tri-connection");
                     ch.attr(key).set(codec.connection());
                     p.addLast(new TripleCommandOutBoundHandler());
@@ -176,10 +178,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
-        //增加自定义流控
-        codec.connection().local().flowController(new TriHttp2LocalFlowController(codec.connection()));
-        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection()));
-        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
 
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new TripleClientHandler(frameworkModel));

@@ -71,9 +71,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
         } else if (msg instanceof Http2DataFrame) {
             onDataRead(ctx, (Http2DataFrame) msg);
-            //服务端读完数据，更新流控窗口
-            Http2Connection connection = (Http2Connection)ctx.channel().attr(AttributeKey.valueOf("tri-connection")).get();
-            connection.local().flowController().consumeBytes(connection.stream(((Http2DataFrame) msg).stream().id()),((Http2DataFrame) msg).initialFlowControlledBytes());
         } else if (msg instanceof ReferenceCounted) {
             // ignored
             ReferenceCountUtil.release(msg);
@@ -115,7 +112,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
             .get();
-        tripleServerStream.transportObserver.onData(msg.content(), msg.isEndStream());
+        tripleServerStream.transportObserver.onData(msg, msg.isEndStream());
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
@@ -123,7 +120,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             frameworkModel, executor,
             pathResolver, acceptEncoding, filters);
         ctx.channel().attr(SERVER_STREAM_KEY).set(tripleServerStream);
-        tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
+
+        //transmit connection to triple invoke to flowcontrol
+        Http2Connection connection = (Http2Connection)ctx.channel().attr(AttributeKey.valueOf("tri-connection")).get();
+        tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream(), connection);
     }
 
 }

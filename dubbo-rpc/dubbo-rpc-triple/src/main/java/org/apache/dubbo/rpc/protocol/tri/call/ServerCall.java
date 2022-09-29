@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
@@ -38,7 +40,7 @@ public interface ServerCall {
          *
          * @param message message received
          */
-        void onMessage(Object message);
+        void onMessage(Object message,DefaultHttp2WindowUpdateFrame stream,Http2Connection connection);
 
         /**
          * @param status when the call is canceled.

@@ -103,12 +103,12 @@ class TripleClientStreamTest {
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
         headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(),
             TripleHeaderEnum.CONTENT_PROTO.getHeader());
-        transportListener.onHeader(headers, false);
+        transportListener.onHeader(headers, false,null);
         Assertions.assertTrue(listener.started);
         stream.request(2);
         byte[] data = new byte[]{0, 0, 0, 0, 1, 1};
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
-        transportListener.onData(buf, false);
+     //   transportListener.onData(buf, false);
         buf.release();
         Assertions.assertEquals(1, listener.message.length);
     }

@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -24,6 +28,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class UnaryServerCallListener extends AbstractServerCallListener {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnaryServerCallListener.class);
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
         ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
@@ -36,11 +41,18 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
+    public void onMessage(Object message,DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
         if (message instanceof Object[]) {
             invocation.setArguments((Object[]) message);
         } else {
             invocation.setArguments(new Object[]{message});
+        }
+
+        invocation.setAttachment("tri-connection",connection);
+        invocation.setAttachment("tri-stream",stream);
+        if(null != invocation.getObjectAttachment("windowSizeIncrement")){
+            int windowSizeIncrement = (int)invocation.getObjectAttachment("windowSizeIncrement");
+            invocation.setAttachment("windowSizeIncrement",windowSizeIncrement + stream.windowSizeIncrement());
         }
     }
 

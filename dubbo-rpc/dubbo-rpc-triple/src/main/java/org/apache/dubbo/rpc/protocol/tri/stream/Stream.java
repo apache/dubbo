@@ -18,6 +18,8 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.handler.codec.http2.Http2Headers;
@@ -43,7 +45,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(byte[] message);
+        void onMessage(byte[] message, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection);
 
         /**
          * Callback when receive cancel signal.

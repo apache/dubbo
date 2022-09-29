@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -27,7 +29,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-
 import java.net.InetSocketAddress;
 
 public abstract class AbstractServerCallListener implements AbstractServerCall.Listener {
@@ -59,6 +60,13 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         final long stInMillis = System.currentTimeMillis();
         try {
             final Result response = invoker.invoke(invocation);
+
+            //unary and serverstream add flowcontrol update windowsize
+            if(null != invocation.getObjectAttachment("tri-connection") && null != invocation.getObjectAttachment("windowSizeIncrement") && null != invocation.getObjectAttachment("tri-stream")){
+                Http2Connection connection = (Http2Connection)invocation.getObjectAttachment("tri-connection");
+                DefaultHttp2WindowUpdateFrame stream = (DefaultHttp2WindowUpdateFrame)invocation.getObjectAttachment("tri-stream");
+                connection.local().flowController().consumeBytes(connection.stream(stream.stream().id()), (int)invocation.getObjectAttachment("windowSizeIncrement"));
+            }
             response.whenCompleteWithContext((r, t) -> {
                 responseObserver.setResponseAttachments(response.getObjectAttachments());
                 if (t != null) {

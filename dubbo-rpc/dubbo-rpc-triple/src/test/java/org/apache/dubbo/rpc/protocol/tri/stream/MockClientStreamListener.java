@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
 import java.util.Map;
@@ -39,7 +41,7 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
-    public void onMessage(byte[] message) {
+    public void onMessage(byte[] message, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
         this.message = message;
     }
 

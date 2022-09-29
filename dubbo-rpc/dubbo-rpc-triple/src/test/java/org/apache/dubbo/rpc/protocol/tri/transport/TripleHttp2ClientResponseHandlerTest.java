@@ -69,7 +69,7 @@ public class TripleHttp2ClientResponseHandlerTest {
         final Http2Headers headers = new DefaultHttp2Headers(true);
         DefaultHttp2HeadersFrame headersFrame = new DefaultHttp2HeadersFrame(headers, true);
         handler.channelRead0(ctx, headersFrame);
-        Mockito.verify(transportListener, Mockito.times(1)).onHeader(headers, true);
+        Mockito.verify(transportListener, Mockito.times(1)).onHeader(headers, true,null);
     }
 
     @Test

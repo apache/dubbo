@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -69,7 +71,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message) {
+    public void onMessage(byte[] message, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
         if (done) {
             LOGGER.warn(
                 "Received message from closed stream,connection=" + connection + " service="
