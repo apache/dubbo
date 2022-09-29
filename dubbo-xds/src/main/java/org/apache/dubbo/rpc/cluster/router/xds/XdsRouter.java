@@ -39,9 +39,11 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRuleListener, EdsEndpointListener {
 
@@ -91,7 +93,9 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
 
         // find match cluster
         String matchCluster = null;
-        for (String subscribeApplication : subscribeApplications) {
+        Set<String> appNames = invokers.stream().map(inv -> inv.getUrl().getRemoteApplication())
+            .filter(Objects::nonNull).collect(Collectors.toSet());
+        for (String subscribeApplication : appNames) {
             List<XdsRouteRule> rules = xdsRouteRuleMap.get(subscribeApplication);
             if (CollectionUtils.isEmpty(rules)) {
                 continue;

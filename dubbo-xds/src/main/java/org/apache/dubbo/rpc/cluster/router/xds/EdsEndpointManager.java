@@ -42,7 +42,7 @@ public class EdsEndpointManager {
             new ConcurrentHashSet<>()
         );
         if (CollectionUtils.isEmpty(listeners)) {
-            doSubscribeRds(cluster);
+            doSubscribeEds(cluster);
         }
         listeners.add(listener);
 
@@ -51,13 +51,13 @@ public class EdsEndpointManager {
         }
     }
 
-    private void doSubscribeRds(String cluster) {
+    private void doSubscribeEds(String cluster) {
         EDS_LISTENERS.computeIfAbsent(cluster, key -> endpoints -> {
             notifyEndpointChange(cluster, endpoints);
         });
         Consumer<Set<Endpoint>> consumer = EDS_LISTENERS.get(cluster);
 
-        //todo control plane subscribe rds
+        //todo control plane subscribe eds
     }
 
     public synchronized void unSubscribeEds(String cluster, EdsEndpointListener listener) {
@@ -68,16 +68,16 @@ public class EdsEndpointManager {
         listeners.remove(listener);
         if (listeners.isEmpty()) {
             ENDPOINT_LISTENERS.remove(cluster);
-            doUnsubscribeRds(cluster);
+            doUnsubscribeEds(cluster);
         }
     }
 
-    private void doUnsubscribeRds(String cluster) {
+    private void doUnsubscribeEds(String cluster) {
         Consumer<Set<Endpoint>> consumer = EDS_LISTENERS.remove(cluster);
 
         if (consumer != null) {
 
-            //todo control plane unsubscribe rds
+            //todo control plane unsubscribe eds
         }
         ENDPOINT_DATA_CACHE.remove(cluster);
     }
