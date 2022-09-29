@@ -1,4 +1,4 @@
-name: Build and Test For Dubbo 3.1
+name: Build and Test For Dubbo 3.2
 
 on: [push, pull_request, workflow_dispatch]
 
