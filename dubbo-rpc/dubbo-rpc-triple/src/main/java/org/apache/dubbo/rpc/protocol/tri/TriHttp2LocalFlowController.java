@@ -1,18 +1,17 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2014 The Netty Project
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.dubbo.rpc.protocol.tri;
@@ -36,6 +35,10 @@ import io.netty.handler.codec.http2.Http2Exception.StreamException;
 import io.netty.util.internal.PlatformDependent;
 import io.netty.util.internal.UnstableApi;
 
+
+/**
+ * This design is learning from {@see io.netty.handler.codec.http2.DefaultHttp2LocalFlowController} which is in Netty.
+ */
 @UnstableApi
 public class TriHttp2LocalFlowController implements Http2LocalFlowController {
     /**
@@ -465,12 +468,6 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
             } catch (Throwable t) {
                 throw connectionError(INTERNAL_ERROR, t,
                     "Attempting to return too many bytes for stream %d", stream.id());
-            }
-
-            System.out.println("send window update id: " + stream.id() + " size: " + deltaWindowSize);
-            StackTraceElement[] str = Thread.currentThread().getStackTrace();
-            for(int i = 0; i< 15; i++){
-                System.out.println("send window update id: " + stream.id() + " class: " + str[i].getClassName());
             }
             // Send a window update for the stream/connection.
             frameWriter.writeWindowUpdate(ctx, stream.id(), deltaWindowSize, ctx.newPromise());

@@ -1,18 +1,17 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2014 The Netty Project
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * The Netty Project licenses this file to you under the Apache License,
+ * version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at:
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
  */
 
 package org.apache.dubbo.rpc.protocol.tri;
@@ -34,10 +33,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 /**
- * Basic implementation of {@link Http2RemoteFlowController}.
- * <p>
- * This class is <strong>NOT</strong> thread safe. The assumption is all methods must be invoked from a single thread.
- * Typically this thread is the event loop thread for the {@link ChannelHandlerContext} managed by this class.
+ * This design is learning from {@see io.netty.handler.codec.http2.DefaultHttp2RemoteFlowController} which is in Netty.
  */
 @UnstableApi
 public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
@@ -517,7 +513,6 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
                 int negativeBytes = -bytes;
                 connectionState.incrementStreamWindow(negativeBytes);
                 incrementStreamWindow(negativeBytes);
-                System.out.println("connectionState: " + connectionState.stream.id() + " - " + negativeBytes + " = " + connectionState.window);
             } catch (Http2Exception e) {
                 // Should never get here since we're decrementing.
                 throw new IllegalStateException("Invalid window state when writing frame: " + e.getMessage(), e);

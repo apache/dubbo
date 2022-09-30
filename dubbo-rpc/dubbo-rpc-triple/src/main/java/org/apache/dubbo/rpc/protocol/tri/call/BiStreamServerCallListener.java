@@ -56,7 +56,6 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         }
         //stream add flowcontrol update windowsize
         if(null != stream && null != connection.stream(stream.stream().id())){
-            System.out.println("AbstractServerCallListener invoke: " + stream.stream().id());
             try {
                 connection.local().flowController().consumeBytes(connection.stream(stream.stream().id()), stream.windowSizeIncrement());
             }catch (Exception e){

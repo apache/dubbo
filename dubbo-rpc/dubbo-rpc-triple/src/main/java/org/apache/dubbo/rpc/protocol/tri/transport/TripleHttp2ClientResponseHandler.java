@@ -17,7 +17,13 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import io.netty.handler.codec.http2.*;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.Http2ResetFrame;
+import io.netty.handler.codec.http2.Http2StreamFrame;
 import io.netty.util.AttributeKey;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
