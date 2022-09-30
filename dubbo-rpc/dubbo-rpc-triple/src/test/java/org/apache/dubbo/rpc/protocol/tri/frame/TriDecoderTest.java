@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
+import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.Http2DataFrame;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 import io.netty.buffer.ByteBuf;
@@ -34,13 +36,15 @@ class TriDecoderTest {
         buf.writeByte(0);
         buf.writeInt(1);
         buf.writeByte(2);
-    //    decoder.deframe(buf);
+        Http2DataFrame fame =  new DefaultHttp2DataFrame(buf);
+        decoder.deframe(fame);
         final ByteBuf buf2 = Unpooled.buffer();
         buf2.writeByte(0);
         buf2.writeInt(2);
         buf2.writeByte(2);
         buf2.writeByte(3);
-//   /     decoder.deframe(buf2);
+        Http2DataFrame fame2 =  new DefaultHttp2DataFrame(buf2);
+        decoder.deframe(fame2);
         Assertions.assertEquals(0, listener.dataCount);
         decoder.request(1);
         Assertions.assertEquals(1, listener.dataCount);

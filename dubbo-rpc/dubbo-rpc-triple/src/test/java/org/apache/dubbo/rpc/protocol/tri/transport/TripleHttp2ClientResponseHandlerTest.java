@@ -20,7 +20,11 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.http2.Http2FrameCodecBuilder;;
+import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -28,9 +32,13 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.AttributeKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+
+import static org.mockito.Mockito.mock;
 
 /**
  * {@link TripleHttp2ClientResponseHandler }
@@ -43,10 +51,11 @@ public class TripleHttp2ClientResponseHandlerTest {
 
     @BeforeEach
     public void init() {
-        transportListener = Mockito.mock(AbstractH2TransportListener.class);
+        transportListener = mock(AbstractH2TransportListener.class);
         handler = new TripleHttp2ClientResponseHandler(transportListener);
-        ctx = Mockito.mock(ChannelHandlerContext.class);
-        Channel channel = Mockito.mock(Channel.class);
+        ctx = mock(ChannelHandlerContext.class);
+      //  Channel channel = Mockito.mock(Channel.class);
+        Channel channel = new EmbeddedChannel(mock(ChannelHandler.class));
         Mockito.when(ctx.channel()).thenReturn(channel);
     }
 
@@ -68,8 +77,10 @@ public class TripleHttp2ClientResponseHandlerTest {
     public void testChannelRead0() throws Exception {
         final Http2Headers headers = new DefaultHttp2Headers(true);
         DefaultHttp2HeadersFrame headersFrame = new DefaultHttp2HeadersFrame(headers, true);
+        final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer().build();
+        ctx.channel().attr(AttributeKey.valueOf("tri-connection")).set(codec.connection());
         handler.channelRead0(ctx, headersFrame);
-        Mockito.verify(transportListener, Mockito.times(1)).onHeader(headers, true,null);
+        Mockito.verify(transportListener, Mockito.times(1)).onHeader(headers, true,codec.connection());
     }
 
     @Test
