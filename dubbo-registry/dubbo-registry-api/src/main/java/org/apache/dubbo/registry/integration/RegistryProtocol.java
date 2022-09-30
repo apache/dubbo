@@ -767,6 +767,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
+        public boolean isMatchedSubscribeUrl(URL targetSubscribeUrl) {
+            return this.subscribeUrl.equals(targetSubscribeUrl);
+        }
+
         private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
             List<URL> result = new ArrayList<>();
             for (URL url : configuratorUrls) {
@@ -906,7 +910,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     if (listeners != null) {
                         if (!registry.isServiceDiscovery()) {
                             for (NotifyListener listener : listeners) {
-                                registry.unsubscribe(subscribeUrl, listener);
+                                if (listener instanceof OverrideListener) {
+                                    OverrideListener overrideListener = (OverrideListener) listener;
+                                    if (overrideListener.isMatchedSubscribeUrl(this.subscribeUrl)) {
+                                        registry.unsubscribe(subscribeUrl, listener);
+                                    }
+                                }
                             }
                         }
                         ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
