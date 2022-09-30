@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -27,6 +28,8 @@ import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
+import org.apache.dubbo.rpc.protocol.tri.frame.Framer;
+import org.apache.dubbo.rpc.protocol.tri.frame.MessageFramer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -61,6 +64,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     private final WriteQueue writeQueue;
     private Deframer deframer;
     private final Channel parent;
+    private final Framer framer;
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
@@ -71,6 +75,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.parent = null;
         this.listener = listener;
         this.writeQueue = writeQueue;
+        this.framer = new MessageFramer(writeQueue);
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
@@ -81,6 +86,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.parent = parent;
         this.listener = listener;
         this.writeQueue = createWriteQueue(parent);
+        this.framer = new MessageFramer(writeQueue);
     }
 
     private WriteQueue createWriteQueue(Channel parent) {
@@ -108,7 +114,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             return parent.newFailedFuture(new IllegalStateException("Stream already closed"));
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        return writeQueue.enqueue(headerCmd).addListener(future -> {
+        return writeQueue.enqueueSoon(headerCmd, false).addListener(future -> {
             if (!future.isSuccess()) {
                 transportException(future.cause());
             }
@@ -136,8 +142,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     public ChannelFuture sendMessage(byte[] message, int compressFlag, boolean eos) {
         final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,
             compressFlag);
-        return this.writeQueue.enqueue(cmd)
-            .addListener(future -> {
+        ChannelPromise channelPromise = this.writeQueue.createChannelPromise();
+        cmd.promise(channelPromise);
+        framer.addDataCmd(cmd);
+        return channelPromise.addListener(future -> {
                     if (!future.isSuccess()) {
                         cancelByLocal(
                             TriRpcStatus.INTERNAL.withDescription("Client write message failed")
@@ -155,9 +163,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     @Override
-    public ChannelFuture halfClose() {
-        final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
-        return this.writeQueue.enqueue(cmd);
+    public void halfClose() {
+        return framer.close();
     }
 
     /**

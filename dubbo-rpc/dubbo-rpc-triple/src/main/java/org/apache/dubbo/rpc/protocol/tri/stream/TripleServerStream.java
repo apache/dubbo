@@ -126,7 +126,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
 
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false))
+        return writeQueue.enqueueSoon(HeaderQueueCommand.createHeaders(headers, false), false)
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -159,7 +159,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
         trailersSent = true;
-        return writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true))
+        return writeQueue.enqueueSoon(HeaderQueueCommand.createHeaders(trailers, true), true)
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -224,7 +224,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return writeQueue.failure(
                 new IllegalStateException("Trailers already sent, no more body allowed"));
         }
-        return writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressFlag));
+        return writeQueue.enqueueSoon(DataQueueCommand.createGrpcCommand(message, false, compressFlag), true);
     }
 
     /**
@@ -238,8 +238,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
+        writeQueue.enqueueSoon(HeaderQueueCommand.createHeaders(headers, false), false);
+        writeQueue.enqueueSoon(TextDataQueueCommand.createCommand(status.description, true), true);
     }
 
     /**

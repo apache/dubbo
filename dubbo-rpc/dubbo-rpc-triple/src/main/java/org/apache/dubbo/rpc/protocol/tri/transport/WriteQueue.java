@@ -59,6 +59,10 @@ public class WriteQueue {
     }
 
     public ChannelFuture enqueue(QueuedCommand command) {
+        return enqueueSoon(command, true);
+    }
+
+    public ChannelFuture enqueueSoon(QueuedCommand command, boolean soon) {
         if (!channel.isActive()) {
             return channel.newFailedFuture(new IOException("channel is closed"));
         }
@@ -71,8 +75,14 @@ public class WriteQueue {
             command.promise(promise);
         }
         queue.add(command);
-        scheduleFlush();
+        if(soon) {
+            scheduleFlush();
+        }
         return promise;
+    }
+
+    public ChannelPromise createChannelPromise() {
+        return channel.newPromise();
     }
 
     public void scheduleFlush() {
