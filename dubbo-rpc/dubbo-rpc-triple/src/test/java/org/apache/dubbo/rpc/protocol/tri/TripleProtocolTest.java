@@ -103,8 +103,8 @@ public class TripleProtocolTest {
         inboundMessageObserver.onCompleted();
         outboundMessageSubscriber2.getLatch().await(3000, TimeUnit.MILLISECONDS);
         // verify client
- //       Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), SERVER_MSG);
-        Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
+        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), SERVER_MSG);
+ //       Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
         // verify server
         MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) ((IGreeterImpl) serviceImpl).getMockStreamObserver();
         serverOutboundMessageSubscriber.getLatch().await(1000, TimeUnit.MILLISECONDS);
