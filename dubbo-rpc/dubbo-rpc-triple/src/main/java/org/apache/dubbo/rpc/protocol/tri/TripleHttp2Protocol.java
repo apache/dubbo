@@ -71,8 +71,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private static final int DEFAULT_MAX_HEADER_LIST_SIZE = KIB_32;
     private static final int DEFAULT_SETTING_HEADER_LIST_SIZE = 4096;
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
- //   private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
-    private static final int DEFAULT_WINDOW_INIT_SIZE = 65540;
+    private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
