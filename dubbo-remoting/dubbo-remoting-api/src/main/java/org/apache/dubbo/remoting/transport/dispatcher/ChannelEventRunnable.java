@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.dispatcher;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 
@@ -52,6 +53,7 @@ public class ChannelEventRunnable implements Runnable {
 
     @Override
     public void run() {
+        InternalThreadLocal.removeAll();
         if (state == ChannelState.RECEIVED) {
             try {
                 handler.received(channel, message);
@@ -95,7 +97,7 @@ public class ChannelEventRunnable implements Runnable {
                 logger.warn("unknown state: " + state + ", message is " + message);
             }
         }
-
+        InternalThreadLocal.removeAll();
     }
 
     /**

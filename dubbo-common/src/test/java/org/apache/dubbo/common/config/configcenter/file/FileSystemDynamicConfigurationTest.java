@@ -42,8 +42,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link FileSystemDynamicConfiguration} Test
  */
-// Test often failed on Github Actions Platform because of file system on Azure
-// Change to Disabled because DisabledIfEnvironmentVariable does not work on Github.
+// Test often failed on GitHub Actions Platform because of file system on Azure
+// Change to Disabled because DisabledIfEnvironmentVariable does not work on GitHub.
 @Disabled
 public class FileSystemDynamicConfigurationTest {
 

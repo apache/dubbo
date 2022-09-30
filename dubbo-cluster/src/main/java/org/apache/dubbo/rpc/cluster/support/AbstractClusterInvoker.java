@@ -49,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RESELECT
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RESELECT_COUNT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RESELECT_INVOKERS;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK;
@@ -213,11 +214,11 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                         //Avoid collision
                         invoker = invokers.get((index + 1) % invokers.size());
                     } catch (Exception e) {
-                        logger.warn("2-5","select invokers exception","",e.getMessage() + " may because invokers list dynamic change, ignore.",e);
+                        logger.warn(CLUSTER_FAILED_RESELECT_INVOKERS,"select invokers exception","",e.getMessage() + " may because invokers list dynamic change, ignore.",e);
                     }
                 }
             } catch (Throwable t) {
-                logger.error("2-5","failed to reselect invokers","","cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url",t);
+                logger.error(CLUSTER_FAILED_RESELECT_INVOKERS,"failed to reselect invokers","","cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url",t);
             }
         }
 

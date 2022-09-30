@@ -99,6 +99,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
@@ -726,13 +727,13 @@ public class ConfigValidationUtils {
             return;
         }
         if (value.length() > maxlength) {
-            logger.error("5-17", "the value content is too long", "", "Parameter value format error. Invalid " +
+            logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "the value content is too long", "", "Parameter value format error. Invalid " +
                 property + "=\"" + value + "\" is longer than " + maxlength);
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                logger.error("5-17", "the value content is illegal character", "", "Parameter value format error. Invalid " +
+                logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "the value content is illegal character", "", "Parameter value format error. Invalid " +
                     property + "=\"" + value + "\" contains illegal " +
                     "character, only digit, letter, '-', '_' or '.' is legal.");
             }
