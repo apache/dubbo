@@ -193,8 +193,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         return 9090;
     }
 
-    public Map<URL, List<NotifyListener>> getOverrideListeners() {
-        Map<URL, List<NotifyListener>> map = new HashMap<>();
+    public Map<URL, NotifyListener> getOverrideListeners() {
+        Map<URL, NotifyListener> map = new HashMap<>();
         List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
         if (applicationModels.size() == 1) {
             return applicationModels.get(0).getBeanFactory().getBean(ProviderConfigurationListener.class).getOverrideListeners();
@@ -231,8 +231,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
 
-        Map<URL, List<NotifyListener>> overrideListeners = getProviderConfigurationListener(providerUrl).getOverrideListeners();
-        overrideListeners.computeIfAbsent(registryUrl, list -> new CopyOnWriteArrayList<>()).add(overrideSubscribeListener);
+        Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(providerUrl).getOverrideListeners();
+        overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
@@ -767,10 +767,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        public boolean isMatchedSubscribeUrl(URL targetSubscribeUrl) {
-            return this.subscribeUrl.equals(targetSubscribeUrl);
-        }
-
         private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
             List<URL> result = new ArrayList<>();
             for (URL url : configuratorUrls) {
@@ -823,7 +819,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
-        private final Map<URL, List<NotifyListener>> overrideListeners = new ConcurrentHashMap<>();
+        private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
 
         public ProviderConfigurationListener(ModuleModel moduleModel) {
             super(moduleModel);
@@ -845,13 +841,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         @Override
         protected void notifyOverrides() {
-            Collection<List<NotifyListener>> listenersList = overrideListeners.values();
-            for (List<NotifyListener> listeners : listenersList) {
-                listeners.forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
-            }
+            overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
         }
 
-        public Map<URL, List<NotifyListener>> getOverrideListeners() {
+        public Map<URL, NotifyListener> getOverrideListeners() {
             return overrideListeners;
         }
     }
@@ -905,18 +898,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
             try {
                 if (subscribeUrl != null) {
-                    Map<URL, List<NotifyListener>> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
-                    List<NotifyListener> listeners = overrideListeners.remove(registerUrl);
-                    if (listeners != null) {
+                    Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
+                    NotifyListener listener = overrideListeners.remove(subscribeUrl);
+                    if (listener != null) {
                         if (!registry.isServiceDiscovery()) {
-                            for (NotifyListener listener : listeners) {
-                                if (listener instanceof OverrideListener) {
-                                    OverrideListener overrideListener = (OverrideListener) listener;
-                                    if (overrideListener.isMatchedSubscribeUrl(this.subscribeUrl)) {
-                                        registry.unsubscribe(subscribeUrl, listener);
-                                    }
-                                }
-                            }
+                            registry.unsubscribe(subscribeUrl, listener);
                         }
                         ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                         if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
