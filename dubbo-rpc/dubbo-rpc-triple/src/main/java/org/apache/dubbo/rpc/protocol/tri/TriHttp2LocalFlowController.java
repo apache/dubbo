@@ -169,7 +169,9 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
 
     @Override
     public boolean consumeBytes(Http2Stream stream, int numBytes) throws Http2Exception {
-        assert ctx != null && ctx.executor().inEventLoop();
+        //because triple thread do consume ,so delete ctx.executor().inEventLoop()
+        assert ctx != null ;
+   //     assert ctx != null && ctx.executor().inEventLoop();
         checkPositiveOrZero(numBytes, "numBytes");
         if (numBytes == 0) {
             return false;

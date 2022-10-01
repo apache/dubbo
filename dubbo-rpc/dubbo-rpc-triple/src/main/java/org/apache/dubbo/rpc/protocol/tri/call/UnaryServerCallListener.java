@@ -53,6 +53,8 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
         if(null != invocation.getObjectAttachment("windowSizeIncrement")){
             int windowSizeIncrement = (int)invocation.getObjectAttachment("windowSizeIncrement");
             invocation.setAttachment("windowSizeIncrement",windowSizeIncrement + stream.windowSizeIncrement());
+        }else{
+            invocation.setAttachment("windowSizeIncrement",stream.windowSizeIncrement());
         }
     }
 
