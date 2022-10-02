@@ -40,7 +40,7 @@ public interface ServerCall {
          *
          * @param message message received
          */
-        void onMessage(Object message,DefaultHttp2WindowUpdateFrame stream,Http2Connection connection);
+        void onMessage(Object message);
 
         /**
          * @param status when the call is canceled.

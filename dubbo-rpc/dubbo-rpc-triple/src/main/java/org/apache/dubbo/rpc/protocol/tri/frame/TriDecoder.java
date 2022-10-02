@@ -25,7 +25,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-
+import java.util.HashMap;
+import java.util.Map;
 public class TriDecoder implements Deframer {
 
     private static final int HEADER_LENGTH = 5;
@@ -156,8 +157,12 @@ public class TriDecoder implements Deframer {
         byte[] streams = compressedFlag ? getCompressedBody() : getUncompressedBody();
         int bytes = flowControlledBytes;
         flowControlledBytes = 0;
+        Map map = new HashMap();
+        map.put("message",streams);
+        map.put("stream",new DefaultHttp2WindowUpdateFrame(bytes).stream(stream));
+        map.put("connection",connection);
         //  new DefaultHttp2WindowUpdateFrame(bytes).stream(stream);
-        listener.onRawMessage(streams,new DefaultHttp2WindowUpdateFrame(bytes).stream(stream),connection);
+        listener.onRawMessage(map);
 
         // Done with this frame, begin processing the next header.
         state = GrpcDecodeState.HEADER;
@@ -183,7 +188,7 @@ public class TriDecoder implements Deframer {
 
     public interface Listener {
 
-        void onRawMessage(byte[] data, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection);
+        void onRawMessage(Map map);
 
         void close();
 

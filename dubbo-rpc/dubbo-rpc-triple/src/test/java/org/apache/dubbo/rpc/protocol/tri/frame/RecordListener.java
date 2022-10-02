@@ -17,8 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
-import io.netty.handler.codec.http2.Http2Connection;
+import java.util.Map;
 
 public class RecordListener implements TriDecoder.Listener {
     byte[] lastData;
@@ -26,9 +25,9 @@ public class RecordListener implements TriDecoder.Listener {
     boolean close;
 
     @Override
-    public void onRawMessage(byte[] data, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
+    public void onRawMessage(Map map) {
         dataCount += 1;
-        lastData = data;
+        lastData = (byte[])map.get("message");
     }
 
     @Override

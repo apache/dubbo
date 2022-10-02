@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
 import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -175,12 +175,16 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     }
 
     @Override
-    public final void onMessage(byte[] message,DefaultHttp2WindowUpdateFrame stream,Http2Connection connection) {
+    public final void onMessage(Map data) {
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
+            byte[] message =  (byte[])((Map) data).get("message");
+            Http2WindowUpdateFrame stream = (Http2WindowUpdateFrame)((Map) data).get("stream");
+            Http2Connection connection = (Http2Connection)((Map) data).get("connection");
             Object instance = parseSingleMessage(message);
-            listener.onMessage(instance, stream, connection);
+            data.put("instance",instance);
+            listener.onMessage(data);
         } catch (Throwable t) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
                 .withCause(t);

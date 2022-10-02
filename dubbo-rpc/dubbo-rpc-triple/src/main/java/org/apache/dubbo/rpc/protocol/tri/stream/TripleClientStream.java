@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
@@ -44,7 +43,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
-
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -247,8 +245,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             }
             TriDecoder.Listener listener = new TriDecoder.Listener() {
                 @Override
-                public void onRawMessage(byte[] data,DefaultHttp2WindowUpdateFrame stream,Http2Connection connection) {
-                    TripleClientStream.this.listener.onMessage(data,stream,connection);
+                public void onRawMessage(Map map) {
+                    TripleClientStream.this.listener.onMessage(map);
                 }
 
                 public void close() {

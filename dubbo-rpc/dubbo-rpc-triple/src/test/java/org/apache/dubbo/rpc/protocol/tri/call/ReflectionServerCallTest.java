@@ -34,6 +34,8 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -88,7 +90,9 @@ class ReflectionServerCallTest {
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
-        call2.onMessage(new byte[0],null,null);
+        Map map = new HashMap();
+        map.put("message",new byte[0]);
+        call2.onMessage(map);
         call2.onComplete();
     }
 }

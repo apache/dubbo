@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
+import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+
+import java.util.Map;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
 
@@ -37,7 +39,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
-        invoke();
+        invoke(null);
     }
 
     @Override
@@ -46,7 +48,8 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message,DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
+    public void onMessage(Object map) {
+        Object message = ((Map) map).get("instance");
         if (message instanceof Object[]) {
             message = ((Object[]) message)[0];
         }
@@ -54,6 +57,8 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         if (responseObserver.isAutoRequestN()) {
             responseObserver.request(1);
         }
+        Http2Connection connection = (Http2Connection)((Map) map).get("connection");
+        Http2WindowUpdateFrame stream = (Http2WindowUpdateFrame)((Map) map).get("stream");
         //stream add flowcontrol update windowsize
         if(null != stream && null != connection.stream(stream.stream().id())){
             try {

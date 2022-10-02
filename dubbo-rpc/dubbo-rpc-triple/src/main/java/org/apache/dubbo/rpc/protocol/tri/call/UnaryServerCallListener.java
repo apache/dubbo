@@ -17,16 +17,25 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
 import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControl;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
+import java.util.Map;
+
 public class UnaryServerCallListener extends AbstractServerCallListener {
+
+    private Http2Connection http2Connection;
+
+    private int windowSizeIncrement=0;
+
+    private Http2WindowUpdateFrame http2WindowUpdateFrame;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnaryServerCallListener.class);
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
@@ -41,21 +50,17 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message,DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
+    public void onMessage(Object map) {
+        Object message = ((Map) map).get("instance");
         if (message instanceof Object[]) {
             invocation.setArguments((Object[]) message);
         } else {
             invocation.setArguments(new Object[]{message});
         }
+        http2Connection = (Http2Connection)((Map) map).get("connection");
+        http2WindowUpdateFrame = (Http2WindowUpdateFrame)((Map) map).get("stream");
+        windowSizeIncrement = windowSizeIncrement + http2WindowUpdateFrame.windowSizeIncrement();
 
-        invocation.setAttachment("tri-connection",connection);
-        invocation.setAttachment("tri-stream",stream);
-        if(null != invocation.getObjectAttachment("windowSizeIncrement")){
-            int windowSizeIncrement = (int)invocation.getObjectAttachment("windowSizeIncrement");
-            invocation.setAttachment("windowSizeIncrement",windowSizeIncrement + stream.windowSizeIncrement());
-        }else{
-            invocation.setAttachment("windowSizeIncrement",stream.windowSizeIncrement());
-        }
     }
 
     @Override
@@ -66,7 +71,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        invoke();
+        invoke(new TripleFlowControl(http2Connection,windowSizeIncrement,http2WindowUpdateFrame));
     }
 
 }

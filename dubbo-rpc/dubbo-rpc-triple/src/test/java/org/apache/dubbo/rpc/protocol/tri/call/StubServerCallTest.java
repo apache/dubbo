@@ -32,7 +32,8 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.Collections;
-
+import java.util.HashMap;
+import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -66,7 +67,9 @@ class StubServerCallTest {
             service, method,
             ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());
-        call.onMessage(new byte[0],null,null);
+        Map map = new HashMap();
+        map.put("message",new byte[0]);
+        call.onMessage(map);
         call.onComplete();
     }
 }

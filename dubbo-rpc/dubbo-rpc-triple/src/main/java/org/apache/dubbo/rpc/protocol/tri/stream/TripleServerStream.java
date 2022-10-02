@@ -17,10 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
@@ -48,7 +47,6 @@ import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
-
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
@@ -59,7 +57,6 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.concurrent.Future;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -432,8 +429,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         private class ServerDecoderListener implements TriDecoder.Listener {
 
             @Override
-            public void onRawMessage(byte[] data,DefaultHttp2WindowUpdateFrame stream,Http2Connection connection) {
-                listener.onMessage(data,stream,connection);
+            public void onRawMessage(Map map) {
+                listener.onMessage(map);
             }
 
             @Override

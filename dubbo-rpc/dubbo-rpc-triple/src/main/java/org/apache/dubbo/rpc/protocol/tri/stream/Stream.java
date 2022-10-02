@@ -17,15 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
-import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
-
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
-
 import java.net.SocketAddress;
+import java.util.Map;
 
 /**
  * Stream is a bi-directional channel that manipulates the data flow between peers. Inbound data
@@ -45,7 +41,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(byte[] message, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection);
+        void onMessage(Map message);
 
         /**
          * Callback when receive cancel signal.

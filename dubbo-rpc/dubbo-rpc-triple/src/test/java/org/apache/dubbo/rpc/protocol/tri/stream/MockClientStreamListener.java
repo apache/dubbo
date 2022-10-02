@@ -41,8 +41,8 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
-    public void onMessage(byte[] message, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
-        this.message = message;
+    public void onMessage(Map map) {
+        this.message = (byte[])map.get("message");
     }
 
     @Override

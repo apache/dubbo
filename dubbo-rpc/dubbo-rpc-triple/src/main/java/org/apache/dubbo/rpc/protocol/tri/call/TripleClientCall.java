@@ -71,7 +71,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message, DefaultHttp2WindowUpdateFrame stream, Http2Connection connection) {
+    public void onMessage(Map map) {
+        byte[] message = (byte[])map.get("message");
         if (done) {
             LOGGER.warn(
                 "Received message from closed stream,connection=" + connection + " service="
