@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -13,16 +14,14 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
-  -->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>27</version>
-        <relativePath />
+        <relativePath/>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>
@@ -138,7 +137,7 @@
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
-        <tomcat_embed_version>8.5.69</tomcat_embed_version>
+        <tomcat_embed_version>8.5.78</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
         <nacos_version>2.1.0</nacos_version>
         <grpc.version>1.47.0</grpc.version>
