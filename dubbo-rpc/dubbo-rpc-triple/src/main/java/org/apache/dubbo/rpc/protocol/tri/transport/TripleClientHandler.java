@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.remoting.api.ConnectionHandler;
+import org.apache.dubbo.remoting.api.connection.ConnectionHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -36,7 +36,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2GoAwayFrame) {
-            final ConnectionHandler connectionHandler = ctx.pipeline().get(ConnectionHandler.class);
+            final ConnectionHandler connectionHandler = (ConnectionHandler) ctx.pipeline().get("connectionHandler");
             connectionHandler.onGoAway(ctx.channel());
         }
         ReferenceCountUtil.release(msg);

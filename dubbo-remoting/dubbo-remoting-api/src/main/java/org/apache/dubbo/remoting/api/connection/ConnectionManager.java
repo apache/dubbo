@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
-import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
-public class NettyPortUnificationTransporter implements PortUnificationTransporter {
+import java.util.function.Consumer;
 
-    public static final String NAME = "netty4";
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ConnectionManager {
 
-    @Override
-    public AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyPortUnificationServer(url, handler);
-    }
+    AbstractConnectionClient connect(URL url, ChannelHandler handler);
 
-    @Override
-    public AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyConnectionClient(url, handler);
-    }
+    void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer);
+
 }

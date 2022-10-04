@@ -22,6 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
@@ -35,6 +38,8 @@ public class PortUnificationExchanger {
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(PortUnificationExchanger.class);
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
+
+    private static volatile ConnectionManager connectionManager;
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
         servers.computeIfAbsent(url.getAddress(), addr -> {
@@ -53,6 +58,22 @@ public class PortUnificationExchanger {
             return server;
         });
         return servers.get(url.getAddress());
+    }
+
+    public static AbstractConnectionClient connect(URL url, ChannelHandler handler) {
+        if (connectionManager == null) {
+            synchronized (PortUnificationExchanger.class) {
+                if (connectionManager == null) {
+                    connectionManager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class)
+                            .getExtension(MultiplexProtocolConnectionManager.NAME);
+                }
+            }
+        }
+
+        final AbstractConnectionClient connectionClient;
+        connectionClient = connectionManager.connect(url, handler);
+
+        return connectionClient;
     }
 
     public static void close() {
@@ -74,7 +95,7 @@ public class PortUnificationExchanger {
 
     public static PortUnificationTransporter getTransporter(URL url) {
         return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class)
-            .getAdaptiveExtension();
+                .getAdaptiveExtension();
     }
 
 }

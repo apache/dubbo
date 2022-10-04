@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.transport.netty4;
+
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.api.connection.ConnectionHandler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -32,36 +34,66 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 @ChannelHandler.Sharable
-public class ConnectionHandler extends ChannelInboundHandlerAdapter {
-    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(ConnectionHandler.class);
-    private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
-    private final Connection connection;
+public class NettyConnectionHandler extends ChannelInboundHandlerAdapter implements ConnectionHandler {
 
-    public ConnectionHandler(Connection connection) {
-        this.connection = connection;
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(ConnectionHandler.class);
+
+    private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
+    private final NettyConnectionClient connectionClient;
+
+    public NettyConnectionHandler(NettyConnectionClient connectionClient) {
+        this.connectionClient = connectionClient;
     }
 
-    public void onGoAway(Channel channel) {
-        final Attribute<Boolean> attr = channel.attr(GO_AWAY_KEY);
+    @Override
+    public void onGoAway(Object channel) {
+        if (!(channel instanceof Channel)) {
+            return;
+        }
+        Channel nettyChannel = ((Channel) channel);
+        final Attribute<Boolean> attr = nettyChannel.attr(GO_AWAY_KEY);
         if (Boolean.TRUE.equals(attr.get())) {
             return;
         }
 
         attr.set(true);
-        if (connection != null) {
-            connection.onGoaway(channel);
+        if (connectionClient != null) {
+            connectionClient.onGoaway(nettyChannel);
         }
         if (log.isDebugEnabled()) {
-            log.debug(String.format("Channel %s go away ,schedule reconnect", channel));
+            log.debug(String.format("Channel %s go away ,schedule reconnect", nettyChannel));
         }
-        reconnect(channel);
+        reconnect(nettyChannel);
+    }
+
+    @Override
+    public void reconnect(Object channel) {
+        if (!(channel instanceof Channel)) {
+            return;
+        }
+        Channel nettyChannel = ((Channel) channel);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Connection %s is reconnecting, attempt=%d", connectionClient, 1));
+        }
+        final EventLoop eventLoop = nettyChannel.eventLoop();
+        eventLoop.schedule(() -> {
+            try {
+                connectionClient.doConnect();
+            } catch (Throwable e) {
+                log.error("Fail to connect to " + connectionClient.getChannel(), e);
+            }
+        }, 1, TimeUnit.SECONDS);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ctx.fireChannelActive();
-        if (!connection.isClosed()) {
-            connection.onConnected(ctx.channel());
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), connectionClient.getUrl(), connectionClient);
+        if (!connectionClient.isClosed()) {
+            connectionClient.onConnected(ctx.channel());
+            if (log.isInfoEnabled()) {
+                log.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
+            }
         } else {
             ctx.close();
         }
@@ -81,14 +113,6 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         if (!Boolean.TRUE.equals(goawayAttr.get())) {
             reconnect(ctx.channel());
         }
-    }
-
-    private void reconnect(Channel channel) {
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Connection %s is reconnecting, attempt=%d", connection, 1));
-        }
-        final EventLoop eventLoop = channel.eventLoop();
-        eventLoop.schedule(connection::connect, 1, TimeUnit.SECONDS);
     }
 
 }

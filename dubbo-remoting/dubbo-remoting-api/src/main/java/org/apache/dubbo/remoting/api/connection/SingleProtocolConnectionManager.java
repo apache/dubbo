@@ -14,30 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 
-import io.netty.util.internal.PlatformDependent;
-
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 public class SingleProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "single";
 
-    private final ConcurrentMap<String, Connection> connections = PlatformDependent.newConcurrentHashMap();
+    private final ConcurrentMap<String, AbstractConnectionClient> connections = new ConcurrentHashMap<>(16);
 
     @Override
-    public Connection connect(URL url) {
+    public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
         return connections.compute(url.getAddress(), (address, conn) -> {
             if (conn == null) {
-                final Connection created = new Connection(url);
-                created.getClosePromise().addListener(future -> connections.remove(address, created));
-                return created;
+                try {
+                    final AbstractConnectionClient connectionClient = PortUnificationExchanger.getTransporter(url).connect(url, handler);
+                    connectionClient.addCloseListener(() -> connections.remove(address, connectionClient));
+                    return connectionClient;
+                } catch (RemotingException e) {
+                    throw new RuntimeException(e);
+                }
             } else {
                 conn.retain();
                 return conn;
@@ -46,7 +52,7 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public void forEachConnection(Consumer<Connection> connectionConsumer) {
+    public void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer) {
         connections.values().forEach(connectionConsumer);
     }
 }
