@@ -76,6 +76,8 @@ header:
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java'
     - 'dubbo-config/dubbo-config-spring/src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java'
+    - 'dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2LocalFlowController.java'
+    - 'dubbo-rpc/dubbo-rpc-triple/src/main/java/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java'
 
   comment: on-failure
 
