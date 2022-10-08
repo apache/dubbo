@@ -121,7 +121,7 @@
         <maven_jetty_version>9.4.38.v20210224</maven_jetty_version>
         <maven_checkstyle_version>3.1.2</maven_checkstyle_version>
         <maven_jacoco_version>0.8.7</maven_jacoco_version>
-        <maven_flatten_version>1.2.5</maven_flatten_version>
+        <maven_flatten_version>1.3.0</maven_flatten_version>
         <maven_enforce_version>3.0.0-M3</maven_enforce_version>
         <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.1.1-SNAPSHOT</revision>
+        <revision>3.1.2-SNAPSHOT</revision>
     </properties>
 
     <modules>
