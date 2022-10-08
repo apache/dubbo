@@ -328,6 +328,8 @@
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
+                                        **/org/apache/dubbo/rpc/protocol/tri/TriHttp2LocalFlowController.java,
+                                        **/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
