@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -123,7 +124,7 @@ public class AdaptivePowerOfTwoChoiceTest extends LoadBalanceBaseTest{
         int run = 10000;
         Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker,AtomicLong>();
         AdaptivePowerOfTwoChoice lb = (AdaptivePowerOfTwoChoice)getLoadBalance(AdaptivePowerOfTwoChoice.NAME);
-
+        lb.setApplicationModel(ApplicationModel.defaultModel());
         for(Invoker invoker : p2cInvokers){
             counter.put(invoker,new AtomicLong(0));
         }

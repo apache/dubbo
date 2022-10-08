@@ -135,11 +135,15 @@ public class AdaptivePowerOfTwoChoice extends AbstractLoadBalance implements Sco
 
         double averageLatency = 0;
         double totalLatency = 0;
+
+        while(!onResetSlideWindow.compareAndSet(false,true))
         for(int i = 0; i < length; i++){
             RpcStatus rpcStatus = RpcStatus.getStatus(invokers.get(i).getUrl(),invocation.getMethodName());
             SlideWindowData slideWindowData = methodMap.computeIfAbsent(rpcStatus,SlideWindowData::new);
             totalLatency += slideWindowData.getLatency();
         }
+        onResetSlideWindow.set(false);
+
         averageLatency = totalLatency/length;
 
         if(length == 2)
