@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.serial;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -96,9 +97,12 @@ public final class SerializingExecutor implements Executor, Runnable {
         try {
             while ((r = runQueue.poll()) != null) {
                 try {
+                    InternalThreadLocal.removeAll();
                     r.run();
                 } catch (RuntimeException e) {
                     LOGGER.error("Exception while executing runnable " + r, e);
+                } finally {
+                    InternalThreadLocal.removeAll();
                 }
             }
         } finally {

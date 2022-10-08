@@ -29,7 +29,10 @@ public interface LoggerCodeConstants {
 
     String COMMON_CACHE_PATH_INACCESSIBLE = "0-3";
 
-    String COMMON_CACHE_FILE_EXCEED_MAXIMUM_LIMIT = "0-4";
+    String COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED = "0-4";
+
+
+    String COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED = "0-5";
 
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";

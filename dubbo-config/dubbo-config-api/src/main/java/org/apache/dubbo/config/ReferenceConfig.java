@@ -478,16 +478,21 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
             return;
         }
-        // get pod namespace
-        String podNamespace;
-        if (StringUtils.isEmpty(System.getenv("POD_NAMESPACE"))) {
-            if (logger.isWarnEnabled()) {
-                logger.warn(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "Can not get env variable: POD_NAMESPACE, it may not be running in the K8S environment , " +
-                    "finally use 'default' replace.");
+
+        // get provider namespace if (@DubboReference, <reference provider-namespace="xx"/>) present
+        String podNamespace = referenceParameters.get(RegistryConstants.PROVIDER_NAMESPACE);
+
+        // get pod namespace from env if annotation not present the provider namespace
+        if (StringUtils.isEmpty(podNamespace)) {
+            if (StringUtils.isEmpty(System.getenv("POD_NAMESPACE"))) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "Can not get env variable: POD_NAMESPACE, it may not be running in the K8S environment , " +
+                            "finally use 'default' replace.");
+                }
+                podNamespace = "default";
+            } else {
+                podNamespace = System.getenv("POD_NAMESPACE");
             }
-            podNamespace = "default";
-        } else {
-            podNamespace = System.getenv("POD_NAMESPACE");
         }
 
         // In mesh mode, providedBy equals K8S Service name.
@@ -536,11 +541,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName(), referenceParameters);
         url = url.setScopeModel(getScopeModel());
         url = url.setServiceModel(consumerModel);
-        Invoker<?> withFilter = protocolSPI.refer(interfaceClass, url);
-        // Local Invoke ( Support Cluster Filter / Filter )
-        List<Invoker<?>> invokers = new ArrayList<>();
-        invokers.add(withFilter);
-        invoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(url, invokers), true);
+        invoker = protocolSPI.refer(interfaceClass, url);
 
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());

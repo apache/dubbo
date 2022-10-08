@@ -25,7 +25,7 @@ public class Profiler {
     public static final String PROFILER_KEY = "DUBBO_INVOKE_PROFILER";
     public static final int MAX_ENTRY_SIZE = 1000;
 
-    private final static InternalThreadLocal<ProfilerEntry> bizProfiler = new InternalThreadLocal<>();
+    private static final InternalThreadLocal<ProfilerEntry> bizProfiler = new InternalThreadLocal<>();
 
     public static ProfilerEntry start(String message) {
         return new ProfilerEntry(message);
