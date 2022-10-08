@@ -151,6 +151,26 @@ public class DubboInvokerAvailableTest {
         Assertions.assertFalse(invoker.isAvailable());
     }
 
+    /**
+     * The test prefer serialization
+     *
+     * @throws Exception Exception
+     */
+    @Test
+    public void testPreferSerialization() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?lazy=true&connections=1&timeout=10000&serialization=fastjson&prefer_serialization=fastjson2,hessian2");
+        ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
+
+        Invoker<?> invoker = protocol.refer(IDemoService.class, url);
+        Assertions.assertTrue(invoker.isAvailable());
+        ExchangeClient exchangeClient = getClients((DubboInvoker<?>) invoker)[0];
+        Assertions.assertFalse(exchangeClient.isClosed());
+        //invoke method --> init client
+        IDemoService service = (IDemoService) proxy.getProxy(invoker);
+        Assertions.assertEquals("ok", service.get());
+    }
+
     private ExchangeClient[] getClients(DubboInvoker<?> invoker) throws Exception {
         Field field = DubboInvoker.class.getDeclaredField("clients");
         field.setAccessible(true);
