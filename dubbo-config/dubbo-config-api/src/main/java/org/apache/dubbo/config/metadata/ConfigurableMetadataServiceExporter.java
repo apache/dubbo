@@ -46,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_FIND_PROTOCOL;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 /**
@@ -139,7 +140,7 @@ public class ConfigurableMetadataServiceExporter {
                     }
                 }
             } catch (Exception e) {
-                logger.error("5-16", "invalid specified " + specifiedProtocol + "  protocol", "", "Failed to find any valid protocol, will use random port to export metadata service.", e);
+                logger.error(CONFIG_FAILED_FIND_PROTOCOL, "invalid specified " + specifiedProtocol + "  protocol", "", "Failed to find any valid protocol, will use random port to export metadata service.", e);
             }
         } else {
             protocolConfig.setPort(port);

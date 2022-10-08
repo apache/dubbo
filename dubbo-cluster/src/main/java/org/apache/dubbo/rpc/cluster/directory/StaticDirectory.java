@@ -28,6 +28,8 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
+
 /**
  * StaticDirectory
  */
@@ -108,7 +110,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
                 List<Invoker<T>> finalInvokers = routerChain.route(getConsumerUrl(), invokers, invocation);
                 return finalInvokers == null ? BitList.emptyList() : finalInvokers;
             } catch (Throwable t) {
-                logger.error("2-1","Failed to execute router","","Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(),t);
+                logger.error(CLUSTER_FAILED_SITE_SELECTION,"Failed to execute router","","Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(),t);
                 return BitList.emptyList();
             }
         }

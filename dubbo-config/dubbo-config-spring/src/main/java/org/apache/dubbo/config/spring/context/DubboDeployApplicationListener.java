@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 import java.util.concurrent.Future;
@@ -130,7 +131,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
                 moduleModel.destroy();
             }
         } catch (Exception e) {
-            logger.error("5-20", "", "", "Unexpected error occurred when stop dubbo module: " + e.getMessage(), e);
+            logger.error(CONFIG_STOP_DUBBO_ERROR, "", "", "Unexpected error occurred when stop dubbo module: " + e.getMessage(), e);
         }
         // remove context bind cache
         DubboSpringInitializer.remove(event.getApplicationContext());

@@ -39,6 +39,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_FAILBACK_TIMES;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_INVOKE_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_TIMER_RETRY_FAILED;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
 import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
 
@@ -93,7 +95,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             failTimer.newTimeout(retryTimerTask, RETRY_FAILED_PERIOD, TimeUnit.SECONDS);
         } catch (Throwable e) {
-            logger.error("2-9","add newTimeout exception","","Failback background works error, invocation->" + invocation + ", exception: " + e.getMessage(),e);
+            logger.error(CLUSTER_TIMER_RETRY_FAILED,"add newTimeout exception","","Failback background works error, invocation->" + invocation + ", exception: " + e.getMessage(),e);
         }
     }
 
@@ -108,7 +110,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             // Then the serviceContext will be cleared after the call is completed.
             return invokeWithContextAsync(invoker, invocation, consumerUrl);
         } catch (Throwable e) {
-            logger.error("2-10","Failback to invoke method and start to retries","","Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
+            logger.error(CLUSTER_FAILED_INVOKE_SERVICE,"Failback to invoke method and start to retries","","Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
                 + e.getMessage() + ", ",e);
             if (retries > 0) {
                 addFailed(loadbalance, invocation, invokers, invoker, consumerUrl);
@@ -166,9 +168,9 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 lastInvoker = retryInvoker;
                 invokeWithContextAsync(retryInvoker, invocation, consumerUrl);
             } catch (Throwable e) {
-                logger.error("2-10","Failed retry to invoke method","","Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.",e);
+                logger.error(CLUSTER_FAILED_INVOKE_SERVICE,"Failed retry to invoke method","","Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.",e);
                 if ((++retriedTimes) >= retries) {
-                    logger.error("2-10","Failed retry to invoke method and retry times exceed threshold","","Failed retry times exceed threshold (" + retries + "), We have to abandon, invocation->" + invocation,e);
+                    logger.error(CLUSTER_FAILED_INVOKE_SERVICE,"Failed retry to invoke method and retry times exceed threshold","","Failed retry times exceed threshold (" + retries + "), We have to abandon, invocation->" + invocation,e);
                 } else {
                     rePut(timeout);
                 }

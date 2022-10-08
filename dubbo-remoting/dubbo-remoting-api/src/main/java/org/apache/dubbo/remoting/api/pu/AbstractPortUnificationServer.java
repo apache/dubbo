@@ -23,9 +23,24 @@ import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractPortUnificationServer extends AbstractServer {
     private final List<WireProtocol> protocols;
+
+    /*
+    protocol name --> URL object
+    wire protocol will get url object to config server pipeline for channel
+     */
+    private final Map<String, URL> supportedUrls = new ConcurrentHashMap<>();
+
+    /*
+    protocol name --> ChannelHandler object
+    wire protocol will get handler to config server pipeline for channel
+    (for triple protocol, it's a default handler that do nothing)
+     */
+    private final Map<String, ChannelHandler> supportedHandlers = new ConcurrentHashMap<>();
 
     public AbstractPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -36,4 +51,23 @@ public abstract class AbstractPortUnificationServer extends AbstractServer {
         return protocols;
     }
 
+    /*
+    This method registers URL object and corresponding channel handler to pu server.
+    In PuServerExchanger.bind, this method is called with ConcurrentHashMap.computeIfPresent to register messages to
+    this supportedUrls and supportedHandlers
+     */
+    public void addSupportedProtocol(URL url, ChannelHandler handler) {
+        this.supportedUrls.put(url.getProtocol(), url);
+        this.supportedHandlers.put(url.getProtocol(), handler);
+    }
+
+    protected Map<String, URL> getSupportedUrls() {
+        // this getter is just used by implementation of this class
+        return supportedUrls;
+    }
+
+    public Map<String, ChannelHandler> getSupportedHandlers() {
+        // this getter is just used by implementation of this class
+        return supportedHandlers;
+    }
 }

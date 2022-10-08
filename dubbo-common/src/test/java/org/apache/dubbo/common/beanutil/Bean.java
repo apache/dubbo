@@ -1,12 +1,3 @@
-package org.apache.dubbo.common.beanutil;
-
-import org.apache.dubbo.rpc.model.person.FullAddress;
-import org.apache.dubbo.rpc.model.person.PersonStatus;
-import org.apache.dubbo.rpc.model.person.Phone;
-
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,6 +14,16 @@ import java.util.Map;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.beanutil;
+
+import org.apache.dubbo.rpc.model.person.FullAddress;
+import org.apache.dubbo.rpc.model.person.PersonStatus;
+import org.apache.dubbo.rpc.model.person.Phone;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
+
 public class Bean {
 
     private Class<?> type;

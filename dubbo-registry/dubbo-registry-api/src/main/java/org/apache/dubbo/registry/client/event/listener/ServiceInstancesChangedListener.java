@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_REFRESH_ADDRESS;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -185,7 +186,7 @@ public class ServiceInstancesChangedListener {
             // return if all metadata is empty, this notification will not take effect.
             if (emptyNum == revisionToInstances.size()) {
                 // 1-17 - Address refresh failed.
-                logger.error("1-17", "metadata Server failure", "",
+                logger.error(REGISTRY_FAILED_REFRESH_ADDRESS, "metadata Server failure", "",
                     "Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
 
                 return;

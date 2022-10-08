@@ -33,6 +33,9 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -140,6 +143,10 @@ public class PojoUtils {
 
         if (ReflectUtils.isPrimitives(pojo.getClass())) {
             return pojo;
+        }
+        
+        if (pojo instanceof LocalDate || pojo instanceof LocalDateTime || pojo instanceof LocalTime) {
+            return pojo.toString();
         }
 
         if (pojo instanceof Class) {

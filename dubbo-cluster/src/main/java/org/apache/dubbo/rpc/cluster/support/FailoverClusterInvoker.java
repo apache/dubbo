@@ -36,6 +36,7 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_MULTIPLE_RETRIES;
 
 /**
  * When invoke fails, log the initial error and retry other invokers (retry n times, which means at most n different invokers will be invoked)
@@ -79,7 +80,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result result = invokeWithContext(invoker, invocation);
                 if (le != null && logger.isWarnEnabled()) {
-                    logger.warn("2-16","failed to retry do invoke","","Although retry the method " + methodName
+                    logger.warn(CLUSTER_FAILED_MULTIPLE_RETRIES,"failed to retry do invoke","","Although retry the method " + methodName
                         + " in the service " + getInterface().getName()
                         + " was successful by the provider " + invoker.getUrl().getAddress()
                         + ", but there have been failed providers " + providers

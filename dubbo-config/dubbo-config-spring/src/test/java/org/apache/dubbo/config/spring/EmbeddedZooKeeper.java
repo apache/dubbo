@@ -29,6 +29,8 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.UUID;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ZOOKEEPER_SERVER_ERROR;
+
 /**
  * from: https://github.com/spring-projects/spring-xd/blob/v1.3.1.RELEASE/spring-xd-dirt/src/main/java/org/springframework/xd/dirt/zookeeper/ZooKeeperUtils.java
  * <p>
@@ -238,7 +240,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 if (errorHandler != null) {
                     errorHandler.handleError(e);
                 } else {
-                    logger.error("5-19", "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
+                    logger.error(CONFIG_ZOOKEEPER_SERVER_ERROR, "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
                 }
             }
         }

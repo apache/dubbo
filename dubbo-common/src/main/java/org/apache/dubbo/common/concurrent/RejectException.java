@@ -19,7 +19,7 @@ package org.apache.dubbo.common.concurrent;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
 
 /**
- * Exception thrown by an {@link MemorySafeLinkedBlockingQueue} when a element cannot be accepted.
+ * Exception thrown by an {@link MemorySafeLinkedBlockingQueue} when an element cannot be accepted.
  */
 public class RejectException extends RuntimeException {
 

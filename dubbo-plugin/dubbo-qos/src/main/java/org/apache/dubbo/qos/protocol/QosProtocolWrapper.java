@@ -113,6 +113,11 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
+
+            if (server.isStarted()) {
+                return;
+            }
+
             server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);

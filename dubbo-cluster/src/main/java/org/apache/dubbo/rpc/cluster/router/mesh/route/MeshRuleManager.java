@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RECEIVE_RULE;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.MESH_RULE_DATA_ID_SUFFIX;
 
 public class MeshRuleManager {
@@ -63,7 +64,7 @@ public class MeshRuleManager {
                 meshAppRuleListener.receiveConfigInfo(rawConfig);
             }
         } catch (Throwable throwable) {
-            logger.error("2-13","failed to get mesh app route rule","","get MeshRuleManager app rule failed.",throwable);
+            logger.error(CLUSTER_FAILED_RECEIVE_RULE,"failed to get mesh app route rule","","get MeshRuleManager app rule failed.",throwable);
         }
 
         ruleRepository.addListener(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, meshAppRuleListener);

@@ -94,6 +94,8 @@ final class NettyChannel extends AbstractChannel {
             if (ret == null) {
                 ret = nettyChannel;
             }
+        } else {
+            ret.markActive(true);
         }
         return ret;
     }
@@ -231,12 +233,18 @@ final class NettyChannel extends AbstractChannel {
         attributes.remove(key);
     }
 
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((channel == null) ? 0 : channel.hashCode());
         return result;
+    }
+
+    @Override
+    protected void setUrl(URL url) {
+        super.setUrl(url);
     }
 
     @Override

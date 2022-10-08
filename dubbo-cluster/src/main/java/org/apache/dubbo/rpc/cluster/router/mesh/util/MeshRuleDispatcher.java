@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_RULE_LISTENER;
+
 
 public class MeshRuleDispatcher {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MeshRuleDispatcher.class);
@@ -55,8 +57,7 @@ public class MeshRuleDispatcher {
                         listener.onRuleChange(appName, entry.getValue());
                     }
                 } else {
-                    logger.warn("2-18","Receive mesh rule but none of listener has been registered","","Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
-                    logger.warn("Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
+                    logger.warn(CLUSTER_NO_RULE_LISTENER,"Receive mesh rule but none of listener has been registered","","Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
                 }
             }
             // clear rule listener not being notified in this time

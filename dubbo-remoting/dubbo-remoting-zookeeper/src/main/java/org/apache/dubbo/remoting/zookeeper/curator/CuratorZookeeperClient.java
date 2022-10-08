@@ -59,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.NodeCacheListenerImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
@@ -103,7 +104,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected");
 
                 // 5-1 Failed to connect to configuration center.
-                logger.error("5-1", "Zookeeper server offline", "",
+                logger.error(CONFIG_FAILED_CONNECT_REGISTRY, "Zookeeper server offline", "",
                     "Failed to connect with zookeeper", illegalStateException);
 
                 throw illegalStateException;

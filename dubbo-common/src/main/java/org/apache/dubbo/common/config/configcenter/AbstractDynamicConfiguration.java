@@ -78,7 +78,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     /**
-     * The thread pool for workers who executes the tasks
+     * The thread pool for workers who execute the tasks
      */
     private final ThreadPoolExecutor workersThreadPool;
 
@@ -86,12 +86,12 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
 
     private final long timeout;
 
-    public AbstractDynamicConfiguration(URL url) {
+    protected AbstractDynamicConfiguration(URL url) {
         this(getThreadPoolPrefixName(url), getThreadPoolSize(url), getThreadPoolKeepAliveTime(url), getGroup(url),
                 getTimeout(url));
     }
 
-    public AbstractDynamicConfiguration(String threadPoolPrefixName,
+    protected AbstractDynamicConfiguration(String threadPoolPrefixName,
                                         int threadPoolSize,
                                         long keepAliveTime,
                                         String group,

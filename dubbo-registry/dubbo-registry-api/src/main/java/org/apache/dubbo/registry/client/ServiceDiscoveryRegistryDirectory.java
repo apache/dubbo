@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
@@ -297,7 +298,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
                 // 4-1 - Unsupported protocol
 
-                logger.error("4-1", "protocol extension does not installed", "", "Unsupported protocol.",
+                logger.error(PROTOCOL_UNSUPPORTED, "protocol extension does not installed", "", "Unsupported protocol.",
                     new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
                     " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
                     " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +

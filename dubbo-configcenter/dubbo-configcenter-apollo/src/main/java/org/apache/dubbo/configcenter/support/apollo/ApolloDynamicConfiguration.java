@@ -47,6 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -108,7 +109,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
             } else {
                 // 5-1 Failed to connect to configuration center.
 
-                logger.warn("5-1", "configuration server offline", "",
+                logger.warn(CONFIG_FAILED_CONNECT_REGISTRY, "configuration server offline", "",
                     "Failed to connect to config center, the config center is Apollo, " +
                     "the address is: " + (StringUtils.isNotEmpty(configAddr) ? configAddr : configEnv) +
                     ", will use the local cache value instead before eventually the connection is established.");

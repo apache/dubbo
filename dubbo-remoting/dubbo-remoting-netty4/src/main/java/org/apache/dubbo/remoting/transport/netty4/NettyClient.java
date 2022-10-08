@@ -48,6 +48,8 @@ import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.eventLoopGroup;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
@@ -220,7 +222,7 @@ public class NettyClient extends AbstractClient {
                 RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
                         + serverAddress + ", error message is:" + cause.getMessage(), cause);
 
-                logger.error("6-1", "network disconnected", "",
+                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "",
                     "Failed to connect to provider server by other reason.", cause);
 
                 throw remotingException;
@@ -234,7 +236,7 @@ public class NettyClient extends AbstractClient {
                         + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
 
-                logger.error("6-2", "provider crash", "",
+                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "",
                     "Client-side timeout.", remotingException);
 
                 throw remotingException;
