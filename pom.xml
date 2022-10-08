@@ -690,6 +690,8 @@
                         <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
                         <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
                         <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                        <exclude>**/org/apache/dubbo/rpc/protocol/tri/TriHttp2LocalFlowController.java</exclude>
+                        <exclude>**/org/apache/dubbo/rpc/protocol/tri/TriHttp2RemoteFlowController.java</exclude>
                         <!-- exclude the edazdarevic files -->
                         <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
                         <!-- exclude protobuf generated files -->
