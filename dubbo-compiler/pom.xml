@@ -32,14 +32,6 @@
     <description>Dubbo customized RPC stub compiler.</description>
 
     <properties>
-        <maven_compiler_version>3.6.0</maven_compiler_version>
-        <maven_jar_version>3.0.2</maven_jar_version>
-        <maven_source_version>3.0.1</maven_source_version>
-        <maven_javadoc_version>3.0.1</maven_javadoc_version>
-        <java_source_version>1.8</java_source_version>
-        <java_target_version>1.8</java_target_version>
-        <file_encoding>UTF-8</file_encoding>
-
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
@@ -75,7 +67,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven_compiler_version}</version>
                 <configuration>
                     <compilerArgument>-proc:none</compilerArgument>
                     <fork>true</fork>
@@ -88,7 +79,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven_jar_version}</version>
                 <configuration>
                     <archive>
                         <manifest>
