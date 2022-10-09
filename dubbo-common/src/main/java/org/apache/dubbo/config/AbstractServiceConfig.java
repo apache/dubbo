@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
@@ -29,6 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENE
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 
 /**
  * AbstractServiceConfig
@@ -124,6 +126,18 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     private String serialization;
 
     /**
+     * If the parameter has a value, the consumer will read the parameter first.
+     * If the Dubbo Sdk you are using contains the serialization type, the serialization method specified by the argument is used.
+     * <p>
+     * When this parameter is null or the serialization type specified by this parameter does not exist in the Dubbo SDK, the serialization type specified by serialization is used.
+     * If the Dubbo SDK if still does not exist, the default type of the Dubbo SDK is used.
+     * For Dubbo SDK >= 3.1, <code>preferSerialization</code> takes precedence over <code>serialization</code>
+     * <p>
+     * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
+     */
+    private String preferSerialization; // default:hessian2
+
+    /**
      * Weather the service is export asynchronously
      * @deprecated
      * @see ModuleConfig#exportAsync
@@ -151,6 +165,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         }
         if (dynamic == null) {
             dynamic = true;
+        }
+
+        if (StringUtils.isBlank(preferSerialization)) {
+            preferSerialization = DEFAULT_PREFER_SERIALIZATION;
         }
     }
 
@@ -328,6 +346,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
+    }
+
+    public String getPreferSerialization() {
+        return preferSerialization;
+    }
+
+    public void setPreferSerialization(String preferSerialization) {
+        this.preferSerialization = preferSerialization;
     }
 
     @Deprecated

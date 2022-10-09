@@ -43,6 +43,10 @@ public interface CommonConstants {
 
     String METADATA_SERVICE_PROTOCOL_KEY = "metadata-service-protocol";
 
+    String METRICS_SERVICE_PORT_KEY = "metrics-service-port";
+
+    String METRICS_SERVICE_PROTOCOL_KEY = "metrics-service-protocol";
+
     String LIVENESS_PROBE_KEY = "liveness-probe";
 
     String READINESS_PROBE_KEY = "readiness-probe";
@@ -111,6 +115,8 @@ public interface CommonConstants {
     int DEFAULT_THREADS = 200;
 
     String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
+
+    String CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY = "CONSUMER_SHARED_SERVICE_EXECUTOR";
 
     String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
 
@@ -586,4 +592,10 @@ public interface CommonConstants {
     String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
 
 
+    /**
+     *
+     * used in JVMUtil.java ,Control stack print lines, default is 32 lines
+     *
+     */
+    String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 }

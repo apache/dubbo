@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
  * @since 2.7
  */
 public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B extends AbstractServiceBuilder<T, B>>
-        extends AbstractInterfaceBuilder<T, B> {
+    extends AbstractInterfaceBuilder<T, B> {
 
     /**
      * The service version
@@ -112,6 +112,11 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
      * used for thread pool isolation between services
      */
     private Executor executor;
+
+    /**
+     * The prefer serialization type
+     */
+    private String preferSerialization;
 
     public B version(String version) {
         this.version = version;
@@ -227,6 +232,17 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         return getThis();
     }
 
+    /**
+     * The prefer serialization type
+     *
+     * @param preferSerialization prefer serialization type
+     * @return {@link B}
+     */
+    public B preferSerialization(String preferSerialization) {
+        this.preferSerialization = preferSerialization;
+        return getThis();
+    }
+
     @Override
     public void build(T instance) {
         super.build(instance);
@@ -281,6 +297,9 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         }
         if (executor != null) {
             instance.setExecutor(executor);
+        }
+        if (StringUtils.isNotBlank(preferSerialization)) {
+            instance.setPreferSerialization(preferSerialization);
         }
     }
 }

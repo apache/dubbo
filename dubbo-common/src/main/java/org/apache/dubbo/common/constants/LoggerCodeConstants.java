@@ -164,4 +164,6 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
 
+    String INTERNAL_SERVICE_CONFIG_ERROR = "6-3";
+
 }

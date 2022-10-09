@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -42,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
@@ -71,9 +73,12 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     private final FrameworkExecutorRepository frameworkExecutorRepository;
     private ExecutorSupport executorSupport;
 
+    private final DataStore dataStore;
+
     public DefaultExecutorRepository(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        this.dataStore = applicationModel.getExtensionLoader(DataStore.class).getDefaultExtension();
     }
 
     /**
@@ -84,7 +89,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      */
     @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        Map<String, ExecutorService> executors = data.computeIfAbsent(getExecutorKey(url), k -> new ConcurrentHashMap<>());
+        String executorKey = getExecutorKey(url);
+        Map<String, ExecutorService> executors = data.computeIfAbsent(executorKey, k -> new ConcurrentHashMap<>());
 
         String executorCacheKey = getExecutorSecondKey(url);
 
@@ -98,6 +104,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executor = createExecutor(url);
             executors.put(executorCacheKey, executor);
         }
+
+        dataStore.put(executorKey, executorCacheKey, executor);
         return executor;
     }
 
@@ -143,6 +151,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         if (serviceDescriptor == null) {
             executorKey = EXECUTOR_SERVICE_COMPONENT_KEY;
 
+        }
+
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))){
+            executorKey = CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
         }
         return executorKey;
     }

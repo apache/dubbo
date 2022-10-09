@@ -245,6 +245,12 @@
                             <![CDATA[ declares provider service port. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provider-namespace" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ assign namespace that the provider belong to when mesh enable. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="router" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -963,6 +969,13 @@
                 <xsd:documentation><![CDATA[ The metrics protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+
+        <xsd:attribute name="enable-jvm-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable jvm metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
