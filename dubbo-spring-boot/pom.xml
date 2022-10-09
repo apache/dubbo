@@ -79,7 +79,18 @@
             <version>${junit_jupiter_version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.12.14</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.12.14</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-test-check</artifactId>
