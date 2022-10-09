@@ -118,7 +118,7 @@ public class BitList<E> extends AbstractList<E> {
      * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
      *
      * @param target target bitList
-     * @return a new bitList only contains those elements contain in both two list and source bitList's tailList
+     * @return this bitList only contains those elements contain in both two list and source bitList's tailList
      */
     public BitList<E> and(BitList<E> target) {
         rootSet.and(target.rootSet);
