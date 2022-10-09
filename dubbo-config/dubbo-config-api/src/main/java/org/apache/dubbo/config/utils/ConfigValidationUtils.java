@@ -26,6 +26,7 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -489,6 +490,17 @@ public class ConfigValidationUtils {
         checkName(ARCHITECTURE, config.getArchitecture());
         checkName(ENVIRONMENT, config.getEnvironment());
         checkParameterName(config.getParameters());
+        checkQosDependency(config);
+    }
+
+    private static void checkQosDependency(ApplicationConfig config) {
+        if (!Boolean.FALSE.equals(config.getQosEnable())) {
+            try {
+                ClassUtils.forName("org.apache.dubbo.qos.protocol.QosProtocolWrapper");
+            } catch (ClassNotFoundException e) {
+                logger.warn("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly.", e);
+            }
+        }
     }
 
     public static void validateModuleConfig(ModuleConfig config) {
