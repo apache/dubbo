@@ -18,8 +18,16 @@ env:
     '
 
 jobs:
+  license:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check License
+        uses: apache/skywalking-eyes@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build-source:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
@@ -74,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, windows-2019 ]
+        os: [ ubuntu-20.04, windows-2019 ]
         jdk: [ 8, 11, 17 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -126,7 +134,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, windows-2019 ]
+        os: [ ubuntu-20.04, windows-2019 ]
         jdk: [ 8, 11, 17 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -161,7 +169,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, windows-2019 ]
+        os: [ ubuntu-20.04, windows-2019 ]
         jdk: [ 8, 11, 17 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -192,7 +200,7 @@ jobs:
         uses: codecov/codecov-action@v1
 
   integration-test-prepare:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       JOB_COUNT: 3
     steps:
@@ -211,8 +219,8 @@ jobs:
 
   integration-test-job:
     needs: [build-source, integration-test-prepare]
-    name: "Integration Test on ubuntu-18.04 (JobId: ${{matrix.job_id}})"
-    runs-on: ubuntu-18.04
+    name: "Integration Test on ubuntu-20.04 (JobId: ${{matrix.job_id}})"
+    runs-on: ubuntu-20.04
     timeout-minutes: 30
     env:
       JAVA_VER: 8
@@ -267,7 +275,7 @@ jobs:
   integration-test-result:
     needs: [integration-test-job]
     if: always()
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       JAVA_VER: 8
     steps:
