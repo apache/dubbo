@@ -583,4 +583,10 @@ public interface CommonConstants {
      */
     String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
+    /**
+     *
+     * used in JVMUtil.java ,Control stack print lines, default is 32 lines
+     *
+     */
+    String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 }
