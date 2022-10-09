@@ -477,9 +477,10 @@ public class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Invoker<?> withFilter = ((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker();
-        withFilter = ((MockClusterInvoker<?>) withFilter).getDirectory().getAllInvokers().get(0);
-        Assertions.assertTrue(withFilter instanceof InjvmInvoker);
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Invoker<?> withFilter = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper);
+        Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
         URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
