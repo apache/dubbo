@@ -22,8 +22,10 @@ import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class SslConfig extends AbstractConfig {
 
@@ -62,6 +64,14 @@ public class SslConfig extends AbstractConfig {
     private InputStream clientKeyCertChainPathStream;
     private InputStream clientPrivateKeyPathStream;
     private InputStream clientTrustCertCollectionPathStream;
+
+    private String serverKeyCertChain;
+    private String serverPrivateKey;
+    private String serverTrustCertCollection;
+
+    private String clientKeyCertChain;
+    private String clientPrivateKey;
+    private String clientTrustCertCollection;
 
     public SslConfig() {
     }
@@ -143,8 +153,11 @@ public class SslConfig extends AbstractConfig {
     }
 
     public InputStream getServerKeyCertChainPathStream() throws IOException {
+        if (serverKeyCertChain != null) {
+            return new ByteArrayInputStream(serverKeyCertChain.getBytes(StandardCharsets.UTF_8));
+        }
         if (serverKeyCertChainPath != null) {
-            serverKeyCertChainPathStream = IOUtils.getURL(serverKeyCertChainPath).openStream();
+            return IOUtils.getURL(serverKeyCertChainPath).openStream();
         }
         return serverKeyCertChainPathStream;
     }
@@ -154,8 +167,11 @@ public class SslConfig extends AbstractConfig {
     }
 
     public InputStream getServerPrivateKeyPathStream() throws IOException {
+        if (serverPrivateKey != null) {
+            return new ByteArrayInputStream(serverPrivateKey.getBytes(StandardCharsets.UTF_8));
+        }
         if (serverPrivateKeyPath != null) {
-            serverPrivateKeyPathStream = IOUtils.getURL(serverPrivateKeyPath).openStream();
+            return IOUtils.getURL(serverPrivateKeyPath).openStream();
         }
         return serverPrivateKeyPathStream;
     }
@@ -165,8 +181,11 @@ public class SslConfig extends AbstractConfig {
     }
 
     public InputStream getServerTrustCertCollectionPathStream() throws IOException {
+        if (serverTrustCertCollection != null) {
+            return new ByteArrayInputStream(serverTrustCertCollection.getBytes(StandardCharsets.UTF_8));
+        }
         if (serverTrustCertCollectionPath != null) {
-            serverTrustCertCollectionPathStream = IOUtils.getURL(serverTrustCertCollectionPath).openStream();
+            return IOUtils.getURL(serverTrustCertCollectionPath).openStream();
         }
         return serverTrustCertCollectionPathStream;
     }
@@ -176,8 +195,11 @@ public class SslConfig extends AbstractConfig {
     }
 
     public InputStream getClientKeyCertChainPathStream() throws IOException {
+        if (clientKeyCertChain != null) {
+            return new ByteArrayInputStream(clientKeyCertChain.getBytes(StandardCharsets.UTF_8));
+        }
         if (clientKeyCertChainPath != null) {
-            clientKeyCertChainPathStream = IOUtils.getURL(clientKeyCertChainPath).openStream();
+            return IOUtils.getURL(clientKeyCertChainPath).openStream();
         }
         return clientKeyCertChainPathStream;
     }
@@ -187,8 +209,11 @@ public class SslConfig extends AbstractConfig {
     }
 
     public InputStream getClientPrivateKeyPathStream() throws IOException {
+        if (clientPrivateKey != null) {
+            return new ByteArrayInputStream(clientPrivateKey.getBytes(StandardCharsets.UTF_8));
+        }
         if (clientPrivateKeyPath != null) {
-            clientPrivateKeyPathStream = IOUtils.getURL(clientPrivateKeyPath).openStream();
+            return IOUtils.getURL(clientPrivateKeyPath).openStream();
         }
         return clientPrivateKeyPathStream;
     }
@@ -198,13 +223,64 @@ public class SslConfig extends AbstractConfig {
     }
 
     public InputStream getClientTrustCertCollectionPathStream() throws IOException {
+        if (clientTrustCertCollection != null) {
+            return new ByteArrayInputStream(clientTrustCertCollection.getBytes(StandardCharsets.UTF_8));
+        }
         if (clientTrustCertCollectionPath != null) {
-            clientTrustCertCollectionPathStream = IOUtils.getURL(clientTrustCertCollectionPath).openStream();
+            return IOUtils.getURL(clientTrustCertCollectionPath).openStream();
         }
         return clientTrustCertCollectionPathStream;
     }
 
     public void setClientTrustCertCollectionPathStream(InputStream clientTrustCertCollectionPathStream) {
         this.clientTrustCertCollectionPathStream = clientTrustCertCollectionPathStream;
+    }
+
+    public String getServerKeyCertChain() {
+        return serverKeyCertChain;
+    }
+
+    public void setServerKeyCertChain(String serverKeyCertChain) {
+        this.serverKeyCertChain = serverKeyCertChain;
+    }
+
+    public String getServerPrivateKey() {
+        return serverPrivateKey;
+    }
+
+    public void setServerPrivateKey(String serverPrivateKey) {
+        this.serverPrivateKey = serverPrivateKey;
+    }
+
+    public String getServerTrustCertCollection() {
+        return serverTrustCertCollection;
+    }
+
+    public void setServerTrustCertCollection(String serverTrustCertCollection) {
+        this.serverTrustCertCollection = serverTrustCertCollection;
+    }
+
+    public String getClientKeyCertChain() {
+        return clientKeyCertChain;
+    }
+
+    public void setClientKeyCertChain(String clientKeyCertChain) {
+        this.clientKeyCertChain = clientKeyCertChain;
+    }
+
+    public String getClientPrivateKey() {
+        return clientPrivateKey;
+    }
+
+    public void setClientPrivateKey(String clientPrivateKey) {
+        this.clientPrivateKey = clientPrivateKey;
+    }
+
+    public String getClientTrustCertCollection() {
+        return clientTrustCertCollection;
+    }
+
+    public void setClientTrustCertCollection(String clientTrustCertCollection) {
+        this.clientTrustCertCollection = clientTrustCertCollection;
     }
 }

@@ -20,7 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
+import org.apache.dubbo.registry.xds.util.DubboSSLManager;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
@@ -57,6 +59,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.ECGenParameterSpec;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -71,11 +76,14 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
     private CertPair certPair;
 
-    public IstioCitadelCertificateSigner() {
+    private ApplicationModel applicationModel;
+
+    public IstioCitadelCertificateSigner(ApplicationModel applicationModel) {
         // watch cert, Refresh every 30s
         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(1);
         scheduledThreadPool.scheduleAtFixedRate(new GenerateCertTask(), 0, 30, TimeUnit.SECONDS);
         istioEnv = IstioEnv.getInstance();
+        this.applicationModel = applicationModel;
     }
 
     @Override
@@ -162,7 +170,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         stub = MetadataUtils.attachHeaders(stub, header);
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        StringBuffer publicKeyBuilder = new StringBuffer();
+        List<String> publicKeyBuilder = Collections.synchronizedList(new ArrayList<>());
         AtomicBoolean failed = new AtomicBoolean(false);
         stub.createCertificate(generateRequest(csr), generateResponseObserver(countDownLatch, publicKeyBuilder, failed));
 
@@ -179,9 +187,18 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         }
 
         String privateKeyPem = generatePrivatePemKey(privateKey);
-        CertPair certPair = new CertPair(privateKeyPem, publicKeyBuilder.toString(), System.currentTimeMillis(), expireTime);
+        String publicKeyPem = String.join("\n", publicKeyBuilder);
+        String certChain;
+        if (publicKeyBuilder.size() > 1) {
+            certChain = String.join("\n", publicKeyBuilder.subList(1, publicKeyBuilder.size()));
+        } else {
+            certChain = istioEnv.getCaCert();
+        }
+        CertPair certPair = new CertPair(certChain, privateKeyPem, publicKeyPem, System.currentTimeMillis(), expireTime);
 
         channel.shutdown();
+
+        DubboSSLManager.setCert(applicationModel, certPair);
         return certPair;
     }
 
@@ -190,16 +207,16 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
     }
 
     private StreamObserver<IstioCertificateResponse> generateResponseObserver(CountDownLatch countDownLatch,
-                                                                              StringBuffer publicKeyBuilder,
+                                                                              List<String> certChain,
                                                                               AtomicBoolean failed) {
         return new StreamObserver<IstioCertificateResponse>() {
             @Override
             public void onNext(IstioCertificateResponse istioCertificateResponse) {
                 for (int i = 0; i < istioCertificateResponse.getCertChainCount(); i++) {
-                    publicKeyBuilder.append(istioCertificateResponse.getCertChainBytes(i).toStringUtf8());
+                    certChain.add(istioCertificateResponse.getCertChainBytes(i).toStringUtf8());
                 }
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Receive Cert chain from Istio Citadel. \n" + publicKeyBuilder);
+                    logger.debug("Receive Cert chain from Istio Citadel. \n" + certChain);
                 }
                 countDownLatch.countDown();
             }

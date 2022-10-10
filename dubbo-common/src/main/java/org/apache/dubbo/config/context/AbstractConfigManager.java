@@ -142,7 +142,12 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
      *
      * @param config the dubbo {@link AbstractConfig config}
      */
+
     public final <T extends AbstractConfig> T addConfig(AbstractConfig config) {
+        return addConfig(config, false);
+    }
+
+    public final <T extends AbstractConfig> T addConfig(AbstractConfig config, boolean override) {
         if (config == null) {
             return null;
         }
@@ -156,6 +161,12 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         }
 
         Map<String, AbstractConfig> configsMap = configsCache.computeIfAbsent(getTagName(config.getClass()), type -> new ConcurrentHashMap<>());
+
+        if (override) {
+            synchronized (configsMap) {
+                return (T) add(config, configsMap);
+            }
+        }
 
         // fast check duplicated equivalent config before write lock
         if (!(config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase)) {
@@ -223,8 +234,39 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         return config;
     }
 
+    private <C extends AbstractConfig> C add(C config, Map<String, C> configsMap)
+        throws IllegalStateException {
+
+        if (config == null || configsMap == null) {
+            return config;
+        }
+
+        // reuse key if is unique config
+        String key = null;
+        if (uniqueConfigTypes.contains(config.getClass())) {
+            if (configsMap.size() > 0) {
+                key = configsMap.keySet().iterator().next();
+            }
+        }
+
+        if (key == null) {
+            key = config.getId();
+        }
+
+        if (key == null) {
+            do {
+                // generate key if id is not set
+                key = generateConfigId(config);
+            } while (configsMap.containsKey(key));
+        }
+
+        // override existed config if any
+        configsMap.put(key, config);
+        return config;
+    }
+
     protected <C extends AbstractConfig> boolean removeIfAbsent(C config, Map<String, C> configsMap) {
-        if(config.getId() != null) {
+        if (config.getId() != null) {
             return configsMap.remove(config.getId(), config);
         }
         return configsMap.values().removeIf(c -> config == c);

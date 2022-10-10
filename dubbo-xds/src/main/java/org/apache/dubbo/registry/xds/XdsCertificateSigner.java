@@ -27,16 +27,22 @@ public interface XdsCertificateSigner {
     CertPair GenerateCert(URL url);
 
     class CertPair {
+        private final String certChain;
         private final String privateKey;
         private final String publicKey;
         private final long createTime;
         private final long expireTime;
 
-        public CertPair(String privateKey, String publicKey, long createTime, long expireTime) {
+        public CertPair(String certChain, String privateKey, String publicKey, long createTime, long expireTime) {
+            this.certChain = certChain;
             this.privateKey = privateKey;
             this.publicKey = publicKey;
             this.createTime = createTime;
             this.expireTime = expireTime;
+        }
+
+        public String getCertChain() {
+            return certChain;
         }
 
         public String getPrivateKey() {

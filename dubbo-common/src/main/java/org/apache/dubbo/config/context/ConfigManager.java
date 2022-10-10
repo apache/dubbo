@@ -110,6 +110,11 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         addConfig(sslConfig);
     }
 
+    @DisableInject
+    public void replaceSsl(SslConfig sslConfig) {
+        addConfig(sslConfig, true);
+    }
+
     public Optional<SslConfig> getSsl() {
         return ofNullable(getSingleConfig(getTagName(SslConfig.class)));
     }
