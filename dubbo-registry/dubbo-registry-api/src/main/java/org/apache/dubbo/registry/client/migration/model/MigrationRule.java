@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.registry.Constants.MIGRATION_DELAY_KEY;
@@ -154,28 +155,9 @@ public class MigrationRule {
     }
 
     public MigrationStep getStep(URL consumerURL) {
-        if (interfaceRules != null) {
-            SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
-            if (rule != null) {
-                if (rule.getStep() != null) {
-                    return rule.getStep();
-                }
-            }
-        }
-
-        if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getRemoteMapping(consumerURL);
-            if (CollectionUtils.isNotEmpty(services)) {
-                for (String service : services) {
-                    SubMigrationRule rule = applicationRules.get(service);
-                    if (rule != null) {
-                        if (rule.getStep() != null) {
-                            return rule.getStep();
-                        }
-                    }
-                }
-            }
+        MigrationStep value = getValue(consumerURL, SubMigrationRule::getStep);
+        if (value != null) {
+            return value;
         }
 
         /**
@@ -205,28 +187,9 @@ public class MigrationRule {
     }
 
     public float getThreshold(URL consumerURL) {
-        if (interfaceRules != null) {
-            SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
-            if (rule != null) {
-                if (rule.getThreshold() != null) {
-                    return rule.getThreshold();
-                }
-            }
-        }
-
-        if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getRemoteMapping(consumerURL);
-            if (CollectionUtils.isNotEmpty(services)) {
-                for (String service : services) {
-                    SubMigrationRule rule = applicationRules.get(service);
-                    if (rule != null) {
-                        if (rule.getThreshold() != null) {
-                            return rule.getThreshold();
-                        }
-                    }
-                }
-            }
+        Float value = getValue(consumerURL, SubMigrationRule::getThreshold);
+        if (value != null) {
+            return value;
         }
 
         return threshold == null ? consumerURL.getParameter(MIGRATION_THRESHOLD_KEY, -1f) : threshold;
@@ -245,28 +208,9 @@ public class MigrationRule {
     }
 
     public int getProportion(URL consumerURL) {
-        if (interfaceRules != null) {
-            SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
-            if (rule != null) {
-                if (rule.getProportion() != null) {
-                    return rule.getProportion();
-                }
-            }
-        }
-
-        if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getRemoteMapping(consumerURL);
-            if (CollectionUtils.isNotEmpty(services)) {
-                for (String service : services) {
-                    SubMigrationRule rule = applicationRules.get(service);
-                    if (rule != null) {
-                        if (rule.getProportion() != null) {
-                            return rule.getProportion();
-                        }
-                    }
-                }
-            }
+        Integer value = getValue(consumerURL, SubMigrationRule::getProportion);
+        if (value != null) {
+            return value;
         }
 
         return proportion == null ? consumerURL.getParameter(MIGRATION_PROMOTION_KEY, 100) : proportion;
@@ -281,28 +225,9 @@ public class MigrationRule {
     }
 
     public int getDelay(URL consumerURL) {
-        if (interfaceRules != null) {
-            SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
-            if (rule != null) {
-                if (rule.getDelay() != null) {
-                    return rule.getDelay();
-                }
-            }
-        }
-
-        if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getRemoteMapping(consumerURL);
-            if (CollectionUtils.isNotEmpty(services)) {
-                for (String service : services) {
-                    SubMigrationRule rule = applicationRules.get(service);
-                    if (rule != null) {
-                        if (rule.getDelay() != null) {
-                            return rule.getDelay();
-                        }
-                    }
-                }
-            }
+        Integer value = getValue(consumerURL, SubMigrationRule::getDelay);
+        if (value != null) {
+            return value;
         }
 
         return delay == null ? consumerURL.getParameter(MIGRATION_DELAY_KEY, 0) : delay;
@@ -321,11 +246,21 @@ public class MigrationRule {
     }
 
     public boolean getForce(URL consumerURL) {
+        Boolean value = getValue(consumerURL, SubMigrationRule::getForce);
+        if (value != null) {
+            return value;
+        }
+
+        return force == null ? consumerURL.getParameter(MIGRATION_FORCE_KEY, false) : force;
+    }
+
+    public <T> T getValue(URL consumerURL, Function<SubMigrationRule, T> function) {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
-                if (rule.getForce() != null) {
-                    return rule.getForce();
+                T value = function.apply(rule);
+                if (value != null) {
+                    return value;
                 }
             }
         }
@@ -337,15 +272,15 @@ public class MigrationRule {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
                     if (rule != null) {
-                        if (rule.getForce() != null) {
-                            return rule.getForce();
+                        T value = function.apply(rule);
+                        if (value != null) {
+                            return value;
                         }
                     }
                 }
             }
         }
-
-        return force == null ? consumerURL.getParameter(MIGRATION_FORCE_KEY, false) : force;
+        return null;
     }
 
     public void setForce(Boolean force) {
