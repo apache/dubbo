@@ -1,7 +1,8 @@
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -35,9 +36,20 @@ public class MessageFramer implements Framer {
     }
 
     private void commitToSink(boolean endOfStream, boolean flush) {
-        for (DataQueueCommand dataQueueCommand : queue) {
-            writeQueue.enqueueSoon(dataQueueCommand, false);
+        int size = queue.size();
+        if(size > 0) {
+            if(size == 1) {
+                DataQueueCommand poll = queue.poll();
+                poll.setEndStream(true);
+                writeQueue.enqueueSoon(queue.poll(), true);
+            }
+            else {
+                for (DataQueueCommand dataQueueCommand : queue) {
+                    writeQueue.enqueueSoon(dataQueueCommand, false);
+                }
+                EndStreamQueueCommand endStreamQueueCommand = new EndStreamQueueCommand();
+                writeQueue.enqueueSoon(endStreamQueueCommand, true);
+            }
         }
-        writeQueue.scheduleFlush();
     }
 }

@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -108,6 +107,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         writeQueue.close();
     }
 
+    @Override
     public ChannelFuture sendHeader(Http2Headers headers) {
         if (this.writeQueue == null) {
             // already processed at createStream()
@@ -127,6 +127,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         listener.onComplete(status, null);
     }
 
+    @Override
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
         final CancelQueueCommand cmd = CancelQueueCommand.createCommand(Http2Error.CANCEL);
         return this.writeQueue.enqueue(cmd, true);
@@ -164,7 +165,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     @Override
     public void halfClose() {
-        return framer.close();
+        framer.close();
     }
 
     /**
@@ -257,6 +258,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                     TripleClientStream.this.listener.onMessage(data);
                 }
 
+                @Override
                 public void close() {
                     finishProcess(statusFromTrailers(trailers), trailers);
                 }

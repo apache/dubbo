@@ -28,7 +28,7 @@ public class DataQueueCommand extends QueuedCommand {
 
     private final int compressFlag;
 
-    private final boolean endStream;
+    private boolean endStream;
 
     private DataQueueCommand(byte[] data, int compressFlag, boolean endStream) {
         this.data = data;
@@ -65,4 +65,7 @@ public class DataQueueCommand extends QueuedCommand {
         return endStream;
     }
 
+    public void setEndStream(boolean endStream) {
+        this.endStream = endStream;
+    }
 }
