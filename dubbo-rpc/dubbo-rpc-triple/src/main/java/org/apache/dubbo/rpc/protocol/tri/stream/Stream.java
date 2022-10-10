@@ -21,7 +21,6 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
 import java.net.SocketAddress;
-import java.util.Map;
 
 /**
  * Stream is a bi-directional channel that manipulates the data flow between peers. Inbound data
@@ -41,7 +40,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(Map message);
+        void onMessage(Object message);
 
         /**
          * Callback when receive cancel signal.

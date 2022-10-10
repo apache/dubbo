@@ -245,8 +245,8 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             }
             TriDecoder.Listener listener = new TriDecoder.Listener() {
                 @Override
-                public void onRawMessage(Map map) {
-                    TripleClientStream.this.listener.onMessage(map);
+                public void onRawMessage(Object data) {
+                    TripleClientStream.this.listener.onMessage(data);
                 }
 
                 public void close() {

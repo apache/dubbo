@@ -166,17 +166,12 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
         state.writeWindowUpdateIfNeeded();
     }
 
-    @Override
-    public boolean consumeBytes(Http2Stream stream, int numBytes) throws Http2Exception {
+    public boolean consumeTriBytes(Http2Stream stream, int numBytes)  throws Http2Exception {
         //because triple thread do consume ,so delete ctx.executor().inEventLoop()
         assert ctx != null ;
-   //     assert ctx != null && ctx.executor().inEventLoop();
+        //     assert ctx != null && ctx.executor().inEventLoop();
         checkPositiveOrZero(numBytes, "numBytes");
         if (numBytes == 0) {
-            return false;
-        }
-        //use triple flowcontroller
-        if(!(Thread.currentThread().getStackTrace()[2].getClassName().endsWith("BiStreamServerCallListener") || Thread.currentThread().getStackTrace()[2].getClassName().endsWith("AbstractServerCallListener"))){
             return false;
         }
         // Streams automatically consume all remaining bytes when they are closed, so just ignore
@@ -188,6 +183,11 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
 
             return consumeAllBytes(state(stream), numBytes);
         }
+        return false;
+    }
+
+    @Override
+    public boolean consumeBytes(Http2Stream stream, int numBytes) throws Http2Exception {
         return false;
     }
 

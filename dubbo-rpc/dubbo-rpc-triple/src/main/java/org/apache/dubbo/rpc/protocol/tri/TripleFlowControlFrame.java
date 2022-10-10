@@ -16,11 +16,10 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri;
-
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 
-public class TripleFlowControl {
+public class TripleFlowControlFrame {
 
     private Http2Connection http2Connection;
 
@@ -28,10 +27,15 @@ public class TripleFlowControl {
 
     private Http2WindowUpdateFrame http2WindowUpdateFrame;
 
-    public TripleFlowControl(Http2Connection http2Connection,int windowSizeIncrement,Http2WindowUpdateFrame http2WindowUpdateFrame){
+    private byte[] message;
+
+    private Object instance;
+
+    public TripleFlowControlFrame(Http2Connection http2Connection, int windowSizeIncrement, Http2WindowUpdateFrame http2WindowUpdateFrame, byte[] message){
         this.http2Connection = http2Connection;
         this.windowSizeIncrement = windowSizeIncrement;
         this.http2WindowUpdateFrame = http2WindowUpdateFrame;
+        this.message = message;
     }
 
     public Http2Connection getHttp2Connection() {
@@ -56,6 +60,22 @@ public class TripleFlowControl {
 
     public void setHttp2WindowUpdateFrame(Http2WindowUpdateFrame http2WindowUpdateFrame) {
         this.http2WindowUpdateFrame = http2WindowUpdateFrame;
+    }
+
+    public byte[] getMessage() {
+        return message;
+    }
+
+    public void setMessage(byte[] message) {
+        this.message = message;
+    }
+
+    public Object getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Object instance) {
+        this.instance = instance;
     }
 
 }

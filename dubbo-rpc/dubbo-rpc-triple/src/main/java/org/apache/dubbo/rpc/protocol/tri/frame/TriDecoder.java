@@ -16,17 +16,15 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
-
 import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2FrameStream;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.HashMap;
-import java.util.Map;
 public class TriDecoder implements Deframer {
 
     private static final int HEADER_LENGTH = 5;
@@ -157,13 +155,8 @@ public class TriDecoder implements Deframer {
         byte[] streams = compressedFlag ? getCompressedBody() : getUncompressedBody();
         int bytes = flowControlledBytes;
         flowControlledBytes = 0;
-        Map map = new HashMap();
-        map.put("message",streams);
-        map.put("stream",new DefaultHttp2WindowUpdateFrame(bytes).stream(stream));
-        map.put("connection",connection);
-        //  new DefaultHttp2WindowUpdateFrame(bytes).stream(stream);
-        listener.onRawMessage(map);
-
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(connection,0,new DefaultHttp2WindowUpdateFrame(bytes).stream(stream),streams);
+        listener.onRawMessage(tripleFlowControlFrame);
         // Done with this frame, begin processing the next header.
         state = GrpcDecodeState.HEADER;
         requiredLength = HEADER_LENGTH;
@@ -188,7 +181,7 @@ public class TriDecoder implements Deframer {
 
     public interface Listener {
 
-        void onRawMessage(Map map);
+        void onRawMessage(Object data);
 
         void close();
 

@@ -25,9 +25,9 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TriHttp2LocalFlowController;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-
-import java.util.Map;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
 
@@ -48,21 +48,24 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object map) {
-        Object message = ((Map) map).get("instance");
-        if (message instanceof Object[]) {
-            message = ((Object[]) message)[0];
+    public void onMessage(Object message) {
+        if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
+            Object[] data = (Object[])((TripleFlowControlFrame) message).getInstance();
+            requestObserver.onNext(data[0]);
+        }else{
+            requestObserver.onNext(((TripleFlowControlFrame) message).getInstance());
         }
-        requestObserver.onNext(message);
+
         if (responseObserver.isAutoRequestN()) {
             responseObserver.request(1);
         }
-        Http2Connection connection = (Http2Connection)((Map) map).get("connection");
-        Http2WindowUpdateFrame stream = (Http2WindowUpdateFrame)((Map) map).get("stream");
+        Http2WindowUpdateFrame stream = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
+        Http2Connection connection = ((TripleFlowControlFrame) message).getHttp2Connection();
         //stream add flowcontrol update windowsize
         if(null != stream && null != connection.stream(stream.stream().id())){
             try {
-                connection.local().flowController().consumeBytes(connection.stream(stream.stream().id()), stream.windowSizeIncrement());
+                TriHttp2LocalFlowController triHttp2LocalFlowController = (TriHttp2LocalFlowController)connection.local().flowController();
+                triHttp2LocalFlowController.consumeTriBytes(connection.stream(stream.stream().id()), stream.windowSizeIncrement());
             }catch (Exception e){
                 LOGGER.error("flowcontroller failed ", e);
             }

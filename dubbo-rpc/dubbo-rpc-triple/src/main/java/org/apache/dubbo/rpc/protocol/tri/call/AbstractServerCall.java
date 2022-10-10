@@ -16,9 +16,6 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.call;
-
-import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,18 +31,17 @@ import org.apache.dubbo.rpc.model.PackableMethod;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
-
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.util.concurrent.Future;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
@@ -175,15 +171,15 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     }
 
     @Override
-    public final void onMessage(Map data) {
+    public final void onMessage(Object data) {
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
-            byte[] message =  (byte[])((Map) data).get("message");
-            Http2WindowUpdateFrame stream = (Http2WindowUpdateFrame)((Map) data).get("stream");
-            Http2Connection connection = (Http2Connection)((Map) data).get("connection");
-            Object instance = parseSingleMessage(message);
-            data.put("instance",instance);
+            if(data instanceof TripleFlowControlFrame){
+                byte[] message =  ((TripleFlowControlFrame) data).getMessage();
+                Object instance = parseSingleMessage(message);
+                ((TripleFlowControlFrame) data).setInstance(instance);
+            }
             listener.onMessage(data);
         } catch (Throwable t) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")

@@ -17,9 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.handler.codec.http2.DefaultHttp2WindowUpdateFrame;
-import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 
 import java.util.Map;
 
@@ -41,8 +40,8 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
-    public void onMessage(Map map) {
-        this.message = (byte[])map.get("message");
+    public void onMessage(Object message) {
+        this.message = ((TripleFlowControlFrame) message).getMessage();
     }
 
     @Override

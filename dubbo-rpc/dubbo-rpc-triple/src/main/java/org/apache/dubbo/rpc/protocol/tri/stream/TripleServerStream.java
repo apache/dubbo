@@ -429,8 +429,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         private class ServerDecoderListener implements TriDecoder.Listener {
 
             @Override
-            public void onRawMessage(Map map) {
-                listener.onMessage(map);
+            public void onRawMessage(Object data) {
+                listener.onMessage(data);
             }
 
             @Override

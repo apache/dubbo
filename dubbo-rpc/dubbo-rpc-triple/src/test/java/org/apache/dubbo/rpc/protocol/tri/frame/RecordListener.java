@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import java.util.Map;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 
 public class RecordListener implements TriDecoder.Listener {
     byte[] lastData;
@@ -25,9 +25,10 @@ public class RecordListener implements TriDecoder.Listener {
     boolean close;
 
     @Override
-    public void onRawMessage(Map map) {
+    public void onRawMessage(Object message) {
         dataCount += 1;
-        lastData = (byte[])map.get("message");
+        lastData = ((TripleFlowControlFrame) message).getMessage();
+
     }
 
     @Override

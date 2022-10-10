@@ -24,9 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleFlowControl;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-import java.util.Map;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
@@ -48,15 +47,16 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object map) {
-        Object message = ((Map) map).get("instance");
-        if (message instanceof Object[]) {
-            message = ((Object[]) message)[0];
+    public void onMessage(Object message) {
+        if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
+            Object[] data = (Object[])((TripleFlowControlFrame) message).getInstance();
+            invocation.setArguments(new Object[]{data[0], responseObserver});
+        }else{
+            invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance(), responseObserver});
         }
-        invocation.setArguments(new Object[]{message, responseObserver});
-        http2Connection = (Http2Connection)((Map) map).get("connection");
-        http2WindowUpdateFrame = (Http2WindowUpdateFrame)((Map) map).get("stream");
-        windowSizeIncrement = windowSizeIncrement + http2WindowUpdateFrame.windowSizeIncrement();
+        http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
+        http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
+        windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
     }
 
     @Override
@@ -68,6 +68,6 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        invoke(new TripleFlowControl(http2Connection,windowSizeIncrement,http2WindowUpdateFrame));
+        invoke(new TripleFlowControlFrame(http2Connection,windowSizeIncrement,http2WindowUpdateFrame,null));
     }
 }
