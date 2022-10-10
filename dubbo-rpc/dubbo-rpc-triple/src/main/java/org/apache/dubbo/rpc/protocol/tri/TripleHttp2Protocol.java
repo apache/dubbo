@@ -133,7 +133,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 @Override
                 protected void initChannel(Http2StreamChannel ch) {
                     final ChannelPipeline p = ch.pipeline();
-                    writeQueue.setChannelIfAbsent(ch.parent());
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
                         headFilters, ch, writeQueue));

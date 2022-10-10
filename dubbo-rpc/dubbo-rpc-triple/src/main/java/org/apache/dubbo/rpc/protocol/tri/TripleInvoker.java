@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.Channel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -82,7 +81,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
-    private volatile WriteQueue writeQueue;
+    private final WriteQueue writeQueue = new WriteQueue();
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
@@ -112,7 +111,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             future.completeExceptionally(exception);
             return new AsyncRpcResult(future, invocation);
         }
-        initWriteQueueIfNecessary(connection.getChannel());
 
         ConsumerModel consumerModel = (ConsumerModel) (invocation.getServiceModel() != null
             ? invocation.getServiceModel() : getUrl().getServiceModel());
@@ -314,15 +312,5 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 timeout);// pass timeout to remote server
         }
         return timeout;
-    }
-
-    private void initWriteQueueIfNecessary(Channel channel) {
-        if (writeQueue == null) {
-            synchronized (this) {
-                if (writeQueue == null) {
-                    this.writeQueue = new WriteQueue(channel);
-                }
-            }
-        }
     }
 }

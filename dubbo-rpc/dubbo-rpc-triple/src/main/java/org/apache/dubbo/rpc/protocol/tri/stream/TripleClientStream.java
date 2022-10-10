@@ -20,7 +20,8 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
@@ -92,14 +93,15 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     private Http2StreamChannel initHttp2StreamChannel(Channel parent) {
         Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
-        Future<Http2StreamChannel> future = bootstrap.handler(new ChannelInitializer<Http2StreamChannel>() {
-            @Override
-            protected void initChannel(Http2StreamChannel channel) throws Exception {
-                channel.pipeline().addLast(new TripleCommandOutBoundHandler());
-                channel.pipeline().addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
-                channel.closeFuture().addListener(f -> transportException(f.cause()));
-            }
-        }).open().syncUninterruptibly();
+        Future<Http2StreamChannel> future = bootstrap.handler(new ChannelInboundHandlerAdapter() {
+                @Override
+                public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+                    Channel channel = ctx.channel();
+                    channel.pipeline().addLast(new TripleCommandOutBoundHandler());
+                    channel.pipeline().addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
+                    channel.closeFuture().addListener(f -> transportException(f.cause()));
+                }
+            }).open().syncUninterruptibly();
         if (!future.isSuccess()) {
             throw new IllegalStateException("Create remote stream failed. channel:" + parent);
         }

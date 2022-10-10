@@ -53,8 +53,12 @@ public class WriteQueueTest {
     @BeforeEach
     public void init() {
         channel = Mockito.mock(Channel.class);
+        Channel parent = Mockito.mock(Channel.class);
         ChannelPromise promise = Mockito.mock(ChannelPromise.class);
         EventLoop eventLoop = new DefaultEventLoop();
+        Mockito.when(parent.eventLoop()).thenReturn(eventLoop);
+
+        Mockito.when(channel.parent()).thenReturn(parent);
         Mockito.when(channel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.newPromise()).thenReturn(promise);
@@ -70,7 +74,7 @@ public class WriteQueueTest {
     @Test
     public void test() throws Exception {
 
-        WriteQueue writeQueue = new WriteQueue(channel);
+        WriteQueue writeQueue = new WriteQueue();
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0).channel(channel));
         TriRpcStatus status = TriRpcStatus.UNKNOWN
@@ -96,7 +100,7 @@ public class WriteQueueTest {
 
     @Test
     public void testChunk() throws Exception {
-        WriteQueue writeQueue = new WriteQueue(channel);
+        WriteQueue writeQueue = new WriteQueue();
         // test deque chunk size
         writeMethodCalledTimes.set(0);
         for (int i = 0; i < DEQUE_CHUNK_SIZE; i++) {
