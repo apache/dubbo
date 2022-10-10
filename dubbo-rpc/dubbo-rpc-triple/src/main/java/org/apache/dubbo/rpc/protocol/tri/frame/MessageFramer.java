@@ -41,7 +41,7 @@ public class MessageFramer implements Framer {
             if(size == 1) {
                 DataQueueCommand poll = queue.poll();
                 poll.setEndStream(true);
-                writeQueue.enqueueSoon(queue.poll(), true);
+                writeQueue.enqueueSoon(poll, true);
             }
             else {
                 for (DataQueueCommand dataQueueCommand : queue) {
