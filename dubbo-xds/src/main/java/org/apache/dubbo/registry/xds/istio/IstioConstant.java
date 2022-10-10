@@ -48,6 +48,10 @@ public class IstioConstant {
 
     public final static String KUBERNETES_CA_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt";
 
+    public final static String ISTIO_SA_PATH = "/var/run/secrets/tokens/istio-token";
+
+    public final static String ISTIO_CA_PATH = "/var/run/secrets/istio/root-cert.pem";
+
     public final static String KUBERNETES_NAMESPACE_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
 
     public final static String RSA_KEY_SIZE_KEY = "RSA_KEY_SIZE";
@@ -90,4 +94,13 @@ public class IstioConstant {
     public final static String NS = "/ns/";
 
     public final static String SA = "/sa/";
+
+    public final static String JWT_POLICY = "JWT_POLICY";
+
+    public final static String DEFAULT_JWT_POLICY = "first-party-jwt";
+
+    public final static String FIRST_PARTY_JWT = "first-party-jwt";
+
+    public final static String THIRD_PARTY_JWT = "third-party-jwt";
+
 }
