@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorService;
 import org.apache.dubbo.rpc.protocol.tri.HelloReply;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -34,8 +35,6 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -90,9 +89,8 @@ class ReflectionServerCallTest {
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
-        Map map = new HashMap();
-        map.put("message",new byte[0]);
-        call2.onMessage(map);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(null,0,null,new byte[0]);
+        call2.onMessage(tripleFlowControlFrame);
         call2.onComplete();
     }
 }

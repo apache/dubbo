@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -35,7 +33,6 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     private Http2WindowUpdateFrame http2WindowUpdateFrame;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnaryServerCallListener.class);
     public UnaryServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
         ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
@@ -48,21 +45,15 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
-        if(message instanceof TripleFlowControlFrame){
-            if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
-                invocation.setArguments((Object[]) ((TripleFlowControlFrame) message).getInstance());
-            } else {
-                invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance()});
-            }
-            http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
-            http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
-            windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
-        }else if(message instanceof Object[]){
-            invocation.setArguments((Object[]) message);
-        }else {
-            invocation.setArguments(new Object[]{message});
+    public void onMessage(TripleFlowControlFrame message) {
+        if (message.getInstance() instanceof Object[]) {
+            invocation.setArguments((Object[])message.getInstance());
+        } else {
+            invocation.setArguments(new Object[]{message.getInstance()});
         }
+        http2WindowUpdateFrame = message.getHttp2WindowUpdateFrame();
+        http2Connection = message.getHttp2Connection();
+        windowSizeIncrement = windowSizeIncrement + message.getHttp2WindowUpdateFrame().windowSizeIncrement();
     }
 
     @Override

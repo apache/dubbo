@@ -20,6 +20,8 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
+
 import java.net.SocketAddress;
 
 /**
@@ -40,7 +42,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(Object message);
+        void onMessage(TripleFlowControlFrame message);
 
         /**
          * Callback when receive cancel signal.

@@ -25,6 +25,7 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
@@ -245,7 +246,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             }
             TriDecoder.Listener listener = new TriDecoder.Listener() {
                 @Override
-                public void onRawMessage(Object data) {
+                public void onRawMessage(TripleFlowControlFrame data) {
                     TripleClientStream.this.listener.onMessage(data);
                 }
 

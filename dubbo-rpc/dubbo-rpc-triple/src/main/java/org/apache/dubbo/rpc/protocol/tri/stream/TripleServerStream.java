@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.call.ReflectionAbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.call.StubAbstractServerCall;
@@ -429,7 +430,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         private class ServerDecoderListener implements TriDecoder.Listener {
 
             @Override
-            public void onRawMessage(Object data) {
+            public void onRawMessage(TripleFlowControlFrame data) {
                 listener.onMessage(data);
             }
 

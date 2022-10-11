@@ -171,15 +171,13 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     }
 
     @Override
-    public final void onMessage(Object data) {
+    public final void onMessage(TripleFlowControlFrame data) {
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
-            if(data instanceof TripleFlowControlFrame){
-                byte[] message =  ((TripleFlowControlFrame) data).getMessage();
-                Object instance = parseSingleMessage(message);
-                ((TripleFlowControlFrame) data).setInstance(instance);
-            }
+            byte[] message =  data.getMessage();
+            Object instance = parseSingleMessage(message);
+            data.setInstance(instance);
             listener.onMessage(data);
         } catch (Throwable t) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")

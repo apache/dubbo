@@ -73,6 +73,9 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     private static final int DEFAULT_MAX_FRAME_SIZE = MIB_8;
     private static final int DEFAULT_WINDOW_INIT_SIZE = MIB_8;
 
+    private static final String CONNECTION_KEY = "tri_connection";
+
+
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
     public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
@@ -137,7 +140,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                 protected void initChannel(Channel ch) {
                     final ChannelPipeline p = ch.pipeline();
                     //add connection to channel  to flowcontrol
-                    AttributeKey key = AttributeKey.valueOf("tri-connection");
+                    AttributeKey key = AttributeKey.valueOf(CONNECTION_KEY);
                     ch.attr(key).set(codec.connection());
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),

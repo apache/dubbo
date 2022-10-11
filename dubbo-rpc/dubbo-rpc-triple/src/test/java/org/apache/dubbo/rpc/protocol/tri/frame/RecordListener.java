@@ -25,9 +25,9 @@ public class RecordListener implements TriDecoder.Listener {
     boolean close;
 
     @Override
-    public void onRawMessage(Object message) {
+    public void onRawMessage(TripleFlowControlFrame message) {
         dataCount += 1;
-        lastData = ((TripleFlowControlFrame) message).getMessage();
+        lastData = message.getMessage();
 
     }
 

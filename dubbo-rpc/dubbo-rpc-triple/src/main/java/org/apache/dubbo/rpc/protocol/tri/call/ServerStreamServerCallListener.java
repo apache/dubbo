@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -28,8 +26,6 @@ import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerStreamServerCallListener.class);
 
     private Http2Connection http2Connection;
 
@@ -47,22 +43,16 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
-        if(message instanceof TripleFlowControlFrame){
-            if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
-                Object[] data = (Object[])((TripleFlowControlFrame) message).getInstance();
-                invocation.setArguments(new Object[]{data[0], responseObserver});
-            }else{
-                invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance(), responseObserver});
-            }
-            http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
-            http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
-            windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
-        }else if(message instanceof Object[]){
-            invocation.setArguments(new Object[]{((Object[]) message)[0], responseObserver});
+    public void onMessage(TripleFlowControlFrame message) {
+        if (message.getInstance() instanceof Object[]) {
+            Object[] data = (Object[])message.getInstance();
+            invocation.setArguments(new Object[]{data[0], responseObserver});
         }else{
-            invocation.setArguments(new Object[]{message, responseObserver});
+            invocation.setArguments(new Object[]{message.getInstance(), responseObserver});
         }
+        http2WindowUpdateFrame = message.getHttp2WindowUpdateFrame();
+        http2Connection = message.getHttp2Connection();
+        windowSizeIncrement = windowSizeIncrement +  message.getHttp2WindowUpdateFrame().windowSizeIncrement();
     }
 
     @Override

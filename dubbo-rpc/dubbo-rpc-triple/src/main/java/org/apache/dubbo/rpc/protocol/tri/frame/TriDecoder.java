@@ -181,7 +181,7 @@ public class TriDecoder implements Deframer {
 
     public interface Listener {
 
-        void onRawMessage(Object data);
+        void onRawMessage(TripleFlowControlFrame data);
 
         void close();
 
