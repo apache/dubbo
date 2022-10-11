@@ -17,11 +17,13 @@
 
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2StreamFrame;
 
-public class FrameQueueCommand extends QueuedCommand {
+public class FrameQueueCommand {
+
+    private ChannelPromise promise;
 
     private final Http2StreamFrame frame;
 
@@ -33,8 +35,23 @@ public class FrameQueueCommand extends QueuedCommand {
         return new FrameQueueCommand(http2StreamFrame);
     }
 
-    @Override
-    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(frame, promise);
+    public ChannelPromise promise() {
+        return promise;
+    }
+
+    public void promise(ChannelPromise promise) {
+        this.promise = promise;
+    }
+
+    public void cancel() {
+        promise.tryFailure(new IllegalStateException("Canceled"));
+    }
+
+    public final Http2StreamFrame getFrame() {
+        return frame;
+    }
+
+    public void run(Channel channel) {
+        channel.write(this, promise);
     }
 }

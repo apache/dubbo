@@ -17,12 +17,13 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import org.apache.dubbo.remoting.buffer.ChannelWritableBufferAllocator;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -32,7 +33,6 @@ import org.apache.dubbo.rpc.protocol.tri.frame.MessageFramer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
@@ -97,7 +97,6 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         }
         final Http2StreamChannel channel = future.getNow();
         channel.pipeline()
-            .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
         channel.closeFuture()
             .addListener(f -> transportException(f.cause()));
@@ -114,8 +113,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             // already processed at createStream()
             return parent.newFailedFuture(new IllegalStateException("Stream already closed"));
         }
-        final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        return writeQueue.enqueueSoon(headerCmd, false).addListener(future -> {
+        return writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2HeadersFrame(headers, false)), false).addListener(future -> {
             if (!future.isSuccess()) {
                 transportException(future.cause());
             }
@@ -130,8 +128,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     @Override
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
-        final CancelQueueCommand cmd = CancelQueueCommand.createCommand(Http2Error.CANCEL);
-        return this.writeQueue.enqueue(cmd, true);
+        return this.writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.CANCEL)), true);
     }
 
     @Override
@@ -191,7 +188,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         private Http2Headers trailers;
 
         void handleH2TransportError(TriRpcStatus status) {
-            writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.NO_ERROR), true);
+            writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.NO_ERROR)), true);
             finishProcess(status, null);
         }
 
@@ -325,7 +322,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             executor.execute(() -> {
                 if (endStream) {
                     if (!halfClosed) {
-                        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL),
+                        writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.CANCEL)),
                             true);
                     }
                     onTrailersReceived(headers);

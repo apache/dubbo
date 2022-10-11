@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.buffer.ByteBufUtil;
+import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -32,10 +36,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.call.ReflectionAbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.call.StubAbstractServerCall;
-import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -130,7 +131,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     }
 
     public ChannelFuture reset(Http2Error cause) {
-        return writeQueue.enqueue(CancelQueueCommand.createCommand(cause), true);
+        return writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(cause)), true);
     }
 
     @Override
@@ -147,7 +148,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
 
-        return writeQueue.enqueueSoon(HeaderQueueCommand.createHeaders(headers, false), false)
+        return writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2HeadersFrame(headers, false)), false)
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -180,7 +181,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
         headerSent = true;
         trailersSent = true;
-        return writeQueue.enqueueSoon(HeaderQueueCommand.createHeaders(trailers, true), true)
+        return writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2HeadersFrame(trailers, true)), true)
             .addListener(f -> {
                 if (!f.isSuccess()) {
                     reset(Http2Error.INTERNAL_ERROR);
@@ -260,8 +261,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
-        writeQueue.enqueueSoon(HeaderQueueCommand.createHeaders(headers, false), false);
-        writeQueue.enqueueSoon(TextDataQueueCommand.createCommand(status.description, true), true);
+        writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2HeadersFrame(headers, false)), false);
+        ByteBuf buf = ByteBufUtil.writeUtf8(channel.alloc(), status.description);
+        writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(buf, true)), true);
     }
 
     /**

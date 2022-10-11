@@ -16,13 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
+import io.netty.handler.codec.http2.Http2StreamFrame;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
@@ -37,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -70,28 +73,52 @@ public class WriteQueueTest {
     @Test
     public void test() throws Exception {
 
+        List<Http2StreamFrame> ayFrame = new ArrayList<>();
         WriteQueue writeQueue = new WriteQueue(channel);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0));
-        TriRpcStatus status = TriRpcStatus.UNKNOWN
+
+        {
+            DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame), false);
+            ayFrame.add(defaultHttp2HeadersFrame);
+        }
+        {
+            byte[] bytes = new byte[0];
+            ByteBuf buf = channel.alloc().buffer();
+            buf.writeByte(0);
+            buf.writeInt(bytes.length);
+            buf.writeBytes(bytes);
+            DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(buf, true);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2DataFrame), false);
+            ayFrame.add(defaultHttp2DataFrame);
+        }
+        {
+            DefaultHttp2ResetFrame defaultHttp2ResetFrame = new DefaultHttp2ResetFrame(Http2Error.CANCEL);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2ResetFrame), false);
+            ayFrame.add(defaultHttp2ResetFrame);
+        }
+        {
+            TriRpcStatus status = TriRpcStatus.UNKNOWN
                 .withCause(new RpcException())
                 .withDescription("Encode Response data error");
-        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
+            ByteBuf buf = ByteBufUtil.writeUtf8(channel.alloc(), status.description);
+            DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(buf, true);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(buf, true)), true);
+            ayFrame.add(defaultHttp2DataFrame);
+        }
+
 
         while (writeMethodCalledTimes.get() != 4) {
             Thread.sleep(50);
         }
 
-        ArgumentCaptor<QueuedCommand> commandArgumentCaptor = ArgumentCaptor.forClass(QueuedCommand.class);
+        ArgumentCaptor<FrameQueueCommand> commandArgumentCaptor = ArgumentCaptor.forClass(FrameQueueCommand.class);
         ArgumentCaptor<ChannelPromise> promiseArgumentCaptor = ArgumentCaptor.forClass(ChannelPromise.class);
         Mockito.verify(channel, Mockito.times(4)).write(commandArgumentCaptor.capture(), promiseArgumentCaptor.capture());
-        List<QueuedCommand> queuedCommands = commandArgumentCaptor.getAllValues();
-        Assertions.assertEquals(queuedCommands.size(), 4);
-        Assertions.assertTrue(queuedCommands.get(0) instanceof HeaderQueueCommand);
-        Assertions.assertTrue(queuedCommands.get(1) instanceof DataQueueCommand);
-        Assertions.assertTrue(queuedCommands.get(2) instanceof CancelQueueCommand);
-        Assertions.assertTrue(queuedCommands.get(3) instanceof TextDataQueueCommand);
+        List<FrameQueueCommand> queuedCommands = commandArgumentCaptor.getAllValues();
+        Assertions.assertEquals(queuedCommands.size(), ayFrame.size());
+        for (int i = 0; i < queuedCommands.size(); i++) {
+            Assertions.assertTrue(queuedCommands.get(i).getFrame().equals(ayFrame.get(i)));
+        }
     }
 
     @Test
@@ -100,9 +127,11 @@ public class WriteQueueTest {
         // test deque chunk size
         writeMethodCalledTimes.set(0);
         for (int i = 0; i < DEQUE_CHUNK_SIZE; i++) {
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+            DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame), false);
         }
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+        DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
+        writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame), true);
         while (writeMethodCalledTimes.get() != (DEQUE_CHUNK_SIZE + 1)) {
             Thread.sleep(50);
         }

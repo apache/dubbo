@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -32,7 +32,7 @@ public class WriteQueue {
 
     static final int DEQUE_CHUNK_SIZE = 128;
     private final Channel channel;
-    private final Queue<QueuedCommand> queue;
+    private final Queue<FrameQueueCommand> queue;
     private final AtomicBoolean scheduled;
     private volatile boolean rst;
 
@@ -50,7 +50,7 @@ public class WriteQueue {
         return channel.newFailedFuture(cause);
     }
 
-    public ChannelFuture enqueue(QueuedCommand command, boolean rst) {
+    public ChannelFuture enqueue(FrameQueueCommand command, boolean rst) {
         ChannelFuture future = enqueue(command);
         if (rst) {
             this.rst = true;
@@ -58,11 +58,11 @@ public class WriteQueue {
         return future;
     }
 
-    public ChannelFuture enqueue(QueuedCommand command) {
+    public ChannelFuture enqueue(FrameQueueCommand command) {
         return enqueueSoon(command, true);
     }
 
-    public ChannelFuture enqueueSoon(QueuedCommand command, boolean soon) {
+    public ChannelFuture enqueueSoon(FrameQueueCommand command, boolean soon) {
         if (!channel.isActive()) {
             return channel.newFailedFuture(new IOException("channel is closed"));
         }
@@ -93,7 +93,7 @@ public class WriteQueue {
 
     private void flush() {
         try {
-            QueuedCommand cmd;
+            FrameQueueCommand cmd;
             int i = 0;
             boolean flushedOnce = false;
             while ((cmd = queue.poll()) != null) {

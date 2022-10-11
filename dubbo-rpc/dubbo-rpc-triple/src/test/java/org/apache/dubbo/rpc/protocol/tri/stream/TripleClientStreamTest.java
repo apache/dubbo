@@ -26,11 +26,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
-import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -81,19 +77,19 @@ class TripleClientStreamTest {
         requestMetadata.group = url.getGroup();
         requestMetadata.version = url.getVersion();
         stream.sendHeader(requestMetadata.toHeaders(stream.getCompressor()));
-        verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
+        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
         // no other commands
-        verify(writeQueue).enqueue(any(QueuedCommand.class));
+        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
         stream.sendMessage(new byte[0]);
-        verify(writeQueue).enqueue(any(DataQueueCommand.class));
-        verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue, times(2)).enqueue(any(FrameQueueCommand.class));
         stream.halfClose();
-        verify(writeQueue).enqueue(any(EndStreamQueueCommand.class));
-        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue, times(3)).enqueue(any(FrameQueueCommand.class));
 
         stream.cancelByLocal(TriRpcStatus.CANCELLED);
-        verify(writeQueue, times(1)).enqueue(any(CancelQueueCommand.class), anyBoolean());
-        verify(writeQueue, times(3)).enqueue(any(QueuedCommand.class));
+        verify(writeQueue, times(1)).enqueue(any(FrameQueueCommand.class), anyBoolean());
+        verify(writeQueue, times(3)).enqueue(any(FrameQueueCommand.class));
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
