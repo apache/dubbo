@@ -48,15 +48,21 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onMessage(Object message) {
-        if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
-            Object[] data = (Object[])((TripleFlowControlFrame) message).getInstance();
-            invocation.setArguments(new Object[]{data[0], responseObserver});
+        if(message instanceof TripleFlowControlFrame){
+            if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
+                Object[] data = (Object[])((TripleFlowControlFrame) message).getInstance();
+                invocation.setArguments(new Object[]{data[0], responseObserver});
+            }else{
+                invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance(), responseObserver});
+            }
+            http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
+            http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
+            windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
+        }else if(message instanceof Object[]){
+            invocation.setArguments(new Object[]{((Object[]) message)[0], responseObserver});
         }else{
-            invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance(), responseObserver});
+            invocation.setArguments(new Object[]{message, responseObserver});
         }
-        http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
-        http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
-        windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
     }
 
     @Override

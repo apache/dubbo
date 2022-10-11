@@ -49,15 +49,20 @@ public class UnaryServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onMessage(Object message) {
-        if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
-            invocation.setArguments((Object[]) ((TripleFlowControlFrame) message).getInstance());
-        } else {
-            invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance()});
+        if(message instanceof TripleFlowControlFrame){
+            if (((TripleFlowControlFrame) message).getInstance() instanceof Object[]) {
+                invocation.setArguments((Object[]) ((TripleFlowControlFrame) message).getInstance());
+            } else {
+                invocation.setArguments(new Object[]{((TripleFlowControlFrame) message).getInstance()});
+            }
+            http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
+            http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
+            windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
+        }else if(message instanceof Object[]){
+            invocation.setArguments((Object[]) message);
+        }else {
+            invocation.setArguments(new Object[]{message});
         }
-        http2WindowUpdateFrame = ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame();
-        http2Connection = ((TripleFlowControlFrame) message).getHttp2Connection();
-        windowSizeIncrement = windowSizeIncrement + ((TripleFlowControlFrame) message).getHttp2WindowUpdateFrame().windowSizeIncrement();
-
     }
 
     @Override

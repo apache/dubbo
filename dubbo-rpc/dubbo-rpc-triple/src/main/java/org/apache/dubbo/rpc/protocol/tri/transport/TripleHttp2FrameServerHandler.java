@@ -43,6 +43,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final AttributeKey<TripleServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
         "tri_server_stream");
 
+    private static final AttributeKey<TripleServerStream> CONNECTION_KEY = AttributeKey.valueOf(
+        "tri_connection");
+
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
         TripleHttp2FrameServerHandler.class);
@@ -122,7 +125,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         ctx.channel().attr(SERVER_STREAM_KEY).set(tripleServerStream);
 
         //transmit connection to triple invoke to flowcontrol
-        Http2Connection connection = (Http2Connection)ctx.channel().attr(AttributeKey.valueOf("tri-connection")).get();
+        Http2Connection connection = (Http2Connection)ctx.channel().attr(CONNECTION_KEY).get();
         tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream(), connection);
     }
 
