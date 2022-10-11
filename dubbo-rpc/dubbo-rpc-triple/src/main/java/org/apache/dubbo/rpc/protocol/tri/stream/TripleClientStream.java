@@ -18,12 +18,14 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import io.netty.channel.ChannelPromise;
+import org.apache.dubbo.remoting.buffer.ChannelWritableBufferAllocator;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
@@ -74,7 +76,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.parent = null;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.framer = new MessageFramer(writeQueue);
+        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(parent.alloc()));
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
@@ -85,7 +87,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.parent = parent;
         this.listener = listener;
         this.writeQueue = createWriteQueue(parent);
-        this.framer = new MessageFramer(writeQueue);
+        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(parent.alloc()));
     }
 
     private WriteQueue createWriteQueue(Channel parent) {
@@ -145,7 +147,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             compressFlag);
         ChannelPromise channelPromise = this.writeQueue.createChannelPromise();
         cmd.promise(channelPromise);
-        framer.addDataCmd(cmd);
+        framer.writePayload(cmd);
         return channelPromise.addListener(future -> {
                     if (!future.isSuccess()) {
                         cancelByLocal(
@@ -159,8 +161,19 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     @Override
+    public Future<?> sendMessage(byte[] message) {
+        framer.writePayload(message);
+        return null;
+    }
+
+    @Override
     public void request(int n) {
         deframer.request(n);
+    }
+
+    @Override
+    public void setCompressor(Compressor compressor) {
+        framer.setCompressor(compressor);
     }
 
     @Override

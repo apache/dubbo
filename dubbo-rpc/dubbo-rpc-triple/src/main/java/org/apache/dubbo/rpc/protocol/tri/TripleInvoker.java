@@ -234,8 +234,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
-        // TODO read compressor from config
-        meta.compressor = Compressor.NONE;
         meta.cancellationContext = RpcContext.getCancellationContext();
         meta.address = url.getAddress();
         meta.service = url.getPath();

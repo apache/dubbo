@@ -1,30 +1,64 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import org.apache.dubbo.remoting.buffer.ChannelWritableBuffer;
+import org.apache.dubbo.remoting.buffer.WritableBuffer;
+import org.apache.dubbo.remoting.buffer.WritableBufferAllocator;
+import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-/**
- * @author owen.cai
- * @create_date 2022/9/30
- * @alter_author
- * @alter_date
- */
 public class MessageFramer implements Framer {
-    private final WriteQueue writeQueue;
-    private boolean closed;
-    private final Queue<DataQueueCommand> queue = new ConcurrentLinkedQueue<>();
+    private static final int HEADER_LENGTH = 5;
 
-    public MessageFramer(WriteQueue writeQueue) {
+    private final WriteQueue writeQueue;
+    private final WritableBufferAllocator bufferAllocator;
+    private WritableBuffer buffer;
+    private Compressor compressor = Compressor.NONE;
+
+    private boolean closed;
+
+    public MessageFramer(WriteQueue writeQueue, WritableBufferAllocator bufferAllocator) {
         this.writeQueue = writeQueue;
+        this.bufferAllocator = bufferAllocator;
     }
 
     @Override
-    public void addDataCmd(DataQueueCommand cmd) {
-        queue.add(cmd);
+    public void setCompressor(Compressor compressor) {
+        this.compressor = compressor;
+    }
+
+    @Override
+    public void writePayload(byte[] cmd) {
+        int compressed =
+            Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())
+                ? 0 : 1;
+        final byte[] compress = compressor.compress(cmd);
+        WritableBuffer allocate = bufferAllocator.allocate(HEADER_LENGTH + compress.length);
+        allocate.write((byte) compressed);
+        allocate.writeInt(compress.length);
+        allocate.write(compress, 0, compress.length);
+        this.buffer = allocate;
     }
 
     @Override
@@ -36,20 +70,8 @@ public class MessageFramer implements Framer {
     }
 
     private void commitToSink(boolean endOfStream, boolean flush) {
-        int size = queue.size();
-        if(size > 0) {
-            if(size == 1) {
-                DataQueueCommand poll = queue.poll();
-                poll.setEndStream(true);
-                writeQueue.enqueueSoon(poll, true);
-            }
-            else {
-                for (DataQueueCommand dataQueueCommand : queue) {
-                    writeQueue.enqueueSoon(dataQueueCommand, false);
-                }
-                EndStreamQueueCommand endStreamQueueCommand = new EndStreamQueueCommand();
-                writeQueue.enqueueSoon(endStreamQueueCommand, true);
-            }
-        }
+        ByteBuf bytebuf = this.buffer == null ? Unpooled.EMPTY_BUFFER : ((ChannelWritableBuffer)this.buffer).bytebuf().touch();
+        FrameQueueCommand grpcCommand = FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(bytebuf, endOfStream));
+        writeQueue.enqueueSoon(grpcCommand, flush);
     }
 }

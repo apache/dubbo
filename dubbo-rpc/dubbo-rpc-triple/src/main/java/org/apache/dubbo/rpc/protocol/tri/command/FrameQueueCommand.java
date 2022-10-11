@@ -15,14 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.rpc.protocol.tri.command;
 
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2StreamFrame;
 
-public interface Framer {
-    void setCompressor(Compressor compressor);
+public class FrameQueueCommand extends QueuedCommand {
 
-    void writePayload(byte[] cmd);
+    private final Http2StreamFrame frame;
 
-    void close();
+    private FrameQueueCommand(Http2StreamFrame http2StreamFrame) {
+        this.frame = http2StreamFrame;
+    }
+
+    public static FrameQueueCommand createGrpcCommand(Http2StreamFrame http2StreamFrame) {
+        return new FrameQueueCommand(http2StreamFrame);
+    }
+
+    @Override
+    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
+        ctx.write(frame, promise);
+    }
 }

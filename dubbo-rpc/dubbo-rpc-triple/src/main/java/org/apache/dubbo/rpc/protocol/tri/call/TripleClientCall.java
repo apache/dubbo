@@ -222,11 +222,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         final byte[] data;
         try {
             data = requestMetadata.packableMethod.packRequest(message);
-            int compressed =
-                Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding())
-                    ? 0 : 1;
-            final byte[] compress = requestMetadata.compressor.compress(data);
-            stream.sendMessage(compress, compressed, false)
+            stream.sendMessage(data)
                 .addListener(f -> {
                     if (!f.isSuccess()) {
                         cancelByLocal(f.cause());
@@ -256,7 +252,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void setCompression(String compression) {
-        this.requestMetadata.compressor = Compressor.getCompressor(frameworkModel, compression);
+        this.stream.setCompressor(Compressor.getCompressor(frameworkModel, compression));
     }
 
     @Override

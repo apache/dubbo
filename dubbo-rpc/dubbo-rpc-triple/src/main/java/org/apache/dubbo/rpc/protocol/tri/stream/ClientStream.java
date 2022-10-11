@@ -60,12 +60,10 @@ public interface ClientStream extends Stream {
 
     /**
      * Send message to remote peer.
-     *
-     * @param message message to send to remote peer
-     * @param eos     whether this is the last message
-     * @return future to callback when send message is done
+     * @param message
+     * @return
      */
-    Future<?> sendMessage(byte[] message, int compressFlag, boolean eos);
+    Future<?> sendMessage(byte[] message);
 
     /**
      * No more data will be sent, half close this stream to wait server response.

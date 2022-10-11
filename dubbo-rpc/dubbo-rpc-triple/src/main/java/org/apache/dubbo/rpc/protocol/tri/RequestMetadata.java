@@ -42,7 +42,6 @@ public class RequestMetadata {
     public String address;
     public String acceptEncoding;
     public String timeout;
-    public Compressor compressor;
     public CancellationContext cancellationContext;
     public MethodDescriptor method;
     public PackableMethod packableMethod;

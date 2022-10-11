@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 import java.net.SocketAddress;
 
@@ -31,7 +32,6 @@ import java.net.SocketAddress;
  * by {@link Stream}. Backpressure is supported by {@link #request(int)}.
  */
 public interface Stream {
-
     /**
      * Register a {@link Listener} to receive inbound data from remote peer.
      */
@@ -84,4 +84,10 @@ public interface Stream {
      */
     void request(int n);
 
+
+    /**
+     * set compressor
+     * @param compressor
+     */
+    void setCompressor(Compressor compressor);
 }

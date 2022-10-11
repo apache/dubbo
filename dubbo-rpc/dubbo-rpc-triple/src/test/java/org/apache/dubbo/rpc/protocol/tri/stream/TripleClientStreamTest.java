@@ -75,7 +75,6 @@ class TripleClientStreamTest {
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
         requestMetadata.scheme = TripleConstant.HTTP_SCHEME;
-        requestMetadata.compressor = Compressor.NONE;
         requestMetadata.acceptEncoding = Compressor.NONE.getMessageEncoding();
         requestMetadata.address = url.getAddress();
         requestMetadata.service = url.getPath();
