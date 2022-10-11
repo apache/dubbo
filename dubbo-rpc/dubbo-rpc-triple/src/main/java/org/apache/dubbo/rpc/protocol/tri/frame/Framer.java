@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
+import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 public interface Framer {
@@ -24,5 +25,5 @@ public interface Framer {
 
     void writePayload(byte[] cmd);
 
-    void close();
+    ChannelFuture close();
 }

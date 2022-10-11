@@ -68,6 +68,6 @@ public interface ClientStream extends Stream {
     /**
      * No more data will be sent, half close this stream to wait server response.
      */
-    void halfClose();
+    Future<?> halfClose();
 
 }

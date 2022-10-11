@@ -17,13 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.remoting.buffer.ChannelWritableBufferAllocator;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
@@ -140,30 +138,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         return parent.remoteAddress();
     }
 
-
-    @Override
-    public ChannelFuture sendMessage(byte[] message, int compressFlag, boolean eos) {
-        final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,
-            compressFlag);
-        ChannelPromise channelPromise = this.writeQueue.createChannelPromise();
-        cmd.promise(channelPromise);
-        framer.writePayload(cmd);
-        return channelPromise.addListener(future -> {
-                    if (!future.isSuccess()) {
-                        cancelByLocal(
-                            TriRpcStatus.INTERNAL.withDescription("Client write message failed")
-                                .withCause(future.cause())
-                        );
-                        transportException(future.cause());
-                    }
-                }
-            );
-    }
-
     @Override
     public Future<?> sendMessage(byte[] message) {
         framer.writePayload(message);
-        return null;
+        return parent.newSucceededFuture();
     }
 
     @Override
@@ -177,8 +155,12 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     @Override
-    public void halfClose() {
-        framer.close();
+    public ChannelFuture halfClose() {
+        ChannelFuture close = framer.close();
+        if(close != null) {
+            return close;
+        }
+        return parent.newSucceededFuture();
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.frame;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import org.apache.dubbo.remoting.buffer.ChannelWritableBuffer;
 import org.apache.dubbo.remoting.buffer.WritableBuffer;
@@ -62,16 +63,18 @@ public class MessageFramer implements Framer {
     }
 
     @Override
-    public void close() {
+    public ChannelFuture close() {
         if(!closed) {
             closed = true;
-            commitToSink(true, true);
+            return commitToSink(true, true);
         }
+        return null;
     }
 
-    private void commitToSink(boolean endOfStream, boolean flush) {
+    private ChannelFuture commitToSink(boolean endOfStream, boolean flush) {
         ByteBuf bytebuf = this.buffer == null ? Unpooled.EMPTY_BUFFER : ((ChannelWritableBuffer)this.buffer).bytebuf().touch();
         FrameQueueCommand grpcCommand = FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(bytebuf, endOfStream));
         writeQueue.enqueueSoon(grpcCommand, flush);
+        return grpcCommand.promise();
     }
 }

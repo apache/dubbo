@@ -247,7 +247,12 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (canceled) {
             return;
         }
-        stream.halfClose();
+        stream.halfClose()
+            .addListener(f -> {
+                if (!f.isSuccess()) {
+                    cancelByLocal(new IllegalStateException("Half close failed", f.cause()));
+                }
+            });
     }
 
     @Override

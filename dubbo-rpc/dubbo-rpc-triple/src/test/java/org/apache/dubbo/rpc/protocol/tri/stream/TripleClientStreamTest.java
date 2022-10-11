@@ -84,7 +84,7 @@ class TripleClientStreamTest {
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));
-        stream.sendMessage(new byte[0], 0, false);
+        stream.sendMessage(new byte[0]);
         verify(writeQueue).enqueue(any(DataQueueCommand.class));
         verify(writeQueue, times(2)).enqueue(any(QueuedCommand.class));
         stream.halfClose();
