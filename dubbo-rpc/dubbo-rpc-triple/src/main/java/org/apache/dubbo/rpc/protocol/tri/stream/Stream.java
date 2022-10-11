@@ -84,10 +84,20 @@ public interface Stream {
      */
     void request(int n);
 
+    /**
+     * get compressor
+     * @return
+     */
+    Compressor getCompressor();
 
     /**
      * set compressor
      * @param compressor
      */
     void setCompressor(Compressor compressor);
+
+    /**
+     * flush data
+     */
+    void flush();
 }

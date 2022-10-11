@@ -57,9 +57,8 @@ public interface ServerStream extends Stream {
      * Send message to client
      *
      * @param message      raw message
-     * @param compressFlag whether to compress the message
      * @return a future that indicates the completion of send message
      */
-    Future<?> sendMessage(byte[] message, int compressFlag);
+    Future<?> sendMessage(byte[] message);
 
 }

@@ -69,12 +69,13 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     TripleClientStream(FrameworkModel frameworkModel,
         Executor executor,
         WriteQueue writeQueue,
+        Channel channel,
         ClientStream.Listener listener) {
         super(executor, frameworkModel);
-        this.parent = null;
+        this.parent = channel;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(parent.alloc()));
+        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(channel.alloc()));
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
@@ -150,8 +151,18 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     @Override
+    public Compressor getCompressor() {
+        return framer.getCompressor();
+    }
+
+    @Override
     public void setCompressor(Compressor compressor) {
         framer.setCompressor(compressor);
+    }
+
+    @Override
+    public void flush() {
+        framer.flush();
     }
 
     @Override

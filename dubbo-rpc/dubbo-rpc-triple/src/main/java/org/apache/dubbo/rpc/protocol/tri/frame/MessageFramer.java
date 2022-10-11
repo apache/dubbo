@@ -45,6 +45,11 @@ public class MessageFramer implements Framer {
     }
 
     @Override
+    public Compressor getCompressor() {
+        return compressor;
+    }
+
+    @Override
     public void setCompressor(Compressor compressor) {
         this.compressor = compressor;
     }
@@ -71,8 +76,17 @@ public class MessageFramer implements Framer {
         return null;
     }
 
+    @Override
+    public void flush() {
+        if (buffer != null && buffer.readableBytes() > 0) {
+            commitToSink(false, true);
+        }
+    }
+
     private ChannelFuture commitToSink(boolean endOfStream, boolean flush) {
-        ByteBuf bytebuf = this.buffer == null ? Unpooled.EMPTY_BUFFER : ((ChannelWritableBuffer)this.buffer).bytebuf().touch();
+        WritableBuffer buf = buffer;
+        buffer = null;
+        ByteBuf bytebuf = buf == null ? Unpooled.EMPTY_BUFFER : ((ChannelWritableBuffer)buf).bytebuf().touch();
         FrameQueueCommand grpcCommand = FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(bytebuf, endOfStream));
         writeQueue.enqueueSoon(grpcCommand, flush);
         return grpcCommand.promise();

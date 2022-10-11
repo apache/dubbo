@@ -217,7 +217,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         }
         if (!headerSent) {
             headerSent = true;
-            stream.sendHeader(requestMetadata.toHeaders());
+            stream.sendHeader(requestMetadata.toHeaders(stream.getCompressor()));
         }
         final byte[] data;
         try {

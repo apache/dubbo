@@ -81,10 +81,6 @@ public class WriteQueue {
         return promise;
     }
 
-    public ChannelPromise createChannelPromise() {
-        return channel.newPromise();
-    }
-
     public void scheduleFlush() {
         if (scheduled.compareAndSet(false, true)) {
             channel.eventLoop().execute(this::flush);

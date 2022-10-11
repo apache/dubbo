@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.buffer.ChannelWritableBufferAllocator;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.PathResolver;
@@ -35,9 +36,12 @@ import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
+import org.apache.dubbo.rpc.protocol.tri.frame.Framer;
+import org.apache.dubbo.rpc.protocol.tri.frame.MessageFramer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
@@ -82,6 +86,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     private final InetSocketAddress remoteAddress;
     private final Channel channel;
     private Deframer deframer;
+    private final Framer framer;
 
     public TripleServerStream(Channel channel,
                               FrameworkModel frameworkModel,
@@ -96,6 +101,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         this.filters = filters;
         this.writeQueue = new WriteQueue(channel);
         this.remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(channel.alloc()));
     }
 
     @Override
@@ -106,6 +112,21 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
     @Override
     public void request(int n) {
         deframer.request(n);
+    }
+
+    @Override
+    public Compressor getCompressor() {
+        return framer.getCompressor();
+    }
+
+    @Override
+    public void setCompressor(Compressor compressor) {
+        framer.setCompressor(compressor);
+    }
+
+    @Override
+    public void flush() {
+        framer.flush();
     }
 
     public ChannelFuture reset(Http2Error cause) {
@@ -211,7 +232,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
 
     @Override
-    public ChannelFuture sendMessage(byte[] message, int compressFlag) {
+    public ChannelFuture sendMessage(byte[] message) {
         if (reset) {
             return writeQueue.failure(
                 new IllegalStateException("Stream already reset, no more body allowed"));
@@ -224,7 +245,8 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return writeQueue.failure(
                 new IllegalStateException("Trailers already sent, no more body allowed"));
         }
-        return writeQueue.enqueueSoon(DataQueueCommand.createGrpcCommand(message, false, compressFlag), true);
+        framer.writePayload(message);
+        return channel.newSucceededFuture();
     }
 
     /**

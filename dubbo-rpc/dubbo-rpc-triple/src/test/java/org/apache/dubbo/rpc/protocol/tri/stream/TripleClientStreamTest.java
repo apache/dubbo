@@ -70,7 +70,7 @@ class TripleClientStreamTest {
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
-            ImmediateEventExecutor.INSTANCE, writeQueue, listener);
+            ImmediateEventExecutor.INSTANCE, writeQueue, channel, listener);
 
         final RequestMetadata requestMetadata = new RequestMetadata();
         requestMetadata.method = methodDescriptor;
@@ -80,7 +80,7 @@ class TripleClientStreamTest {
         requestMetadata.service = url.getPath();
         requestMetadata.group = url.getGroup();
         requestMetadata.version = url.getVersion();
-        stream.sendHeader(requestMetadata.toHeaders());
+        stream.sendHeader(requestMetadata.toHeaders(stream.getCompressor()));
         verify(writeQueue).enqueue(any(HeaderQueueCommand.class));
         // no other commands
         verify(writeQueue).enqueue(any(QueuedCommand.class));

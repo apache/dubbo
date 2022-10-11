@@ -66,7 +66,6 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     public boolean autoRequestN = true;
     public Long timeout;
     ServerCall.Listener listener;
-    private Compressor compressor;
     private boolean headerSent;
     private boolean closed;
     CancellationContext cancellationContext;
@@ -149,22 +148,14 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             close(TriRpcStatus.INTERNAL.withDescription("Missing response"), null);
             return;
         }
-        Future<?> future;
-        if (compressor != null) {
-            int compressedFlag =
-                Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
-            final byte[] compressed = compressor.compress(data);
-            future = stream.sendMessage(compressed, compressedFlag);
-        } else {
-            future = stream.sendMessage(data, 0);
-        }
-        future.addListener(f -> {
+        stream.sendMessage(data).addListener(f -> {
             if (!f.isSuccess()) {
                 cancelDual(TriRpcStatus.CANCELLED
                     .withDescription("Send message failed")
                     .withCause(f.cause()));
             }
         });
+        stream.flush();
     }
 
     @Override
@@ -254,9 +245,9 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         if (acceptEncoding != null) {
             headers.set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncoding);
         }
-        if (compressor != null) {
+        if (stream.getCompressor() != null) {
             headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
-                compressor.getMessageEncoding());
+                stream.getCompressor().getMessageEncoding());
         }
         // send header failed will reset stream and close request observer cause no more data will be sent
         stream.sendHeader(headers)
@@ -287,7 +278,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         if (headerSent) {
             throw new IllegalStateException("Can not set compression after header sent");
         }
-        this.compressor = Compressor.getCompressor(frameworkModel, compression);
+        stream.setCompressor(Compressor.getCompressor(frameworkModel, compression));
     }
 
     public void disableAutoRequestN() {
@@ -299,7 +290,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         return autoRequestN;
     }
 
-
+    @Override
     public void close(TriRpcStatus status, Map<String, Object> attachments) {
         doClose(status, attachments);
     }

@@ -48,7 +48,7 @@ public class RequestMetadata {
     public Map<String, Object> attachments;
 
 
-    public DefaultHttp2Headers toHeaders() {
+    public DefaultHttp2Headers toHeaders(Compressor compressor) {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
         header.scheme(scheme)
             .authority(address)
