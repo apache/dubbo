@@ -138,6 +138,7 @@ public class DubboSpringInitializer {
 
         // mark context as bound
         context.markAsBound();
+        moduleModel.setBindSpring(true);
 
         // register common beans
         DubboBeanUtils.registerCommonBeans(registry);

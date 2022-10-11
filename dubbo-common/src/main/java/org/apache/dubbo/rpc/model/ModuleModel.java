@@ -46,6 +46,7 @@ public class ModuleModel extends ScopeModel {
     private ModuleServiceRepository serviceRepository;
     private ModuleConfigManager moduleConfigManager;
     private ModuleDeployer deployer;
+    private boolean bindSpring = false;
 
     public ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
@@ -195,5 +196,13 @@ public class ModuleModel extends ScopeModel {
         logger.info("Dynamically registering consumer model " + serviceKey + " into model " + this.getDesc());
         serviceRepository.registerConsumer(consumerModel);
         return consumerModel;
+    }
+
+    public boolean isBindSpring() {
+        return bindSpring;
+    }
+
+    public void setBindSpring(boolean bindSpring) {
+        this.bindSpring = bindSpring;
     }
 }

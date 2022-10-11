@@ -22,8 +22,13 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModelConstants;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_SHUTDOWN_HOOK;
 
@@ -77,7 +82,44 @@ public class DubboShutdownHook extends Thread {
     }
 
     private void doDestroy() {
-        applicationModel.destroy();
+        boolean hasModuleBindSpring = false;
+        // check if any modules are bound to Spring
+        for (ModuleModel module: applicationModel.getModuleModels()) {
+            if (module.isBindSpring()) {
+                hasModuleBindSpring = true;
+                break;
+            }
+        }
+        if (hasModuleBindSpring) {
+            int timeout = ConfigurationUtils.getServerShutdownTimeout(applicationModel);
+            if (timeout > 0) {
+                long start = System.currentTimeMillis();
+                /**
+                 * To avoid shutdown conflicts between Dubbo and Spring,
+                 * wait for the modules bound to Spring to be handled by Spring util timeout.
+                 */
+                while (!applicationModel.isDestroyed() && hasModuleBindSpring
+                    && (System.currentTimeMillis() - start) < timeout) {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(10);
+                        hasModuleBindSpring = false;
+                        if (!applicationModel.isDestroyed()) {
+                            for (ModuleModel module: applicationModel.getModuleModels()) {
+                                if (module.isBindSpring()) {
+                                    hasModuleBindSpring = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+        if (!applicationModel.isDestroyed()) {
+            applicationModel.destroy();
+        }
     }
 
     /**
