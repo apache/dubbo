@@ -85,7 +85,7 @@ public class DubboShutdownHook extends Thread {
         boolean hasModuleBindSpring = false;
         // check if any modules are bound to Spring
         for (ModuleModel module: applicationModel.getModuleModels()) {
-            if (module.isBindSpring()) {
+            if (module.isLifeCycleManagedExternally()) {
                 hasModuleBindSpring = true;
                 break;
             }
@@ -98,6 +98,7 @@ public class DubboShutdownHook extends Thread {
                  * To avoid shutdown conflicts between Dubbo and Spring,
                  * wait for the modules bound to Spring to be handled by Spring util timeout.
                  */
+                logger.info("Waiting for modules managed by Spring to be shut down.");
                 while (!applicationModel.isDestroyed() && hasModuleBindSpring
                     && (System.currentTimeMillis() - start) < timeout) {
                     try {
@@ -105,7 +106,7 @@ public class DubboShutdownHook extends Thread {
                         hasModuleBindSpring = false;
                         if (!applicationModel.isDestroyed()) {
                             for (ModuleModel module: applicationModel.getModuleModels()) {
-                                if (module.isBindSpring()) {
+                                if (module.isLifeCycleManagedExternally()) {
                                     hasModuleBindSpring = true;
                                     break;
                                 }
@@ -118,6 +119,8 @@ public class DubboShutdownHook extends Thread {
             }
         }
         if (!applicationModel.isDestroyed()) {
+            logger.info("Dubbo shuts down application " +
+                "after Spring fails to do in time or doesn't do it completely.");
             applicationModel.destroy();
         }
     }

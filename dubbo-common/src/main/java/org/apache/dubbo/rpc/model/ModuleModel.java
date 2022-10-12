@@ -46,7 +46,7 @@ public class ModuleModel extends ScopeModel {
     private ModuleServiceRepository serviceRepository;
     private ModuleConfigManager moduleConfigManager;
     private ModuleDeployer deployer;
-    private boolean bindSpring = false;
+    private boolean lifeCycleManagedExternally = false;
 
     public ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
@@ -198,11 +198,11 @@ public class ModuleModel extends ScopeModel {
         return consumerModel;
     }
 
-    public boolean isBindSpring() {
-        return bindSpring;
+    public boolean isLifeCycleManagedExternally() {
+        return lifeCycleManagedExternally;
     }
 
-    public void setBindSpring(boolean bindSpring) {
-        this.bindSpring = bindSpring;
+    public void setLifeCycleManagedExternally(boolean lifeCycleManagedExternally) {
+        this.lifeCycleManagedExternally = lifeCycleManagedExternally;
     }
 }
