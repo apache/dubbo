@@ -120,7 +120,7 @@ public class NetUtils {
 
     /**
      * Check the port whether is in use in os
-     * 
+     *
      * @param port the port to check if in use
      * @return is the given port in use or not
      */
@@ -346,7 +346,7 @@ public class NetUtils {
             for(String ignoredInterface: ignoredInterfaces.split(",")){
                 String trimIgnoredInterface = ignoredInterface.trim();
                 boolean matched = false;
-                try {                     
+                try {
                     matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
                 } catch (PatternSyntaxException e) {
                     // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
@@ -592,7 +592,7 @@ public class NetUtils {
             splitCharacter = SPLIT_IPV6_CHARACTER;
         }
         String[] mask = pattern.split(splitCharacter);
-        //check format of pattern
+        // check format of pattern
         checkHostPattern(pattern, mask, isIpv4);
 
         host = inetAddress.getHostAddress();

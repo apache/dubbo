@@ -155,6 +155,30 @@ public class RmiProtocolTest {
 
     }
 
+    @Test
+    public void testRmiProtocalGroupAndVersion() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        RemoteService remoteService = new RemoteServiceImpl();
+        RemoteService remoteService2 = new RemoteService2Impl();
+
+        URL url = URL.valueOf("rmi://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?version=v1&group=g1");
+        URL url2 = URL.valueOf("rmi://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?version=v2&group=g2");
+        Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, url));
+        Exporter<?> rpcExporter2 = protocol.export(proxy.getInvoker(remoteService2, RemoteService.class, url2));
+
+        remoteService = proxy.getProxy(protocol.refer(RemoteService.class, url));
+        remoteService2 = proxy.getProxy(protocol.refer(RemoteService.class, url2));
+        for (int i = 0; i < 1; i++) {
+            String say = remoteService.sayHello("abcd");
+            assertEquals("hello abcd@" + RemoteServiceImpl.class.getName(), say);
+            String say2 = remoteService2.sayHello("group");
+            assertEquals("hello group@" + RemoteService2Impl.class.getName(), say2);
+        }
+        rpcExporter.unexport();
+        rpcExporter2.unexport();
+
+    }
+
     public interface NonStdRmiInterface {
         void bark();
     }
