@@ -55,6 +55,9 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         }else{
             requestObserver.onNext(message.getInstance());
         }
+        if (responseObserver.isAutoRequestN()) {
+            responseObserver.request(1);
+        }
         Http2WindowUpdateFrame stream = message.getHttp2WindowUpdateFrame();
         Http2Connection connection = message.getHttp2Connection();
         //stream add flowcontrol update windowsize
