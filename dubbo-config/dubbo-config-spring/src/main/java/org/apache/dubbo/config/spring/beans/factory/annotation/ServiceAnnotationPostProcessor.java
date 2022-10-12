@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.config.MethodConfig;
@@ -356,7 +357,8 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 .stream()
             .map(annotationType ->
                 ClassUtils.isPresent("org.springframework.core.annotation.AnnotatedElementUtils",
-                    Thread.currentThread().getContextClassLoader()) ?
+                    Thread.currentThread().getContextClassLoader()) &&
+                ReflectUtils.hasMethod(org.springframework.core.annotation.AnnotatedElementUtils.class, "findMergedAnnotation") ?
                     org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation(beanClass, annotationType) :
                     org.apache.dubbo.common.utils.AnnotationUtils.findAnnotation(beanClass, annotationType))
                 .filter(Objects::nonNull)
