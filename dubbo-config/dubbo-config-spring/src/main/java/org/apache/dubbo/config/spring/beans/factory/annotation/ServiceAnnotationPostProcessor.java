@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.config.MethodConfig;
@@ -80,7 +81,6 @@ import java.util.Set;
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
-import static org.apache.dubbo.common.utils.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -354,7 +354,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     private Annotation findServiceAnnotation(Class<?> beanClass) {
         return serviceAnnotationTypes
                 .stream()
-                .map(annotationType -> findAnnotation(beanClass, annotationType))
+            .map(annotationType ->
+                ClassUtils.isPresent("org.springframework.core.annotation.AnnotatedElementUtils",
+                    Thread.currentThread().getContextClassLoader()) ?
+                    org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation(beanClass, annotationType) :
+                    org.apache.dubbo.common.utils.AnnotationUtils.findAnnotation(beanClass, annotationType))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
