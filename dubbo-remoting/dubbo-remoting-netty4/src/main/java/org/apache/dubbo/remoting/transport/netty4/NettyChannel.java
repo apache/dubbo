@@ -55,7 +55,7 @@ final class NettyChannel extends AbstractChannel {
 
     private final AtomicBoolean active = new AtomicBoolean(false);
 
-    private final WriteQueue writeQueue;
+    private final Netty4BatchWriteQueue writeQueue;
 
     /**
      * The constructor of NettyChannel.
@@ -71,7 +71,7 @@ final class NettyChannel extends AbstractChannel {
             throw new IllegalArgumentException("netty channel == null;");
         }
         this.channel = channel;
-        this.writeQueue = new WriteQueue(channel);
+        this.writeQueue = Netty4BatchWriteQueue.createWriteQueue(channel);
     }
 
     /**
