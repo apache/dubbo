@@ -41,7 +41,7 @@ public enum TripleHeaderEnum {
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
     SERVICE_VERSION("tri-service-version"),
     SERVICE_GROUP("tri-service-group"),
-    TRI_EXCEPTION_FLAG("tri-exception-flag");
+    TRI_RETURN_FLAG("tri-return-flag");
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
 
     static final Set<String> excludeAttachmentsSet = new HashSet<>();
