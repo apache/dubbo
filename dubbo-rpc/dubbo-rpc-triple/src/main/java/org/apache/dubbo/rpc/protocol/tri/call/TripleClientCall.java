@@ -33,7 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
@@ -69,7 +69,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message) {
+    public void onMessage(TripleFlowControlFrame data) {
+        byte[] message = data.getMessage();
         if (done) {
             LOGGER.warn(
                 "Received message from closed stream,connection=" + connection + " service="

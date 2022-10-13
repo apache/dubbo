@@ -16,7 +16,8 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
-
+import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Connection;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -42,11 +43,10 @@ import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -289,11 +289,11 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         }
 
         @Override
-        public void onHeader(Http2Headers headers, boolean endStream) {
-            executor.execute(() -> processHeader(headers, endStream));
+        public void onHeader(Http2Headers headers, boolean endStream, Http2Connection connection) {
+            executor.execute(() -> processHeader(headers, endStream,connection));
         }
 
-        private void processHeader(Http2Headers headers, boolean endStream) {
+        private void processHeader(Http2Headers headers, boolean endStream,Http2Connection connection) {
             if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
                 responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
                     TriRpcStatus.INTERNAL.withDescription(
@@ -372,7 +372,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
             try {
                 final TriDecoder.Listener listener = new ServerDecoderListener();
-                deframer = new TriDecoder(deCompressor, listener);
+                deframer = new TriDecoder(deCompressor, listener,connection);
             } catch (Throwable t) {
                 responseErr(TriRpcStatus.INTERNAL.withCause(t));
                 return;
@@ -397,15 +397,15 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
 
         @Override
-        public void onData(ByteBuf data, boolean endStream) {
-            executor.execute(() -> doOnData(data, endStream));
+        public void onData(Http2DataFrame msg, boolean endStream) {
+            executor.execute(() -> doOnData(msg, endStream));
         }
 
-        private void doOnData(ByteBuf data, boolean endStream) {
+        private void doOnData(Http2DataFrame msg, boolean endStream) {
             if (deframer == null) {
                 return;
             }
-            deframer.deframe(data);
+            deframer.deframe(msg);
             if (endStream) {
                 deframer.close();
             }
@@ -430,7 +430,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         private class ServerDecoderListener implements TriDecoder.Listener {
 
             @Override
-            public void onRawMessage(byte[] data) {
+            public void onRawMessage(TripleFlowControlFrame data) {
                 listener.onMessage(data);
             }
 
