@@ -110,7 +110,7 @@
         <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.15.0</thrift_version>
         <hessian_version>4.0.38</hessian_version>
-        <protobuf-java_version>3.11.0</protobuf-java_version>
+        <protobuf-java_version>3.16.3</protobuf-java_version>
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.43.v20210629</jetty_version>
@@ -171,7 +171,7 @@
         <swagger_version>1.5.24</swagger_version>
 
         <snappy_java_version>1.1.8.4</snappy_java_version>
-        <bouncycastle-bcprov_version>1.68</bouncycastle-bcprov_version>
+        <bouncycastle-bcprov_version>1.69</bouncycastle-bcprov_version>
         <metrics_version>2.0.1</metrics_version>
         <sofa_registry_version>5.2.0</sofa_registry_version>
         <gson_version>2.8.9</gson_version>
