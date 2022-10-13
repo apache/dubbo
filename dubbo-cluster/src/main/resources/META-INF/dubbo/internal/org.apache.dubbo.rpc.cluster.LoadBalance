@@ -3,3 +3,4 @@ roundrobin=org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance
 leastactive=org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance
 consistenthash=org.apache.dubbo.rpc.cluster.loadbalance.ConsistentHashLoadBalance
 shortestresponse=org.apache.dubbo.rpc.cluster.loadbalance.ShortestResponseLoadBalance
+adaptive=org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance
