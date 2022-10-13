@@ -154,6 +154,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 // observer reused
                 StreamObserver<DiscoveryRequest> observer = requestObserverMap.get(request);
 
+                if (observer == null) {
+                    observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
+                    requestObserverMap.put(request, observer);
+                }
+
                 // send request to control panel
                 observer.onNext(buildDiscoveryRequest(names));
 
@@ -231,11 +236,17 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onError(Throwable t) {
             logger.error("xDS Client received error message! detail:", t);
+            clear();
         }
 
         @Override
         public void onCompleted() {
-            // ignore
+            logger.info("xDS Client completed, requestId: " + requestId);
+            clear();
+        }
+
+        private void clear() {
+            requestObserverMap.remove(requestId);
         }
     }
 

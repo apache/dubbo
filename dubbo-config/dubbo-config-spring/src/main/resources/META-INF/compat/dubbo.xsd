@@ -245,6 +245,12 @@
                             <![CDATA[ declares provider service port. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provider-namespace" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ assign namespace that the provider belong to when mesh enable. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="router" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -1115,6 +1121,11 @@
         <xsd:attribute name="threadname" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="thread-pool-exhausted-listeners" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool exhausted listeners. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">
