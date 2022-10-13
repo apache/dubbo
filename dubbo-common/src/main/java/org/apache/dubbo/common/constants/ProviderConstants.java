@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.threadpool.event;
+package org.apache.dubbo.common.constants;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ThreadPoolExhaustedListener {
+/**
+ * Provider Constants
+ */
+public interface ProviderConstants {
 
     /**
-     * Notify when the thread pool is exhausted.
-     * {@link org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport}
+     * Default prefer serialization,multiple separated by commas
      */
-    void onEvent(ThreadPoolExhaustedEvent event);
+    String DEFAULT_PREFER_SERIALIZATION = "hessian2";
 }
