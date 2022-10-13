@@ -26,7 +26,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import istio.v1.auth.IstioCertificateRequest;
@@ -46,8 +45,10 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -143,7 +144,11 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
         String csr = generateCsr(publicKey, signer);
         ManagedChannel channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
-            .sslContext(GrpcSslContexts.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE).build()).build();
+            .sslContext(
+                GrpcSslContexts.forClient()
+                    .trustManager(new ByteArrayInputStream(istioEnv.getCaCert().getBytes(StandardCharsets.UTF_8)))
+                    .build())
+            .build();
 
         Metadata header = new Metadata();
         Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
