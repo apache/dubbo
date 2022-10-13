@@ -71,9 +71,9 @@ public class NettyClientHandlerTest {
         ArgumentCaptor<Object> objectArgumentCaptor = ArgumentCaptor.forClass(Object.class);
         Mockito.verify(handler, Mockito.times(1)).received(captor.capture(), objectArgumentCaptor.capture());
 
-        nettyClientHandler.userEventTriggered(ctx, IdleStateEvent.READER_IDLE_STATE_EVENT);
-        ArgumentCaptor<Request> requestArgumentCaptor = ArgumentCaptor.forClass(Request.class);
-        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(requestArgumentCaptor.capture());
+//        nettyClientHandler.userEventTriggered(ctx, IdleStateEvent.READER_IDLE_STATE_EVENT);
+//        ArgumentCaptor<Request> requestArgumentCaptor = ArgumentCaptor.forClass(Request.class);
+//        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(requestArgumentCaptor.capture());
 
 
         Request request = new Request();
