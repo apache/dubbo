@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.common.threadpool.event;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ThreadPoolExhaustedListener {
 
     /**

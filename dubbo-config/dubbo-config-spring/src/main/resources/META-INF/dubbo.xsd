@@ -1306,6 +1306,11 @@
                 <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="thread-pool-exhausted-listeners" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool exhausted listeners. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool size. ]]></xsd:documentation>
