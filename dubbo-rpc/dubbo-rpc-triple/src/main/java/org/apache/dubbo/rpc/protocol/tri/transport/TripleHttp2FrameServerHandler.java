@@ -16,7 +16,10 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
-
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.Http2ResetFrame;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -28,9 +31,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2HeadersFrame;
-import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
@@ -42,6 +42,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     private static final AttributeKey<TripleServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
         "tri_server_stream");
+
+    private static final AttributeKey<TripleServerStream> CONNECTION_KEY = AttributeKey.valueOf(
+        "tri_connection");
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -112,7 +115,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
             .get();
-        tripleServerStream.transportObserver.onData(msg.content(), msg.isEndStream());
+        tripleServerStream.transportObserver.onData(msg, msg.isEndStream());
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
@@ -120,7 +123,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             frameworkModel, executor,
             pathResolver, acceptEncoding, filters);
         ctx.channel().attr(SERVER_STREAM_KEY).set(tripleServerStream);
-        tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
+
+        //transmit connection to triple invoke to flowcontrol
+        Http2Connection connection = (Http2Connection)ctx.channel().attr(CONNECTION_KEY).get();
+        tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream(), connection);
     }
 
 }

@@ -16,17 +16,16 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
-
-import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http2.Http2DataFrame;
 
 public interface Deframer {
 
     /**
      * Adds the given data to this deframer and attempts delivery to the listener.
      *
-     * @param data the raw data read from the remote endpoint. Must be non-null.
+     * @param msg the raw data read from the remote endpoint. Must be non-null.
      */
-    void deframe(ByteBuf data);
+    void deframe(Http2DataFrame msg);
 
     /**
      * Requests up to the given number of messages from the call. No additional messages will be

@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StubMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -32,7 +33,6 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.Collections;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -66,7 +66,8 @@ class StubServerCallTest {
             service, method,
             ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());
-        call.onMessage(new byte[0]);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(null,0,null,new byte[0]);
+        call.onMessage(tripleFlowControlFrame);
         call.onComplete();
     }
 }

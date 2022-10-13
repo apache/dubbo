@@ -17,12 +17,21 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
+
+    private Http2Connection http2Connection;
+
+    private int windowSizeIncrement=0;
+
+    private Http2WindowUpdateFrame http2WindowUpdateFrame;
 
     public ServerStreamServerCallListener(RpcInvocation invocation, Invoker<?> invoker,
         ServerCallToObserverAdapter<Object> responseObserver) {
@@ -34,11 +43,16 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(Object message) {
-        if (message instanceof Object[]) {
-            message = ((Object[]) message)[0];
+    public void onMessage(TripleFlowControlFrame message) {
+        if (message.getInstance() instanceof Object[]) {
+            Object[] data = (Object[])message.getInstance();
+            invocation.setArguments(new Object[]{data[0], responseObserver});
+        }else{
+            invocation.setArguments(new Object[]{message.getInstance(), responseObserver});
         }
-        invocation.setArguments(new Object[]{message, responseObserver});
+        http2WindowUpdateFrame = message.getHttp2WindowUpdateFrame();
+        http2Connection = message.getHttp2Connection();
+        windowSizeIncrement = windowSizeIncrement +  message.getHttp2WindowUpdateFrame().windowSizeIncrement();
     }
 
     @Override
@@ -50,6 +64,6 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        invoke();
+        invoke(new TripleFlowControlFrame(http2Connection,windowSizeIncrement,http2WindowUpdateFrame,null));
     }
 }

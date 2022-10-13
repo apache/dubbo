@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.DescriptorService;
 import org.apache.dubbo.rpc.protocol.tri.HelloReply;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
 
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -88,7 +89,8 @@ class ReflectionServerCallTest {
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
-        call2.onMessage(new byte[0]);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(null,0,null,new byte[0]);
+        call2.onMessage(tripleFlowControlFrame);
         call2.onComplete();
     }
 }
