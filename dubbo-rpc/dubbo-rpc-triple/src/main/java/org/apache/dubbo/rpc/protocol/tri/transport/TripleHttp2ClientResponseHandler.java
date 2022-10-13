@@ -20,7 +20,8 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.TriRpcStatus;
-
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.util.AttributeKey;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
@@ -60,10 +61,11 @@ public final class TripleHttp2ClientResponseHandler extends
     protected void channelRead0(ChannelHandlerContext ctx, Http2StreamFrame msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             final Http2HeadersFrame headers = (Http2HeadersFrame) msg;
-            transportListener.onHeader(headers.headers(), headers.isEndStream());
+            Http2Connection connection = (Http2Connection)ctx.channel().attr(AttributeKey.valueOf("tri-connection")).get();
+            transportListener.onHeader(headers.headers(), headers.isEndStream(),connection);
         } else if (msg instanceof Http2DataFrame) {
             final Http2DataFrame data = (Http2DataFrame) msg;
-            transportListener.onData(data.content(), data.isEndStream());
+            transportListener.onData(data, data.isEndStream());
         } else {
             super.channelRead(ctx, msg);
         }

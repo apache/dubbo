@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import java.util.Map;
 
 public class MockClientStreamListener implements ClientStream.Listener {
@@ -39,8 +39,8 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
-    public void onMessage(byte[] message) {
-        this.message = message;
+    public void onMessage(TripleFlowControlFrame message) {
+        this.message = message.getMessage();
     }
 
     @Override

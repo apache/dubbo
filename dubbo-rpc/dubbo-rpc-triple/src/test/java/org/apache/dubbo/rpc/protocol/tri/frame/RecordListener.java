@@ -16,16 +16,16 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 public class RecordListener implements TriDecoder.Listener {
     byte[] lastData;
     int dataCount;
     boolean close;
 
     @Override
-    public void onRawMessage(byte[] data) {
+    public void onRawMessage(TripleFlowControlFrame message) {
         dataCount += 1;
-        lastData = data;
+        lastData = message.getMessage();
     }
 
     @Override

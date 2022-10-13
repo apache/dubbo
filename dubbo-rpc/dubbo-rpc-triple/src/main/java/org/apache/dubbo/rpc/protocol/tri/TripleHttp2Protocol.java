@@ -16,7 +16,6 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -36,7 +35,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
-
+import io.netty.util.AttributeKey;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -76,6 +75,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
     public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
+
+    private static final String CONNECTION_KEY = "tri_connection";
 
     private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
@@ -125,11 +126,18 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        //add triple flowcontroller
+        codec.connection().local().flowController(new TriHttp2LocalFlowController(codec.connection()));
+        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Channel>() {
                 @Override
                 protected void initChannel(Channel ch) {
                     final ChannelPipeline p = ch.pipeline();
+                    //add connection to channel  to flowcontrol
+                    AttributeKey key = AttributeKey.valueOf(CONNECTION_KEY);
+                    ch.attr(key).set(codec.connection());
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
                         headFilters));
