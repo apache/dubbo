@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 
 /**
  * ProtocolConfig
@@ -88,6 +89,12 @@ public class ProtocolConfig extends AbstractConfig {
      * Thread pool's queue length
      */
     private Integer queues;
+
+
+    /**
+     * Thread pool exhausted listeners
+     */
+    private String threadPoolExhaustedListeners;
 
     /**
      * Max acceptable connections
@@ -301,6 +308,15 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setThreadname(String threadname) {
         this.threadname = threadname;
+    }
+
+    @Parameter(key = THREAD_POOL_EXHAUSTED_LISTENERS_KEY)
+    public String getThreadPoolExhaustedListeners() {
+        return threadPoolExhaustedListeners;
+    }
+
+    public void setThreadPoolExhaustedListeners(String threadPoolExhaustedListeners) {
+        this.threadPoolExhaustedListeners = threadPoolExhaustedListeners;
     }
 
     public Integer getCorethreads() {
