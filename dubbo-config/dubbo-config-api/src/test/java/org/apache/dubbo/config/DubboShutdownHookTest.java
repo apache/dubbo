@@ -41,7 +41,6 @@ public class DubboShutdownHookTest {
 
     @Test
     public void testDestoryNoModuleManagedExternally() {
-        dubboShutdownHook.run();
         boolean hasModuleManagedExternally = false;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.isLifeCycleManagedExternally()) {
@@ -50,6 +49,7 @@ public class DubboShutdownHookTest {
             }
         }
         Assertions.assertFalse(hasModuleManagedExternally);
+        dubboShutdownHook.run();
         Assertions.assertTrue(applicationModel.isDestroyed());
     }
 
