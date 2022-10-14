@@ -28,7 +28,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -61,8 +61,8 @@ import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMe
  * Abstract common {@link BeanPostProcessor} implementation for customized annotation that annotated injected-object.
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractAnnotationBeanPostProcessor extends
-        InstantiationAwareBeanPostProcessorAdapter implements MergedBeanDefinitionPostProcessor,
+public abstract class AbstractAnnotationBeanPostProcessor implements
+        InstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor,
         BeanFactoryAware, BeanClassLoaderAware, EnvironmentAware, DisposableBean {
 
     private final static int CACHE_SIZE = Integer.getInteger("", 32);
@@ -310,6 +310,26 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
      */
     protected abstract Object doGetInjectedBean(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                                 AnnotatedInjectElement injectedElement) throws Exception;
+
+    @Override
+    public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
+        return null;
+    }
+
+    @Override
+    public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        return true;
+    }
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
 
     /**
      * {@link Annotation Annotated} {@link InjectionMetadata} implementation

@@ -958,6 +958,13 @@
                 <xsd:documentation><![CDATA[ The metrics protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+
+        <xsd:attribute name="enable-jvm-metrics" type="xsd:boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable jvm metrics when collecting. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+
         <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
@@ -1297,6 +1304,11 @@
         <xsd:attribute name="threadname" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="thread-pool-exhausted-listeners" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool exhausted listeners. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">

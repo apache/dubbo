@@ -16,23 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
-import org.apache.dubbo.common.infra.InfraAdapter;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
@@ -60,6 +43,23 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
+import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 
 /**
@@ -546,6 +546,7 @@ public class ApplicationConfig extends AbstractConfig {
     public void setMetadataServiceProtocol(String metadataServiceProtocol) {
         this.metadataServiceProtocol = metadataServiceProtocol;
     }
+
 
     @Parameter(key = LIVENESS_PROBE_KEY)
     public String getLivenessProbe() {

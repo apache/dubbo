@@ -71,6 +71,8 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_MISSING_METADATA_CONFIG_PORT = "1-18";
 
+    String REGISTRY_ROUTER_WAIT_LONG = "1-19";
+
     // cluster module 2-1 ~ 2-18
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
@@ -164,4 +166,9 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
 
+    String INTERNAL_SERVICE_CONFIG_ERROR = "6-3";
+
+    String INTERNAL_ERROR = "99-0";
+
+    String INTERNAL_INTERRUPTED = "99-1";
 }
