@@ -25,8 +25,6 @@ import org.apache.dubbo.common.BatchExecutorQueue;
 /**
  * netty4 batch write queue
  *
- * @author icodening
- * @date 2022.10.11
  */
 public class Netty4BatchWriteQueue extends BatchExecutorQueue<Netty4BatchWriteQueue.MessageTuple> {
 
