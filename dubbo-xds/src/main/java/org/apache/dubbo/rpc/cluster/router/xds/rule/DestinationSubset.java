@@ -17,13 +17,13 @@
 package org.apache.dubbo.rpc.cluster.router.xds.rule;
 
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DestinationSubset<T> {
-
-    private Set<String> endpointSet;
 
     public DestinationSubset(String clusterName) {
         this.clusterName = clusterName;
@@ -31,15 +31,12 @@ public class DestinationSubset<T> {
 
     private final String clusterName;
 
-    private Set<Endpoint> endpoints;
+    private Set<Endpoint> endpoints = new HashSet<>();
 
+    private BitList<Invoker<T>> invokers;
 
     public String getClusterName() {
         return clusterName;
-    }
-
-    public Set<String> getEndpointAddress() {
-        return endpointSet;
     }
 
     public Set<Endpoint> getEndpoints() {
@@ -48,9 +45,14 @@ public class DestinationSubset<T> {
 
     public void setEndpoints(Set<Endpoint> endpoints) {
         this.endpoints = endpoints;
-        endpointSet = endpoints.stream().map(end ->
-                end.getPortValue() <= 0 ? end.getAddress() : end.getAddress() + ':' + end.getPortValue())
-            .collect(Collectors.toSet());
+
     }
 
+    public BitList<Invoker<T>> getInvokers() {
+        return invokers;
+    }
+
+    public void setInvokers(BitList<Invoker<T>> invokers) {
+        this.invokers = invokers;
+    }
 }
