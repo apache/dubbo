@@ -40,8 +40,8 @@ public enum TripleHeaderEnum {
     GRPC_ACCEPT_ENCODING("grpc-accept-encoding"),
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
     SERVICE_VERSION("tri-service-version"),
-    SERVICE_GROUP("tri-service-group"),
-    TRI_RETURN_FLAG("tri-return-flag");
+    SERVICE_GROUP("tri-service-group");
+
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
 
     static final Set<String> excludeAttachmentsSet = new HashSet<>();
