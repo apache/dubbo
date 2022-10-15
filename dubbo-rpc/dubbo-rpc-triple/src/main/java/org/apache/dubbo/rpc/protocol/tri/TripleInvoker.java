@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.rpc.AppResponse;
@@ -55,6 +56,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -78,7 +80,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final Set<Invoker<?>> invokers;
-    private final ExecutorService streamExecutor;
+    private final Executor streamExecutor;
     private final String acceptEncodings;
 
     public TripleInvoker(Class<T> serviceType,
@@ -91,7 +93,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         this.invokers = invokers;
         this.connection = connectionManager.connect(url);
         this.acceptEncodings = acceptEncodings;
-        this.streamExecutor = streamExecutor;
+        this.streamExecutor = new SerializingExecutor(streamExecutor);
     }
 
     private static AsciiString getSchemeFromUrl(URL url) {
