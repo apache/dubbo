@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -35,7 +36,7 @@ import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -67,12 +68,13 @@ class TripleClientStreamTest {
             new Class<?>[]{String.class});
 
         MockClientStreamListener listener = new MockClientStreamListener();
-        WriteQueue writeQueue = mock(WriteQueue.class);
+        TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
         when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
+        when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
             ImmediateEventExecutor.INSTANCE, writeQueue, listener, http2StreamChannel);
 

@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import java.io.IOException;
@@ -60,7 +61,7 @@ import java.util.concurrent.Executor;
 public class TripleClientStream extends AbstractStream implements ClientStream {
 
     public final ClientStream.Listener listener;
-    private final WriteQueue writeQueue;
+    private final TripleWriteQueue writeQueue;
     private Deframer deframer;
     private final Channel parent;
     private final Http2StreamChannel http2StreamChannel;
@@ -69,7 +70,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
         Executor executor,
-        WriteQueue writeQueue,
+        TripleWriteQueue writeQueue,
         ClientStream.Listener listener,
         Http2StreamChannel http2StreamChannel) {
         super(executor, frameworkModel);
@@ -83,7 +84,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         Executor executor,
         Channel parent,
         ClientStream.Listener listener,
-        WriteQueue writeQueue) {
+        TripleWriteQueue writeQueue) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;

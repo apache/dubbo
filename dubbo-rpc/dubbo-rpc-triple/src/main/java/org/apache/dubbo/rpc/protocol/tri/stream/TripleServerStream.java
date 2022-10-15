@@ -42,7 +42,7 @@ import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.transport.AbstractH2TransportListener;
 import org.apache.dubbo.rpc.protocol.tri.transport.H2TransportListener;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -72,7 +72,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleServerStream.class);
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
-    private final WriteQueue writeQueue;
+    private final TripleWriteQueue writeQueue;
     private final PathResolver pathResolver;
     private final List<HeaderFilter> filters;
     private final String acceptEncoding;
@@ -91,7 +91,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                               PathResolver pathResolver,
                               String acceptEncoding,
                               List<HeaderFilter> filters,
-                              WriteQueue writeQueue) {
+                              TripleWriteQueue writeQueue) {
         super(executor, frameworkModel);
         this.pathResolver = pathResolver;
         this.acceptEncoding = acceptEncoding;

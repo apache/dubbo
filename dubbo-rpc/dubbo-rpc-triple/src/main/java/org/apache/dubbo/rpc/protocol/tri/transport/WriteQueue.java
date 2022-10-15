@@ -27,6 +27,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Deprecated
 public class WriteQueue {
 
     static final int DEQUE_CHUNK_SIZE = 128;

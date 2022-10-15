@@ -55,7 +55,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         Executor executor,
         List<HeaderFilter> filters,
         Http2StreamChannel channel,
-        WriteQueue writeQueue) {
+        TripleWriteQueue writeQueue) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
         this.filters = filters;
