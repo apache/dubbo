@@ -40,6 +40,7 @@ public class ModuleModelTest {
         Assertions.assertEquals(moduleModel.getApplicationModel(), applicationModel);
         Assertions.assertTrue(applicationModel.getPubModuleModels().contains(moduleModel));
         Assertions.assertNotNull(moduleModel.getInternalId());
+        Assertions.assertFalse(moduleModel.isLifeCycleManagedExternally());
 
         Assertions.assertNotNull(moduleModel.getExtensionDirector());
         Assertions.assertNotNull(moduleModel.getBeanFactory());
