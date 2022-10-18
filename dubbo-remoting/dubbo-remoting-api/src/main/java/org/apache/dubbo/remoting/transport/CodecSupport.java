@@ -24,9 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 
@@ -83,11 +82,10 @@ public class CodecSupport {
     }
 
     public static Serialization getSerialization(URL url) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(UrlUtils.serializationOrDefault(url));
     }
 
-    public static Serialization getSerialization(URL url, Byte id) throws IOException {
+    public static Serialization getSerialization(Byte id) throws IOException {
         Serialization result = getSerializationById(id);
         if (result == null) {
             throw new IOException("Unrecognized serialize type from consumer: " + id);
@@ -96,7 +94,7 @@ public class CodecSupport {
     }
 
     public static ObjectInput deserialize(URL url, InputStream is, byte proto) throws IOException {
-        Serialization s = getSerialization(url, proto);
+        Serialization s = getSerialization(proto);
         return s.deserialize(url, is);
     }
 
@@ -167,20 +165,29 @@ public class CodecSupport {
         if (CollectionUtils.isEmpty(urls)) {
             throw new IOException("Service " + path + " with version " + version + " not found, invocation rejected.");
         } else {
-            boolean match = false;
-            for (URL url : urls) {
-                String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
-                Byte localId = SERIALIZATIONNAME_ID_MAP.get(serializationName);
-                if (localId != null && localId.equals(id)) {
-                    match = true;
-                }
-            }
-            if(!match) {
+            boolean match = urls.stream().anyMatch(url -> isMatch(url, id));
+            if (!match) {
                 throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
             }
         }
 
     }
 
-
+    /**
+     * Is Match
+     *
+     * @param url url
+     * @param id  id
+     * @return boolean
+     */
+    private static boolean isMatch(URL url, Byte id) {
+        Byte localId;
+        for (String serialization : UrlUtils.allSerializations(url)) {
+            localId = SERIALIZATIONNAME_ID_MAP.get(serialization);
+            if (id.equals(localId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
