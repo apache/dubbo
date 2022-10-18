@@ -54,7 +54,8 @@ public class AppResponse implements Result {
 
     private Throwable exception;
 
-    private Map<String, Object> attachments = new HashMap<>();
+    protected Map<String, Object> attachments = new HashMap<>();
+
 
     private Map<String, Object> attributes = new HashMap<>();
 
@@ -132,37 +133,44 @@ public class AppResponse implements Result {
      * @param map contains all key-value pairs to append
      */
     public void setAttachments(Map<String, String> map) {
-        this.attachments = map == null ? new HashMap<>() : new HashMap<>(map);
+        this.attachments = safeGetAttachments(map);
     }
 
     @Override
     public void setObjectAttachments(Map<String, Object> map) {
-        this.attachments = map == null ? new HashMap<>() : map;
+        this.attachments = safeGetAttachments(map);
     }
 
+    protected Map<String, Object> safeGetAttachments(Map<String, ?> map) {
+        return map == null ? new HashMap<>() : new HashMap<>(map);
+    }
+
+
     public void addAttachments(Map<String, String> map) {
-        if (map == null) {
-            return;
-        }
-        if (this.attachments == null) {
-            this.attachments = new HashMap<>(map.size());
-        }
-        this.attachments.putAll(map);
+        addObjectAttachments(map, attachments);
     }
 
     @Override
     public void addObjectAttachments(Map<String, Object> map) {
+        addObjectAttachments(map, attachments);
+    }
+
+    protected void addObjectAttachments(Map<String, ?> map, Map<String, Object> attachments) {
         if (map == null) {
             return;
         }
-        if (this.attachments == null) {
-            this.attachments = new HashMap<>(map.size());
+        if (attachments == null) {
+            attachments = new HashMap<>(map.size());
         }
-        this.attachments.putAll(map);
+        attachments.putAll(map);
     }
 
     @Override
     public String getAttachment(String key) {
+        return getAttachment(key, attachments);
+    }
+
+    protected String getAttachment(String key, Map<String, Object> attachments) {
         Object value = attachments.get(key);
         if (value instanceof String) {
             return (String) value;
@@ -177,23 +185,16 @@ public class AppResponse implements Result {
 
     @Override
     public String getAttachment(String key, String defaultValue) {
-        Object result = attachments.get(key);
-        if (result == null) {
-            return defaultValue;
-        }
+        Object result = getObjectAttachment(key, defaultValue);
         if (result instanceof String) {
             return (String) result;
         }
-        return defaultValue;
+        return null;
     }
 
     @Override
     public Object getObjectAttachment(String key, Object defaultValue) {
-        Object result = attachments.get(key);
-        if (result == null) {
-            result = defaultValue;
-        }
-        return result;
+        return attachments.getOrDefault(key, defaultValue);
     }
 
     @Override

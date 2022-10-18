@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AttachmentInSensitiveAppResponse;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.DeadlineFuture;
 
@@ -39,7 +40,7 @@ public class UnaryClientCallListener implements ClientCall.Listener {
 
     @Override
     public void onClose(TriRpcStatus status, Map<String, Object> trailers) {
-        AppResponse result = new AppResponse();
+        AppResponse result = new AttachmentInSensitiveAppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
             result.setValue(appResponse);
