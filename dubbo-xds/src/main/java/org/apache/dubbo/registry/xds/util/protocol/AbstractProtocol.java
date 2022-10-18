@@ -147,7 +147,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 // origin request, may changed by updateObserve
                 Set<String> names = requestParam.get(request);
 
-                // use future to get async result
+                // use future to get async result, future complete on StreamObserver onNext
                 CompletableFuture<T> future = new CompletableFuture<>();
                 streamResult.put(request, future);
 
