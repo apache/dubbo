@@ -77,7 +77,7 @@ public class StreamUtils {
      * @param attachments KV pairs
      */
     public static void convertAttachment(DefaultHttp2Headers headers,
-        Map<String, Object> attachments) {
+                                         Map<String, Object> attachments) {
         if (attachments == null) {
             return;
         }
@@ -109,6 +109,8 @@ public class StreamUtils {
             } else if (v instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
+            } else {
+                LOGGER.warn("Unsupported attachment k: " + key + "  type: " + v.getClass().getName());
             }
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v,
