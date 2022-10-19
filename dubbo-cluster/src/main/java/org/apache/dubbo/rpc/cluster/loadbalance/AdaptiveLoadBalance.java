@@ -49,11 +49,10 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         Invoker invoker = selectByP2C(invokers,url,invocation);
-        if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
-            && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
-            invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
-            AdaptiveMetrics.addConsumerReq(buildServiceKey(invoker,invocation));
-        }
+        invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
+        AdaptiveMetrics.addConsumerReq(buildServiceKey(invoker,invocation));
+        AdaptiveMetrics.setPickTime(buildServiceKey(invoker,invocation),System.currentTimeMillis());
+
         return invoker;
     }
 
