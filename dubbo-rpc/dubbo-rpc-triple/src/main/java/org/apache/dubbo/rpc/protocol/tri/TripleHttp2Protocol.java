@@ -60,6 +60,7 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_FRAME_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 
 @Activate
 public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
@@ -125,6 +126,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        boolean convertNoLowerHeader = config.getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Channel>() {
                 @Override

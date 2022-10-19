@@ -103,4 +103,6 @@ public interface Constants {
     String H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY = "dubbo.rpc.tri.initial-window-size";
     String H2_SETTINGS_MAX_FRAME_SIZE_KEY = "dubbo.rpc.tri.max-frame-size";
     String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
+
+    String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
 }

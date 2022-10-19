@@ -47,7 +47,7 @@ public class RequestMetadata {
     public MethodDescriptor method;
     public PackableMethod packableMethod;
     public Map<String, Object> attachments;
-
+    public boolean convertNoLowerHeader;
 
     public DefaultHttp2Headers toHeaders() {
         DefaultHttp2Headers header = new DefaultHttp2Headers(false);
@@ -70,12 +70,12 @@ public class RequestMetadata {
             setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 compressor.getMessageEncoding());
         }
-        StreamUtils.convertAttachment(header, attachments);
+        StreamUtils.convertAttachment(header, attachments, convertNoLowerHeader);
         return header;
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key,
-        CharSequence value) {
+                              CharSequence value) {
         if (value == null) {
             return;
         }

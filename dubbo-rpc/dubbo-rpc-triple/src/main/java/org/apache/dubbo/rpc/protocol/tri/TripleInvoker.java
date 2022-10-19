@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -65,6 +66,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
+import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -82,11 +84,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final String acceptEncodings;
 
     public TripleInvoker(Class<T> serviceType,
-        URL url,
-        String acceptEncodings,
-        ConnectionManager connectionManager,
-        Set<Invoker<?>> invokers,
-        ExecutorService streamExecutor) {
+                         URL url,
+                         String acceptEncodings,
+                         ConnectionManager connectionManager,
+                         Set<Invoker<?>> invokers,
+                         ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connection = connectionManager.connect(url);
@@ -152,7 +154,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                                      ClientCall call) {
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[1];
         final StreamObserver<Object> requestObserver = streamCall(call, request, responseObserver);
@@ -162,7 +164,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeBiOrClientStream(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                                          ClientCall call) {
         final AsyncRpcResult result;
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[0];
@@ -173,8 +175,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     StreamObserver<Object> streamCall(ClientCall call,
-        RequestMetadata metadata,
-        StreamObserver<Object> responseObserver) {
+                                      RequestMetadata metadata,
+                                      StreamObserver<Object> responseObserver) {
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
             responseObserver);
         StreamObserver<Object> streamObserver = call.start(metadata, listener);
@@ -190,7 +192,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                               ClientCall call) {
         ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
         invocation.setAttachment(TIMEOUT_KEY, timeout);
@@ -220,7 +222,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     RequestMetadata createRequest(MethodDescriptor methodDescriptor, Invocation invocation,
-        Integer timeout) {
+                                  Integer timeout) {
         final String methodName = RpcUtils.getMethodName(invocation);
         Objects.requireNonNull(methodDescriptor,
             "MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(
@@ -232,6 +234,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         } else {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
+        meta.convertNoLowerHeader = ConfigurationUtils.getEnvConfiguration(url.getOrDefaultFrameworkModel()).getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config

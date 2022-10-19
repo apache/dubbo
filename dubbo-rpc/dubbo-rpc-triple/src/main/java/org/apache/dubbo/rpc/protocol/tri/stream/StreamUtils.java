@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
@@ -75,12 +77,16 @@ public class StreamUtils {
      *
      * @param headers     the metadata holder
      * @param attachments KV pairs
+     * @param needConvertHeaderKey convert flag
      */
     public static void convertAttachment(DefaultHttp2Headers headers,
-        Map<String, Object> attachments) {
+                                         Map<String, Object> attachments,
+                                         boolean needConvertHeaderKey) {
         if (attachments == null) {
             return;
         }
+
+        Map<String, String> needConvertKey = new HashMap<>();
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
@@ -89,9 +95,23 @@ public class StreamUtils {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
+            if (!entry.getKey().equals(key)) {
+                needConvertKey.put(entry.getKey(), key);
+            }
             final Object v = entry.getValue();
             convertSingleAttachment(headers, key, v);
         }
+        if (needConvertHeaderKey && !needConvertKey.isEmpty()) {
+            String needConvertJson = JsonUtils.getJson().toJson(needConvertKey);
+            headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
+        }
+
+    }
+
+
+    public static void convertAttachment(DefaultHttp2Headers headers,
+                                         Map<String, Object> attachments) {
+        convertAttachment(headers, attachments, false);
     }
 
     /**
@@ -109,6 +129,8 @@ public class StreamUtils {
             } else if (v instanceof byte[]) {
                 String str = encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
+            } else {
+                LOGGER.warn("Unsupported attachment k: " + key + " class: " + v.getClass().getName());
             }
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v,
