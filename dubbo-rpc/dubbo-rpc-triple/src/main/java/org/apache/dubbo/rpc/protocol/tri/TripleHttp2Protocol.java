@@ -23,7 +23,6 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
@@ -50,7 +49,6 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
 
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
