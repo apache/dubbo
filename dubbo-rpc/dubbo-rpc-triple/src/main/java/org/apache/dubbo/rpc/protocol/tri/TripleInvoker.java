@@ -152,7 +152,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
-                                      ClientCall call) {
+        ClientCall call) {
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[1];
         final StreamObserver<Object> requestObserver = streamCall(call, request, responseObserver);
@@ -162,7 +162,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeBiOrClientStream(MethodDescriptor methodDescriptor, Invocation invocation,
-                                          ClientCall call) {
+        ClientCall call) {
         final AsyncRpcResult result;
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[0];
@@ -173,8 +173,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     StreamObserver<Object> streamCall(ClientCall call,
-                                      RequestMetadata metadata,
-                                      StreamObserver<Object> responseObserver) {
+        RequestMetadata metadata,
+        StreamObserver<Object> responseObserver) {
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
             responseObserver);
         StreamObserver<Object> streamObserver = call.start(metadata, listener);
@@ -190,7 +190,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-                               ClientCall call) {
+        ClientCall call) {
         ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
         invocation.setAttachment(TIMEOUT_KEY, timeout);
@@ -220,7 +220,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     RequestMetadata createRequest(MethodDescriptor methodDescriptor, Invocation invocation,
-                                  Integer timeout) {
+        Integer timeout) {
         final String methodName = RpcUtils.getMethodName(invocation);
         Objects.requireNonNull(methodDescriptor,
             "MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(

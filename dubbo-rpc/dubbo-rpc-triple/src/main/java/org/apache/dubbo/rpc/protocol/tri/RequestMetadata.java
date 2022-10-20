@@ -75,7 +75,7 @@ public class RequestMetadata {
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key,
-                              CharSequence value) {
+        CharSequence value) {
         if (value == null) {
             return;
         }
