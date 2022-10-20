@@ -46,7 +46,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
     /**
      * uses a single worker thread operating off an bounded queue
      */
-    private static ThreadPoolExecutor executor;
+    private ThreadPoolExecutor executor;
 
     public AdaptiveLoadBalanceFilter(ApplicationModel applicationModel) {
         executor = new ThreadPoolExecutor(1, 1, 0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
