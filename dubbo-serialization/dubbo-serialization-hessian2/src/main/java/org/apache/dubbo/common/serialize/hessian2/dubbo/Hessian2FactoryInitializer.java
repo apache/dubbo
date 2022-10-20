@@ -26,16 +26,16 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 @SPI(value = "default", scope = ExtensionScope.FRAMEWORK)
 public interface Hessian2FactoryInitializer {
-    String WHITELIST = "dubbo.application.hessian2.whitelist";
+    String WHITELIST_KEY = "dubbo.application.hessian2.whitelist";
     String ALLOW = "dubbo.application.hessian2.allow";
     String DENY = "dubbo.application.hessian2.deny";
+    String WHITELIST = System.getProperty(WHITELIST_KEY);
 
     SerializerFactory getSerializerFactory();
 
     static Hessian2FactoryInitializer getInstance() {
         ExtensionLoader<Hessian2FactoryInitializer> loader = FrameworkModel.defaultModel().getExtensionLoader(Hessian2FactoryInitializer.class);
-        String whitelist = System.getProperty(WHITELIST);
-        if (StringUtils.isNotEmpty(whitelist)) {
+        if (StringUtils.isNotEmpty(WHITELIST)) {
             return loader.getExtension("whitelist");
         }
         return loader.getDefaultExtension();
