@@ -65,7 +65,6 @@ public enum TripleHeaderEnum {
 
     private final String header;
 
-
     TripleHeaderEnum(String header) {
         this.header = header;
     }

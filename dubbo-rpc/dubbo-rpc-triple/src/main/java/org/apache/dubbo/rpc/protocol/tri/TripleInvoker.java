@@ -82,11 +82,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final String acceptEncodings;
 
     public TripleInvoker(Class<T> serviceType,
-                         URL url,
-                         String acceptEncodings,
-                         ConnectionManager connectionManager,
-                         Set<Invoker<?>> invokers,
-                         ExecutorService streamExecutor) {
+        URL url,
+        String acceptEncodings,
+        ConnectionManager connectionManager,
+        Set<Invoker<?>> invokers,
+        ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connection = connectionManager.connect(url);

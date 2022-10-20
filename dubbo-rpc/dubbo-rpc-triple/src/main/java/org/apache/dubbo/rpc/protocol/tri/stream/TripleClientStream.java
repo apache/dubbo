@@ -69,9 +69,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
-                       Executor executor,
-                       WriteQueue writeQueue,
-                       ClientStream.Listener listener) {
+        Executor executor,
+        WriteQueue writeQueue,
+        ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = null;
         this.listener = listener;
@@ -79,9 +79,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
-                              Executor executor,
-                              Channel parent,
-                              ClientStream.Listener listener) {
+        Executor executor,
+        Channel parent,
+        ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
