@@ -191,13 +191,12 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             }
             return;
         }
-        //dubbo类扫描器
+
         DubboClassPathBeanDefinitionScanner scanner =
                 new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
-        //获取bean名称生成器
+
         BeanNameGenerator beanNameGenerator = resolveBeanNameGenerator(registry);
         scanner.setBeanNameGenerator(beanNameGenerator);
-        //添加扫描需要包含的注解类型 DubboService.class,Service.class，以及兼容com.alibaba.dubbo.config.annotation.Service.class
         for (Class<? extends Annotation> annotationType : serviceAnnotationTypes) {
             scanner.addIncludeFilter(new AnnotationTypeFilter(annotationType));
         }
