@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -66,7 +65,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
-import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -234,7 +232,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         } else {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
-        meta.convertNoLowerHeader = ConfigurationUtils.getEnvConfiguration(url.getOrDefaultFrameworkModel()).getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
+        meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config

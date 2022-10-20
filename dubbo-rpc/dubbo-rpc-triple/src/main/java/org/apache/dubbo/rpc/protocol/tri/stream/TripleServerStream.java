@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +29,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.call.ReflectionAbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.call.StubAbstractServerCall;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
@@ -67,7 +67,6 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 
 public class TripleServerStream extends AbstractStream implements ServerStream {
 
@@ -175,8 +174,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             headers.status(HttpResponseStatus.OK.codeAsText());
             headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         }
-        boolean convertNoLowerHeader = ConfigurationUtils.getEnvConfiguration(frameworkModel).getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
-        StreamUtils.convertAttachment(headers, attachments, convertNoLowerHeader);
+        StreamUtils.convertAttachment(headers, attachments, TripleProtocol.CONVERT_NO_LOWER_HEADER);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(rpcStatus.code.code));
         if (rpcStatus.isOk()) {
             return headers;
