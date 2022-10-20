@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class StreamUtils {
 
@@ -75,8 +76,8 @@ public class StreamUtils {
      * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
      * Only raw byte array or string value will be put.
      *
-     * @param headers     the metadata holder
-     * @param attachments KV pairs
+     * @param headers              the metadata holder
+     * @param attachments          KV pairs
      * @param needConvertHeaderKey convert flag
      */
     public static void convertAttachment(DefaultHttp2Headers headers,
@@ -86,7 +87,6 @@ public class StreamUtils {
             return;
         }
 
-        Map<String, String> needConvertKey = new HashMap<>();
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
@@ -95,17 +95,19 @@ public class StreamUtils {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
-            if (!entry.getKey().equals(key)) {
-                needConvertKey.put(entry.getKey(), key);
-            }
             final Object v = entry.getValue();
             convertSingleAttachment(headers, key, v);
         }
-        if (needConvertHeaderKey && !needConvertKey.isEmpty()) {
-            String needConvertJson = JsonUtils.getJson().toJson(needConvertKey);
-            headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
+        if (needConvertHeaderKey) {
+            Map<String, String> needConvertKey = attachments.entrySet()
+                .stream()
+                .filter(it -> !headers.contains(it.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, it -> it.getKey().toLowerCase(Locale.ROOT)));
+            if (!needConvertKey.isEmpty()) {
+                String needConvertJson = JsonUtils.getJson().toJson(needConvertKey);
+                headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
+            }
         }
-
     }
 
 
