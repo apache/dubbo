@@ -16,22 +16,29 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.BaseFilter;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.Constants;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.util.concurrent.ExecutorService;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
