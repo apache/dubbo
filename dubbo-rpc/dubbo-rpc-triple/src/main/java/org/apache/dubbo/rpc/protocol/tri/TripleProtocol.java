@@ -74,7 +74,8 @@ public class TripleProtocol extends AbstractProtocol {
         this.triBuiltinService = new TriBuiltinService(frameworkModel);
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
-        CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(frameworkModel).getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
+        CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
+            .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
         Set<String> supported = frameworkModel.getExtensionLoader(DeCompressor.class)
             .getSupportedExtensions();
         this.acceptEncodings = String.join(",", supported);
