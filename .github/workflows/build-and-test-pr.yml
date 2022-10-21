@@ -176,6 +176,10 @@ jobs:
         with:
           repository: 'apache/dubbo-samples'
           ref: master
+          path: "./dubbo-samples"
+      - uses: actions/checkout@v2
+        with:
+          path: "./dubbo"
       - name: "Cache local Maven repository"
         uses: actions/cache@v2
         with:
@@ -206,11 +210,15 @@ jobs:
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
+      - name: "Compile Dubbo (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
       - name: "Build test image"
         run: |
-          cd test && bash ./build-test-image.sh
+          cd dubbo-samples/test && bash ./build-test-image.sh
       - name: "Run tests"
-        run: cd test && bash ./run-tests.sh
+        run: cd dubbo-samples/test && bash ./run-tests.sh
       - name: "Upload test result"
         if: always()
         uses: actions/upload-artifact@v2
