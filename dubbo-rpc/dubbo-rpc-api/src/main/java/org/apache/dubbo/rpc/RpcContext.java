@@ -63,6 +63,20 @@ public class RpcContext {
         }
     };
 
+    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
+        @Override
+        protected RpcContextAttachment initialValue() {
+            return new RpcContextAttachment();
+        }
+    };
+
+    private static final InternalThreadLocal<RpcContextAttachment> SERVER_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
+        @Override
+        protected RpcContextAttachment initialValue() {
+            return new RpcContextAttachment();
+        }
+    };
+
     private static final InternalThreadLocal<RpcContextAttachment> CLIENT_ATTACHMENT = new InternalThreadLocal<RpcContextAttachment>() {
         @Override
         protected RpcContextAttachment initialValue() {
@@ -128,6 +142,21 @@ public class RpcContext {
      */
     public static void removeServerContext() {
         SERVER_LOCAL.remove();
+    }
+    public static RpcContextAttachment getClientResponseContext() {
+        return CLIENT_RESPONSE_LOCAL.get();
+    }
+
+    public static RpcContextAttachment getServerResponseContext() {
+        return SERVER_RESPONSE_LOCAL.get();
+    }
+
+    public static void removeClientResponseContext() {
+        CLIENT_RESPONSE_LOCAL.remove();
+    }
+
+    public static void removeServerResponseContext() {
+        SERVER_RESPONSE_LOCAL.remove();
     }
 
     /**
@@ -207,6 +236,8 @@ public class RpcContext {
             SERVER_ATTACHMENT.remove();
         }
         SERVER_LOCAL.remove();
+        CLIENT_RESPONSE_LOCAL.remove();
+        SERVER_RESPONSE_LOCAL.remove();
         SERVICE_CONTEXT.remove();
         CANCELLATION_CONTEXT.remove();
     }
@@ -828,13 +859,18 @@ public class RpcContext {
         private final RpcServiceContext serviceContext;
         private final RpcContextAttachment clientAttachment;
         private final RpcContextAttachment serverAttachment;
+        private final RpcContextAttachment clientResponseLocal;
         private final RpcContextAttachment serverLocal;
+
+        private final RpcContextAttachment serverResponseLocal;
 
         public RestoreContext() {
             serviceContext = getServiceContext().copyOf(false);
             clientAttachment = getClientAttachment().copyOf(false);
             serverAttachment = getServerAttachment().copyOf(false);
             serverLocal = getServerContext().copyOf(false);
+            clientResponseLocal = getClientResponseContext().copyOf(false);
+            serverResponseLocal = getServerResponseContext().copyOf(false);
         }
 
         public void restore() {
@@ -857,6 +893,16 @@ public class RpcContext {
                 SERVER_LOCAL.set(serverLocal);
             } else {
                 removeServerContext();
+            }
+            if (clientResponseLocal != null) {
+                CLIENT_RESPONSE_LOCAL.set(clientResponseLocal);
+            } else {
+                removeClientResponseContext();
+            }
+            if (serverResponseLocal != null) {
+                SERVER_RESPONSE_LOCAL.set(serverResponseLocal);
+            } else {
+                removeServerResponseContext();
             }
         }
     }

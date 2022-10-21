@@ -75,7 +75,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
             if (CollectionUtils.isNotEmpty(supportedSelectors)) {
                 for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
-                    Map<String, Object> selected = supportedSelector.select();
+                    Map<String, Object> selected = supportedSelector.select(invocation);
                     if (CollectionUtils.isNotEmptyMap(selected)) {
                         ((RpcInvocation) invocation).addObjectAttachments(selected);
                     }
@@ -83,7 +83,6 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             } else {
                 ((RpcInvocation) invocation).addObjectAttachments(RpcContext.getServerAttachment().getObjectAttachments());
             }
-
             Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
             if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
                 /**
@@ -106,7 +105,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                 }
             }
 
-            RpcContext.removeServerContext();
+            RpcContext.removeClientResponseContext();
             return invoker.invoke(invocation);
         } finally {
             RpcContext.restoreServiceContext(originServiceContext);
@@ -116,8 +115,18 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
-
+        Map<String, Object> map = appResponse.getObjectAttachments();
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = supportedSelector.selectReverse(invocation);
+                if (CollectionUtils.isNotEmptyMap(selected)) {
+                    RpcContext.getClientResponseContext().setObjectAttachments(selected);
+                }
+            }
+        } else {
+            RpcContext.getServerResponseContext().setObjectAttachments(map);
+        }
+        RpcContext.getClientResponseContext().setObjectAttachments(map);
         removeContext(invocation);
     }
 
