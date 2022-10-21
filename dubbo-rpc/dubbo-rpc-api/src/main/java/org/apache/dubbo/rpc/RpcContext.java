@@ -56,7 +56,15 @@ public class RpcContext {
     /**
      * use internal thread local to improve performance
      */
-    private static final InternalThreadLocal<RpcContextAttachment> SERVER_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
+
+    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
+        @Override
+        protected RpcContextAttachment initialValue() {
+            return new RpcContextAttachment();
+        }
+    };
+
+    private static final InternalThreadLocal<RpcContextAttachment> SERVER_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
         @Override
         protected RpcContextAttachment initialValue() {
             return new RpcContextAttachment();
@@ -118,7 +126,7 @@ public class RpcContext {
      * @return server context
      */
     public static RpcContextAttachment getServerContext() {
-        return SERVER_LOCAL.get();
+        return new RpcServerContextAttachment();
     }
 
     /**
@@ -126,8 +134,20 @@ public class RpcContext {
      *
      * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
-    public static void removeServerContext() {
-        SERVER_LOCAL.remove();
+    public static RpcContextAttachment getClientResponseContext() {
+        return CLIENT_RESPONSE_LOCAL.get();
+    }
+
+    public static RpcContextAttachment getServerResponseContext() {
+        return SERVER_RESPONSE_LOCAL.get();
+    }
+
+    public static void removeClientResponseContext() {
+        CLIENT_RESPONSE_LOCAL.remove();
+    }
+
+    public static void removeServerResponseContext() {
+        SERVER_RESPONSE_LOCAL.remove();
     }
 
     /**
@@ -156,6 +176,13 @@ public class RpcContext {
      */
     public static RpcContextAttachment getServerAttachment() {
         return SERVER_ATTACHMENT.get();
+    }
+
+    public static void removeServerContext() {
+        RpcContextAttachment rpcContextAttachment = RpcContext.getServerContext();
+        for(String key : rpcContextAttachment.attachments.keySet()) {
+            rpcContextAttachment.remove(key);
+        }
     }
 
     public boolean canRemove() {
@@ -206,7 +233,8 @@ public class RpcContext {
         if (SERVER_ATTACHMENT.get().canRemove()) {
             SERVER_ATTACHMENT.remove();
         }
-        SERVER_LOCAL.remove();
+        CLIENT_RESPONSE_LOCAL.remove();
+        SERVER_RESPONSE_LOCAL.remove();
         SERVICE_CONTEXT.remove();
         CANCELLATION_CONTEXT.remove();
     }
@@ -828,13 +856,15 @@ public class RpcContext {
         private final RpcServiceContext serviceContext;
         private final RpcContextAttachment clientAttachment;
         private final RpcContextAttachment serverAttachment;
-        private final RpcContextAttachment serverLocal;
+        private final RpcContextAttachment clientResponseLocal;
+        private final RpcContextAttachment serverResponseLocal;
 
         public RestoreContext() {
             serviceContext = getServiceContext().copyOf(false);
             clientAttachment = getClientAttachment().copyOf(false);
             serverAttachment = getServerAttachment().copyOf(false);
-            serverLocal = getServerContext().copyOf(false);
+            clientResponseLocal = getClientResponseContext().copyOf(false);
+            serverResponseLocal = getServerResponseContext().copyOf(false);
         }
 
         public void restore() {
@@ -853,10 +883,15 @@ public class RpcContext {
             } else {
                 removeServerAttachment();
             }
-            if (serverLocal != null) {
-                SERVER_LOCAL.set(serverLocal);
+            if (clientResponseLocal != null) {
+                CLIENT_RESPONSE_LOCAL.set(clientResponseLocal);
             } else {
-                removeServerContext();
+                removeClientResponseContext();
+            }
+            if (serverResponseLocal != null) {
+                SERVER_RESPONSE_LOCAL.set(serverResponseLocal);
+            } else {
+                removeServerResponseContext();
             }
         }
     }
