@@ -112,24 +112,21 @@ jobs:
           echo "list the downloaded zookeeper binary archive"
           ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
 
-  unit-test-fast:
+  unit-test:
     needs: [build-source, unit-test-prepare]
-    name: "Unit Test On ubuntu-20.04 (Node: ${{ matrix.case-role }})"
+    name: "Unit Test On ubuntu-20.04"
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
-      matrix:
-        case-role: [0, 1, 2, 3, 4, 5]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
-      CASE_RANGE: 6
     steps:
       - uses: actions/checkout@v2
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
       - uses: actions/cache@v2
         name: "Cache local Maven repository"
         with:
@@ -138,17 +135,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
-      - name: "Restore Dubbo cache"
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
-            ${{ runner.os }}-dubbo-snapshot-
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
-        run: bash unit-test.sh
+        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Pjacoco -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v1
 
