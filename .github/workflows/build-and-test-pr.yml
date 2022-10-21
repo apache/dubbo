@@ -160,7 +160,7 @@ jobs:
           path: test/jobs
 
   integration-test-job:
-    needs: [integration-test-prepare]
+    needs: [build-source, integration-test-prepare]
     name: "Integration Test on ubuntu-20.04 (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-20.04
     timeout-minutes: 30
@@ -187,6 +187,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
+      - name: "Set up JDK 8"
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
       - name: "Restore Dubbo cache"
         uses: actions/cache@v2
         with:
@@ -195,19 +199,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
+      - name: "Compile Dubbo (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo-project
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
       - name: "Download test list"
         uses: actions/download-artifact@v2
         with:
           name: test-list
           path: test/jobs/
-      - name: "Set up JDK 8"
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: "Compile Dubbo (Linux)"
-        run: |
-          cd ${{ github.workspace }}/dubbo-project
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
       - name: "Init Candidate Versions"
         run: |
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
