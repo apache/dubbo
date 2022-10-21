@@ -160,7 +160,7 @@ jobs:
           path: test/jobs
 
   integration-test-job:
-    needs: [build-source, integration-test-prepare]
+    needs: [integration-test-prepare]
     name: "Integration Test on ubuntu-20.04 (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-20.04
     timeout-minutes: 30
@@ -203,16 +203,17 @@ jobs:
         run: |
           cd ${{ github.workspace }}/dubbo-project
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+      - name: "Calculate Dubbo Version"
+        id: dubbo-version
+        run: |
+          DUBBO_VERSION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
+          echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Download test list"
         uses: actions/download-artifact@v2
         with:
           name: test-list
           path: test/jobs/
-      - name: "Init Candidate Versions"
-        run: |
-          DUBBO_VERSION="${{needs.build-source.outputs.version}}"
-          CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
-          echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
         run: |
           cd test && bash ./build-test-image.sh
