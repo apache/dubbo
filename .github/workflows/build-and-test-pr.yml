@@ -150,14 +150,16 @@ jobs:
         with:
           repository: 'apache/dubbo-samples'
           ref: master
+          path: dubbo-samples
       - name: "Prepare test list"
         run: |
+          cd ./dubbo-samples
           bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
         uses: actions/upload-artifact@v2
         with:
           name: test-list
-          path: test/jobs
+          path: dubbo-samples/test/jobs
 
   integration-test-job:
     needs: [integration-test-prepare]
