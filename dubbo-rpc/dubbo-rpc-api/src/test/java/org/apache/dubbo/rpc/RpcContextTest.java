@@ -43,8 +43,7 @@ public class RpcContextTest {
         RpcContext serverRpcContext = RpcContext.getServerContext();
         Assertions.assertNotNull(serverRpcContext);
 
-        RpcContext.removeServerContext();
-        Assertions.assertNotEquals(serverRpcContext, RpcContext.getServerContext());
+        Assertions.assertEquals(serverRpcContext, RpcContext.getServerContext());
 
     }
 
@@ -201,6 +200,14 @@ public class RpcContextTest {
         map.put("mapKey2", "mapValue2");
         rpcContext.setObjectAttachments(map);
         Assertions.assertEquals(map, rpcContext.getObjectAttachments());
+    }
+    @Test
+    public void say() {
+        final String key = "user-attachment";
+        final String value = "attachment-value";
+        RpcContext.getServerContext().setObjectAttachment(key, value);
+        final String returned = (String) RpcContext.getServerContext().getObjectAttachment(key);
+        System.out.println(returned);
     }
 
     @Test

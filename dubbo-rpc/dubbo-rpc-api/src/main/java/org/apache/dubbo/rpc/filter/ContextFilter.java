@@ -17,15 +17,11 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.TimeoutCountDown;
+import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashMap;
@@ -58,6 +54,13 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ContextFilter implements Filter, Filter.Listener {
+    private Set<PenetrateAttachmentSelector> supportedSelectors;
+
+    public ContextFilter() {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
+        supportedSelectors = selectorExtensionLoader.getSupportedExtensionInstances();
+    }
 
     private static final Set<String> UNLOADING_KEYS;
 
@@ -142,7 +145,17 @@ public class ContextFilter implements Filter, Filter.Listener {
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = supportedSelector.selectReverse(invocation);
+                if (CollectionUtils.isNotEmptyMap(selected)) {
+                    appResponse.addObjectAttachments(selected);
+                }
+            }
+        } else {
+            appResponse.addObjectAttachments(RpcContext.getClientResponseContext().getObjectAttachments());
+        }
+        appResponse.addObjectAttachments(RpcContext.getServerResponseContext().getObjectAttachments());
         removeContext();
     }
 
@@ -155,6 +168,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         RpcContext.removeServerAttachment();
         RpcContext.removeClientAttachment();
         RpcContext.removeServiceContext();
-        RpcContext.removeServerContext();
+        RpcContext.removeClientResponseContext();
+        RpcContext.removeServerResponseContext();
     }
 }
