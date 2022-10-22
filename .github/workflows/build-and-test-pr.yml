@@ -77,7 +77,7 @@ jobs:
         id: dubbo-version
         run: |
           REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
-          echo "::set-output name=version::$REVISION"
+          echo "version=$REVISION" >> $GITHUB_OUTPUT
           echo "dubbo version: $REVISION"
 
   unit-test-prepare:
