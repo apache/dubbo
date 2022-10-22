@@ -194,8 +194,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
         ClientCall call) {
         ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
+
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
+        if (timeout <= 0) {
+            return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                "No time left for making the following call: " + invocation.getServiceName() + "."
+                    + invocation.getMethodName() + ", terminate directly."), invocation);
+        }
         invocation.setAttachment(TIMEOUT_KEY, timeout);
+
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
             methodDescriptor.getMethodName(), getUrl().getAddress(), timeout, callbackExecutor);
@@ -234,6 +241,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         } else {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
+        meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config

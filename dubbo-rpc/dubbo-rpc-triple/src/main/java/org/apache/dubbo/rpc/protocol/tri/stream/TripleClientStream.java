@@ -17,17 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -46,6 +38,18 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHand
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.concurrent.Future;
+
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -59,6 +63,8 @@ import java.util.concurrent.Executor;
  * Instead of maintaining state, this class depends on upper layer or transport layer's states.
  */
 public class TripleClientStream extends AbstractStream implements ClientStream {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleClientStream.class);
 
     public final ClientStream.Listener listener;
     private final TripleWriteQueue writeQueue;
@@ -229,7 +235,28 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
             final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers);
-            listener.onComplete(status, attachments, reserved);
+            final Map<String, Object> finalAttachments = convertNoLowerCaseHeader(attachments);
+            listener.onComplete(status, finalAttachments, reserved);
+        }
+
+        private Map<String, Object> convertNoLowerCaseHeader(Map<String, Object> attachments) {
+            Object obj = attachments.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+            if (obj == null) {
+                return attachments;
+            }
+            if (obj instanceof String) {
+                String json = TriRpcStatus.decodeMessage((String) obj);
+                Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+                map.forEach((originalKey, lowerCaseKey) -> {
+                    Object val = attachments.remove(lowerCaseKey);
+                    if (val != null) {
+                        attachments.put(originalKey, val);
+                    }
+                });
+            } else {
+                LOGGER.error("Triple convertNoLowerCaseHeader error, obj is not String");
+            }
+            return attachments;
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {
