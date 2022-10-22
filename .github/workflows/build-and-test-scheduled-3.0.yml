@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 3.0
+          ref: "3.0"
           path: dubbo
       - uses: actions/setup-java@v1
         with:
@@ -138,7 +138,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 3.0
+          ref: "3.0"
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v1
         with:
