@@ -110,6 +110,8 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_NO_RULE_LISTENER = "2-18";
 
+    String CLUSTER_ASYN_INVOKE_FAILED = "2-19";
+
     // proxy module 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
