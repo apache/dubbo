@@ -29,7 +29,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -131,7 +130,7 @@ public class ConfigValidationUtilsTest {
     public void testCheckQosInApplicationConfig() throws Exception {
         ConfigValidationUtils mock = Mockito.mock(ConfigValidationUtils.class);
         ErrorTypeAwareLogger loggerMock = Mockito.mock(ErrorTypeAwareLogger.class);
-        setFinalStatic(mock.getClass().getDeclaredField("logger"), loggerMock);
+        injectField(mock.getClass().getDeclaredField("logger"), loggerMock);
         ApplicationConfig config = new ApplicationConfig();
         config.setName("testName");
         config.setQosEnable(false);
@@ -143,11 +142,8 @@ public class ConfigValidationUtilsTest {
         verify(loggerMock).warn(eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), any());
     }
 
-    private void setFinalStatic(Field field, Object newValue) throws Exception {
+    private void injectField(Field field, Object newValue) throws Exception {
         field.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
         field.set(null, newValue);
     }
 
