@@ -194,9 +194,11 @@ final public class MockInvoker<T> implements Invoker<T> {
                 + ", please check if there's mock class or instance implementing interface "
                 + serviceType.getName(), e);
         }
-        if (mockClass == null || !serviceType.isAssignableFrom(mockClass)) {
-            throw new IllegalStateException("The mock class " + mockClass.getName() +
-                " not implement interface " + serviceType.getName());
+        if (mockClass == null) {
+            throw new IllegalStateException("not implement interface " + serviceType.getName());
+        }
+        if (!serviceType.isAssignableFrom(mockClass)) {
+            throw new IllegalStateException("The mock class " + mockClass.getName() + " not implement interface " + serviceType.getName());
         }
 
         try {

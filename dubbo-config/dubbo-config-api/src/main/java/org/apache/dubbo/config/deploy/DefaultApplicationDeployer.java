@@ -849,7 +849,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                             break;
                         }
                     }
-                    onFailed(getIdentifier() + " found failed module: " + errorModule.getDesc(), error);
+                    if (errorModule != null) {
+                        onFailed(getIdentifier() + " found failed module: " + errorModule.getDesc(), error);
+                    } else {
+                        onFailed(getIdentifier() + " found failed module", null);
+                    }
                     break;
                 case PENDING:
                     // cannot change to pending from other state
