@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
@@ -139,14 +140,11 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
         if (needToPrintMessage) {
             messageHolder.set(stringBuilder.toString());
         }
-        Set<String> endpointSet = destinationSubset.getEndpointAddress();
-        BitList<Invoker<T>> result = new BitList<>(new ArrayList<>());
-        for (Invoker<T> invoker : invokers) {
-            if (endpointSet.contains(invoker.getUrl().getAddress())) {
-                result.add(invoker);
-            }
+        if (destinationSubset.getInvokers() == null) {
+            return BitList.emptyList();
         }
-        return result;
+
+        return destinationSubset.getInvokers().and(invokers);
     }
 
     private String computeMatchCluster(Invocation invocation, XdsRouteRule rule) {
@@ -224,6 +222,28 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
                 subscribeApplications = currentApplications;
             }
         }
+
+        // update subset
+        synchronized (this) {
+            BitList<Invoker<T>> allInvokers = currentInvokeList.clone();
+            for (DestinationSubset<T> subset : destinationSubsetMap.values()) {
+                computeSubset(subset, allInvokers);
+            }
+        }
+
+    }
+
+    private void computeSubset(DestinationSubset<T> subset, BitList<Invoker<T>> invokers) {
+        Set<Endpoint> endpoints = subset.getEndpoints();
+        List<Invoker<T>> filterInvokers = invokers.stream().filter(inv -> {
+            String host = inv.getUrl().getHost();
+            int port = inv.getUrl().getPort();
+            Optional<Endpoint> any = endpoints.stream()
+                .filter(end -> host.equals(end.getAddress()) && port == end.getPortValue())
+                .findAny();
+            return any.isPresent();
+        }).collect(Collectors.toList());
+        subset.setInvokers(new BitList<>(filterInvokers));
     }
 
     @Override
@@ -295,6 +315,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
             return;
         }
         subset.setEndpoints(endpoints);
+        computeSubset(subset, currentInvokeList.clone());
     }
 
     @Override

@@ -201,8 +201,7 @@ public class XdsRouteTest {
         edsEndpointManager.notifyEndpointChange(cluster1, endpoints);
 
         DestinationSubset<Object> objectDestinationSubset = xdsRouter.getDestinationSubsetMap().get(cluster1);
-        assertEquals(invokers.stream().map(Invoker::getUrl).map(URL::getAddress)
-            .collect(Collectors.toSet()), objectDestinationSubset.getEndpointAddress());
+        assertEquals(invokers, objectDestinationSubset.getInvokers());
     }
 
     @Test
