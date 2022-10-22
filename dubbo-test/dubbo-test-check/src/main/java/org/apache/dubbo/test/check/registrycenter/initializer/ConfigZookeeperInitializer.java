@@ -54,7 +54,7 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
         int availableAdminServerPort = NetUtils.getAvailablePort(adminServerPort);
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(zooSample));
+            properties.load(Files.newInputStream(zooSample.toPath()));
             properties.setProperty("clientPort", String.valueOf(clientPort));
             properties.setProperty("admin.serverPort", String.valueOf(availableAdminServerPort));
             Path dataDir = Paths.get(zookeeperConf.getParent().toString(), "data");
