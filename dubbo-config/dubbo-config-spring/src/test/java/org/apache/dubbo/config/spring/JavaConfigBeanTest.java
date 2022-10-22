@@ -110,7 +110,7 @@ public class JavaConfigBeanTest {
             Assertions.assertEquals(5, referenceConfig.getRetries());
 
             DemoService referProxy = (DemoService) referenceConfig.get();
-            Assertions.assertTrue( referProxy instanceof DemoService);
+            // Assertions.assertTrue( referProxy instanceof DemoService);
             String result = referProxy.sayName("dubbo");
             Assertions.assertEquals("say:dubbo", result);
 
