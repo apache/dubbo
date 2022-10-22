@@ -24,7 +24,7 @@ jobs:
   license:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.1
       - name: Check License
@@ -36,7 +36,7 @@ jobs:
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.1
           path: dubbo
@@ -146,7 +146,7 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.1
       - name: "Set up JDK ${{ matrix.jdk }}"
@@ -186,7 +186,7 @@ jobs:
       DUBBO_DEFAULT_SERIALIZATION: fastjson2
       MAVEN_SUREFIRE_ADD_OPENS: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.1
       - name: "Set up JDK ${{ matrix.jdk }}"
@@ -217,7 +217,7 @@ jobs:
     env:
       JOB_COUNT: 3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
@@ -243,7 +243,7 @@ jobs:
       matrix:
         job_id: [1, 2, 3]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
@@ -296,7 +296,7 @@ jobs:
     env:
       JAVA_VER: 8
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
@@ -312,11 +312,11 @@ jobs:
   error-code-inspecting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: "./dubbo"
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-test-tools'
           ref: main

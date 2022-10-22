@@ -24,7 +24,7 @@ jobs:
   license:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.0
       - name: Check License
@@ -36,7 +36,7 @@ jobs:
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.0
           path: dubbo
@@ -146,7 +146,7 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: 3.0
       - name: "Set up JDK ${{ matrix.jdk }}"
@@ -177,7 +177,7 @@ jobs:
     env:
       JOB_COUNT: 3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
@@ -203,7 +203,7 @@ jobs:
       matrix:
         job_id: [1, 2, 3]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
@@ -256,7 +256,7 @@ jobs:
     env:
       JAVA_VER: 8
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'apache/dubbo-samples'
           ref: master
