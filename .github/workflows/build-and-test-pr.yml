@@ -19,7 +19,7 @@ env:
 
 jobs:
   license:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Check License
@@ -27,7 +27,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   build-source:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.dubbo-version.outputs.version }}
     steps:
@@ -38,7 +38,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 8
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -47,7 +47,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Dubbo cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -60,7 +60,7 @@ jobs:
         run: 7z a ${{ github.workspace }}/rat.zip *rat.txt -r
       - name: "Upload rat file if failure"
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "rat-file"
           path: ${{ github.workspace }}/rat.zip
@@ -69,7 +69,7 @@ jobs:
         run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
       - name: "Upload checkstyle file if failure"
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "checkstyle-file"
           path: ${{ github.workspace }}/checkstyle.zip
@@ -82,13 +82,13 @@ jobs:
 
   unit-test-prepare:
     name: "Preparation for Unit Test"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     env:
       ZOOKEEPER_VERSION: 3.6.3
     steps:
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache zookeeper binary archive"
         id: "cache-zookeeper"
         with:
@@ -115,8 +115,8 @@ jobs:
 
   unit-test:
     needs: [build-source, unit-test-prepare]
-    name: "Unit Test On ubuntu-20.04"
-    runs-on: ubuntu-20.04
+    name: "Unit Test On ubuntu-latest"
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     env:
@@ -129,7 +129,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 17
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -144,7 +144,7 @@ jobs:
         uses: codecov/codecov-action@v1
 
   integration-test-prepare:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       JOB_COUNT: 3
     steps:
@@ -156,15 +156,15 @@ jobs:
         run: |
           bash ./test/scripts/prepare-test.sh
       - name: "Upload test list"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-list
           path: test/jobs
 
   integration-test-job:
     needs: [build-source, integration-test-prepare]
-    name: "Integration Test on ubuntu-20.04 (JobId: ${{matrix.job_id}})"
-    runs-on: ubuntu-20.04
+    name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       JAVA_VER: 8
@@ -179,7 +179,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Cache local Maven repository"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
@@ -187,7 +187,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -216,7 +216,7 @@ jobs:
         run: cd test && bash ./run-tests.sh
       - name: "Upload test result"
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: test-result
           path: test/jobs/*-result*
@@ -224,7 +224,7 @@ jobs:
   integration-test-result:
     needs: [integration-test-job]
     if: always()
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       JAVA_VER: 8
     steps:
@@ -271,7 +271,7 @@ jobs:
           ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
 
       - name: "Upload error code inspection result"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "error-inspection-result"
           path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt
