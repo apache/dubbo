@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
-import javafx.util.Pair;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -32,6 +31,7 @@ import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.rpc.cluster.router.xds.util.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
