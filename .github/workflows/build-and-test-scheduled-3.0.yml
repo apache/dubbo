@@ -225,7 +225,7 @@ jobs:
             ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
             ${{ runner.os }}-dubbo-snapshot-
       - name: "Download test list"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: test-list
           path: test/jobs/
@@ -262,7 +262,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Download test result"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: test-result
           path: test/jobs/
