@@ -45,4 +45,10 @@ public interface XdsProtocol<T> {
      * @param resourceNames new resource name list to observe
      */
     void updateObserve(long request, Set<String> resourceNames);
+
+    /**
+     * Remove request-related mappings  {@link XdsProtocol#observeResource(Set, Consumer)}
+     * @param request requestId returned by {@link XdsProtocol#observeResource(Set, Consumer)}
+     */
+    void removeObserve(long request);
 }

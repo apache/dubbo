@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.xds;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 
 import java.util.List;
@@ -32,6 +33,9 @@ public class RdsRouteRuleManager {
     private static final ConcurrentHashMap<String, List<XdsRouteRule>> ROUTE_DATA_CACHE = new ConcurrentHashMap<>();
 
     private static final ConcurrentHashMap<String, RdsVirtualHostListener> RDS_LISTENERS = new ConcurrentHashMap<>();
+
+    private PilotExchanger pilotExchanger;
+
 
     public RdsRouteRuleManager() {
     }
@@ -54,7 +58,7 @@ public class RdsRouteRuleManager {
     private void doSubscribeRds(String domain) {
         RDS_LISTENERS.computeIfAbsent(domain, key -> new RdsVirtualHostListener(domain, this));
         RdsVirtualHostListener rdsVirtualHostListener = RDS_LISTENERS.get(domain);
-        // todo request control plane subscribe rds
+        rdsVirtualHostListener.parseVirtualHost(pilotExchanger.getVirtualHost(domain));
     }
 
     public synchronized void unSubscribeRds(String domain, XdsRouteRuleListener listener) {
@@ -73,8 +77,7 @@ public class RdsRouteRuleManager {
         RdsVirtualHostListener rdsVirtualHostListener = RDS_LISTENERS.remove(domain);
 
         if (rdsVirtualHostListener != null) {
-
-            // todo request control plane unsubscribe rds
+            pilotExchanger.unObserveRds(domain);
         }
         ROUTE_DATA_CACHE.remove(domain);
     }
@@ -96,6 +99,10 @@ public class RdsRouteRuleManager {
                 listener.onRuleChange(domain, xdsRouteRules);
             }
         }
+    }
+
+    public void setPilotExchanger(PilotExchanger pilotExchanger) {
+        this.pilotExchanger = pilotExchanger;
     }
 
     // for test

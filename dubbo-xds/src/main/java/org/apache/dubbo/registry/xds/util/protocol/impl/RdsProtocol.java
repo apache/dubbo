@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+import javafx.util.Pair;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -35,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
@@ -53,21 +56,24 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     @Override
     protected RouteResult decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
-            Map<String, Set<String>> map = response.getResourcesList().stream()
+            Pair<Map<String, Set<String>>, Map<String, VirtualHost>> mapMapPair = response.getResourcesList().stream()
                 .map(RdsProtocol::unpackRouteConfiguration)
                 .filter(Objects::nonNull)
                 .map(RdsProtocol::decodeResourceToListener)
                 .reduce((a, b) -> {
-                    a.putAll(b);
+                    a.getKey().putAll(b.getKey());
+                    a.getValue().putAll(b.getValue());
                     return a;
-                }).orElse(new HashMap<>());
-            return new RouteResult(map);
+                }).orElse(new Pair<>(new HashMap<>(), new HashMap<>()));
+
+            return new RouteResult(mapMapPair.getKey(),mapMapPair.getValue());
         }
         return new RouteResult();
     }
 
-    private static Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {
+    private static Pair<Map<String, Set<String>>,Map<String, VirtualHost>> decodeResourceToListener(RouteConfiguration resource) {
         Map<String, Set<String>> map = new HashMap<>();
+        Map<String, VirtualHost> rdsVirtualhostMap = new ConcurrentHashMap<>();
         resource.getVirtualHostsList()
             .forEach(virtualHost -> {
                 Set<String> cluster = virtualHost.getRoutesList().stream()
@@ -76,9 +82,10 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                     .collect(Collectors.toSet());
                 for (String domain : virtualHost.getDomainsList()) {
                     map.put(domain, cluster);
+                    rdsVirtualhostMap.put(domain,virtualHost);
                 }
             });
-        return map;
+        return new Pair<>(map,rdsVirtualhostMap);
     }
 
     private static RouteConfiguration unpackRouteConfiguration(Any any) {

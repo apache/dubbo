@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.xds;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
 import java.util.Set;
@@ -32,6 +33,7 @@ public class EdsEndpointManager {
 
     private static final ConcurrentHashMap<String, Consumer<Set<Endpoint>>> EDS_LISTENERS = new ConcurrentHashMap<>();
 
+    private PilotExchanger pilotExchanger;
 
     public EdsEndpointManager() {
     }
@@ -56,8 +58,7 @@ public class EdsEndpointManager {
             notifyEndpointChange(cluster, endpoints);
         });
         Consumer<Set<Endpoint>> consumer = EDS_LISTENERS.get(cluster);
-
-        //todo control plane subscribe eds
+        pilotExchanger.observeEndpoints(cluster,consumer);
     }
 
     public synchronized void unSubscribeEds(String cluster, EdsEndpointListener listener) {
@@ -76,8 +77,7 @@ public class EdsEndpointManager {
         Consumer<Set<Endpoint>> consumer = EDS_LISTENERS.remove(cluster);
 
         if (consumer != null) {
-
-            //todo control plane unsubscribe eds
+            pilotExchanger.unObserveEndpoints(cluster,consumer);
         }
         ENDPOINT_DATA_CACHE.remove(cluster);
     }
@@ -94,6 +94,10 @@ public class EdsEndpointManager {
         for (EdsEndpointListener listener : listeners) {
             listener.onEndPointChange(cluster, endpoints);
         }
+    }
+
+    public void setPilotExchanger(PilotExchanger pilotExchanger) {
+        this.pilotExchanger = pilotExchanger;
     }
 
     // for test
