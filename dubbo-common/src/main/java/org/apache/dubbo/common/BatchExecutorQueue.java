@@ -74,7 +74,7 @@ public class BatchExecutorQueue<T> {
                     i++;
                 }
             }
-            if (i != 0 || !flushedOnce) {
+            if ((i != 0 || !flushedOnce) && item != null) {
                 flush(item);
             }
         } finally {
