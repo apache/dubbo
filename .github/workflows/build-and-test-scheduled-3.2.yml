@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 3.2
+          ref: "3.2"
       - name: Check License
         uses: apache/skywalking-eyes@main
         env:
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 3.2
+          ref: "3.2"
           path: dubbo
       - uses: actions/setup-java@v1
         with:
@@ -148,7 +148,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 3.2
+          ref: "3.2"
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v1
         with:
@@ -188,7 +188,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: 3.2
+          ref: "3.2"
       - name: "Set up JDK ${{ matrix.jdk }}"
         uses: actions/setup-java@v1
         with:
