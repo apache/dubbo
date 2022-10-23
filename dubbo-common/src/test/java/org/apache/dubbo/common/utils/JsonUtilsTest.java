@@ -78,6 +78,10 @@ public class JsonUtilsTest {
         List<Object> objs = new LinkedList<>();
 
         {
+            objs.add(null);
+        }
+
+        {
             Map<String, String> map = new HashMap<>();
             map.put("a", "a");
             objs.add(map);
