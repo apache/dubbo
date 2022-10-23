@@ -255,12 +255,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>hessian-lite</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
         <!-- metadata -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -352,16 +346,12 @@
             <artifactId>netty-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <artifactId>hessian-lite</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
@@ -405,7 +395,6 @@
                             <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
-                                    <include>com.alibaba:hessian-lite</include>
                                     <include>org.apache.dubbo:dubbo-auth</include>
                                     <include>org.apache.dubbo:dubbo-cluster</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
@@ -1162,7 +1151,6 @@
                             <includeDependencySources>true</includeDependencySources>
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.dubbo:dubbo-*</dependencySourceInclude>
-                                <dependencySourceExclude>com.alibaba:hessian-*</dependencySourceExclude>
                             </dependencySourceIncludes>
                             <show>public</show>
                             <charset>UTF-8</charset>

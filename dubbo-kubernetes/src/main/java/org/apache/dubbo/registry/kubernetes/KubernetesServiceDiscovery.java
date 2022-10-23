@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.kubernetes;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -30,7 +31,6 @@ import org.apache.dubbo.registry.kubernetes.util.KubernetesConfigUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import com.alibaba.fastjson.JSONObject;
 import io.fabric8.kubernetes.api.model.EndpointAddress;
 import io.fabric8.kubernetes.api.model.EndpointPort;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
@@ -126,7 +126,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     .edit(pod ->
                             new PodBuilder(pod)
                                     .editOrNewMetadata()
-                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
+                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JsonUtils.getJson().toJson(serviceInstance.getMetadata()))
                                     .endMetadata()
                                     .build());
             if (logger.isInfoEnabled()) {
@@ -412,7 +412,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
 
                     String properties = pod.getMetadata().getAnnotations().get(KUBERNETES_PROPERTIES_KEY);
                     if (StringUtils.isNotEmpty(properties)) {
-                        serviceInstance.getMetadata().putAll(JSONObject.parseObject(properties, Map.class));
+                        serviceInstance.getMetadata().putAll(JsonUtils.getJson().toJavaObject(properties, Map.class));
                         instances.add(serviceInstance);
                     } else {
                         logger.warn("Unable to find Service Instance metadata in Pod Annotations. " +
