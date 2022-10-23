@@ -46,8 +46,8 @@ public class AdaptiveMetrics {
     private final AtomicLong errorReq = new AtomicLong();
     private double ewma = 0;
 
-    private final long factor = 50;
-    private int weight = 100;
+//    private final long factor = 50;
+//    private int weight = 100;
 
     public static double getLoad(String idKey,int weight,int timeout){
         AdaptiveMetrics metrics = getStatus(idKey);

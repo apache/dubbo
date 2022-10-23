@@ -16,13 +16,17 @@
  */
 package org.apache.dubbo.rpc.cluster.filter.support;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.AdaptiveMetrics;
+import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -33,12 +37,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
  * if the load balance is adaptive ,set attachment to get the metrics of the server
- * @see Filter
- * @see RpcContext
+ * @see org.apache.dubbo.rpc.Filter
+ * @see org.apache.dubbo.rpc.RpcContext
  */
 @Activate(group = CONSUMER, order = -200000)
 public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.Listener {
