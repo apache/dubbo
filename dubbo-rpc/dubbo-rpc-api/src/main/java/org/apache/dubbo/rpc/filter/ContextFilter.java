@@ -142,7 +142,7 @@ public class ContextFilter implements Filter, Filter.Listener {
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-//        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
+        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
         appResponse.addObjectAttachments(RpcContext.getServerResponseContext().getObjectAttachments());
         removeContext();
     }
