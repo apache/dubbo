@@ -104,7 +104,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                             + invocation.getMethodName() + ", terminate directly."), invocation);
                 }
             }
-
+            RpcContext.removeServerContext();
             RpcContext.removeClientResponseContext();
             return invoker.invoke(invocation);
         } finally {
@@ -115,6 +115,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
+        RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
         Map<String, Object> map = appResponse.getObjectAttachments();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
