@@ -18,7 +18,21 @@
 package org.apache.dubbo.remoting.utils;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.transport.CodecSupport;
+
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.apache.dubbo.remoting.Constants.PREFER_SERIALIZATION_KEY;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 public class UrlUtils {
     public static int getIdleTimeout(URL url) {
@@ -33,5 +47,69 @@ public class UrlUtils {
 
     public static int getHeartbeat(URL url) {
         return url.getParameter(Constants.HEARTBEAT_KEY, Constants.DEFAULT_HEARTBEAT);
+    }
+
+    /**
+     * Get the serialization id
+     *
+     * @param url url
+     * @return {@link Byte}
+     */
+    public static Byte serializationId(URL url) {
+        Byte serializationId;
+        // Obtain the value from prefer_serialization. Such as:fastjson2,hessian2
+        List<String> preferSerials = preferSerialization(url);
+        for (String preferSerial : preferSerials) {
+            if ((serializationId = CodecSupport.getIDByName(preferSerial)) != null) {
+                return serializationId;
+            }
+        }
+
+        // Secondly, obtain the value from serialization
+        if ((serializationId = CodecSupport.getIDByName(url.getParameter(SERIALIZATION_KEY))) != null) {
+            return serializationId;
+        }
+
+        // Finally, use the default serialization type
+        return CodecSupport.getIDByName(DefaultSerializationSelector.getDefaultRemotingSerialization());
+    }
+
+    /**
+     * Get the serialization or default serialization
+     *
+     * @param url url
+     * @return {@link String}
+     */
+    public static String serializationOrDefault(URL url) {
+        return allSerializations(url).stream().findFirst().get();
+    }
+
+    /**
+     * Get the all serializations,ensure insertion order
+     *
+     * @param url url
+     * @return {@link List}<{@link String}>
+     */
+    public static Collection<String> allSerializations(URL url) {
+        // preferSerialization -> serialization -> default serialization
+        Set<String> serializations = new LinkedHashSet<>();
+        UrlUtils.preferSerialization(url).forEach(serializations::add);
+        Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
+        serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
+        return Collections.unmodifiableSet(serializations);
+    }
+
+    /**
+     * Prefer Serialization
+     *
+     * @param url url
+     * @return {@link List}<{@link String}>
+     */
+    public static List<String> preferSerialization(URL url) {
+        String preferSerialization = url.getParameter(PREFER_SERIALIZATION_KEY);
+        if (StringUtils.isNotBlank(preferSerialization)) {
+            return Collections.unmodifiableList(StringUtils.splitToList(preferSerialization, ','));
+        }
+        return Collections.emptyList();
     }
 }
