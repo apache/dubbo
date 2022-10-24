@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,11 +51,18 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
     /**
      * uses a single worker thread operating off an bounded queue
      */
-    private ThreadPoolExecutor executor;
+    private ThreadPoolExecutor executor = null;
 
-    public AdaptiveLoadBalanceFilter(ApplicationModel applicationModel) {
-        executor = new ThreadPoolExecutor(1, 1, 0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
-            new NamedInternalThreadFactory("Dubbo-framework-loadbalance-adaptive", true), new ThreadPoolExecutor.DiscardOldestPolicy());
+    private ThreadPoolExecutor getExecutor(){
+        if (null == executor) {
+            synchronized (this) {
+                if (null == executor) {
+                    executor = new ThreadPoolExecutor(1, 1, 0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
+                        new NamedInternalThreadFactory("Dubbo-framework-loadbalance-adaptive", true), new ThreadPoolExecutor.DiscardOldestPolicy());
+                }
+            }
+        }
+        return executor;
     }
 
     @Override
@@ -95,7 +101,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
                 long rt = (System.nanoTime() - profilerEntry.getStartTime()) / 1000_000L;
                 metricsMap.put("rt", String.valueOf(rt));
 
-                executor.execute(() -> {
+                getExecutor().execute(() -> {
                     AdaptiveMetrics.setProviderMetrics(buildServiceKey(invocation), metricsMap);
                 });
             }
@@ -108,7 +114,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        executor.execute(() -> {
+        getExecutor().execute(() -> {
             AdaptiveMetrics.addErrorReq(buildServiceKey(invocation));
         });
     }
