@@ -408,7 +408,6 @@ public class TriHttp2LocalFlowController implements Http2LocalFlowController {
                 throw streamError(stream.id(), FLOW_CONTROL_ERROR,
                     "Flow control window overflowed for stream: %d", stream.id());
             }
-
             window += delta;
             processedWindow += delta;
             lowerBound = Math.min(delta, 0);
