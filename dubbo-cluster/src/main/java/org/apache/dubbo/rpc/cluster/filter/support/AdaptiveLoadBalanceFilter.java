@@ -114,9 +114,12 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        getExecutor().execute(() -> {
-            AdaptiveMetrics.addErrorReq(buildServiceKey(invocation));
-        });
+        if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
+            && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
+            getExecutor().execute(() -> {
+                AdaptiveMetrics.addErrorReq(buildServiceKey(invocation));
+            });
+        }
     }
 
 
