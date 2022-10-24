@@ -50,6 +50,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFER_SERVICE;
 
 /**
  * Export/refer services of module
@@ -175,7 +177,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         // wait for refer finish
                         waitReferFinish();
                     } catch (Throwable e) {
-                        logger.warn("wait for export/refer services occurred an exception", e);
+                        logger.warn(CONFIG_FAILED_WAIT_EXPORT_REFER, "", "", "wait for export/refer services occurred an exception", e);
                     } finally {
                         onModuleStarted();
                     }
@@ -421,7 +423,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             exportFuture.get();
         } catch (Throwable e) {
-            logger.warn(getIdentifier() + " export services occurred an exception: " + e.toString());
+            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "","",getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
@@ -434,7 +436,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             referFuture = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
             referFuture.get();
         } catch (Throwable e) {
-            logger.warn(getIdentifier() + " refer services occurred an exception: " + e.toString());
+            logger.warn(CONFIG_FAILED_REFER_SERVICE, "", "", getIdentifier() + " refer services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();

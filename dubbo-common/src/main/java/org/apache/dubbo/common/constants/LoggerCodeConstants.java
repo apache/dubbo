@@ -108,6 +108,10 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_NO_RULE_LISTENER = "2-18";
 
+    String CLUSTER_EXECUTE_FILTER_EXCEPTION = "2-19";
+
+    String CLUSTER_FAILED_GROUP_MERGE = "2-20";
+
     // proxy module 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
@@ -158,6 +162,28 @@ public interface LoggerCodeConstants {
     String CONFIG_ZOOKEEPER_SERVER_ERROR = "5-19";
 
     String CONFIG_STOP_DUBBO_ERROR = "5-20";
+
+    String CONFIG_FAILED_EXECUTE_DESTORY = "5-21";
+
+    String CONFIG_FAILED_INIT_CONFIG_CENTER = "5-22";
+
+    String CONFIG_FAILED_WAIT_EXPORT_REFER = "5-23";
+
+    String CONFIG_FAILED_REFER_SERVICE = "5-24";
+
+    String CONFIG_UNDEFINED_PROTOCOL = "5-25";
+
+    String CONFIG_METADATA_SERVICE_EXPORTED = "5-26";
+
+    String CONFIG_API_WRONG_USE = "5-27";
+
+    String CONFIG_NO_ANNOTATIONS_FOUND = "5-28";
+
+    String CONFIG_NO_BEANS_SCANNED = "5-29";
+
+    String CONFIG_DUPLICATED_BEAN_DEFINITION = "5-30";
+
+    String CONFIG_WARN_STATUS_CHECKER = "5-31";
 
     // transport module 6-1 ~ 6-2
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";

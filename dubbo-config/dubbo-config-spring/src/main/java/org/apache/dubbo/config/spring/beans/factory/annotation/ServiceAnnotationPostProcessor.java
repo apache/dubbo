@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -81,6 +81,9 @@ import java.util.Set;
 
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_ANNOTATIONS_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_BEANS_SCANNED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUPLICATED_BEAN_DEFINITION;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
@@ -111,7 +114,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             com.alibaba.dubbo.config.annotation.Service.class
     );
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     protected final Set<String> packagesToScan;
 
@@ -187,7 +190,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         scanned = true;
         if (CollectionUtils.isEmpty(packagesToScan)) {
             if (logger.isWarnEnabled()) {
-                logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
+                logger.warn(CONFIG_NO_BEANS_SCANNED, "", "", "packagesToScan is empty , ServiceBean registry will be ignored!");
             }
             return;
         }
@@ -236,7 +239,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 }
             } else {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("No class annotated by Dubbo @Service was found under package ["
+                    logger.warn(CONFIG_NO_ANNOTATIONS_FOUND,"No annotations were found on the class","","No class annotated by Dubbo @Service was found under package ["
                             + packageToScan + "], ignore re-scanned classes: " + scanExcludeFilter.getExcludedCount());
                 }
             }
@@ -585,7 +588,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
             String msg = "Found duplicated BeanDefinition of service interface [" + serviceInterface + "] with bean name [" + serviceBeanName +
                     "], existing definition [ " + existingDefinition + "], new definition [" + serviceBeanDefinition + "]";
-            logger.error(msg);
+            logger.error(CONFIG_DUPLICATED_BEAN_DEFINITION, "", "", msg);
             throw new BeanDefinitionStoreException(serviceBeanDefinition.getResourceDescription(), serviceBeanName, msg);
         }
 
