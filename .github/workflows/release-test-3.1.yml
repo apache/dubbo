@@ -42,7 +42,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 8
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -51,7 +51,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Dubbo cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
@@ -90,11 +90,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-2019 ]
+        os: [ ubuntu-latest, windows-latest ]
     env:
       ZOOKEEPER_VERSION: 3.6.3
     steps:
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache zookeeper binary archive"
         id: "cache-zookeeper"
         with:
@@ -140,7 +140,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-2019 ]
+        os: [ ubuntu-latest, windows-latest ]
         jdk: [ 8, 11, 17, 19 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -151,7 +151,7 @@ jobs:
         with:
           java-version: ${{ matrix.jdk }}
           distribution: 'zulu'
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -177,7 +177,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-2019 ]
+        os: [ ubuntu-latest, windows-latest ]
         jdk: [ 8, 11, 17, 19 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
@@ -190,7 +190,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.jdk }}
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: "Cache local Maven repository"
         with:
           path: ~/.m2/repository
@@ -245,7 +245,7 @@ jobs:
           repository: 'apache/dubbo-samples'
           ref: master
       - name: "Cache local Maven repository"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
@@ -253,7 +253,7 @@ jobs:
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
       - name: "Restore Dubbo cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
