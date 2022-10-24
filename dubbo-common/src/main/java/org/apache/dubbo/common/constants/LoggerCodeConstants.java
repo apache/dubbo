@@ -190,4 +190,9 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
 
+    // Internal unknown error.
+
+    String INTERNAL_ERROR = "99-0";
+
+    String INTERNAL_INTERRUPTED = "99-1";
 }
