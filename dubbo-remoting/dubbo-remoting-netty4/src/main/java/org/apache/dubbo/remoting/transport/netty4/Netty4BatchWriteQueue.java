@@ -64,7 +64,11 @@ public class Netty4BatchWriteQueue extends BatchExecutorQueue<Netty4BatchWriteQu
     @Override
     protected void flush(MessageTuple item) {
         prepare(item);
-        channel.writeAndFlush(multiMessage).addListener(new ChannelFutureListener() {
+        Object finalMessage = multiMessage;
+        if (multiMessage.size() == 1) {
+            finalMessage = multiMessage.get(0);
+        }
+        channel.writeAndFlush(finalMessage).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 ChannelPromise cp;
