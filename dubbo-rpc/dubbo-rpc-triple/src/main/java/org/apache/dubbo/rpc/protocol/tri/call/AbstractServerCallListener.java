@@ -16,7 +16,7 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.call;
-
+import io.netty.handler.codec.http2.Http2Stream;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -27,7 +27,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
-
+import org.apache.dubbo.rpc.protocol.tri.TriHttp2LocalFlowController;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import java.net.InetSocketAddress;
 
 public abstract class AbstractServerCallListener implements AbstractServerCall.Listener {
@@ -46,7 +47,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         this.responseObserver = responseObserver;
     }
 
-    public void invoke() {
+    public void invoke(TripleFlowControlFrame tripleFlowControlBean) {
         RpcContext.restoreCancellationContext(cancellationContext);
         InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
             .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
@@ -59,6 +60,12 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         final long stInMillis = System.currentTimeMillis();
         try {
             final Result response = invoker.invoke(invocation);
+            //unary and serverstream add flowcontrol update windowsize
+            if(null != tripleFlowControlBean && null != tripleFlowControlBean.getHttp2Connection() && tripleFlowControlBean.getWindowSizeIncrement() > 0 && null != tripleFlowControlBean.getHttp2WindowUpdateFrame()){
+                Http2Stream stream = tripleFlowControlBean.getHttp2Connection().stream(tripleFlowControlBean.getHttp2WindowUpdateFrame().stream().id());
+                TriHttp2LocalFlowController triHttp2LocalFlowController = (TriHttp2LocalFlowController)tripleFlowControlBean.getHttp2Connection().local().flowController();
+                triHttp2LocalFlowController.consumeTriBytes(stream, tripleFlowControlBean.getWindowSizeIncrement());
+            }
             response.whenCompleteWithContext((r, t) -> {
                 responseObserver.setResponseAttachments(response.getObjectAttachments());
                 if (t != null) {

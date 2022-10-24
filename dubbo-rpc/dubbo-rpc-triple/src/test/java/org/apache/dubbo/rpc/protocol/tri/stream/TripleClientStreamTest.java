@@ -16,9 +16,10 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
-
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.Http2DataFrame;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -109,12 +110,13 @@ class TripleClientStreamTest {
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TriRpcStatus.OK.code.code + "");
         headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(),
             TripleHeaderEnum.CONTENT_PROTO.getHeader());
-        transportListener.onHeader(headers, false);
+        transportListener.onHeader(headers, false,null);
         Assertions.assertTrue(listener.started);
         stream.request(2);
         byte[] data = new byte[]{0, 0, 0, 0, 1, 1};
         final ByteBuf buf = Unpooled.wrappedBuffer(data);
-        transportListener.onData(buf, false);
+        Http2DataFrame fame =  new DefaultHttp2DataFrame(buf);
+        transportListener.onData(fame, false);
         buf.release();
         Assertions.assertEquals(1, listener.message.length);
     }

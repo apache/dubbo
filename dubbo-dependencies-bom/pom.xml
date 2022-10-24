@@ -349,7 +349,7 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java-util</artifactId>
-                <version>${protobuf-java_version}</version>
+                <version>3.19.2</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
