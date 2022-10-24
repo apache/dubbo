@@ -170,6 +170,8 @@ public interface LoggerCodeConstants {
 
     String INTERNAL_SERVICE_CONFIG_ERROR = "6-3";
 
+    // Internal unknown error.
+
     String INTERNAL_ERROR = "99-0";
 
     String INTERNAL_INTERRUPTED = "99-1";
