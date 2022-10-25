@@ -815,14 +815,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-
-    <repositories>
-        <!--    只有中央仓库中才有ProtoBuf的编译插件...    -->
-        <repository>
-            <id>central-repos</id>
-            <name>Central Repository</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </repository>
-    </repositories>
 </project>
