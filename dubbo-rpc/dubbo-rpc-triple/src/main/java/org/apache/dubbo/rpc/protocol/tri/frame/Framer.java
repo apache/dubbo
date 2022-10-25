@@ -21,12 +21,32 @@ import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 public interface Framer {
+    /**
+     * get the compressor used for compression.
+     * @return
+     */
     Compressor getCompressor();
+
+    /**
+     * Set the compressor used for compression.
+     * @param compressor
+     */
     void setCompressor(Compressor compressor);
 
+    /**
+     * Writes out a payload message.
+     * @param cmd contains the message to be written out. It will be completely consumed.
+     */
     void writePayload(byte[] cmd);
 
+    /**
+     * Closes, with flush.
+     * @return
+     */
     ChannelFuture close();
 
+    /**
+     * Flush the buffered payload.
+     */
     void flush();
 }

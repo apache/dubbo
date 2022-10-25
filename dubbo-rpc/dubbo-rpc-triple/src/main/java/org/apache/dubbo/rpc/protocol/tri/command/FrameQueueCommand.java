@@ -52,6 +52,6 @@ public class FrameQueueCommand {
     }
 
     public void run(Channel channel) {
-        channel.write(this, promise);
+        channel.write(frame, promise);
     }
 }
