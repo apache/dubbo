@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleServerStream;
@@ -44,26 +45,23 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         TripleHttp2FrameServerHandler.class);
     private final PathResolver pathResolver;
-    private final FrameworkModel frameworkModel;
-    private final Executor executor;
-    private final List<HeaderFilter> filters;
+    private final ExecutorSupport executorSupport;
     private final String acceptEncoding;
     private final TripleServerStream tripleServerStream;
 
     public TripleHttp2FrameServerHandler(
         FrameworkModel frameworkModel,
-        Executor executor,
+        ExecutorSupport executorSupport,
         List<HeaderFilter> filters,
         Http2StreamChannel channel,
         TripleWriteQueue writeQueue) {
-        this.frameworkModel = frameworkModel;
-        this.executor = executor;
-        this.filters = filters;
+        this.executorSupport = executorSupport;
         this.acceptEncoding = String.join(",",
             frameworkModel.getExtensionLoader(DeCompressor.class).getSupportedExtensions());
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
-        tripleServerStream = new TripleServerStream(channel, frameworkModel, executor, pathResolver, acceptEncoding, filters, writeQueue);
+        // The executor will be assigned in onHeadersRead method
+        tripleServerStream = new TripleServerStream(channel, frameworkModel, null, pathResolver, acceptEncoding, filters, writeQueue);
     }
 
     @Override
@@ -109,6 +107,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
+        Executor executor = executorSupport.getExecutor(msg);
+        tripleServerStream.setExecutor(executor);
         tripleServerStream.transportObserver.onHeader(msg.headers(), msg.isEndStream());
     }
 
