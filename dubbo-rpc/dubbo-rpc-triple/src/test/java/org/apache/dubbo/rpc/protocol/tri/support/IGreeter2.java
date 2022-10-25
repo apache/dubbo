@@ -14,21 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.tri.support;
 
-package org.apache.dubbo.rpc.protocol.tri.command;
+public interface IGreeter2 {
+    String SERVER_MSG = "HELLO WORLD";
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-
-public class EndStreamQueueCommand extends QueuedCommand {
-
-    public static EndStreamQueueCommand create() {
-        return new EndStreamQueueCommand();
-    }
-
-    @Override
-    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.write(new DefaultHttp2DataFrame(true), promise);
-    }
+    /**
+     * Use request to respond
+     */
+    String echo(String request) throws IGreeterException;
 }

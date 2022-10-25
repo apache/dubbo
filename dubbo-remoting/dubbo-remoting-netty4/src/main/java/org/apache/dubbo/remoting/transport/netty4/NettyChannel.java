@@ -55,6 +55,8 @@ final class NettyChannel extends AbstractChannel {
 
     private final AtomicBoolean active = new AtomicBoolean(false);
 
+    private final Netty4BatchWriteQueue writeQueue;
+
     /**
      * The constructor of NettyChannel.
      * It is private so NettyChannel usually create by {@link NettyChannel#getOrAddChannel(Channel, URL, ChannelHandler)}
@@ -69,6 +71,7 @@ final class NettyChannel extends AbstractChannel {
             throw new IllegalArgumentException("netty channel == null;");
         }
         this.channel = channel;
+        this.writeQueue = Netty4BatchWriteQueue.createWriteQueue(channel);
     }
 
     /**
@@ -161,7 +164,7 @@ final class NettyChannel extends AbstractChannel {
         boolean success = true;
         int timeout = 0;
         try {
-            ChannelFuture future = channel.writeAndFlush(message);
+            ChannelFuture future = writeQueue.enqueue(message);
             if (sent) {
                 // wait timeout ms
                 timeout = getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);

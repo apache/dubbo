@@ -126,6 +126,8 @@ public interface CommonConstants {
 
     String CORE_THREADS_KEY = "corethreads";
 
+    String THREAD_POOL_EXHAUSTED_LISTENERS_KEY = "thread-pool-exhausted-listeners";
+
     String THREADS_KEY = "threads";
 
     String QUEUES_KEY = "queues";

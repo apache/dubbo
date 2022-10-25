@@ -72,7 +72,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             }
         } catch (Throwable t) {
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
-                    + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
+                    + " on " + bindAddress + ", cause: " + t.getMessage(), t);
         }
         executors.add(executorRepository.createExecutorIfAbsent(url));
     }
