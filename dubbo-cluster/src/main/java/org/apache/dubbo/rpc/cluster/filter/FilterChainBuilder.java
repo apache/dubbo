@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster.filter;
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_EXECUTE_FILTER_EXCEPTION;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 @SPI(value = "default", scope = APPLICATION)
@@ -179,7 +180,7 @@ public interface FilterChainBuilder {
     }
 
     class CallbackRegistrationInvoker<T, FILTER extends BaseFilter> implements Invoker<T> {
-        static final Logger LOGGER = LoggerFactory.getLogger(CallbackRegistrationInvoker.class);
+        static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CallbackRegistrationInvoker.class);
         final Invoker<T> filterInvoker;
         final List<FILTER> filters;
 
@@ -220,7 +221,7 @@ public interface FilterChainBuilder {
                             }
                         }
                     } catch (RuntimeException runtimeException) {
-                        LOGGER.error(String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
+                        LOGGER.error(CLUSTER_EXECUTE_FILTER_EXCEPTION, "the custom filter is abnormal", "", String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug(String.format("Whole filter list is: %s", filters.stream().map(tmpFilter -> tmpFilter.getClass().getSimpleName()).collect(Collectors.toList())));
                         }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_GROUP_MERGE;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 
@@ -50,7 +51,7 @@ import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 @SuppressWarnings("unchecked")
 public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private static final Logger log = LoggerFactory.getLogger(MergeableClusterInvoker.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(MergeableClusterInvoker.class);
 
     public MergeableClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -101,8 +102,8 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result r = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
-                    log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
-                        " failed: " + r.getException().getMessage(), r.getException());
+                    log.error(CLUSTER_FAILED_GROUP_MERGE, "Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
+                        " failed: " + r.getException().getMessage(), "", r.getException().getMessage());
                 } else {
                     resultList.add(r);
                 }

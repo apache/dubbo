@@ -22,7 +22,7 @@ package org.apache.dubbo.common.constants;
  */
 public interface LoggerCodeConstants {
 
-    // common module 0-1 ~ 0-4
+    // common module
     String COMMON_THREAD_POOL_EXHAUSTED = "0-1";
 
     String COMMON_PROPERTY_MISSPELLING = "0-2";
@@ -31,8 +31,9 @@ public interface LoggerCodeConstants {
 
     String COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED = "0-4";
 
-
     String COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED = "0-5";
+
+    String COMMON_THREAD_INTERRUPTED_EXCEPTION = "0-6";
 
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
@@ -71,7 +72,21 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_MISSING_METADATA_CONFIG_PORT = "1-18";
 
-    // cluster module 2-1 ~ 2-18
+    String REGISTRY_ERROR_LISTEN_KUBERNETES = "1-19";
+
+    String REGISTRY_UNABLE_MATCH_KUBERNETES = "1-20";
+
+    String REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES = "1-21";
+
+    String REGISTRY_UNABLE_ACCESS_KUBERNETES = "1-22";
+
+    String REGISTRY_FAILED_DOWNLOAD_FILE = "1-23";
+
+    String REGISTRY_FAILED_START_ZOOKEEPER = "1-24";
+
+    String REGISTRY_FAILED_STOP_ZOOKEEPER = "1-25";
+
+    // cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
     String CLUSTER_NO_VALID_PROVIDER = "2-2";
@@ -108,17 +123,21 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_NO_RULE_LISTENER = "2-18";
 
-    // proxy module 3-1
+    String CLUSTER_EXECUTE_FILTER_EXCEPTION = "2-19";
+
+    String CLUSTER_FAILED_GROUP_MERGE = "2-20";
+
+    // proxy module
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
-    // protocol module 4-1 ~ 4-3
+    // protocol module
     String PROTOCOL_UNSUPPORTED = "4-1";
 
     String PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER = "4-2";
 
     String PROTOCOL_FAILED_REFER_INVOKER = "4-3";
 
-    // config module 5-1 ~ 5-20
+    // config module
     String CONFIG_FAILED_CONNECT_REGISTRY = "5-1";
 
     String CONFIG_FAILED_SHUTDOWN_HOOK = "5-2";
@@ -159,7 +178,39 @@ public interface LoggerCodeConstants {
 
     String CONFIG_STOP_DUBBO_ERROR = "5-20";
 
-    // transport module 6-1 ~ 6-2
+    String CONFIG_FAILED_EXECUTE_DESTORY = "5-21";
+
+    String CONFIG_FAILED_INIT_CONFIG_CENTER = "5-22";
+
+    String CONFIG_FAILED_WAIT_EXPORT_REFER = "5-23";
+
+    String CONFIG_FAILED_REFER_SERVICE = "5-24";
+
+    String CONFIG_UNDEFINED_PROTOCOL = "5-25";
+
+    String CONFIG_METADATA_SERVICE_EXPORTED = "5-26";
+
+    String CONFIG_API_WRONG_USE = "5-27";
+
+    String CONFIG_NO_ANNOTATIONS_FOUND = "5-28";
+
+    String CONFIG_NO_BEANS_SCANNED = "5-29";
+
+    String CONFIG_DUPLICATED_BEAN_DEFINITION = "5-30";
+
+    String CONFIG_WARN_STATUS_CHECKER = "5-31";
+
+    String CONFIG_FAILED_CLOSE_CONNECT_APOLLO = "5-32";
+
+    String CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO = "5-33";
+
+    String CONFIG_ERROR_NACOS = "5-34";
+
+    String CONFIG_START_DUBBO_ERROR = "5-35";
+
+    String CONFIG_FILTER_VALIDATION_EXCEPTION = "5-36";
+
+    // transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
