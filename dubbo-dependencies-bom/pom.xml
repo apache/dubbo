@@ -212,57 +212,6 @@
                 <artifactId>netty</artifactId>
                 <version>${netty_version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-all</artifactId>
-                <version>${netty4_version}</version>
-            </dependency>
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-codec</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-handler</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-codec-http2</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--            </dependency>-->
-
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-transport-native-epoll</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--                <classifier>linux-x86_64</classifier>-->
-<!--                <scope>runtime</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-transport-native-epoll</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--                <classifier>linux-aarch_64</classifier>-->
-<!--                <scope>runtime</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-transport-native-kqueue</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--                <classifier>osx-x86_64</classifier>-->
-<!--                <scope>runtime</scope>-->
-<!--            </dependency>-->
-<!--            <dependency>-->
-<!--                <groupId>io.netty</groupId>-->
-<!--                <artifactId>netty-transport-native-kqueue</artifactId>-->
-<!--                <version>${netty4_version}</version>-->
-<!--                <classifier>osx-aarch_64</classifier>-->
-<!--                <scope>runtime</scope>-->
-<!--            </dependency>-->
-
             <dependency>
                 <groupId>org.apache.mina</groupId>
                 <artifactId>mina-core</artifactId>
