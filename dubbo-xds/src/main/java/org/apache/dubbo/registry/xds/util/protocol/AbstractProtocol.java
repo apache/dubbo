@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -39,9 +39,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
+
 public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractProtocol.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProtocol.class);
 
     protected final XdsChannel xdsChannel;
 
@@ -114,7 +116,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             // get result
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
-            logger.error("Error occur when request control panel.");
+            logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error occur when request control panel.");
             return null;
         } finally {
             // close observer
@@ -166,7 +168,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     // get result
                     consumer.accept(future.get());
                 } catch (InterruptedException | ExecutionException e) {
-                    logger.error("Error occur when request control panel.");
+                    logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error occur when request control panel.");
                 } finally {
                     // close observer
                     //requestObserver.onCompleted();
@@ -175,7 +177,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     streamResult.remove(request);
                 }
             } catch (Throwable t) {
-                logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
+                logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error when requesting observe data. Type: " + getTypeUrl(), t);
             }
         }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
 
@@ -235,7 +237,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
         @Override
         public void onError(Throwable t) {
-            logger.error("xDS Client received error message! detail:", t);
+            logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
             clear();
         }
 

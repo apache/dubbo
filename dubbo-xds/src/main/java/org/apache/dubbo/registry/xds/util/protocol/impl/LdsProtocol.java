@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
@@ -38,9 +38,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
+
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
 
-    private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);
@@ -87,7 +89,7 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
         try {
             return any.unpack(Listener.class);
         } catch (InvalidProtocolBufferException e) {
-            logger.error("Error occur when decode xDS response.", e);
+            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
             return null;
         }
     }
@@ -99,7 +101,7 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
             }
             return any.unpack(HttpConnectionManager.class);
         } catch (InvalidProtocolBufferException e) {
-            logger.error("Error occur when decode xDS response.", e);
+            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
             return null;
         }
     }

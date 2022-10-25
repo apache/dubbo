@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
@@ -51,7 +51,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.OPTIMIZER_KEY;
  */
 public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<>();
 
