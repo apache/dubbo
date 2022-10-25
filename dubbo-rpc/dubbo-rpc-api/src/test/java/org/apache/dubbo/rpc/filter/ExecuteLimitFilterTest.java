@@ -101,31 +101,33 @@ class ExecuteLimitFilterTest {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&executes=" + maxExecute);
         final Invoker<ExecuteLimitFilter> invoker = new BlockMyInvoker<>(url, 1000);
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latchThatWaitsAllThreadStarted = new CountDownLatch(1);
+        final CountDownLatch latchThatWaitsAllThreadFinished = new CountDownLatch(totalExecute);
+
         for (int i = 0; i < totalExecute; i++) {
 
             Thread thread = new Thread(() -> {
                 try {
-                    latch.await();
+                    latchThatWaitsAllThreadStarted.await();
+                    executeLimitFilter.invoke(invoker, invocation);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                }
-                try {
-                    executeLimitFilter.invoke(invoker, invocation);
                 } catch (RpcException expected) {
                     failed.incrementAndGet();
+                } finally {
+                    latchThatWaitsAllThreadFinished.countDown();
                 }
             });
 
             thread.start();
         }
 
-        latch.countDown();
+        latchThatWaitsAllThreadStarted.countDown();
 
         try {
-            Thread.sleep(1000);
+            latchThatWaitsAllThreadFinished.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         Assertions.assertEquals(totalExecute - maxExecute, failed.get());
