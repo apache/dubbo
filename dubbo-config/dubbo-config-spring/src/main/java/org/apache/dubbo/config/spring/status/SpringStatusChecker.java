@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring.status;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
@@ -29,13 +29,15 @@ import org.springframework.context.Lifecycle;
 
 import java.lang.reflect.Method;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_STATUS_CHECKER;
+
 /**
  * SpringStatusChecker
  */
 @Activate
 public class SpringStatusChecker implements StatusChecker {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpringStatusChecker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SpringStatusChecker.class);
 
     private ApplicationModel applicationModel;
 
@@ -100,7 +102,7 @@ public class SpringStatusChecker implements StatusChecker {
             if (t.getCause() instanceof UnsupportedOperationException){
                 logger.debug(t.getMessage(), t);
             }else {
-                logger.warn(t.getMessage(), t);
+                logger.warn(CONFIG_WARN_STATUS_CHECKER, "", "", t.getMessage(), t);
             }
         }
         return new Status(level, buf.toString());
