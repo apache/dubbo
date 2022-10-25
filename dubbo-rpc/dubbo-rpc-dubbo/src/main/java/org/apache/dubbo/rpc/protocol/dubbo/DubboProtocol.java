@@ -149,7 +149,12 @@ public class DubboProtocol extends AbstractProtocol {
             }
             RpcContext.getServiceContext().setRemoteAddress(channel.getRemoteAddress());
             Result result = invoker.invoke(inv);
-            return result.thenApply(Function.identity());
+            return result.thenApply(Function.identity())
+                .thenApply(t->{
+//                    FutureContext.getContext().setFuture(null);
+                    RpcContext.getServiceContext().setFuture(null);
+                    return t;
+                });
         }
 
         @Override
