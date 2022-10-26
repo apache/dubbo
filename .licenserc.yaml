@@ -76,6 +76,8 @@ header:
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java'
     - 'dubbo-config/dubbo-config-spring/src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java'
+    - 'dubbo-remoting/dubbo-remoting-api/src/main/java/org/apache/dubbo/remoting/buffer/WritableBuffer.java'
+    - 'dubbo-remoting/dubbo-remoting-api/src/main/java/org/apache/dubbo/remoting/buffer/WritableBufferAllocator.java'
 
   comment: on-failure
 

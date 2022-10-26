@@ -287,3 +287,11 @@ This product contains a modified portion of 'Istio', an open platform to connect
  under a "Apache License 2.0" license, see https://github.com/istio/api/blob/master/LICENSE:
 
  * security/v1alpha1/ca.proto
+
+This product contains a portion of the grpc project, which is published at
+https://github.com/grpc/ and is licensed under a "Apache License 2.0" license, see https://github.com/grpc/grpc-java/blob/master/LICENSE:
+
+ * org.apache.dubbo.remoting.buffer.WritableBuffer
+ * org.apache.dubbo.remoting.buffer.WritableBufferAllocator
+
+
