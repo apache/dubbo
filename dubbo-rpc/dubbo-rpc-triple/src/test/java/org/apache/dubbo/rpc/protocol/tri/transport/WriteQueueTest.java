@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.EmptyByteBuf;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
@@ -57,9 +59,11 @@ public class WriteQueueTest {
         channel = Mockito.mock(Channel.class);
         Channel parent = Mockito.mock(Channel.class);
         ChannelPromise promise = Mockito.mock(ChannelPromise.class);
+        ByteBufAllocator byteBufAllocator = Mockito.mock(ByteBufAllocator.class);
         EventLoop eventLoop = new DefaultEventLoop();
         Mockito.when(parent.eventLoop()).thenReturn(eventLoop);
 
+        Mockito.when(channel.alloc()).thenReturn(byteBufAllocator);
         Mockito.when(channel.parent()).thenReturn(parent);
         Mockito.when(channel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(channel.isActive()).thenReturn(true);
@@ -84,12 +88,7 @@ public class WriteQueueTest {
             ayFrame.add(defaultHttp2HeadersFrame);
         }
         {
-            byte[] bytes = new byte[0];
-            ByteBuf buf = channel.alloc().buffer();
-            buf.writeByte(0);
-            buf.writeInt(bytes.length);
-            buf.writeBytes(bytes);
-            DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(buf, true);
+            DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(new EmptyByteBuf(channel.alloc()), true);
             writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2DataFrame).channel(channel), false);
             ayFrame.add(defaultHttp2DataFrame);
         }
@@ -99,12 +98,8 @@ public class WriteQueueTest {
             ayFrame.add(defaultHttp2ResetFrame);
         }
         {
-            TriRpcStatus status = TriRpcStatus.UNKNOWN
-                .withCause(new RpcException())
-                .withDescription("Encode Response data error");
-            ByteBuf buf = ByteBufUtil.writeUtf8(channel.alloc(), status.description);
-            DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(buf, true);
-            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(buf, true)).channel(channel), true);
+            DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(new EmptyByteBuf(channel.alloc()), true);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2DataFrame).channel(channel), true);
             ayFrame.add(defaultHttp2DataFrame);
         }
 
@@ -112,13 +107,13 @@ public class WriteQueueTest {
             Thread.sleep(50);
         }
 
-        ArgumentCaptor<FrameQueueCommand> commandArgumentCaptor = ArgumentCaptor.forClass(FrameQueueCommand.class);
+        ArgumentCaptor<Http2StreamFrame> commandArgumentCaptor = ArgumentCaptor.forClass(Http2StreamFrame.class);
         ArgumentCaptor<ChannelPromise> promiseArgumentCaptor = ArgumentCaptor.forClass(ChannelPromise.class);
         Mockito.verify(channel, Mockito.times(4)).write(commandArgumentCaptor.capture(), promiseArgumentCaptor.capture());
-        List<FrameQueueCommand> queuedCommands = commandArgumentCaptor.getAllValues();
+        List<Http2StreamFrame> queuedCommands = commandArgumentCaptor.getAllValues();
         Assertions.assertEquals(queuedCommands.size(), ayFrame.size());
         for (int i = 0; i < queuedCommands.size(); i++) {
-            Assertions.assertTrue(queuedCommands.get(i).getFrame().equals(ayFrame.get(i)));
+            Assertions.assertTrue(queuedCommands.get(i).equals(ayFrame.get(i)));
         }
     }
 
