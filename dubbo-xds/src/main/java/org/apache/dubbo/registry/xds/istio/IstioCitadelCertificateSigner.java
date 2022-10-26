@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.xds.istio;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 import org.apache.dubbo.rpc.RpcException;
@@ -62,9 +62,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_CERT_ISTIO;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_KEY_ISTIO;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_RECEIVE_ERROR_MSG_ISTIO;
+
 public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
-    private static final Logger logger = LoggerFactory.getLogger(IstioCitadelCertificateSigner.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(IstioCitadelCertificateSigner.class);
 
     private final org.apache.dubbo.registry.xds.istio.IstioEnv istioEnv;
 
@@ -99,7 +103,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 try {
                     certPair = createCert();
                 } catch (IOException e) {
-                    logger.error("Generate Cert from Istio failed.", e);
+                    logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
                     throw new RpcException("Generate Cert from Istio failed.", e);
                 }
             }
@@ -122,7 +126,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 privateKey = keypair.getPrivate();
                 signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
             } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-                logger.error("Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+                logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
                     + "Will attempt to generate with RSA2048.", e);
             }
         }
@@ -136,7 +140,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 privateKey = keypair.getPrivate();
                 signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keypair.getPrivate());
             } catch (NoSuchAlgorithmException | OperatorCreationException e) {
-                logger.error("Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.", e);
+                logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.", e);
                 throw new RpcException(e);
             }
         }
@@ -202,7 +206,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
             @Override
             public void onError(Throwable throwable) {
                 failed.set(true);
-                logger.error("Receive error message from Istio Citadel grpc stub.", throwable);
+                logger.error(REGISTRY_RECEIVE_ERROR_MSG_ISTIO, "", "", "Receive error message from Istio Citadel grpc stub.", throwable);
                 countDownLatch.countDown();
             }
 
