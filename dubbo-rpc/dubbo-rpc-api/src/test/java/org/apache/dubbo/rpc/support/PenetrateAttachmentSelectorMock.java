@@ -19,20 +19,21 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.PenetrateAttachmentSelector;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcContextAttachment;
 
 import java.util.Map;
 
 public class PenetrateAttachmentSelectorMock implements PenetrateAttachmentSelector {
 
     @Override
-    public Map<String, Object> select(Invocation invocation) {
+    public Map<String, Object> select(Invocation invocation, RpcContextAttachment serverAttachment) {
         Map<String, Object> objectAttachments = RpcContext.getServerAttachment().getObjectAttachments();
         objectAttachments.put("testKey", "testVal");
         return objectAttachments;
     }
 
     @Override
-    public Map<String, Object> selectReverse(Invocation invocation) {
+    public Map<String, Object> selectReverse(Invocation invocation, RpcContextAttachment clientResponse) {
         return null;
     }
 }

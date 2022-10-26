@@ -155,7 +155,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         // pass attachments to result
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = supportedSelector.selectReverse(invocation);
+                Map<String, Object> selected = supportedSelector.selectReverse(invocation, RpcContext.getServerResponseContext());
                 if (CollectionUtils.isNotEmptyMap(selected)) {
                     appResponse.addObjectAttachments(selected);
                 }

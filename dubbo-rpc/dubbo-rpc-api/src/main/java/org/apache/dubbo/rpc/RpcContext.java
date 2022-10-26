@@ -56,18 +56,6 @@ public class RpcContext {
     /**
      * use internal thread local to improve performance
      */
-    private static final RpcContext AGENT_SERVER_CONTEXT = new RpcContextAttachment() {
-        @Override
-        public RpcContextAttachment setObjectAttachment(String key, Object value) {
-            if (value == null) {
-                attachments.remove(key);
-            } else {
-                RpcContext.getServerResponseContext().setAttachment(key, value);
-                attachments.put(key, value);
-            }
-            return this;
-        }
-    };
 
     private static final InternalThreadLocal<RpcContextAttachment> CLIENT_RESPONSE_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
         @Override
@@ -138,7 +126,7 @@ public class RpcContext {
      * @return server context
      */
     public static RpcContextAttachment getServerContext() {
-        return (RpcContextAttachment) AGENT_SERVER_CONTEXT;
+        return  RpcServerContextAttachment.getServerContext();
     }
 
     /**
@@ -188,6 +176,13 @@ public class RpcContext {
      */
     public static RpcContextAttachment getServerAttachment() {
         return SERVER_ATTACHMENT.get();
+    }
+
+    public static void removeServerContext() {
+        RpcContextAttachment rpcContextAttachment = RpcContext.getServerContext();
+        for(String key : rpcContextAttachment.attachments.keySet()) {
+            rpcContextAttachment.remove(key);
+        }
     }
 
     public boolean canRemove() {

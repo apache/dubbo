@@ -62,6 +62,9 @@ public class RpcContext {
         org.apache.dubbo.rpc.RpcContext.removeServerResponseContext();
     }
 
+    public static void removeServerContext() {
+        org.apache.dubbo.rpc.RpcContext.removeServerContext();
+    }
     public static void removeContext() {
         org.apache.dubbo.rpc.RpcContext.removeContext();
     }
