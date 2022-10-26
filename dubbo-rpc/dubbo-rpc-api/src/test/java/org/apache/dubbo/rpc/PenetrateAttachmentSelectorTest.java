@@ -39,7 +39,7 @@ public class PenetrateAttachmentSelectorTest {
         Map<String, Object> allSelected = new HashMap<>();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (String supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select(null);
+                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select(null, null, null);
                 allSelected.putAll(selected);
             }
         }
