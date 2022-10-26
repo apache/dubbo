@@ -23,107 +23,107 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
     private static final RpcContextAttachment AGENT_SERVER_CONTEXT = new RpcContextAttachment() {
         @Override
         public RpcContextAttachment setObjectAttachment(String key, Object value) {
-            return super.setObjectAttachment(key, value);
+            return RpcContext.getServerResponseContext().setObjectAttachment(key, value);
         }
 
         @Override
         protected void setAsyncContext(AsyncContext asyncContext) {
-            super.setAsyncContext(asyncContext);
+            RpcContext.getServerResponseContext().setAsyncContext(asyncContext);
         }
 
         @Override
         public boolean isAsyncStarted() {
-            return super.isAsyncStarted();
+            return RpcContext.getServerResponseContext().isAsyncStarted();
         }
 
         @Override
         public boolean stopAsync() {
-            return super.stopAsync();
+            return RpcContext.getServerResponseContext().stopAsync();
         }
 
         @Override
         public AsyncContext getAsyncContext() {
-            return super.getAsyncContext();
+            return RpcContext.getClientResponseContext().getAsyncContext();
         }
 
         @Override
         public String getAttachment(String key) {
-            return super.getAttachment(key);
+            return RpcContext.getClientResponseContext().getAttachment(key);
         }
 
         @Override
         public Object getObjectAttachment(String key) {
-            return super.getObjectAttachment(key);
+            return RpcContext.getClientResponseContext().getObjectAttachment(key);
         }
 
         @Override
         public RpcContextAttachment setAttachment(String key, String value) {
-            return super.setAttachment(key, value);
+            return RpcContext.getServerResponseContext().setAttachment(key, value);
         }
 
         @Override
         public RpcContextAttachment setAttachment(String key, Object value) {
-            return super.setAttachment(key, value);
+            return RpcContext.getServerResponseContext().setAttachment(key, value);
         }
 
         @Override
         public RpcContextAttachment removeAttachment(String key) {
-            return super.removeAttachment(key);
+            return RpcContext.getServerResponseContext().removeAttachment(key);
         }
 
         @Override
         public Map<String, String> getAttachments() {
-            return super.getAttachments();
+            return RpcContext.getServerResponseContext().getAttachments();
         }
 
         @Override
         public Map<String, Object> getObjectAttachments() {
-            return super.getObjectAttachments();
+            return RpcContext.getServerResponseContext().getObjectAttachments();
         }
 
         @Override
         public RpcContextAttachment setAttachments(Map<String, String> attachment) {
-            return super.setAttachments(attachment);
+            return RpcContext.getServerResponseContext().setAttachments(attachment);
         }
 
         @Override
         public RpcContextAttachment setObjectAttachments(Map<String, Object> attachment) {
-            return super.setObjectAttachments(attachment);
+            return RpcContext.getServerResponseContext().setObjectAttachments(attachment);
         }
 
         @Override
         public void clearAttachments() {
-            super.clearAttachments();
+            RpcContext.getServerResponseContext().clearAttachments();
         }
 
         @Override
         public Map<String, Object> get() {
-            return super.get();
+            return RpcContext.getServerResponseContext().get();
         }
 
         @Override
         public RpcContextAttachment set(String key, Object value) {
-            return super.set(key, value);
+            return RpcContext.getServerResponseContext().set(key, value);
         }
 
         @Override
         public RpcContextAttachment remove(String key) {
-            return super.remove(key);
+            return RpcContext.getServerResponseContext().remove(key);
         }
 
         @Override
         public Object get(String key) {
-            return super.get(key);
+            return RpcContext.getServerResponseContext().get(key);
         }
 
         @Override
         public RpcContextAttachment copyOf(boolean needCopy) {
-            return super.copyOf(needCopy);
+            return RpcContext.getServerResponseContext().copyOf(needCopy);
         }
 
         @Override
         protected boolean isValid() {
-            return super.isValid();
+            return RpcContext.getServerResponseContext().isValid();
         }
     };
 
