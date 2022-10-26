@@ -17,17 +17,113 @@
 
 package org.apache.dubbo.rpc;
 
+import java.util.Map;
+
 public class RpcServerContextAttachment extends RpcContextAttachment{
     private static final RpcContextAttachment AGENT_SERVER_CONTEXT = new RpcContextAttachment() {
         @Override
         public RpcContextAttachment setObjectAttachment(String key, Object value) {
-            if (value == null) {
-                attachments.remove(key);
-            } else {
-                RpcContext.getServerResponseContext().setAttachment(key, value);
-                attachments.put(key, value);
-            }
-            return this;
+            return super.setObjectAttachment(key, value);
+        }
+
+        @Override
+        protected void setAsyncContext(AsyncContext asyncContext) {
+            super.setAsyncContext(asyncContext);
+        }
+
+        @Override
+        public boolean isAsyncStarted() {
+            return super.isAsyncStarted();
+        }
+
+        @Override
+        public boolean stopAsync() {
+            return super.stopAsync();
+        }
+
+        @Override
+        public AsyncContext getAsyncContext() {
+            return super.getAsyncContext();
+        }
+
+        @Override
+        public String getAttachment(String key) {
+            return super.getAttachment(key);
+        }
+
+        @Override
+        public Object getObjectAttachment(String key) {
+            return super.getObjectAttachment(key);
+        }
+
+        @Override
+        public RpcContextAttachment setAttachment(String key, String value) {
+            return super.setAttachment(key, value);
+        }
+
+        @Override
+        public RpcContextAttachment setAttachment(String key, Object value) {
+            return super.setAttachment(key, value);
+        }
+
+        @Override
+        public RpcContextAttachment removeAttachment(String key) {
+            return super.removeAttachment(key);
+        }
+
+        @Override
+        public Map<String, String> getAttachments() {
+            return super.getAttachments();
+        }
+
+        @Override
+        public Map<String, Object> getObjectAttachments() {
+            return super.getObjectAttachments();
+        }
+
+        @Override
+        public RpcContextAttachment setAttachments(Map<String, String> attachment) {
+            return super.setAttachments(attachment);
+        }
+
+        @Override
+        public RpcContextAttachment setObjectAttachments(Map<String, Object> attachment) {
+            return super.setObjectAttachments(attachment);
+        }
+
+        @Override
+        public void clearAttachments() {
+            super.clearAttachments();
+        }
+
+        @Override
+        public Map<String, Object> get() {
+            return super.get();
+        }
+
+        @Override
+        public RpcContextAttachment set(String key, Object value) {
+            return super.set(key, value);
+        }
+
+        @Override
+        public RpcContextAttachment remove(String key) {
+            return super.remove(key);
+        }
+
+        @Override
+        public Object get(String key) {
+            return super.get(key);
+        }
+
+        @Override
+        public RpcContextAttachment copyOf(boolean needCopy) {
+            return super.copyOf(needCopy);
+        }
+
+        @Override
+        protected boolean isValid() {
+            return super.isValid();
         }
     };
 
@@ -37,6 +133,6 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
      * @return server context
      */
     public static RpcContextAttachment getServerContext() {
-        return (RpcContextAttachment) AGENT_SERVER_CONTEXT;
+        return AGENT_SERVER_CONTEXT;
     }
 }

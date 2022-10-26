@@ -116,6 +116,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
         // pass attachments to result
         Map<String, Object> map = appResponse.getObjectAttachments();
         RpcContext.getClientResponseContext().setObjectAttachments(map);
+        RpcContext.getServerContext().setObjectAttachments(map);
         removeContext(invocation);
     }
 
