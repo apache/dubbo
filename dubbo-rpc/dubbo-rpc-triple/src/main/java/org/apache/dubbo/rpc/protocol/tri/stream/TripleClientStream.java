@@ -85,7 +85,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         this.parent = http2StreamChannel;
         this.listener = listener;
         this.writeQueue = writeQueue;
-        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(http2StreamChannel.alloc()));
+        this.framer = new MessageFramer(http2StreamChannel, writeQueue, new ChannelWritableBufferAllocator(http2StreamChannel.alloc()));
         this.http2StreamChannel = http2StreamChannel;
     }
 
@@ -97,9 +97,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
-        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(parent.alloc()));
-        this.writeQueue = writeQueue;
         this.http2StreamChannel = initHttp2StreamChannel(parent);
+        this.framer = new MessageFramer(this.http2StreamChannel, writeQueue, new ChannelWritableBufferAllocator(this.http2StreamChannel.alloc()));
+        this.writeQueue = writeQueue;
     }
 
     private Http2StreamChannel initHttp2StreamChannel(Channel parent) {

@@ -80,7 +80,7 @@ public class WriteQueueTest {
 
         {
             DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
-            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame), false);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame).channel(channel), false);
             ayFrame.add(defaultHttp2HeadersFrame);
         }
         {
@@ -90,12 +90,12 @@ public class WriteQueueTest {
             buf.writeInt(bytes.length);
             buf.writeBytes(bytes);
             DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(buf, true);
-            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2DataFrame), false);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2DataFrame).channel(channel), false);
             ayFrame.add(defaultHttp2DataFrame);
         }
         {
             DefaultHttp2ResetFrame defaultHttp2ResetFrame = new DefaultHttp2ResetFrame(Http2Error.CANCEL);
-            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2ResetFrame), false);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2ResetFrame).channel(channel), false);
             ayFrame.add(defaultHttp2ResetFrame);
         }
         {
@@ -104,7 +104,7 @@ public class WriteQueueTest {
                 .withDescription("Encode Response data error");
             ByteBuf buf = ByteBufUtil.writeUtf8(channel.alloc(), status.description);
             DefaultHttp2DataFrame defaultHttp2DataFrame = new DefaultHttp2DataFrame(buf, true);
-            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(buf, true)), true);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(buf, true)).channel(channel), true);
             ayFrame.add(defaultHttp2DataFrame);
         }
 

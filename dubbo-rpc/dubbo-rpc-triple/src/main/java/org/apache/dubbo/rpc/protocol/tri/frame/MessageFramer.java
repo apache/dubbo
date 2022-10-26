@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri.frame;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import org.apache.dubbo.remoting.buffer.ChannelWritableBuffer;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 public class MessageFramer implements Framer {
     private static final int HEADER_LENGTH = 5;
 
+    private final Channel sink;
     private final TripleWriteQueue writeQueue;
     private final WritableBufferAllocator bufferAllocator;
     private WritableBuffer buffer;
@@ -39,7 +41,8 @@ public class MessageFramer implements Framer {
 
     private boolean closed;
 
-    public MessageFramer(TripleWriteQueue writeQueue, WritableBufferAllocator bufferAllocator) {
+    public MessageFramer(Channel sink, TripleWriteQueue writeQueue, WritableBufferAllocator bufferAllocator) {
+        this.sink = sink;
         this.writeQueue = writeQueue;
         this.bufferAllocator = bufferAllocator;
     }
@@ -87,7 +90,7 @@ public class MessageFramer implements Framer {
         WritableBuffer buf = buffer;
         buffer = null;
         ByteBuf bytebuf = buf == null ? Unpooled.EMPTY_BUFFER : ((ChannelWritableBuffer)buf).bytebuf().touch();
-        FrameQueueCommand grpcCommand = FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(bytebuf, endOfStream));
+        FrameQueueCommand grpcCommand = FrameQueueCommand.createGrpcCommand(new DefaultHttp2DataFrame(bytebuf, endOfStream)).channel(sink);
         writeQueue.enqueueSoon(grpcCommand, flush);
         return grpcCommand.promise();
     }

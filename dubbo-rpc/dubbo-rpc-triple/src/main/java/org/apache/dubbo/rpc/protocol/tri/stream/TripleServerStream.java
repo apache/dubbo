@@ -105,7 +105,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         this.filters = filters;
         this.writeQueue = writeQueue;
         this.remoteAddress = (InetSocketAddress) channel.remoteAddress();
-        this.framer = new MessageFramer(writeQueue, new ChannelWritableBufferAllocator(channel.alloc()));
+        this.framer = new MessageFramer(channel, writeQueue, new ChannelWritableBufferAllocator(channel.alloc()));
         this.http2StreamChannel = channel;
     }
 
