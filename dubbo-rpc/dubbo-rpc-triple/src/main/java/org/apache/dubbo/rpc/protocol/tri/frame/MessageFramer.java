@@ -27,19 +27,19 @@ import org.apache.dubbo.remoting.buffer.WritableBufferAllocator;
 import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
-import org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 public class MessageFramer implements Framer {
     private static final int HEADER_LENGTH = 5;
 
-    private final WriteQueue writeQueue;
+    private final TripleWriteQueue writeQueue;
     private final WritableBufferAllocator bufferAllocator;
     private WritableBuffer buffer;
     private Compressor compressor = Compressor.NONE;
 
     private boolean closed;
 
-    public MessageFramer(WriteQueue writeQueue, WritableBufferAllocator bufferAllocator) {
+    public MessageFramer(TripleWriteQueue writeQueue, WritableBufferAllocator bufferAllocator) {
         this.writeQueue = writeQueue;
         this.bufferAllocator = bufferAllocator;
     }

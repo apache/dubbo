@@ -439,6 +439,7 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void writerIndex(int writerIndex) {
+        buffer.ensureWritable(writerIndex);
         buffer.writerIndex(writerIndex);
     }
 

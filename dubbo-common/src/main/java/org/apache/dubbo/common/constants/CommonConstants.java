@@ -116,6 +116,8 @@ public interface CommonConstants {
 
     String EXECUTOR_SERVICE_COMPONENT_KEY = ExecutorService.class.getName();
 
+    String CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY = "CONSUMER_SHARED_SERVICE_EXECUTOR";
+
     String INTERNAL_EXECUTOR_SERVICE_COMPONENT_KEY = "INTERNAL_SERVICE_EXECUTOR";
 
     String THREADPOOL_KEY = "threadpool";
@@ -123,6 +125,8 @@ public interface CommonConstants {
     String THREAD_NAME_KEY = "threadname";
 
     String CORE_THREADS_KEY = "corethreads";
+
+    String THREAD_POOL_EXHAUSTED_LISTENERS_KEY = "thread-pool-exhausted-listeners";
 
     String THREADS_KEY = "threads";
 
@@ -581,4 +585,10 @@ public interface CommonConstants {
      */
     String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
+    /**
+     *
+     * used in JVMUtil.java ,Control stack print lines, default is 32 lines
+     *
+     */
+    String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
 }

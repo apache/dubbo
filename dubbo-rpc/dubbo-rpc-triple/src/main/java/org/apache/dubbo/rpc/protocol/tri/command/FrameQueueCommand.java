@@ -23,6 +23,8 @@ import io.netty.handler.codec.http2.Http2StreamFrame;
 
 public class FrameQueueCommand {
 
+    protected Channel channel;
+
     private ChannelPromise promise;
 
     private final Http2StreamFrame frame;
@@ -53,5 +55,14 @@ public class FrameQueueCommand {
 
     public void run(Channel channel) {
         channel.write(frame, promise);
+    }
+
+    public Channel channel() {
+        return channel;
+    }
+
+    public FrameQueueCommand channel(Channel channel) {
+        this.channel = channel;
+        return this;
     }
 }

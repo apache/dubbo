@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -75,11 +77,13 @@ public class NettyChannelTest {
 
     @Test
     public void testSend() throws Exception {
+        Mockito.when(channel.eventLoop()).thenReturn(Mockito.mock(EventLoop.class));
         NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, channelHandler);
-        ChannelFuture future = Mockito.mock(ChannelFuture.class);
+        ChannelPromise future = Mockito.mock(ChannelPromise.class);
         Mockito.when(future.await(1000)).thenReturn(true);
         Mockito.when(future.cause()).thenReturn(null);
         Mockito.when(channel.writeAndFlush(Mockito.any())).thenReturn(future);
+        Mockito.when(channel.newPromise()).thenReturn(future);
         nettyChannel.send("msg", true);
 
         NettyChannel finalNettyChannel = nettyChannel;

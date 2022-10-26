@@ -22,6 +22,7 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
+import org.apache.dubbo.common.BatchExecutorQueue;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
@@ -43,11 +44,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue.DEQUE_CHUNK_SIZE;
-
 
 /**
- * {@link WriteQueue}
+ * {@link TripleWriteQueue}
  */
 public class WriteQueueTest {
     private final AtomicInteger writeMethodCalledTimes = new AtomicInteger(0);
@@ -56,8 +55,12 @@ public class WriteQueueTest {
     @BeforeEach
     public void init() {
         channel = Mockito.mock(Channel.class);
+        Channel parent = Mockito.mock(Channel.class);
         ChannelPromise promise = Mockito.mock(ChannelPromise.class);
         EventLoop eventLoop = new DefaultEventLoop();
+        Mockito.when(parent.eventLoop()).thenReturn(eventLoop);
+
+        Mockito.when(channel.parent()).thenReturn(parent);
         Mockito.when(channel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.newPromise()).thenReturn(promise);
@@ -72,9 +75,8 @@ public class WriteQueueTest {
 
     @Test
     public void test() throws Exception {
-
         List<Http2StreamFrame> ayFrame = new ArrayList<>();
-        WriteQueue writeQueue = new WriteQueue(channel);
+        TripleWriteQueue writeQueue = new TripleWriteQueue();
 
         {
             DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
@@ -106,7 +108,6 @@ public class WriteQueueTest {
             ayFrame.add(defaultHttp2DataFrame);
         }
 
-
         while (writeMethodCalledTimes.get() != 4) {
             Thread.sleep(50);
         }
@@ -123,19 +124,20 @@ public class WriteQueueTest {
 
     @Test
     public void testChunk() throws Exception {
-        WriteQueue writeQueue = new WriteQueue(channel);
+        TripleWriteQueue writeQueue = new TripleWriteQueue();
         // test deque chunk size
         writeMethodCalledTimes.set(0);
-        for (int i = 0; i < DEQUE_CHUNK_SIZE; i++) {
+        for (int i = 0; i < BatchExecutorQueue.DEFAULT_QUEUE_SIZE; i++) {
             DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
-            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame), false);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame).channel(channel), false);
         }
         DefaultHttp2HeadersFrame defaultHttp2HeadersFrame = new DefaultHttp2HeadersFrame(new DefaultHttp2Headers(), false);
-        writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame), true);
-        while (writeMethodCalledTimes.get() != (DEQUE_CHUNK_SIZE + 1)) {
+        writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(defaultHttp2HeadersFrame).channel(channel), true);
+
+        while (writeMethodCalledTimes.get() != (BatchExecutorQueue.DEFAULT_QUEUE_SIZE + 1)) {
             Thread.sleep(50);
         }
-        Mockito.verify(channel, Mockito.times(DEQUE_CHUNK_SIZE + 1)).write(Mockito.any(), Mockito.any());
+        Mockito.verify(channel, Mockito.times(BatchExecutorQueue.DEFAULT_QUEUE_SIZE + 1)).write(Mockito.any(), Mockito.any());
     }
 
 }

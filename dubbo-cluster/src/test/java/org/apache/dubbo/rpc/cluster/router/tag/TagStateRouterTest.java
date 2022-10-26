@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,7 +89,7 @@ public class TagStateRouterTest {
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setAttachment(TAG_KEY, "tag2");
-        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), invocation, false, new Holder<>());
+        List<Invoker<String>> filteredInvokers = router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
         Assertions.assertEquals(1, filteredInvokers.size());
         Assertions.assertEquals(invoker1, filteredInvokers.get(0));
     }

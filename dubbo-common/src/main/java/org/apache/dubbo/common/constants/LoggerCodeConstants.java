@@ -71,6 +71,8 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_MISSING_METADATA_CONFIG_PORT = "1-18";
 
+    String REGISTRY_ROUTER_WAIT_LONG = "1-19";
+
     // cluster module 2-1 ~ 2-18
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
@@ -107,6 +109,8 @@ public interface LoggerCodeConstants {
     String CLUSTER_FAILED_MOCK_REQUEST = "2-17";
 
     String CLUSTER_NO_RULE_LISTENER = "2-18";
+
+    String CLUSTER_ASYN_INVOKE_FAILED = "2-19";
 
     // proxy module 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
@@ -166,4 +170,9 @@ public interface LoggerCodeConstants {
 
     String INTERNAL_SERVICE_CONFIG_ERROR = "6-3";
 
+    // Internal unknown error.
+
+    String INTERNAL_ERROR = "99-0";
+
+    String INTERNAL_INTERRUPTED = "99-1";
 }
