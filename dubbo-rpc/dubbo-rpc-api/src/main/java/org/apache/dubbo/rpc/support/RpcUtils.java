@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -38,6 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETE
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
@@ -50,15 +51,15 @@ import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
  */
 public class RpcUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RpcUtils.class);
     private static final AtomicLong INVOKE_ID = new AtomicLong(0);
 
     public static Class<?> getReturnType(Invocation invocation) {
         try {
             if (invocation != null && invocation.getInvoker() != null
-                    && invocation.getInvoker().getUrl() != null
-                    && invocation.getInvoker().getInterface() != GenericService.class
-                    && !invocation.getMethodName().startsWith("$")) {
+                && invocation.getInvoker().getUrl() != null
+                && invocation.getInvoker().getInterface() != GenericService.class
+                && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
@@ -66,7 +67,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(COMMON_FAILED_REFLECT, "", "", t.getMessage(), t);
         }
         return null;
     }
@@ -74,9 +75,9 @@ public class RpcUtils {
     public static Type[] getReturnTypes(Invocation invocation) {
         try {
             if (invocation != null && invocation.getInvoker() != null
-                    && invocation.getInvoker().getUrl() != null
-                    && invocation.getInvoker().getInterface() != GenericService.class
-                    && !invocation.getMethodName().startsWith("$")) {
+                && invocation.getInvoker().getUrl() != null
+                && invocation.getInvoker().getInterface() != GenericService.class
+                && !invocation.getMethodName().startsWith("$")) {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
@@ -84,7 +85,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(COMMON_FAILED_REFLECT, "", "", t.getMessage(), t);
         }
         return null;
     }
@@ -120,9 +121,9 @@ public class RpcUtils {
 
     public static String getMethodName(Invocation invocation) {
         if ($INVOKE.equals(invocation.getMethodName())
-                && invocation.getArguments() != null
-                && invocation.getArguments().length > 0
-                && invocation.getArguments()[0] instanceof String) {
+            && invocation.getArguments() != null
+            && invocation.getArguments().length > 0
+            && invocation.getArguments()[0] instanceof String) {
             return (String) invocation.getArguments()[0];
         }
         return invocation.getMethodName();
@@ -130,9 +131,9 @@ public class RpcUtils {
 
     public static Object[] getArguments(Invocation invocation) {
         if ($INVOKE.equals(invocation.getMethodName())
-                && invocation.getArguments() != null
-                && invocation.getArguments().length > 2
-                && invocation.getArguments()[2] instanceof Object[]) {
+            && invocation.getArguments() != null
+            && invocation.getArguments().length > 2
+            && invocation.getArguments()[2] instanceof Object[]) {
             return (Object[]) invocation.getArguments()[2];
         }
         return invocation.getArguments();
@@ -140,9 +141,9 @@ public class RpcUtils {
 
     public static Class<?>[] getParameterTypes(Invocation invocation) {
         if ($INVOKE.equals(invocation.getMethodName())
-                && invocation.getArguments() != null
-                && invocation.getArguments().length > 1
-                && invocation.getArguments()[1] instanceof String[]) {
+            && invocation.getArguments() != null
+            && invocation.getArguments().length > 1
+            && invocation.getArguments()[1] instanceof String[]) {
             String[] types = (String[]) invocation.getArguments()[1];
             if (types == null) {
                 return new Class<?>[0];
@@ -228,7 +229,7 @@ public class RpcUtils {
     private static Method getMethodByService(Invocation invocation, String service) throws NoSuchMethodException {
         Class<?> invokerInterface = invocation.getInvoker().getInterface();
         Class<?> cls = invokerInterface != null ? ReflectUtils.forName(invokerInterface.getClassLoader(), service)
-                : ReflectUtils.forName(service);
+            : ReflectUtils.forName(service);
         Method method = cls.getMethod(invocation.getMethodName(), invocation.getParameterTypes());
         if (method.getReturnType() == void.class) {
             return null;
@@ -239,7 +240,7 @@ public class RpcUtils {
     public static long getTimeout(Invocation invocation, long defaultTimeout) {
         long timeout = defaultTimeout;
         Object genericTimeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_ATTACHMENT_KEY);
-        if(genericTimeout == null) {
+        if (genericTimeout == null) {
             genericTimeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_ATTACHMENT_KEY_LOWER);
         }
         if (genericTimeout != null) {

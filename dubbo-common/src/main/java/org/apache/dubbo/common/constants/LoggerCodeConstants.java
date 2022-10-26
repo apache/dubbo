@@ -37,6 +37,10 @@ public interface LoggerCodeConstants {
 
     String COMMON_CLASS_NOT_FOUND = "0-7";
 
+    String COMMON_FAILED_REFLECT = "0-8";
+
+    String COMMON_FAILED_NOTIFY_EVENT = "0-9";
+
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
@@ -150,6 +154,16 @@ public interface LoggerCodeConstants {
     // proxy module
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
+    String PROXY_FAILED_EXPORT_SERVICE = "3-2";
+
+    String PROXY_FAILED_JAVASSIST = "3-3";
+
+    String PROXY_TIMEOUT_REQUEST = "3-4";
+
+    String PROXY_ERROR_ASYNC_RESPONSE = "3-5";
+
+    String PROXY_UNSUPPORTED_INVOKER = "3-6";
+
     // protocol module
     String PROTOCOL_UNSUPPORTED = "4-1";
 
@@ -184,6 +198,12 @@ public interface LoggerCodeConstants {
     String PROTOCOL_CLOSED_SERVER = "4-16";
 
     String PROTOCOL_FAILED_DESTROY_INVOKER = "4-17";
+
+    String PROTOCOL_FAILED_LOAD_MODEL = "4-18";
+
+    String PROTOCOL_INCORRECT_PARAMETER_VALUES = "4-19";
+
+    String PROTOCOL_FAILED_DECODE = "4-20";
 
     // config module
     String CONFIG_FAILED_CONNECT_REGISTRY = "5-1";
