@@ -26,14 +26,14 @@ import java.util.Map;
 public class PenetrateAttachmentSelectorMock implements PenetrateAttachmentSelector {
 
     @Override
-    public Map<String, Object> select(Invocation invocation, RpcContextAttachment serverAttachment) {
+    public Map<String, Object> select(Invocation invocation, RpcContextAttachment clientAttachment, RpcContextAttachment serverAttachment) {
         Map<String, Object> objectAttachments = RpcContext.getServerAttachment().getObjectAttachments();
         objectAttachments.put("testKey", "testVal");
         return objectAttachments;
     }
 
     @Override
-    public Map<String, Object> selectReverse(Invocation invocation, RpcContextAttachment clientResponse) {
+    public Map<String, Object> selectReverse(Invocation invocation, RpcContextAttachment clientResponseContext, RpcContextAttachment serverResponseContext) {
         return null;
     }
 }

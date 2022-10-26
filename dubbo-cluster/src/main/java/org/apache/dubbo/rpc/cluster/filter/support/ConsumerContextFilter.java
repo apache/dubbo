@@ -75,7 +75,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
             if (CollectionUtils.isNotEmpty(supportedSelectors)) {
                 for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
-                    Map<String, Object> selected = supportedSelector.select(invocation, RpcContext.getServerAttachment());
+                    Map<String, Object> selected = supportedSelector.select(invocation, RpcContext.getClientAttachment(), RpcContext.getServerAttachment());
                     if (CollectionUtils.isNotEmptyMap(selected)) {
                         ((RpcInvocation) invocation).addObjectAttachments(selected);
                     }
