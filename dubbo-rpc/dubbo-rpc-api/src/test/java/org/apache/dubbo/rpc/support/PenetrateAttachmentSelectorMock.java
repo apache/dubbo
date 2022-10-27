@@ -34,6 +34,8 @@ public class PenetrateAttachmentSelectorMock implements PenetrateAttachmentSelec
 
     @Override
     public Map<String, Object> selectReverse(Invocation invocation, RpcContextAttachment clientResponseContext, RpcContextAttachment serverResponseContext) {
-        return null;
+        Map<String, Object> objectAttachments = RpcContext.getServerResponseContext().getObjectAttachments();
+        objectAttachments.put("reverseKey", "reverseVal");
+        return objectAttachments;
     }
 }

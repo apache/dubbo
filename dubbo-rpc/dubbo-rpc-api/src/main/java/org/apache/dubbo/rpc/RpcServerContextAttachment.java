@@ -22,6 +22,16 @@ import java.util.Map;
 public class RpcServerContextAttachment extends RpcContextAttachment{
     private static final RpcContextAttachment AGENT_SERVER_CONTEXT = new RpcContextAttachment() {
         @Override
+        public RpcContextAttachment copyOf(boolean needCopy) {
+           throw new RuntimeException("copyOf internal method, should not be invoke");
+        }
+
+        @Override
+        protected boolean isValid() {
+            throw new RuntimeException("isValid of is internal method, should not be invoke");
+        }
+
+        @Override
         public RpcContextAttachment setObjectAttachment(String key, Object value) {
             return RpcContext.getServerResponseContext().setObjectAttachment(key, value);
         }
@@ -48,12 +58,21 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
 
         @Override
         public String getAttachment(String key) {
-            return RpcContext.getClientResponseContext().getAttachment(key);
+            Object value = getObjectAttachment(key);
+            if (value instanceof String) {
+                return (String) value;
+            }
+            return null;
         }
 
         @Override
         public Object getObjectAttachment(String key) {
-            return RpcContext.getClientResponseContext().getObjectAttachment(key);
+            Object attachment = getServerResponseContext().getObjectAttachment(key);
+            if (attachment != null) {
+                return attachment;
+            } else {
+                return RpcContext.getClientResponseContext().getObjectAttachment(key);
+            }
         }
 
         @Override
@@ -68,17 +87,24 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
 
         @Override
         public RpcContextAttachment removeAttachment(String key) {
+            RpcContext.getClientResponseContext().removeAttachment(key);
             return RpcContext.getServerResponseContext().removeAttachment(key);
         }
 
         @Override
         public Map<String, String> getAttachments() {
-            return RpcContext.getServerResponseContext().getAttachments();
+            Map<String, String> clientResponseContext = RpcContext.getClientResponseContext().getAttachments();
+            Map<String, String> serverResponseContext = RpcContext.getServerResponseContext().getAttachments();
+            clientResponseContext.putAll(serverResponseContext);
+            return clientResponseContext;
         }
 
         @Override
         public Map<String, Object> getObjectAttachments() {
-            return RpcContext.getServerResponseContext().getObjectAttachments();
+            Map<String, Object> clientResponseContext = RpcContext.getClientResponseContext().getObjectAttachments();
+            Map<String, Object> serverResponseContext = RpcContext.getServerResponseContext().getObjectAttachments();
+            clientResponseContext.putAll(serverResponseContext);
+            return clientResponseContext;
         }
 
         @Override
@@ -93,37 +119,28 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
 
         @Override
         public void clearAttachments() {
+            RpcContext.getClientAttachment().clearAttachments();
             RpcContext.getServerResponseContext().clearAttachments();
         }
 
         @Override
         public Map<String, Object> get() {
-            return RpcContext.getServerResponseContext().get();
+            return getObjectAttachments();
         }
 
         @Override
         public RpcContextAttachment set(String key, Object value) {
-            return RpcContext.getServerResponseContext().set(key, value);
+            return setAttachment(key, value);
         }
 
         @Override
         public RpcContextAttachment remove(String key) {
-            return RpcContext.getServerResponseContext().remove(key);
+            return removeAttachment(key);
         }
 
         @Override
         public Object get(String key) {
-            return RpcContext.getServerResponseContext().get(key);
-        }
-
-        @Override
-        public RpcContextAttachment copyOf(boolean needCopy) {
-            return RpcContext.getServerResponseContext().copyOf(needCopy);
-        }
-
-        @Override
-        protected boolean isValid() {
-            return RpcContext.getServerResponseContext().isValid();
+            return getAttachment(key);
         }
     };
 

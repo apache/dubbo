@@ -64,8 +64,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 public class ContextFilter implements Filter, Filter.Listener {
     private Set<PenetrateAttachmentSelector> supportedSelectors;
 
-    public ContextFilter() {
-        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+    public ContextFilter(ApplicationModel applicationModel) {
         ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
         supportedSelectors = selectorExtensionLoader.getSupportedExtensionInstances();
     }
