@@ -29,6 +29,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleStateEvent;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 
@@ -88,6 +89,7 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         super.write(ctx, msg, promise);
         final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         final boolean isRequest = msg instanceof Request;
+        final boolean isMultiMessage = msg instanceof MultiMessage;
 
         // We add listeners to make sure our out bound event is correct.
         // If our out bound event has an error (in most cases the encoder fails),
@@ -104,6 +106,15 @@ public class NettyClientHandler extends ChannelDuplexHandler {
                 Request request = (Request) msg;
                 Response response = buildErrorResponse(request, t);
                 handler.received(channel, response);
+            } else if (t != null && isMultiMessage) {
+                MultiMessage multiMessage = (MultiMessage) msg;
+                for (Object originMessage : multiMessage) {
+                    if (originMessage instanceof Request) {
+                        Request request = (Request) originMessage;
+                        Response response = buildErrorResponse(request, t);
+                        handler.received(channel, response);
+                    }
+                }
             }
         });
     }
