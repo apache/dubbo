@@ -141,7 +141,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     @Override
     public ChannelFuture cancelByLocal(TriRpcStatus status) {
         TripleClientStream.this.rst = true;
-        return this.writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.CANCEL)).channel(http2StreamChannel), true);
+        return this.writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.CANCEL)).channel(http2StreamChannel), true);
     }
 
     @Override
@@ -211,7 +211,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
         private Http2Headers trailers;
 
         void handleH2TransportError(TriRpcStatus status) {
-            writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.NO_ERROR)).channel(http2StreamChannel), true);
+            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.NO_ERROR)).channel(http2StreamChannel), true);
             TripleClientStream.this.rst = true;
             finishProcess(status, null);
         }
@@ -368,7 +368,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                 if (endStream) {
                     if (!halfClosed) {
                         if (http2StreamChannel.isActive() && !rst) {
-                            writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.CANCEL)).channel(http2StreamChannel),
+                            writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(Http2Error.CANCEL)).channel(http2StreamChannel),
                                 true);
                             rst = true;
                         }

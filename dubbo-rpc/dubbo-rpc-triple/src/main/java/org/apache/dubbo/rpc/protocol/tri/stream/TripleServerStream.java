@@ -140,7 +140,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             return checkResult;
         }
         this.rst = true;
-        return writeQueue.enqueue(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(cause)).channel(http2StreamChannel), true);
+        return writeQueue.enqueueSoon(FrameQueueCommand.createGrpcCommand(new DefaultHttp2ResetFrame(cause)).channel(http2StreamChannel), true);
     }
 
     @Override

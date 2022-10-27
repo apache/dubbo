@@ -25,10 +25,6 @@ import org.apache.dubbo.rpc.protocol.tri.command.FrameQueueCommand;
 
 public class TripleWriteQueue extends BatchExecutorQueue<FrameQueueCommand> {
 
-    public ChannelFuture enqueue(FrameQueueCommand command, boolean rst) {
-        return enqueueSoon(command, true);
-    }
-
     public ChannelFuture enqueue(FrameQueueCommand command) {
         return enqueueSoon(command, true);
     }

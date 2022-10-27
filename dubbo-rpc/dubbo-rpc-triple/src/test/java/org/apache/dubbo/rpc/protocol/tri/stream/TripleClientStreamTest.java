@@ -43,6 +43,7 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -66,12 +67,12 @@ class TripleClientStreamTest {
         MockClientStreamListener listener = new MockClientStreamListener();
         TripleWriteQueue writeQueue = mock(TripleWriteQueue.class);
         final EmbeddedChannel channel = new EmbeddedChannel();
-        when(writeQueue.enqueue(any())).thenReturn(channel.newPromise());
         when(writeQueue.enqueueSoon(any(), anyBoolean())).thenReturn(channel.newPromise());
         Http2StreamChannel http2StreamChannel = mock(Http2StreamChannel.class);
         when(http2StreamChannel.isActive()).thenReturn(true);
         when(http2StreamChannel.newSucceededFuture()).thenReturn(channel.newSucceededFuture());
         when(http2StreamChannel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
+        when(http2StreamChannel.alloc()).thenReturn(channel.alloc());
         TripleClientStream stream = new TripleClientStream(url.getOrDefaultFrameworkModel(),
             ImmediateEventExecutor.INSTANCE, writeQueue, listener, http2StreamChannel);
 
@@ -84,19 +85,21 @@ class TripleClientStreamTest {
         requestMetadata.group = url.getGroup();
         requestMetadata.version = url.getVersion();
         stream.sendHeader(requestMetadata.toHeaders(stream.getCompressor()));
-        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue).enqueueSoon(any(FrameQueueCommand.class), ArgumentMatchers.eq(false));
         // no other commands
-        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue).enqueueSoon(any(FrameQueueCommand.class), anyBoolean());
         stream.sendMessage(new byte[0]);
-        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
-        verify(writeQueue, times(2)).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue).enqueueSoon(any(FrameQueueCommand.class), ArgumentMatchers.eq(false));
+        // no other commands
+        verify(writeQueue).enqueueSoon(any(FrameQueueCommand.class), anyBoolean());
         stream.halfClose();
-        verify(writeQueue).enqueue(any(FrameQueueCommand.class));
-        verify(writeQueue, times(3)).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue).enqueueSoon(any(FrameQueueCommand.class), ArgumentMatchers.eq(false));
+        verify(writeQueue).enqueueSoon(any(FrameQueueCommand.class), ArgumentMatchers.eq(true));
+        verify(writeQueue, times(2)).enqueueSoon(any(FrameQueueCommand.class), anyBoolean());
 
         stream.cancelByLocal(TriRpcStatus.CANCELLED);
-        verify(writeQueue, times(1)).enqueue(any(FrameQueueCommand.class), anyBoolean());
-        verify(writeQueue, times(3)).enqueue(any(FrameQueueCommand.class));
+        verify(writeQueue, times(2)).enqueueSoon(any(FrameQueueCommand.class), ArgumentMatchers.eq(true));
+        verify(writeQueue, times(3)).enqueueSoon(any(FrameQueueCommand.class), anyBoolean());
 
         H2TransportListener transportListener = stream.createTransportListener();
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
