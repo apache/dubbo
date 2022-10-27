@@ -30,6 +30,10 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
+import java.nio.ByteBuffer;
+
+import static java.lang.Math.min;
+
 public class MessageFramer implements Framer {
     private static final int HEADER_LENGTH = 5;
 
@@ -38,6 +42,7 @@ public class MessageFramer implements Framer {
     private final WritableBufferAllocator bufferAllocator;
     private WritableBuffer buffer;
     private Compressor compressor = Compressor.NONE;
+    private final ByteBuffer headerScratch = ByteBuffer.allocate(HEADER_LENGTH);
 
     private boolean closed;
 
@@ -59,18 +64,35 @@ public class MessageFramer implements Framer {
 
     @Override
     public void writePayload(byte[] cmd) {
-        if(this.buffer != null && buffer.writableBytes() == 0) {
-            commitToSink(false, false);
-        }
         int compressed =
             Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())
                 ? 0 : 1;
         final byte[] compress = compressor.compress(cmd);
-        WritableBuffer allocate = bufferAllocator.allocate(HEADER_LENGTH + compress.length);
-        allocate.write((byte) compressed);
-        allocate.writeInt(compress.length);
-        allocate.write(compress, 0, compress.length);
-        this.buffer = allocate;
+
+        headerScratch.clear();
+        headerScratch.put((byte) compressed).putInt(compress.length);
+        if (buffer == null) {
+            buffer = bufferAllocator.allocate(headerScratch.position() + compress.length);
+        }
+        writeRaw(headerScratch.array());
+        writeRaw(compress);
+    }
+    private void writeRaw(byte[] b) {
+        int off = 0;
+        int len = b.length;
+        while (len > 0) {
+            if (buffer != null && buffer.writableBytes() == 0) {
+                commitToSink(false, false);
+            }
+            if (buffer == null) {
+                // Request a buffer allocation using the message length as a hint.
+                buffer = bufferAllocator.allocate(len);
+            }
+            int toWrite = min(len, buffer.writableBytes());
+            buffer.write(b, off, toWrite);
+            off += toWrite;
+            len -= toWrite;
+        }
     }
 
     @Override
