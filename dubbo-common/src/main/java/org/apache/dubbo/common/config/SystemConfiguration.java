@@ -18,15 +18,27 @@ package org.apache.dubbo.common.config;
 
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Configuration from system properties
+ * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
+ *
+ * @See ConfigUtils#getProperty(String)
+ * @see PropertiesConfiguration
  */
 public class SystemConfiguration implements Configuration {
 
+    private final Map<String, Object> cache = new ConcurrentHashMap<>();
+
     @Override
     public Object getInternalProperty(String key) {
-        return System.getProperty(key);
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        } else {
+            Object val = System.getProperty(key);
+            cache.putIfAbsent(key, val);
+            return val;
+        }
     }
 
     public Map<String, String> getProperties() {
