@@ -74,7 +74,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         super(type, url);
         this.key = key;
         this.exporter = exporter;
-        this.executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        this.executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
         this.paramDeepCopyUtil = url.getOrDefaultFrameworkModel().getExtensionLoader(ParamDeepCopyUtil.class)
             .getExtension(url.getParameter(CommonConstants.INJVM_COPY_UTIL_KEY, DefaultParamDeepCopyUtil.NAME));
         this.shouldIgnoreSameModule = url.getParameter(CommonConstants.INJVM_IGNORE_SAME_MODULE_KEY, false);
