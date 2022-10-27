@@ -81,6 +81,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     private static final String ONRETURN = "onreturn";
     private static final String ONTHROW = "onthrow";
     private static final String ONINVOKE = "oninvoke";
+    private static final String EXECUTOR = "executor";
     private static final String METHOD = "Method";
     private static final String BEAN_NAME = "BEAN_NAME";
     private static boolean resolvePlaceholdersEnabled = true;
@@ -193,6 +194,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                             String method = value.substring(index + 1);
                             reference = new RuntimeBeanReference(ref);
                             beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
+                        } else if (EXECUTOR.equals(property)){
+                            reference = new RuntimeBeanReference(value);
                         } else {
                             if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
                                 BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);

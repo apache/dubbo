@@ -29,7 +29,9 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
@@ -40,9 +42,12 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected final URL url;
 
+    protected final ExecutorSupport executorSupport;
+
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
+        this.executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
     }
 
     public void close() {
@@ -121,13 +126,22 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
             } else {
                 ExecutorService executor = responseFuture.getExecutor();
                 if (executor == null || executor.isShutdown()) {
-                    executor = getSharedExecutorService();
+                    executor = getSharedExecutorService(msg);
                 }
                 return executor;
             }
         } else {
-            return getSharedExecutorService();
+            return getSharedExecutorService(msg);
         }
+    }
+
+    /**
+     * @param msg  msg is the network message body, executorSupport.getExecutor needs it, and gets important information from it to get executor
+     * @return
+     */
+    public ExecutorService getSharedExecutorService(Object msg) {
+        Executor executor = executorSupport.getExecutor(msg);
+        return executor != null ? (ExecutorService) executor : getSharedExecutorService();
     }
 
     /**
@@ -145,8 +159,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         // note: url.getOrDefaultApplicationModel() may create new application model
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
 
-        ExecutorRepository executorRepository =
-                applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(applicationModel);
 
         ExecutorService executor = executorRepository.getExecutor(url);
 
