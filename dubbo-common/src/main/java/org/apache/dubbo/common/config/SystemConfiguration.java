@@ -36,7 +36,9 @@ public class SystemConfiguration implements Configuration {
             return cache.get(key);
         } else {
             Object val = System.getProperty(key);
-            cache.putIfAbsent(key, val);
+            if (val != null) {
+                cache.putIfAbsent(key, val);
+            }
             return val;
         }
     }
