@@ -59,6 +59,9 @@ public class MessageFramer implements Framer {
 
     @Override
     public void writePayload(byte[] cmd) {
+        if(this.buffer != null && buffer.writableBytes() == 0) {
+            commitToSink(false, false);
+        }
         int compressed =
             Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())
                 ? 0 : 1;
