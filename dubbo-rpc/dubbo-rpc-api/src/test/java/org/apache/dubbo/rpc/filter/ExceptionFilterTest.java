@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invoker;
@@ -46,7 +46,7 @@ public class ExceptionFilterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testRpcException() {
-        Logger logger = mock(Logger.class);
+        ErrorTypeAwareLogger logger = mock(ErrorTypeAwareLogger.class);
         RpcContext.getServiceContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
 
