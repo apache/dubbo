@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AdaptiveMetrics {
 
-    private static final ConcurrentMap<String, AdaptiveMetrics> METRICS_STATISTICS = new ConcurrentHashMap<String,
+    private ConcurrentMap<String, AdaptiveMetrics> metricsStatistics = new ConcurrentHashMap<String,
         AdaptiveMetrics>();
 
     private long currentProviderTime = 0;
@@ -49,7 +49,7 @@ public class AdaptiveMetrics {
 //    private final long factor = 50;
 //    private int weight = 100;
 
-    public static double getLoad(String idKey,int weight,int timeout){
+    public double getLoad(String idKey,int weight,int timeout){
         AdaptiveMetrics metrics = getStatus(idKey);
 
         //If the time more than 2 times, mandatory selected
@@ -75,36 +75,33 @@ public class AdaptiveMetrics {
         return metrics.providerCPULoad * (Math.sqrt(metrics.ewma) + 1) * (inflight + 1) / ((((double)metrics.consumerSuccess.get() / (double)(metrics.consumerReq.get() + 1)) * weight) + 1);
     }
 
-    private AdaptiveMetrics() {
+    public AdaptiveMetrics getStatus(String idKey){
+        return metricsStatistics.computeIfAbsent(idKey, k -> new AdaptiveMetrics());
     }
 
-    public static AdaptiveMetrics getStatus(String idKey){
-        return METRICS_STATISTICS.computeIfAbsent(idKey, k -> new AdaptiveMetrics());
-    }
-
-    public static void addConsumerReq(String idKey){
+    public void addConsumerReq(String idKey){
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.consumerReq.incrementAndGet();
     }
 
-    public static void addConsumerSuccess(String idKey){
+    public void addConsumerSuccess(String idKey){
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.consumerSuccess.incrementAndGet();
     }
 
-    public static void addErrorReq(String idKey){
+    public void addErrorReq(String idKey){
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.errorReq.incrementAndGet();
     }
 
-    public static void setPickTime(String idKey,long time){
+    public void setPickTime(String idKey,long time){
         AdaptiveMetrics metrics = getStatus(idKey);
         metrics.pickTime = time;
     }
 
 
 
-    public static void setProviderMetrics(String idKey,Map<String,String> metricsMap){
+    public void setProviderMetrics(String idKey,Map<String,String> metricsMap){
 
         AdaptiveMetrics metrics = getStatus(idKey);
 

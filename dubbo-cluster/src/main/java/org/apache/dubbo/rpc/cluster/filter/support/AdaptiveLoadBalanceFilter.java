@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.filter.support;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
@@ -29,6 +30,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,12 +49,25 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
  * @see org.apache.dubbo.rpc.RpcContext
  */
 @Activate(group = CONSUMER, order = -200000)
-public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.Listener {
+public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.Listener , ScopeModelAware {
 
     /**
      * uses a single worker thread operating off an bounded queue
      */
     private ThreadPoolExecutor executor = null;
+
+    private ApplicationModel scopeModel;
+
+    private AdaptiveMetrics adaptiveMetrics;
+
+    @Override
+    public void setApplicationModel(ApplicationModel scopeModel) {
+        AdaptiveMetrics bean = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
+        if (bean == null) {
+            scopeModel.getBeanFactory().registerBean(new AdaptiveMetrics());
+        }
+        this.scopeModel = scopeModel;
+    }
 
     private ThreadPoolExecutor getExecutor(){
         if (null == executor) {
@@ -59,10 +75,18 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
                 if (null == executor) {
                     executor = new ThreadPoolExecutor(1, 1, 0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(1024),
                         new NamedInternalThreadFactory("Dubbo-framework-loadbalance-adaptive", true), new ThreadPoolExecutor.DiscardOldestPolicy());
+                    GlobalResourcesRepository.getInstance().registerDisposable(() -> this.executor.shutdown());
                 }
             }
         }
         return executor;
+    }
+
+    private AdaptiveMetrics getAdaptiveMetricsInstance(){
+        if (adaptiveMetrics == null) {
+            adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
+        }
+        return adaptiveMetrics;
     }
 
     @Override
@@ -81,7 +105,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         try {
             if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
                 && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
-                AdaptiveMetrics.addConsumerSuccess(buildServiceKey(invocation));
+                getAdaptiveMetricsInstance().addConsumerSuccess(buildServiceKey(invocation));
             }
             String attachment = appResponse.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
             if (StringUtils.isNotEmpty(attachment)) {
@@ -102,7 +126,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
                 metricsMap.put("rt", String.valueOf(rt));
 
                 getExecutor().execute(() -> {
-                    AdaptiveMetrics.setProviderMetrics(buildServiceKey(invocation), metricsMap);
+                    getAdaptiveMetricsInstance().setProviderMetrics(buildServiceKey(invocation), metricsMap);
                 });
             }
         }
@@ -117,7 +141,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
             && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
             getExecutor().execute(() -> {
-                AdaptiveMetrics.addErrorReq(buildServiceKey(invocation));
+                getAdaptiveMetricsInstance().addErrorReq(buildServiceKey(invocation));
             });
         }
     }

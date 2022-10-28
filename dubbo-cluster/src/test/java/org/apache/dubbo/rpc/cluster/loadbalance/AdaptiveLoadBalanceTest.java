@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
@@ -35,6 +36,10 @@ import java.util.stream.Collectors;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
+
+    private ApplicationModel scopeModel;
+
+    private AdaptiveMetrics adaptiveMetrics;
 
     @Test
     @Order(0)
@@ -73,6 +78,13 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         return url.getAddress() + ":" + invocation.getProtocolServiceKey();
     }
 
+    private AdaptiveMetrics getAdaptiveMetricsInstance(){
+        if (adaptiveMetrics == null) {
+            adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
+        }
+        return adaptiveMetrics;
+    }
+
     @Test
     @Order(1)
     public void testSelectByAdaptive() throws NoSuchFieldException, IllegalAccessException {
@@ -82,7 +94,9 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         int loop = 10000;
 
         AdaptiveLoadBalance lb = new AdaptiveLoadBalance();
-        lb.setApplicationModel(ApplicationModel.defaultModel());
+        scopeModel = ApplicationModel.defaultModel();
+        lb.setApplicationModel(scopeModel);
+
 
         lb.select(weightInvokersSR, null, weightTestInvocation);
 
@@ -97,7 +111,7 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 metricsMap.put("rt", "10");
                 metricsMap.put("load", "10");
                 metricsMap.put("curTime", String.valueOf(System.currentTimeMillis()-10));
-                AdaptiveMetrics.addConsumerSuccess(idKey);
+                getAdaptiveMetricsInstance().addConsumerSuccess(idKey);
             }
 
             if (selected.getUrl().getProtocol().equals("test2")) {
@@ -105,7 +119,7 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 metricsMap.put("rt", "100");
                 metricsMap.put("load", "40");
                 metricsMap.put("curTime", String.valueOf(System.currentTimeMillis()-100));
-                AdaptiveMetrics.addConsumerSuccess(idKey);
+                getAdaptiveMetricsInstance().addConsumerSuccess(idKey);
             }
 
             if (selected.getUrl().getProtocol().equals("test5")) {
@@ -113,10 +127,10 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 metricsMap.put("load", "400");//400%
                 metricsMap.put("curTime", String.valueOf(System.currentTimeMillis() - 5000));
 
-                AdaptiveMetrics.addErrorReq(idKey);
+                getAdaptiveMetricsInstance().addErrorReq(idKey);
                 sumInvoker5++;
             }
-            AdaptiveMetrics.setProviderMetrics(idKey,metricsMap);
+            getAdaptiveMetricsInstance().setProviderMetrics(idKey,metricsMap);
             try {
                 Thread.sleep(3);
             } catch (InterruptedException e) {

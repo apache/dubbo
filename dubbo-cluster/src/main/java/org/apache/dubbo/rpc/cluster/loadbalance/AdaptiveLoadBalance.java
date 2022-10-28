@@ -47,16 +47,32 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
 
     private final int default_timeout = 30_000;
 
+    private ApplicationModel scopeModel;
+
+    private AdaptiveMetrics adaptiveMetrics;
+
     @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public void setApplicationModel(ApplicationModel scopeModel){
+        AdaptiveMetrics bean = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
+        if (bean == null) {
+            scopeModel.getBeanFactory().registerBean(new AdaptiveMetrics());
+        }
+        this.scopeModel = scopeModel;
+    }
+
+    private AdaptiveMetrics getAdaptiveMetricsInstance(){
+        if (adaptiveMetrics == null) {
+            adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
+        }
+        return adaptiveMetrics;
     }
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         Invoker invoker = selectByP2C(invokers,url,invocation);
         invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
-        AdaptiveMetrics.addConsumerReq(buildServiceKey(invoker,invocation));
-        AdaptiveMetrics.setPickTime(buildServiceKey(invoker,invocation),System.currentTimeMillis());
+        getAdaptiveMetricsInstance().addConsumerReq(buildServiceKey(invoker,invocation));
+        getAdaptiveMetricsInstance().setPickTime(buildServiceKey(invoker,invocation),System.currentTimeMillis());
 
         return invoker;
     }
@@ -103,8 +119,8 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
         int weight2 = getWeight(invoker2, invocation);
         int timeout1 = getTimeout(invoker2, invocation);
         int timeout2 = getTimeout(invoker2, invocation);
-        long load1 = Double.doubleToLongBits(AdaptiveMetrics.getLoad(buildServiceKey(invoker1,invocation),weight1,timeout1 ));
-        long load2 = Double.doubleToLongBits(AdaptiveMetrics.getLoad(buildServiceKey(invoker2,invocation),weight2,timeout2 ));
+        long load1 = Double.doubleToLongBits(getAdaptiveMetricsInstance().getLoad(buildServiceKey(invoker1,invocation),weight1,timeout1 ));
+        long load2 = Double.doubleToLongBits(getAdaptiveMetricsInstance().getLoad(buildServiceKey(invoker2,invocation),weight2,timeout2 ));
 
         if (load1 == load2) {
             // The sum of weights
