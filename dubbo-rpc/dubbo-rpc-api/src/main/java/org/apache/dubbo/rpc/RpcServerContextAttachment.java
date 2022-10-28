@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class RpcServerContextAttachment extends RpcContextAttachment{
@@ -93,18 +94,22 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
 
         @Override
         public Map<String, String> getAttachments() {
+            Map<String, String> attachmentMap = new HashMap<>();
             Map<String, String> clientResponseContext = RpcContext.getClientResponseContext().getAttachments();
             Map<String, String> serverResponseContext = RpcContext.getServerResponseContext().getAttachments();
-            clientResponseContext.putAll(serverResponseContext);
-            return clientResponseContext;
+            attachmentMap.putAll(clientResponseContext);
+            attachmentMap.putAll(serverResponseContext);
+            return attachmentMap;
         }
 
         @Override
         public Map<String, Object> getObjectAttachments() {
+            Map<String, Object> attachmentMap = new HashMap<>();
             Map<String, Object> clientResponseContext = RpcContext.getClientResponseContext().getObjectAttachments();
             Map<String, Object> serverResponseContext = RpcContext.getServerResponseContext().getObjectAttachments();
-            clientResponseContext.putAll(serverResponseContext);
-            return clientResponseContext;
+            attachmentMap.putAll(clientResponseContext);
+            attachmentMap.putAll(serverResponseContext);
+            return attachmentMap;
         }
 
         @Override
