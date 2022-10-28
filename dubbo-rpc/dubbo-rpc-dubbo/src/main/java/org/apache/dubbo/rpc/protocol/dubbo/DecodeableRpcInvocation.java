@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
@@ -133,7 +134,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
+            String serializationSecurityCheck = ConfigurationUtils.getSystemConfiguration(
+                channel.getUrl().getScopeModel()).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
+
+            if (Boolean.parseBoolean(serializationSecurityCheck)) {
                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
