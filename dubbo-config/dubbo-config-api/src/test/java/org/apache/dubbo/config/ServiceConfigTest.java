@@ -37,7 +37,6 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -72,6 +71,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -174,7 +174,8 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+        // export MetadataService and DemoService in "mockprotocol2" protocol.
+        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
     }
 
     @Test
@@ -338,7 +339,8 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+        // export MetadataService and DemoService in "mockprotocol2" protocol.
+        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
     }
 
     @Test
