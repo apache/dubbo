@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
@@ -34,6 +34,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_ERROR_ASYNC_RESPONSE;
 import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
 
 /**
@@ -51,7 +52,7 @@ import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
  * for compatibility consideration. Because many legacy {@link Filter} implementation are most possibly to call getValue directly.
  */
 public class AsyncRpcResult implements Result {
-    private static final Logger logger = LoggerFactory.getLogger(AsyncRpcResult.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AsyncRpcResult.class);
 
     /**
      * RpcContext may already have been changed when callback happens, it happens when the same thread is used to execute another RPC call.
@@ -91,7 +92,7 @@ public class AsyncRpcResult implements Result {
     /**
      * CompletableFuture can only be completed once, so try to update the result of one completed CompletableFuture will
      * have no effect. To avoid this problem, we check the complete status of this future before update its value.
-     *
+     * <p>
      * But notice that trying to give an uncompleted CompletableFuture a new specified value may face a race condition,
      * because the background thread watching the real result will also change the status of this CompletableFuture.
      * The result is you may lose the value you expected to set.
@@ -110,7 +111,7 @@ public class AsyncRpcResult implements Result {
             }
         } catch (Exception e) {
             // This should not happen in normal request process;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
     }
@@ -132,7 +133,7 @@ public class AsyncRpcResult implements Result {
             }
         } catch (Exception e) {
             // This should not happen in normal request process;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
     }
@@ -157,7 +158,7 @@ public class AsyncRpcResult implements Result {
             }
         } catch (Exception e) {
             // This should not happen in normal request process;
-            logger.error("Got exception when trying to fetch the underlying result from AsyncRpcResult.");
+            logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Got exception when trying to fetch the underlying result from AsyncRpcResult.");
             throw new RpcException(e);
         }
 

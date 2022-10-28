@@ -28,9 +28,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ConnectionTest {
+class ConnectionTest {
     @Test
-    public void connectSyncTest() throws Throwable {
+    void connectSyncTest() throws Throwable {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         NettyPortUnificationServer server = null;
@@ -57,39 +57,44 @@ public class ConnectionTest {
                 // ignored
             }
         }
-
-
     }
 
     @Test
-    public void testMultiConnect() throws Throwable {
+    void testMultiConnect() throws Throwable {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         NettyPortUnificationServer server = null;
+        ExecutorService service = Executors.newFixedThreadPool(10);
+
         try {
             server = new NettyPortUnificationServer(url, new DefaultPuHandler());
-            server.close();
 
             Connection connection = new Connection(url);
-            ExecutorService service = Executors.newFixedThreadPool(10);
+
             final CountDownLatch latch = new CountDownLatch(10);
             for (int i = 0; i < 10; i++) {
                 Runnable runnable = () -> {
                     try {
                         Assertions.assertTrue(connection.isAvailable());
-                        latch.countDown();
                     } catch (Exception e) {
                         // ignore
+                    } finally {
+                        latch.countDown();
                     }
                 };
+
                 service.execute(runnable);
             }
+
+            latch.await();
         } finally {
             try {
                 server.close();
             } catch (Throwable e) {
                 // ignored
             }
+
+            service.shutdown();
         }
     }
 }

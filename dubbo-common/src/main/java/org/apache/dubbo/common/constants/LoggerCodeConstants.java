@@ -35,6 +35,12 @@ public interface LoggerCodeConstants {
 
     String COMMON_THREAD_INTERRUPTED_EXCEPTION = "0-6";
 
+    String COMMON_CLASS_NOT_FOUND = "0-7";
+
+    String COMMON_FAILED_REFLECT = "0-8";
+
+    String COMMON_FAILED_NOTIFY_EVENT = "0-9";
+
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
@@ -86,6 +92,24 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_STOP_ZOOKEEPER = "1-25";
 
+    String REGISTRY_FAILED_GENERATE_CERT_ISTIO = "1-26";
+
+    String REGISTRY_FAILED_GENERATE_KEY_ISTIO = "1-27";
+
+    String REGISTRY_RECEIVE_ERROR_MSG_ISTIO = "1-28";
+
+    String REGISTRY_ERROR_READ_FILE_ISTIO = "1-29";
+
+    String REGISTRY_ERROR_REQUEST_XDS = "1-30";
+
+    String REGISTRY_ERROR_RESPONSE_XDS = "1-31";
+
+    String REGISTRY_ERROR_CREATE_CHANNEL_XDS = "1-32";
+
+    String REGISTRY_ERROR_INITIALIZE_XDS = "1-33";
+
+    String REGISTRY_ERROR_PARSING_XDS = "1-34";
+
     // cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
@@ -130,12 +154,56 @@ public interface LoggerCodeConstants {
     // proxy module
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
+    String PROXY_FAILED_EXPORT_SERVICE = "3-2";
+
+    String PROXY_FAILED_JAVASSIST = "3-3";
+
+    String PROXY_TIMEOUT_REQUEST = "3-4";
+
+    String PROXY_ERROR_ASYNC_RESPONSE = "3-5";
+
+    String PROXY_UNSUPPORTED_INVOKER = "3-6";
+
     // protocol module
     String PROTOCOL_UNSUPPORTED = "4-1";
 
     String PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER = "4-2";
 
     String PROTOCOL_FAILED_REFER_INVOKER = "4-3";
+
+    String PROTOCOL_UNSAFE_SERIALIZATION = "4-4";
+
+    String PROTOCOL_FAILED_CLOSE_STREAM = "4-5";
+
+    String PROTOCOL_ERROR_DESERIALIZE = "4-6";
+
+    String PROTOCOL_ERROR_CLOSE_CLIENT = "4-7";
+
+    String PROTOCOL_ERROR_CLOSE_SERVER = "4-8";
+
+    String PROTOCOL_FAILED_PARSE = "4-9";
+
+    String PROTOCOL_FAILED_SERIALIZE_TRIPLE = "4-10";
+
+    String PROTOCOL_FAILED_REQUEST = "4-11";
+
+    String PROTOCOL_FAILED_CREATE_STREAM_TRIPLE = "4-12";
+
+    String PROTOCOL_TIMEOUT_SERVER = "4-13";
+
+    String PROTOCOL_FAILED_RESPONSE = "4-14";
+
+    String PROTOCOL_STREAM_LISTENER = "4-15";
+
+    String PROTOCOL_CLOSED_SERVER = "4-16";
+
+    String PROTOCOL_FAILED_DESTROY_INVOKER = "4-17";
+
+    String PROTOCOL_FAILED_LOAD_MODEL = "4-18";
+
+    String PROTOCOL_INCORRECT_PARAMETER_VALUES = "4-19";
+
+    String PROTOCOL_FAILED_DECODE = "4-20";
 
     // config module
     String CONFIG_FAILED_CONNECT_REGISTRY = "5-1";
