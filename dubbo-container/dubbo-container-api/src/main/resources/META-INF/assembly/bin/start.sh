@@ -21,11 +21,11 @@ cd ..
 DEPLOY_DIR=`pwd`
 CONF_DIR=$DEPLOY_DIR/conf
 
-SERVER_NAME=`sed '/dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
-SERVER_PROTOCOL=`sed '/dubbo.protocol.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
-SERVER_HOST=`sed '/dubbo.protocol.host/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
-SERVER_PORT=`sed '/dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
-LOGS_FILE=`sed '/dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+SERVER_NAME=`sed '/^dubbo.application.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+SERVER_PROTOCOL=`sed '/^dubbo.protocol.name/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+SERVER_HOST=`sed '/^dubbo.protocol.host/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+SERVER_PORT=`sed '/^dubbo.protocol.port/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
+LOGS_FILE=`sed '/^dubbo.log4j.file/!d;s/.*=//' conf/dubbo.properties | tr -d '\r'`
 VM_ARGS_PERM_SIZE='PermSize'
 VM_ARGS_METASPACE_SIZE='MetaspaceSize'
 JAVA_8_VERSION="180"

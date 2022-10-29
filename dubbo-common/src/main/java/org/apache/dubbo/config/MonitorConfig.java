@@ -63,11 +63,6 @@ public class MonitorConfig extends AbstractConfig {
      */
     private Map<String, String> parameters;
 
-    /**
-     * If it's default
-     */
-    private Boolean isDefault;
-
     public MonitorConfig() {
     }
 
@@ -133,14 +128,6 @@ public class MonitorConfig extends AbstractConfig {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
-    }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     public String getInterval() {

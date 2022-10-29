@@ -33,7 +33,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * The shutdown hook thread to do the clean up stuff.
  * This is a singleton in order to ensure there is only one shutdown hook registered.
- * Because {@link ApplicationShutdownHooks} use {@link java.util.IdentityHashMap}
  * to store the shutdown hooks.
  */
 public class DubboShutdownHook extends Thread {
@@ -52,7 +51,7 @@ public class DubboShutdownHook extends Thread {
     /**
      * Has it already been destroyed or not?
      */
-    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
@@ -90,6 +89,7 @@ public class DubboShutdownHook extends Thread {
      */
     public void register() {
         if (registered.compareAndSet(false, true)) {
+            destroyed.set(false);
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
             dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
@@ -113,6 +113,10 @@ public class DubboShutdownHook extends Thread {
     public void doDestroy() {
         // dispatch the DubboDestroyedEvent @since 2.7.5
         dispatch(new DubboServiceDestroyedEvent(this));
+        if (destroyed.compareAndSet(false, true)) {
+            AbstractRegistryFactory.destroyAll();
+            destroyProtocols();
+        }
     }
 
     private void dispatch(Event event) {
@@ -124,10 +128,7 @@ public class DubboShutdownHook extends Thread {
     }
 
     public static void destroyAll() {
-        if (destroyed.compareAndSet(false, true)) {
-            AbstractRegistryFactory.destroyAll();
-            destroyProtocols();
-        }
+        getDubboShutdownHook().doDestroy();
     }
 
     /**
@@ -146,4 +147,10 @@ public class DubboShutdownHook extends Thread {
             }
         }
     }
+
+    public static void reset() {
+        getDubboShutdownHook().destroyed.set(false);
+        getDubboShutdownHook().unregister();
+    }
+
 }

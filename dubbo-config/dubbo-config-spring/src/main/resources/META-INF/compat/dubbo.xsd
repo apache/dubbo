@@ -244,6 +244,11 @@
                             <![CDATA[ The routers ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="serialization" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -1466,6 +1471,31 @@
             <xsd:appinfo>
                 <tool:annotation>
                     <tool:exports type="org.apache.dubbo.config.SslConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:complexType name="annotationType">
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="package" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The scan package. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:element name="annotation" type="annotationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The annotation config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.ServiceConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.ReferenceConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>

@@ -1,0 +1,2 @@
+default=org.apache.dubbo.serialize.hessian.dubbo.DefaultHessian2FactoryInitializer
+whitelist=org.apache.dubbo.serialize.hessian.dubbo.WhitelistHessian2FactoryInitializer

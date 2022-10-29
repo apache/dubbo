@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -58,7 +59,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -68,6 +71,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATE
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
@@ -144,13 +148,17 @@ public class RegistryDirectoryTest {
     @Test
     public void test_Constructor_CheckStatus() throws Exception {
         URL url = URL.valueOf("notsupported://10.20.30.40/" + service + "?a=b").addParameterAndEncoded(REFER_KEY,
-                "foo=bar");
+                "foo=bar&" + REGISTER_IP_KEY + "=10.20.30.40&" + INTERFACE_KEY + "=" + service);
         RegistryDirectory reg = getRegistryDirectory(url);
         Field field = reg.getClass().getSuperclass().getSuperclass().getDeclaredField("queryMap");
-        field.setAccessible(true);
+        ReflectUtils.makeAccessible(field);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assertions.assertEquals("bar", queryMap.get("foo"));
-        Assertions.assertEquals(url.setProtocol(CONSUMER_PROTOCOL).clearParameters().addParameter("foo", "bar"), reg.getConsumerUrl());
+        URL expected = url.setProtocol(DUBBO_PROTOCOL).clearParameters()
+                .addParameter("foo", "bar")
+                .addParameter(REGISTER_IP_KEY, "10.20.30.40")
+                .addParameter(INTERFACE_KEY, service);
+        Assertions.assertEquals(expected, reg.getConsumerUrl());
     }
 
     @Test

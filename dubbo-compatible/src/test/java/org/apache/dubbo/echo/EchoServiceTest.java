@@ -23,10 +23,10 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
-import com.alibaba.dubbo.rpc.service.EchoService;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

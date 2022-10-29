@@ -18,8 +18,6 @@
 package org.apache.dubbo.metadata.store.consul;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -38,12 +36,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
+
 /**
  * metadata report impl for consul
  */
 public class ConsulMetadataReport extends AbstractMetadataReport {
-    private static final Logger logger = LoggerFactory.getLogger(ConsulMetadataReport.class);
-    private static final int DEFAULT_PORT = 8500;
 
     private ConsulClient client;
 
@@ -51,7 +50,7 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
         super(url);
 
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
     }
 

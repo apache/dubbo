@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAutoConfiguration,\
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboHealthIndicatorAutoConfiguration,\
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointMetadataAutoConfiguration
+org.springframework.boot.actuate.autoconfigure.ManagementContextConfiguration=\
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboMvcEndpointManagementContextConfiguration

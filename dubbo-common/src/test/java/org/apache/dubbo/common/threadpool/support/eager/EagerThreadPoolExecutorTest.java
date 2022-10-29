@@ -75,16 +75,13 @@ public class EagerThreadPoolExecutorTest {
 
         for (int i = 0; i < 15; i++) {
             Thread.sleep(50);
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
-                            .size() + " executor size: " + executor.getPoolSize());
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            executor.execute(() -> {
+                System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
+                        .size() + " executor size: " + executor.getPoolSize());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             });
         }

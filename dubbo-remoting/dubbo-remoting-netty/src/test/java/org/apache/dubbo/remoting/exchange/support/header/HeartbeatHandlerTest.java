@@ -57,12 +57,15 @@ public class HeartbeatHandlerTest {
             server = null;
         }
 
+        FakeChannelHandlers.resetChannelHandlers();
+
         // wait for timer to finish
         Thread.sleep(2000);
     }
 
     @Test
     public void testServerHeartbeat() throws Exception {
+        FakeChannelHandlers.resetChannelHandlers();
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56780))
                 .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
                 .addParameter(Constants.TRANSPORTER_KEY, "netty3")

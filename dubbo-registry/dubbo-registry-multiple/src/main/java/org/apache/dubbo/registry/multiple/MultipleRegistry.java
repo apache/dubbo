@@ -20,6 +20,8 @@ package org.apache.dubbo.registry.multiple;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -40,6 +43,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  * MultipleRegistry
  */
 public class MultipleRegistry extends AbstractRegistry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
 
     public static final String REGISTRY_FOR_SERVICE = "service-registry";
     public static final String REGISTRY_FOR_REFERENCE = "reference-registry";
@@ -71,7 +76,7 @@ public class MultipleRegistry extends AbstractRegistry {
         this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
         init();
         checkApplicationName(this.applicationName);
-        // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
+        // This urls contain parameter and it do not inherit from the parameter of url in MultipleRegistry
 
         Map<String, Registry> registryMap = new HashMap<>();
         if (initServiceRegistry) {
@@ -90,7 +95,7 @@ public class MultipleRegistry extends AbstractRegistry {
                 serviceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            Registry registry = registryFactory.getRegistry(URL.valueOf(tmpUrl));
+            Registry registry = getRegistry(URL.valueOf(tmpUrl));
             registryMap.put(tmpUrl, registry);
             serviceRegistries.put(tmpUrl, registry);
         }
@@ -104,12 +109,20 @@ public class MultipleRegistry extends AbstractRegistry {
                 referenceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            Registry registry = registryFactory.getRegistry(URL.valueOf(tmpUrl));
+            Registry registry = getRegistry(URL.valueOf(tmpUrl));
             registryMap.put(tmpUrl, registry);
             referenceRegistries.put(tmpUrl, registry);
         }
     }
 
+    protected Registry getRegistry(URL url) {
+        try {
+            return registryFactory.getRegistry(url);
+        } catch (Throwable t) {
+            LOGGER.error(t.getMessage(), t);
+            throw t;
+        }
+    }
 
     @Override
     public URL getUrl() {
@@ -118,7 +131,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public boolean isAvailable() {
-        boolean available = serviceRegistries.isEmpty() ? true : false;
+        boolean available = serviceRegistries.isEmpty();
         for (Registry serviceRegistry : serviceRegistries.values()) {
             if (serviceRegistry.isAvailable()) {
                 available = true;
@@ -128,7 +141,7 @@ public class MultipleRegistry extends AbstractRegistry {
             return false;
         }
 
-        available = referenceRegistries.isEmpty() ? true : false;
+        available = referenceRegistries.isEmpty();
         for (Registry referenceRegistry : referenceRegistries.values()) {
             if (referenceRegistry.isAvailable()) {
                 available = true;
@@ -193,14 +206,14 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public List<URL> lookup(URL url) {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         for (Registry registry : referenceRegistries.values()) {
             List<URL> tmpUrls = registry.lookup(url);
             if (!CollectionUtils.isEmpty(tmpUrls)) {
                 urls.addAll(tmpUrls);
             }
         }
-        return urls;
+        return urls.stream().distinct().collect(Collectors.toList());
     }
 
     protected void init() {

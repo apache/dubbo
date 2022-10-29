@@ -46,7 +46,7 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
+    protected final DelegateExporterMap exporterMap = new DelegateExporterMap();
 
     /**
      * <host:port, ProtocolServer>
@@ -65,6 +65,7 @@ public abstract class AbstractProtocol implements Protocol {
         return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
     }
 
+    @Override
     public List<ProtocolServer> getServers() {
         return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
     }
@@ -84,14 +85,13 @@ public abstract class AbstractProtocol implements Protocol {
                 }
             }
         }
-        for (String key : new ArrayList<String>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
-            if (exporter != null) {
+        for (Map.Entry<String, Exporter<?>> item : exporterMap.getExporterMap().entrySet()) {
+            if (exporterMap.removeExportMap(item.getKey(), item.getValue())) {
                 try {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Unexport service: " + exporter.getInvoker().getUrl());
+                        logger.info("Unexport service: " + item.getValue().getInvoker().getUrl());
                     }
-                    exporter.unexport();
+                    item.getValue().unexport();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -107,10 +107,10 @@ public abstract class AbstractProtocol implements Protocol {
     protected abstract <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException;
 
     public Map<String, Exporter<?>> getExporterMap() {
-        return exporterMap;
+        return exporterMap.getExporterMap();
     }
 
     public Collection<Exporter<?>> getExporters() {
-        return Collections.unmodifiableCollection(exporterMap.values());
+        return exporterMap.getExporters();
     }
 }

@@ -154,24 +154,15 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Integer wait;
 
-    /**
-     * Whether to use the default protocol
-     */
-    private Boolean isDefault;
-
     @Deprecated
     public void setProtocol(String protocol) {
         this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
+    @Override
     @Parameter(excluded = true)
     public Boolean isDefault() {
         return isDefault;
-    }
-
-    @Deprecated
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     @Parameter(excluded = true)
@@ -464,7 +455,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         sb.append(", telnet='").append(telnet).append('\'');
         sb.append(", prompt='").append(prompt).append('\'');
         sb.append(", status='").append(status).append('\'');
-        sb.append(", wait=").append(wait);
+        sb.append(", wait=").append(wait).append('\'');
         sb.append(", isDefault=").append(isDefault);
         sb.append('}');
         return sb.toString();

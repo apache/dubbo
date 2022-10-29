@@ -112,6 +112,7 @@ public class ListTelnetHandler implements TelnetHandler {
                 buf.append(" addresses: ");
                 buf.append(ServiceCheckUtils.getConsumerAddressNum(consumer));
             }
+            buf.append("\r\n");
         }
     }
 

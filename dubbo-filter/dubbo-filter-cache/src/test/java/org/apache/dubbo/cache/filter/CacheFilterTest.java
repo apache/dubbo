@@ -86,6 +86,7 @@ public class CacheFilterTest {
         invocation.setArguments(new Object[]{});
 
         cacheFilter.invoke(invoker, invocation);
+        cacheFilter.invoke(invoker, invocation);
         Result rpcResult1 = cacheFilter.invoke(invoker1, invocation);
         Result rpcResult2 = cacheFilter.invoke(invoker2, invocation);
         Assertions.assertEquals(rpcResult1.getValue(), rpcResult2.getValue());
@@ -100,6 +101,7 @@ public class CacheFilterTest {
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg1"});
 
+        cacheFilter.invoke(invoker, invocation);
         cacheFilter.invoke(invoker, invocation);
         Result rpcResult1 = cacheFilter.invoke(invoker1, invocation);
         Result rpcResult2 = cacheFilter.invoke(invoker2, invocation);
@@ -116,6 +118,7 @@ public class CacheFilterTest {
         invocation.setArguments(new Object[]{"arg2"});
 
         cacheFilter.invoke(invoker3, invocation);
+        cacheFilter.invoke(invoker3, invocation);
         Result rpcResult = cacheFilter.invoke(invoker2, invocation);
         Assertions.assertEquals(rpcResult.getValue(), "value2");
     }
@@ -128,6 +131,7 @@ public class CacheFilterTest {
         invocation.setParameterTypes(new Class<?>[]{String.class});
         invocation.setArguments(new Object[]{"arg3"});
 
+        cacheFilter.invoke(invoker4, invocation);
         cacheFilter.invoke(invoker4, invocation);
         Result result1 = cacheFilter.invoke(invoker1, invocation);
         Result result2 = cacheFilter.invoke(invoker2, invocation);

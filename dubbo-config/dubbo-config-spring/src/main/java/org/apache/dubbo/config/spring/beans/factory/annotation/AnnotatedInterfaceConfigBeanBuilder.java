@@ -16,14 +16,13 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.Assert;
@@ -31,8 +30,8 @@ import org.springframework.util.Assert;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
-import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.getBeans;
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.getOptionalBean;
 
 /**
  * An Abstract Builder to build {@link AbstractInterfaceConfig Interface Config} Bean that annotated
@@ -56,6 +55,8 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
     protected Object configBean;
 
     protected Class<?> interfaceClass;
+
+    protected String beanName;
 
     protected AnnotatedInterfaceConfigBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
@@ -210,6 +211,11 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
 
     public <T extends AnnotatedInterfaceConfigBeanBuilder<C>> T interfaceClass(Class<?> interfaceClass) {
         this.interfaceClass = interfaceClass;
+        return (T) this;
+    }
+
+    public <T extends AnnotatedInterfaceConfigBeanBuilder<C>> T beanName(String beanName) {
+        this.beanName = beanName;
         return (T) this;
     }
 }

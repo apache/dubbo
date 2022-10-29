@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -84,6 +85,11 @@ public abstract class AbstractConfig implements Serializable {
     protected String prefix;
 
     protected final AtomicBoolean refreshed = new AtomicBoolean(false);
+
+    /**
+     * Is default or not
+     */
+    protected Boolean isDefault;
 
     private static String convertLegacyValue(String key, String value) {
         if (value != null && value.length() > 0) {
@@ -362,6 +368,7 @@ public abstract class AbstractConfig implements Serializable {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
             if (method.getDeclaringClass() != Object.class
+                    && method.getDeclaringClass()!= Annotation.class
                     && method.getReturnType() != void.class
                     && method.getParameterTypes().length == 0
                     && Modifier.isPublic(method.getModifiers())
@@ -519,7 +526,7 @@ public abstract class AbstractConfig implements Serializable {
                             buf.append(" ");
                             buf.append(key);
                             buf.append("=\"");
-                            buf.append(value);
+                            buf.append(key.equals("password") ? "******" : value);
                             buf.append("\"");
                         }
                     }
@@ -610,5 +617,13 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         return hashCode;
+    }
+
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 }

@@ -22,6 +22,7 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -32,6 +33,11 @@ import java.util.Set;
 public class CompatibleTypeUtils {
 
     private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * the text to parse such as "2007-12-03T10:15:30"
+     */
+    private static final int ISO_LOCAL_DATE_TIME_MIN_LEN = 19;
 
     private CompatibleTypeUtils() {
     }
@@ -111,17 +117,28 @@ public class CompatibleTypeUtils {
                             + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
             }
-            if (type == java.time.LocalDateTime.class || type == java.time.LocalDate.class
-                    || type == java.time.LocalTime.class) {
-
-                LocalDateTime localDateTime = LocalDateTime.parse(string);
-                if (type == java.time.LocalDate.class) {
-                    return localDateTime.toLocalDate();
+            if (type == java.time.LocalDateTime.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
                 }
-                if (type == java.time.LocalTime.class) {
-                    return localDateTime.toLocalTime();
+                return LocalDateTime.parse(string);
+            }
+            if (type == java.time.LocalDate.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
                 }
-                return localDateTime;
+                return java.time.LocalDate.parse(string);
+            }
+            if (type == java.time.LocalTime.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
+                }
+                
+                if (string.length() >= ISO_LOCAL_DATE_TIME_MIN_LEN) {
+                    return LocalDateTime.parse(string).toLocalTime();
+                } else {
+                    return LocalTime.parse(string);
+                }
             }
             if (type == Class.class) {
                 try {
@@ -200,19 +217,19 @@ public class CompatibleTypeUtils {
             }
         }
         if (value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
+            int length = Array.getLength(value);
             Collection collection;
             if (!type.isInterface()) {
                 try {
                     collection = (Collection) type.newInstance();
                 } catch (Throwable e) {
-                    collection = new ArrayList<Object>();
+                    collection = new ArrayList<Object>(length);
                 }
             } else if (type == Set.class) {
-                collection = new HashSet<Object>();
+                collection = new HashSet<Object>(Math.max((int) (length/.75f) + 1, 16));
             } else {
-                collection = new ArrayList<Object>();
+                collection = new ArrayList<Object>(length);
             }
-            int length = Array.getLength(value);
             for (int i = 0; i < length; i++) {
                 collection.add(Array.get(value, i));
             }

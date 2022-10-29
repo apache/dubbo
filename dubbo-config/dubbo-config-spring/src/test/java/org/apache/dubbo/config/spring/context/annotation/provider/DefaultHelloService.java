@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
  * @since TODO
  */
 @Service
-@DubboService
+@DubboService(parameters = {"sayHello.timeout", "3000"})
 public class DefaultHelloService implements HelloService {
 
     @Override

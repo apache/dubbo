@@ -727,7 +727,7 @@ public class RpcContext {
             try {
                 setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
-                //local invoke will return directly
+                // local invoke will return directly
                 if (o != null) {
                     if (o instanceof CompletableFuture) {
                         return (CompletableFuture<T>) o;

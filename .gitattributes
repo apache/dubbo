@@ -1,0 +1,4 @@
+# Git will understand that all files specified are not text,
+# and it should not try to change them.
+# This will prevent file formatting (such as `crlf` endings to `lf` endings) while commit.
+* -text

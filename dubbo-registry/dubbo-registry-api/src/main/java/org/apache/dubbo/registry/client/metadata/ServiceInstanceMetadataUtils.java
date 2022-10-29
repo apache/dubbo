@@ -260,6 +260,10 @@ public class ServiceInstanceMetadataUtils {
         return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
     }
 
+    public static void resetInstanceUpdateKey(ServiceInstance instance) {
+        instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
+    }
+
     public static void refreshMetadataAndInstance() {
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
         remoteMetadataService.publishMetadata(ApplicationModel.getName());

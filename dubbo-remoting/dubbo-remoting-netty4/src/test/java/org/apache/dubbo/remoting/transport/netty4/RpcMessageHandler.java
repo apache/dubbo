@@ -29,7 +29,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 
 public class RpcMessageHandler implements Replier<RpcMessage> {
-    private final static ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
+    private static final ServiceProvider DEFAULT_PROVIDER = new ServiceProvider() {
         public Object getImplementation(String service) {
             String impl = service + "Impl";
             try {

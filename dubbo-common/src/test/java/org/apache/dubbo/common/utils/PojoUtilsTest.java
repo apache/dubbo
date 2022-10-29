@@ -32,6 +32,9 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -199,6 +202,11 @@ public class PojoUtilsTest {
         assertArrayObject(new Float[]{37F, -39F, 123456.7F});
 
         assertArrayObject(new Double[]{37D, -39D, 123456.7D});
+
+        assertObject(new int[][]{{37, -39, 12456}});
+        assertObject(new Integer[][][]{{{37, -39, 12456}}});
+
+        assertArrayObject(new Integer[]{37, -39, 12456});
     }
 
     @Test
@@ -702,12 +710,12 @@ public class PojoUtilsTest {
         String dateTimeStr = "2018-09-12 10:12:33";
         String[] dateFormat = new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss"};
 
-        //java.util.Date
+        // java.util.Date
         Object date = PojoUtils.realize(dateTimeStr, Date.class, (Type) Date.class);
         assertEquals(Date.class, date.getClass());
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(date));
 
-        //java.sql.Time
+        // java.sql.Time
         Object time = PojoUtils.realize(dateTimeStr, java.sql.Time.class, (Type) java.sql.Time.class);
         assertEquals(java.sql.Time.class, time.getClass());
         assertEquals(timeStr, new SimpleDateFormat(dateFormat[2]).format(time));
@@ -753,6 +761,54 @@ public class PojoUtilsTest {
         Object setResult = PojoUtils.realize(setStr, HashSet.class);
         assertEquals(HashSet.class, setResult.getClass());
         assertEquals(setResult, setStr);
+    }
+
+    @Test
+    public void testMapToPojo() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("gender", "male");
+        map.put("age", 40);
+
+        List<Map<String, Object>> children = new ArrayList<>();
+        Map<String, Object> child = new HashMap<>();
+        child.put("gender", "male");
+        child.put("age", 15);
+        children.add(child);
+        map.put("children", children);
+
+        Map<String, Object> features = new HashMap<>();
+        features.put("divorce", false);
+        features.put("money", 0);
+        features.put("height", "177cm");
+        map.put("features", features);
+
+        Parent parent = PojoUtils.mapToPojo(map, Parent.class);
+
+        assertEquals(parent.gender, "male");;
+        assertEquals(parent.getAge(), 40);
+        assertEquals(parent.getChildren().size(), 1);
+        assertEquals(parent.getChildren().get(0).gender, "male");
+        assertEquals(parent.getChildren().get(0).age, 15);
+        assertNotNull(parent.getFeatures());
+        assertEquals(parent.getFeatures().get("divorce"), "false");
+        assertEquals(parent.getFeatures().get("money"), "0");
+        assertEquals(parent.getFeatures().get("height"), "177cm");
+    }
+
+    @Test
+    public void testJava8Time() {
+        
+        Object localDateTimeGen = PojoUtils.generalize(LocalDateTime.now());
+        Object localDateTime = PojoUtils.realize(localDateTimeGen, LocalDateTime.class);
+        assertEquals(localDateTimeGen, localDateTime.toString());
+
+        Object localDateGen = PojoUtils.generalize(LocalDate.now());
+        Object localDate = PojoUtils.realize(localDateGen, LocalDate.class);
+        assertEquals(localDateGen, localDate.toString());
+
+        Object localTimeGen = PojoUtils.generalize(LocalTime.now());
+        Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
+        assertEquals(localTimeGen, localTime.toString());
     }
 
     public enum Day {
@@ -837,7 +893,9 @@ public class PojoUtilsTest {
         String name;
         int age;
         Child child;
+        private List<Child> children;
         private String securityEmail;
+        private Map<String, String> features;
 
         public static Parent getNewParent() {
             return new Parent();
@@ -873,6 +931,22 @@ public class PojoUtilsTest {
 
         public void setChild(Child child) {
             this.child = child;
+        }
+
+        public List<Child> getChildren() {
+            return children;
+        }
+
+        public void setChildren(List<Child> children) {
+            this.children = children;
+        }
+
+        public Map<String, String> getFeatures() {
+            return features;
+        }
+
+        public void setFeatures(Map<String, String> features) {
+            this.features = features;
         }
     }
 

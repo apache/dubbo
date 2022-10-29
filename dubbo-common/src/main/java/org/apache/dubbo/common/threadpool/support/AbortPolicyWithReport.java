@@ -31,8 +31,10 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.utils.JVMUtil;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventDispatcher;
 
+import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 
 /**
@@ -60,6 +62,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
     private static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd_HH:mm:ss";
 
     private static Semaphore guard = new Semaphore(1);
+
+    private static final String USER_HOME = System.getProperty("user.home");
 
     public AbortPolicyWithReport(String threadName, URL url) {
         this.threadName = threadName;
@@ -104,7 +108,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
         ExecutorService pool = Executors.newSingleThreadExecutor();
         pool.execute(() -> {
-            String dumpPath = url.getParameter(DUMP_DIRECTORY, System.getProperty("user.home"));
+            String dumpPath = getDumpPath();
 
             SimpleDateFormat sdf;
 
@@ -134,4 +138,21 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     }
 
+    private String getDumpPath() {
+        final String dumpPath = url.getParameter(DUMP_DIRECTORY);
+        if (StringUtils.isEmpty(dumpPath)) {
+            return USER_HOME;
+        }
+        final File dumpDirectory = new File(dumpPath);
+        if (!dumpDirectory.exists()) {
+            if (dumpDirectory.mkdirs()) {
+                logger.info(format("Dubbo dump directory[%s] created", dumpDirectory.getAbsolutePath()));
+            } else {
+                logger.warn(format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
+                        dumpDirectory.getAbsolutePath(), USER_HOME));
+                return USER_HOME;
+            }
+        }
+        return dumpPath;
+    }
 }

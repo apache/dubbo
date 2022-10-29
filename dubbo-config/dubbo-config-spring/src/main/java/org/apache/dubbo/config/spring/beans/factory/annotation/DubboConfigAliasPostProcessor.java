@@ -39,7 +39,7 @@ public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPost
     /**
      * The bean name of {@link DubboConfigConfigurationRegistrar}
      */
-    public final static String BEAN_NAME = "dubboConfigAliasPostProcessor";
+    public static final String BEAN_NAME = "dubboConfigAliasPostProcessor";
 
     private BeanDefinitionRegistry registry;
 

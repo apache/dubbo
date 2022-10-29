@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.utils.ReflectUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +31,7 @@ import java.util.Map;
 /**
  * The type Environment configuration test.
  */
-class EnvironmentConfigurationTest {
+public class EnvironmentConfigurationTest {
 
     private static final String MOCK_KEY = "DUBBO_KEY";
     private static final String MOCK_VALUE = "mockValue";
@@ -64,11 +66,11 @@ class EnvironmentConfigurationTest {
         try {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
+            ReflectUtils.makeAccessible(theEnvironmentField);
             Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
             env.putAll(newenv);
             Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            ReflectUtils.makeAccessible(theCaseInsensitiveEnvironmentField);
             Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
             cienv.putAll(newenv);
         } catch (NoSuchFieldException e) {
@@ -77,7 +79,7 @@ class EnvironmentConfigurationTest {
             for (Class cl : classes) {
                 if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
                     Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
+                    ReflectUtils.makeAccessible(field);
                     Object obj = field.get(env);
                     Map<String, String> map = (Map<String, String>) obj;
                     map.clear();
@@ -90,7 +92,7 @@ class EnvironmentConfigurationTest {
     private static void updateEnv(String name, String val) throws ReflectiveOperationException {
         Map<String, String> env = System.getenv();
         Field field = env.getClass().getDeclaredField("m");
-        field.setAccessible(true);
+        ReflectUtils.makeAccessible(field);
         ((Map<String, String>) field.get(env)).put(name, val);
     }
     /**

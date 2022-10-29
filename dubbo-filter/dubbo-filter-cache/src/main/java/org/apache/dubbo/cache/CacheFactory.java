@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.cache;
 
+import org.apache.dubbo.cache.support.lru.LruCacheFactory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
+
+import static org.apache.dubbo.common.constants.FilterConstants.CACHE_KEY;
 
 /**
  * Interface needs to be implemented by all the cache store provider.Along with implementing <b>CacheFactory</b> interface
@@ -27,7 +30,7 @@ import org.apache.dubbo.rpc.Invocation;
  *
  * @see Cache
  */
-@SPI("lru")
+@SPI(LruCacheFactory.NAME)
 public interface CacheFactory {
 
     /**
@@ -37,7 +40,7 @@ public interface CacheFactory {
      * @param invocation
      * @return Instance of Cache containing cached value against method url and invocation.
      */
-    @Adaptive("cache")
+    @Adaptive(CACHE_KEY)
     Cache getCache(URL url, Invocation invocation);
 
 }

@@ -40,13 +40,15 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.KEEP_ALIVE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+
 
 /**
  * NettyServer.
@@ -86,18 +88,43 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     protected void doOpen() throws Throwable {
         bootstrap = new ServerBootstrap();
 
-        bossGroup = NettyEventLoopFactory.eventLoopGroup(1, "NettyServerBoss");
-        workerGroup = NettyEventLoopFactory.eventLoopGroup(
+        bossGroup = createBossGroup();
+        workerGroup = createWorkerGroup();
+
+        final NettyServerHandler nettyServerHandler = createNettyServerHandler();
+        channels = nettyServerHandler.getChannels();
+
+        initServerBootstrap(nettyServerHandler);
+
+        // bind
+        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
+        channelFuture.syncUninterruptibly();
+        channel = channelFuture.channel();
+
+    }
+
+    protected EventLoopGroup createBossGroup() {
+        return NettyEventLoopFactory.eventLoopGroup(1, "NettyServerBoss");
+    }
+
+    protected EventLoopGroup createWorkerGroup() {
+        return NettyEventLoopFactory.eventLoopGroup(
                 getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS),
                 "NettyServerWorker");
+    }
 
-        final NettyServerHandler nettyServerHandler = new NettyServerHandler(getUrl(), this);
-        channels = nettyServerHandler.getChannels();
+    protected NettyServerHandler createNettyServerHandler() {
+        return new NettyServerHandler(getUrl(), this);
+    }
+
+    protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
+        boolean keepalive = getUrl().getParameter(KEEP_ALIVE_KEY, Boolean.FALSE);
 
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NettyEventLoopFactory.serverSocketChannelClass())
                 .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
                 .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
+                .childOption(ChannelOption.SO_KEEPALIVE, keepalive)
                 .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -116,11 +143,6 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
-        // bind
-        ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
-        channelFuture.syncUninterruptibly();
-        channel = channelFuture.channel();
-
     }
 
     @Override
@@ -134,9 +156,9 @@ public class NettyServer extends AbstractServer implements RemotingServer {
             logger.warn(e.getMessage(), e);
         }
         try {
-            Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
+            Collection<Channel> channels = getChannels();
             if (channels != null && channels.size() > 0) {
-                for (org.apache.dubbo.remoting.Channel channel : channels) {
+                for (Channel channel : channels) {
                     try {
                         channel.close();
                     } catch (Throwable e) {
@@ -166,14 +188,16 @@ public class NettyServer extends AbstractServer implements RemotingServer {
 
     @Override
     public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new HashSet<Channel>();
-        for (Channel channel : this.channels.values()) {
-            if (channel.isConnected()) {
-                chs.add(channel);
-            } else {
-                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
-            }
-        }
+        Collection<Channel> chs = new ArrayList<>(this.channels.size());
+        chs.addAll(this.channels.values());
+        // check of connection status is unnecessary since we are using channels in NettyServerHandler
+//        for (Channel channel : this.channels.values()) {
+//            if (channel.isConnected()) {
+//                chs.add(channel);
+//            } else {
+//                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
+//            }
+//        }
         return chs;
     }
 
@@ -192,4 +216,23 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         return channel.isActive();
     }
 
+    protected EventLoopGroup getBossGroup() {
+        return bossGroup;
+    }
+
+    protected EventLoopGroup getWorkerGroup() {
+        return workerGroup;
+    }
+
+    protected ServerBootstrap getServerBootstrap() {
+        return bootstrap;
+    }
+
+    protected io.netty.channel.Channel getBossChannel() {
+        return channel;
+    }
+
+    protected Map<String, Channel> getServerChannels() {
+        return channels;
+    }
 }

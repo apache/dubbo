@@ -53,9 +53,12 @@ public class MethodConfigTest {
     private static final int EXECUTES = 5;
     private static final boolean DEPERECATED = true;
     private static final boolean STICKY = true;
-    private static final String ONINVOKE = "i";
-    private static final String ONTHROW = "t";
-    private static final String ONRETURN = "r";
+    private static final String ONINVOKE = "instance.i";
+    private static final String ONTHROW = "instance.t";
+    private static final String ONRETURN = "instance.r";
+    private static final String ONINVOKEMETHOD = "i";
+    private static final String ONTHROWMETHOD = "t";
+    private static final String ONRETURNMETHOD = "r";
     private static final String CACHE = "c";
     private static final String VALIDATION = "v";
     private static final int ARGUMENTS_INDEX = 24;
@@ -82,9 +85,9 @@ public class MethodConfigTest {
         assertThat(EXECUTES, equalTo(methodConfig.getExecutes().intValue()));
         assertThat(DEPERECATED, equalTo(methodConfig.getDeprecated()));
         assertThat(STICKY, equalTo(methodConfig.getSticky()));
-        assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
-        assertThat(ONTHROW, equalTo(methodConfig.getOnthrow()));
-        assertThat(ONRETURN, equalTo(methodConfig.getOnreturn()));
+        assertThat(ONINVOKEMETHOD, equalTo(methodConfig.getOninvokeMethod()));
+        assertThat(ONTHROWMETHOD, equalTo(methodConfig.getOnthrowMethod()));
+        assertThat(ONRETURNMETHOD, equalTo(methodConfig.getOnreturnMethod()));
         assertThat(CACHE, equalTo(methodConfig.getCache()));
         assertThat(VALIDATION, equalTo(methodConfig.getValidation()));
         assertThat(ARGUMENTS_INDEX, equalTo(methodConfig.getArguments().get(0).getIndex().intValue()));

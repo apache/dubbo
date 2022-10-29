@@ -1,0 +1,4 @@
+demo=org.apache.dubbo.common.extension.wrapper.impl.DemoImpl
+wrapper=org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper
+wrapper2=org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2
+demo2=org.apache.dubbo.common.extension.wrapper.impl.DemoImpl

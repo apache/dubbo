@@ -76,7 +76,7 @@ public class TagRouterTest {
      * </pre>
      */
     @Test
-    public void tagRouterRuleParseTest(){
+    public void tagRouterRuleParseTest() throws Exception {
         String tagRouterRuleConfig = "---\n" +
                 "force: false\n" +
                 "runtime: true\n" +

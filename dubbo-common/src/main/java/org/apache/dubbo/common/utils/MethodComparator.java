@@ -32,7 +32,7 @@ import java.util.Comparator;
  */
 public class MethodComparator implements Comparator<Method> {
 
-    public final static MethodComparator INSTANCE = new MethodComparator();
+    public static final MethodComparator INSTANCE = new MethodComparator();
 
     private MethodComparator() {
     }

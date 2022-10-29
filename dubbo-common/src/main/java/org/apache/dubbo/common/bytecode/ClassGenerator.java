@@ -340,9 +340,7 @@ public final class ClassGenerator {
             return mCtc.toClass(loader, pd);
         } catch (RuntimeException e) {
             throw e;
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } catch (CannotCompileException e) {
+        } catch (NotFoundException | CannotCompileException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -384,7 +382,7 @@ public final class ClassGenerator {
         return getCtClass(c.getDeclaringClass()).getConstructor(ReflectUtils.getDesc(c));
     }
 
-    public static interface DC {
+    public interface DC {
 
     } // dynamic class tag interface.
 }

@@ -17,23 +17,22 @@
 package org.apache.dubbo.rpc.cluster.router.tag.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.yaml.snakeyaml.TypeDescription;
+import org.apache.dubbo.common.utils.PojoUtils;
+
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+
+import java.util.Map;
 
 /**
  *
  */
 public class TagRuleParser {
 
-    public static TagRouterRule parse(String rawRule) {
-        Constructor constructor = new Constructor(TagRouterRule.class);
-        TypeDescription tagDescription = new TypeDescription(TagRouterRule.class);
-        tagDescription.addPropertyParameters("tags", Tag.class);
-        constructor.addTypeDescription(tagDescription);
-
-        Yaml yaml = new Yaml(constructor);
-        TagRouterRule rule = yaml.load(rawRule);
+    public static TagRouterRule parse(String rawRule) throws Exception {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawRule);
+        TagRouterRule rule = PojoUtils.mapToPojo(map, TagRouterRule.class);
         rule.setRawRule(rawRule);
         if (CollectionUtils.isEmpty(rule.getTags())) {
             rule.setValid(false);

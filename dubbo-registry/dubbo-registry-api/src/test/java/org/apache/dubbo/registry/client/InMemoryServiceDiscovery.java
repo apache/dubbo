@@ -36,13 +36,11 @@ import static java.util.Collections.emptyList;
  *
  * @since 2.7.5
  */
-public class InMemoryServiceDiscovery implements ServiceDiscovery {
+public class InMemoryServiceDiscovery extends AbstractServiceDiscovery {
 
     private final EventDispatcher dispatcher = EventDispatcher.getDefaultExtension();
 
     private Map<String, List<ServiceInstance>> repository = new HashMap<>();
-
-    private ServiceInstance serviceInstance;
 
     private URL registryURL;
 
@@ -77,18 +75,12 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
         return registryURL;
     }
 
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
-    }
-
     public String toString() {
         return "InMemoryServiceDiscovery";
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doRegister(ServiceInstance serviceInstance) {
         String serviceName = serviceInstance.getServiceName();
         List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
         if (!serviceInstances.contains(serviceInstance)) {
@@ -97,7 +89,7 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         unregister(serviceInstance);
         register(serviceInstance);
     }

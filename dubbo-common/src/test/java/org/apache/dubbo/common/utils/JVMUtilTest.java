@@ -17,5 +17,15 @@
 
 package org.apache.dubbo.common.utils;
 
+import org.junit.jupiter.api.Test;
+import java.io.ByteArrayOutputStream;
+
 public class JVMUtilTest {
+    @Test
+    public void test() throws Exception {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        JVMUtil.jstack(bos);
+        String threadStackInfo = new String(bos.toByteArray());
+        System.out.println(threadStackInfo);
+    }
 }

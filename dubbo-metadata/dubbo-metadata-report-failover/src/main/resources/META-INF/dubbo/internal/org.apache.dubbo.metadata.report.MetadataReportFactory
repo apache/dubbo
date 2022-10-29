@@ -1,0 +1,1 @@
+failover=org.apache.dubbo.metadata.store.failover.FailoverMetadataReportFactory

@@ -18,7 +18,7 @@ package org.apache.dubbo.common.serialize.kryo;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.kryo.utils.ReflectionUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
@@ -43,7 +43,7 @@ public class CompatibleKryo extends Kryo {
          * default to the default serializer.
          * It is the responsibility of kryo to handle with every standard jdk classes, so we will just escape these classes.
          */
-        if (!ReflectionUtils.isJdk(type) && !type.isArray() && !type.isEnum() && !ReflectionUtils.checkZeroArgConstructor(type)) {
+        if (!ReflectUtils.isJdk(type) && !type.isArray() && !type.isEnum() && !ReflectUtils.checkZeroArgConstructor(type)) {
             if (logger.isWarnEnabled()) {
                 logger.warn(type + " has no zero-arg constructor and this will affect the serialization performance");
             }

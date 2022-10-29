@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -154,8 +155,8 @@ public final class ReflectUtils {
     }
 
     public static boolean isPrimitives(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
+        while (cls.isArray()) {
+            cls = cls.getComponentType();
         }
         return isPrimitive(cls);
     }
@@ -1063,7 +1064,7 @@ public final class ReflectUtils {
         try {
             Object value = emptyInstances.get(returnType);
             if (value == null) {
-                value = returnType.newInstance();
+                value = returnType.getDeclaredConstructor().newInstance();
                 emptyInstances.put(returnType, value);
             }
             Class<?> cls = value.getClass();
@@ -1076,9 +1077,7 @@ public final class ReflectUtils {
                     Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
                     if (property != null) {
                         try {
-                            if (!field.isAccessible()) {
-                                field.setAccessible(true);
-                            }
+                            ReflectUtils.makeAccessible(field);
                             field.set(value, property);
                         } catch (Throwable ignored) {
                         }
@@ -1167,8 +1166,7 @@ public final class ReflectUtils {
                         || Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-
-                field.setAccessible(true);
+                ReflectUtils.makeAccessible(field);
 
                 properties.put(field.getName(), field);
             }
@@ -1183,7 +1181,7 @@ public final class ReflectUtils {
             Method[] methods = cl.getDeclaredMethods();
             for (Method method : methods) {
                 if (isBeanPropertyReadMethod(method)) {
-                    method.setAccessible(true);
+                    ReflectUtils.makeAccessible(method);
                     String property = getPropertyNameFromBeanReadMethod(method);
                     properties.put(property, method);
                 }
@@ -1201,6 +1199,9 @@ public final class ReflectUtils {
                 Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
                 if (actualArgType instanceof ParameterizedType) {
                     returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else if (actualArgType instanceof TypeVariable) {
+                    returnType = (Class<?>) ((TypeVariable<?>) actualArgType).getBounds()[0];
                     genericReturnType = actualArgType;
                 } else {
                     returnType = (Class<?>) actualArgType;
@@ -1229,16 +1230,14 @@ public final class ReflectUtils {
 
         Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
                 .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
-                .map(type -> ParameterizedType.class.cast(type))  // cast to ParameterizedType
+                .map(ParameterizedType.class::cast)  // cast to ParameterizedType
                 .collect(Collectors.toSet());
 
         if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
             genericTypes.stream()
                     .filter(type -> type instanceof Class)
-                    .map(type -> Class.class.cast(type))
-                    .forEach(superClass -> {
-                        parameterizedTypes.addAll(findParameterizedTypes(superClass));
-                    });
+                    .map(Class.class::cast)
+                    .forEach(superClass -> parameterizedTypes.addAll(findParameterizedTypes(superClass)));
         }
 
         return unmodifiableSet(parameterizedTypes);                     // build as a Set
@@ -1327,5 +1326,70 @@ public final class ReflectUtils {
         }
 
         return types;
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given method accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param method the method to make accessible
+     * @see java.lang.reflect.Method#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Method method) {
+        if ((!Modifier.isPublic(method.getModifiers()) ||
+                !Modifier.isPublic(method.getDeclaringClass().getModifiers())) && !method.isAccessible()) {
+            method.setAccessible(true);
+        }
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given field accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param field the field to make accessible
+     * @see java.lang.reflect.Field#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Field field) {
+        if ((!Modifier.isPublic(field.getModifiers()) ||
+                !Modifier.isPublic(field.getDeclaringClass().getModifiers()) ||
+                Modifier.isFinal(field.getModifiers())) && !field.isAccessible()) {
+            field.setAccessible(true);
+        }
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given constructor accessible, explicitly setting it accessible
+     * if necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param ctor the constructor to make accessible
+     * @see java.lang.reflect.Constructor#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Constructor<?> ctor) {
+        if ((!Modifier.isPublic(ctor.getModifiers()) ||
+                !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) && !ctor.isAccessible()) {
+            ctor.setAccessible(true);
+        }
+    }
+
+    public static boolean checkZeroArgConstructor(Class clazz) {
+        try {
+            clazz.getDeclaredConstructor();
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    public static boolean isJdk(Class clazz) {
+        return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
     }
 }

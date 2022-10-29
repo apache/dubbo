@@ -1,0 +1,2 @@
+local=org.apache.dubbo.metadata.store.failover.MockLocalFailoverCondition
+all=org.apache.dubbo.metadata.store.failover.MockAllFailoverCondition

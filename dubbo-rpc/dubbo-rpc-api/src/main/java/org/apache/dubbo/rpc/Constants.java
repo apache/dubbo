@@ -90,4 +90,8 @@ public interface Constants {
 
     String CONSUMER_MODEL = "consumerModel";
     String METHOD_MODEL = "methodModel";
+
+    String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
+    String INVOCATION_KEY = "invocation";
+    String SERIALIZATION_ID_KEY = "serialization_id";
 }

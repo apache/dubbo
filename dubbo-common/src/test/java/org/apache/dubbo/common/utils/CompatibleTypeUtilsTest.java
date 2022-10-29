@@ -84,7 +84,7 @@ public class CompatibleTypeUtilsTest {
             result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11T12:24:12.047", java.time.LocalTime.class);
             assertEquals(DateTimeFormatter.ofPattern("HH:mm:ss").format((java.time.LocalTime) result), "12:24:12");
 
-            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11T12:24:12.047", java.time.LocalDate.class);
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11", java.time.LocalDate.class);
             assertEquals(DateTimeFormatter.ofPattern("yyyy-MM-dd").format((java.time.LocalDate) result), "2011-12-11");
 
             result = CompatibleTypeUtils.compatibleTypeConvert("ab", char[].class);

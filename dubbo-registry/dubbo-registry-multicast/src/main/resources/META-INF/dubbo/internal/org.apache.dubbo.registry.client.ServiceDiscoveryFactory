@@ -1,1 +1,0 @@
-multicast=org.apache.dubbo.registry.multicast.MulticastServiceDiscoveryFactory

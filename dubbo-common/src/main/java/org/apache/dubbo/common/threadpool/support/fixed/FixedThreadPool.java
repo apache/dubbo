@@ -41,6 +41,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
  */
 public class FixedThreadPool implements ThreadPool {
 
+    public static final String NAME = "fixed";
+
     @Override
     public Executor getExecutor(URL url) {
         String name = url.getParameter(THREAD_NAME_KEY, DEFAULT_THREAD_NAME);
