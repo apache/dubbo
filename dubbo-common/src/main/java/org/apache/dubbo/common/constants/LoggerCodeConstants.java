@@ -51,6 +51,26 @@ public interface LoggerCodeConstants {
 
     String COMMON_MONITOR_EXCEPTION = "0-14";
 
+    String COMMON_ERROR_LOAD_EXTENSION = "0-15";
+
+    String COMMON_EXECUTORS_NO_FOUND = "0-16";
+
+    String COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN = "0-17";
+
+    String COMMON_ERROR_USE_THREAD_POOL = "0-18";
+
+    String COMMON_ERROR_RUN_THREAD_TASK = "0-19";
+
+    String COMMON_UNEXPECTED_CREATE_DUMP = "0-20";
+
+    String COMMON_ERROR_TOO_MANY_INSTANCES = "0-21";
+
+    String COMMON_IO_EXCEPTION = "0-22";
+
+    String COMMON_JSON_CONVERT_EXCEPTION = "0-23";
+
+    String COMMON_FAILED_OVERRIDE_FIELD = "0-24";
+
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
@@ -121,6 +141,8 @@ public interface LoggerCodeConstants {
     String REGISTRY_ERROR_PARSING_XDS = "1-34";
 
     String REGISTRY_ZOOKEEPER_EXCEPTION = "1-35";
+
+    String REGISTRY_UNEXPECTED_EXCEPTION = "1-36";
 
     // cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";

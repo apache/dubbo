@@ -19,7 +19,7 @@ package org.apache.dubbo.common.threadpool.manager;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.ThreadPool;
@@ -51,12 +51,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_EXECUTO
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_EXECUTORS_NO_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultExecutorRepository.class);
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
@@ -127,7 +130,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         }
 
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))){
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
             executorKey = CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
         }
         return executorKey;
@@ -146,7 +149,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
          * have Executor instances generated and stored.
          */
         if (executors == null) {
-            logger.warn("No available executors, this is not expected, framework should call createExecutorIfAbsent first " +
+            logger.warn(COMMON_EXECUTORS_NO_FOUND, "", "", "No available executors, this is not expected, framework should call createExecutorIfAbsent first" +
                 "before coming to here.");
 
             return null;
@@ -192,7 +195,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 }
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(COMMON_ERROR_USE_THREAD_POOL, "", "", t.getMessage(), t);
         }
     }
 
@@ -218,7 +221,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                     serviceExportExecutor.shutdown();
                 } catch (Throwable ignored) {
                     // ignored
-                    logger.warn(ignored.getMessage(), ignored);
+                    logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", ignored.getMessage(), ignored);
                 }
             }
             serviceExportExecutor = null;
@@ -246,7 +249,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 try {
                     serviceReferExecutor.shutdown();
                 } catch (Throwable ignored) {
-                    logger.warn(ignored.getMessage(), ignored);
+                    logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", ignored.getMessage(), ignored);
                 }
             }
             serviceReferExecutor = null;
@@ -331,7 +334,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                             ExecutorUtil.shutdownNow(executor, 100);
                         } catch (Throwable ignored) {
                             // ignored
-                            logger.warn(ignored.getMessage(), ignored);
+                            logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", ignored.getMessage(), ignored);
                         }
                     }
                 });
@@ -345,7 +348,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executorService.shutdownNow();
         } catch (Exception e) {
             String msg = "shutdown executor service [" + name + "] failed: ";
-            logger.warn(msg + e.getMessage(), e);
+            logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", msg + e.getMessage(), e);
         }
     }
 

@@ -21,7 +21,7 @@ import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -37,12 +37,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
+
 /**
  * A bean factory for internal sharing.
  */
 public class ScopeBeanFactory {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeBeanFactory.class);
+    protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeBeanFactory.class);
 
     private final ScopeBeanFactory parent;
     private ExtensionAccessor extensionAccessor;
@@ -239,14 +241,14 @@ public class ScopeBeanFactory {
     }
 
     public void destroy() {
-        if (destroyed.compareAndSet(false, true)){
+        if (destroyed.compareAndSet(false, true)) {
             for (BeanInfo beanInfo : registeredBeanInfos) {
                 if (beanInfo.instance instanceof Disposable) {
                     try {
                         Disposable beanInstance = (Disposable) beanInfo.instance;
                         beanInstance.destroy();
                     } catch (Throwable e) {
-                        LOGGER.error("An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
+                        LOGGER.error(CONFIG_FAILED_DESTROY_INVOKER, "", "", "An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
                     }
                 }
             }

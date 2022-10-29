@@ -21,7 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -35,8 +35,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
 public class Environment extends LifecycleAdapter implements ApplicationExt {
-    private static final Logger logger = LoggerFactory.getLogger(Environment.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Environment.class);
 
     public static final String NAME = "environment";
 
@@ -160,6 +162,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
 
     /**
      * Merge target map properties into app configuration
+     *
      * @param map
      */
     public void updateAppConfigMap(Map<String, String> map) {
@@ -215,6 +218,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
 
     /**
      * Get configuration map list for target instance
+     *
      * @param config
      * @param prefix
      * @return
@@ -238,6 +242,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
 
     /**
      * Get global configuration as map list
+     *
      * @return
      */
     public List<Map<String, String>> getConfigurationMaps() {
@@ -263,7 +268,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
             try {
                 defaultDynamicConfiguration.close();
             } catch (Exception e) {
-                logger.warn("close dynamic configuration failed: " + e.getMessage(), e);
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "close dynamic configuration failed: " + e.getMessage(), e);
             }
             defaultDynamicConfiguration = null;
         }
@@ -322,7 +327,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         if (defaultDynamicGlobalConfiguration == null) {
             if (defaultDynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("dynamicConfiguration is null , return globalConfiguration.");
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }
