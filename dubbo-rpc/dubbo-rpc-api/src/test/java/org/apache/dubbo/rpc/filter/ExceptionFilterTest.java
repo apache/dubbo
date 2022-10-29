@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -64,9 +65,9 @@ public class ExceptionFilterTest {
             exceptionFilter.onError(e, invoker, invocation);
         }
 
-        Mockito.verify(logger).error(eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
-                + DemoService.class.getName() + ", method: sayHello, exception: "
-                + RpcException.class.getName() + ": TestRpcException"), eq(exception));
+        Mockito.verify(logger).error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
+            + DemoService.class.getName() + ", method: sayHello, exception: "
+            + RpcException.class.getName() + ": TestRpcException"), eq(exception));
         RpcContext.removeContext();
     }
 
