@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component("demoServiceComponent")
 public class DemoServiceComponent implements DemoService {
-    @DubboReference(loadbalance = "adaptive")
+    @DubboReference
     private DemoService demoService;
 
     @Override
