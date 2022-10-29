@@ -91,7 +91,7 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
     }
 
     private void setDubboApplicationQosEnableProperty(Map<String, Object> defaultProperties) {
-        defaultProperties.put(DUBBO_APPLICATION_QOS_ENABLE_PROPERTY, Boolean.FALSE.toString());
+        defaultProperties.put(DUBBO_APPLICATION_QOS_ENABLE_PROPERTY, Boolean.TRUE.toString());
     }
 
     /**

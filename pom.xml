@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.1.2-SNAPSHOT</revision>
+        <revision>3.2.0-beta.1-SNAPSHOT</revision>
     </properties>
 
     <modules>

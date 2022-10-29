@@ -147,7 +147,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 // origin request, may changed by updateObserve
                 Set<String> names = requestParam.get(request);
 
-                // use future to get async result
+                // use future to get async result, future complete on StreamObserver onNext
                 CompletableFuture<T> future = new CompletableFuture<>();
                 streamResult.put(request, future);
 
@@ -226,17 +226,22 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 return;
             }
             observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
-            CompletableFuture<T> future = streamResult.get(requestId);
-            if (future == null) {
-                return;
-            }
-            future.complete(result);
+            returnResult(result);
         }
 
         @Override
         public void onError(Throwable t) {
             logger.error("xDS Client received error message! detail:", t);
             clear();
+            returnResult(null);
+        }
+
+        private void returnResult(T result) {
+            CompletableFuture<T> future = streamResult.get(requestId);
+            if (future == null) {
+                return;
+            }
+            future.complete(result);
         }
 
         @Override

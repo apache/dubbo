@@ -47,6 +47,7 @@ import org.apache.dubbo.rpc.protocol.tri.call.TripleClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.UnaryClientCallListener;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
@@ -80,6 +81,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final ExecutorService streamExecutor;
     private final String acceptEncodings;
+    private final TripleWriteQueue writeQueue = new TripleWriteQueue();
 
     public TripleInvoker(Class<T> serviceType,
         URL url,
@@ -117,7 +119,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             invocation.getMethodName(),
             invocation.getParameterTypes());
         ClientCall call = new TripleClientCall(connection, streamExecutor,
-            getUrl().getOrDefaultFrameworkModel());
+            getUrl().getOrDefaultFrameworkModel(), writeQueue);
 
         AsyncRpcResult result;
         try {
@@ -319,5 +321,4 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         return timeout;
     }
-
 }

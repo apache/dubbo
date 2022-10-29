@@ -22,8 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,7 +37,7 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
     @SuppressWarnings({"unchecked"})
     public <T> T copy(URL url, Object src, Class<T> targetClass) {
         Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-            url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+            UrlUtils.serializationOrDefault(url));
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ObjectOutput objectOutput = serialization.serialize(url, outputStream);

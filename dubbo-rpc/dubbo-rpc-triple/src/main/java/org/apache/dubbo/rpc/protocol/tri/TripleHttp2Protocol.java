@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.rpc.HeaderFilter;
+import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
@@ -37,9 +38,9 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2FrameLogger;
@@ -47,6 +48,8 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
+
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,14 +128,16 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(SERVER_LOGGER)
             .build();
+        ExecutorSupport executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
+        TripleWriteQueue writeQueue = new TripleWriteQueue();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
-            new ChannelInitializer<Channel>() {
+            new ChannelInitializer<Http2StreamChannel>() {
                 @Override
-                protected void initChannel(Channel ch) {
+                protected void initChannel(Http2StreamChannel ch) {
                     final ChannelPipeline p = ch.pipeline();
                     p.addLast(new TripleCommandOutBoundHandler());
-                    p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, lookupExecutor(url),
-                        headFilters));
+                    p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, executorSupport,
+                        headFilters, ch, writeQueue));
                 }
             });
         List<ChannelHandler> handlers = new ArrayList<>();

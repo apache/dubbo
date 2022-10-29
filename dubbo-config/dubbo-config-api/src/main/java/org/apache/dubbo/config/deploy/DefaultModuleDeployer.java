@@ -87,7 +87,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         this.moduleModel = moduleModel;
         configManager = moduleModel.getConfigManager();
         frameworkExecutorRepository = moduleModel.getApplicationModel().getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        executorRepository = moduleModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(moduleModel.getApplicationModel());
         referenceCache = SimpleReferenceCache.newCache();
         applicationDeployer = DefaultApplicationDeployer.get(moduleModel);
 
