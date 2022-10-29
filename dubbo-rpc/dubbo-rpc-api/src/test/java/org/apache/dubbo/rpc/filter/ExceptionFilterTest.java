@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invoker;
@@ -30,7 +31,6 @@ import org.apache.dubbo.rpc.support.LocalException;
 import com.alibaba.com.caucho.hessian.HessianException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +47,8 @@ public class ExceptionFilterTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testRpcException() {
-        ErrorTypeAwareLogger logger = mock(ErrorTypeAwareLogger.class);
+        Logger failLogger = mock(Logger.class);
+        FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
         RpcContext.getServiceContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
 
@@ -61,11 +62,11 @@ public class ExceptionFilterTest {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
-            exceptionFilter.setLogger(logger);
+            exceptionFilter.setLogger(failsafeLogger);
             exceptionFilter.onError(e, invoker, invocation);
         }
 
-        Mockito.verify(logger).error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
+        failsafeLogger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
             + DemoService.class.getName() + ", method: sayHello, exception: "
             + RpcException.class.getName() + ": TestRpcException"), eq(exception));
         RpcContext.removeContext();
