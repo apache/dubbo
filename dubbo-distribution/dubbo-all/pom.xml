@@ -468,6 +468,16 @@
                                     <include>org.apache.dubbo:dubbo-compiler</include>
                                     <include>org.apache.dubbo:dubbo-kubernetes</include>
                                     <include>org.apache.dubbo:dubbo-xds</include>
+                                    <include>org.apache.dubbo:dubbo-filter</include>
+                                    <include>org.apache.dubbo:dubbo-filter-cache</include>
+                                    <include>org.apache.dubbo:dubbo-filter-validation</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot-compatible</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot-autoconfigure-compatible</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot-autoconfigure</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot-starter</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot-actuator-compatible</include>
+                                    <include>org.apache.dubbo:dubbo-spring-boot-actuator</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
@@ -1117,6 +1127,42 @@
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.validation.Validation
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/services/org.apache.dubbo.common.extension.LoadingStrategy
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.registry.client.metadata.ServiceInstanceNotificationCustomizer
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.pu.PortUnificationTransporter
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.compressor.Compressor
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor
                                     </resource>
                                 </transformer>
                             </transformers>
