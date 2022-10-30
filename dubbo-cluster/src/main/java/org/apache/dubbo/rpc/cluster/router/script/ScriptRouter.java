@@ -32,6 +32,13 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.CodeSource;
+import java.security.Permissions;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,6 +57,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
  * ScriptRouter
  */
 public class ScriptRouter extends AbstractRouter {
+
     public static final String NAME = "SCRIPT_ROUTER";
     private static final int SCRIPT_ROUTER_DEFAULT_PRIORITY = 0;
     private static final Logger logger = LoggerFactory.getLogger(ScriptRouter.class);
@@ -61,6 +69,19 @@ public class ScriptRouter extends AbstractRouter {
     private final String rule;
 
     private CompiledScript function;
+
+    private AccessControlContext accessControlContext;
+
+    {
+        //Just give permission of reflect to access member.
+        Permissions perms = new Permissions();
+        perms.add(new RuntimePermission("accessDeclaredMembers"));
+        // Cast to Certificate[] required because of ambiguity:
+        ProtectionDomain domain = new ProtectionDomain(
+                new CodeSource(null, (Certificate[]) null), perms);
+        accessControlContext = new AccessControlContext(
+                new ProtectionDomain[]{domain});
+    }
 
     public ScriptRouter(URL url) {
         this.url = url;
@@ -75,8 +96,6 @@ public class ScriptRouter extends AbstractRouter {
             logger.error("route error, rule has been ignored. rule: " + rule +
                     ", url: " + RpcContext.getContext().getUrl(), e);
         }
-
-
     }
 
     /**
@@ -107,17 +126,23 @@ public class ScriptRouter extends AbstractRouter {
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        try {
-            Bindings bindings = createBindings(invokers, invocation);
-            if (function == null) {
-                return invokers;
-            }
-            return getRoutedInvokers(function.eval(bindings));
-        } catch (ScriptException e) {
-            logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
-                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+        if (engine == null || function == null) {
             return invokers;
         }
+        Bindings bindings = createBindings(invokers, invocation);
+        return getRoutedInvokers(AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
+            public Object run() {
+                try {
+                    return function.eval(bindings);
+                } catch (ScriptException e) {
+                    logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
+                            invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+                    return invokers;
+                }
+            }
+        }, accessControlContext));
+
     }
 
     /**

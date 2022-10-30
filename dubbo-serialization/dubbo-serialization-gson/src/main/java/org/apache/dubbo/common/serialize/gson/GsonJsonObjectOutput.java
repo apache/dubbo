@@ -100,6 +100,14 @@ public class GsonJsonObjectOutput implements ObjectOutput {
         json = null;
     }
 
+
+    @Override
+    public void writeThrowable(Object obj) throws IOException {
+        String clazz = obj.getClass().getName();
+        ExceptionWrapper bo = new ExceptionWrapper(obj, clazz);
+        this.writeObject(bo);
+    }
+
     @Override
     public void flushBuffer() throws IOException {
         writer.flush();

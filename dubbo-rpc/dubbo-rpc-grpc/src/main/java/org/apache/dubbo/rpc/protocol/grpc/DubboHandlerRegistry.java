@@ -36,7 +36,8 @@ public class DubboHandlerRegistry extends HandlerRegistry {
     private final Map<String, ServerServiceDefinition> services = new ConcurrentHashMap<>();
     private final Map<String, ServerMethodDefinition<?, ?>> methods = new ConcurrentHashMap<>();
 
-    public DubboHandlerRegistry() {}
+    public DubboHandlerRegistry() {
+    }
 
     /**
      * Returns the service definitions in this registry.
@@ -63,8 +64,10 @@ public class DubboHandlerRegistry extends HandlerRegistry {
 
     void removeService(String serviceKey) {
         ServerServiceDefinition service = services.remove(serviceKey);
-        for (ServerMethodDefinition<?, ?> method : service.getMethods()) {
-            methods.remove(method.getMethodDescriptor().getFullMethodName(), method);
+        if (null != service) {
+            for (ServerMethodDefinition<?, ?> method : service.getMethods()) {
+                methods.remove(method.getMethodDescriptor().getFullMethodName(), method);
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.lang.reflect.Method;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * ProviderModel is about published services
@@ -51,7 +53,7 @@ public class ProviderModel {
         this.serviceInstance = serviceInstance;
         this.serviceModel = serviceModel;
         this.serviceConfig = serviceConfig;
-        this.urls = new ArrayList<>(1);
+        this.urls = new CopyOnWriteArrayList<>();
     }
 
     public String getServiceKey() {
@@ -184,7 +186,7 @@ public class ProviderModel {
         methodsToExport = serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
-            method.setAccessible(true);
+            ReflectUtils.makeAccessible(method);
 
             List<ProviderMethodModel> methodModels = methods.get(method.getName());
             if (methodModels == null) {

@@ -35,12 +35,14 @@ import static org.apache.dubbo.common.Version.isRelease263OrHigher;
 import static org.apache.dubbo.common.Version.isRelease270OrHigher;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * RmiProtocol.
  */
-public class RmiProtocol extends AbstractProxyProtocol {
+public class RmiProtocol extends AbstractProxyProtocol{
 
     public static final int DEFAULT_PORT = 1099;
 
@@ -102,7 +104,14 @@ public class RmiProtocol extends AbstractProxyProtocol {
                 return invocation;
             });
         }
-        String serviceUrl = url.toIdentityString();
+
+        String pathKey = URL.buildKey(url.getPath(), url.getParameter(GROUP_KEY), url.getParameter(VERSION_KEY));
+        //The format is 'rmi://{host}:{ip}/{group}/{interfaceName}:{version}'
+        StringBuilder buf = new StringBuilder();
+        buf.append(url.getProtocol()).append("://")
+                .append(url.getHost()).append(":").append(url.getPort())
+                .append("/").append(pathKey);
+        String serviceUrl = buf.toString();
         if (isGeneric) {
             serviceUrl = serviceUrl + "/" + GENERIC_KEY;
         }
@@ -137,9 +146,9 @@ public class RmiProtocol extends AbstractProxyProtocol {
         final RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
         rmiServiceExporter.setRegistryPort(url.getPort());
         if (isGeneric) {
-            rmiServiceExporter.setServiceName(url.getPath() + "/" + GENERIC_KEY);
+            rmiServiceExporter.setServiceName(url.getServiceKey() + "/" + GENERIC_KEY);
         } else {
-            rmiServiceExporter.setServiceName(url.getPath());
+            rmiServiceExporter.setServiceName(url.getServiceKey());
         }
         rmiServiceExporter.setServiceInterface(type);
         rmiServiceExporter.setService(impl);

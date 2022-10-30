@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.apache.dubbo.config.spring.api.LazyInitHelloService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -49,16 +52,12 @@ import java.util.Map;
         "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
         "packagesToScan = ${provider.package}",
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceAnnotationBeanPostProcessorTest {
-
-    @BeforeEach
-    public void setUp() {
-        ApplicationModel.reset();
-    }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Autowired
@@ -78,8 +77,10 @@ public class ServiceAnnotationBeanPostProcessorTest {
         Assertions.assertEquals(2, helloServicesMap.size());
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
-
-        Assertions.assertEquals(2, serviceBeansMap.size());
+        /**
+         * There are one {@link HelloService} and two {@link LazyInitHelloService} has 1
+         * */
+        Assertions.assertEquals(3, serviceBeansMap.size());
 
         Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
@@ -95,8 +96,10 @@ public class ServiceAnnotationBeanPostProcessorTest {
     public void testMethodAnnotation() {
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
-
-        Assertions.assertEquals(2, serviceBeansMap.size());
+        /**
+         * There are one {@link HelloService} and two {@link LazyInitHelloService} has 1
+         * */
+        Assertions.assertEquals(3, serviceBeansMap.size());
 
         ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7");
 

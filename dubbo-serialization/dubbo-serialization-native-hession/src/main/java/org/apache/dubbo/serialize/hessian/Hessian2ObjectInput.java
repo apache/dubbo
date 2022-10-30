@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.serialize.hessian;
 
-import com.caucho.hessian.io.Hessian2Input;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.serialize.hessian.dubbo.Hessian2FactoryInitializer;
+
+import com.caucho.hessian.io.Hessian2Input;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +33,7 @@ public class Hessian2ObjectInput implements ObjectInput {
 
     public Hessian2ObjectInput(InputStream is) {
         input = new Hessian2Input(is);
-        input.setSerializerFactory(Hessian2SerializerFactory.INSTANCE);
+        input.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
     }
 
     @Override

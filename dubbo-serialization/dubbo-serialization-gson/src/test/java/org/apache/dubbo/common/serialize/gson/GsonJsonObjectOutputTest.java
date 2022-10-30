@@ -135,6 +135,26 @@ public class GsonJsonObjectOutputTest {
         assertThat(readObjectForImage, is(image));
     }
 
+    public class BizException extends RuntimeException {
+
+        public BizException(String message) {
+            super(message);
+        }
+
+    }
+
+
+    @Test
+    public void testWriteThrowable() throws IOException, ClassNotFoundException {
+        BizException exception = new BizException("biz_exception");
+        this.gsonJsonObjectOutput.writeThrowable(exception);
+        this.flushToInput();
+        Throwable ex = this.gsonJsonObjectInput.readThrowable();
+        assertThat(ex.getMessage(), is("biz_exception"));
+        assertThat(ex.getClass(), is(BizException.class));
+
+    }
+
     private void flushToInput() throws IOException {
         this.gsonJsonObjectOutput.flushBuffer();
         this.byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());

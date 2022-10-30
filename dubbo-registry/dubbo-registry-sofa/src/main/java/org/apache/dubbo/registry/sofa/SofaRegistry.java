@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.sofa;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -62,8 +60,6 @@ import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
  */
 public class SofaRegistry extends FailbackRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SofaRegistry.class);
-
     /**
      * Cache subscriber by dataId
      */
@@ -85,8 +81,8 @@ public class SofaRegistry extends FailbackRegistry {
      */
     public SofaRegistry(URL url) {
         super(url);
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Build sofa registry by url:" + url);
+        if (logger.isInfoEnabled()) {
+            logger.info("Build sofa registry by url:" + url);
         }
         this.registryClient = buildClient(url);
         this.waitAddressTimeout = Integer.parseInt(ConfigUtils.getProperty(ADDRESS_WAIT_TIME_KEY, "5000"));
@@ -162,7 +158,7 @@ public class SofaRegistry extends FailbackRegistry {
         Subscriber listSubscriber = subscribers.get(serviceName);
 
         if (listSubscriber != null) {
-            LOGGER.warn("Service name [" + serviceName + "] have bean registered in SOFARegistry.");
+            logger.warn("Service name [" + serviceName + "] have bean registered in SOFARegistry.");
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
             handleRegistryData(listSubscriber.peekData(), listener, countDownLatch);
@@ -189,10 +185,10 @@ public class SofaRegistry extends FailbackRegistry {
     private void waitAddress(String serviceName, CountDownLatch countDownLatch) {
         try {
             if (!countDownLatch.await(waitAddressTimeout, TimeUnit.MILLISECONDS)) {
-                LOGGER.warn("Subscribe data failed by dataId " + serviceName);
+                logger.warn("Subscribe data failed by dataId " + serviceName);
             }
         } catch (Exception e) {
-            LOGGER.error("Error when wait Address!", e);
+            logger.error("Error when wait Address!", e);
         }
     }
 
@@ -264,8 +260,8 @@ public class SofaRegistry extends FailbackRegistry {
         for (String provider : datas) {
             sb.append("  >>> ").append(provider).append("\n");
         }
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Receive updated RPC service addresses: service[" + dataId
+        if (logger.isInfoEnabled()) {
+            logger.info("Receive updated RPC service addresses: service[" + dataId
                     + "]\n  .Available target addresses size [" + datas.size() + "]\n"
                     + sb.toString());
         }

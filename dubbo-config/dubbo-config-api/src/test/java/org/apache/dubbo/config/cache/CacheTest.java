@@ -83,6 +83,7 @@ public class CacheTest {
                 // verify cache, same result is returned for multiple invocations (in fact, the return value increases
                 // on every invocation on the server side)
                 String fix = null;
+                cacheService.findCache("0");
                 for (int i = 0; i < 3; i++) {
                     String result = cacheService.findCache("0");
                     assertTrue(fix == null || fix.equals(result));
@@ -94,6 +95,7 @@ public class CacheTest {
                     // default cache.size is 1000 for LRU, should have cache expired if invoke more than 1001 times
                     for (int n = 0; n < 1001; n++) {
                         String pre = null;
+                        cacheService.findCache(String.valueOf(n));
                         for (int i = 0; i < 10; i++) {
                             String result = cacheService.findCache(String.valueOf(n));
                             assertTrue(pre == null || pre.equals(result));

@@ -326,7 +326,9 @@ public final class URLBuilder {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
-        this.parameters.putAll(parameters);
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            addParameterIfAbsent(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 

@@ -115,8 +115,8 @@ public class DefaultServiceInstance implements ServiceInstance {
         return address;
     }
 
-    private static String getAddress(String host, int port) {
-        return port <= 0 ? host : host + ':' + port;
+    private static String getAddress(String host, Integer port) {
+        return port != null && port <= 0 ? host : host + ':' + port;
     }
 
     @Override
@@ -174,8 +174,12 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DefaultServiceInstance)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DefaultServiceInstance)) {
+            return false;
+        }
         DefaultServiceInstance that = (DefaultServiceInstance) o;
         boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
                 Objects.equals(getHost(), that.getHost()) &&
@@ -184,7 +188,7 @@ public class DefaultServiceInstance implements ServiceInstance {
             if (entry.getKey().equals(REVISION_KEY)) {
                 continue;
             }
-            equals = equals && !entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+            equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
         }
 
         return equals;

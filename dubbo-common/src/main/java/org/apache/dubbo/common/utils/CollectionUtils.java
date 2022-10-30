@@ -39,28 +39,25 @@ import static java.util.Collections.unmodifiableSet;
  */
 public class CollectionUtils {
 
-    private static final Comparator<String> SIMPLE_NAME_COMPARATOR = new Comparator<String>() {
-        @Override
-        public int compare(String s1, String s2) {
-            if (s1 == null && s2 == null) {
-                return 0;
-            }
-            if (s1 == null) {
-                return -1;
-            }
-            if (s2 == null) {
-                return 1;
-            }
-            int i1 = s1.lastIndexOf('.');
-            if (i1 >= 0) {
-                s1 = s1.substring(i1 + 1);
-            }
-            int i2 = s2.lastIndexOf('.');
-            if (i2 >= 0) {
-                s2 = s2.substring(i2 + 1);
-            }
-            return s1.compareToIgnoreCase(s2);
+    private static final Comparator<String> SIMPLE_NAME_COMPARATOR = (s1, s2) -> {
+        if (s1 == null && s2 == null) {
+            return 0;
         }
+        if (s1 == null) {
+            return -1;
+        }
+        if (s2 == null) {
+            return 1;
+        }
+        int i1 = s1.lastIndexOf('.');
+        if (i1 >= 0) {
+            s1 = s1.substring(i1 + 1);
+        }
+        int i2 = s2.lastIndexOf('.');
+        if (i2 >= 0) {
+            s2 = s2.substring(i2 + 1);
+        }
+        return s1.compareToIgnoreCase(s2);
     };
 
     private CollectionUtils() {
@@ -324,9 +321,7 @@ public class CollectionUtils {
 
         try {
             return one.containsAll(another);
-        } catch (ClassCastException unused) {
-            return false;
-        } catch (NullPointerException unused) {
+        } catch (ClassCastException | NullPointerException unused) {
             return false;
         }
     }

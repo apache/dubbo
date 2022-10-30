@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.compiler.support;
 
 
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
@@ -28,6 +29,7 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,6 +55,8 @@ import java.util.Set;
  */
 public class JdkCompiler extends AbstractCompiler {
 
+    public static final String NAME = "jdk";
+
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
@@ -61,14 +65,22 @@ public class JdkCompiler extends AbstractCompiler {
 
     private final JavaFileManagerImpl javaFileManager;
 
-    private volatile List<String> options;
+    private final List<String> options;
 
-    public JdkCompiler() {
-        options = new ArrayList<String>();
-        options.add("-source");
-        options.add("1.6");
-        options.add("-target");
-        options.add("1.6");
+    private static final String DEFAULT_JAVA_VERSION = "1.8";
+
+    private static List<String> buildDefaultOptions(String javaVersion) {
+        return Arrays.asList(
+                "-source", javaVersion, "-target", javaVersion
+        );
+    }
+
+    private static List<String> buildDefaultOptions() {
+        return buildDefaultOptions(DEFAULT_JAVA_VERSION);
+    }
+
+    public JdkCompiler(List<String> options) {
+        this.options = new ArrayList<>(options);
         StandardJavaFileManager manager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
         if (loader instanceof URLClassLoader
@@ -93,6 +105,14 @@ public class JdkCompiler extends AbstractCompiler {
         javaFileManager = new JavaFileManagerImpl(manager, classLoader);
     }
 
+    public JdkCompiler() {
+        this(buildDefaultOptions());
+    }
+
+    public JdkCompiler(String javaVersion) {
+        this(buildDefaultOptions(javaVersion));
+    }
+
     @Override
     public Class<?> doCompile(String name, String sourceCode) throws Throwable {
         int i = name.lastIndexOf('.');
@@ -102,11 +122,20 @@ public class JdkCompiler extends AbstractCompiler {
         javaFileManager.putFileForInput(StandardLocation.SOURCE_PATH, packageName,
                 className + ClassUtils.JAVA_EXTENSION, javaFileObject);
         Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
-                null, Arrays.asList(javaFileObject)).call();
+                null, Collections.singletonList(javaFileObject)).call();
         if (result == null || !result) {
-            throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
+            throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + getCompileErrorMessage(diagnosticCollector));
         }
         return classLoader.loadClass(name);
+    }
+
+    private String getCompileErrorMessage(DiagnosticCollector<JavaFileObject> diagnostics) {
+        StringBuilder sb = new StringBuilder();
+        for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+            sb.append("\n").append(diagnostic.toString());
+        }
+
+        return sb.toString();
     }
 
     private static final class JavaFileObjectImpl extends SimpleJavaFileObject {
@@ -234,7 +263,7 @@ public class JdkCompiler extends AbstractCompiler {
         }
     }
 
-    private final class ClassLoaderImpl extends ClassLoader {
+    private static final class ClassLoaderImpl extends ClassLoader {
 
         private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
 

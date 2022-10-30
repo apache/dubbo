@@ -66,6 +66,10 @@ public class ConfigurationUtils {
         return ApplicationModel.getEnvironment().getConfiguration();
     }
 
+    public static Configuration getDynamicGlobalConfiguration() {
+        return ApplicationModel.getEnvironment().getDynamicGlobalConfiguration();
+    }
+
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
@@ -92,6 +96,14 @@ public class ConfigurationUtils {
         return timeout;
     }
 
+    public static String getDynamicProperty(String property) {
+        return getDynamicProperty(property, null);
+    }
+
+    public static String getDynamicProperty(String property, String defaultValue) {
+        return StringUtils.trim(getDynamicGlobalConfiguration().getString(property, defaultValue));
+    }
+
     public static String getProperty(String property) {
         return getProperty(property, null);
     }
@@ -106,9 +118,7 @@ public class ConfigurationUtils {
 
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
-        if (StringUtils.isEmpty(content)) {
-            logger.warn("You specified the config center, but there's not even one single config item in it.");
-        } else {
+        if (StringUtils.isNotEmpty(content)) {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
             properties.stringPropertyNames().forEach(

@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 
 /**
  * Cluster. (SPI, Singleton, ThreadSafe)
@@ -33,7 +32,8 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
  */
 @SPI(Cluster.DEFAULT)
 public interface Cluster {
-    String DEFAULT = FailoverCluster.NAME;
+
+    String DEFAULT = "failover";
 
     /**
      * Merge the directory invokers to a virtual invoker.

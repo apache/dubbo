@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
@@ -350,7 +351,7 @@ public class ThriftCodec implements Codec2 {
 
                 try {
                     field = clazz.getDeclaredField(fieldIdEnum.getFieldName());
-                    field.setAccessible(true);
+                    ReflectUtils.makeAccessible(field);
                 } catch (NoSuchFieldException e) {
                     throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
                 }

@@ -61,6 +61,7 @@ public class AsyncToSyncInvoker<T> implements Invoker<T> {
                 asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RpcException("Interrupted unexpectedly while waiting for remote result to return!  method: " +
                     invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
         } catch (ExecutionException e) {

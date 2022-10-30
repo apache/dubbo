@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -36,6 +37,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.remoting.Constants.SENT_KEY;
@@ -71,7 +73,9 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv).thenApply(obj -> (AppResponse) obj);
+                final String methodName = RpcUtils.getMethodName(invocation);
+                final int timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getContext(), DEFAULT_TIMEOUT);
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv, timeout, null).thenApply(obj -> (AppResponse) obj);
                 return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {

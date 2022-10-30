@@ -1,4 +1,5 @@
 all=org.apache.dubbo.remoting.transport.dispatcher.all.AllDispatcher
+all2=org.apache.dubbo.remoting.transport.dispatcher.all2.AllDispatcher2
 direct=org.apache.dubbo.remoting.transport.dispatcher.direct.DirectDispatcher
 message=org.apache.dubbo.remoting.transport.dispatcher.message.MessageOnlyDispatcher
 execution=org.apache.dubbo.remoting.transport.dispatcher.execution.ExecutionDispatcher

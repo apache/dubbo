@@ -22,6 +22,9 @@ target/
 # visual-studio-code ignore
 .vscode/
 
+# fleet
+.fleet/
+
 # temp ignore
 *.log
 *.cache

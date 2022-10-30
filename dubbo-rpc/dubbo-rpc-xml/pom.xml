@@ -29,11 +29,6 @@
     <name>${project.artifactId}</name>
     <description>The xml rpc module of dubbo project</description>
     <properties>
-        <xmlrpc_version>3.1.3</xmlrpc_version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <url>https://github.com/apache/dubbo</url>
@@ -42,13 +37,17 @@
         <dependency>
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-server</artifactId>
-            <version>${xmlrpc_version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-client</artifactId>
-            <version>${xmlrpc_version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-api</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -59,7 +58,7 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-compatible</artifactId>
+            <artifactId>dubbo-config-spring</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

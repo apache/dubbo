@@ -20,6 +20,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.TestProxyFactory;
@@ -50,6 +51,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -135,41 +138,69 @@ public class ServiceConfigTest {
     @Test
     public void testExport() throws Exception {
         service.export();
+        try {
+            assertThat(service.getExportedUrls(), hasSize(1));
+            URL url = service.toUrl();
+            assertThat(url.getProtocol(), equalTo("mockprotocol2"));
+            assertThat(url.getPath(), equalTo(DemoService.class.getName()));
+            assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
+            assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
+            assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
+            assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
+            assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
+            assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
+            assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
+            assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+            assertThat(url.getParameters(), hasKey(METHODS_KEY));
+            assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
+            assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
+            Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+        }finally {
+            service.unexport();
+        }
+    }
 
-        assertThat(service.getExportedUrls(), hasSize(1));
-        URL url = service.toUrl();
-        assertThat(url.getProtocol(), equalTo("mockprotocol2"));
-        assertThat(url.getPath(), equalTo(DemoService.class.getName()));
-        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
-        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
-        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
-        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
-        assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
-        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
-        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
-        assertThat(url.getParameters(), hasKey(METHODS_KEY));
-        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
-        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+    @Test
+    public void testVersionAndGroupConfigFromProvider() {
+        //Service no configuration version , the Provider configured.
+        service.getProvider().setVersion("1.0.0");
+        service.getProvider().setGroup("groupA");
+        service.export();
+
+        String serviceVersion = service.getVersion();
+        String serviceVersion2 = service.toUrl().getParameter(VERSION_KEY);
+
+        String group = service.getGroup();
+        String group2 = service.toUrl().getParameter(GROUP_KEY);
+
+        assertEquals(serviceVersion2, serviceVersion);
+        assertEquals(group, group2);
     }
 
     @Test
     public void testProxy() throws Exception {
         service2.export();
-
-        assertThat(service2.getExportedUrls(), hasSize(1));
-        assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+        try {
+            assertThat(service2.getExportedUrls(), hasSize(1));
+            assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+            TestProxyFactory.count = 0;
+        }finally {
+            service2.unexport();
+        }
     }
 
 
     @Test
     public void testDelayExport() throws Exception {
         delayService.export();
-        assertTrue(delayService.getExportedUrls().isEmpty());
-        //add 300ms to ensure that the delayService has been exported
-        TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
-        assertThat(delayService.getExportedUrls(), hasSize(1));
+        try {
+            assertTrue(delayService.getExportedUrls().isEmpty());
+            //add 300ms to ensure that the delayService has been exported
+            TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
+            assertThat(delayService.getExportedUrls(), hasSize(1));
+        }finally {
+            delayService.unexport();
+        }
     }
 
     @Test
@@ -237,6 +268,7 @@ public class ServiceConfigTest {
             ServiceConfig service = new ServiceConfig();
             service.setGeneric("illegal");
         });
+        DubboBootstrap.reset();
     }
 
 //    @Test
@@ -258,7 +290,11 @@ public class ServiceConfigTest {
     @Test
     public void testApplicationInUrl() {
         service.export();
-        Assertions.assertNotNull(service.toUrl().getParameter(APPLICATION_KEY));
-        Assertions.assertEquals("app", service.toUrl().getParameter(APPLICATION_KEY));
+        try {
+            Assertions.assertNotNull(service.toUrl().getParameter(APPLICATION_KEY));
+            Assertions.assertEquals("app", service.toUrl().getParameter(APPLICATION_KEY));
+        }finally {
+            service.unexport();
+        }
     }
 }

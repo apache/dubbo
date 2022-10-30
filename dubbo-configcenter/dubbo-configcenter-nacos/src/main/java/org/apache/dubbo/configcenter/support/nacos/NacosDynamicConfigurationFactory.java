@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationF
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 
-import com.alibaba.nacos.api.PropertyKeyConst;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 
 /**
  * The nacos implementation of {@link AbstractDynamicConfigurationFactory}
@@ -32,9 +32,9 @@ public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurati
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
         URL nacosURL = url;
-        if (CommonConstants.DUBBO.equals(url.getParameter(PropertyKeyConst.NAMESPACE))) {
+        if (CommonConstants.DUBBO.equals(url.getParameter(CONFIG_NAMESPACE_KEY))) {
             // Nacos use empty string as default name space, replace default namespace "dubbo" to ""
-            nacosURL = url.removeParameter(PropertyKeyConst.NAMESPACE);
+            nacosURL = url.removeParameter(CONFIG_NAMESPACE_KEY);
         }
         return new NacosDynamicConfiguration(nacosURL);
     }

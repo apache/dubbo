@@ -24,6 +24,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 
 /**
  * The test-case for https://github.com/apache/dubbo/issues/6252
@@ -33,6 +34,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @EnableDubboConfig
 @PropertySource("classpath:/META-INF/issue-6252-test.properties")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class Issue6252Test {
 
     @Bean

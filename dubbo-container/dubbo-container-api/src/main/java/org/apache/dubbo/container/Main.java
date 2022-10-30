@@ -62,7 +62,7 @@ public class Main {
             for (int i = 0; i < args.length; i++) {
                 containers.add(LOADER.getExtension(args[i]));
             }
-            logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
+            logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo service.");
 
             if ("true".equals(System.getProperty(SHUTDOWN_HOOK_KEY))) {
                 Runtime.getRuntime().addShutdownHook(new Thread("dubbo-container-shutdown-hook") {

@@ -178,7 +178,7 @@ public class MetadataInfo implements Serializable {
         private String path; // most of the time, path is the same with the interface name.
         private Map<String, String> params;
 
-        // params configuried on consumer side,
+        // params configured on consumer side,
         private transient Map<String, String> consumerParams;
         // cached method params
         private transient Map<String, Map<String, String>> methodParams;
@@ -325,9 +325,10 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMethodParameter(String method, String key, String defaultValue) {
+            // set consumerMethodParams firstly to avoid NPE at race condition.
             if (methodParams == null) {
-                methodParams = URL.toMethodParameters(params);
                 consumerMethodParams = URL.toMethodParameters(consumerParams);
+                methodParams = URL.toMethodParameters(params);
             }
 
             String value = getMethodParameter(method, key, consumerMethodParams);
@@ -339,7 +340,10 @@ public class MetadataInfo implements Serializable {
         }
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
-            Map<String, String> keyMap = map.get(method);
+            Map<String, String> keyMap = null;
+            if (CollectionUtils.isNotEmptyMap(map)) {
+                keyMap = map.get(method);
+            }
             String value = null;
             if (keyMap != null) {
                 value = keyMap.get(key);
@@ -356,12 +360,14 @@ public class MetadataInfo implements Serializable {
         }
 
         public boolean hasMethodParameter(String method) {
+            // set consumerMethodParams firstly to NPE at race condition.
             if (methodParams == null) {
-                methodParams = URL.toMethodParameters(params);
                 consumerMethodParams = URL.toMethodParameters(consumerParams);
+                methodParams = URL.toMethodParameters(params);
             }
 
-            return consumerMethodParams.containsKey(method) || methodParams.containsKey(method);
+            return (CollectionUtils.isNotEmptyMap(consumerMethodParams) && consumerMethodParams.containsKey(method))
+                    || (CollectionUtils.isNotEmptyMap(methodParams) && methodParams.containsKey(method));
         }
 
         public String toDescString() {

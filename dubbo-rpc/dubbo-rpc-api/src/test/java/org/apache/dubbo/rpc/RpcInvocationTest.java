@@ -37,6 +37,10 @@ public class RpcInvocationTest {
         Assertions.assertEquals(1, invocation.getObjectAttachment("objectKey3"));
         Assertions.assertEquals(3, invocation.getObjectAttachments().size());
 
+        invocation.getAttachments().put("object4", "value4");
+        Assertions.assertEquals(invocation.getAttachment("object4"), "value4");
+
+
         HashMap<String, Object> map = new HashMap<>();
         map.put("mapKey1", 1);
         map.put("mapKey2", "mapValue2");

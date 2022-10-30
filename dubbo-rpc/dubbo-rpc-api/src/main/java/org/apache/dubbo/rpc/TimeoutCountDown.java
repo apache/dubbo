@@ -60,7 +60,7 @@ public final class TimeoutCountDown implements Comparable<TimeoutCountDown> {
     if (isExpired()) {
       return timeoutInMillis + TimeUnit.MILLISECONDS.convert(System.nanoTime() - deadlineInNanos, TimeUnit.NANOSECONDS);
     } else {
-      return TimeUnit.MILLISECONDS.convert(deadlineInNanos - System.nanoTime(), TimeUnit.NANOSECONDS);
+      return timeoutInMillis - TimeUnit.MILLISECONDS.convert(deadlineInNanos - System.nanoTime(), TimeUnit.NANOSECONDS);
     }
   }
 

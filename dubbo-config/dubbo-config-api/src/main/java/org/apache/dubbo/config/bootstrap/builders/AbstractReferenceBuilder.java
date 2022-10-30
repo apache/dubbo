@@ -66,6 +66,11 @@ public abstract class AbstractReferenceBuilder<T extends AbstractReferenceConfig
      */
     protected String group;
 
+    /**
+     * The serialization type
+     */
+    protected String serialization;
+
     public B check(Boolean check) {
         this.check = check;
         return getThis();
@@ -126,6 +131,11 @@ public abstract class AbstractReferenceBuilder<T extends AbstractReferenceConfig
         return getThis();
     }
 
+    public B serialization(String serialization) {
+        this.serialization = serialization;
+        return getThis();
+    }
+
     @Override
     public void build(T instance) {
         super.build(instance);
@@ -156,6 +166,9 @@ public abstract class AbstractReferenceBuilder<T extends AbstractReferenceConfig
         }
         if (!StringUtils.isEmpty(group)) {
             instance.setGroup(group);
+        }
+        if (!StringUtils.isEmpty(serialization)) {
+            instance.setSerialization(serialization);
         }
     }
 }

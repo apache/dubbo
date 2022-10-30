@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
-
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * AbstractConsumerConfig
@@ -71,15 +71,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     //TODO solve merge problem
     protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
-    /**
-     * The remote service version the customer side will reference
-     */
-    protected String version;
 
-    /**
-     * The remote service group the customer side will reference
-     */
-    protected String group;
 
     /**
      * declares which app or service this interface belongs to
@@ -87,6 +79,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected String providedBy;
 
     protected String router;
+
+    /**
+     * The serialization type
+     */
+    protected String serialization;
 
     public Boolean isCheck() {
         return check;
@@ -212,21 +209,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.sticky = sticky;
     }
 
-    public String getVersion() {
-        return version;
-    }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
 
     @Parameter(key = "provided-by")
     public String getProvidedBy() {
@@ -244,5 +227,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setRouter(String router) {
         this.router = router;
+    }
+
+    public String getSerialization() {
+        return serialization;
+    }
+
+    public void setSerialization(String serialization) {
+        this.serialization = serialization;
     }
 }

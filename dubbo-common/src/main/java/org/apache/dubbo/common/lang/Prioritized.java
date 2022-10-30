@@ -63,7 +63,7 @@ public interface Prioritized extends Comparable<Prioritized> {
     /**
      * Get the priority
      *
-     * @return the default is {@link #MIN_PRIORITY minimum one}
+     * @return the default is {@link #NORMAL_PRIORITY}
      */
     default int getPriority() {
         return NORMAL_PRIORITY;

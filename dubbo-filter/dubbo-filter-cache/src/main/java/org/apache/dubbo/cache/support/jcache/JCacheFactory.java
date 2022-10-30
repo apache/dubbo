@@ -35,6 +35,8 @@ import javax.cache.spi.CachingProvider;
  */
 public class JCacheFactory extends AbstractCacheFactory {
 
+    public static final String NAME = "jcache";
+
     /**
      * Takes url as an method argument and return new instance of cache store implemented by JCache.
      * @param url url of the method

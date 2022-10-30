@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.consul;
 
-import com.pszymczyk.consul.ConsulProcess;
-import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -25,7 +23,10 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 
+import com.pszymczyk.consul.ConsulProcess;
+import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,14 +35,14 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class ConsulRegistryTest {
 
-    private static ConsulProcess consul;
+    private ConsulProcess consul;
     private ConsulRegistry consulRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
     private URL serviceUrl = URL.valueOf("consul://127.0.0.1:" + NetUtils.getAvailablePort() + "/" + service + "?notify=false&methods=test1,test2");
@@ -49,10 +50,23 @@ public class ConsulRegistryTest {
     private ConsulRegistryFactory consulRegistryFactory;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        this.consul = ConsulStarterBuilder.consulStarter()
-                .build()
-                .start();
+    public void setUp() {
+        Exception exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.consul = ConsulStarterBuilder.consulStarter()
+                        .build()
+                        .start();
+                exception = null;
+            } catch (Exception e) {
+                exception = e;
+                e.printStackTrace();
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
         this.registryUrl = URL.valueOf("consul://localhost:" + consul.getHttpPort());
 
         consulRegistryFactory = new ConsulRegistryFactory();

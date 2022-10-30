@@ -19,12 +19,13 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.DemoService;
+
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.ReflectionUtils;
 
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilderTest.GROUP;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBea
  */
 @Service(interfaceClass = DemoService.class, group = GROUP, version = VERSION,
         application = "application", module = "module", registry = {"1", "2", "3"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceBeanNameBuilderTest {
 
     @Reference(interfaceClass = DemoService.class, group = "DUBBO", version = "${dubbo.version}",

@@ -43,7 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDDEN_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEPARATOR_REGEX;
 import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARATOR;
@@ -940,7 +940,7 @@ public final class StringUtils {
     }
 
     public static String toURLKey(String key) {
-        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDE_KEY_PREFIX);
+        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDDEN_KEY_PREFIX);
     }
 
     public static String toOSStyleKey(String key) {

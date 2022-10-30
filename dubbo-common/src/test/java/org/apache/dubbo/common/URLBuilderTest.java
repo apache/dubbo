@@ -19,6 +19,8 @@ package org.apache.dubbo.common;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -93,6 +95,48 @@ public class URLBuilderTest {
         URL url2 = URLBuilder.from(url1)
                 .addParameterIfAbsent("absentKey", "absentValue")
                 .addParameterIfAbsent("version", "2.0.0") // should not override
+                .build();
+        assertThat(url2.getParameter("version"), equalTo("1.0.0"));
+        assertThat(url2.getParameter("absentKey"), equalTo("absentValue"));
+    }
+
+    @Test
+    public void shouldAddParameters() {
+        URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&key2=v2");
+
+        // string pairs test
+        URL url2 = URLBuilder.from(url1)
+                .addParameters("version", "1.0.0", "absentKey1", "absentValue1")
+                .build();
+        assertThat(url2.getParameter("version"), equalTo("1.0.0"));
+        assertThat(url2.getParameter("absentKey1"), equalTo("absentValue1"));
+
+        // map test
+        Map<String, String> parameters = new HashMap<String, String>(){
+            {
+                this.put("version", "2.0.0");
+                this.put("absentKey2", "absentValue2");
+            }
+        };
+        url2 = URLBuilder.from(url1)
+                .addParameters(parameters)
+                .build();
+        assertThat(url2.getParameter("version"), equalTo("2.0.0"));
+        assertThat(url2.getParameter("absentKey2"), equalTo("absentValue2"));
+    }
+
+    @Test
+    public void shouldAddParametersIfAbsent() {
+        URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&key2=v2");
+
+        Map<String, String> parameters = new HashMap<String, String>(){
+            {
+                this.put("version", "2.0.0");
+                this.put("absentKey", "absentValue");
+            }
+        };
+        URL url2 = URLBuilder.from(url1)
+                .addParametersIfAbsent(parameters)
                 .build();
         assertThat(url2.getParameter("version"), equalTo("1.0.0"));
         assertThat(url2.getParameter("absentKey"), equalTo("absentValue"));

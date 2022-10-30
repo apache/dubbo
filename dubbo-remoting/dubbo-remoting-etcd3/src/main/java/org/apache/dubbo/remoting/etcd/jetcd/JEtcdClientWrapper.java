@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
@@ -47,6 +48,7 @@ import io.grpc.stub.StreamObserver;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -112,7 +114,7 @@ public class JEtcdClientWrapper {
 
     private volatile boolean cancelKeepAlive = false;
 
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;
@@ -498,7 +500,7 @@ public class JEtcdClientWrapper {
 
     /**
      * because jetcd's connection change callback not supported yet, we must
-     * loop to test if connect or disconnect event happend or not. It will be changed
+     * loop to test if connect or disconnect event happened or not. It will be changed
      * in the future if we found better choice.
      */
     public void start() {
@@ -594,7 +596,7 @@ public class JEtcdClientWrapper {
     }
 
     /**
-     * try get client's shared channel, becase all fields is private on jetcd,
+     * try get client's shared channel, because all fields is private on jetcd,
      * we must using it by reflect, in the future, jetcd may provider better tools.
      *
      * @param client get channel from current client
@@ -603,14 +605,10 @@ public class JEtcdClientWrapper {
     private ManagedChannel newChannel(Client client) {
         try {
             Field connectionField = client.getClass().getDeclaredField("connectionManager");
-            if (!connectionField.isAccessible()) {
-                connectionField.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(connectionField);
             Object connection = connectionField.get(client);
             Method channel = connection.getClass().getDeclaredMethod("getChannel");
-            if (!channel.isAccessible()) {
-                channel.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(channel);
             return (ManagedChannel) channel.invoke(connection);
         } catch (Exception e) {
             throw new RuntimeException("Failed to obtain connection channel from " + url.getBackupAddress(), e);
@@ -625,9 +623,9 @@ public class JEtcdClientWrapper {
         this.connectionStateListener = connectionStateListener;
     }
 
-    public static void requiredNotNull(Object obj, RuntimeException exeception) {
+    public static void requiredNotNull(Object obj, RuntimeException exception) {
         if (obj == null) {
-            throw exeception;
+            throw exception;
         }
     }
 

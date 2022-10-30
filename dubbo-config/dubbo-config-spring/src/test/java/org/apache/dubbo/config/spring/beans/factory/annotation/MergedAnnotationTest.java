@@ -25,10 +25,12 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class MergedAnnotationTest {
 
     @Test

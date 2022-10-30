@@ -32,6 +32,8 @@ import org.apache.dubbo.common.URL;
 
 public class ExpiringCacheFactory extends AbstractCacheFactory {
 
+    public static final String NAME = "expiring";
+
     /**
      * Takes url as an method argument and return new instance of cache store implemented by JCache.
      * @param url url of the method

@@ -90,6 +90,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             p.addLast(new StringDecoder(CharsetUtil.UTF_8));
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
             p.addLast(new IdleStateHandler(0, 0, 5 * 60));
+            p.addLast(new TelnetIdleEventHandler());
             p.addLast(new TelnetProcessHandler());
             p.remove(this);
         }

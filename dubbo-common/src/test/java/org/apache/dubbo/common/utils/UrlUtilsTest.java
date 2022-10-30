@@ -43,7 +43,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testAddressNull() {
-        assertNull(UrlUtils.parseURL(null, null));
+        String exceptionMessage = "Address is not allowed to be empty.";
+        try {
+            UrlUtils.parseURL(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -133,7 +138,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrlsAddressNull() {
-        assertNull(UrlUtils.parseURLs(null, null));
+        String exceptionMessage = "Address is not allowed to be empty.";
+        try {
+            UrlUtils.parseURLs(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -334,8 +344,8 @@ public class UrlUtilsTest {
     public void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.1");
         URL pattern = url.addParameter(GROUP_KEY, "test")
-                .addParameter(INTERFACE_KEY, "test")
-                .addParameter(VERSION_KEY, "test");
+            .addParameter(INTERFACE_KEY, "test")
+            .addParameter(VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 

@@ -23,7 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
@@ -78,8 +78,7 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
             if (StringUtils.isNotEmpty(interfaceName) && !isGeneric(exportedURL.getParameter(GENERIC_KEY))) {
                 Class interfaceClass = forName(interfaceName);
                 ServiceDefinition serviceDefinition = buildFullDefinition(interfaceClass, exportedURL.getParameters());
-                Gson gson = new Gson();
-                json = gson.toJson(serviceDefinition);
+                json = JSON.toJSONString(serviceDefinition);
             }
         } catch (ClassNotFoundException e) {
             //ignore error

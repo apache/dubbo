@@ -1,0 +1,1 @@
+default=org.apache.dubbo.rpc.cluster.support.merger.DefaultProviderURLMergeProcessor

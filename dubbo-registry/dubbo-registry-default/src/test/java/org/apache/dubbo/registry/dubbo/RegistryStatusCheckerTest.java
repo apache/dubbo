@@ -47,7 +47,7 @@ public class RegistryStatusCheckerTest {
 
     @BeforeEach
     public void setUp() {
-        AbstractRegistryFactory.clearRegistryNotDestroy();
+        AbstractRegistryFactory.reset();
         ApplicationModel.getServiceRepository().registerService(RegistryService.class);
     }
 
@@ -64,7 +64,7 @@ public class RegistryStatusCheckerTest {
         assertEquals(Status.Level.OK, new RegistryStatusChecker().check().getLevel());
 
         String message = new RegistryStatusChecker().check().getMessage();
-        Assertions.assertTrue(message.contains(registryUrl.getAddress() + "(connected)"));
-        Assertions.assertTrue(message.contains(registryUrl2.getAddress() + "(connected)"));
+        Assertions.assertTrue(message.contains(registryUrl.getHost() + "(connected)"));
+        Assertions.assertTrue(message.contains(registryUrl2.getHost() + "(connected)"));
     }
 }

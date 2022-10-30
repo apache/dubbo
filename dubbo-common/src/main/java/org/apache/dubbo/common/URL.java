@@ -18,7 +18,6 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -56,6 +55,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
@@ -248,7 +248,7 @@ class URL implements Serializable {
         Map<String, String> parameters = null;
         int i = url.indexOf('?'); // separator between body and parameters
         if (i >= 0) {
-            String[] parts = url.substring(i + 1).split("&");
+            String[] parts = url.substring(i + 1).split("[&;]");
             parameters = new HashMap<>();
             for (String part : parts) {
                 part = part.trim();
@@ -269,6 +269,13 @@ class URL implements Serializable {
             }
             url = url.substring(0, i);
         }
+
+        // ignore the url content following '#'
+        int poundIndex = url.indexOf('#');
+        if (poundIndex != -1) {
+            url = url.substring(0, poundIndex);
+        }
+
         i = url.indexOf("://");
         if (i >= 0) {
             if (i == 0) {
@@ -1237,18 +1244,10 @@ class URL implements Serializable {
     }
 
     public URL addParameters(String... pairs) {
-        if (pairs == null || pairs.length == 0) {
+        if (ArrayUtils.isEmpty(pairs)) {
             return this;
         }
-        if (pairs.length % 2 != 0) {
-            throw new IllegalArgumentException("Map pairs can not be odd number.");
-        }
-        Map<String, String> map = new HashMap<>();
-        int len = pairs.length / 2;
-        for (int i = 0; i < len; i++) {
-            map.put(pairs[2 * i], pairs[2 * i + 1]);
-        }
-        return addParameters(map);
+        return addParameters(CollectionUtils.toStringMap(pairs));
     }
 
     public URL addParameterString(String query) {
@@ -1654,8 +1653,9 @@ class URL implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+
         result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
+        result = prime * result + ((parameters == null) ? 0 : parametersHashCode());
         result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + port;
@@ -1687,14 +1687,13 @@ class URL implements Serializable {
             return false;
         } else {
             for (String key : parameters.keySet()) {
-                if (key.equals(CommonConstants.TIMESTAMP_KEY)) {
+                if (key.equals(TIMESTAMP_KEY)) {
                     continue;
                 }
                 if (!parameters.get(key).equals(other.parameters.get(key))) {
                     return false;
                 }
             }
-            return true;
         }
 
         if (!StringUtils.isEquals(password, other.password)) {
@@ -1713,6 +1712,19 @@ class URL implements Serializable {
             return false;
         }
         return true;
+    }
+
+    private int parametersHashCode() {
+        int h = 0;
+        for (Map.Entry<String, String> next : parameters.entrySet()) {
+            if (TIMESTAMP_KEY.equals(next.getKey())) {
+                continue;
+            }
+
+            h += next.hashCode();
+        }
+
+        return h;
     }
 
     public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {

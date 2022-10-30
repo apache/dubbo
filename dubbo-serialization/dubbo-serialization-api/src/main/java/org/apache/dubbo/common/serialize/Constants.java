@@ -33,4 +33,6 @@ public interface Constants {
 
     byte PROTOBUF_SERIALIZATION_ID = 22;
     byte KRYO_SERIALIZATION2_ID = 25;
+
+    byte MSGPACK_SERIALIZATION_ID = 27;
 }

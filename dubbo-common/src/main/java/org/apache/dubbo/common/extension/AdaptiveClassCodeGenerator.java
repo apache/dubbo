@@ -241,7 +241,7 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * generate extName assigment code
+     * generate extName assignment code
      */
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
         // TODO: refactor it

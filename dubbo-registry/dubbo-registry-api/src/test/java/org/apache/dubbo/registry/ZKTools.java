@@ -58,14 +58,30 @@ public class ZKTools {
             }
         }, executor);
 
-        tesConditionRule();
-
+        testMigrationRule();
+//        tesConditionRule();
 //        testStartupConfig();
 //        testProviderConfig();
 //        testPathCache();
 //        testTreeCache();
 //        testCuratorListener();
 //       Thread.sleep(100000);
+    }
+
+    public static void testMigrationRule() {
+        String serviceStr = "---\n" +
+                "key: demo-consumer\n" +
+                "step: INTERFACE_FIRST\n" +
+                "...";
+        try {
+            String servicePath = "/dubbo/config/DUBBO_SERVICEDISCOVERY_MIGRATION/demo-consumer.migration";
+            if (client.checkExists().forPath(servicePath) == null) {
+                client.create().creatingParentsIfNeeded().forPath(servicePath);
+            }
+            setData(servicePath, serviceStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void testStartupConfig() {

@@ -79,6 +79,7 @@ public class InternalThreadLocalTest {
         final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
         internalThreadLocalString.set("value");
         Assertions.assertEquals(2, InternalThreadLocal.size(), "size method is wrong!");
+        InternalThreadLocal.removeAll();
     }
 
     @Test

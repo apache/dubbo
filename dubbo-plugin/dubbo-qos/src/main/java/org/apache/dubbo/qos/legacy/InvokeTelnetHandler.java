@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.legacy;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -24,15 +25,15 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-import com.alibaba.fastjson.JSON;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,13 +44,15 @@ import static org.apache.dubbo.common.utils.PojoUtils.realize;
  * InvokeTelnetHandler
  */
 @Activate
-@Help(parameter = "[service.]method(args) ", summary = "Invoke the service method.",
+@Help(parameter = "[service.]method(args) [{'attachment':{'a':'b'}}]", summary = "Invoke the service method.",
         detail = "Invoke the service method.")
 public class InvokeTelnetHandler implements TelnetHandler {
 
     public static final String INVOKE_MESSAGE_KEY = "telnet.invoke.method.message";
     public static final String INVOKE_METHOD_LIST_KEY = "telnet.invoke.method.list";
     public static final String INVOKE_METHOD_PROVIDER_KEY = "telnet.invoke.method.provider";
+
+    private static final String ATTACHMENT_KEY  = "attachment";
 
     @Override
     @SuppressWarnings("unchecked")
@@ -62,18 +65,19 @@ public class InvokeTelnetHandler implements TelnetHandler {
 
         String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
 
-        int i = message.indexOf("(");
+        int leftBracket = message.indexOf("(");
+        int rightBracket = message.indexOf(")");
 
-        if (i < 0 || !message.endsWith(")")) {
+        if (leftBracket < 0 || rightBracket < 0) {
             return "Invalid parameters, format: service.method(args)";
         }
 
-        String method = message.substring(0, i).trim();
-        String args = message.substring(i + 1, message.length() - 1).trim();
-        i = method.lastIndexOf(".");
-        if (i >= 0) {
-            service = method.substring(0, i).trim();
-            method = method.substring(i + 1).trim();
+        String method = message.substring(0, leftBracket).trim();
+        String args = message.substring(leftBracket + 1, rightBracket).trim();
+        leftBracket = method.lastIndexOf(".");
+        if (leftBracket >= 0) {
+            service = method.substring(0, leftBracket).trim();
+            method = method.substring(leftBracket + 1).trim();
         }
 
         List<Object> list;
@@ -82,6 +86,17 @@ public class InvokeTelnetHandler implements TelnetHandler {
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
+
+        Map<Object, Object> context = Collections.emptyMap();
+        String contextJson = message.substring(Math.min(message.length(), rightBracket + 1)).trim();
+        if (StringUtils.isNotEmpty(contextJson)) {
+            try {
+                context = JSON.parseObject(contextJson, Map.class);
+            } catch (Throwable t) {
+                // parse context json string.
+            }
+        }
+
         StringBuilder buf = new StringBuilder();
         Method invokeMethod = null;
         ProviderModel selectedProvider = null;
@@ -90,29 +105,34 @@ public class InvokeTelnetHandler implements TelnetHandler {
             invokeMethod = (Method) channel.getAttribute(SelectTelnetHandler.SELECT_METHOD_KEY);
         } else {
             for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-                if (isServiceMatch(service, provider)) {
-                    selectedProvider = provider;
-                    List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
-                    if (CollectionUtils.isNotEmpty(methodList)) {
-                        if (methodList.size() == 1) {
-                            invokeMethod = methodList.get(0);
-                        } else {
-                            List<Method> matchMethods = findMatchMethods(methodList, list);
-                            if (CollectionUtils.isNotEmpty(matchMethods)) {
-                                if (matchMethods.size() == 1) {
-                                    invokeMethod = matchMethods.get(0);
-                                } else { //exist overridden method
-                                    channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
-                                    channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
-                                    channel.setAttribute(INVOKE_MESSAGE_KEY, message);
-                                    printSelectMessage(buf, matchMethods);
-                                    return buf.toString();
-                                }
-                            }
-                        }
-                    }
+                if (!isServiceMatch(service, provider)) {
+                    continue;
+                }
+
+                selectedProvider = provider;
+                List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
+                if (CollectionUtils.isEmpty(methodList)) {
                     break;
                 }
+
+                if (methodList.size() == 1) {
+                    invokeMethod = methodList.get(0);
+                } else {
+                    List<Method> matchMethods = findMatchMethods(methodList, list);
+                    if (CollectionUtils.isEmpty(matchMethods)) {
+                        break;
+                    }
+                    if (matchMethods.size() == 1) {
+                        invokeMethod = matchMethods.get(0);
+                    } else { //exist overridden method
+                        channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
+                        channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
+                        channel.setAttribute(INVOKE_MESSAGE_KEY, message);
+                        printSelectMessage(buf, matchMethods);
+                        return buf.toString();
+                    }
+                }
+                break;
             }
         }
 
@@ -120,33 +140,42 @@ public class InvokeTelnetHandler implements TelnetHandler {
         if (!StringUtils.isEmpty(service)) {
             buf.append("Use default service ").append(service).append(".");
         }
-        if (selectedProvider != null) {
-            if (invokeMethod != null) {
-                try {
-                    Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
-                            invokeMethod.getGenericParameterTypes());
-                    long start = System.currentTimeMillis();
-                    AppResponse result = new AppResponse();
-                    try {
-                        Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
-                        result.setValue(o);
-                    } catch (Throwable t) {
-                        result.setException(t);
-                    }
-                    long end = System.currentTimeMillis();
-                    buf.append("\r\nresult: ");
-                    buf.append(JSON.toJSONString(result.recreate()));
-                    buf.append("\r\nelapsed: ");
-                    buf.append(end - start);
-                    buf.append(" ms.");
-                } catch (Throwable t) {
-                    return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
-                }
-            } else {
-                buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
-            }
-        } else {
+        if (selectedProvider == null) {
             buf.append("\r\nNo such service ").append(service);
+            return buf.toString();
+        }
+        if (invokeMethod == null) {
+            buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
+            return buf.toString();
+        }
+        try {
+            Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
+                    invokeMethod.getGenericParameterTypes());
+            long start = System.currentTimeMillis();
+
+            // before invoke
+            if (context.get(ATTACHMENT_KEY) != null) {
+                RpcContext.getContext().setAttachments((Map<String, String>) context.get(ATTACHMENT_KEY));
+            }
+
+            AppResponse result = new AppResponse();
+            try {
+                result.setValue(invokeMethod.invoke(selectedProvider.getServiceInstance(), array));
+            } catch (Throwable t) {
+                result.setException(t);
+            } finally {
+                // after invoke
+                RpcContext.getContext().clearAttachments();
+            }
+
+            long end = System.currentTimeMillis();
+            buf.append("\r\nresult: ");
+            buf.append(JSON.toJSONString(result.recreate()));
+            buf.append("\r\nelapsed: ");
+            buf.append(end - start);
+            buf.append(" ms.");
+        } catch (Throwable t) {
+            return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
         }
         return buf.toString();
     }

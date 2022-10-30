@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Collection;
 import java.util.List;
@@ -60,18 +61,19 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail ;
-import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
  * ConfigTest
  */
 @Disabled
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ConfigTest {
 
     @Test
@@ -408,12 +410,17 @@ public class ConfigTest {
 
     @Test
     public void testInitReference() throws Exception {
-        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider.xml");
+        String configPath = ConfigTest.class.getPackage().getName().replace('.', '/');
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(configPath + "/demo-provider.xml", configPath+"/demo-provider-properties.xml");
         providerContext.start();
         try {
-            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/init-reference.xml");
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(configPath + "/init-reference.xml");
             ctx.start();
             try {
+
+                ReferenceBean referenceBean = ctx.getBean("&demoService", ReferenceBean.class);
+                Assertions.assertEquals("demo_tag", referenceBean.getTag());
+
                 DemoService demoService = (DemoService) ctx.getBean("demoService");
                 assertEquals("say:world", demoService.sayName("world"));
             } finally {

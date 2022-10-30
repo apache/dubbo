@@ -18,39 +18,68 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.log4j.Level;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class LogTest {
     @Test
     public void testLogName() throws Exception {
-        Log log = new Log();
-        log.setLogName("log-name");
-        assertThat(log.getLogName(), equalTo("log-name"));
+        Log log1 = new Log();
+        Log log2 = new Log();
+        Log log3 = new Log();
+        log1.setLogName("log-name");
+        log2.setLogName("log-name");
+        log3.setLogName("log-name-other");
+        assertThat(log1.getLogName(), equalTo("log-name"));
+        Assertions.assertEquals(log1, log2);
+        Assertions.assertEquals(log1.hashCode(), log2.hashCode());
+        Assertions.assertNotEquals(log1, log3);
     }
 
     @Test
     public void testLogLevel() throws Exception {
-        Log log = new Log();
-        log.setLogLevel(Level.ALL);
-        assertThat(log.getLogLevel(), is(Level.ALL));
+        Log log1 = new Log();
+        Log log2 = new Log();
+        Log log3 = new Log();
+        log1.setLogLevel(Level.ALL);
+        log2.setLogLevel(Level.ALL);
+        log3.setLogLevel(Level.DEBUG);
+        assertThat(log1.getLogLevel(), is(Level.ALL));
+        Assertions.assertEquals(log1, log2);
+        Assertions.assertEquals(log1.hashCode(), log2.hashCode());
+        Assertions.assertNotEquals(log1, log3);
     }
 
     @Test
     public void testLogMessage() throws Exception {
-        Log log = new Log();
-        log.setLogMessage("log-message");
-        assertThat(log.getLogMessage(), equalTo("log-message"));
+        Log log1 = new Log();
+        Log log2 = new Log();
+        Log log3 = new Log();
+        log1.setLogMessage("log-message");
+        log2.setLogMessage("log-message");
+        log3.setLogMessage("log-message-other");
+        assertThat(log1.getLogMessage(), equalTo("log-message"));
+        Assertions.assertEquals(log1, log2);
+        Assertions.assertEquals(log1.hashCode(), log2.hashCode());
+        Assertions.assertNotEquals(log1, log3);
     }
 
     @Test
     public void testLogThread() throws Exception {
-        Log log = new Log();
-        log.setLogThread("log-thread");
-        assertThat(log.getLogThread(), equalTo("log-thread"));
+        Log log1 = new Log();
+        Log log2 = new Log();
+        Log log3 = new Log();
+        log1.setLogThread("log-thread");
+        log2.setLogThread("log-thread");
+        log3.setLogThread("log-thread-other");
+        assertThat(log1.getLogThread(), equalTo("log-thread"));
+        Assertions.assertEquals(log1, log2);
+        Assertions.assertEquals(log1.hashCode(), log2.hashCode());
+        Assertions.assertNotEquals(log1, log3);
     }
 
 }

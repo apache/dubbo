@@ -32,7 +32,7 @@ public class ConfigConfigurationAdapter implements Configuration {
 
     public ConfigConfigurationAdapter(AbstractConfig config) {
         Map<String, String> configMetadata = config.getMetaData();
-        metaData = new HashMap<>(configMetadata.size());
+        metaData = new HashMap<>(configMetadata.size(), 1.0f);
         for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
             String prefix = config.getPrefix().endsWith(".") ? config.getPrefix() : config.getPrefix() + ".";
             String id = StringUtils.isEmpty(config.getId()) ? "" : config.getId() + ".";

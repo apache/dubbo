@@ -60,7 +60,7 @@ public interface ServiceNameMapping {
         return getExtensionLoader(ServiceNameMapping.class).getExtension(name == null ? CONFIG_MAPPING_TYPE : name);
     }
 
-    static String buildGroup(String serviceInterface, String group, String version, String protocol) {
+    static String buildGroup(String serviceInterface) {
         //        the issue : https://github.com/apache/dubbo/issues/4671
         //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
         //                .append(KEY_SEPARATOR).append(defaultString(group))

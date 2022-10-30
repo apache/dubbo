@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config.configcenter;
 
+@Deprecated
 public interface Constants {
     String CONFIG_CLUSTER_KEY = "config.cluster";
     String CONFIG_NAMESPACE_KEY = "config.namespace";

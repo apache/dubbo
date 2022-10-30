@@ -314,7 +314,7 @@ public class RpcContext {
             try {
                 setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
-                //local invoke will return directly
+                // local invoke will return directly
                 if (o != null) {
                     FutureTask<T> f = new FutureTask<T>(new Callable<T>() {
                         @Override
