@@ -117,7 +117,7 @@ public class ConfigurableMetadataServiceExporter {
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(specifiedProtocol);
-        String serialization=getSerialization(specifiedProtocol);
+        String serialization = getSerialization(specifiedProtocol);
         protocolConfig.setSerialization(serialization);
         if (port == null || port < -1) {
             try {
@@ -194,10 +194,8 @@ public class ConfigurableMetadataServiceExporter {
             serialization.set(getApplicationConfig().getParameters().get(SERIALIZATION_KEY));
         }
         if (StringUtils.isEmpty(serialization.get())) {
-            applicationModel.getApplicationConfigManager().getProtocol(protocol).ifPresent(protocolConfig -> {
-                serialization.set(Optional.ofNullable(protocolConfig.getSerialization())
-                    .orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization));
-            });
+            applicationModel.getApplicationConfigManager().getProtocol(protocol).ifPresent(protocolConfig -> serialization.set(Optional.ofNullable(protocolConfig.getSerialization())
+                .orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization)));
         }
         return serialization.get();
     }
