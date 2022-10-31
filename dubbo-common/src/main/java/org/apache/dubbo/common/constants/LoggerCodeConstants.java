@@ -41,6 +41,40 @@ public interface LoggerCodeConstants {
 
     String COMMON_FAILED_NOTIFY_EVENT = "0-9";
 
+    String COMMON_UNSUPPORTED_INVOKER = "0-10";
+
+    String COMMON_FAILED_STOP_HTTP_SERVER = "0-11";
+
+    String COMMON_UNEXPECTED_EXCEPTION = "0-12";
+
+    String COMMON_METRICS_COLLECTOR_EXCEPTION = "0-13";
+
+    String COMMON_MONITOR_EXCEPTION = "0-14";
+
+    String COMMON_ERROR_LOAD_EXTENSION = "0-15";
+
+    String COMMON_EXECUTORS_NO_FOUND = "0-16";
+
+    String COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN = "0-17";
+
+    String COMMON_ERROR_USE_THREAD_POOL = "0-18";
+
+    String COMMON_ERROR_RUN_THREAD_TASK = "0-19";
+
+    String COMMON_UNEXPECTED_CREATE_DUMP = "0-20";
+
+    String COMMON_ERROR_TOO_MANY_INSTANCES = "0-21";
+
+    String COMMON_IO_EXCEPTION = "0-22";
+
+    String COMMON_JSON_CONVERT_EXCEPTION = "0-23";
+
+    String COMMON_FAILED_OVERRIDE_FIELD = "0-24";
+
+    String COMMON_FAILED_LOAD_MAPPING_CACHE = "0-24";
+
+    String COMMON_METADATA_PROCESSOR = "0-25";
+
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
@@ -110,6 +144,14 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_ERROR_PARSING_XDS = "1-34";
 
+    String REGISTRY_ZOOKEEPER_EXCEPTION = "1-35";
+
+    String REGISTRY_UNEXPECTED_EXCEPTION = "1-36";
+
+    String REGISTRY_NACOS_EXCEPTION = "1-37";
+
+    String REGISTRY_SOCKET_EXCEPTION = "1-38";
+
     // cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
@@ -163,6 +205,8 @@ public interface LoggerCodeConstants {
     String PROXY_ERROR_ASYNC_RESPONSE = "3-5";
 
     String PROXY_UNSUPPORTED_INVOKER = "3-6";
+
+    String PROXY_TIMEOUT_RESPONSE = "3-7";
 
     // protocol module
     String PROTOCOL_UNSUPPORTED = "4-1";
@@ -282,6 +326,47 @@ public interface LoggerCodeConstants {
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
+
+    String TRANSPORT_FAILED_CLOSE = "6-3";
+
+    String TRANSPORT_UNEXPECTED_EXCEPTION = "6-4";
+
+    String TRANSPORT_FAILED_DISCONNECT_PROVIDER = "6-5";
+
+    String TRANSPORT_UNSUPPORTED_MESSAGE = "6-6";
+
+    String TRANSPORT_CONNECTION_LIMIT_EXCEED = "6-7";
+
+    String TRANSPORT_FAILED_DECODE = "6-8";
+
+    String TRANSPORT_FAILED_SERIALIZATION = "6-9";
+
+    String TRANSPORT_EXCEED_PAYLOAD_LIMIT = "6-10";
+
+    String TRANSPORT_UNSUPPORTED_CHARSET = "6-11";
+
+    String TRANSPORT_FAILED_DESTROY_ZOOKEEPER = "6-12";
+
+    String TRANSPORT_FAILED_CLOSE_STREAM = "6-13";
+
+    String TRANSPORT_FAILED_RESPONSE = "6-14";
+
+    String TRANSPORT_SKIP_UNUSED_STREAM = "6-15";
+
+    String TRANSPORT_FAILED_RECONNECT = "6-3";
+
+    // qos plugin
+    String QOS_PROFILER_DISABLED = "7-1";
+
+    String QOS_PROFILER_ENABLED = "7-2";
+
+    String QOS_PROFILER_WARN_PERCENT = "7-3";
+
+    String QOS_FAILED_START_SERVER = "7-4";
+
+    String QOS_COMMAND_NOT_FOUND = "7-5";
+
+    String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
     // Internal unknown error.
 

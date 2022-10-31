@@ -17,7 +17,7 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
 import static org.apache.dubbo.monitor.Constants.DEFAULT_MONITOR_SEND_DATA_INTERVAL;
 import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
@@ -54,7 +55,7 @@ import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
  */
 public class DubboMonitor implements Monitor {
 
-    private static final Logger logger = LoggerFactory.getLogger(DubboMonitor.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DubboMonitor.class);
 
     /**
      * The timer for sending statistics
@@ -85,7 +86,7 @@ public class DubboMonitor implements Monitor {
                 // collect data
                 send();
             } catch (Throwable t) {
-                logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
+                logger.error(COMMON_MONITOR_EXCEPTION, "", "", "Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
             }
         }, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
     }
@@ -196,7 +197,7 @@ public class DubboMonitor implements Monitor {
         try {
             ExecutorUtil.cancelScheduledFuture(sendFuture);
         } catch (Throwable t) {
-            logger.error("Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
+            logger.error(COMMON_MONITOR_EXCEPTION, "", "", "Unexpected error occur at cancel sender timer, cause: " + t.getMessage(), t);
         }
         monitorInvoker.destroy();
     }
