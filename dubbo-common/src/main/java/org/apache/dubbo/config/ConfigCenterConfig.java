@@ -30,8 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.CONFIG_APP_CONFIGFILE_KEY;
@@ -104,6 +106,12 @@ public class ConfigCenterConfig extends AbstractConfig {
             address = ANYHOST_VALUE;
         }
         map.put(PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        if (StringUtils.isNotEmpty(username)) {
+            map.put(USERNAME_KEY, username);
+        }
+        if (StringUtils.isNotEmpty(password)) {
+            map.put(PASSWORD_KEY, password);
+        }
         // use 'zookeeper' as the default configcenter.
         if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
             map.put(PROTOCOL_KEY, ZOOKEEPER_PROTOCOL);

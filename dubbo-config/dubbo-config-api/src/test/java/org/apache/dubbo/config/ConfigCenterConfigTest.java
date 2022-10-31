@@ -34,8 +34,10 @@ public class ConfigCenterConfigTest {
         config.setNamespace("namespace");
         config.setGroup("group");
         config.setAddress("zookeeper://127.0.0.1:2181");
+        config.setUsername("test-user");
+        config.setPassword("test-pass");
 
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181/ConfigCenterConfig?check=true&" +
+        Assertions.assertEquals("zookeeper://test-user:test-pass@127.0.0.1:2181/ConfigCenterConfig?check=true&" +
                         "config-file=dubbo.properties&group=group&highest-priority=true&" +
                         "namespace=namespace&timeout=3000",
                 config.toUrl().toFullString()
