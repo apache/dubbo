@@ -98,7 +98,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
-        Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
+        Map<Set<String>, List<URL>> revisionsToUrls = new HashMap<>();
         Map<String, List<URL>> tmpServiceUrls = new HashMap<>();
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
@@ -117,8 +117,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
                         revisionToMetadata.put(revision, metadata);
-                    } else {
-
                     }
                 }
 
@@ -126,18 +124,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     parseMetadata(revision, metadata, localServiceToRevisions);
                     ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
                 }
-//                else {
-//                    logger.error("Failed to load service metadata for instance " + instance);
-//                    Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new TreeSet<>());
-//                    set.add(revision);
-//                }
             }
 
             localServiceToRevisions.forEach((serviceKey, revisions) -> {
                 List<URL> urls = revisionsToUrls.get(revisions);
-                if (urls != null) {
-                    tmpServiceUrls.put(serviceKey, urls);
-                } else {
+                if (urls == null) {
                     urls = new ArrayList<>();
                     for (String r : revisions) {
                         for (ServiceInstance i : revisionToInstances.get(r)) {
@@ -145,8 +136,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                         }
                     }
                     revisionsToUrls.put(revisions, urls);
-                    tmpServiceUrls.put(serviceKey, urls);
                 }
+                tmpServiceUrls.put(serviceKey, urls);
             });
         }
 
@@ -191,11 +182,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     private void notifyAddressChanged() {
-        listeners.forEach((key, notifyListeners) -> {
-            notifyListeners.forEach(notifyListener -> {
-                notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
-            });
-        });
+        listeners.forEach((key, notifyListeners) -> notifyListeners.forEach(notifyListener -> notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)))));
     }
 
     private List<URL> toUrlsWithEmpty(List<URL> urls) {

@@ -493,8 +493,6 @@ public class ExchangeCodec extends TelnetCodec {
                 if ((flag & FLAG_EVENT) != 0) {
                     res.setEvent(true);
                 }
-                // get status.
-                byte status = header[3];
                 res.setStatus(Response.CLIENT_ERROR);
                 String errorMsg = "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel;
                 logger.error(errorMsg);

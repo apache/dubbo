@@ -70,7 +70,7 @@ import static org.apache.dubbo.monitor.Constants.SERVICE;
 public class MetricsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
-    private static volatile AtomicBoolean exported = new AtomicBoolean(false);
+    private static final AtomicBoolean exported = new AtomicBoolean(false);
     private Integer port;
     private String protocolName;
 
@@ -83,7 +83,7 @@ public class MetricsFilter implements Filter {
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+                    protocol.getDefaultPort() : Integer.parseInt(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -131,7 +131,7 @@ public class MetricsFilter implements Filter {
         method.append("(");
 
         for (int i = 0; i < argTypes.length; i++) {
-            method.append((i == 0 ? "" : ", ") + argTypes[i].getSimpleName());
+            method.append(i == 0 ? "" : ", ").append(argTypes[i].getSimpleName());
         }
         method.append(")");
         Class<?> returnType = RpcUtils.getReturnType(invocation);
@@ -180,21 +180,20 @@ public class MetricsFilter implements Filter {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
-        List<MetricObject> threadPoolMtricList = new ArrayList<>();
+        List<MetricObject> threadPoolMetricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
-            String port = entry.getKey();
             ExecutorService executor = (ExecutorService) entry.getValue();
             if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
 
-                threadPoolMtricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.max", tp.getMaximumPoolSize(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.current", tp.getPoolSize(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.max", tp.getMaximumPoolSize(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.current", tp.getPoolSize(), MetricLevel.MAJOR));
             }
         }
 
-        return threadPoolMtricList;
+        return threadPoolMetricList;
     }
 
     private MetricObject value2MetricObject(String metric, Integer value, MetricLevel level) {
@@ -210,7 +209,7 @@ public class MetricsFilter implements Filter {
     }
 
     private Invoker<MetricsService> initMetricsInvoker() {
-        Invoker<MetricsService> metricsInvoker = new Invoker<MetricsService>() {
+        return new Invoker<MetricsService>() {
             @Override
             public Class<MetricsService> getInterface() {
                 return MetricsService.class;
@@ -235,7 +234,7 @@ public class MetricsFilter implements Filter {
                     collector.collect(entry.getKey(), entry.getValue(), timestamp);
                 }
 
-                List res = collector.build();
+                List<MetricObject> res = collector.build();
                 res.addAll(getThreadPoolMessage());
                 return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(res), invocation);
             }
@@ -255,7 +254,5 @@ public class MetricsFilter implements Filter {
 
             }
         };
-
-        return metricsInvoker;
     }
 }

@@ -156,14 +156,18 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private Invoker<T> getInvoker(String mockService) {
+    private Invoker<T> getInvoker(String mock) {
+        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
+
+        final boolean isDefault = ConfigUtils.isDefault(mock);
+        // convert to actual mock service name
+        String mockService = isDefault ? serviceType.getName() + "Mock" : mock;
         Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
         if (invoker != null) {
             return invoker;
         }
 
-        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
-        T mockObject = (T) getMockObject(mockService, serviceType);
+        T mockObject = (T) getMockObject(mock, serviceType);
         invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
         if (MOCK_MAP.size() < 10000) {
             MOCK_MAP.put(mockService, invoker);

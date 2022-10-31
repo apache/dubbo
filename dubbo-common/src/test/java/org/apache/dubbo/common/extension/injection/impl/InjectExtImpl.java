@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.extension.injection.impl;
 
-import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 
@@ -32,7 +32,7 @@ public class InjectExtImpl implements InjectExt {
         this.simpleExt = simpleExt;
     }
 
-    @DisableInject
+    @Inject(enable = false)
     public void setSimpleExt1(SimpleExt simpleExt1) {
         this.simpleExt1 = simpleExt1;
     }

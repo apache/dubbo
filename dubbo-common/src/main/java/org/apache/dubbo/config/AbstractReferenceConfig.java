@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
-
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 /**
  * AbstractConsumerConfig
@@ -79,6 +79,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected String providedBy;
 
     protected String router;
+
+    /**
+     * The serialization type
+     */
+    protected String serialization;
 
     public Boolean isCheck() {
         return check;
@@ -222,5 +227,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setRouter(String router) {
         this.router = router;
+    }
+
+    public String getSerialization() {
+        return serialization;
+    }
+
+    public void setSerialization(String serialization) {
+        this.serialization = serialization;
     }
 }

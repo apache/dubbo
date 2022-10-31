@@ -112,6 +112,15 @@ public class ApplicationModel {
         return application == null ? getName() : application;
     }
 
+    @Deprecated
+    public static String tryGetApplication() {
+        if (application != null) {
+            return application;
+        }
+        return getConfigManager().getApplication()
+                .map(ApplicationConfig::getName).orElse(null);
+    }
+
     // Currently used by UT.
     @Deprecated
     public static void setApplication(String application) {

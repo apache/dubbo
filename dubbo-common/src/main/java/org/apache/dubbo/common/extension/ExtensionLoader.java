@@ -452,6 +452,7 @@ public class ExtensionLoader<T> {
 
     /**
      * get the original type.
+     *
      * @param name
      * @return
      */
@@ -707,33 +708,56 @@ public class ExtensionLoader<T> {
                 if (!isSetter(method)) {
                     continue;
                 }
-                /**
-                 * Check {@link DisableInject} to see if we need auto injection for this property
+
+                /*
+                 * Check {@link DisableInject} to see if we need autowire injection for this property
                  */
                 if (method.getAnnotation(DisableInject.class) != null) {
                     continue;
                 }
+
                 Class<?> pt = method.getParameterTypes()[0];
                 if (ReflectUtils.isPrimitives(pt)) {
                     continue;
                 }
 
-                try {
-                    String property = getSetterProperty(method);
-                    Object object = objectFactory.getExtension(pt, property);
-                    if (object != null) {
-                        method.invoke(instance, object);
+                /*
+                 * Check {@link Inject} to see if we need auto-injection for this property
+                 * {@link Inject#enable} == false will skip inject property phase
+                 * {@link Inject#InjectType#ByName} default inject by name
+                 */
+                String property = getSetterProperty(method);
+                Inject inject = method.getAnnotation(Inject.class);
+                if (inject == null) {
+                    injectValue(instance, method, pt, property);
+                } else {
+                    if (!inject.enable()) {
+                        continue;
                     }
-                } catch (Exception e) {
-                    logger.error("Failed to inject via method " + method.getName()
-                            + " of interface " + type.getName() + ": " + e.getMessage(), e);
-                }
 
+                    if (inject.type() == Inject.InjectType.ByType) {
+                        injectValue(instance, method, pt, null);
+                    } else {
+                        injectValue(instance, method, pt, property);
+                    }
+                }
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
         return instance;
+    }
+
+    private void injectValue(T instance, Method method, Class<?> pt, String property) {
+        try {
+            Object object = objectFactory.getExtension(pt, property);
+            if (object != null) {
+                method.invoke(instance, object);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to inject via method " + method.getName()
+                    + " of interface " + type.getName() + ": " + e.getMessage(), e);
+        }
     }
 
     private void initExtension(T instance) {

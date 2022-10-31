@@ -134,7 +134,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     /**
      * The flag whether the ReferenceConfig has been initialized
      */
-    private transient volatile boolean initialized;
+    private transient boolean initialized;
 
     /**
      * whether this ReferenceConfig has been destroyed

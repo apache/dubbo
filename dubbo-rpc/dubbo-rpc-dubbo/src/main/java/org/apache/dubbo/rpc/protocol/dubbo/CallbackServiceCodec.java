@@ -114,7 +114,7 @@ class CallbackServiceCodec {
             }
         }
         tmpMap.putAll(params);
-        
+
         tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
         tmpMap.remove(Constants.BIND_PORT_KEY); //callback doesn't needs bind.port
         tmpMap.put(INTERFACE_KEY, clazz.getName());
@@ -173,8 +173,8 @@ class CallbackServiceCodec {
                     channel.setAttribute(invokerCacheKey, invoker);
                     increaseInstanceCount(channel, countkey);
 
-                    //convert error fail fast .
-                    //ignore concurrent problem.
+                    // convert error fail fast .
+                    // ignore concurrent problem.
                     Set<Invoker<?>> callbackInvokers = (Set<Invoker<?>>) channel.getAttribute(CHANNEL_CALLBACK_KEY);
                     if (callbackInvokers == null) {
                         callbackInvokers = new ConcurrentHashSet<>(1);
@@ -229,7 +229,7 @@ class CallbackServiceCodec {
         Integer count = (Integer) channel.getAttribute(isServer ? getServerSideCountKey(channel, interfaceClass) : getClientSideCountKey(interfaceClass));
         int limit = url.getParameter(CALLBACK_INSTANCES_LIMIT_KEY, DEFAULT_CALLBACK_INSTANCES);
         if (count != null && count >= limit) {
-            //client side error
+            // client side error
             throw new IllegalStateException("interface " + interfaceClass + " `s callback instances num exceed providers limit :" + limit
                     + " ,current num: " + (count + 1) + ". The new callback service will not work !!! you can cancle the callback service which exported before. channel :" + channel);
         } else {
@@ -239,7 +239,7 @@ class CallbackServiceCodec {
 
     private static void increaseInstanceCount(Channel channel, String countkey) {
         try {
-            //ignore concurrent problem?
+            // ignore concurrent problem?
             Integer count = (Integer) channel.getAttribute(countkey);
             if (count == null) {
                 count = 1;
