@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -38,6 +38,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_T
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 
 /**
  * AbstractClient
@@ -46,7 +48,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     protected static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractClient.class);
 
     private final Lock connectLock = new ReentrantLock();
 
@@ -80,7 +82,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             // If lazy connect client fails to establish a connection, the client instance will still be created,
             // and the reconnection will be initiated by ReconnectTask, so there is no need to throw an exception
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
-                logger.warn("Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() +
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress() +
                     " connect to the server " + getRemoteAddress() +
                     " (the connection request is initiated by lazy connect client, ignore and retry later!), cause: " +
                     t.getMessage(), t);
@@ -91,7 +93,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                 close();
                 throw t;
             } else {
-                logger.warn("Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                     + " connect to the server " + getRemoteAddress() + " (check == false, ignore and retry later!), cause: " + t.getMessage(), t);
             }
         } catch (Throwable t) {
@@ -210,7 +212,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
 
             if (isClosed() || isClosing()) {
-                logger.warn("No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                     + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed or closing.");
                 return;
             }
@@ -252,12 +254,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     channel.close();
                 }
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
             try {
                 doDisConnect();
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
         } finally {
             connectLock.unlock();
@@ -278,33 +280,33 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     @Override
     public void close() {
         if (isClosed()) {
-            logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+            logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
             return;
         }
 
         connectLock.lock();
         try {
             if (isClosed()) {
-                logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+                logger.warn(TRANSPORT_FAILED_CONNECT_PROVIDER, "", "", "No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
                 return;
             }
 
             try {
                 super.close();
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
 
             try {
                 disconnect();
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
 
             try {
                 doClose();
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
             }
 
         } finally {

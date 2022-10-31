@@ -42,6 +42,7 @@ import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 
@@ -119,7 +120,7 @@ public class NacosNamingServiceUtils {
             namingService = NacosFactory.createNamingService(nacosProperties);
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getErrMsg(), e);
+                logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getErrMsg(), e);
             }
             throw new IllegalStateException(e);
         }
@@ -157,10 +158,10 @@ public class NacosNamingServiceUtils {
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
         // Put all parameters
         properties.putAll(parameters);
-        if (StringUtils.isNotEmpty(url.getUsername())){
+        if (StringUtils.isNotEmpty(url.getUsername())) {
             properties.put(USERNAME, url.getUsername());
         }
-        if (StringUtils.isNotEmpty(url.getPassword())){
+        if (StringUtils.isNotEmpty(url.getPassword())) {
             properties.put(PASSWORD, url.getPassword());
         }
 

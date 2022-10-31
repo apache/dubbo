@@ -71,6 +71,10 @@ public interface LoggerCodeConstants {
 
     String COMMON_FAILED_OVERRIDE_FIELD = "0-24";
 
+    String COMMON_FAILED_LOAD_MAPPING_CACHE = "0-24";
+
+    String COMMON_METADATA_PROCESSOR = "0-25";
+
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
@@ -143,6 +147,10 @@ public interface LoggerCodeConstants {
     String REGISTRY_ZOOKEEPER_EXCEPTION = "1-35";
 
     String REGISTRY_UNEXPECTED_EXCEPTION = "1-36";
+
+    String REGISTRY_NACOS_EXCEPTION = "1-37";
+
+    String REGISTRY_SOCKET_EXCEPTION = "1-38";
 
     // cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
@@ -328,6 +336,37 @@ public interface LoggerCodeConstants {
     String TRANSPORT_UNSUPPORTED_MESSAGE = "6-6";
 
     String TRANSPORT_CONNECTION_LIMIT_EXCEED = "6-7";
+
+    String TRANSPORT_FAILED_DECODE = "6-8";
+
+    String TRANSPORT_FAILED_SERIALIZATION = "6-9";
+
+    String TRANSPORT_EXCEED_PAYLOAD_LIMIT = "6-10";
+
+    String TRANSPORT_UNSUPPORTED_CHARSET = "6-11";
+
+    String TRANSPORT_FAILED_DESTROY_ZOOKEEPER = "6-12";
+
+    String TRANSPORT_FAILED_CLOSE_STREAM = "6-13";
+
+    String TRANSPORT_FAILED_RESPONSE = "6-14";
+
+    String TRANSPORT_SKIP_UNUSED_STREAM = "6-15";
+
+    String TRANSPORT_FAILED_RECONNECT = "6-3";
+
+    // qos plugin
+    String QOS_PROFILER_DISABLED = "7-1";
+
+    String QOS_PROFILER_ENABLED = "7-2";
+
+    String QOS_PROFILER_WARN_PERCENT = "7-3";
+
+    String QOS_FAILED_START_SERVER = "7-4";
+
+    String QOS_COMMAND_NOT_FOUND = "7-5";
+
+    String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
     // Internal unknown error.
 

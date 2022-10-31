@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -31,12 +31,15 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
+
 /**
  * Telnet process handler
  */
 public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
 
-    private static final Logger log = LoggerFactory.getLogger(TelnetProcessHandler.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(TelnetProcessHandler.class);
     private final CommandExecutor commandExecutor;
 
     public TelnetProcessHandler(FrameworkModel frameworkModel) {
@@ -62,11 +65,11 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
             } catch (NoSuchCommandException ex) {
                 ctx.writeAndFlush(msg + " :no such command");
                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
-                log.error("can not found command " + commandContext, ex);
+                log.error(QOS_COMMAND_NOT_FOUND, "", "", "can not found command " + commandContext, ex);
             } catch (Exception ex) {
                 ctx.writeAndFlush(msg + " :fail to execute commandContext by " + ex.getMessage());
                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
-                log.error("execute commandContext got exception " + commandContext, ex);
+                log.error(QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext got exception " + commandContext, ex);
             }
         }
     }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.server;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
@@ -33,6 +33,8 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
+
 /**
  * A server serves for both telnet access and http access
  * <ul>
@@ -43,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Server {
 
-    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Server.class);
 
     private String host;
 
@@ -107,7 +109,7 @@ public class Server {
 
             logger.info("qos-server bind localhost:" + port);
         } catch (Throwable throwable) {
-            logger.error("qos-server can not bind localhost:" + port, throwable);
+            logger.error(QOS_FAILED_START_SERVER, "", "", "qos-server can not bind localhost:" + port, throwable);
             throw throwable;
         }
     }
