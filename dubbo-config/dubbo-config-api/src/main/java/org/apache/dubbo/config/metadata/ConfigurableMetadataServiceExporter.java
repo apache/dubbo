@@ -19,6 +19,7 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -38,6 +39,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
@@ -49,6 +53,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_FIND_PROTOCOL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 
 /**
  * Export metadata service
@@ -113,7 +118,8 @@ public class ConfigurableMetadataServiceExporter {
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(specifiedProtocol);
-
+        String serialization=getSerialization(specifiedProtocol);
+        protocolConfig.setSerialization(serialization);
         if (port == null || port < -1) {
             try {
                 if (logger.isInfoEnabled()) {
@@ -180,6 +186,21 @@ public class ConfigurableMetadataServiceExporter {
         }
 
         return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
+    }
+
+    private String getSerialization(String protocol) {
+        AtomicReference<String> serialization = new AtomicReference<>();
+        Map<String, String> params = getApplicationConfig().getParameters();
+        if (CollectionUtils.isNotEmptyMap(params)) {
+            serialization.set(getApplicationConfig().getParameters().get(SERIALIZATION_KEY));
+        }
+        if (StringUtils.isEmpty(serialization.get())) {
+            applicationModel.getApplicationConfigManager().getProtocol(protocol).ifPresent(protocolConfig -> {
+                serialization.set(Optional.ofNullable(protocolConfig.getSerialization())
+                    .orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization));
+            });
+        }
+        return serialization.get();
     }
 
 
