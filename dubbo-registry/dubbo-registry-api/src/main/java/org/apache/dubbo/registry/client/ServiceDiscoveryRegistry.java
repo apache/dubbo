@@ -17,11 +17,9 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -35,7 +33,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -195,21 +192,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         boolean check = url.getParameter(CHECK_KEY, false);
 
-        String providedBy = url.getParameter(RegistryConstants.PROVIDED_BY);
 
         String key = ServiceNameMapping.buildMappingKey(url);
         Lock mappingLock = serviceNameMapping.getMappingLock(key);
         try {
             mappingLock.lock();
-
-            Set<String> subscribedServices = null;
-            if(StringUtils.isBlank(providedBy)) {
-                subscribedServices = serviceNameMapping.getCachedMapping(url);
-            }
-            else {
-                subscribedServices = new TreeSet();
-                subscribedServices.add(providedBy);
-            }
+            Set<String> subscribedServices = serviceNameMapping.getCachedMapping(key);
             try {
                 MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
                 subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -45,19 +46,19 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
+    private static final int DEFAULT_ENTRY_SIZE = 10000;
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected ApplicationModel applicationModel;
     private final MappingCacheManager mappingCacheManager;
+    private final LRUCache<String, Set<String>> mappingUserDefine;
     private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
     private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
-    // TODO, check how should this be cleared once a reference or interface is destroyed to avoid key accumulation
-    private final Map<String, Boolean> mappingInitStatus = new HashMap<>();
 
     public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -70,6 +71,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
             applicationModel.tryGetApplicationName(),
             applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
+
+        String rawEntrySize = System.getProperty("dubbo.mapping.user.define.entrySize");
+        int entrySize = StringUtils.parseInteger(rawEntrySize);
+        entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
+        this.mappingUserDefine = new LRUCache<>(entrySize);
     }
 
     // just for test
@@ -96,27 +102,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     @Override
     public synchronized void initInterfaceAppMapping(URL subscribedURL) {
         String key = ServiceNameMapping.buildMappingKey(subscribedURL);
-        if (hasInitiated(key)) {
-            return;
-        }
-        mappingInitStatus.put(key, Boolean.TRUE);
-
-        Set<String> subscribedServices = new TreeSet<>();
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
 
         if (StringUtils.isNotEmpty(serviceNames)) {
             logger.info(key + " mapping to " + serviceNames + " instructed by provided-by set by user.");
-            subscribedServices.addAll(parseServices(serviceNames));
-        }
-
-        if (isEmpty(subscribedServices)) {
-            Set<String> cachedServices = this.getCachedMapping(key);
-            if (!isEmpty(cachedServices)) {
-                logger.info(key + " mapping to " + serviceNames + " instructed by local cache.");
-                subscribedServices.addAll(cachedServices);
-            }
-        } else {
-            this.putCachedMappingIfAbsent(key, subscribedServices);
+            this.putMappingUserDefine(key, parseServices(serviceNames));
         }
     }
 
@@ -186,13 +176,11 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         mappingCacheManager.put(serviceKey, toTreeSet(apps));
     }
 
-    protected void putCachedMappingIfAbsent(String serviceKey, Set<String> apps) {
+    protected void putMappingUserDefine(String serviceKey, Set<String> apps) {
         Lock lock = getMappingLock(serviceKey);
         try {
             lock.lock();
-            if (CollectionUtils.isEmpty(mappingCacheManager.get(serviceKey))) {
-                mappingCacheManager.put(serviceKey, toTreeSet(apps));
-            }
+            mappingUserDefine.put(serviceKey, apps);
         } finally {
             lock.unlock();
         }
@@ -200,7 +188,13 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
     @Override
     public Set<String> getCachedMapping(String mappingKey) {
-        return mappingCacheManager.get(mappingKey);
+        Set<String> userDefine = mappingUserDefine.get(mappingKey);
+        Set<String> strings = mappingCacheManager.get(mappingKey);
+        if(userDefine != null && strings != null) {
+            userDefine.addAll(strings);
+            return userDefine;
+        }
+        return userDefine == null ? strings : userDefine;
     }
 
     @Override
@@ -215,12 +209,33 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
 
     @Override
     public Set<String> removeCachedMapping(String serviceKey) {
-        return mappingCacheManager.remove(serviceKey);
+        Set<String> remove = mappingCacheManager.remove(serviceKey);
+        Set<String> removeUserDefine = mappingUserDefine.remove(serviceKey);
+        if(remove != null && removeUserDefine != null) {
+            remove.addAll(removeUserDefine);
+            return remove;
+        }
+        return remove == null ? removeUserDefine : remove;
     }
 
     @Override
     public Map<String, Set<String>> getCachedMapping() {
-        return Collections.unmodifiableMap(mappingCacheManager.getAll());
+        Map<String, Set<String>> stringSetMap = Collections.unmodifiableMap(mappingCacheManager.getAll());
+        mappingUserDefine.lock();
+        try {
+            for (Map.Entry<String, Set<String>> entry : mappingUserDefine.entrySet()) {
+                Set<String> strings = stringSetMap.get(entry.getKey());
+                if(strings == null) {
+                    stringSetMap.put(entry.getKey(), entry.getValue());
+                }
+                else {
+                    strings.addAll(entry.getValue());
+                }
+            }
+        } finally {
+            mappingUserDefine.releaseLock();
+        }
+        return stringSetMap;
     }
 
     public Lock getMappingLock(String key) {
@@ -239,23 +254,12 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         }
     }
 
-    private boolean hasInitiated(String key) {
-        Lock lock = getMappingLock(key);
-        try {
-            lock.lock();
-            return mappingInitStatus.computeIfAbsent(key, _k -> Boolean.FALSE);
-        } finally {
-            lock.unlock();
-        }
-    }
-
     @Override
     public void $destroy() {
         mappingCacheManager.destroy();
+        mappingUserDefine.clear();
         mappingListeners.clear();
         mappingLocks.clear();
-        mappingInitStatus.clear();
-
     }
 
     private class AsyncMappingTask implements Callable<Set<String>> {
