@@ -602,7 +602,7 @@ public class ProtocolConfig extends AbstractConfig {
                 });
             }
         } catch (Exception e) {
-            logger.error("merge protocol fail, error: ", e);
+            logger.error("merge protocol config fail, error: ", e);
         }
     }
 
