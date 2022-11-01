@@ -244,6 +244,7 @@ public class CollectionUtils {
         if (object != null) {
             Field[] fields = object.getClass().getDeclaredFields();
             for (Field field : fields) {
+                field.setAccessible(true);
                 Object value = field.get(object);
                 if (value != null) {
                     ret.put((K)field.getName(), (V)value);
