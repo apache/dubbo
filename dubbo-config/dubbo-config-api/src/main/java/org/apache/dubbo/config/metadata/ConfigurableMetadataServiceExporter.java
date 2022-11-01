@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -192,31 +193,38 @@ public class ConfigurableMetadataServiceExporter {
     private String getRelatedOrDefaultProtocol() {
         String protocol = "";
         // <dubbo:consumer/>
-        Collection<ConsumerConfig> consumers = applicationModel.getDefaultModule().getConfigManager().getConsumers();
-        if (CollectionUtils.isNotEmpty(consumers)) {
-            for (ConsumerConfig config : consumers) {
-                protocol = config.getProtocol();
-                if (StringUtils.isNotEmpty(protocol)) {
-                    break;
+        List<ModuleModel> moduleModels = applicationModel.getPubModuleModels();
+        breakPoint:
+        for (ModuleModel moduleModel : moduleModels) {
+            Collection<ConsumerConfig> consumers = moduleModel.getConfigManager().getConsumers();
+            if (CollectionUtils.isNotEmpty(consumers)) {
+                for (ConsumerConfig config : consumers) {
+                    protocol = config.getProtocol();
+                    if (StringUtils.isNotEmpty(protocol)) {
+                        break breakPoint;
+                    }
                 }
             }
         }
         // <dubbo:provider/>
         if (StringUtils.isEmpty(protocol)) {
-            Collection<ProviderConfig> providers = applicationModel.getDefaultModule().getConfigManager().getProviders();
-            if (CollectionUtils.isNotEmpty(providers)) {
-                for (ProviderConfig config : providers) {
-                    ProtocolConfig protocolConfig = config.getProtocol();
-                    protocol = protocolConfig != null ? protocolConfig.getName() : "";
-                    if (StringUtils.isNotEmpty(protocol)) {
-                        break;
-                    } else {
-                        List<ProtocolConfig> protocols = config.getProtocols();
-                        if (CollectionUtils.isNotEmpty(protocols)) {
-                            for (ProtocolConfig protocolCfg : protocols) {
-                                protocol = protocolCfg.getName();
-                                if (StringUtils.isNotEmpty(protocol)) {
-                                    break;
+            breakPoint:
+            for (ModuleModel moduleModel : moduleModels) {
+                Collection<ProviderConfig> providers = moduleModel.getConfigManager().getProviders();
+                if (CollectionUtils.isNotEmpty(providers)) {
+                    for (ProviderConfig config : providers) {
+                        ProtocolConfig protocolConfig = config.getProtocol();
+                        protocol = protocolConfig != null ? protocolConfig.getName() : "";
+                        if (StringUtils.isNotEmpty(protocol)) {
+                            break breakPoint;
+                        } else {
+                            List<ProtocolConfig> protocols = config.getProtocols();
+                            if (CollectionUtils.isNotEmpty(protocols)) {
+                                for (ProtocolConfig protocolCfg : protocols) {
+                                    protocol = protocolCfg.getName();
+                                    if (StringUtils.isNotEmpty(protocol)) {
+                                        break breakPoint;
+                                    }
                                 }
                             }
                         }
@@ -226,7 +234,7 @@ public class ConfigurableMetadataServiceExporter {
         }
         // <dubbo:protocol/>
         if (StringUtils.isEmpty(protocol)) {
-            Collection<ProtocolConfig> protocols = applicationModel.getDefaultModule().getConfigManager().getProtocols();
+            Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
             if (CollectionUtils.isNotEmpty(protocols)) {
                 for (ProtocolConfig config : protocols) {
                     protocol = config.getName();
