@@ -17,23 +17,24 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * MD5 util.
  */
 public class MD5Utils {
 
-    private static final Logger logger = LoggerFactory.getLogger(MD5Utils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MD5Utils.class);
 
     private static final char[] hexDigits = {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
 
     private MessageDigest mdInst;
@@ -42,12 +43,13 @@ public class MD5Utils {
         try {
             mdInst = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            logger.error("Failed to obtain md5", e);
+            logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "Failed to obtain md5", e);
         }
     }
 
     /**
      * Calculation md5 value of specify string
+     *
      * @param input
      */
     public String getMd5(String input) {

@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.io.UnsafeStringWriter;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.PrintWriter;
@@ -46,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEPARATOR_REGEX;
 import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_JSON_CONVERT_EXCEPTION;
 
 /**
  * StringUtils
@@ -57,7 +58,7 @@ public final class StringUtils {
     public static final int INDEX_NOT_FOUND = -1;
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-    private static final Logger logger = LoggerFactory.getLogger(StringUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(StringUtils.class);
     private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)"); //key value pair pattern.
     private static final Pattern NUM_PATTERN = Pattern.compile("^\\d+$");
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
@@ -1031,7 +1032,7 @@ public final class StringUtils {
                 try {
                     buf.append(JsonUtils.getJson().toJson(arg));
                 } catch (Exception e) {
-                    logger.warn(e.getMessage(), e);
+                    logger.warn(COMMON_JSON_CONVERT_EXCEPTION, "", "", e.getMessage(), e);
                     buf.append(arg);
                 }
             }

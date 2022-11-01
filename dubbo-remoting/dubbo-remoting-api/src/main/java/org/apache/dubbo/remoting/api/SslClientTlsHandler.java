@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -29,10 +29,12 @@ import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLSession;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
-public  class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(SslClientTlsHandler.class);
+public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
+
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslClientTlsHandler.class);
 
     private final SslContext sslContext;
 
@@ -59,7 +61,7 @@ public  class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
                 logger.info("TLS negotiation succeed with session: " + session);
                 ctx.pipeline().remove(this);
             } else {
-                logger.error("TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
+                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
                 ctx.fireExceptionCaught(handshakeEvent.cause());
             }
         }

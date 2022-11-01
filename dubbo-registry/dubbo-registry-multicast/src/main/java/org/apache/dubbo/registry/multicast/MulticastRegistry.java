@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_SOCKET_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
@@ -122,7 +123,7 @@ public class MulticastRegistry extends FailbackRegistry {
                         Arrays.fill(buf, (byte) 0);
                     } catch (Throwable e) {
                         if (!multicastSocket.isClosed()) {
-                            logger.error(e.getMessage(), e);
+                            logger.error(REGISTRY_SOCKET_EXCEPTION, "", "", e.getMessage(), e);
                         }
                     }
                 }
@@ -138,7 +139,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 try {
                     clean(); // Remove the expired
                 } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected exception occur at clean expired provider, cause: " + t.getMessage(), t);
+                    logger.error(REGISTRY_SOCKET_EXCEPTION, "", "", "Unexpected exception occur at clean expired provider, cause: " + t.getMessage(), t);
                 }
             }, cleanPeriod, cleanPeriod, TimeUnit.MILLISECONDS);
         } else {
@@ -151,10 +152,10 @@ public class MulticastRegistry extends FailbackRegistry {
             String message = "Invalid multicast address " + multicastAddress;
             if (multicastAddress instanceof Inet4Address) {
                 throw new IllegalArgumentException(message + ", " +
-                        "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
+                    "ipv4 multicast address scope: 224.0.0.0 - 239.255.255.255.");
             } else {
                 throw new IllegalArgumentException(message + ", " + "ipv6 multicast address must start with ff, " +
-                        "for example: ff01::1");
+                    "for example: ff01::1");
             }
         }
     }
@@ -168,7 +169,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 for (URL url : new HashSet<URL>(providers)) {
                     if (isExpired(url)) {
                         if (logger.isWarnEnabled()) {
-                            logger.warn("Clean expired provider " + url);
+                            logger.warn(REGISTRY_SOCKET_EXCEPTION, "", "", "Clean expired provider " + url);
                         }
                         doUnregister(url);
                     }
@@ -213,7 +214,7 @@ public class MulticastRegistry extends FailbackRegistry {
                     if (UrlUtils.isMatch(url, u)) {
                         String host = remoteAddress != null && remoteAddress.getAddress() != null ? remoteAddress.getAddress().getHostAddress() : url.getIp();
                         if (url.getParameter("unicast", true) // Whether the consumer's machine has only one process
-                                && !NetUtils.getLocalHost().equals(host)) { // Multiple processes in the same machine cannot be unicast with unicast or there will be only one process receiving information
+                            && !NetUtils.getLocalHost().equals(host)) { // Multiple processes in the same machine cannot be unicast with unicast or there will be only one process receiving information
                             unicast(REGISTER + " " + u.toFullString(), host);
                         } else {
                             multicast(REGISTER + " " + u.toFullString());
@@ -301,13 +302,13 @@ public class MulticastRegistry extends FailbackRegistry {
         try {
             ExecutorUtil.cancelScheduledFuture(cleanFuture);
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(REGISTRY_SOCKET_EXCEPTION, "", "", t.getMessage(), t);
         }
         try {
             multicastSocket.leaveGroup(multicastAddress);
             multicastSocket.close();
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(REGISTRY_SOCKET_EXCEPTION, "", "", t.getMessage(), t);
         }
         ExecutorUtil.gracefulShutdown(cleanExecutor, cleanPeriod);
     }

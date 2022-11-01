@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint.condition;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import org.springframework.beans.BeanUtils;
@@ -25,6 +25,8 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ClassUtils;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 
 /**
  * {@link Conditional} that checks whether or not an endpoint is enabled, which is compatible with
@@ -36,7 +38,7 @@ import org.springframework.util.ClassUtils;
  */
 class CompatibleOnEnabledEndpointCondition implements Condition {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompatibleOnEnabledEndpointCondition.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(CompatibleOnEnabledEndpointCondition.class);
 
     // Spring Boot [2.0.0 , 2.2.x]
     static String CONDITION_CLASS_NAME_OLD =
@@ -62,7 +64,7 @@ class CompatibleOnEnabledEndpointCondition implements Condition {
             return true;
         }
         // No condition class found
-        LOGGER.warn(String.format("No condition class found, Dubbo Health Endpoint [%s] will not expose", metadata));
+        LOGGER.warn(COMMON_CLASS_NOT_FOUND, "No condition class found", "", String.format("No condition class found, Dubbo Health Endpoint [%s] will not expose", metadata));
         return false;
     }
 }

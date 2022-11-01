@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
@@ -45,9 +45,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
+
 public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleClientCall.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
     private final Connection connection;
     private final Executor executor;
     private final FrameworkModel frameworkModel;
@@ -60,7 +64,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean done;
 
     public TripleClientCall(Connection connection, Executor executor,
-        FrameworkModel frameworkModel) {
+                            FrameworkModel frameworkModel) {
         this.connection = connection;
         this.executor = executor;
         this.frameworkModel = frameworkModel;
@@ -71,7 +75,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     @Override
     public void onMessage(byte[] message) {
         if (done) {
-            LOGGER.warn(
+            LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "",
                 "Received message from closed stream,connection=" + connection + " service="
                     + requestMetadata.service + " method="
                     + requestMetadata.method.getMethodName());
@@ -83,8 +87,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         } catch (Throwable t) {
             cancelByLocal(TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
                 .withCause(t).asException());
-            LOGGER.error(String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
-                connection ,requestMetadata.service, requestMetadata.method.getMethodName()),t);
+            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
+                connection, requestMetadata.service, requestMetadata.method.getMethodName()), t);
         }
     }
 
@@ -102,7 +106,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-        Map<String, String> excludeHeaders) {
+                           Map<String, String> excludeHeaders) {
         if (done) {
             return;
         }
@@ -174,7 +178,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 // support others type but now only support this
             }
         } catch (Throwable t) {
-            LOGGER.error("tran from grpc-status-details error", t);
+            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "tran from grpc-status-details error", t);
         }
         return map;
     }
@@ -233,7 +237,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                     }
                 });
         } catch (Throwable t) {
-            LOGGER.error(String.format("Serialize triple request failed, service=%s method=%s",
+            LOGGER.error(PROTOCOL_FAILED_SERIALIZE_TRIPLE, "", "", String.format("Serialize triple request failed, service=%s method=%s",
                 requestMetadata.service,
                 requestMetadata.method), t);
             cancelByLocal(t);
@@ -266,7 +270,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public StreamObserver<Object> start(RequestMetadata metadata,
-        ClientCall.Listener responseListener) {
+                                        ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
         this.stream = new TripleClientStream(frameworkModel, executor, connection.getChannel(),
