@@ -460,7 +460,7 @@ public class RpcInvocation implements Invocation, Serializable {
         try {
             attachmentLock.lock();
             if (attachments == null) {
-                attachments = new HashMap<>(32);
+                attachments = new HashMap<>();
             }
             attachments.put(key, value);
         } finally {
@@ -516,8 +516,9 @@ public class RpcInvocation implements Invocation, Serializable {
                 return;
             }
             if (this.attachments == null) {
-                this.attachments = new HashMap<>(attachments);
+                this.attachments = new HashMap<>();
             }
+            this.attachments.putAll(attachments);
         } finally {
             attachmentLock.unlock();
         }
