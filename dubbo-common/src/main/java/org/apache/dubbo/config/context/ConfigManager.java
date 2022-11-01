@@ -295,6 +295,14 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             }
             protocolPortMap.put(port, protocol);
         }
+
+        // Log the current configurations.
+        logger.info("The current configurations or effective configurations are as follows:");
+        for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
+            getConfigs(configType).stream().forEach((config) -> {
+                logger.info(config.toString());
+            });
+        }
     }
 
     public ConfigMode getConfigMode() {

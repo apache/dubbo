@@ -64,6 +64,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
@@ -279,7 +280,7 @@ public class NacosRegistry extends FailbackRegistry {
         } else {
             Map<NotifyListener, NacosAggregateListener> listenerMap = originToAggregateListener.get(url);
             if (listenerMap == null) {
-                logger.warn(String.format("No aggregate listener found for url %s, this service might have already been unsubscribed.", url));
+                logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", String.format("No aggregate listener found for url %s, this service might have already been unsubscribed.", url));
                 return;
             }
             NacosAggregateListener nacosAggregateListener = listenerMap.remove(listener);
@@ -291,7 +292,7 @@ public class NacosRegistry extends FailbackRegistry {
                         NacosInstanceManageUtil.removeCorrespondingServiceNames(serviceName);
                     }
                 } catch (NacosException e) {
-                    logger.error("Failed to unsubscribe " + url + " to nacos " + getUrl() + ", cause: " + e.getMessage(), e);
+                    logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to unsubscribe " + url + " to nacos " + getUrl() + ", cause: " + e.getMessage(), e);
                 }
             }
             if (listenerMap.isEmpty()) {
@@ -353,7 +354,7 @@ public class NacosRegistry extends FailbackRegistry {
         try {
             Set<String> serviceNames = new LinkedHashSet<>();
             serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
-                    getUrl().getGroup(Constants.DEFAULT_GROUP)).getData()
+                getUrl().getGroup(Constants.DEFAULT_GROUP)).getData()
                 .stream()
                 .filter(this::isConformRules)
                 .map(NacosServiceName::new)
@@ -534,7 +535,7 @@ public class NacosRegistry extends FailbackRegistry {
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
         if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
-            logger.warn("Received empty url address list and empty protection is disabled, will clear current available addresses");
+            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Received empty url address list and empty protection is disabled, will clear current available addresses");
             URL empty = URLBuilder.from(consumerURL)
                 .setProtocol(EMPTY_PROTOCOL)
                 .addParameter(CATEGORY_KEY, DEFAULT_CATEGORY)

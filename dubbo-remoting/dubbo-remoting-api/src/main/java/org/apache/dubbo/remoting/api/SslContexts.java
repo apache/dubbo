@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -34,9 +34,11 @@ import java.io.InputStream;
 import java.security.Provider;
 import java.security.Security;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE_STREAM;
+
 public class SslContexts {
 
-    private static final Logger logger = LoggerFactory.getLogger(SslContexts.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
         ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
@@ -128,8 +130,8 @@ public class SslContexts {
             return SslProvider.JDK;
         }
         throw new IllegalStateException(
-                "Could not find any valid TLS provider, please check your dependency or deployment environment, " +
-                        "usually netty-tcnative, Conscrypt, or Jetty NPN/ALPN is needed.");
+            "Could not find any valid TLS provider, please check your dependency or deployment environment, " +
+                "usually netty-tcnative, Conscrypt, or Jetty NPN/ALPN is needed.");
     }
 
     private static boolean checkJdkProvider() {
@@ -144,7 +146,7 @@ public class SslContexts {
         try {
             stream.close();
         } catch (IOException e) {
-            logger.warn("Failed to close a stream.", e);
+            logger.warn(TRANSPORT_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
         }
     }
 

@@ -52,6 +52,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHME
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -99,7 +100,14 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         }
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
+
             int timeout = calculateTimeout(invocation, methodName);
+            if (timeout <= 0) {
+                return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                    "No time left for making the following call: " + invocation.getServiceName() + "."
+                        + invocation.getMethodName() + ", terminate directly."), invocation);
+            }
+
             invocation.setAttachment(TIMEOUT_KEY, timeout);
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
@@ -108,7 +116,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             } else {
                 ExecutorService executor = getCallbackExecutor(getUrl(), inv);
                 CompletableFuture<AppResponse> appResponseFuture =
-                        currentClient.request(inv, timeout, executor).thenApply(obj -> (AppResponse) obj);
+                    currentClient.request(inv, timeout, executor).thenApply(obj -> (AppResponse) obj);
                 // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
                 FutureContext.getContext().setCompatibleFuture(appResponseFuture);
                 AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, inv);
@@ -174,7 +182,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                             client.close(serverShutdownTimeout);
                         }
                     } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+                        logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
                     }
                 }
 

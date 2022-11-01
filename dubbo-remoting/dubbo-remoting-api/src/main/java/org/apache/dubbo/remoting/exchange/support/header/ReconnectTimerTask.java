@@ -17,17 +17,20 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 /**
  * ReconnectTimerTask
  */
 public class ReconnectTimerTask extends AbstractTimerTask {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReconnectTimerTask.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReconnectTimerTask.class);
 
     private final int idleTimeout;
 
@@ -48,20 +51,20 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                     logger.info("Initial connection to " + channel);
                     ((Client) channel).reconnect();
                 } catch (Exception e) {
-                    logger.error("Fail to connect to " + channel, e);
+                    logger.error(TRANSPORT_FAILED_RECONNECT, "", "", "Fail to connect to" + channel, e);
                 }
-            // check pong at client
+                // check pong at client
             } else if (lastRead != null && now - lastRead > idleTimeout) {
-                logger.warn("Reconnect to channel " + channel + ", because heartbeat read idle time out: "
-                        + idleTimeout + "ms");
+                logger.warn(TRANSPORT_FAILED_RECONNECT, "", "", "Reconnect to channel " + channel + ", because heartbeat read idle time out: "
+                    + idleTimeout + "ms");
                 try {
                     ((Client) channel).reconnect();
                 } catch (Exception e) {
-                    logger.error(channel + "reconnect failed during idle time.", e);
+                    logger.error(TRANSPORT_FAILED_RECONNECT, "", "", channel + "reconnect failed during idle time.", e);
                 }
             }
         } catch (Throwable t) {
-            logger.warn("Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
         }
     }
 }

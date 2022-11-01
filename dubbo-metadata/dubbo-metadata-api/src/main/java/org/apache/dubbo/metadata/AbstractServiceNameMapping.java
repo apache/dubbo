@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -44,6 +44,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
@@ -51,8 +52,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     private static final int DEFAULT_ENTRY_SIZE = 10000;
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     protected ApplicationModel applicationModel;
     private final MappingCacheManager mappingCacheManager;
     private final LRUCache<String, Set<String>> mappingUserDefine;
@@ -64,7 +64,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         this.applicationModel = applicationModel;
         boolean enableFileCache = true;
         Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
-        if(application.isPresent()) {
+        if (application.isPresent()) {
             enableFileCache = Boolean.TRUE.equals(application.get().getEnableFileCache()) ? true : false;
         }
         this.mappingCacheManager = new MappingCacheManager(enableFileCache,
@@ -297,7 +297,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("Failed getting mapping info from remote center. ", e);
+                    logger.error(COMMON_FAILED_LOAD_MAPPING_CACHE, "", "", "Failed getting mapping info from remote center. ", e);
                 }
                 return mappedServices;
             }

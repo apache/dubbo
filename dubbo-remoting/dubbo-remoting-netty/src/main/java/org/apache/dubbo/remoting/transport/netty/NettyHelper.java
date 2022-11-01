@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import org.jboss.netty.logging.AbstractInternalLogger;
 import org.jboss.netty.logging.InternalLogger;
 import org.jboss.netty.logging.InternalLoggerFactory;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 final class NettyHelper {
 
@@ -36,15 +38,15 @@ final class NettyHelper {
 
         @Override
         public InternalLogger newInstance(String name) {
-            return new DubboLogger(LoggerFactory.getLogger(name));
+            return new DubboLogger(LoggerFactory.getErrorTypeAwareLogger(name));
         }
     }
 
     static class DubboLogger extends AbstractInternalLogger {
 
-        private Logger logger;
+        private ErrorTypeAwareLogger logger;
 
-        DubboLogger(Logger logger) {
+        DubboLogger(ErrorTypeAwareLogger logger) {
             this.logger = logger;
         }
 
@@ -90,22 +92,22 @@ final class NettyHelper {
 
         @Override
         public void warn(String msg) {
-            logger.warn(msg);
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", msg);
         }
 
         @Override
         public void warn(String msg, Throwable cause) {
-            logger.warn(msg, cause);
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", msg, cause);
         }
 
         @Override
         public void error(String msg) {
-            logger.error(msg);
+            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", msg);
         }
 
         @Override
         public void error(String msg, Throwable cause) {
-            logger.error(msg, cause);
+            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", msg, cause);
         }
 
         @Override

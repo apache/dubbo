@@ -17,7 +17,7 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +30,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * Parameters for backward compatibility for version prior to 2.0.5
@@ -38,7 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
  */
 @Deprecated
 public class Parameters {
-    protected static final Logger logger = LoggerFactory.getLogger(Parameters.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Parameters.class);
     private final Map<String, String> parameters;
 
     public Parameters(String... pairs) {
@@ -91,7 +92,7 @@ public class Parameters {
             try {
                 value = URLDecoder.decode(value, "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                logger.error(e.getMessage(), e);
+                logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
             }
         }
         return value;

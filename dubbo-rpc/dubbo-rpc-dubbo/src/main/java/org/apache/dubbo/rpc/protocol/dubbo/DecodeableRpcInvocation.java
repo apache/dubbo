@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -52,12 +52,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KE
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
-    private static final Logger log = LoggerFactory.getLogger(DecodeableRpcInvocation.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DecodeableRpcInvocation.class);
 
     private Channel channel;
 
@@ -92,7 +93,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Decode rpc invocation failed: " + e.getMessage(), e);
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
                 }
                 request.setBroken(true);
                 request.setData(e);
