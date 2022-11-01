@@ -191,8 +191,9 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         Set<String> userDefine = mappingUserDefine.get(mappingKey);
         Set<String> strings = mappingCacheManager.get(mappingKey);
         if(userDefine != null && strings != null) {
-            userDefine.addAll(strings);
-            return userDefine;
+            TreeSet treeSet = new TreeSet(strings);
+            treeSet.addAll(userDefine);
+            return treeSet;
         }
         return userDefine == null ? strings : userDefine;
     }
@@ -212,8 +213,9 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         Set<String> remove = mappingCacheManager.remove(serviceKey);
         Set<String> removeUserDefine = mappingUserDefine.remove(serviceKey);
         if(remove != null && removeUserDefine != null) {
-            remove.addAll(removeUserDefine);
-            return remove;
+            TreeSet treeSet = new TreeSet(remove);
+            treeSet.addAll(removeUserDefine);
+            return treeSet;
         }
         return remove == null ? removeUserDefine : remove;
     }
