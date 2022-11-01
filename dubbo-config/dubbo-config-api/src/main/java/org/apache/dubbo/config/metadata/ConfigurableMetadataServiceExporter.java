@@ -145,8 +145,9 @@ public class ConfigurableMetadataServiceExporter {
         } else {
             protocolConfig.setPort(port);
         }
-
-        protocolConfig.mergeProtocol(getProtocolConfig(specifiedProtocol));
+        
+        applicationModel.getApplicationConfigManager().getProtocol(specifiedProtocol)
+            .ifPresent(protocolConfig::mergeProtocol);
 
         if (protocolConfig.getPort() == null) {
             protocolConfig.setPort(-1);
