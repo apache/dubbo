@@ -21,7 +21,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -50,6 +49,7 @@ public class NettyClientHandlerTest {
         when(channel.writeAndFlush(any())).thenReturn(future);
         when(future.cause()).thenReturn(null);
         when(channel.newPromise()).thenReturn(future);
+        when(future.addListener(Mockito.any())).thenReturn(future);
 
         NettyClientHandler nettyClientHandler = new NettyClientHandler(url, handler);
 
@@ -77,12 +77,6 @@ public class NettyClientHandlerTest {
         Thread.sleep(500);
         Mockito.verify(channel, Mockito.times(1)).writeAndFlush(requestArgumentCaptor.capture());
 
-
-        Request request = new Request();
-        ChannelPromise promise = Mockito.mock(ChannelPromise.class);
-        nettyClientHandler.write(ctx,request,promise);
-        ArgumentCaptor<GenericFutureListener> listenerArgumentCaptor = ArgumentCaptor.forClass(GenericFutureListener.class);
-        Mockito.verify(promise, Mockito.times(1)).addListener(listenerArgumentCaptor.capture());
 
     }
 }
