@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
@@ -579,4 +582,28 @@ public class ProtocolConfig extends AbstractConfig {
     public void setExtProtocol(String extProtocol) {
         this.extProtocol = extProtocol;
     }
+
+    public void mergeProtocol(ProtocolConfig protocolConfig) {
+        if (protocolConfig == null) {
+            return;
+        }
+        Field[] targetFields = this.getClass().getDeclaredFields();
+        try {
+            Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(protocolConfig);
+            for (Field targetField : targetFields) {
+                Optional.ofNullable(protocolConfigMap.get(targetField.getName())).ifPresent(value -> {
+                    try {
+                        if (targetField.get(this) == null) {
+                            targetField.set(this, value);
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            logger.error("merge protocol fail, error: ", e);
+        }
+    }
+
 }
