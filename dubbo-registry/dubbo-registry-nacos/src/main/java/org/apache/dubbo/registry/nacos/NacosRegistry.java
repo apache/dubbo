@@ -531,6 +531,17 @@ public class NacosRegistry extends FailbackRegistry {
         return serviceNames;
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        try {
+            this.namingService.shutdown();
+        } catch (NacosException e) {
+            logger.warn("Unable to shutdown nacos naming service", e);
+        }
+        this.nacosListeners.clear();
+    }
+
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
