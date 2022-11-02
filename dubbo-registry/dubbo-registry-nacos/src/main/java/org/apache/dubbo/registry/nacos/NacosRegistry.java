@@ -537,7 +537,7 @@ public class NacosRegistry extends FailbackRegistry {
         try {
             this.namingService.shutdown();
         } catch (NacosException e) {
-            logger.warn("Unable to shutdown nacos naming service", e);
+            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to shutdown nacos naming service", e);
         }
         this.nacosListeners.clear();
     }
