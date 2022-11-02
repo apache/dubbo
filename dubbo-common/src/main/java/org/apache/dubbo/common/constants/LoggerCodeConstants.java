@@ -152,6 +152,8 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_SOCKET_EXCEPTION = "1-38";
 
+    String REGISTRY_FAILED_LOAD_METADATA = "1-39";
+
     // cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
