@@ -583,16 +583,17 @@ public class ProtocolConfig extends AbstractConfig {
         this.extProtocol = extProtocol;
     }
 
-    public void mergeProtocol(ProtocolConfig protocolConfig) {
-        if (protocolConfig == null) {
+    public void mergeProtocol(ProtocolConfig sourceConfig) {
+        if (sourceConfig == null) {
             return;
         }
         Field[] targetFields = this.getClass().getDeclaredFields();
         try {
-            Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(protocolConfig);
+            Map<String, Object> protocolConfigMap = CollectionUtils.objToMap(sourceConfig);
             for (Field targetField : targetFields) {
                 Optional.ofNullable(protocolConfigMap.get(targetField.getName())).ifPresent(value -> {
                     try {
+                        targetField.setAccessible(true);
                         if (targetField.get(this) == null) {
                             targetField.set(this, value);
                         }
