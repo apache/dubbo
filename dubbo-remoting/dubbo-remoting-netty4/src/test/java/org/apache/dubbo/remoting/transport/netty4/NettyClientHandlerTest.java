@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -44,6 +45,7 @@ public class NettyClientHandlerTest {
         Mockito.when(ctx.channel()).thenReturn(channel);
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
+        Mockito.when(channel.alloc()).thenReturn(PooledByteBufAllocator.DEFAULT);
 
         ChannelPromise future = mock(ChannelPromise.class);
         when(channel.writeAndFlush(any())).thenReturn(future);
