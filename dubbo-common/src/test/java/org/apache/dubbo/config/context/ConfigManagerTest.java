@@ -186,9 +186,7 @@ public class ConfigManagerTest {
     // Test ProtocolConfig correlative methods
     @Test
     public void testProtocolConfig() {
-
         ProtocolConfig config = new ProtocolConfig();
-
         configManager.addProtocols(asList(config, null));
         Collection<ProtocolConfig> configs = configManager.getProtocols();
         assertEquals(1, configs.size());
