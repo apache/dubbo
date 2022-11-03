@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.config.ProtocolConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -198,6 +199,14 @@ public class CollectionUtilsTest {
         expected.put("c", 3);
 
         assertEquals(expected, CollectionUtils.toMap("a", 1, "b", 2, "c", 3));
+    }
+
+    @Test
+    public void testObjectToMap() throws Exception {
+        ProtocolConfig protocolConfig=new ProtocolConfig();
+        protocolConfig.setSerialization("fastjson2");
+
+        assertFalse(CollectionUtils.objToMap(protocolConfig).isEmpty());
     }
 
     @Test

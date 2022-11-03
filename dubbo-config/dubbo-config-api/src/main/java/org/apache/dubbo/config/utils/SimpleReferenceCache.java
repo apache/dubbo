@@ -18,7 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_API_WRONG_USE;
+
 /**
  * A simple util class for cache {@link ReferenceConfigBase}.
  * <p>
@@ -42,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * You can implement and use your own {@link ReferenceConfigBase} cache if you need use complicate strategy.
  */
 public class SimpleReferenceCache implements ReferenceCache {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleReferenceCache.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SimpleReferenceCache.class);
     public static final String DEFAULT_NAME = "_DEFAULT_";
     /**
      * Create the key with the <b>Group</b>, <b>Interface</b> and <b>version</b> attribute of {@link ReferenceConfigBase}.
@@ -117,7 +119,7 @@ public class SimpleReferenceCache implements ReferenceCache {
         if (singleton) {
             proxy = get(key, (Class<T>) type);
         } else {
-            logger.warn("Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
+            logger.warn(CONFIG_API_WRONG_USE, "", "", "Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
                 "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
         }
 

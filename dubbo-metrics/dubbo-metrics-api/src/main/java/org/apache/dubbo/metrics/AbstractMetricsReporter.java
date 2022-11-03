@@ -28,7 +28,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.metrics.MetricsReporter;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
@@ -46,6 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METRICS_KEY;
 
 /**
@@ -53,7 +54,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METR
  */
 public abstract class AbstractMetricsReporter implements MetricsReporter {
 
-    private final Logger logger = LoggerFactory.getLogger(AbstractMetricsReporter.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetricsReporter.class);
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -144,7 +145,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                                 break;
                         }
                     } catch (Exception e) {
-                        logger.error("error occurred when synchronize metrics collector.", e);
+                        logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "error occurred when synchronize metrics collector.", e);
                     }
                 }
             });

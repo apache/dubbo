@@ -18,7 +18,7 @@ package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -44,11 +44,12 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 import static org.apache.dubbo.registry.client.migration.model.MigrationStep.APPLICATION_FIRST;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
-    private Logger logger = LoggerFactory.getLogger(MigrationInvoker.class);
+    private ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MigrationInvoker.class);
 
     private URL url;
     private URL consumerUrl;
@@ -255,7 +256,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             try {
                 Thread.sleep(delay * 1000L);
             } catch (InterruptedException e) {
-                logger.error("Interrupted when waiting for address notify!" + e);
+                logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Interrupted when waiting for address notify!" + e);
             }
         } else {
             // do not wait address notify by default
@@ -264,7 +265,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         try {
             latch.await(delay, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            logger.error("Interrupted when waiting for address notify!" + e);
+            logger.error(REGISTRY_FAILED_NOTIFY_EVENT, "", "", "Interrupted when waiting for address notify!" + e);
         }
     }
 

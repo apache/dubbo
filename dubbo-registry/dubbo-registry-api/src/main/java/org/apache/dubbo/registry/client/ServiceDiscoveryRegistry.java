@@ -41,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
@@ -368,7 +369,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             logger.info("Received mapping notification from meta server, " + event);
 
             if (stopped) {
-                logger.warn("Listener has been stopped, ignore mapping notification, check why listener is not removed.");
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Listener has been stopped, ignore mapping notification, check why listener is not removed.");
                 return;
             }
             Set<String> newApps = event.getApps();

@@ -16,16 +16,18 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PROFILER_WARN_PERCENT;
+
 @Cmd(name = "setProfilerWarnPercent", example = "setProfilerWarnPercent 0.75", summary = "Disable Dubbo Invocation Profiler.")
 public class SetProfilerWarnPercent implements BaseCommand {
-    private final static Logger logger = LoggerFactory.getLogger(SetProfilerWarnPercent.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SetProfilerWarnPercent.class);
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -33,7 +35,7 @@ public class SetProfilerWarnPercent implements BaseCommand {
             return "args error. example: setProfilerWarnPercent 0.75";
         }
         ProfilerSwitch.setWarnPercent(Double.parseDouble(args[0]));
-        logger.warn("Dubbo Invocation Profiler warn percent has been set to " + args[0]);
+        logger.warn(QOS_PROFILER_WARN_PERCENT, "", "", "Dubbo Invocation Profiler warn percent has been set to " + args[0]);
         return "OK";
     }
 }

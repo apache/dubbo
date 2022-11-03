@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring.status;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
@@ -33,13 +33,15 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_WARN_STATUS_CHECKER;
+
 /**
  * DataSourceStatusChecker
  */
 @Activate
 public class DataSourceStatusChecker implements StatusChecker {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataSourceStatusChecker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DataSourceStatusChecker.class);
 
     private ApplicationModel applicationModel;
 
@@ -92,7 +94,7 @@ public class DataSourceStatusChecker implements StatusChecker {
                 buf.append(metaData.getDatabaseProductVersion());
                 buf.append(')');
             } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
+                logger.warn(CONFIG_WARN_STATUS_CHECKER, "", "", e.getMessage(), e);
                 return new Status(level, e.getMessage());
             }
         }
