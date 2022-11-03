@@ -47,6 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_FIND_PROTOCOL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_METADATA_SERVICE_EXPORTED;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 /**
@@ -77,7 +78,7 @@ public class ConfigurableMetadataServiceExporter {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
+                logger.warn(CONFIG_METADATA_SERVICE_EXPORTED, "", "", "The MetadataService has been exported : " + serviceConfig.getExportedUrls());
             }
         }
 
@@ -112,7 +113,6 @@ public class ConfigurableMetadataServiceExporter {
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(specifiedProtocol);
-
         if (port == null || port < -1) {
             try {
                 if (logger.isInfoEnabled()) {
@@ -145,6 +145,9 @@ public class ConfigurableMetadataServiceExporter {
         } else {
             protocolConfig.setPort(port);
         }
+        
+        applicationModel.getApplicationConfigManager().getProtocol(specifiedProtocol)
+            .ifPresent(protocolConfig::mergeProtocol);
 
         if (protocolConfig.getPort() == null) {
             protocolConfig.setPort(-1);
@@ -180,7 +183,6 @@ public class ConfigurableMetadataServiceExporter {
 
         return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
     }
-
 
     private ServiceConfig<MetadataService> buildServiceConfig() {
         ApplicationConfig applicationConfig = getApplicationConfig();

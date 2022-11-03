@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.transport.dispatcher;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutorService;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
-    protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(WrappedChannelHandler.class);
 
     protected final ChannelHandler handler;
 

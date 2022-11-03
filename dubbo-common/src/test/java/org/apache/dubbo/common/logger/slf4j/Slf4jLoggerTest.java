@@ -23,6 +23,7 @@ import org.slf4j.spi.LocationAwareLogger;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,8 +42,8 @@ public class Slf4jLoggerTest {
         logger.debug("debug");
         logger.trace("info");
 
-        verify(locationAwareLogger, times(5)).log(isNull(Marker.class), anyString(),
-                anyInt(), anyString(), isNull(Object[].class), isNull(Throwable.class));
+        verify(locationAwareLogger, times(5)).log(isNull(), anyString(),
+                anyInt(), anyString(), isNull(), isNull());
 
         logger.error(new Exception("error"));
         logger.warn(new Exception("warn"));
@@ -56,7 +57,7 @@ public class Slf4jLoggerTest {
         logger.debug("debug", new Exception("debug"));
         logger.trace("trace", new Exception("trace"));
 
-        verify(locationAwareLogger, times(10)).log(isNull(Marker.class), anyString(),
-                anyInt(), anyString(), isNull(Object[].class), any(Throwable.class));
+        verify(locationAwareLogger, times(10)).log(isNull(), anyString(),
+                anyInt(), anyString(), isNull(), any(Throwable.class));
     }
 }

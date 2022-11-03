@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
@@ -27,10 +27,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
 
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetadataReportFactory.class);
     private static final String EXPORT_KEY = "export";
     private static final String REFER_KEY = "refer";
 
@@ -67,7 +69,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
                 metadataReport = createMetadataReport(url);
             } catch (Exception e) {
                 if (!check) {
-                    logger.warn("The metadata reporter failed to initialize", e);
+                    logger.warn(PROXY_FAILED_EXPORT_SERVICE, "", "", "The metadata reporter failed to initialize", e);
                 } else {
                     throw e;
                 }
@@ -91,11 +93,11 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         lock.lock();
         try {
             for (MetadataReport metadataReport : serviceStoreMap.values()) {
-                try{
+                try {
                     metadataReport.destroy();
-                }catch (Throwable ignored){
+                } catch (Throwable ignored) {
                     // ignored
-                    logger.warn(ignored.getMessage(),ignored);
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", ignored.getMessage(), ignored);
                 }
             }
             serviceStoreMap.clear();

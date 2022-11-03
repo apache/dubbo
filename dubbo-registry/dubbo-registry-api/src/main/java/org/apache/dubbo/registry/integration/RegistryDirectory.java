@@ -290,7 +290,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             try {
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
-                logger.warn("destroyUnusedInvokers error. ", e);
+                logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "destroyUnusedInvokers error. ", e);
             }
 
             // notify invokers refreshed
@@ -346,7 +346,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     routers.add(router);
                 }
             } catch (Throwable t) {
-                logger.error("convert router url to router error, url: " + url, t);
+                logger.error(PROXY_FAILED_CONVERT_URL, "", "", "convert router url to router error, url:" + url, t);
             }
         }
 
@@ -441,9 +441,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
             logger.error(PROTOCOL_UNSUPPORTED, "protocol extension does not installed", "", "Unsupported protocol.",
                 new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
-                " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
-                " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
+                    " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
+                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
 
             return false;
         }
@@ -578,7 +578,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
                 } catch (Exception e) {
-                    logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
+                    logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
                 }
             }
         }
@@ -605,7 +605,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         // 1-16 - Unsupported category in NotifyListener
         logger.warn(REGISTRY_UNSUPPORTED_CATEGORY, "", "",
             "Unsupported category " + category + " in notified url: " + url + " from registry " +
-            getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
+                getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
 
         return false;
     }

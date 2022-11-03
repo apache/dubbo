@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -30,12 +30,14 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
+
 @Cmd(name = "publishMetadata", summary = "update service metadata and service instance", example = {
-        "publishMetadata",
-        "publishMetadata 5"
+    "publishMetadata",
+    "publishMetadata 5"
 })
-public class  PublishMetadata implements BaseCommand {
-    private static final Logger logger = LoggerFactory.getLogger(PublishMetadata.class);
+public class PublishMetadata implements BaseCommand {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PublishMetadata.class);
     private final FrameworkModel frameworkModel;
 
     public PublishMetadata(FrameworkModel frameworkModel) {
@@ -60,7 +62,7 @@ public class  PublishMetadata implements BaseCommand {
                     frameworkExecutorRepository.nextScheduledExecutor()
                         .schedule(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel), delay, TimeUnit.SECONDS);
                 } catch (NumberFormatException e) {
-                    logger.error("Wrong delay param", e);
+                    logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "", "", "Wrong delay param", e);
                     return "publishMetadata failed! Wrong delay param!";
                 }
                 stringBuilder.append("publish task submitted, will publish in ").append(args[0]).append(" seconds. App:").append(applicationModel.getApplicationName()).append("\n");

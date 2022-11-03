@@ -20,7 +20,7 @@ package org.apache.dubbo.common.config;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -44,6 +44,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * Utilities for manipulating configurations from different sources
@@ -57,7 +58,7 @@ public final class ConfigurationUtils {
         throw new UnsupportedOperationException("No instance of 'ConfigurationUtils' for you! ");
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigurationUtils.class);
     private static final List<String> securityKey;
 
     static {
@@ -108,6 +109,7 @@ public final class ConfigurationUtils {
 
     /**
      * Server shutdown wait timeout mills
+     *
      * @return
      */
     @SuppressWarnings("deprecation")
@@ -172,30 +174,30 @@ public final class ConfigurationUtils {
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {
-            logger.warn("Config center was specified, but no config item found.");
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Config center was specified, but no config item found.");
         } else {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
             properties.stringPropertyNames().forEach(
-                    k -> {
-                        boolean deny = false;
-                        for (String key : securityKey) {
-                            if (k.contains(key)) {
-                                deny = true;
-                                break;
-                            }
+                k -> {
+                    boolean deny = false;
+                    for (String key : securityKey) {
+                        if (k.contains(key)) {
+                            deny = true;
+                            break;
                         }
-                        if (!deny) {
-                            map.put(k, properties.getProperty(k));
-                        }
-                    });
+                    }
+                    if (!deny) {
+                        map.put(k, properties.getProperty(k));
+                    }
+                });
         }
         return map;
     }
 
     public static boolean isEmptyValue(Object value) {
         return value == null ||
-                value instanceof String && StringUtils.isBlank((String) value);
+            value instanceof String && StringUtils.isBlank((String) value);
     }
 
     /**
@@ -212,6 +214,7 @@ public final class ConfigurationUtils {
      * props: {"name": "dubbo", "port" : "1234"}
      *
      * </pre>
+     *
      * @param configMaps
      * @param prefix
      * @param <V>
@@ -239,11 +242,11 @@ public final class ConfigurationUtils {
         }
 
         if (CollectionUtils.isNotEmptyMap(configMap)) {
-            Map<String,V> copy ;
-            synchronized (configMap){
+            Map<String, V> copy;
+            synchronized (configMap) {
                 copy = new HashMap<>(configMap);
             }
-            for(Map.Entry<String, V> entry : copy.entrySet()) {
+            for (Map.Entry<String, V> entry : copy.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
@@ -280,8 +283,8 @@ public final class ConfigurationUtils {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
-        Map<String,V> copy ;
-        synchronized (configMap){
+        Map<String, V> copy;
+        synchronized (configMap) {
             copy = new HashMap<>(configMap);
         }
         for (Map.Entry<String, V> entry : copy.entrySet()) {
@@ -319,8 +322,8 @@ public final class ConfigurationUtils {
         }
         Set<String> ids = new LinkedHashSet<>();
         for (Map<String, V> configMap : configMaps) {
-            Map<String,V> copy ;
-            synchronized (configMap){
+            Map<String, V> copy;
+            synchronized (configMap) {
                 copy = new HashMap<>(configMap);
             }
             for (Map.Entry<String, V> entry : copy.entrySet()) {
@@ -357,6 +360,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getSystemConfiguration(ScopeModel)}
      */
     @Deprecated
@@ -366,6 +370,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getEnvConfiguration(ScopeModel)}
      */
     @Deprecated
@@ -375,6 +380,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getGlobalConfiguration(ScopeModel)}
      */
     @Deprecated
@@ -384,6 +390,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getDynamicGlobalConfiguration(ScopeModel)}
      */
     @Deprecated
@@ -393,6 +400,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getCachedDynamicProperty(ScopeModel, String, String)}
      */
     @Deprecated
@@ -402,6 +410,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String)}
      */
     @Deprecated
@@ -411,6 +420,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String, String)}
      */
     @Deprecated
@@ -420,6 +430,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String)}
      */
     @Deprecated
@@ -429,6 +440,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String, String)}
      */
     @Deprecated
@@ -438,6 +450,7 @@ public final class ConfigurationUtils {
 
     /**
      * For compact single instance
+     *
      * @deprecated Replaced to {@link ConfigurationUtils#get(ScopeModel, String, int)}
      */
     @Deprecated
