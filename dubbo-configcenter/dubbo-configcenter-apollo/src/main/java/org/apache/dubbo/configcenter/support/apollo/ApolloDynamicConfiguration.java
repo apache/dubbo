@@ -215,6 +215,16 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         return dubboConfig.getProperty(key, null);
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        Object v = dubboConfig.getProperty(key, null);
+        if (v != null) {
+            return v;
+        } else {
+            return defaultValue;
+        }
+    }
+
     /**
      * Ignores the group parameter.
      *

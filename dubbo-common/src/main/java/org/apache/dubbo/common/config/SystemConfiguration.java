@@ -43,6 +43,24 @@ public class SystemConfiguration implements Configuration {
         }
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        if (cache.containsKey(key)) {
+            return cache.get(key);
+        } else {
+            Object val = System.getProperty(key);
+            if (val != null) {
+                cache.putIfAbsent(key, val);
+            } else {
+                val = defaultValue;
+                if (defaultValue != null) {
+                    cache.putIfAbsent(key, defaultValue);
+                }
+            }
+            return val;
+        }
+    }
+
     public Map<String, String> getProperties() {
         return (Map) System.getProperties();
     }

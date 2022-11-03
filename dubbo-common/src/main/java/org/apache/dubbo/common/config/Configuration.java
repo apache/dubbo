@@ -127,17 +127,18 @@ public interface Configuration {
      * Gets a property from the configuration. The default value will return if the configuration doesn't contain
      * the mapping for the specified key.
      *
-     * @param key property to retrieve
+     * @param key          property to retrieve
      * @param defaultValue default value
      * @return the value to which this configuration maps the specified key, or default value if the configuration
      * contains no mapping for this key.
      */
     default Object getProperty(String key, Object defaultValue) {
-        Object value = getInternalProperty(key);
-        return value != null ? value : defaultValue;
+        return getInternalProperty(key, defaultValue);
     }
 
     Object getInternalProperty(String key);
+
+    Object getInternalProperty(String key, Object defaultValue);
 
     /**
      * Check if the configuration contains the specified key.
