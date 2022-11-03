@@ -272,6 +272,8 @@ public interface CommonConstants {
     String PORT_KEY = "port";
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
 
+    String PROVIDED_BY_CACHE = "provided-by-cache";
+
     /**
      * broadcast cluster.
      */
