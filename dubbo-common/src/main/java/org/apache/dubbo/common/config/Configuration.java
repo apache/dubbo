@@ -154,9 +154,12 @@ public interface Configuration {
 
     default <T> T convert(Class<T> cls, String key, T defaultValue) {
         // we only process String properties for now
-        String value = (String) getProperty(key, defaultValue);
+        Object value = getProperty(key, defaultValue);
 
-        if (value == null) {
+        if (!String.class.isInstance(value)) {
+            if (cls.isInstance(value)) {
+                return cls.cast(value);
+            }
             return defaultValue;
         }
 
@@ -165,24 +168,26 @@ public interface Configuration {
             return cls.cast(value);
         }
 
+        String str = (String) value;
+
         if (Boolean.class.equals(cls) || Boolean.TYPE.equals(cls)) {
-            obj = Boolean.valueOf(value);
+            obj = Boolean.valueOf(str);
         } else if (Number.class.isAssignableFrom(cls) || cls.isPrimitive()) {
             if (Integer.class.equals(cls) || Integer.TYPE.equals(cls)) {
-                obj = Integer.valueOf(value);
+                obj = Integer.valueOf(str);
             } else if (Long.class.equals(cls) || Long.TYPE.equals(cls)) {
-                obj = Long.valueOf(value);
+                obj = Long.valueOf(str);
             } else if (Byte.class.equals(cls) || Byte.TYPE.equals(cls)) {
-                obj = Byte.valueOf(value);
+                obj = Byte.valueOf(str);
             } else if (Short.class.equals(cls) || Short.TYPE.equals(cls)) {
-                obj = Short.valueOf(value);
+                obj = Short.valueOf(str);
             } else if (Float.class.equals(cls) || Float.TYPE.equals(cls)) {
-                obj = Float.valueOf(value);
+                obj = Float.valueOf(str);
             } else if (Double.class.equals(cls) || Double.TYPE.equals(cls)) {
-                obj = Double.valueOf(value);
+                obj = Double.valueOf(str);
             }
         } else if (cls.isEnum()) {
-            obj = Enum.valueOf(cls.asSubclass(Enum.class), value);
+            obj = Enum.valueOf(cls.asSubclass(Enum.class), str);
         }
 
         return cls.cast(obj);
