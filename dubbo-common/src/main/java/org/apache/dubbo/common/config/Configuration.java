@@ -154,7 +154,7 @@ public interface Configuration {
 
     default <T> T convert(Class<T> cls, String key, T defaultValue) {
         // we only process String properties for now
-        String value = (String) getProperty(key);
+        String value = (String) getProperty(key, defaultValue);
 
         if (value == null) {
             return defaultValue;
