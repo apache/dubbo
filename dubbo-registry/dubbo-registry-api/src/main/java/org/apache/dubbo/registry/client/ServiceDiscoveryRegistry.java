@@ -196,9 +196,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
 
         String key = ServiceNameMapping.buildMappingKey(url);
-        Lock mappingLock = serviceNameMapping.getMappingLock(key);
-        try {
-            if(mappingByUrl == null) {
+
+        if(mappingByUrl == null) {
+            Lock mappingLock = serviceNameMapping.getMappingLock(key);
+            try {
                 mappingLock.lock();
                 Set<String> subscribedServices = serviceNameMapping.getMapping(url);
                 try {
@@ -211,16 +212,16 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
                 if (CollectionUtils.isEmpty(mappingByUrl)) {
                     logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
-//                if (check) {
-//                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-//                }
+                    //                if (check) {
+                    //                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+                    //                }
                     return;
                 }
+            } finally {
+                mappingLock.unlock();
             }
-            subscribeURLs(url, listener, mappingByUrl);
-        } finally {
-            mappingLock.unlock();
         }
+        subscribeURLs(url, listener, mappingByUrl);
     }
 
     @Override
