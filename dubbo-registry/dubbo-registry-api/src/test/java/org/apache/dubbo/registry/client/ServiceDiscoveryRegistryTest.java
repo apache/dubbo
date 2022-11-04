@@ -45,6 +45,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDED_BY_CACHE;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -153,6 +155,15 @@ public class ServiceDiscoveryRegistryTest {
         Set<String> singleApp = new HashSet<>();
         singleApp.add(APP_NAME1);
         when(mapping.getAndListen(any(), any(), any())).thenReturn(singleApp);
+        try {
+            serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
+        } finally {
+            serviceDiscoveryRegistry.unsubscribe(checkURL, testServiceListener);
+        }
+
+        //test provider case
+        checkURL = url.addParameter(PROVIDED_BY, APP_NAME1);
+
         try {
             serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
         } finally {
