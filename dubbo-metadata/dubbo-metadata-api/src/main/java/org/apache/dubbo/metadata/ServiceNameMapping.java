@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -91,18 +90,11 @@ public interface ServiceNameMapping extends Destroyable {
     }
 
     static Set<String> getMappingByUrl(URL consumerURL) {
-        Object attribute = consumerURL.getAttribute(CommonConstants.PROVIDED_BY_CACHE);
-        if(attribute != null) {
-            return (Set<String>) attribute;
-        }
         String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
         if(StringUtils.isBlank(providedBy)) {
             return null;
         }
-        //add cache
-        Set<String> strings = AbstractServiceNameMapping.parseServices(providedBy);
-        consumerURL.putAttribute(CommonConstants.PROVIDED_BY_CACHE, strings);
-        return strings;
+        return AbstractServiceNameMapping.parseServices(providedBy);
     }
 
     /**
