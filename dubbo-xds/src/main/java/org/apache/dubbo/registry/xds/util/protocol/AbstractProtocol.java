@@ -71,8 +71,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     private final Map<Long, CompletableFuture<T>> streamResult = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService pollingExecutor;
-
     private final int pollingTimeout;
 
     protected final static AtomicLong requestId = new AtomicLong(0);
@@ -80,7 +78,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
-        this.pollingExecutor = new ScheduledThreadPoolExecutor(pollingPoolSize, new NamedThreadFactory("Dubbo-registry-xds"));
         this.pollingTimeout = pollingTimeout;
     }
 
@@ -142,45 +139,40 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
         requestObserverMap.put(request, requestObserver);
 
-        ScheduledFuture<?> scheduledFuture = pollingExecutor.scheduleAtFixedRate(() -> {
-            try {
-                // origin request, may changed by updateObserve
-                Set<String> names = requestParam.get(request);
+        try {
+            // origin request, may changed by updateObserve
+            Set<String> names = requestParam.get(request);
 
-                // use future to get async result, future complete on StreamObserver onNext
-                CompletableFuture<T> future = new CompletableFuture<>();
-                streamResult.put(request, future);
+            // use future to get async result, future complete on StreamObserver onNext
+            CompletableFuture<T> future = new CompletableFuture<>();
+            streamResult.put(request, future);
 
-                // observer reused
-                StreamObserver<DiscoveryRequest> observer = requestObserverMap.get(request);
+            // observer reused
+            StreamObserver<DiscoveryRequest> observer = requestObserverMap.get(request);
 
-                if (observer == null) {
-                    observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
-                    requestObserverMap.put(request, observer);
-                }
-
-                // send request to control panel
-                observer.onNext(buildDiscoveryRequest(names));
-
-                try {
-                    // get result
-                    consumer.accept(future.get());
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.error("Error occur when request control panel.");
-                } finally {
-                    // close observer
-                    //requestObserver.onCompleted();
-
-                    // remove temp
-                    streamResult.remove(request);
-                }
-            } catch (Throwable t) {
-                logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
+            if (observer == null) {
+                observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
+                requestObserverMap.put(request, observer);
             }
-        }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
 
-        observeScheduledMap.put(request, scheduledFuture);
+            // send request to control panel
+            observer.onNext(buildDiscoveryRequest(names));
 
+            try {
+                // get result
+                consumer.accept(future.get());
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("Error occur when request control panel.");
+            } finally {
+                // close observer
+                //requestObserver.onCompleted();
+
+                // remove temp
+                streamResult.remove(request);
+            }
+        } catch (Throwable t) {
+            logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
+        }
         return request;
     }
 
