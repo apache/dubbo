@@ -29,6 +29,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.Protocol;
@@ -42,6 +43,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
@@ -194,54 +196,45 @@ public class ConfigurableMetadataServiceExporter {
         String protocol = "";
         // <dubbo:consumer/>
         List<ModuleModel> moduleModels = applicationModel.getPubModuleModels();
-        breakPoint:
-        for (ModuleModel moduleModel : moduleModels) {
-            Collection<ConsumerConfig> consumers = moduleModel.getConfigManager().getConsumers();
-            if (CollectionUtils.isNotEmpty(consumers)) {
-                for (ConsumerConfig config : consumers) {
-                    protocol = config.getProtocol();
-                    if (StringUtils.isNotEmpty(protocol)) {
-                        break breakPoint;
-                    }
-                }
-            }
-        }
+        protocol = moduleModels.stream()
+            .map(ModuleModel::getConfigManager)
+            .map(ModuleConfigManager::getConsumers)
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(Collection::stream)
+            .map(ConsumerConfig::getProtocol)
+            .filter(StringUtils::isNotEmpty)
+            .findFirst()
+            .orElse("");
         // <dubbo:provider/>
         if (StringUtils.isEmpty(protocol)) {
-            breakPoint:
-            for (ModuleModel moduleModel : moduleModels) {
-                Collection<ProviderConfig> providers = moduleModel.getConfigManager().getProviders();
-                if (CollectionUtils.isNotEmpty(providers)) {
-                    for (ProviderConfig config : providers) {
-                        ProtocolConfig protocolConfig = config.getProtocol();
-                        protocol = protocolConfig != null ? protocolConfig.getName() : "";
-                        if (StringUtils.isNotEmpty(protocol)) {
-                            break breakPoint;
-                        } else {
-                            List<ProtocolConfig> protocols = config.getProtocols();
-                            if (CollectionUtils.isNotEmpty(protocols)) {
-                                for (ProtocolConfig protocolCfg : protocols) {
-                                    protocol = protocolCfg.getName();
-                                    if (StringUtils.isNotEmpty(protocol)) {
-                                        break breakPoint;
-                                    }
-                                }
-                            }
-                        }
+            Stream<ProviderConfig> providerConfigStream = moduleModels.stream()
+                .map(ModuleModel::getConfigManager)
+                .map(ModuleConfigManager::getProviders)
+                .filter(CollectionUtils::isNotEmpty)
+                .flatMap(Collection::stream);
+            protocol = providerConfigStream
+                .filter((providerConfig) -> providerConfig.getProtocol() != null || CollectionUtils.isNotEmpty(providerConfig.getProtocols()))
+                .map(providerConfig -> {
+                    if (providerConfig.getProtocol() != null && StringUtils.isNotEmpty(providerConfig.getProtocol().getName())) {
+                        return providerConfig.getProtocol().getName();
+                    } else {
+                        return providerConfig.getProtocols().stream()
+                            .map(ProtocolConfig::getName)
+                            .filter(StringUtils::isNotEmpty)
+                            .findFirst()
+                            .orElse("");
                     }
-                }
-            }
+                })
+                .filter(StringUtils::isNotEmpty)
+                .findFirst()
+                .orElse("");
         }
         // <dubbo:protocol/>
         if (StringUtils.isEmpty(protocol)) {
             Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
             if (CollectionUtils.isNotEmpty(protocols)) {
-                for (ProtocolConfig config : protocols) {
-                    protocol = config.getName();
-                    if (StringUtils.isNotEmpty(protocol)) {
-                        break;
-                    }
-                }
+                protocol = protocols.stream()
+                    .map(ProtocolConfig::getName).filter(StringUtils::isNotEmpty).findFirst().orElse("");
             }
         }
         // <dubbo:application/>
