@@ -17,14 +17,16 @@
 
 package org.apache.dubbo.rpc;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-public class RpcServerContextAttachment extends RpcContextAttachment{
-    private static final RpcContextAttachment AGENT_SERVER_CONTEXT = new RpcContextAttachment() {
+public class RpcServerContextAttachment{
+    static class Agent extends RpcContextAttachment implements Map{
         @Override
         public RpcContextAttachment copyOf(boolean needCopy) {
-           throw new RuntimeException("copyOf internal method, should not be invoke");
+            throw new RuntimeException("copyOf internal method, should not be invoke");
         }
 
         @Override
@@ -147,7 +149,68 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
         public Object get(String key) {
             return getAttachment(key);
         }
-    };
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return false;
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            return false;
+        }
+
+        @Override
+        public Object get(Object key) {
+            return null;
+        }
+
+        @Override
+        public Object put(Object key, Object value) {
+            return setAttachment((String) key, value);
+        }
+
+        @Override
+        public Object remove(Object key) {
+            return null;
+        }
+
+        @Override
+        public void putAll(Map m) {
+
+        }
+
+        @Override
+        public void clear() {
+
+        }
+
+        @Override
+        public Set keySet() {
+            return null;
+        }
+
+        @Override
+        public Collection values() {
+            return null;
+        }
+
+        @Override
+        public Set<Entry> entrySet() {
+            return null;
+        }
+    }
+
 
     /**
      * get server side context. ( A <-- B , in B side)
@@ -155,6 +218,6 @@ public class RpcServerContextAttachment extends RpcContextAttachment{
      * @return server context
      */
     public static RpcContextAttachment getServerContext() {
-        return AGENT_SERVER_CONTEXT;
+        return new Agent();
     }
 }
