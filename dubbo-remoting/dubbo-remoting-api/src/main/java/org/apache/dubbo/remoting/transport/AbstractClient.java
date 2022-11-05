@@ -103,8 +103,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        ExecutorRepository executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
 
         /**
          * Consumer's executor is shared globally, provider ip doesn't need to be part of the thread name.

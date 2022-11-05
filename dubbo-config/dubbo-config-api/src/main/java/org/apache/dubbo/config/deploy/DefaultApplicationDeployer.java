@@ -127,7 +127,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
 
         // load spi listener
@@ -1072,7 +1072,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // shutdown export/refer executor
         executorRepository.shutdownServiceExportExecutor();
         executorRepository.shutdownServiceReferExecutor();
-        getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
+        ExecutorRepository.getInstance(applicationModel).destroyAll();
     }
 
     private void destroyRegistries() {

@@ -74,7 +74,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         super(type, url);
         this.key = key;
         this.exporter = exporter;
-        this.executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        this.executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
         this.paramDeepCopyUtil = url.getOrDefaultFrameworkModel().getExtensionLoader(ParamDeepCopyUtil.class)
             .getExtension(url.getParameter(CommonConstants.INJVM_COPY_UTIL_KEY, DefaultParamDeepCopyUtil.NAME));
         this.shouldIgnoreSameModule = url.getParameter(CommonConstants.INJVM_IGNORE_SAME_MODULE_KEY, false);
@@ -102,7 +102,15 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-        invocation.setAttachment(TIMEOUT_KEY, calculateTimeout(invocation, invocation.getMethodName()));
+
+        int timeout = calculateTimeout(invocation, invocation.getMethodName());
+        if (timeout <= 0) {
+            return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                "No time left for making the following call: " + invocation.getServiceName() + "."
+                    + invocation.getMethodName() + ", terminate directly."), invocation);
+        }
+        invocation.setAttachment(TIMEOUT_KEY, timeout);
+
 
         String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
 

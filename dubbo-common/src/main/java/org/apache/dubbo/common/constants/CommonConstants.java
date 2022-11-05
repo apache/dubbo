@@ -586,9 +586,22 @@ public interface CommonConstants {
     String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
     /**
+     * used for thread isolation between services
+     */
+    String SERVICE_EXECUTOR = "service-executor";
+    String EXECUTOR_MANAGEMENT_MODE = "executor-management-mode";
+    String EXECUTOR_MANAGEMENT_MODE_DEFAULT = "default";
+    String EXECUTOR_MANAGEMENT_MODE_ISOLATION = "isolation";
+
+
+    /**
      *
      * used in JVMUtil.java ,Control stack print lines, default is 32 lines
      *
      */
     String DUBBO_JSTACK_MAXLINE = "dubbo.jstack-dump.max-line";
+
+
+    String ENCODE_IN_IO_THREAD_KEY = "encode.in.io";
+    boolean DEFAULT_ENCODE_IN_IO_THREAD = false;
 }

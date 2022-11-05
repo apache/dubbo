@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.concurrent.GenericFutureListener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -45,11 +45,13 @@ public class NettyClientHandlerTest {
         Mockito.when(ctx.channel()).thenReturn(channel);
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.eventLoop()).thenReturn(new NioEventLoopGroup().next());
+        Mockito.when(channel.alloc()).thenReturn(PooledByteBufAllocator.DEFAULT);
 
         ChannelPromise future = mock(ChannelPromise.class);
         when(channel.writeAndFlush(any())).thenReturn(future);
         when(future.cause()).thenReturn(null);
         when(channel.newPromise()).thenReturn(future);
+        when(future.addListener(Mockito.any())).thenReturn(future);
 
         NettyClientHandler nettyClientHandler = new NettyClientHandler(url, handler);
 
@@ -75,15 +77,8 @@ public class NettyClientHandlerTest {
         nettyClientHandler.userEventTriggered(ctx, IdleStateEvent.READER_IDLE_STATE_EVENT);
         ArgumentCaptor<Request> requestArgumentCaptor = ArgumentCaptor.forClass(Request.class);
         Thread.sleep(500);
-        Mockito.verify(channel, Mockito.times(1)).write(requestArgumentCaptor.capture(), any());
-        Mockito.verify(channel, Mockito.times(1)).flush();
+        Mockito.verify(channel, Mockito.times(1)).writeAndFlush(requestArgumentCaptor.capture());
 
-
-        Request request = new Request();
-        ChannelPromise promise = Mockito.mock(ChannelPromise.class);
-        nettyClientHandler.write(ctx,request,promise);
-        ArgumentCaptor<GenericFutureListener> listenerArgumentCaptor = ArgumentCaptor.forClass(GenericFutureListener.class);
-        Mockito.verify(promise, Mockito.times(1)).addListener(listenerArgumentCaptor.capture());
 
     }
 }
