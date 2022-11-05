@@ -82,6 +82,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final Set<Invoker<?>> invokers;
     private final Executor streamExecutor;
+    private final SerializingExecutor serializingExecutor;
     private final String acceptEncodings;
     private final TripleWriteQueue writeQueue = new TripleWriteQueue();
 
@@ -95,7 +96,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         this.invokers = invokers;
         this.connection = connectionManager.connect(url);
         this.acceptEncodings = acceptEncodings;
-        this.streamExecutor = new SerializingExecutor(streamExecutor);
+        this.streamExecutor = streamExecutor;
+        this.serializingExecutor = new SerializingExecutor(streamExecutor);
     }
 
     private static AsciiString getSchemeFromUrl(URL url) {
@@ -127,6 +129,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         try {
             switch (methodDescriptor.getRpcType()) {
                 case UNARY:
+                    call = new TripleClientCall(connection, serializingExecutor,
+                        getUrl().getOrDefaultFrameworkModel(), writeQueue);
                     result = invokeUnary(methodDescriptor, invocation, call);
                     break;
                 case SERVER_STREAM:
