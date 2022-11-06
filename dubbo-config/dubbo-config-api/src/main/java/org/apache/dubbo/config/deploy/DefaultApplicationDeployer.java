@@ -770,8 +770,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             onStopping();
 
             unregisterServiceInstance();
-            destroyRegistries();
-            destroyMetadataReports();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
@@ -788,6 +786,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             try {
+                destroyRegistries();
+                destroyMetadataReports();
+
                 executeShutdownCallbacks();
 
                 // TODO should we close unused protocol server which only used by this application?

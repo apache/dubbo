@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.PathResolver;
@@ -38,13 +38,15 @@ import io.netty.util.ReferenceCounted;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
+
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     private static final AttributeKey<TripleServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf(
         "tri_server_stream");
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(
         TripleHttp2FrameServerHandler.class);
     private final PathResolver pathResolver;
     private final FrameworkModel frameworkModel;
@@ -89,7 +91,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
         final TripleServerStream tripleServerStream = ctx.channel().attr(SERVER_STREAM_KEY)
             .get();
-        LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
+        LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Triple Server received remote reset errorCode=" + frame.errorCode());
         if (tripleServerStream != null) {
             tripleServerStream.transportObserver.cancelByRemote(frame.errorCode());
         }
@@ -98,7 +100,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("Exception in processing triple message", cause);
+            LOGGER.warn(PROTOCOL_FAILED_RESPONSE, "", "", "Exception in processing triple message", cause);
         }
         TriRpcStatus status = TriRpcStatus.getStatus(cause,
             "Provider's error:\n" + cause.getMessage());

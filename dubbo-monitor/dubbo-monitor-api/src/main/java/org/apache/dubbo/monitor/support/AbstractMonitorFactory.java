@@ -17,7 +17,7 @@
 package org.apache.dubbo.monitor.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.monitor.Monitor;
@@ -36,12 +36,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 
 /**
  * AbstractMonitorFactory. (SPI, Singleton, ThreadSafe)
  */
 public abstract class AbstractMonitorFactory implements MonitorFactory {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractMonitorFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMonitorFactory.class);
 
     /**
      * The lock for getting monitor center
@@ -90,7 +91,7 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
                     FUTURES.remove(key);
                     return m;
                 } catch (Throwable e) {
-                    logger.warn("Create monitor failed, monitor data will not be collected until you fix this problem. monitorUrl: " + monitorUrl, e);
+                    logger.warn(COMMON_MONITOR_EXCEPTION, "", "", "Create monitor failed, monitor data will not be collected until you fix this problem. monitorUrl: " + monitorUrl, e);
                     return null;
                 }
             });

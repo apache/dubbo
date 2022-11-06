@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -60,13 +60,15 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_MISSPELLING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
 
 public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     private static final String CONFIG_NAME_READ_METHOD = "getName";
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConfigManager.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfigManager.class);
     private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
     final Map<String, Map<String, AbstractConfig>> configsCache = new ConcurrentHashMap<>();
@@ -119,7 +121,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             }
         } catch (Exception e) {
             String msg = "Illegal '" + ConfigKeys.DUBBO_CONFIG_MODE + "' config value [" + configModeStr + "], available values " + Arrays.toString(ConfigMode.values());
-            logger.error(msg, e);
+            logger.error(COMMON_PROPERTY_MISSPELLING, "", "", msg, e);
             throw new IllegalArgumentException(msg, e);
         }
 
@@ -213,7 +215,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         C existedConfig = configsMap.get(key);
         if (existedConfig != null && !isEquals(existedConfig, config)) {
             String type = config.getClass().getSimpleName();
-            logger.warn(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
                     "you can try to give each %s a different id, override previous config with later config. id: %s, prev: %s, later: %s",
                 type, type, type, type, key, existedConfig, config));
         }
@@ -224,7 +226,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     }
 
     protected <C extends AbstractConfig> boolean removeIfAbsent(C config, Map<String, C> configsMap) {
-        if(config.getId() != null) {
+        if (config.getId() != null) {
             return configsMap.remove(config.getId(), config);
         }
         return configsMap.values().removeIf(c -> config == c);
@@ -439,7 +441,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 case IGNORE: {
                     // ignore later config
                     if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "keep previous config and ignore later config");
+                        logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msgPrefix + "keep previous config and ignore later config");
                     }
                     return Optional.of(oldOne);
                 }
@@ -447,7 +449,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     // clear previous config, add new config
                     configsMap.clear();
                     if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "override previous config with later config");
+                        logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msgPrefix + "override previous config with later config");
                     }
                     break;
                 }
@@ -455,7 +457,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     // override old one's properties with the new one
                     oldOne.overrideWithConfig(config, true);
                     if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "override previous config with later config");
+                        logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msgPrefix + "override previous config with later config");
                     }
                     return Optional.of(oldOne);
                 }
@@ -463,7 +465,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     // override old one's properties with the new one
                     oldOne.overrideWithConfig(config, false);
                     if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                        logger.warn(msgPrefix + "override previous config with later config");
+                        logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msgPrefix + "override previous config with later config");
                     }
                     return Optional.of(oldOne);
                 }
@@ -504,7 +506,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     this.addConfig(config);
                     tmpConfigs.add(config);
                 } catch (Exception e) {
-                    logger.error("load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
+                    logger.error(COMMON_PROPERTY_MISSPELLING, "", "", "load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
                 } finally {
                     if (addDefaultNameConfig && key != null) {

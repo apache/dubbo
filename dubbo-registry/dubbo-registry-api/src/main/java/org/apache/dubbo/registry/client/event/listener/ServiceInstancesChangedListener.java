@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_REFRESH_ADDRESS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -178,9 +179,9 @@ public class ServiceInstancesChangedListener {
                 try {
                     retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 } catch (Exception e) {
-                    logger.error("Error submitting async retry task.");
+                    logger.error(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Error submitting async retry task.");
                 }
-                logger.warn("Address refresh try task submitted");
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Address refresh try task submitted");
             }
 
             // return if all metadata is empty, this notification will not take effect.
@@ -290,12 +291,12 @@ public class ServiceInstancesChangedListener {
     protected boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
-            logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
+            logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Received address refresh retry event, " + retryEvent.getFailureRecordTime());
             if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata) {
-                logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
                 return true;
             }
-            logger.warn("Retrying address notification...");
+            logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Retrying address notification...");
         }
         return false;
     }
@@ -339,7 +340,7 @@ public class ServiceInstancesChangedListener {
 
         if (emptyMetadataNum > 0) {
             builder.insert(0, emptyMetadataNum + "/" + revisionToInstances.size() + " revisions failed to get metadata from remote: ");
-            logger.error(builder.toString());
+            logger.error(REGISTRY_UNEXPECTED_EXCEPTION, "", "", builder.toString());
         } else {
             builder.insert(0, revisionToInstances.size() + " unique working revisions: ");
             logger.info(builder.toString());

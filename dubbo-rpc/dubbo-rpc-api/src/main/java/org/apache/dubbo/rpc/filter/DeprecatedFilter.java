@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.rpc.Filter;
@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.RpcException;
 
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNSUPPORTED_INVOKER;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
@@ -40,7 +41,7 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 @Activate(group = CommonConstants.CONSUMER, value = DEPRECATED_KEY)
 public class DeprecatedFilter implements Filter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeprecatedFilter.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DeprecatedFilter.class);
 
     private static final Set<String> LOGGED = new ConcurrentHashSet<String>();
 
@@ -50,7 +51,7 @@ public class DeprecatedFilter implements Filter {
         if (!LOGGED.contains(key)) {
             LOGGED.add(key);
             if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), DEPRECATED_KEY, false)) {
-                LOGGER.error("The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
+                LOGGER.error(COMMON_UNSUPPORTED_INVOKER, "", "", "The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
             }
         }
         return invoker.invoke(invocation);

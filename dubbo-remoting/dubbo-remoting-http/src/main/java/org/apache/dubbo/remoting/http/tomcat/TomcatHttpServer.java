@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.http.tomcat;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.http.HttpHandler;
 import org.apache.dubbo.remoting.http.servlet.DispatcherServlet;
@@ -33,11 +33,12 @@ import java.io.File;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_STOP_HTTP_SERVER;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 
 public class TomcatHttpServer extends AbstractHttpServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(TomcatHttpServer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TomcatHttpServer.class);
 
     private final Tomcat tomcat;
 
@@ -91,7 +92,7 @@ public class TomcatHttpServer extends AbstractHttpServer {
             // close port by destroy()
             tomcat.destroy();
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(COMMON_FAILED_STOP_HTTP_SERVER, "", "", e.getMessage(), e);
         }
     }
 }

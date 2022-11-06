@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -29,9 +29,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+
 public class PortUnificationExchanger {
 
-    private static final Logger log = LoggerFactory.getLogger(PortUnificationExchanger.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(PortUnificationExchanger.class);
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
@@ -60,7 +62,7 @@ public class PortUnificationExchanger {
             try {
                 server.close();
             } catch (Throwable throwable) {
-                log.error("Close all port unification server failed", throwable);
+                log.error(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close all port unification server failed", throwable);
             }
         }
     }
