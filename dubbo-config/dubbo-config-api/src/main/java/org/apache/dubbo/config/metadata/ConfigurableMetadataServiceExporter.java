@@ -107,7 +107,7 @@ public class ConfigurableMetadataServiceExporter {
     }
 
     private ProtocolConfig getProtocolConfig(String protocol) {
-        return applicationModel.getApplicationConfigManager().getProtocol(protocol).get();
+        return applicationModel.getApplicationConfigManager().getProtocol(protocol).orElse(null);
     }
 
     private ProtocolConfig generateMetadataProtocol() {
@@ -138,9 +138,12 @@ public class ConfigurableMetadataServiceExporter {
                         }
                         protocolConfig.setPort(Integer.parseInt(rawPort));
                     } else {
-                        Integer protocolPort = getProtocolConfig(specifiedProtocol).getPort();
-                        if (null != protocolPort && protocolPort != -1) {
-                            protocolConfig.setPort(protocolPort);
+                        ProtocolConfig specifiedProtocolConfig = getProtocolConfig(specifiedProtocol);
+                        if (specifiedProtocolConfig != null) {
+                            Integer protocolPort = specifiedProtocolConfig.getPort();
+                            if (null != protocolPort && protocolPort != -1) {
+                                protocolConfig.setPort(protocolPort);
+                            }
                         }
                     }
                 }
@@ -150,7 +153,7 @@ public class ConfigurableMetadataServiceExporter {
         } else {
             protocolConfig.setPort(port);
         }
-        
+
         applicationModel.getApplicationConfigManager().getProtocol(specifiedProtocol)
             .ifPresent(protocolConfig::mergeProtocol);
 
