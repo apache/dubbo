@@ -97,7 +97,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         requestParam.put(request, resourceNames);
 
         // create observer
-        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
+        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request, null));
 
         // use future to get async result
         CompletableFuture<T> future = new CompletableFuture<>();
@@ -136,7 +136,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         consumer.accept(getResource(resourceNames));
 
         // channel reused
-        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
+        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request, consumer));
         requestObserverMap.put(request, requestObserver);
 
         try {
@@ -151,25 +151,25 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             StreamObserver<DiscoveryRequest> observer = requestObserverMap.get(request);
 
             if (observer == null) {
-                observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
+                observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request, consumer));
                 requestObserverMap.put(request, observer);
             }
 
             // send request to control panel
             observer.onNext(buildDiscoveryRequest(names));
 
-            try {
-                // get result
-                consumer.accept(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                logger.error("Error occur when request control panel.");
-            } finally {
-                // close observer
-                //requestObserver.onCompleted();
-
-                // remove temp
-                streamResult.remove(request);
-            }
+//            try {
+//                // get result
+//                consumer.accept(future.get());
+//            } catch (InterruptedException | ExecutionException e) {
+//                logger.error("Error occur when request control panel.");
+//            } finally {
+//                // close observer
+//                //requestObserver.onCompleted();
+//
+//                // remove temp
+//                streamResult.remove(request);
+//            }
         } catch (Throwable t) {
             logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
         }
@@ -205,8 +205,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     private class ResponseObserver implements StreamObserver<DiscoveryResponse> {
         private final long requestId;
 
-        public ResponseObserver(long requestId) {
+        private Consumer<T> consumer;
+        public ResponseObserver(long requestId, Consumer<T> consumer) {
             this.requestId = requestId;
+            this.consumer = consumer;
         }
 
         @Override
@@ -217,15 +219,26 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             if (observer == null) {
                 return;
             }
-            observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
-            returnResult(result);
+            if (consumer != null) {
+                observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
+                // get result
+                consumer.accept(result);
+                streamResult.remove(this.requestId);
+            } else {
+                returnResult(result);
+            }
         }
 
         @Override
         public void onError(Throwable t) {
             logger.error("xDS Client received error message! detail:", t);
             clear();
-            returnResult(null);
+            if (consumer != null) {
+                consumer.accept(null);
+                streamResult.remove(this.requestId);
+            } else {
+                returnResult(null);
+            }
         }
 
         private void returnResult(T result) {
