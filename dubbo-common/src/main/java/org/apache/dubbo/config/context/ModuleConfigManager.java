@@ -18,7 +18,7 @@ package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.context.ModuleExt;
 import org.apache.dubbo.common.extension.DisableInject;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractConfig;
@@ -46,6 +46,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
 
 /**
@@ -53,7 +54,7 @@ import static org.apache.dubbo.config.AbstractConfig.getTagName;
  */
 public class ModuleConfigManager extends AbstractConfigManager implements ModuleExt {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModuleConfigManager.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ModuleConfigManager.class);
 
     public static final String NAME = "moduleConfig";
 
@@ -204,7 +205,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
 
     @Override
     protected <C extends AbstractConfig> boolean removeIfAbsent(C config, Map<String, C> configsMap) {
-        if(super.removeIfAbsent(config, configsMap)) {
+        if (super.removeIfAbsent(config, configsMap)) {
             if (config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase) {
                 removeInterfaceConfig((AbstractInterfaceConfig) config);
             }
@@ -240,7 +241,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
             if (prevConfig.equals(config)) {
                 // Is there any problem with ignoring duplicate and equivalent but different ReferenceConfig instances?
                 if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                    logger.warn("Ignore duplicated and equal config: " + config);
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Ignore duplicated and equal config: " + config);
                 }
                 return prevConfig;
             }
@@ -252,7 +253,7 @@ public class ModuleConfigManager extends AbstractConfigManager implements Module
                 "If multiple instances are required for the same interface, please use a different group or version.";
 
             if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                logger.warn(msg);
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msg);
             }
             if (!this.ignoreDuplicatedInterface) {
                 throw new IllegalStateException(msg);

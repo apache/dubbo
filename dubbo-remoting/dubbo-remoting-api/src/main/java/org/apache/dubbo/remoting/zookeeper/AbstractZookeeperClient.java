@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
@@ -29,9 +29,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
+
 public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildListener> implements ZookeeperClient {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractZookeeperClient.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractZookeeperClient.class);
 
     // may hang up to wait name resolution up to 10s
     protected int DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
@@ -159,7 +161,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         try {
             doClose();
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", t.getMessage(), t);
         }
     }
 

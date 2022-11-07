@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Filter;
@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_REQUEST;
 
 /**
  * Log any invocation timeout, but don't stop server from running
@@ -37,7 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
 @Activate(group = CommonConstants.PROVIDER)
 public class TimeoutFilter implements Filter, Filter.Listener {
 
-    private static final Logger logger = LoggerFactory.getLogger(TimeoutFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TimeoutFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -52,7 +53,7 @@ public class TimeoutFilter implements Filter, Filter.Listener {
             if (countDown.isExpired()) {
                 ((AppResponse) appResponse).clear(); // clear response in case of timeout.
                 if (logger.isWarnEnabled()) {
-                    logger.warn("invoke timed out. method: " + invocation.getMethodName() +
+                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", "invoke timed out. method: " + invocation.getMethodName() +
                         " url is " + invoker.getUrl() + ", invoke elapsed " + countDown.elapsedMillis() + " ms.");
                 }
             }

@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_ASYN_INVOKE_FAILED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_GROUP_MERGE;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 
@@ -102,8 +102,8 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Result r = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
-                    log.error(CLUSTER_ASYN_INVOKE_FAILED,"asyn Invoke exception","","Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
-                        " failed: " + r.getException().getMessage(),r.getException());
+                    log.error(CLUSTER_FAILED_GROUP_MERGE, "Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
+                        " failed: " + r.getException().getMessage(), "", r.getException().getMessage());
                 } else {
                     resultList.add(r);
                 }

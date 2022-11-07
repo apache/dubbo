@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -26,12 +26,14 @@ import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DESTROY_ZOOKEEPER;
+
 /**
  * Scope model initializer for remoting-api
  */
 public class RemotingScopeModelInitializer implements ScopeModelInitializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(RemotingScopeModelInitializer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RemotingScopeModelInitializer.class);
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
@@ -48,7 +50,7 @@ public class RemotingScopeModelInitializer implements ScopeModelInitializer {
                     zkTransporter.destroy();
                 }
             } catch (Exception e) {
-                logger.error("Error encountered while destroying ZookeeperTransporter: " + e.getMessage(), e);
+                logger.error(TRANSPORT_FAILED_DESTROY_ZOOKEEPER, "", "", "Error encountered while destroying ZookeeperTransporter: " + e.getMessage(), e);
             }
         });
     }

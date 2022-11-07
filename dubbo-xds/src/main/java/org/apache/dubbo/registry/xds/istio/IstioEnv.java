@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.xds.istio;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsEnv;
 
@@ -27,12 +27,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_READ_FILE_ISTIO;
 import static org.apache.dubbo.registry.xds.istio.IstioConstant.NS;
 import static org.apache.dubbo.registry.xds.istio.IstioConstant.SA;
 import static org.apache.dubbo.registry.xds.istio.IstioConstant.SPIFFE;
 
 public class IstioEnv implements XdsEnv {
-    private static final Logger logger = LoggerFactory.getLogger(IstioEnv.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(IstioEnv.class);
 
     private static final IstioEnv INSTANCE = new IstioEnv();
 
@@ -67,7 +68,7 @@ public class IstioEnv implements XdsEnv {
                     try {
                         return FileUtils.readFileToString(namespaceFile, StandardCharsets.UTF_8);
                     } catch (IOException e) {
-                        logger.error("read namespace file error", e);
+                        logger.error(REGISTRY_ERROR_READ_FILE_ISTIO,  "", "", "read namespace file error", e);
                     }
                 }
                 return IstioConstant.DEFAULT_WORKLOAD_NAMESPACE;

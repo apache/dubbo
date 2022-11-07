@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.http.jetty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -70,7 +71,7 @@ public class JettyLoggerAdapterTest {
 
         Field loggerField = clazz.getDeclaredField("logger");
         loggerField.setAccessible(true);
-        loggerField.set(jettyLoggerAdapter, successLogger);
+        loggerField.set(jettyLoggerAdapter, new FailsafeErrorTypeAwareLogger(successLogger));
         jettyLoggerAdapter.setDebugEnabled(true);
 
         when(successLogger.isDebugEnabled()).thenReturn(true);

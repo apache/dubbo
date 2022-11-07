@@ -56,15 +56,17 @@ public class ClassFinder {
     private void findClassesByFile(String packageName, String resource, Set<String> result) {
         File directory = new File(resource);
         File[] listFiles = directory.listFiles();
-        for (File file : listFiles) {
-            if (file.isDirectory()) {
-                findClassesByFile(packageName, file.getPath(), result);
-            } else {
-                String path = file.getPath();
-                if (path.endsWith(".class")) {
-                    int packageIndex = path.indexOf(packageName.replace("/", File.separator));
-                    String classPath = path.substring(packageIndex, path.length() - 6);
-                    result.add(classPath.replace(File.separator, "."));
+        if (listFiles != null) {
+            for (File file : listFiles) {
+                if (file.isDirectory()) {
+                    findClassesByFile(packageName, file.getPath(), result);
+                } else {
+                    String path = file.getPath();
+                    if (path.endsWith(".class")) {
+                        int packageIndex = path.indexOf(packageName.replace("/", File.separator));
+                        String classPath = path.substring(packageIndex, path.length() - 6);
+                        result.add(classPath.replace(File.separator, "."));
+                    }
                 }
             }
         }

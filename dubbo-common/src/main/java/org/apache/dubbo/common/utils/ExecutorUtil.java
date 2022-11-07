@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.concurrent.Executor;
@@ -28,13 +28,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 public class ExecutorUtil {
-    private static final Logger logger = LoggerFactory.getLogger(ExecutorUtil.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExecutorUtil.class);
     private static final ThreadPoolExecutor SHUTDOWN_EXECUTOR = new ThreadPoolExecutor(0, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(100),
-            new NamedThreadFactory("Close-ExecutorService-Timer", true));
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(100),
+        new NamedThreadFactory("Close-ExecutorService-Timer", true));
 
     public static boolean isTerminated(Executor executor) {
         if (executor instanceof ExecutorService) {
@@ -110,7 +111,7 @@ public class ExecutorUtil {
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (Throwable e) {
-                    logger.warn(e.getMessage(), e);
+                    logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", e.getMessage(), e);
                 }
             });
         }
