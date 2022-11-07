@@ -193,31 +193,35 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         boolean check = url.getParameter(CHECK_KEY, false);
 
+        Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
+
         String key = ServiceNameMapping.buildMappingKey(url);
-        Lock mappingLock = serviceNameMapping.getMappingLock(key);
-        try {
-            mappingLock.lock();
-            Set<String> subscribedServices = serviceNameMapping.getCachedMapping(url);
+
+        if(mappingByUrl == null) {
+            Lock mappingLock = serviceNameMapping.getMappingLock(key);
             try {
-                MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
-                subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
-                mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
-            } catch (Exception e) {
-                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
-            }
+                mappingLock.lock();
+                Set<String> subscribedServices = serviceNameMapping.getMapping(url);
+                try {
+                    MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
+                    mappingByUrl = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
+                    mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
+                } catch (Exception e) {
+                    logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
+                }
 
-            if (CollectionUtils.isEmpty(subscribedServices)) {
-                logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
-//                if (check) {
-//                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-//                }
-                return;
+                if (CollectionUtils.isEmpty(mappingByUrl)) {
+                    logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
+                    //                if (check) {
+                    //                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+                    //                }
+                    return;
+                }
+            } finally {
+                mappingLock.unlock();
             }
-
-            subscribeURLs(url, listener, subscribedServices);
-        } finally {
-            mappingLock.unlock();
         }
+        subscribeURLs(url, listener, mappingByUrl);
     }
 
     @Override
@@ -242,7 +246,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         // TODO: remove service name mapping listener
         serviceDiscovery.unsubscribe(url, listener);
         String protocolServiceKey = url.getProtocolServiceKey();
-        Set<String> serviceNames = serviceNameMapping.getCachedMapping(url);
+        Set<String> serviceNames = serviceNameMapping.getMapping(url);
         serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             String serviceNamesKey = toStringKeys(serviceNames);
