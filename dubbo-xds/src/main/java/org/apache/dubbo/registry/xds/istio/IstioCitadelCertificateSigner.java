@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.xds.istio;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -26,6 +27,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import istio.v1.auth.IstioCertificateRequest;
@@ -143,13 +145,22 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
         }
 
         String csr = generateCsr(publicKey, signer);
-        ManagedChannel channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
-            .sslContext(
-                GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(istioEnv.getCaCert().getBytes(StandardCharsets.UTF_8)))
+        String caCert = istioEnv.getCaCert();
+        ManagedChannel channel;
+        if (StringUtils.isNotEmpty(caCert)) {
+            channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
+                .sslContext(
+                    GrpcSslContexts.forClient()
+                        .trustManager(new ByteArrayInputStream(caCert.getBytes(StandardCharsets.UTF_8)))
+                        .build())
+                .build();
+        } else {
+            channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
+                .sslContext(GrpcSslContexts.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
                     .build())
-            .build();
-
+                .build();
+        }
         Metadata header = new Metadata();
         Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
         header.put(key, "Bearer " + istioEnv.getServiceAccount());
