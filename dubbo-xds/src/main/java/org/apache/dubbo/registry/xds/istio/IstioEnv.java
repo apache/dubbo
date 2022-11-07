@@ -57,6 +57,8 @@ public class IstioEnv implements XdsEnv {
 
     private String istioMetaClusterId;
 
+    private String pilotCertProvider;
+
     private IstioEnv() {
         jwtPolicy = Optional.ofNullable(System.getenv(IstioConstant.JWT_POLICY)).orElse(IstioConstant.DEFAULT_JWT_POLICY);
         podName = Optional.ofNullable(System.getenv("POD_NAME")).orElse(System.getenv("HOSTNAME"));
@@ -79,6 +81,7 @@ public class IstioEnv implements XdsEnv {
         secretTTL = Integer.parseInt(Optional.ofNullable(System.getenv(IstioConstant.SECRET_TTL_KEY)).orElse(IstioConstant.DEFAULT_SECRET_TTL));
         secretGracePeriodRatio = Float.parseFloat(Optional.ofNullable(System.getenv(IstioConstant.SECRET_GRACE_PERIOD_RATIO_KEY)).orElse(IstioConstant.DEFAULT_SECRET_GRACE_PERIOD_RATIO));
         istioMetaClusterId = Optional.ofNullable(System.getenv(IstioConstant.ISTIO_META_CLUSTER_ID_KEY)).orElse(IstioConstant.DEFAULT_ISTIO_META_CLUSTER_ID);
+        pilotCertProvider = Optional.ofNullable(System.getenv(IstioConstant.PILOT_CERT_PROVIDER_KEY)).orElse("");
 
         if (getServiceAccount() == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. " +
@@ -159,13 +162,10 @@ public class IstioEnv implements XdsEnv {
 
     public String getCaCert() {
         File caFile;
-        switch (jwtPolicy) {
-            case IstioConstant.FIRST_PARTY_JWT:
-                caFile = new File(IstioConstant.KUBERNETES_CA_PATH);
-                break;
-            case IstioConstant.THIRD_PARTY_JWT:
-            default:
-                caFile = new File(IstioConstant.ISTIO_CA_PATH);
+        if (IstioConstant.ISTIO_PILOT_CERT_PROVIDER.equals(pilotCertProvider)) {
+            caFile = new File(IstioConstant.ISTIO_CA_PATH);
+        } else {
+            return null;
         }
         if (caFile.canRead()) {
             try {
