@@ -91,7 +91,7 @@ public class CompositeConfiguration implements Configuration {
     public Object getInternalProperty(String key, Object defaultValue) {
         for (Configuration config : configList) {
             try {
-                Object value = config.getProperty(key);
+                Object value = config.getProperty(key, defaultValue);
                 if (!ConfigurationUtils.isEmptyValue(value)) {
                     return value;
                 }
