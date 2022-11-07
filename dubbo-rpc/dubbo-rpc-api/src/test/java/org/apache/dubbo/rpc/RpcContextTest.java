@@ -43,7 +43,8 @@ public class RpcContextTest {
         RpcContext serverRpcContext = RpcContext.getServerContext();
         Assertions.assertNotNull(serverRpcContext);
 
-        Assertions.assertEquals(serverRpcContext, RpcContext.getServerContext());
+        RpcContext.removeServerContext();
+        Assertions.assertNotEquals(serverRpcContext, RpcContext.getServerContext());
 
     }
 
