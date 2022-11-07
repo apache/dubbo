@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.config.bootstrap.builders;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_SERVICE_CONFIG_ERROR;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
@@ -40,6 +28,18 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 public class InternalServiceConfigBuilder<T> {
 
@@ -143,7 +143,7 @@ public class InternalServiceConfigBuilder<T> {
                     }
                 }
             } catch (Exception e) {
-                logger.error(INTERNAL_SERVICE_CONFIG_ERROR, "invalid specified " + port + "  port, error "+e.getMessage(),
+                logger.error(INTERNAL_ERROR, "invalid specified " + port + "  port, error "+e.getMessage(),
                     "", "Failed to find any valid protocol, will use random port to export  service.",e);
             }
         }
@@ -165,6 +165,9 @@ public class InternalServiceConfigBuilder<T> {
         this.nullAssert();
 
         logger.info("Using " + this.protocol + " protocol to export "+interfaceClass.getName()+" service on port " + protocolConfig.getPort());
+
+        applicationModel.getApplicationConfigManager().getProtocol(this.protocol)
+            .ifPresent(protocolConfig::mergeProtocol);
 
         ApplicationConfig applicationConfig = getApplicationConfig();
 
