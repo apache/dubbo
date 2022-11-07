@@ -59,7 +59,7 @@ public class StaticDirectoryTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
 
-        List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false, new Holder<>());
+        List<Invoker<String>> filteredInvokers = router.route(invokers.clone(), URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false, new Holder<>());
         StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
         boolean isAvailable = staticDirectory.isAvailable();
         Assertions.assertTrue(!isAvailable);

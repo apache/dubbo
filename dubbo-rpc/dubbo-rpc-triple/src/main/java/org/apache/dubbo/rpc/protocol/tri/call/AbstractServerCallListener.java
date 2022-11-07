@@ -68,7 +68,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     return;
                 }
                 if (response.hasException()) {
-                    responseObserver.onError(response.getException());
+                    onReturn(response.getException());
                     return;
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;

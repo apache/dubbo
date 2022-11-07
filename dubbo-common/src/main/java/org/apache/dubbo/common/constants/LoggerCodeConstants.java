@@ -154,7 +154,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
-    // cluster module
+    String REGISTRY_ROUTER_WAIT_LONG = "1-40";
+
+    // cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
     String CLUSTER_NO_VALID_PROVIDER = "2-2";
@@ -195,7 +197,7 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    // proxy module
+    // proxy module 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
