@@ -161,8 +161,6 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
         }
 
         public AttachmentMap(RpcServerContextAttachment rpcServerContextAttachment) {
-            Map<String, String> attachmentMap = this;
-            attachmentMap.putAll(getAllAttachmentMap());
             this.rpcServerContextAttachment = rpcServerContextAttachment;
         }
 
