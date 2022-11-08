@@ -370,8 +370,8 @@ public class RpcUtilsTest {
         Assertions.assertNotNull(parameterTypes5);
         Assertions.assertEquals(3, parameterTypes5.length);
         Assertions.assertEquals(String.class, parameterTypes5[0]);
-        Assertions.assertEquals(String.class, parameterTypes5[1]);
-        Assertions.assertEquals(String.class, parameterTypes5[2]);
+        Assertions.assertEquals(void.class, parameterTypes5[1]);
+        Assertions.assertEquals(Object.class, parameterTypes5[2]);
     }
 
     @ParameterizedTest
