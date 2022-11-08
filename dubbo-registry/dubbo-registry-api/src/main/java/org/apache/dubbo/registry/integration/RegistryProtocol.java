@@ -90,6 +90,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -571,7 +573,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
         if (!(invoker instanceof MigrationClusterInvoker)) {
-            logger.error("Only invoker type of MigrationClusterInvoker supports reRefer, current invoker is " + invoker.getClass());
+            logger.error(REGISTRY_UNSUPPORTED_CATEGORY, "", "", "Only invoker type of MigrationClusterInvoker supports reRefer, current invoker is " + invoker.getClass());
             return;
         }
 
@@ -744,7 +746,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             String key = getCacheKey(originInvoker);
             ExporterChangeableWrapper<?> exporter = bounds.get(key);
             if (exporter == null) {
-                logger.warn(new IllegalStateException("error state, exporter should not be null"));
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "error state, exporter should not be null", new IllegalStateException("error state, exporter should not be null"));
                 return;
             }
             //The current, may have been merged many times
@@ -891,7 +893,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             try {
                 registry.unregister(registerUrl);
             } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
             try {
                 if (subscribeUrl != null) {
@@ -914,7 +916,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     }
                 }
             } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
 
             //TODO wait for shutdown timeout is a bit strange
@@ -923,7 +925,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 try {
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
                 }
             }, timeout, TimeUnit.MILLISECONDS);
         }

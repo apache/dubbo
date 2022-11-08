@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -36,8 +37,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
-
-import com.alibaba.fastjson.JSONObject;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -139,7 +138,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private void updateInstanceMetadata(ServiceInstance serviceInstance) {
-        String metadataString = JSONObject.toJSONString(serviceInstance.getMetadata());
+        String metadataString = JsonUtils.getJson().toJson(serviceInstance.getMetadata());
         String metadataRevision = RevisionResolver.calRevision(metadataString);
 
         // check if metadata updated
@@ -201,7 +200,7 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
             // Metadata will be updated by provider callback
 
             String metadataString = metadataMap.get(hostId);
-            serviceInstance.setMetadata(JSONObject.parseObject(metadataString, Map.class));
+            serviceInstance.setMetadata(JsonUtils.getJson().toJavaObject(metadataString, Map.class));
         } else {
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
             MetadataService metadataService = getMetadataServiceProxy(serviceInstance);
@@ -220,12 +219,12 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
                     }
                 });
             metadataMap.put(hostId, metadata);
-            serviceInstance.setMetadata(JSONObject.parseObject(metadata, Map.class));
+            serviceInstance.setMetadata(JsonUtils.getJson().toJavaObject(metadata, Map.class));
         }
     }
 
     public final void notifyListener(String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> instances) {
-        String serviceInstanceRevision = RevisionResolver.calRevision(JSONObject.toJSONString(instances));
+        String serviceInstanceRevision = RevisionResolver.calRevision(JsonUtils.getJson().toJson(instances));
         boolean changed = !serviceInstanceRevision.equalsIgnoreCase(
             serviceInstanceRevisionMap.put(serviceName, serviceInstanceRevision));
 

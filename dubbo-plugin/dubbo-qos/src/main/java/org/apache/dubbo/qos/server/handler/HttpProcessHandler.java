@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.CommandExecutor;
@@ -37,6 +37,9 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_COMMAND_NOT_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_UNEXPECTED_EXCEPTION;
+
 /**
  * Parse HttpRequest for uri and parameters
  * <p>
@@ -50,7 +53,7 @@ import io.netty.handler.codec.http.HttpVersion;
  */
 public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
-    private static final Logger log = LoggerFactory.getLogger(HttpProcessHandler.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(HttpProcessHandler.class);
     private CommandExecutor commandExecutor;
 
     public HttpProcessHandler(FrameworkModel frameworkModel) {
@@ -59,7 +62,7 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
 
     private static FullHttpResponse http(int httpCode, String result) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode)
-                , Unpooled.wrappedBuffer(result.getBytes()));
+            , Unpooled.wrappedBuffer(result.getBytes()));
         HttpHeaders httpHeaders = response.headers();
         httpHeaders.set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
         httpHeaders.set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
@@ -79,7 +82,7 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
         CommandContext commandContext = HttpCommandDecoder.decode(msg);
         // return 404 when fail to construct command context
         if (commandContext == null) {
-            log.warn("can not found commandContext, url: " + msg.uri());
+            log.warn(QOS_UNEXPECTED_EXCEPTION, "", "", "can not found commandContext, url: " + msg.uri());
             FullHttpResponse response = http404();
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         } else {
@@ -90,11 +93,11 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
                 FullHttpResponse response = http(httpCode, result);
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (NoSuchCommandException ex) {
-                log.error("can not find command: " + commandContext, ex);
+                log.error(QOS_COMMAND_NOT_FOUND, "", "", "can not find command: " + commandContext, ex);
                 FullHttpResponse response = http404();
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             } catch (Exception qosEx) {
-                log.error("execute commandContext: " + commandContext + " got exception", qosEx);
+                log.error(QOS_UNEXPECTED_EXCEPTION, "", "", "execute commandContext: " + commandContext + " got exception", qosEx);
                 FullHttpResponse response = http(500, qosEx.getMessage());
                 ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
             }

@@ -24,9 +24,11 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 
@@ -142,6 +144,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     @Deprecated
     private Boolean exportAsync;
+
+    /**
+     * used for thread pool isolation between services
+     */
+    private Executor executor;
 
     public AbstractServiceConfig() {
     }
@@ -359,4 +366,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     public void setExportAsync(Boolean exportAsync) {
         this.exportAsync = exportAsync;
     }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    @Parameter(key = SERVICE_EXECUTOR)
+    public Executor getExecutor() {
+        return executor;
+    }
+
 }

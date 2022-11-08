@@ -18,9 +18,14 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoop;
 import org.apache.dubbo.common.BatchExecutorQueue;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * netty4 batch write queue
@@ -30,6 +35,10 @@ public class Netty4BatchWriteQueue extends BatchExecutorQueue<Netty4BatchWriteQu
     private final Channel channel;
 
     private final EventLoop eventLoop;
+
+    private final Queue<ChannelPromise> promises = new LinkedList<>();
+
+    private final MultiMessage multiMessage = MultiMessage.create();
 
     private Netty4BatchWriteQueue(Channel channel) {
         this.channel = channel;
@@ -48,13 +57,31 @@ public class Netty4BatchWriteQueue extends BatchExecutorQueue<Netty4BatchWriteQu
 
     @Override
     protected void prepare(MessageTuple item) {
-        channel.write(item.originMessage, item.channelPromise);
+        multiMessage.addMessage(item.originMessage);
+        promises.add(item.channelPromise);
     }
 
     @Override
     protected void flush(MessageTuple item) {
         prepare(item);
-        channel.flush();
+        Object finalMessage = multiMessage;
+        if (multiMessage.size() == 1) {
+            finalMessage = multiMessage.get(0);
+        }
+        channel.writeAndFlush(finalMessage).addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) throws Exception {
+                ChannelPromise cp;
+                while ((cp = promises.poll()) != null) {
+                    if (future.isSuccess()){
+                        cp.setSuccess();
+                    } else {
+                        cp.setFailure(future.cause());
+                    }
+                }
+            }
+        });
+        this.multiMessage.removeMessages();
     }
 
     public static Netty4BatchWriteQueue createWriteQueue(Channel channel) {

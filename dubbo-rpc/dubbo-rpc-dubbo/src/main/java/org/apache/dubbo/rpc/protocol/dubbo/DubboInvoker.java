@@ -52,6 +52,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHME
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -181,7 +182,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                             client.close(serverShutdownTimeout);
                         }
                     } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+                        logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
                     }
                 }
 

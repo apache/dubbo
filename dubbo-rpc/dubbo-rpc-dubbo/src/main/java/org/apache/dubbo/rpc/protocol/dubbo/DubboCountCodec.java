@@ -44,7 +44,14 @@ public final class DubboCountCodec implements Codec2 {
 
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
-        codec.encode(channel, buffer, msg);
+        if (msg instanceof MultiMessage) {
+            MultiMessage multiMessage = (MultiMessage) msg;
+            for (Object singleMessage : multiMessage) {
+                codec.encode(channel, buffer, singleMessage);
+            }
+        } else {
+            codec.encode(channel, buffer, msg);
+        }
     }
 
     @Override

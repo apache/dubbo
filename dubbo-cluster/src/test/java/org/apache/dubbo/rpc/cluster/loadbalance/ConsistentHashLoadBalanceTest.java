@@ -34,6 +34,34 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
+    public void testConsistentHashLoadBalanceInGenericCall() {
+        int runs = 10000;
+        Map<Invoker, AtomicLong> genericInvokeCounter = getGenericInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+        Map<Invoker, AtomicLong> invokeCounter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
+
+        Invoker genericHitted = findHitted(genericInvokeCounter);
+        Invoker hitted = findHitted(invokeCounter);
+
+        Assertions.assertEquals(hitted,
+            genericHitted, "hitted should equals to genericHitted");
+    }
+
+    private Invoker findHitted(Map<Invoker,AtomicLong> invokerCounter) {
+        Invoker invoker = null;
+
+        for (Map.Entry<Invoker,AtomicLong> entry : invokerCounter.entrySet()) {
+            if (entry.getValue().longValue() > 0) {
+                invoker = entry.getKey();
+                break;
+            }
+        }
+
+        Assertions.assertNotNull(invoker,"invoker should be found");
+
+        return null;
+    }
+
+    @Test
     public void testConsistentHashLoadBalance() {
         int runs = 10000;
         long unHitedInvokerCount = 0;

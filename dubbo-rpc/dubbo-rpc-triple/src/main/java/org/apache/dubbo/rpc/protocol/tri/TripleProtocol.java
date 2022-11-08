@@ -75,7 +75,7 @@ public class TripleProtocol extends AbstractProtocol {
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
         CONVERT_NO_LOWER_HEADER = ConfigurationUtils.getEnvConfiguration(ApplicationModel.defaultModel())
-            .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, false);
+            .getBoolean(H2_SUPPORT_NO_LOWER_HEADER_KEY, true);
         Set<String> supported = frameworkModel.getExtensionLoader(DeCompressor.class)
             .getSupportedExtensions();
         this.acceptEncodings = String.join(",", supported);
@@ -120,9 +120,7 @@ public class TripleProtocol extends AbstractProtocol {
         triBuiltinService.getHealthStatusManager()
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
         // init
-        url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
-            .createExecutorIfAbsent(url);
+        ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).createExecutorIfAbsent(url);
 
         PortUnificationExchanger.bind(url, new DefaultPuHandler());
         optimizeSerialization(url);
@@ -141,9 +139,7 @@ public class TripleProtocol extends AbstractProtocol {
     }
 
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
-        ExecutorService executor = applicationModel.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension()
-            .createExecutorIfAbsent(url);
+        ExecutorService executor = ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(url);
         Objects.requireNonNull(executor,
             String.format("No available executor found in %s", url));
         return executor;

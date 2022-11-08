@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.common.threadpool.serial;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 
@@ -26,6 +26,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_RUN_THREAD_TASK;
+
 /**
  * Executor ensuring that all {@link Runnable} tasks submitted are executed in order
  * using the provided {@link Executor}, and serially such that no two will ever be
@@ -33,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class SerializingExecutor implements Executor, Runnable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SerializingExecutor.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(SerializingExecutor.class);
 
     /**
      * Use false to stop and true to run
@@ -100,7 +102,7 @@ public final class SerializingExecutor implements Executor, Runnable {
                     InternalThreadLocal.removeAll();
                     r.run();
                 } catch (RuntimeException e) {
-                    LOGGER.error("Exception while executing runnable " + r, e);
+                    LOGGER.error(COMMON_ERROR_RUN_THREAD_TASK, "", "", "Exception while executing runnable " + r, e);
                 } finally {
                     InternalThreadLocal.removeAll();
                 }

@@ -17,8 +17,9 @@
 package org.apache.dubbo.registry.xds.istio;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -26,6 +27,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import istio.v1.auth.IstioCertificateRequest;
@@ -63,9 +65,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_CERT_ISTIO;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_GENERATE_KEY_ISTIO;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_RECEIVE_ERROR_MSG_ISTIO;
+
 public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
-    private static final Logger logger = LoggerFactory.getLogger(IstioCitadelCertificateSigner.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(IstioCitadelCertificateSigner.class);
 
     private final org.apache.dubbo.registry.xds.istio.IstioEnv istioEnv;
 
@@ -100,7 +106,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 try {
                     certPair = createCert();
                 } catch (IOException e) {
-                    logger.error("Generate Cert from Istio failed.", e);
+                    logger.error(REGISTRY_FAILED_GENERATE_CERT_ISTIO, "", "", "Generate Cert from Istio failed.", e);
                     throw new RpcException("Generate Cert from Istio failed.", e);
                 }
             }
@@ -123,7 +129,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 privateKey = keypair.getPrivate();
                 signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keypair.getPrivate());
             } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | OperatorCreationException e) {
-                logger.error("Generate Key with secp256r1 algorithm failed. Please check if your system support. "
+                logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with secp256r1 algorithm failed. Please check if your system support. "
                     + "Will attempt to generate with RSA2048.", e);
             }
         }
@@ -137,18 +143,28 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 privateKey = keypair.getPrivate();
                 signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keypair.getPrivate());
             } catch (NoSuchAlgorithmException | OperatorCreationException e) {
-                logger.error("Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.", e);
+                logger.error(REGISTRY_FAILED_GENERATE_KEY_ISTIO, "", "", "Generate Key with SHA256WithRSA algorithm failed. Please check if your system support.", e);
                 throw new RpcException(e);
             }
         }
 
         String csr = generateCsr(publicKey, signer);
-        ManagedChannel channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
-            .sslContext(
-                GrpcSslContexts.forClient()
-                    .trustManager(new ByteArrayInputStream(istioEnv.getCaCert().getBytes(StandardCharsets.UTF_8)))
+        String caCert = istioEnv.getCaCert();
+        ManagedChannel channel;
+        if (StringUtils.isNotEmpty(caCert)) {
+            channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
+                .sslContext(
+                    GrpcSslContexts.forClient()
+                        .trustManager(new ByteArrayInputStream(caCert.getBytes(StandardCharsets.UTF_8)))
+                        .build())
+                .build();
+        } else {
+            channel = NettyChannelBuilder.forTarget(istioEnv.getCaAddr())
+                .sslContext(GrpcSslContexts.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
                     .build())
-            .build();
+                .build();
+        }
 
         Metadata header = new Metadata();
         Metadata.Key<String> key = Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER);
@@ -207,7 +223,7 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
             @Override
             public void onError(Throwable throwable) {
                 failed.set(true);
-                logger.error("Receive error message from Istio Citadel grpc stub.", throwable);
+                logger.error(REGISTRY_RECEIVE_ERROR_MSG_ISTIO, "", "", "Receive error message from Istio Citadel grpc stub.", throwable);
                 countDownLatch.countDown();
             }
 

@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
@@ -33,11 +33,12 @@ import org.apache.dubbo.rpc.RpcException;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_RESPONSE;
 
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     private final static String CLIENT_IP_KEY = "client_ip";
-    private final static Logger logger = LoggerFactory.getLogger(ProfilerServerFilter.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ProfilerServerFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -94,12 +95,13 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                 attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
             });
 
-            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
-                    "client: %s\n" +
-                    "invocation context:\n%s" +
-                    "thread info: \n%s",
-                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000, timeout,
-                invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
+            logger.warn(PROXY_TIMEOUT_RESPONSE, "", "",
+                String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
+                        "client: %s\n" +
+                        "invocation context:\n%s" +
+                        "thread info: \n%s",
+                    invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000, timeout,
+                    invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
         }
     }
 }

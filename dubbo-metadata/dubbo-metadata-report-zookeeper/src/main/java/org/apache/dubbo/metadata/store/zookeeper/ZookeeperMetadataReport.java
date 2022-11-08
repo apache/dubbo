@@ -18,7 +18,7 @@ package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
 
@@ -55,7 +56,7 @@ import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
  */
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
-    private final static Logger logger = LoggerFactory.getLogger(ZookeeperMetadataReport.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ZookeeperMetadataReport.class);
 
     private final String root;
 
@@ -200,7 +201,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
             zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
             return true;
         } catch (Exception e) {
-            logger.warn("zookeeper publishConfigCas failed.", e);
+            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "zookeeper publishConfigCas failed.", e);
             return false;
         }
     }

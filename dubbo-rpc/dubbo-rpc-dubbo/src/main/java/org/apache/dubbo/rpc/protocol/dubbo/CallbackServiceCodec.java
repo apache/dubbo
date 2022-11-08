@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -52,6 +52,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_LOAD_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES;
 import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
@@ -62,7 +65,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
  * callback service helper
  */
 public class CallbackServiceCodec {
-    private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CallbackServiceCodec.class);
 
     private static final byte CALLBACK_NONE = 0x0;
     private static final byte CALLBACK_CREATE = 0x1;
@@ -149,7 +152,7 @@ public class CallbackServiceCodec {
                     if (inv.getServiceModel() == null) {
                         //TODO should get scope model from url?
                         moduleModel = ApplicationModel.defaultModel().getDefaultModule();
-                        logger.error("Unable to get Service Model from Invocation. Please check if your invocation failed! " +
+                        logger.error(PROTOCOL_FAILED_LOAD_MODEL, "", "", "Unable to get Service Model from Invocation. Please check if your invocation failed! " +
                             "This error only happen in UT cases! Invocation:" + inv);
                     } else {
                         moduleModel = inv.getServiceModel().getModuleModel();
@@ -229,7 +232,7 @@ public class CallbackServiceCodec {
                     }
                     invoker.destroy();
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", e.getMessage(), e);
                 }
                 // cancel refer, directly remove from the map
                 channel.removeAttribute(proxyCacheKey);
@@ -283,7 +286,7 @@ public class CallbackServiceCodec {
             }
             channel.setAttribute(countkey, count);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", e.getMessage(), e);
         }
     }
 
@@ -297,7 +300,7 @@ public class CallbackServiceCodec {
             }
             channel.setAttribute(countkey, count);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", e.getMessage(), e);
         }
     }
 
@@ -337,7 +340,7 @@ public class CallbackServiceCodec {
                 try {
                     return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", e.getMessage(), e);
                     throw new IOException(StringUtils.toString(e));
                 }
             case CallbackServiceCodec.CALLBACK_DESTROY:

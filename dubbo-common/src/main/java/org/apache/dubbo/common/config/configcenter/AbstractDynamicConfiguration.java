@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * The abstract implementation of {@link DynamicConfiguration}
@@ -88,14 +89,14 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
 
     protected AbstractDynamicConfiguration(URL url) {
         this(getThreadPoolPrefixName(url), getThreadPoolSize(url), getThreadPoolKeepAliveTime(url), getGroup(url),
-                getTimeout(url));
+            getTimeout(url));
     }
 
     protected AbstractDynamicConfiguration(String threadPoolPrefixName,
-                                        int threadPoolSize,
-                                        long keepAliveTime,
-                                        String group,
-                                        long timeout) {
+                                           int threadPoolSize,
+                                           long keepAliveTime,
+                                           String group,
+                                           long timeout) {
         this.workersThreadPool = initWorkersThreadPool(threadPoolPrefixName, threadPoolSize, keepAliveTime);
         this.group = group;
         this.timeout = timeout;
@@ -212,7 +213,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
             }
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
+                logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
             }
         }
         return value;
@@ -236,7 +237,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
                                                        int threadPoolSize,
                                                        long keepAliveTime) {
         return new ThreadPoolExecutor(threadPoolSize, threadPoolSize, keepAliveTime,
-                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName, true));
+            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName, true));
     }
 
     protected static String getThreadPoolPrefixName(URL url) {

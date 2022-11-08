@@ -21,7 +21,7 @@ import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -44,6 +44,7 @@ import java.lang.reflect.Type;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -52,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 @Activate(group = CommonConstants.CONSUMER, value = GENERIC_KEY, order = 20000)
 public class GenericImplFilter implements Filter, Filter.Listener {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(GenericImplFilter.class);
 
     private static final Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
 
@@ -120,7 +121,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             }
 
             invocation.setAttachment(
-                    GENERIC_KEY, invoker.getUrl().getParameter(GENERIC_KEY));
+                GENERIC_KEY, invoker.getUrl().getParameter(GENERIC_KEY));
         }
         return invoker.invoke(invocation);
     }
@@ -141,7 +142,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                 try {
                     Class<?> invokerInterface = invoker.getInterface();
                     if (!$INVOKE.equals(methodName) && !$INVOKE_ASYNC.equals(methodName)
-                            && invokerInterface.isAssignableFrom(GenericService.class)) {
+                        && invokerInterface.isAssignableFrom(GenericService.class)) {
                         try {
                             // find the real interface from url
                             String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
@@ -195,7 +196,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             }
                             field.set(targetException, exception.getExceptionMessage());
                         } catch (Throwable e) {
-                            logger.warn(e.getMessage(), e);
+                            logger.warn(COMMON_FAILED_REFLECT, "", "", e.getMessage(), e);
                         }
                         appResponse.setException(targetException);
                     } else if (lastException != null) {
@@ -215,15 +216,15 @@ public class GenericImplFilter implements Filter, Filter.Listener {
 
     private boolean isCallingGenericImpl(String generic, Invocation invocation) {
         return ProtocolUtils.isGeneric(generic)
-                && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
-                && invocation instanceof RpcInvocation;
+            && (!$INVOKE.equals(invocation.getMethodName()) && !$INVOKE_ASYNC.equals(invocation.getMethodName()))
+            && invocation instanceof RpcInvocation;
     }
 
     private boolean isMakingGenericCall(String generic, Invocation invocation) {
         return (invocation.getMethodName().equals($INVOKE) || invocation.getMethodName().equals($INVOKE_ASYNC))
-                && invocation.getArguments() != null
-                && invocation.getArguments().length == 3
-                && ProtocolUtils.isGeneric(generic);
+            && invocation.getArguments() != null
+            && invocation.getArguments().length == 3
+            && ProtocolUtils.isGeneric(generic);
     }
 
 }

@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.CancellationContext;
@@ -50,10 +50,15 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_CREATE_STREAM_TRIPLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+
 public abstract class AbstractServerCall implements ServerCall, ServerStream.Listener {
 
     public static final String REMOTE_ADDRESS_KEY = "tri.remote.address";
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCall.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractServerCall.class);
 
     public final Invoker<?> invoker;
     public final FrameworkModel frameworkModel;
@@ -141,7 +146,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         } catch (Throwable e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
-            LOGGER.error(String.format("Serialize triple response failed, service=%s method=%s",
+            LOGGER.error(PROTOCOL_FAILED_SERIALIZE_TRIPLE,"","",String.format("Serialize triple response failed, service=%s method=%s",
                 serviceName, methodName), e);
             return;
         }
@@ -183,7 +188,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
                 .withCause(t);
             close(status, null);
-            LOGGER.error("Process request failed. service=" + serviceName +
+            LOGGER.error(PROTOCOL_FAILED_REQUEST,"","","Process request failed. service=" + serviceName +
                 " method=" + methodName, t);
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
@@ -229,7 +234,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
                 this.timeout = parseTimeoutToMills(timeout);
             }
         } catch (Throwable t) {
-            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s "
+            LOGGER.warn(PROTOCOL_FAILED_PARSE, "", "", String.format("Failed to parse request timeout set from:%s, service=%s "
                 + "method=%s", timeout, serviceDescriptor.getInterfaceName(), methodName));
         }
         if (null != requestMetadata.get(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader())) {
@@ -348,7 +353,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
         closed = true;
         stream.complete(status, null);
-        LOGGER.error("Triple request error: service=" + serviceName + " method" + methodName,
+        LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "Triple request error: service=" + serviceName + " method" + methodName,
             status.asException());
     }
 
@@ -383,7 +388,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
             }
             return listener;
         } catch (Throwable t) {
-            LOGGER.error("Create triple stream failed", t);
+            LOGGER.error(PROTOCOL_FAILED_CREATE_STREAM_TRIPLE, "", "", "Create triple stream failed", t);
             responseErr(TriRpcStatus.INTERNAL.withDescription("Create stream failed")
                 .withCause(t));
         }

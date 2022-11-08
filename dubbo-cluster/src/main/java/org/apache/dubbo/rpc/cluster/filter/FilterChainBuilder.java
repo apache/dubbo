@@ -35,7 +35,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_ASYN_INVOKE_FAILED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_EXECUTE_FILTER_EXCEPTION;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 @SPI(value = "default", scope = APPLICATION)
@@ -221,7 +221,7 @@ public interface FilterChainBuilder {
                             }
                         }
                     } catch (RuntimeException runtimeException) {
-                        LOGGER.error(CLUSTER_ASYN_INVOKE_FAILED,"asyn Invoke exception","",String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()),runtimeException);
+                        LOGGER.error(CLUSTER_EXECUTE_FILTER_EXCEPTION, "the custom filter is abnormal", "", String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug(String.format("Whole filter list is: %s", filters.stream().map(tmpFilter -> tmpFilter.getClass().getSimpleName()).collect(Collectors.toList())));
                         }

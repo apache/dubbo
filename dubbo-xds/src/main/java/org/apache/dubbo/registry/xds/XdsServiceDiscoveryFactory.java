@@ -17,23 +17,25 @@
 package org.apache.dubbo.registry.xds;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_INITIALIZE_XDS;
+
 public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
-    private static final Logger logger = LoggerFactory.getLogger(XdsServiceDiscoveryFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsServiceDiscoveryFactory.class);
 
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        XdsServiceDiscovery xdsServiceDiscovery = new XdsServiceDiscovery(ApplicationModel.defaultModel() ,registryURL);
+        XdsServiceDiscovery xdsServiceDiscovery = new XdsServiceDiscovery(ApplicationModel.defaultModel(), registryURL);
         try {
             xdsServiceDiscovery.doInitialize(registryURL);
         } catch (Exception e) {
-            logger.error("Error occurred when initialize xDS service discovery impl.", e);
+            logger.error(REGISTRY_ERROR_INITIALIZE_XDS, "", "", "Error occurred when initialize xDS service discovery impl.", e);
         }
         return xdsServiceDiscovery;
     }

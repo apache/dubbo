@@ -40,6 +40,8 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -96,7 +98,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         this.serviceInstance = createServiceInstance(this.metadataInfo);
         if (!isValidInstance(this.serviceInstance)) {
-            logger.warn("No valid instance found, stop registering instance address to registry.");
+            logger.warn(REGISTRY_FAILED_FETCH_INSTANCE, "", "", "No valid instance found, stop registering instance address to registry.");
             return;
         }
 
@@ -195,7 +197,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             }
 
             if (metadata == MetadataInfo.EMPTY) {
-                logger.error("Failed to get metadata for revision after 3 retries, revision=" + revision);
+                logger.error(REGISTRY_FAILED_LOAD_METADATA, "", "", "Failed to get metadata for revision after 3 retries, revision=" + revision);
             } else {
                 metaCacheManager.put(revision, metadata);
             }
@@ -205,7 +207,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public MetadataInfo getRemoteMetadata(String revision) {
-       return metaCacheManager.get(revision);
+        return metaCacheManager.get(revision);
     }
 
     @Override
@@ -242,7 +244,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public List<URL> lookup(URL url) {
-       throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
+        throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
     protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
@@ -310,7 +312,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
         StringBuilder stringBuilder = new StringBuilder(128);
         Optional<ApplicationConfig> application = applicationModel.getApplicationConfigManager().getApplication();
-        if(application.isPresent()) {
+        if (application.isPresent()) {
             stringBuilder.append(application.get().getName());
             stringBuilder.append(".");
         }
