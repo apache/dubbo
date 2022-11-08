@@ -187,6 +187,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.31</version>
+            </dependency>
             <!-- Common libs -->
             <dependency>
                 <groupId>org.springframework</groupId>
