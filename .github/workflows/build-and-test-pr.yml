@@ -28,6 +28,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check Dependencies' License
         uses: apache/skywalking-eyes/dependency@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           log: debug
           config: .licenserc.yaml # optional: set the config file. The default value is `.licenserc.yaml`.
