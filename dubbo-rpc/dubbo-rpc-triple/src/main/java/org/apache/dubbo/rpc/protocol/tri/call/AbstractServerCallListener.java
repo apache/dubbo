@@ -50,7 +50,6 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         RpcContext.restoreCancellationContext(cancellationContext);
         InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
             .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
-        RpcContext.getServerResponseContext().setRemoteAddress(remoteAddress);
         RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes()
             .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
