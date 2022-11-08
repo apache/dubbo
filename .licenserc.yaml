@@ -84,3 +84,4 @@ header:
 dependency:
   files:
     - pom.xml
+    - dubbo-dependencies-bom/pom.xml
