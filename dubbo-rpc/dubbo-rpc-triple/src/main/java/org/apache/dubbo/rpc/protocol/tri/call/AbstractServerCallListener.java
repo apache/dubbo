@@ -54,7 +54,6 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         String remoteApp = (String) invocation.getAttributes()
             .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
-            RpcContext.getServerResponseContext().setRemoteApplicationName(remoteApp);
             RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
         }
         final long stInMillis = System.currentTimeMillis();
