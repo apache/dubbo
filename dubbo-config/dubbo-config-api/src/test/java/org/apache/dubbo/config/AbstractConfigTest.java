@@ -24,9 +24,9 @@ import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +37,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -586,23 +585,14 @@ public class AbstractConfigTest {
 
             Map<String, String> external = new HashMap<>();
             external.put("notConflictKey", "value-from-external");
-
-            try {
-                Map<String, String> map = new HashMap<>();
-                map.put("notConflictKey", "value-from-env");
-                map.put("dubbo.override.notConflictKey2", "value-from-env");
-                setOsEnv(map);
-            } catch (Exception e) {
-                // ignore
-                e.printStackTrace();
-            }
+            external.put("dubbo.override.notConflictKey2", "value-from-external");
 
             ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             overrideConfig.refresh();
 
             Assertions.assertEquals("value-from-config", overrideConfig.getNotConflictKey());
-            Assertions.assertEquals("value-from-env", overrideConfig.getNotConflictKey2());
+            Assertions.assertEquals("value-from-external", overrideConfig.getNotConflictKey2());
         } finally {
             ApplicationModel.defaultModel().getModelEnvironment().destroy();
 
@@ -1002,34 +992,6 @@ public class AbstractConfigTest {
             this.configFields = configFields;
         }
     }
-
-    protected static void setOsEnv(Map<String, String> newenv) throws Exception {
-        try {
-            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
-            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
-            env.putAll(newenv);
-            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
-            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
-            cienv.putAll(newenv);
-        } catch (NoSuchFieldException e) {
-            Class[] classes = Collections.class.getDeclaredClasses();
-            Map<String, String> env = System.getenv();
-            for (Class cl : classes) {
-                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
-                    Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
-                    Object obj = field.get(env);
-                    Map<String, String> map = (Map<String, String>) obj;
-                    map.clear();
-                    map.putAll(newenv);
-                }
-            }
-        }
-    }
-
 
     @Test
     public void testMetaData() throws Exception {
