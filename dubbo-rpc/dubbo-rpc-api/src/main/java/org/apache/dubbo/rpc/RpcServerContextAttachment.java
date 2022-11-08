@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.Objects;
 
 public class RpcServerContextAttachment extends RpcContextAttachment {
     @Override
@@ -36,7 +35,8 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
 
     @Override
     public RpcContextAttachment setObjectAttachment(String key, Object value) {
-        return (RpcContextAttachment) getObjectAttachments().put(key, value);
+        RpcContext.getServerResponseContext().setObjectAttachment(key, value);
+        return this;
     }
 
     @Override
@@ -56,68 +56,72 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
 
     @Override
     public AsyncContext getAsyncContext() {
-        return RpcContext.getClientResponseContext().getAsyncContext();
+        return RpcContext.getServerAttachment().getAsyncContext();
     }
 
     @Override
     public String getAttachment(String key) {
-        return (String) getObjectAttachment(key);
+        Object attachment = getObjectAttachment(key);
+        if (attachment instanceof String) {
+            return (String) attachment;
+        }
+        return null;
     }
 
     @Override
     public Object getObjectAttachment(String key) {
-        return getAttachmentObjectMap().get(key);
+        Object fromServerResponse = RpcContext.getServerResponseContext().getObjectAttachment(key);
+        if (fromServerResponse == null) {
+            fromServerResponse = RpcContext.getClientResponseContext().getObjectAttachment(key);
+        }
+        return fromServerResponse;
     }
 
     @Override
     public RpcContextAttachment setAttachment(String key, String value) {
-        return (RpcContextAttachment) getAttachmentObjectMap().put(key, value);
-//        return RpcContext.getServerResponseContext().setAttachment(key, value);
+        return RpcContext.getServerResponseContext().setAttachment(key, value);
     }
 
     @Override
     public RpcContextAttachment setAttachment(String key, Object value) {
-        return (RpcContextAttachment) getObjectAttachments().put(key, value);
+        return RpcContext.getServerResponseContext().setAttachment(key, value);
     }
 
     @Override
     public RpcContextAttachment removeAttachment(String key) {
-        return (RpcContextAttachment) getAttachmentObjectMap().remove(key);
+        RpcContext.getServerResponseContext().removeAttachment(key);
+        RpcContext.getClientResponseContext().removeAttachment(key);
+        return this;
     }
 
     @Override
     public Map<String, String> getAttachments() {
-        return getAttachmentMap();
+        return new AttachmentsAdapter.ObjectToStringMap(new ObjectAttachmentMap(this));
     }
 
     @Override
     public Map<String, Object> getObjectAttachments() {
-        return getAttachmentObjectMap();
+        return new ObjectAttachmentMap(this);
     }
 
     @Override
     public RpcContextAttachment setAttachments(Map<String, String> attachment) {
-        getAttachmentMap().putAll(attachment);
-        return (RpcContextAttachment) getAttachmentMap();
+        RpcContext.getServerResponseContext().setAttachments(attachment);
+        RpcContext.getClientResponseContext().clearAttachments();
+        return this;
     }
 
     @Override
     public RpcContextAttachment setObjectAttachments(Map<String, Object> attachment) {
-        getAttachmentObjectMap().putAll(attachment);
-        return (RpcContextAttachment) getAttachmentObjectMap();
+        RpcContext.getServerResponseContext().setObjectAttachments(attachment);
+        RpcContext.getClientResponseContext().clearAttachments();
+        return this;
     }
 
     @Override
     public void clearAttachments() {
-        getAttachmentMap().clear();
-    }
-
-    public Map<String, String> getAttachmentMap() {
-        return new AttachmentMap(this);
-    }
-
-    public Map<String, Object> getAttachmentObjectMap() {
-        return new AttachmentMap(this);
+        RpcContext.getServerResponseContext().clearAttachments();
+        RpcContext.getClientResponseContext().clearAttachments();
     }
 
     @Override
@@ -140,112 +144,93 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
         return getAttachment(key);
     }
 
-    static class AttachmentMap implements Map {
-        private RpcServerContextAttachment rpcServerContextAttachment;
+    static class ObjectAttachmentMap implements Map<String, Object> {
+        private final RpcServerContextAttachment adapter;
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            RpcServerContextAttachment.AttachmentMap that = (RpcServerContextAttachment.AttachmentMap) o;
-            return Objects.equals(rpcServerContextAttachment, that.rpcServerContextAttachment);
+        public ObjectAttachmentMap(RpcServerContextAttachment adapter) {
+            this.adapter = adapter;
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(rpcServerContextAttachment);
+        private Map<String, Object> getAttachments() {
+            Map<String, Object> clientResponse = RpcContext.getClientResponseContext().getObjectAttachments();
+            Map<String, Object> serverResponse = RpcContext.getServerResponseContext().getObjectAttachments();
+            Map<String, Object> result = new HashMap<>((int) (clientResponse.size() + serverResponse.size() / 0.75) + 1);
+            result.putAll(clientResponse);
+            result.putAll(serverResponse);
+            return result;
         }
 
-        public AttachmentMap(RpcServerContextAttachment rpcServerContextAttachment) {
-            this.rpcServerContextAttachment = rpcServerContextAttachment;
-        }
-
-        public Map<String, String> getAllAttachmentMap() {
-            Map<String, String> map = new HashMap<>();
-            Map<String, String> clientResponseContext = RpcContext.getClientResponseContext().getAttachments();
-            Map<String, String> serverResponseContext = RpcContext.getServerResponseContext().getAttachments();
-            map.putAll(clientResponseContext);
-            map.putAll(serverResponseContext);
-            return map;
-        }
         @Override
         public int size() {
-            return getAllAttachmentMap().size();
+            return getAttachments().size();
         }
 
         @Override
         public boolean isEmpty() {
-            return size() == 0;
+            return RpcContext.getClientResponseContext().getObjectAttachments().isEmpty() &&
+                RpcContext.getServerResponseContext().getObjectAttachments().isEmpty();
         }
 
         @Override
         public boolean containsKey(Object key) {
-            return getAllAttachmentMap().containsKey(key);
+            return RpcContext.getClientResponseContext().getObjectAttachments().containsKey(key) ||
+                RpcContext.getServerResponseContext().getObjectAttachments().containsKey(key);
         }
 
         @Override
         public boolean containsValue(Object value) {
-            return getAllAttachmentMap().containsValue(value);
+            return RpcContext.getClientResponseContext().getObjectAttachments().containsValue(value) ||
+                RpcContext.getServerResponseContext().getObjectAttachments().containsValue(value);
         }
 
         @Override
         public Object get(Object key) {
-            Object attachment = getServerResponseContext().getObjectAttachment((String) key);
-            if (attachment != null) {
-                return attachment;
+            if (key instanceof String) {
+                return adapter.getObjectAttachment((String) key);
             } else {
-                return RpcContext.getClientResponseContext().getObjectAttachment((String) key);
+                return null;
             }
         }
 
         @Override
-        public Object put(Object key, Object value) {
-            return RpcContext.getServerResponseContext().setAttachment((String) key, value);
+        public Object put(String key, Object value) {
+            return adapter.setObjectAttachment(key, value);
         }
 
         @Override
         public Object remove(Object key) {
-            RpcContext.getClientResponseContext().removeAttachment((String) key);
-            return RpcContext.getServerResponseContext().removeAttachment((String) key);
+            if (key instanceof String) {
+                return adapter.removeAttachment((String) key);
+            } else {
+                return null;
+            }
         }
 
         @Override
-        public void putAll(Map m) {
-            getAllAttachmentMap().putAll(m);
+        public void putAll(Map<? extends String, ?> m) {
+            for (Entry<? extends String, ?> entry : m.entrySet()) {
+                adapter.setObjectAttachment(entry.getKey(), entry.getValue());
+            }
         }
 
         @Override
         public void clear() {
-            getAllAttachmentMap().clear();
+            adapter.clearAttachments();
         }
 
         @Override
-        public Set keySet() {
-            return getAllAttachmentMap().keySet();
+        public Set<String> keySet() {
+            return getAttachments().keySet();
         }
 
         @Override
-        public Collection values() {
-            return getAllAttachmentMap().values();
+        public Collection<Object> values() {
+            return getAttachments().values();
         }
 
         @Override
-        public Set<Entry<String, String>> entrySet() {
-            return getAllAttachmentMap().entrySet();
+        public Set<Entry<String, Object>> entrySet() {
+            return getAttachments().entrySet();
         }
-    }
-
-
-    /**
-     * get server side context. ( A <-- B , in B side)
-     *
-     * @return server context
-     */
-    public static RpcContextAttachment getServerContext() {
-        return new RpcServerContextAttachment();
     }
 }

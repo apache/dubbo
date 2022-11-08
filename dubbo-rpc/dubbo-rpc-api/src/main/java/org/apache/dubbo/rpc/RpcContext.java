@@ -126,7 +126,7 @@ public class RpcContext {
      * @return server context
      */
     public static RpcContextAttachment getServerContext() {
-        return  RpcServerContextAttachment.getServerContext();
+        return new RpcServerContextAttachment();
     }
 
     /**
