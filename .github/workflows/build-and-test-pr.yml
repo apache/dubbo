@@ -26,6 +26,8 @@ jobs:
         uses: apache/skywalking-eyes@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check Dependencies' License
+        uses: apache/skywalking-eyes/dependency@main
   build-source:
     runs-on: ubuntu-latest
     outputs:
