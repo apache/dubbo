@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.TriRpcStatus;
 
@@ -30,10 +30,12 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
+
 public final class TripleHttp2ClientResponseHandler extends
     SimpleChannelInboundHandler<Http2StreamFrame> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(
         TripleHttp2ClientResponseHandler.class);
     private final H2TransportListener transportListener;
 
@@ -70,7 +72,7 @@ public final class TripleHttp2ClientResponseHandler extends
     }
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
-        LOGGER.warn("Triple Client received remote reset errorCode=" + resetFrame.errorCode());
+        LOGGER.warn(PROTOCOL_FAILED_SERIALIZE_TRIPLE, "", "", "Triple Client received remote reset errorCode=" + resetFrame.errorCode());
         transportListener.cancelByRemote(resetFrame.errorCode());
         ctx.close();
     }
@@ -85,7 +87,7 @@ public final class TripleHttp2ClientResponseHandler extends
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         final TriRpcStatus status = TriRpcStatus.INTERNAL
             .withCause(cause);
-        LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code,
+        LOGGER.warn(PROTOCOL_FAILED_SERIALIZE_TRIPLE, "", "", "Meet Exception on ClientResponseHandler, status code is: " + status.code,
             cause);
         transportListener.cancelByRemote(Http2Error.INTERNAL_ERROR.code());
         ctx.close();

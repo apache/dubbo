@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -56,7 +57,7 @@ import java.util.Set;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
 import org.apache.dubbo.common.infra.InfraAdapter;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -70,7 +71,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  * @export
  */
 public class ApplicationConfig extends AbstractConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationConfig.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ApplicationConfig.class);
 
     private static final long serialVersionUID = 5508512956753757169L;
 
@@ -236,7 +237,7 @@ public class ApplicationConfig extends AbstractConfig {
             try {
                 hostname = InetAddress.getLocalHost().getHostName();
             } catch (UnknownHostException e) {
-                LOGGER.warn("Failed to get the hostname of current instance.", e);
+                LOGGER.warn(COMMON_UNEXPECTED_EXCEPTION,"","","Failed to get the hostname of current instance.", e);
                 hostname = "UNKNOWN";
             }
         }

@@ -41,6 +41,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 import static org.apache.dubbo.config.context.ConfigManager.DUBBO_CONFIG_MODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -192,6 +193,14 @@ public class ConfigManagerTest {
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultProtocols().isEmpty());
         assertEquals(configs, moduleConfigManager.getProtocols());
+        assertNotEquals(20881, config.getPort());
+        assertNotEquals(config.getSerialization(),"fastjson2");
+        ProtocolConfig defaultConfig = new ProtocolConfig();
+        defaultConfig.setPort(20881);
+        defaultConfig.setSerialization("fastjson2");
+        config.mergeProtocol(defaultConfig);
+        assertEquals(config.getPort(),20881);
+        assertEquals(config.getSerialization(),"fastjson2");
     }
 
     // Test RegistryConfig correlative methods

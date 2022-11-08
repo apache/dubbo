@@ -17,7 +17,7 @@
 package org.apache.dubbo.container;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 
@@ -30,6 +30,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_START_DUBBO_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_STOP_DUBBO_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 
 /**
  * Main. (API, Static, ThreadSafe)
@@ -42,7 +45,7 @@ public class Main {
 
     public static final String SHUTDOWN_HOOK_KEY = "dubbo.shutdown.hook";
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Main.class);
 
     private static final ExtensionLoader<Container> LOADER = ExtensionLoader.getExtensionLoader(Container.class);
 
@@ -72,7 +75,7 @@ public class Main {
                                 container.stop();
                                 logger.info("Dubbo " + container.getClass().getSimpleName() + " stopped!");
                             } catch (Throwable t) {
-                                logger.error(t.getMessage(), t);
+                                logger.error(CONFIG_STOP_DUBBO_ERROR, "", "", t.getMessage(), t);
                             }
                             try {
                                 LOCK.lock();
@@ -91,14 +94,14 @@ public class Main {
             }
             System.out.println(new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]").format(new Date()) + " Dubbo service server started!");
         } catch (RuntimeException e) {
-            logger.error(e.getMessage(), e);
+            logger.error(CONFIG_START_DUBBO_ERROR, "", "", e.getMessage(), e);
             System.exit(1);
         }
         try {
             LOCK.lock();
             STOP.await();
         } catch (InterruptedException e) {
-            logger.warn("Dubbo service server stopped, interrupted by other thread!", e);
+            logger.warn(COMMON_THREAD_INTERRUPTED_EXCEPTION, "", "", "Dubbo service server stopped, interrupted by other thread!", e);
         } finally {
             LOCK.unlock();
         }

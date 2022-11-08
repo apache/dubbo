@@ -83,7 +83,7 @@ public class TriRpcStatus {
             return new TriRpcStatus(code, throwable, description);
         }
         if (throwable instanceof TimeoutException) {
-            return new TriRpcStatus(TriRpcStatus.Code.DEADLINE_EXCEEDED, throwable, description);
+            return new TriRpcStatus(Code.DEADLINE_EXCEEDED, throwable, description);
         }
         return new TriRpcStatus(Code.UNKNOWN, throwable, description);
     }
@@ -165,27 +165,27 @@ public class TriRpcStatus {
         return encoder.toString().substring(2);
     }
 
-    public static TriRpcStatus.Code httpStatusToGrpcCode(int httpStatusCode) {
+    public static Code httpStatusToGrpcCode(int httpStatusCode) {
         if (httpStatusCode >= 100 && httpStatusCode < 200) {
-            return TriRpcStatus.Code.INTERNAL;
+            return Code.INTERNAL;
         }
         if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code() ||
             httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
         ) {
-            return TriRpcStatus.Code.INTERNAL;
+            return Code.INTERNAL;
         } else if (httpStatusCode == HttpResponseStatus.UNAUTHORIZED.code()) {
-            return TriRpcStatus.Code.UNAUTHENTICATED;
+            return Code.UNAUTHENTICATED;
         } else if (httpStatusCode == HttpResponseStatus.FORBIDDEN.code()) {
-            return TriRpcStatus.Code.PERMISSION_DENIED;
+            return Code.PERMISSION_DENIED;
         } else if (httpStatusCode == HttpResponseStatus.NOT_FOUND.code()) {
-            return TriRpcStatus.Code.UNIMPLEMENTED;
+            return Code.UNIMPLEMENTED;
         } else if (httpStatusCode == HttpResponseStatus.BAD_GATEWAY.code()
             || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
             || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
             || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
             return Code.UNAVAILABLE;
         } else {
-            return TriRpcStatus.Code.UNKNOWN;
+            return Code.UNKNOWN;
         }
     }
 

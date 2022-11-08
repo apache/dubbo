@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import java.lang.reflect.Constructor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
 import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
@@ -47,7 +48,7 @@ import static org.apache.dubbo.rpc.Constants.STUB_KEY;
  */
 public class StubProxyFactoryWrapper implements ProxyFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StubProxyFactoryWrapper.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(StubProxyFactoryWrapper.class);
 
     private final ProxyFactory proxyFactory;
 
@@ -92,14 +93,14 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                             try {
                                 export(proxy, invoker.getInterface(), urlBuilder.build());
                             } catch (Exception e) {
-                                LOGGER.error("export a stub service error.", e);
+                                LOGGER.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "export a stub service error.", e);
                             }
                         }
                     } catch (NoSuchMethodException e) {
                         throw new IllegalStateException("No such constructor \"public " + stubClass.getSimpleName() + "(" + serviceType.getName() + ")\" in stub implementation class " + stubClass.getName(), e);
                     }
                 } catch (Throwable t) {
-                    LOGGER.error("Failed to create stub implementation class " + stub + " in consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", cause: " + t.getMessage(), t);
+                    LOGGER.error(PROXY_FAILED_EXPORT_SERVICE, "", "", "Failed to create stub implementation class " + stub + " in consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", cause: " + t.getMessage(), t);
                     // ignore
                 }
             }

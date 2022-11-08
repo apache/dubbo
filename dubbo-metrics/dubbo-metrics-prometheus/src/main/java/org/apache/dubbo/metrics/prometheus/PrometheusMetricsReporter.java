@@ -23,7 +23,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.BasicAuthHttpConnectionFactory;
 import io.prometheus.client.exporter.PushGateway;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PORT_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PORT;
@@ -56,7 +57,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSH
  */
 public class PrometheusMetricsReporter extends AbstractMetricsReporter {
 
-    private final Logger logger = LoggerFactory.getLogger(PrometheusMetricsReporter.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PrometheusMetricsReporter.class);
 
     private final PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     private ScheduledExecutorService pushJobExecutor = null;
@@ -125,7 +126,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         try {
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
-            logger.error("Error occurred when pushing metrics to prometheus: ", e);
+            logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Error occurred when pushing metrics to prometheus: ", e);
         }
     }
 

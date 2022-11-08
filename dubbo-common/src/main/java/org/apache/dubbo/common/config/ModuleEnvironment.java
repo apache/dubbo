@@ -19,7 +19,7 @@ package org.apache.dubbo.common.config;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.context.ModuleExt;
 import org.apache.dubbo.common.extension.DisableInject;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -29,11 +29,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
 public class ModuleEnvironment extends Environment implements ModuleExt {
 
     // delegate
 
-    private static final Logger logger = LoggerFactory.getLogger(ModuleEnvironment.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ModuleEnvironment.class);
 
     public static final String NAME = "moduleEnvironment";
 
@@ -97,7 +99,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("dynamicConfiguration is null , return globalConfiguration.");
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "dynamicConfiguration is null , return globalConfiguration.");
                 }
                 return getConfiguration();
             }

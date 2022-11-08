@@ -17,11 +17,12 @@
 package org.apache.dubbo.rpc.listener;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_UNSUPPORTED_INVOKER;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
@@ -30,12 +31,12 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 @Activate(DEPRECATED_KEY)
 public class DeprecatedInvokerListener extends InvokerListenerAdapter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeprecatedInvokerListener.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(DeprecatedInvokerListener.class);
 
     @Override
     public void referred(Invoker<?> invoker) throws RpcException {
         if (invoker.getUrl().getParameter(DEPRECATED_KEY, false)) {
-            LOGGER.error("The service " + invoker.getInterface().getName() + " is DEPRECATED! Declare from " + invoker.getUrl());
+            LOGGER.error(PROXY_UNSUPPORTED_INVOKER,"","","The service " + invoker.getInterface().getName() + " is DEPRECATED! Declare from " + invoker.getUrl());
         }
     }
 

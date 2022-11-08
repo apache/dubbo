@@ -18,7 +18,7 @@ package org.apache.dubbo.monitor.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -46,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
 import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
@@ -60,7 +61,7 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 @Activate(group = {PROVIDER})
 public class MonitorFilter implements Filter, Filter.Listener {
 
-    private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MonitorFilter.class);
     private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";
     private static final String MONITOR_REMOTE_HOST_STORE = "monitor_remote_host_store";
 
@@ -158,7 +159,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
                 monitor.collect(statisticsUrl.toSerializableURL());
             }
         } catch (Throwable t) {
-            logger.warn("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
+            logger.warn(COMMON_MONITOR_EXCEPTION, "", "", "Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
     }
 

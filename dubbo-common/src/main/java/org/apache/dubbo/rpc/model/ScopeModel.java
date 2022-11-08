@@ -21,7 +21,7 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -35,8 +35,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
+
 public abstract class ScopeModel implements ExtensionAccessor {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeModel.class);
+    protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ScopeModel.class);
 
     /**
      * The internal id is used to represent the hierarchy of the model tree, such as:
@@ -122,7 +124,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
                     extensionDirector.destroy();
                 }
             } catch (Throwable t) {
-                LOGGER.error("Error happened when destroying ScopeModel.", t);
+                LOGGER.error(CONFIG_UNABLE_DESTROY_MODEL, "", "", "Error happened when destroying ScopeModel.", t);
             }
         }
     }
