@@ -122,7 +122,7 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
-#      DUBBO_DEFAULT_SERIALIZATION: fastjson2
+      DUBBO_DEFAULT_SERIALIZATION: fastjson2
     steps:
       - uses: actions/checkout@v3
       - name: "Set up JDK ${{ matrix.jdk }}"
