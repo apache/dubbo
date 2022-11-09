@@ -50,6 +50,12 @@
             <artifactId>hessian-lite</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-common</artifactId>
+            <version>3.2.0-beta.1</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

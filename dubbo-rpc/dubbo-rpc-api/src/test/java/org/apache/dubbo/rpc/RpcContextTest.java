@@ -18,9 +18,11 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 
+import org.apache.dubbo.common.url.component.URLParam;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -214,5 +216,74 @@ public class RpcContextTest {
     @Test
     public void testRestore() {
 
+    }
+
+    @Test
+    public void testRpcServerContextAttachment() {
+        RpcContextAttachment attachment = RpcContext.getServerContext();
+        attachment.setAttachment("key_1","value_1");
+        attachment.setAttachment("key_2","value_2");
+        Assertions.assertEquals("value_1", attachment.getAttachment("key_1"));
+        Assertions.assertEquals(null, attachment.getAttachment("aaa"));
+        attachment.removeAttachment("key_1");
+        Assertions.assertEquals(null, attachment.getAttachment("key_1"));
+        Assertions.assertEquals("value_2", attachment.getAttachment("key_2"));
+        Object obj = new Object();
+        attachment.setObjectAttachment("key_3", obj);
+        Assertions.assertEquals(obj, attachment.getObjectAttachment("key_3"));
+        attachment.removeAttachment("key_3");
+        Assertions.assertEquals(null, attachment.getObjectAttachment("key_3"));
+
+        Assertions.assertThrows(RuntimeException.class, () -> attachment.copyOf(true));
+        Assertions.assertThrows(RuntimeException.class, attachment::isValid);
+
+    }
+
+    @Test
+    public void testRpcServerContextClearAttachment() {
+        RpcServerContextAttachment attachment = new RpcServerContextAttachment();
+        attachment.setAttachment("key_1","value_1");
+        attachment.setAttachment("key_2","value_2");
+        attachment.setAttachment("key_3","value_3");
+        attachment.clearAttachments();
+        Assertions.assertEquals(null, attachment.getAttachment("key_1"));
+        Assertions.assertEquals(null, attachment.getAttachment("key_2"));
+        Assertions.assertEquals(null, attachment.getAttachment("key_3"));
+    }
+
+    @Test
+    public void testAsyncContext() {
+        RpcContextAttachment attachment = RpcContext.getServerContext();
+        AsyncContext asyncContext = new AsyncContextImpl();
+        attachment.setAsyncContext(asyncContext);
+        asyncContext.start();
+        Assertions.assertTrue(asyncContext.isAsyncStarted());
+        Assertions.assertTrue(attachment.stopAsync());
+    }
+
+    @Test
+    public void testObjectAttachmentMap() {
+        RpcServerContextAttachment attachment  = new RpcServerContextAttachment();
+        RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap = new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
+        objectAttachmentMap.put("key_1", "value_1");
+        Assertions.assertEquals(true, objectAttachmentMap.containsKey("key_1"));
+        Assertions.assertEquals(true, objectAttachmentMap.containsValue("value_1"));
+        Assertions.assertEquals("value_1", objectAttachmentMap.get("key_1"));
+        Assertions.assertEquals(null, objectAttachmentMap.get("key_2"));
+        objectAttachmentMap.remove("key_1");
+        Assertions.assertEquals(null, objectAttachmentMap.get("key_1"));
+    }
+
+    @Test
+    public void testClearAttachmentMap() {
+        RpcServerContextAttachment attachment  = new RpcServerContextAttachment();
+        RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap = new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
+        objectAttachmentMap.put("key_1", "value_1");
+        objectAttachmentMap.put("key_2", "value_2");
+        objectAttachmentMap.put("key_3", "value_3");
+        Assertions.assertEquals(3, objectAttachmentMap.size());
+        objectAttachmentMap.clear();
+        Assertions.assertEquals(0, objectAttachmentMap.size());
+        Assertions.assertEquals(true, objectAttachmentMap.isEmpty());
     }
 }
