@@ -72,6 +72,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
@@ -919,7 +920,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
 
             //TODO wait for shutdown timeout is a bit strange
-            int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
+            int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+            if (subscribeUrl != null) {
+                timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
+            }
             executor.schedule(() -> {
                 try {
                     exporter.unexport();

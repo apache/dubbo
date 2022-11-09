@@ -113,7 +113,6 @@ public class ConfigurableMetadataServiceExporter {
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName(specifiedProtocol);
-
         if (port == null || port < -1) {
             try {
                 if (logger.isInfoEnabled()) {
@@ -146,6 +145,9 @@ public class ConfigurableMetadataServiceExporter {
         } else {
             protocolConfig.setPort(port);
         }
+        
+        applicationModel.getApplicationConfigManager().getProtocol(specifiedProtocol)
+            .ifPresent(protocolConfig::mergeProtocol);
 
         if (protocolConfig.getPort() == null) {
             protocolConfig.setPort(-1);
@@ -181,7 +183,6 @@ public class ConfigurableMetadataServiceExporter {
 
         return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
     }
-
 
     private ServiceConfig<MetadataService> buildServiceConfig() {
         ApplicationConfig applicationConfig = getApplicationConfig();
