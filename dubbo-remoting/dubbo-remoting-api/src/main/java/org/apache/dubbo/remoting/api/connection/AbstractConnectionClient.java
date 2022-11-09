@@ -43,7 +43,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     private volatile long counter;
 
     private static final AtomicLongFieldUpdater<AbstractConnectionClient> COUNTER_UPDATER
-        = AtomicLongFieldUpdater.newUpdater(AbstractConnectionClient.class, "counter");
+            = AtomicLongFieldUpdater.newUpdater(AbstractConnectionClient.class, "counter");
 
     public AbstractConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);

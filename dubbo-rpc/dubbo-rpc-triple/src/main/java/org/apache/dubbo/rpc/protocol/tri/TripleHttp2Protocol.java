@@ -181,7 +181,6 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new SimpleChannelInboundHandler<Object>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                logger.debug("triple client get msg from Http2MultiplexHandler: " + msg);
             }
         });
         pipeline.addLast(codec, handler, new TripleClientHandler(frameworkModel), new TripleTailHandler());
