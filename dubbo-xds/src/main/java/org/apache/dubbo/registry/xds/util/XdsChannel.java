@@ -47,12 +47,19 @@ public class XdsChannel {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(XdsChannel.class);
 
-    private static final String USE_AGENT = "use-agent";
+    public static final String USE_AGENT = "use-agent";
 
     private final ManagedChannel channel;
 
-    protected XdsChannel(URL url) {
+    private URL url;
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public XdsChannel(URL url) {
         ManagedChannel managedChannel = null;
+        this.url = url;
         try {
             if (!url.getParameter(USE_AGENT, false)) {
                 XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
