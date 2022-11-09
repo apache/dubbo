@@ -211,6 +211,7 @@ public class RpcContextTest {
         RpcContext.getServerContext().setObjectAttachment(key, value);
         final String returned = (String) RpcContext.getServerContext().getObjectAttachment(key);
         System.out.println(returned);
+        RpcContext.getServerContext().remove(key);
     }
 
     @Test
