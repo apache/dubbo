@@ -47,6 +47,7 @@
         <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
     <mailingLists>
         <mailingList>
             <name>Development List</name>
