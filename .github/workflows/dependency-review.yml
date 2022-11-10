@@ -1,10 +1,5 @@
 name: 'Dependency Review'
-
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: '0 3 * * *'
+on: [pull_request]
 
 permissions:
   contents: read
