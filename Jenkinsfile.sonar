@@ -30,18 +30,17 @@ pipeline {
                 echo 'Checking Code Quality on SonarCloud'
                 script {
                     // Main parameters
-                    def sonarcloudParams="-Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo"
+                    def sonarcloudParams=""
                     if ( env.BRANCH_NAME.startsWith("PR-") ) {
-                    // this is a pull request
-                    sonarcloudParams="${sonarcloudParams} -Dsonar.pullrequest.branch=${CHANGE_BRANCH} -Dsonar.pullrequest.base=${CHANGE_TARGET} -Dsonar.pullrequest.key=${CHANGE_ID}"
+                        // this is a pull request
+                        withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                            sh 'mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean verify sonar:sonar -Pjacoco -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Dsonar.pullrequest.branch=${CHANGE_BRANCH} -Dsonar.pullrequest.base=${CHANGE_TARGET} -Dsonar.pullrequest.key=${CHANGE_ID} -Dsonar.login=${SONAR_TOKEN}'
+                        }
                     } else {
-                    // this is just a branch
-                    sonarcloudParams="${sonarcloudParams} -Dsonar.branch.name=${BRANCH_NAME}"
-                    }
-                    // Then run the analysis
-                    // 'my-sonarcloud-token' needs to be defined for this job and contains the user token
-                    withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
-                        sh 'mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean verify sonar:sonar -Pjacoco ${sonarcloudParams} -Dsonar.login=${SONAR_TOKEN}'
+                        // this is just a branch
+                        withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                            sh 'mvn --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean verify sonar:sonar -Pjacoco -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Dsonar.branch.name=${BRANCH_NAME} -Dsonar.login=${SONAR_TOKEN}'
+                        }
                     }
                 }
             }
