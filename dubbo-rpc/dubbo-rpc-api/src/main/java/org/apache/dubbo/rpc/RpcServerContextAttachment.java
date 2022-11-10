@@ -56,7 +56,7 @@ public class RpcServerContextAttachment extends RpcContextAttachment {
 
     @Override
     public AsyncContext getAsyncContext() {
-        return RpcContext.getServerAttachment().getAsyncContext();
+        return RpcContext.getServerResponseContext().getAsyncContext();
     }
 
     @Override

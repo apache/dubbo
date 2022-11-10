@@ -23,8 +23,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -238,6 +240,32 @@ public class RpcContextTest {
         Assertions.assertThrows(RuntimeException.class, () -> attachment.copyOf(true));
         Assertions.assertThrows(RuntimeException.class, attachment::isValid);
 
+        Map<String, String> map = new HashMap<>();
+        map.put("key_4", "value_4");
+        map.put("key_5", "value_5");
+        attachment.setAttachments(map);
+        Assertions.assertEquals(attachment.getAttachments(), attachment.getObjectAttachments());
+        Assertions.assertEquals(attachment.getAttachments(), attachment.get());
+        Map<String, String> map1 = attachment.getAttachments();
+        Assertions.assertEquals("value_4", map1.get("key_4"));
+        Assertions.assertEquals("value_5", map1.get("key_5"));
+        attachment.clearAttachments();
+        Assertions.assertEquals(attachment, attachment.removeAttachment("key_4"));
+        Assertions.assertEquals(attachment, attachment.removeAttachment("key_5"));
+
+        attachment.set("key_6", "value_6");
+        Assertions.assertEquals("value_6", attachment.get("key_6"));
+        attachment.clearAttachments();
+
+        Map<String, Object> objectMap = new HashMap<>();
+        objectMap.put("key_7", "value_7");
+        objectMap.put("key_8", "value_8");
+        attachment.setObjectAttachments(objectMap);
+        Map<String, String> objectMap1 = attachment.getAttachments();
+        Assertions.assertEquals("value_7", objectMap1.get("key_7"));
+        Assertions.assertEquals("value_8", objectMap1.get("key_8"));
+        attachment.clearAttachments();
+
     }
 
     @Test
@@ -250,15 +278,24 @@ public class RpcContextTest {
         Assertions.assertEquals(null, attachment.getAttachment("key_1"));
         Assertions.assertEquals(null, attachment.getAttachment("key_2"));
         Assertions.assertEquals(null, attachment.getAttachment("key_3"));
+
+        attachment.setObjectAttachment("key_1","value_1");
+        attachment.setObjectAttachment("key_2","value_2");
+        attachment.setObjectAttachment("key_3","value_3");
+        attachment.clearAttachments();
+        Assertions.assertEquals(null, attachment.getAttachment("key_1"));
+        Assertions.assertEquals(null, attachment.getAttachment("key_2"));
+        Assertions.assertEquals(null, attachment.getAttachment("key_3"));
     }
 
     @Test
     public void testAsyncContext() {
-        RpcContextAttachment attachment = RpcContext.getServerContext();
+        RpcServerContextAttachment attachment = new RpcServerContextAttachment();
         AsyncContext asyncContext = new AsyncContextImpl();
         attachment.setAsyncContext(asyncContext);
         asyncContext.start();
-        Assertions.assertTrue(asyncContext.isAsyncStarted());
+        Assertions.assertTrue(attachment.isAsyncStarted());
+        Assertions.assertEquals(asyncContext, attachment.getAsyncContext());
         Assertions.assertTrue(attachment.stopAsync());
     }
 
@@ -267,12 +304,28 @@ public class RpcContextTest {
         RpcServerContextAttachment attachment  = new RpcServerContextAttachment();
         RpcServerContextAttachment.ObjectAttachmentMap objectAttachmentMap = new RpcServerContextAttachment.ObjectAttachmentMap(attachment);
         objectAttachmentMap.put("key_1", "value_1");
+        Set<String> keySet = objectAttachmentMap.keySet();
+        Assertions.assertEquals(true, keySet.contains("key_1"));
+        Collection<Object> valueSet = objectAttachmentMap.values();
+        Assertions.assertEquals(true, valueSet.contains("value_1"));
+        Set<Map.Entry<String, Object>> entrySet = objectAttachmentMap.entrySet();
+        Map.Entry<String, Object> entry = entrySet.iterator().next();
+        Assertions.assertEquals("key_1", entry.getKey());
+        Assertions.assertEquals("value_1", entry.getValue());
         Assertions.assertEquals(true, objectAttachmentMap.containsKey("key_1"));
         Assertions.assertEquals(true, objectAttachmentMap.containsValue("value_1"));
         Assertions.assertEquals("value_1", objectAttachmentMap.get("key_1"));
         Assertions.assertEquals(null, objectAttachmentMap.get("key_2"));
         objectAttachmentMap.remove("key_1");
         Assertions.assertEquals(null, objectAttachmentMap.get("key_1"));
+        Map<String, String> map = new HashMap<>();
+        map.put("key_3","value_3");
+        map.put("key_4","value_4");
+        objectAttachmentMap.putAll(map);
+        Assertions.assertEquals("value_3", objectAttachmentMap.get("key_3"));
+        Assertions.assertEquals("value_4", objectAttachmentMap.get("key_4"));
+        Assertions.assertEquals(null, objectAttachmentMap.remove(new Object()));
+        objectAttachmentMap.clear();
     }
 
     @Test
@@ -284,6 +337,7 @@ public class RpcContextTest {
         objectAttachmentMap.put("key_3", "value_3");
         Assertions.assertEquals(3, objectAttachmentMap.size());
         objectAttachmentMap.clear();
+        Assertions.assertEquals(null, objectAttachmentMap.get(new Object()));
         Assertions.assertEquals(0, objectAttachmentMap.size());
         Assertions.assertEquals(true, objectAttachmentMap.isEmpty());
     }
