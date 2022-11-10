@@ -41,7 +41,6 @@ public class ServiceDefinitionBuilderTest {
         checkComplexObjectAsParam(fullServiceDefinition);
     }
 
-
     void checkComplexObjectAsParam(FullServiceDefinition fullServiceDefinition) {
         Assertions.assertTrue(fullServiceDefinition.getAnnotations().contains("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(value=666)")
             // JDK 17 style
