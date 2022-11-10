@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.xds.util.protocol;
 
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -28,7 +29,12 @@ import io.grpc.stub.StreamObserver;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
