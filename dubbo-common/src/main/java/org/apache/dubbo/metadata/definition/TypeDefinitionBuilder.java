@@ -44,7 +44,6 @@ public class TypeDefinitionBuilder {
         BUILDERS = new ArrayList<>(tbs);
     }
 
-
     public static TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         TypeBuilder builder = getGenericTypeBuilder(clazz);
         TypeDefinition td;
