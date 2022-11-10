@@ -78,10 +78,22 @@ public class RpcUtils {
                 && invocation.getInvoker().getUrl() != null
                 && invocation.getInvoker().getInterface() != GenericService.class
                 && !invocation.getMethodName().startsWith("$")) {
+                Type[] returnTypes = null;
+                if (invocation instanceof RpcInvocation) {
+                    returnTypes = ((RpcInvocation) invocation).getReturnTypes();
+                    if (returnTypes != null) {
+                        return returnTypes;
+                    }
+                }
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
-                    return ReflectUtils.getReturnTypes(method);
+                    if (method != null) {
+                        returnTypes = ReflectUtils.getReturnTypes(method);
+                    }
+                }
+                if (returnTypes != null) {
+                    return returnTypes;
                 }
             }
         } catch (Throwable t) {
@@ -150,7 +162,7 @@ public class RpcUtils {
             }
             Class<?>[] parameterTypes = new Class<?>[types.length];
             for (int i = 0; i < types.length; i++) {
-                parameterTypes[i] = ReflectUtils.forName(types[0]);
+                parameterTypes[i] = ReflectUtils.forName(types[i]);
             }
             return parameterTypes;
         }

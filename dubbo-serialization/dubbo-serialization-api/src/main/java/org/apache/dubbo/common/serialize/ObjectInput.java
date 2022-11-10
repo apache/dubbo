@@ -32,7 +32,6 @@ public interface ObjectInput extends DataInput {
      * @throws IOException if an I/O error occurs
      * @throws ClassNotFoundException if an ClassNotFoundException occurs
      */
-    @Deprecated
     Object readObject() throws IOException, ClassNotFoundException;
 
     /**
