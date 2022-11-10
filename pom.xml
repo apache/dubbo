@@ -105,6 +105,8 @@
         <updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
         <project.build.outputTimestamp>2020-04-01T08:04:00Z</project.build.outputTimestamp>
+        <sonar.organization>apache</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
         <profile.name>oss</profile.name>
         <!-- for maven compiler plugin -->
