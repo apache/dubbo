@@ -45,7 +45,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     private static final AtomicLongFieldUpdater<AbstractConnectionClient> COUNTER_UPDATER
             = AtomicLongFieldUpdater.newUpdater(AbstractConnectionClient.class, "counter");
 
-    public AbstractConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
+    protected AbstractConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
         COUNTER_UPDATER.set(this, 1L);
     }
@@ -82,7 +82,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
     /**
      * init config and attribute.
      */
-    protected abstract void init();
+    protected abstract void initConnectionClient();
 
     /**
      * connection is available.

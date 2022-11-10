@@ -21,8 +21,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
-import org.apache.dubbo.remoting.api.connection.SingleProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -49,8 +49,7 @@ public class ConnectionTest {
         url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         server = new NettyPortUnificationServer(url, new DefaultPuHandler());
         server.bind();
-        connectionManager = url.getOrDefaultFrameworkModel()
-                .getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
+        connectionManager = PortUnificationExchanger.getConnectionManager(url);
     }
 
     @AfterAll
@@ -63,14 +62,14 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testGetChannel() {
+    void testGetChannel() {
         final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
         Assertions.assertNotNull(connectionClient);
         connectionClient.close();
     }
 
     @Test
-    public void testRefCnt0() throws InterruptedException {
+    void testRefCnt0() throws InterruptedException {
         final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
         CountDownLatch latch = new CountDownLatch(1);
         Assertions.assertNotNull(connectionClient);
@@ -81,7 +80,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testRefCnt1() {
+    void testRefCnt1() {
         DefaultPuHandler handler = new DefaultPuHandler();
         final AbstractConnectionClient connectionClient = connectionManager.connect(url, handler);
         CountDownLatch latch = new CountDownLatch(1);
@@ -95,7 +94,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testRefCnt2() throws InterruptedException {
+    void testRefCnt2() throws InterruptedException {
         final AbstractConnectionClient connectionClient = connectionManager.connect(url, new DefaultPuHandler());
         CountDownLatch latch = new CountDownLatch(1);
         connectionClient.retain();
@@ -107,7 +106,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void connectSyncTest() throws RemotingException {
+    void connectSyncTest() throws RemotingException {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         NettyPortUnificationServer nettyPortUnificationServer = new NettyPortUnificationServer(url, new DefaultPuHandler());
@@ -129,7 +128,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testMultiConnect() throws Throwable {
+    void testMultiConnect() throws Throwable {
         ExecutorService service = Executors.newFixedThreadPool(10);
         final CountDownLatch latch = new CountDownLatch(10);
         AtomicInteger failedCount = new AtomicInteger(0);
@@ -150,7 +149,7 @@ public class ConnectionTest {
         }
         latch.await();
         Assertions.assertEquals(0, failedCount.get());
-        connectionClient.close();
         service.shutdown();
+        connectionClient.destroy();
     }
 }

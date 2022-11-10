@@ -59,7 +59,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(NettyConnectionClient.class);
 
-    private volatile Promise<Object> connectingPromise;
+    private AtomicReference<Promise<Object>> connectingPromise;
 
     private Promise<Void> closePromise;
 
@@ -77,17 +77,13 @@ public class NettyConnectionClient extends AbstractConnectionClient {
     }
 
     @Override
-    public boolean canHandleIdle() {
-        return super.canHandleIdle();
-    }
-
-    @Override
-    protected void init() {
+    protected void initConnectionClient() {
         URL url = ExecutorUtil.setThreadName(getUrl(), "DubboClientHandler");
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         setUrl(url);
         this.protocol = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
         this.remote = getConnectAddress();
+        this.connectingPromise = new AtomicReference<>();
         this.connectionListener = new ConnectionListener();
         this.channel = new AtomicReference<>();
         this.closePromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
@@ -96,13 +92,13 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     @Override
     protected void doOpen() throws Throwable {
-        init();
+        initConnectionClient();
         initBootstrap();
     }
 
     private void initBootstrap() {
-        final Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
+        final Bootstrap nettyBootstrap = new Bootstrap();
+        nettyBootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
@@ -110,8 +106,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 .channel(socketChannelClass());
 
         final NettyConnectionHandler connectionHandler = new NettyConnectionHandler(this);
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
-        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        nettyBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
+        nettyBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
                 final ChannelPipeline pipeline = ch.pipeline();
@@ -128,7 +124,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 // TODO support Socks5
             }
         });
-        this.bootstrap = bootstrap;
+        this.bootstrap = nettyBootstrap;
     }
 
     @Override
@@ -163,14 +159,12 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
         promise.addListener(this.connectionListener);
 
-        boolean ret = this.connectingPromise.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+        boolean ret = connectingPromise.get().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
-            this.connectingPromise = null;
+            connectingPromise.set(null);
         }
-        if (ret && promise.isSuccess()) {
-
-        } else if (promise.cause() != null) {
+        if (promise.cause() != null) {
             Throwable cause = promise.cause();
 
             // 6-1 Failed to connect to provider server by other reason.
@@ -181,7 +175,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                     "Failed to connect to provider server by other reason.", cause);
 
             throw remotingException;
-        } else {
+        } else if (!ret || !promise.isSuccess()) {
             // 6-2 Client-side timeout
             RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
                     + getConnectAddress() + " client-side timeout "
@@ -215,8 +209,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         }
         this.channel.set(nettyChannel);
         // This indicates that the connection is available.
-        if (this.connectingPromise != null) {
-            this.connectingPromise.trySuccess(CONNECTED_OBJECT);
+        if (this.connectingPromise.get() != null) {
+            this.connectingPromise.get().trySuccess(CONNECTED_OBJECT);
         }
         nettyChannel.attr(CONNECTION).set(this);
         if (LOGGER.isDebugEnabled()) {
@@ -253,7 +247,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     @Override
     public Object getChannel(Boolean generalizable) {
-        return generalizable ? getNettyChannel() : getChannel();
+        return Boolean.TRUE.equals(generalizable) ? getNettyChannel() : getChannel();
     }
 
     @Override
@@ -261,8 +255,8 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         if (isClosed()) {
             return false;
         }
-        io.netty.channel.Channel channel = getNettyChannel();
-        if (channel != null && channel.isActive()) {
+        io.netty.channel.Channel nettyChannel = getNettyChannel();
+        if (nettyChannel != null && nettyChannel.isActive()) {
             return true;
         }
 
@@ -274,27 +268,21 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             }
         }
 
-        this.createConnectingPromise();
-        this.connectingPromise.awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
+        createConnectingPromise();
+        connectingPromise.get().awaitUninterruptibly(getConnectTimeout(), TimeUnit.MILLISECONDS);
         // destroy connectingPromise after used
         synchronized (this) {
-            this.connectingPromise = null;
+            connectingPromise.set(null);
         }
 
-        channel = getNettyChannel();
-        return channel != null && channel.isActive();
+        nettyChannel = getNettyChannel();
+        return nettyChannel != null && nettyChannel.isActive();
 
     }
 
     @Override
     public void createConnectingPromise() {
-        if (this.connectingPromise == null) {
-            synchronized (this) {
-                if (this.connectingPromise == null) {
-                    this.connectingPromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
-                }
-            }
-        }
+        connectingPromise.compareAndSet(null, new DefaultPromise<>(GlobalEventExecutor.INSTANCE));
     }
 
     public Promise<Void> getClosePromise() {
@@ -316,9 +304,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     @Override
     public void addCloseListener(Runnable func) {
-        getClosePromise().addListener(future -> {
-            func.run();
-        });
+        getClosePromise().addListener(future -> func.run());
     }
 
     @Override

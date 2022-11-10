@@ -36,7 +36,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UN
 @ChannelHandler.Sharable
 public class NettyConnectionHandler extends ChannelInboundHandlerAdapter implements ConnectionHandler {
 
-    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(ConnectionHandler.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(NettyConnectionHandler.class);
 
     private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
     private final NettyConnectionClient connectionClient;
@@ -60,8 +60,8 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
         if (connectionClient != null) {
             connectionClient.onGoaway(nettyChannel);
         }
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Channel %s go away ,schedule reconnect", nettyChannel));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Channel %s go away ,schedule reconnect", nettyChannel));
         }
         reconnect(nettyChannel);
     }
@@ -72,15 +72,15 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             return;
         }
         Channel nettyChannel = ((Channel) channel);
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Connection %s is reconnecting, attempt=%d", connectionClient, 1));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Connection %s is reconnecting, attempt=%d", connectionClient, 1));
         }
         final EventLoop eventLoop = nettyChannel.eventLoop();
         eventLoop.schedule(() -> {
             try {
                 connectionClient.doConnect();
             } catch (Throwable e) {
-                log.error("Fail to connect to " + connectionClient.getChannel(), e);
+                LOGGER.error("Fail to connect to " + connectionClient.getChannel(), e);
             }
         }, 1, TimeUnit.SECONDS);
     }
@@ -91,8 +91,8 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), connectionClient.getUrl(), connectionClient);
         if (!connectionClient.isClosed()) {
             connectionClient.onConnected(ctx.channel());
-            if (log.isInfoEnabled()) {
-                log.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
             }
         } else {
             ctx.close();
@@ -102,7 +102,7 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Channel error:%s", ctx.channel()), cause);
+        LOGGER.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Channel error:%s", ctx.channel()), cause);
         ctx.close();
     }
 

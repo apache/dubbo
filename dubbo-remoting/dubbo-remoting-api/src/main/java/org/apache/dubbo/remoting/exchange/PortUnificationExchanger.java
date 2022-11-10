@@ -27,7 +27,6 @@ import org.apache.dubbo.remoting.api.connection.ConnectionManager;
 import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +38,6 @@ public class PortUnificationExchanger {
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(PortUnificationExchanger.class);
     private static final ConcurrentMap<String, RemotingServer> servers = new ConcurrentHashMap<>();
-    private static final ConnectionManager CONNECTION_MANAGER = ApplicationModel.defaultModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
 
     public static RemotingServer bind(URL url, ChannelHandler handler) {
         servers.computeIfAbsent(url.getAddress(), addr -> {
@@ -62,7 +60,7 @@ public class PortUnificationExchanger {
 
     public static AbstractConnectionClient connect(URL url, ChannelHandler handler) {
         final AbstractConnectionClient connectionClient;
-        connectionClient = CONNECTION_MANAGER.connect(url, handler);
+        connectionClient = getConnectionManager(url).connect(url, handler);
         return connectionClient;
     }
 
@@ -76,7 +74,6 @@ public class PortUnificationExchanger {
                 log.error(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close all port unification server failed", throwable);
             }
         }
-        CONNECTION_MANAGER.forEachConnection(AbstractConnectionClient::destroy);
     }
 
     // for test
@@ -84,14 +81,13 @@ public class PortUnificationExchanger {
         return servers;
     }
 
-    // for test
-    public static ConnectionManager getConnectionManager() {
-        return CONNECTION_MANAGER;
-    }
-
     public static PortUnificationTransporter getTransporter(URL url) {
         return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class)
                 .getAdaptiveExtension();
+    }
+
+    public static ConnectionManager getConnectionManager(URL url) {
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
     }
 
 }

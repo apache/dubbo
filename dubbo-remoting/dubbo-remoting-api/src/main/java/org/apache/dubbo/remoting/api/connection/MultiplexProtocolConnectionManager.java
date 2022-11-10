@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 public class MultiplexProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "multiple";
 
-    private final ConcurrentMap<String, ConnectionManager> protocols = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConnectionManager> protocols = new ConcurrentHashMap<>(1);
 
     private FrameworkModel frameworkModel;
 

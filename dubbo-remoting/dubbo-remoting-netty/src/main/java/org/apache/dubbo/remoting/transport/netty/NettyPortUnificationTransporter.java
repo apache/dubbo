@@ -34,6 +34,6 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
 
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException {
-        return null;
+        return new NettyConnectionClient(url, handler);
     }
 }

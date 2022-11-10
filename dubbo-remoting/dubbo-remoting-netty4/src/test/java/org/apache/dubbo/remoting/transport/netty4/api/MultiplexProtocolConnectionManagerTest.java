@@ -86,13 +86,8 @@ public class MultiplexProtocolConnectionManagerTest {
         final AbstractConnectionClient connect2 = connectionManager.connect(url2, handler);
 
         Consumer<AbstractConnectionClient> consumer = connection -> {
-            try {
-                Assertions.assertEquals("empty", connection.getUrl().getProtocol());
-            } catch (AssertionFailedError e) {
-                // AssertionFailedError is an Error that could not be catched as Exception.
-                Assertions.assertEquals("tri", connection.getUrl().getProtocol());
-            }
-
+            String protocol = connection.getUrl().getProtocol();
+            Assertions.assertTrue(protocol.equals("empty") || protocol.equals("tri"));
         };
 
         connectionManager.forEachConnection(consumer);
