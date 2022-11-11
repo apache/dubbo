@@ -53,6 +53,7 @@ public class FileTest {
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-compiler"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-dependencies.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-distribution"));
+        ignoredModulesInDubboAll.add(Pattern.compile("dubbo-metadata-processor"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-native.*"));
         ignoredModulesInDubboAll.add(Pattern.compile("dubbo-spring-boot.*"));
     }
@@ -78,8 +79,6 @@ public class FileTest {
             .map(doc -> doc.elementText("artifactId"))
             .sorted()
             .collect(Collectors.toList());
-
-        Assertions.assertEquals(poms.size(), artifactIds.size());
 
         String dubboBomPath = "dubbo-distribution/dubbo-bom/pom.xml";
         Document dubboBom = reader.read(new File(getBaseFile(), dubboBomPath));
@@ -116,11 +115,10 @@ public class FileTest {
                 }
             })
             .map(Document::getRootElement)
+            .filter(doc -> !Objects.equals("pom", doc.elementText("packaging")))
             .map(doc -> doc.elementText("artifactId"))
             .sorted()
             .collect(Collectors.toList());
-
-        Assertions.assertEquals(poms.size(), artifactIds.size());
 
         String dubboDependenciesAllPath = "dubbo-test/dubbo-dependencies-all/pom.xml";
         Document dubboDependenciesAll = reader.read(new File(getBaseFile(), dubboDependenciesAllPath));
@@ -385,6 +383,9 @@ public class FileTest {
                 }
             }
         } else if (path.isFile()) {
+            if (path.getAbsolutePath().contains("target")) {
+                return;
+            }
             if (path.getName().equals("pom.xml")) {
                 poms.add(path);
             }
@@ -400,6 +401,9 @@ public class FileTest {
                 }
             }
         } else if (path.isFile()) {
+            if (path.getAbsolutePath().contains("target")) {
+                return;
+            }
             if (path.getAbsolutePath().contains("src/main/java")) {
                 String content;
                 try {
@@ -427,6 +431,9 @@ public class FileTest {
                 }
             }
         } else if (path.isFile()) {
+            if (path.getAbsolutePath().contains("target")) {
+                return;
+            }
             if (path.getAbsolutePath().contains("src/main/resources/META-INF/dubbo/internal/")) {
                 String absolutePath = path.getAbsolutePath();
                 absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src/main/resources/META-INF/dubbo/internal/") + "src/main/resources/META-INF/dubbo/internal/".length());
@@ -445,6 +452,9 @@ public class FileTest {
                 }
             }
         } else if (path.isFile()) {
+            if (path.getAbsolutePath().contains("target")) {
+                return;
+            }
             if (path.getAbsolutePath().contains("src/main/resources/META-INF/dubbo/org.apache.dubbo")) {
                 spis.add(path);
             }
