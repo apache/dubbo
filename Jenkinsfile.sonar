@@ -17,7 +17,9 @@
  *
  */
 pipeline {
-    agent any
+    agent {
+        label 'ubuntu'
+    }
 
     tools {
         maven 'maven_3_latest'
