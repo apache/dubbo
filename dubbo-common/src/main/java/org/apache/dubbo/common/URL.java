@@ -367,8 +367,7 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        URLAddress newURLAddress = urlAddress.setPassword(password);
-        return returnURL(newURLAddress);
+        return urlAddress == null ? null : returnURL(urlAddress.setPassword(password));
     }
 
     /**
@@ -425,8 +424,7 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        URLAddress newURLAddress = urlAddress.setHost(host);
-        return returnURL(newURLAddress);
+        return urlAddress == null ? null : returnURL(urlAddress.setHost(host));
     }
 
 
@@ -435,8 +433,7 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        URLAddress newURLAddress = urlAddress.setPort(port);
-        return returnURL(newURLAddress);
+        return urlAddress == null ? null : returnURL(urlAddress.setPort(port));
     }
 
     public int getPort(int defaultPort) {
@@ -445,10 +442,13 @@ class URL implements Serializable {
     }
 
     public String getAddress() {
-        return urlAddress.getAddress();
+        return urlAddress == null ? null : urlAddress.getAddress();
     }
 
     public URL setAddress(String address) {
+        if (urlAddress == null) {
+            return null;
+        }
         int i = address.lastIndexOf(':');
         String host;
         int port = this.getPort();
@@ -463,7 +463,7 @@ class URL implements Serializable {
     }
 
     public String getIp() {
-        return urlAddress.getIp();
+        return urlAddress == null ? null : urlAddress.getIp();
     }
 
     public String getBackupAddress() {
@@ -499,8 +499,7 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        URLAddress newURLAddress = urlAddress.setPath(path);
-        return returnURL(newURLAddress);
+        return urlAddress == null ? null : returnURL(urlAddress.setPath(path));
     }
 
     public String getAbsolutePath() {
