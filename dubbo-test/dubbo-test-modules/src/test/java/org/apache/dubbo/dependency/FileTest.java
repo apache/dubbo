@@ -171,6 +171,7 @@ public class FileTest {
                 }
             })
             .map(Document::getRootElement)
+            .filter(doc -> !Objects.equals("pom", doc.elementText("packaging")))
             .filter(doc -> Objects.isNull(doc.element("properties")) ||
                 (!Objects.equals("true", doc.element("properties").elementText("skip_maven_deploy")) &&
                     !Objects.equals("true", doc.element("properties").elementText("maven.deploy.skip"))))
@@ -250,6 +251,7 @@ public class FileTest {
             .filter(doc -> Objects.isNull(doc.element("properties")) ||
                 (!Objects.equals("true", doc.element("properties").elementText("skip_maven_deploy")) &&
                     !Objects.equals("true", doc.element("properties").elementText("maven.deploy.skip"))))
+            .filter(doc -> !Objects.equals("pom", doc.elementText("packaging")))
             .map(doc -> doc.elementText("artifactId"))
             .sorted()
             .collect(Collectors.toList());
