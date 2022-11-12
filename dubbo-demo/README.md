@@ -4,7 +4,7 @@ This directory contains some basic usages that can help users quickly experience
 If you find it interesting and want to learn more, please look into [the dubbo-samples repository](https://github.com/apache/dubbo-samples)
 where you will find comprehensive usages for how to use Dubbo in different scenarios with different features.
 
-- [Developing with Spring Boot](./dubbo-demo-spring-boot)
+- [Use Dubbo with Spring Boot](./dubbo-demo-spring-boot)
 - [Use Dubbo with API](./dubbo-demo-api)
 - [Use Dubbo with Annotation](./dubbo-demo-annotation)
 - [Use Dubbo with XML](./dubbo-demo-xml)
