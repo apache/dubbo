@@ -1,0 +1,1 @@
+This example demonstrates how to use Dubbo with Spring Annotation (without spring boot), more details about annotation with spring boot can be found [here](https://dubbo.apache.org/zh/docs3-v2/java-sdk/reference-manual/config/annotation/).

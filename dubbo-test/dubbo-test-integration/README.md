@@ -1,0 +1,1 @@
+This directory contains some basic usages of Dubbo for developers and debugging purposes. For users of Dubbo, please see [dubbo-demo](https://github.com/apache/dubbo/dubbo-demo) or [the dubbo-samples repository](https://github.com/apache/dubbo-samples).

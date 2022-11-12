@@ -27,18 +27,22 @@ import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.service.GenericService;
 
 public class Application {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (isClassic(args)) {
             runWithRefer();
         } else {
             runWithBootstrap();
         }
+        System.in.read();
     }
 
     private static boolean isClassic(String[] args) {
         return args.length > 0 && "classic".equalsIgnoreCase(args[0]);
     }
 
+    /**
+     * This is the recommended way of programming with Dubbo API.
+     */
     private static void runWithBootstrap() {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setInterface(DemoService.class);
@@ -53,15 +57,18 @@ public class Application {
 
         DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("dubbo");
-        System.out.println(message);
+        System.out.println("Result: " + message);
 
         // generic invoke
         GenericService genericService = (GenericService) demoService;
         Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
             new Object[]{"dubbo generic invoke"});
-        System.out.println(genericInvokeResult);
+        System.out.println("Generic result: " +genericInvokeResult);
     }
 
+    /**
+     * This is the Dubbo2 API kept for compatibility purpose.
+     */
     private static void runWithRefer() {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setApplication(new ApplicationConfig("dubbo-demo-api-consumer"));
@@ -70,6 +77,6 @@ public class Application {
         reference.setInterface(DemoService.class);
         DemoService service = reference.get();
         String message = service.sayHello("dubbo");
-        System.out.println(message);
+        System.out.println("Result: " + message);
     }
 }

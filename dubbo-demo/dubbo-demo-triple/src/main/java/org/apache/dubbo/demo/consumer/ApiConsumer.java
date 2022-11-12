@@ -22,7 +22,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterService;
+import org.apache.dubbo.demo.hello.Greeter;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
@@ -31,9 +31,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ApiConsumer {
-    public static void main(String[] args) throws InterruptedException, IOException {
-        ReferenceConfig<GreeterService> referenceConfig = new ReferenceConfig<>();
-        referenceConfig.setInterface(GreeterService.class);
+    public static void main(String[] args) throws IOException {
+        ReferenceConfig<Greeter> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(Greeter.class);
         referenceConfig.setCheck(false);
         referenceConfig.setProtocol(CommonConstants.TRIPLE);
         referenceConfig.setLazy(true);
@@ -46,17 +46,17 @@ public class ApiConsumer {
             .reference(referenceConfig)
             .start();
 
-        GreeterService greeterService = referenceConfig.get();
+        Greeter greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
         try {
-            final HelloReply reply = greeterService.sayHello(HelloRequest.newBuilder()
+            final HelloReply reply = greeterService.greet(HelloRequest.newBuilder()
                 .setName("triple")
                 .build());
             TimeUnit.SECONDS.sleep(1);
             System.out.println("Reply: " + reply.getMessage());
 
-            CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
-            System.out.println("Async Reply: "+sayHelloAsync.get());
+            CompletableFuture<HelloReply> sayHelloAsync = greeterService.greetAsync(HelloRequest.newBuilder().setName("triple").build());
+            System.out.println("Async Reply: "+sayHelloAsync.get().getMessage());
         } catch (Throwable t) {
             t.printStackTrace();
         }

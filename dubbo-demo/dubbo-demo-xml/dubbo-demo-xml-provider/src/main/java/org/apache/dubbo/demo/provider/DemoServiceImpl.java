@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.demo.provider;
 
-import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.integration.DemoService;
 import org.apache.dubbo.rpc.RpcContext;
 
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
 
 public class DemoServiceImpl implements DemoService {
-    private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(org.apache.dubbo.integration.provider.DemoServiceImpl.class);
 
     @Override
     public String sayHello(String name) {

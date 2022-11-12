@@ -34,7 +34,6 @@ public class ConsumerApplication {
     private DemoService demoService;
 
     public static void main(String[] args) {
-
         ConfigurableApplicationContext context = SpringApplication.run(ConsumerApplication.class, args);
         ConsumerApplication application = context.getBean(ConsumerApplication.class);
         String result = application.doSayHello("world");

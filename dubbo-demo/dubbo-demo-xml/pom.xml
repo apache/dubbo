@@ -36,10 +36,10 @@
     </properties>
 
     <modules>
+        <module>dubbo-demo-xml-interface</module>
         <module>dubbo-demo-xml-provider</module>
         <module>dubbo-demo-xml-consumer</module>
     </modules>
-
 
     <build>
         <plugins>

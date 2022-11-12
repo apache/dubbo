@@ -18,6 +18,11 @@ option objc_class_prefix = "HLW";
 
 package helloworld;
 
+service Greeter{
+  // unary
+  rpc greet(HelloRequest) returns (HelloReply);
+}
+
 // The request message containing the user's name.
 message HelloRequest {
   string name = 1;

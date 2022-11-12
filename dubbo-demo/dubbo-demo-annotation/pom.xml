@@ -34,6 +34,7 @@
     </properties>
 
     <modules>
+        <module>dubbo-demo-annotation-interface</module>
         <module>dubbo-demo-annotation-provider</module>
         <module>dubbo-demo-annotation-consumer</module>
     </modules>
