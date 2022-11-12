@@ -30,6 +30,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
@@ -88,31 +90,61 @@ public class RouterChain<T> {
         this.currentChain = this.mainChain;
     }
 
+    private final AtomicReference<BitList<Invoker<T>>> newInvokers = new AtomicReference<>();
+    private final Semaphore semaphore = new Semaphore(1);
+
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        if (newInvokers.get() != null) {
+            if (availableInvokers.equals(newInvokers.get())) {
+                // notify switch chain
+                switchToMainChain();
+                semaphore.release();
+            }
+        }
         return currentChain.route(url, availableInvokers, invocation);
+    }
+
+    private void switchToMainChain() {
+        currentChain = mainChain;
     }
 
     /**
      * Notify router chain of the initial addresses from registry at the first time.
      * Notify whenever addresses in registry change.
      */
-    public synchronized void setInvokers(BitList<Invoker<T>> invokers) {
-        // 1. switch
+    public synchronized void setInvokers(BitList<Invoker<T>> invokers, Runnable switchAction) {
+        // 1. switch to backup chain
         currentChain = backupChain;
 
-        // 2. wait
+        // 2. wait main chain to finish routing
         waitChain(mainChain);
 
-        // 3. notify
+        // 3. notify main chain
         mainChain.setInvokers(invokers);
 
-        // 4. switch back
-        currentChain = mainChain;
+        // 4. let `route` method check if the invokers are updated
+        newInvokers.set(invokers);
 
-        // 5. wait
+        // 5. switch in directory
+        switchAction.run();
+
+        // 6. wait
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        // 7. switch chain
+        switchToMainChain();
+
+        // 8. clean up `route` method wait
+        newInvokers.set(null);
+
+        // 10. wait backup chain
         waitChain(backupChain);
 
-        // 6. notify
+        // 11. notify backup chain
         backupChain.setInvokers(invokers);
     }
 

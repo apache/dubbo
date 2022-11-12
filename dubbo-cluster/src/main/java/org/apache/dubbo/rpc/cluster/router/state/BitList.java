@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -547,6 +548,26 @@ public class BitList<E> extends AbstractList<E> {
         ArrayList<E> arrayList = new ArrayList<>(size());
         arrayList.addAll(this);
         return arrayList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        BitList<?> bitList = (BitList<?>) o;
+        return Objects.equals(rootSet, bitList.rootSet) && Objects.equals(originList, bitList.originList) && Objects.equals(tailList, bitList.tailList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), rootSet, originList, tailList);
     }
 
     @Override
