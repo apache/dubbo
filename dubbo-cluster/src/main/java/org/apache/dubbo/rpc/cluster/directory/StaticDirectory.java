@@ -97,8 +97,11 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public void notify(List<Invoker<T>> invokers) {
+        BitList<Invoker<T>> bitList = new BitList<>(invokers);
         if (routerChain != null) {
-            routerChain.setInvokers(this.getInvokers(), () -> this.setInvokers(new BitList<>(invokers)));
+            routerChain.setInvokers(bitList.clone(), () -> this.setInvokers(bitList));
+        } else {
+            this.setInvokers(bitList);
         }
     }
 
