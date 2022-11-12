@@ -1,6 +1,8 @@
 # Dubbo Demo
 
-This directory contains some basic usages of Dubbo to help users quickly experience. If you find it interesting and want to learn more, you should look into [the dubbo-samples repository](https://github.com/apache/dubbo-samples) where you will find comprehensive usages for how to use Dubbo in different scenarios with the different features.
+This directory contains some basic usages that can help users quickly experience what Dubbo is like.
+If you find it interesting and want to learn more, please look into [the dubbo-samples repository](https://github.com/apache/dubbo-samples)
+where you will find comprehensive usages for how to use Dubbo in different scenarios with different features.
 
 - [Developing with Spring Boot](./dubbo-demo-spring-boot)
 - [Use Dubbo with API](./dubbo-demo-api)
