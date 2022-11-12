@@ -41,10 +41,8 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2FrameLogger;
@@ -178,12 +176,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new SimpleChannelInboundHandler<Object>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                // Do nothing.
-            }
-        });
-        pipeline.addLast(codec, handler, new TripleClientHandler(frameworkModel), new TripleTailHandler());
+        TripleClientHandler tripleClientHandler = new TripleClientHandler(frameworkModel);
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(tripleClientHandler);
+        pipeline.addLast(codec, handler, tripleClientHandler, new TripleTailHandler());
     }
 }

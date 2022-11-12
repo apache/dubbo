@@ -23,11 +23,12 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.util.ReferenceCountUtil;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
     private final FrameworkModel frameworkModel;
+
+    private static final String CONNECTION_HANDLER_NAME = "connectionHandler";
 
     public TripleClientHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -36,9 +37,9 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2GoAwayFrame) {
-            final ConnectionHandler connectionHandler = (ConnectionHandler) ctx.pipeline().get("connectionHandler");
+            final ConnectionHandler connectionHandler = (ConnectionHandler) ctx.pipeline().get(CONNECTION_HANDLER_NAME);
             connectionHandler.onGoAway(ctx.channel());
         }
-        ReferenceCountUtil.release(msg);
+        ctx.fireChannelRead(msg);
     }
 }

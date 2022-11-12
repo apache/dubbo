@@ -18,8 +18,8 @@ package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -30,6 +30,12 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
 
     private final ConcurrentMap<String, AbstractConnectionClient> connections = new ConcurrentHashMap<>(16);
 
+    private FrameworkModel frameworkModel;
+
+    public SingleProtocolConnectionManager(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
+
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
         if (url == null) {
@@ -37,13 +43,11 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         }
         return connections.compute(url.getAddress(), (address, conn) -> {
             if (conn == null) {
-                try {
-                    final AbstractConnectionClient connectionClient = PortUnificationExchanger.getTransporter(url).connect(url, handler);
-                    connectionClient.addCloseListener(() -> connections.remove(address, connectionClient));
-                    return connectionClient;
-                } catch (RemotingException e) {
-                    throw new RuntimeException(e);
-                }
+                String transport = url.getParameter(Constants.TRANSPORTER_KEY, "netty4");
+                ConnectionManager manager = frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(transport);
+                final AbstractConnectionClient connectionClient = manager.connect(url, handler);
+                connectionClient.addCloseListener(() -> connections.remove(address, connectionClient));
+                return connectionClient;
             } else {
                 conn.retain();
                 return conn;

@@ -21,8 +21,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
-import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -49,7 +49,7 @@ public class ConnectionTest {
         url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         server = new NettyPortUnificationServer(url, new DefaultPuHandler());
         server.bind();
-        connectionManager = PortUnificationExchanger.getConnectionManager(url);
+        connectionManager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
     }
 
     @AfterAll

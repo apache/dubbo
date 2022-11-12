@@ -23,8 +23,6 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
-import org.apache.dubbo.remoting.api.connection.ConnectionManager;
-import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
@@ -60,7 +58,11 @@ public class PortUnificationExchanger {
 
     public static AbstractConnectionClient connect(URL url, ChannelHandler handler) {
         final AbstractConnectionClient connectionClient;
-        connectionClient = getConnectionManager(url).connect(url, handler);
+        try {
+            connectionClient = getTransporter(url).connect(url, handler);
+        } catch (RemotingException e) {
+            throw new RuntimeException(e);
+        }
         return connectionClient;
     }
 
@@ -84,10 +86,6 @@ public class PortUnificationExchanger {
     public static PortUnificationTransporter getTransporter(URL url) {
         return url.getOrDefaultFrameworkModel().getExtensionLoader(PortUnificationTransporter.class)
                 .getAdaptiveExtension();
-    }
-
-    public static ConnectionManager getConnectionManager(URL url) {
-        return url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
     }
 
 }

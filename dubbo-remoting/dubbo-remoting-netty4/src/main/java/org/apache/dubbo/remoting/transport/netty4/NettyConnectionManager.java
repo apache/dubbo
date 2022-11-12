@@ -21,22 +21,23 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
-import org.apache.dubbo.remoting.api.connection.MultiplexProtocolConnectionManager;
-import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
-import org.apache.dubbo.remoting.api.pu.PortUnificationTransporter;
 
-public class NettyPortUnificationTransporter implements PortUnificationTransporter {
+import java.util.function.Consumer;
 
+public class NettyConnectionManager implements ConnectionManager {
     public static final String NAME = "netty4";
 
     @Override
-    public AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyPortUnificationServer(url, handler);
+    public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
+        try {
+            return new NettyConnectionClient(url, handler);
+        } catch (RemotingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException {
-        ConnectionManager manager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
-        return manager.connect(url, handler);
+    public void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer) {
+        // Do nothing.
     }
 }
