@@ -599,8 +599,16 @@
                         <id>report-aggregate</id>
                         <phase>verify</phase>
                         <goals>
+                            <goal>report</goal>
                             <goal>report-aggregate</goal>
                         </goals>
+                        <configuration>
+                            <includes>
+                                <include>target/classes/**/*</include>
+                                <include>target/classes/**</include>
+                                <include>**/*</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
