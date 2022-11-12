@@ -138,6 +138,7 @@ jobs:
     env:
       DISABLE_FILE_SYSTEM_TEST: true
       CURRENT_ROLE: ${{ matrix.case-role }}
+      DUBBO_DEFAULT_SERIALIZATION: fastjson2
     steps:
       - uses: actions/checkout@v3
       - name: "Set up JDK ${{ matrix.jdk }}"
@@ -153,9 +154,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
-        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Pjacoco -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+        run: ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
 
