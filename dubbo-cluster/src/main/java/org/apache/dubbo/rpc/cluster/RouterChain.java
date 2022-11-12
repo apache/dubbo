@@ -30,7 +30,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -90,15 +89,13 @@ public class RouterChain<T> {
         this.currentChain = this.mainChain;
     }
 
-    private final AtomicReference<BitList<Invoker<T>>> newInvokers = new AtomicReference<>();
-    private final Semaphore semaphore = new Semaphore(1);
+    private final AtomicReference<BitList<Invoker<T>>> notifyingInvokers = new AtomicReference<>();
 
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
-        if (newInvokers.get() != null) {
-            if (availableInvokers.equals(newInvokers.get())) {
+        if (notifyingInvokers.get() != null) {
+            if (availableInvokers.getOriginList() == notifyingInvokers.get().getOriginList()) {
                 // notify switch chain
                 switchToMainChain();
-                semaphore.release();
             }
         }
         return currentChain.route(url, availableInvokers, invocation);
@@ -123,7 +120,7 @@ public class RouterChain<T> {
         mainChain.setInvokers(invokers);
 
         // 4. let `route` method check if the invokers are updated
-        newInvokers.set(invokers);
+        notifyingInvokers.set(invokers);
 
         // 5. switch in directory
         switchAction.run();
@@ -139,7 +136,7 @@ public class RouterChain<T> {
         switchToMainChain();
 
         // 8. clean up `route` method wait
-        newInvokers.set(null);
+        notifyingInvokers.set(null);
 
         // 10. wait backup chain
         waitChain(backupChain);
