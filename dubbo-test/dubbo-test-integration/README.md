@@ -1,1 +1,1 @@
-This directory contains some basic usages of Dubbo for developers and debugging purposes. For users of Dubbo, please see [dubbo-demo](https://github.com/apache/dubbo/dubbo-demo) or [the dubbo-samples repository](https://github.com/apache/dubbo-samples).
+Demos contained in this directory are for developers, to make it easier to do tests after development and diagnose or debug if there are any issues. For users of Dubbo, please see [dubbo-demo](../../dubbo-demo) or the [dubbo-samples](https://github.com/apache/dubbo-samples) repository.
