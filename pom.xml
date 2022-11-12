@@ -697,6 +697,7 @@
                         <exclude>**/*.bat</exclude>
                         <exclude>**/*.md</exclude>
                         <exclude>.git/</exclude>
+                        <exclude>.tmp/</exclude>
                         <exclude>.gitignore</exclude>
                         <!-- ASF jenkins box puts the Maven repo in our root directory. -->
                         <exclude>.repository/</exclude>
