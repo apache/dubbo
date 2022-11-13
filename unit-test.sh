@@ -36,10 +36,12 @@ if [ $# -eq 2 ]; then
 #    for (( i = 0; i < 4; i++ )); do
       case_count=$((i % total_executor))
         if [ $case_count -eq "$current_executor" ]; then
+          case_num=$((i + 1))
+          echo "Executing ${submodules[$i]} test cases $case_num / ${#submodules[@]}"
           docker run --rm -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:17 bash .tmp/script-$i.sh
           exit_code=$?
           if [ $exit_code -ne 0 ]; then
-            echo "Failed to execute ${submodules[$i]} test cases"
+            echo "Failed to execute ${submodules[$i]} test cases $case_num / ${#submodules[@]}"
             echo $exit_code > .tmp/exit_code-$current_executor
             exit $exit_code
           fi
