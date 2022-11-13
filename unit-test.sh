@@ -49,13 +49,18 @@ if [ $# -eq 2 ]; then
         if [ $case_count -eq "$current_executor" ]; then
           case_num=$((i + 1))
           echo "Executing ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
-          docker run --name "dubbo-test-$current_executor" --rm -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:11 bash .tmp/script-$i.sh
-          exit_code=$?
+          container_id=$(docker run -d --name "dubbo-test-$current_executor" -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:11 bash .tmp/script-$i.sh)
+          exit_code=$(docker wait "$container_id")
           if [ $exit_code -ne 0 ]; then
             echo "Failed to execute ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
             echo $exit_code > .tmp/exit_code-$current_executor
+
+            docker logs "$container_id"
+            docker rm "$container_id"
+
             exit $exit_code
           fi
+          docker rm "$container_id"
         fi
     done
     echo 0 > .tmp/exit_code-$current_executor
