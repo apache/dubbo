@@ -56,11 +56,14 @@ if [ $# -eq 2 ]; then
             echo $exit_code > .tmp/exit_code-$current_executor
 
             docker logs "$container_id"
+            docker logs "$container_id" > .tmp/logs-$case_num.txt
             docker rm "$container_id"
 
             exit $exit_code
           fi
+          docker logs "$container_id" > .tmp/logs-$case_num.txt
           docker rm "$container_id"
+          echo "Success run ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
         fi
     done
     echo 0 > .tmp/exit_code-$current_executor
@@ -79,7 +82,7 @@ for (( i = 0; i < ${#available_submodules[@]}; i++ )); do
   fi
 done
 
-forks=4
+forks=8
 sub_pids=[]
 for (( i = 0; i < $forks; i++ )); do
     bash ./unit-test.sh $i $forks &
@@ -110,6 +113,7 @@ for (( i = 0; i < $forks; i++ )); do
     exit_code=$(cat .tmp/exit_code-$i)
     if [ $exit_code -ne '0' ]; then
       echo "Failed to execute $i sub jobs"
+      _kill
       exit $exit_code
     fi
 done
