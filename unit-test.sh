@@ -23,25 +23,35 @@
 data_1=$(find . -name pom.xml | cut -c 3- | rev | cut -c 9- | rev | sort)
 
 submodules=($data_1)
+available_submodules=()
+available_count=0
 
-echo "Found ${#submodules[@]} poms from files"
+for (( i = 0; i < ${#submodules[@]}; i++ )); do
+  target="${submodules[$i]}/src/test/java"
+  if [ ! -d $target ]; then
+    available_submodules[$available_count]=${submodules[$i]}
+    available_count=$((available_count+1))
+  fi
+done
+
+echo "Found ${#available_submodules[@]} poms from files"
 echo "Skip ${#skip_modules[@]} modules"
 
 if [ $# -eq 2 ]; then
     current_executor=$1
     total_executor=$2
-    total_modules=${#submodules[@]}
+    total_modules=${#available_submodules[@]}
 
     for (( i = 0; i < total_modules; i++ )); do
 #    for (( i = 0; i < 4; i++ )); do
       case_count=$((i % total_executor))
         if [ $case_count -eq "$current_executor" ]; then
           case_num=$((i + 1))
-          echo "Executing ${submodules[$i]} test cases $case_num / ${#submodules[@]}"
-          docker run --rm -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:17 bash .tmp/script-$i.sh
+          echo "Executing ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
+          docker run --rm -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:11 bash .tmp/script-$i.sh
           exit_code=$?
           if [ $exit_code -ne 0 ]; then
-            echo "Failed to execute ${submodules[$i]} test cases $case_num / ${#submodules[@]}"
+            echo "Failed to execute ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
             echo $exit_code > .tmp/exit_code-$current_executor
             exit $exit_code
           fi
@@ -54,12 +64,12 @@ fi
 ./mvnw --batch-mode -no-transfer-progress clean install -T 2C -Dmaven.test.skip=true
 mkdir .tmp
 
-for (( i = 0; i < ${#submodules[@]}; i++ )); do
+for (( i = 0; i < ${#available_submodules[@]}; i++ )); do
 #for (( i = 0; i < 8; i++ )); do
-  if [ ${submodules[$i]} != "" ]; then
+  if [ ${available_submodules[$i]} != "" ]; then
     case_num=$((i + 1))
-    echo "Generate ${submodules[$i]} test cases script $case_num / ${#submodules[@]}"
-    echo "cd /space/${submodules[$i]} && /space/mvnw --offline --batch-mode -no-transfer-progress clean test verify -Pjacoco" > .tmp/script-$i.sh
+    echo "Generate ${available_submodules[$i]} test cases script $case_num / ${#available_submodules[@]}"
+    echo "cd /space/${available_submodules[$i]} && /space/mvnw --offline --batch-mode -no-transfer-progress clean test verify -Pjacoco" > .tmp/script-$i.sh
   fi
 done
 
