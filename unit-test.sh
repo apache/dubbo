@@ -40,11 +40,12 @@ if [ $# -eq 2 ]; then
           exit_code=$?
           if [ $exit_code -ne 0 ]; then
             echo "Failed to execute ${submodules[$i]} test cases"
-            echo $exit_code > .tmp/exit_code-$i
+            echo $exit_code > .tmp/exit_code-$current_executor
             exit $exit_code
           fi
         fi
     done
+    echo 0 > .tmp/exit_code-$current_executor
     exit 0
 fi
 
