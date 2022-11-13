@@ -43,6 +43,7 @@ if [ $# -eq 2 ]; then
     total_executor=$2
     total_modules=${#available_submodules[@]}
 
+    docker rm "dubbo-test-$current_executor" -f
     for (( i = 0; i < total_modules; i++ )); do
 #    for (( i = 0; i < 4; i++ )); do
       case_count=$((i % total_executor))
@@ -92,7 +93,7 @@ done
 _kill() {
     echo "Receive sigterm"
     for (( i = 0; i < $forks; i++ )); do
-        kill ${sub_pids[$i]}
+        kill -9 ${sub_pids[$i]}
         docker stop -t 0 "dubbo-test-$i"
         docker rm -f "dubbo-test-$i"
     done
