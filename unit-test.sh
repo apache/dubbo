@@ -1,4 +1,5 @@
 #!/bin/sh
+set -m
 # ----------------------------------------------------------------------------
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -27,8 +28,8 @@ available_submodules=()
 available_count=0
 
 for (( i = 0; i < ${#submodules[@]}; i++ )); do
-  target="${submodules[$i]}/src/test/java"
-  if [ ! -d $target ]; then
+  target="${submodules[$i]}/src/test"
+  if [ -d $target ]; then
     available_submodules[$available_count]=${submodules[$i]}
     available_count=$((available_count+1))
   fi
@@ -48,7 +49,7 @@ if [ $# -eq 2 ]; then
         if [ $case_count -eq "$current_executor" ]; then
           case_num=$((i + 1))
           echo "Executing ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
-          docker run --rm -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:11 bash .tmp/script-$i.sh
+          docker run --name "dubbo-test-$current_executor" --rm -v $(pwd):/space -v $HOME/.m2:/root/.m2 -w /space openjdk:11 bash .tmp/script-$i.sh
           exit_code=$?
           if [ $exit_code -ne 0 ]; then
             echo "Failed to execute ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
@@ -80,7 +81,26 @@ for (( i = 0; i < $forks; i++ )); do
     sub_pids[$i]=$!
 done
 
+_kill() {
+    echo "Receive sigterm"
+    for (( i = 0; i < $forks; i++ )); do
+        kill ${sub_pids[$i]}
+        docker stop -t 0 "dubbo-test-$i"
+        docker rm -f "dubbo-test-$i"
+    done
+    exit 143
+}
+
+trap _kill SIGTERM
+trap _kill SIGINT
+trap _kill SIGQUIT
+
 for (( i = 0; i < $forks; i++ )); do
+    count=2
+    while [ $count -ne 0 ]; do
+        count=`ps -ef |grep ${sub_pids[$i]} |grep -v "grep" |wc -l`
+        sleep 1
+    done
     wait ${sub_pids[$i]}
     exit_code=$(cat .tmp/exit_code-$i)
     if [ $exit_code -ne '0' ]; then
