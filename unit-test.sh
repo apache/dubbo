@@ -57,12 +57,12 @@ if [ $# -eq 2 ]; then
             echo $exit_code > .tmp/exit_code-$current_executor
 
             docker logs "$container_id"
-            docker logs "$container_id" > .tmp/logs-$case_num.txt
+            docker logs "$container_id" > .tmp/logs-$case_num.txt 2>&1
             docker rm "$container_id"
 
             exit $exit_code
           fi
-          docker logs "$container_id" > .tmp/logs-$case_num.txt
+          docker logs "$container_id" > .tmp/logs-$case_num.txt 2>&1
           docker rm "$container_id"
           echo "Success run ${available_submodules[$i]} test cases $case_num / ${#available_submodules[@]}"
         fi
@@ -104,6 +104,7 @@ trap _kill SIGTERM
 trap _kill SIGINT
 trap _kill SIGQUIT
 
+parent_exit_code=0
 for (( i = 0; i < $forks; i++ )); do
     count=2
     while [ $count -ne 0 ]; do
@@ -114,10 +115,11 @@ for (( i = 0; i < $forks; i++ )); do
     exit_code=$(cat .tmp/exit_code-$i)
     if [ $exit_code -ne '0' ]; then
       echo "Failed to execute $i sub jobs"
-      _kill
-      exit $exit_code
+      parent_exit_code=$exit_code
     fi
 done
 
+_kill
+exit $parent_exit_code
 
 echo "All Test passed."
