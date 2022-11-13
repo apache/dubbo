@@ -18,10 +18,12 @@
  */
 pipeline {
     agent {
-        docker {
-            image 'openjdk:11'
-            args '-v $HOME/.m2:/root/.m2'
-        }
+        label 'ubuntu'
+    }
+
+    tools {
+        maven 'maven_3_latest'
+        jdk 'jdk_11_latest'
     }
 
     stages {
