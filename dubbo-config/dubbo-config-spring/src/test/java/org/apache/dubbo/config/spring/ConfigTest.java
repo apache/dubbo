@@ -368,6 +368,20 @@ public class ConfigTest {
     }
 
     @Test
+    public void testPayloadInProviderXml() {
+        ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
+            resourcePath + "/demo-provider.xml",
+            resourcePath + "/demo-provider-properties.xml");
+        providerContext.start();
+        ProtocolConfig protocolConfig = providerContext.getBean(ProtocolConfig.class);
+        assertEquals(1024, protocolConfig.getPayload());
+        ProviderConfig providerConfig = providerContext.getBean(ProviderConfig.class);
+        assertEquals(1042, providerConfig.getPayload());
+        ServiceConfig serviceConfig = providerContext.getBean("org.apache.dubbo.config.spring.ServiceBean#0", ServiceConfig.class);
+        assertEquals(1402, serviceConfig.getPayload());
+    }
+
+    @Test
     @Disabled("waiting-to-fix")
     public void testAutowireAndAOP() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(

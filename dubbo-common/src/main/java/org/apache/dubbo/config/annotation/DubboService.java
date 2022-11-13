@@ -317,4 +317,10 @@ public @interface DubboService {
      * Weather the service is export asynchronously
      */
     boolean exportAsync() default false;
+
+    /**
+     * Max byte length of payload. Default value: 8M.
+     * @return
+     */
+    int payload() default 8 * 1024 * 1024;
 }

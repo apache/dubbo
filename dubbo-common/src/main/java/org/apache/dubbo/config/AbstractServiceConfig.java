@@ -102,6 +102,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     protected String protocolIds;
 
     /**
+     * Max byte length of payload
+     */
+    protected Integer payload;
+
+    /**
      * Max allowed executing times
      */
     private Integer executes;
@@ -332,5 +337,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     @Deprecated
     public void setExportAsync(Boolean exportAsync) {
         this.exportAsync = exportAsync;
+    }
+
+    public Integer getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Integer payload) {
+        this.payload = payload;
     }
 }

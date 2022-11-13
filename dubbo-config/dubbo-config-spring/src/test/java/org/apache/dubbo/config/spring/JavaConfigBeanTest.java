@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -89,6 +90,10 @@ public class JavaConfigBeanTest {
             Assertions.assertEquals("dubbo", protocolConfig.getName());
             Assertions.assertEquals(2346, protocolConfig.getPort());
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
+
+            ServiceConfig serviceConfig = consumerContext.getBean(ServiceConfig.class);
+            Assertions.assertEquals("demo", serviceConfig.getGroup());
+            Assertions.assertEquals(1024, serviceConfig.getPayload());
 
             ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
             ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
@@ -173,7 +178,7 @@ public class JavaConfigBeanTest {
     static class ProviderConfiguration {
 
         @Bean
-        @DubboService(group = "demo")
+        @DubboService(group = "demo", payload = 1024)
         public DemoService demoServiceImpl() {
             return new DemoServiceImpl();
         }

@@ -99,11 +99,6 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String charset;
 
     /**
-     * Payload max length
-     */
-    private Integer payload;
-
-    /**
      * The network io buffer size
      */
     private Integer buffer;
@@ -292,14 +287,6 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setCharset(String charset) {
         this.charset = charset;
-    }
-
-    public Integer getPayload() {
-        return payload;
-    }
-
-    public void setPayload(Integer payload) {
-        this.payload = payload;
     }
 
     public Integer getBuffer() {

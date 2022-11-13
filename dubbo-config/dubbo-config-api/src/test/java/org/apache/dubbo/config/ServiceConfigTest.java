@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.remoting.Constants.PAYLOAD_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -192,6 +193,53 @@ public class ServiceConfigTest {
 
         assertEquals(serviceVersion2, serviceVersion);
         assertEquals(group, group2);
+    }
+
+    @Test
+    public void testProtocolPayload() {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName("mockprotocol2");
+        protocolConfig.setPayload(1024);
+        service.setProtocol(protocolConfig);
+        service.export();
+        URL url = service.toUrl();
+        assertThat(url.getParameters(), hasEntry(PAYLOAD_KEY, "1024"));
+    }
+
+    @Test
+    public void testProviderPayload() {
+        service.getProvider().setPayload(1024);
+        service.export();
+        URL url = service.toUrl();
+        assertThat(url.getParameters(), hasEntry(PAYLOAD_KEY, "1024"));
+    }
+
+    @Test
+    public void testServicePayload() {
+        service.setPayload(1024);
+        service.export();
+        URL url = service.toUrl();
+        assertThat(url.getParameters(), hasEntry(PAYLOAD_KEY, "1024"));
+    }
+
+    @Test
+    public void testProviderPayloadMorePriorThanProyocol() {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName("mockprotocol2");
+        protocolConfig.setPayload(1024);
+        service.getProvider().setPayload(1042);
+        service.export();
+        URL url = service.toUrl();
+        assertThat(url.getParameters(), hasEntry(PAYLOAD_KEY, "1042"));
+    }
+
+    @Test
+    public void testServicePayloadMorePriorThanProvider() {
+        service.getProvider().setPayload(1024);
+        service.setPayload(1042);
+        service.export();
+        URL url = service.toUrl();
+        assertThat(url.getParameters(), hasEntry(PAYLOAD_KEY, "1042"));
     }
 
     @Test
