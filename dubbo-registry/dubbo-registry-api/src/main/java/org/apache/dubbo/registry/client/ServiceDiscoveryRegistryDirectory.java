@@ -275,6 +275,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         // notify invokers refreshed
         this.invokersChanged();
+
+        logger.info("Received invokers changed event from registry. " +
+            "Registry type: instance. " +
+            "Service Key: " + getConsumerUrl().getServiceKey() + ". " +
+            "Urls Size : " + invokerUrls.size() + ". " +
+            "Invokers Size : " + getInvokers().size() + ". " +
+            "Available Size: " + getValidInvokers().size() + ". " +
+            "Available Invokers : " + joinValidInvokerAddresses());
     }
 
     /**
