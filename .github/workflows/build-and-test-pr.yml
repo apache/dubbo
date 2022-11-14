@@ -146,7 +146,7 @@ jobs:
           echo "--- End Print Rsa Public Key"
 
   unit-test:
-    needs: [unit-test-prepare]
+    needs: [build-source, unit-test-prepare]
     name: "Unit Test On ubuntu-latest"
     runs-on: ubuntu-latest
     strategy:
@@ -197,7 +197,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           source ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token
-          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Pjacoco,jdk15ge-simple,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=true -Dmaven.test.skip=true -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.login=${SONAR_TOKEN}
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Pjacoco,jdk15ge-simple,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.login=${SONAR_TOKEN}
       - name: "Test with Maven without SonarCloud Scan"
         if: ${{ github.repository != 'apache/dubbo' }}
         timeout-minutes: 70
