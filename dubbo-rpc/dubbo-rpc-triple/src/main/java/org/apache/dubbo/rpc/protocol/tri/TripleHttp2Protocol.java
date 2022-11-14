@@ -22,8 +22,6 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
@@ -39,18 +37,19 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2FrameLogger;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
+
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,8 +66,6 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KE
 
 @Activate
 public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeModelAware {
-
-    private static final Logger logger = LoggerFactory.getLogger(TripleHttp2Protocol.class);
 
     // 1 MiB
     private static final int MIB_1 = 1 << 20;
@@ -176,8 +173,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
-        TripleClientHandler tripleClientHandler = new TripleClientHandler(frameworkModel);
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(tripleClientHandler);
-        pipeline.addLast(codec, handler, tripleClientHandler, new TripleTailHandler());
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(
+            new TripleClientHandler(frameworkModel));
+        pipeline.addLast(codec, handler, new TripleTailHandler());
     }
 }
