@@ -146,7 +146,7 @@ jobs:
           echo "--- End Print Rsa Public Key"
 
   unit-test:
-    needs: [build-source, unit-test-prepare]
+    needs: [unit-test-prepare]
     name: "Unit Test On ubuntu-latest"
     runs-on: ubuntu-latest
     strategy:
