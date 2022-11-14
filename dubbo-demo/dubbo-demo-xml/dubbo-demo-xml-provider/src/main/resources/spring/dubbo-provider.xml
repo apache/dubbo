@@ -31,7 +31,7 @@
     <dubbo:protocol name="dubbo" port="-1"/>
 
     <!-- Put all services need to be exported here -->
-    <dubbo:service interface="org.apache.dubbo.integration.DemoService" timeout="3000" ref="demoService"/>
-    <bean id="demoService" class="org.apache.dubbo.integration.provider.DemoServiceImpl"/>
+    <dubbo:service interface="org.apache.dubbo.demo.DemoService" timeout="3000" ref="demoService"/>
+    <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
 
 </beans>
