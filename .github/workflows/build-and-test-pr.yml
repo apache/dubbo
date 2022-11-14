@@ -146,7 +146,7 @@ jobs:
           echo "--- End Print Rsa Public Key"
 
   unit-test:
-    needs: [unit-test-prepare]
+    needs: [build-source, unit-test-prepare]
     name: "Unit Test On ubuntu-latest"
     runs-on: ubuntu-latest
     strategy:
@@ -189,17 +189,20 @@ jobs:
         run: |
           curl "http://dubbo-vm.apache.org:8000/token?workflow_id=${{ github.run_id }}" -o ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token
           openssl rsautl -decrypt -in ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token -out ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token -inkey ${{ github.workspace }}/.tmp/rsa/rsa_private.pem
+      - name: "Test with Maven with SonarCloud Scan"
+        if: ${{ github.repository == 'apache/dubbo' }}
+        timeout-minutes: 70
+        env:
+          # Needed to get some information about the pull request, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
           source ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token
-          echo "SONAR_TOKEN=$SONAR_TOKEN" >> $GITHUB_ENV
-      - name: "Test with Maven"
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Pjacoco,jdk15ge-simple,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+      - name: "Test with Maven without SonarCloud Scan"
+        if: ${{ github.repository != 'apache/dubbo' }}
         timeout-minutes: 70
         run: |
           ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Pjacoco,jdk15ge-simple,'!jdk15ge' -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        if: ${{ github.repository == 'apache/dubbo' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v3
 
