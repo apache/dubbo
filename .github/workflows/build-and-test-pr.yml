@@ -185,7 +185,7 @@ jobs:
           path: ${{ github.workspace }}/.tmp/rsa
           key: secret-rsa-${{ runner.os }}-${{ github.run_id }}
       - name: "Get sonarcloud token"
-        if: ${{ github.action_repository == 'apache/dubbo' }}
+        if: ${{ github.repository == 'apache/dubbo' }}
         run: |
           curl "http://dubbo-vm.apache.org:8000/token?workflow_id=${{ github.run_id }}" -o ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token
           openssl rsautl -decrypt -in ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token -out ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token -inkey ${{ github.workspace }}/.tmp/rsa/rsa_private.pem
