@@ -307,9 +307,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     }
 
     @Override
-    public PropertyValues postProcessPropertyValues(
-            PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
-
+    public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
+        throws BeansException {
         try {
             AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
             prepareInjection(metadata);
@@ -318,7 +317,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             throw ex;
         } catch (Throwable ex) {
             throw new BeanCreationException(beanName, "Injection of @" + getAnnotationType().getSimpleName()
-                    + " dependencies is failed", ex);
+                + " dependencies is failed", ex);
         }
         return pvs;
     }
@@ -507,7 +506,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Gets all beans of {@link ReferenceBean}
-     * @deprecated  use {@link ReferenceBeanManager.getReferences()} instead
+     * @deprecated use {@link ReferenceBeanManager.getReferences()} instead
      */
     @Deprecated
     public Collection<ReferenceBean<?>> getReferenceBeans() {
