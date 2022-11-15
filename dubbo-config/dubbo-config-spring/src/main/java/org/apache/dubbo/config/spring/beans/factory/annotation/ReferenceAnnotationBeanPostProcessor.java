@@ -51,7 +51,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.MethodMetadata;
 
-import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.util.Collection;
@@ -317,7 +316,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             throw ex;
         } catch (Throwable ex) {
             throw new BeanCreationException(beanName, "Injection of @" + getAnnotationType().getSimpleName()
-                + " dependencies is failed", ex);
+                    + " dependencies is failed", ex);
         }
         return pvs;
     }
@@ -506,7 +505,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     /**
      * Gets all beans of {@link ReferenceBean}
-     * @deprecated use {@link ReferenceBeanManager.getReferences()} instead
+     * @deprecated use {@link ReferenceBeanManager#getReferences()} instead
      */
     @Deprecated
     public Collection<ReferenceBean<?>> getReferenceBeans() {
