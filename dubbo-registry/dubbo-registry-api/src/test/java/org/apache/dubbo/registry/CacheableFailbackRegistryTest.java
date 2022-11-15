@@ -198,7 +198,7 @@ class CacheableFailbackRegistryTest {
         final AtomicReference<List<URL>> currentUrls = new AtomicReference<>();
         final List<URL> EMPTY_LIST = new ArrayList<>();
 
-        registry = new MockCacheableRegistryImpl(registryUrl);
+        registry = new MockCacheableRegistryImpl(registryUrl.addParameter(ENABLE_EMPTY_PROTECTION_KEY, true));
         URL url = URLStrParser.parseEncodedStr(urlStr);
         URL url2 = URLStrParser.parseEncodedStr(urlStr2);
         URL url3 = URLStrParser.parseEncodedStr(urlStr3);

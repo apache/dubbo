@@ -113,7 +113,7 @@ public class ServiceInstancesChangedListenerTest {
     static URL multipleProtocolsConsumerURL = URL.valueOf("dubbo,tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo,tri&registry_cluster=default");
     static URL noProtocolConsumerURL = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&registry_cluster=default");
     static URL singleProtocolsConsumerURL = URL.valueOf("tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=tri&registry_cluster=default");
-    static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
+    static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService?enable-empty-protection=true");
 
     static MetadataInfo metadataInfo_111;
     static MetadataInfo metadataInfo_222;

@@ -74,7 +74,6 @@ public class ServiceInstancesChangedListener {
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
-    protected URL url;
     protected Map<String, Set<NotifyListenerWithKey>> listeners;
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -269,14 +268,6 @@ public class ServiceInstancesChangedListener {
         return serviceNames;
     }
 
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
     public Map<String, List<ServiceInstance>> getAllInstances() {
         return allInstances;
     }
@@ -430,7 +421,7 @@ public class ServiceInstancesChangedListener {
 
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
             // notice that the service of this.url may not be the same as notify listener.
-            URL empty = URLBuilder.from(this.url).setProtocol(EMPTY_PROTOCOL).build();
+            URL empty = URLBuilder.from(serviceDiscovery.getUrl()).setProtocol(EMPTY_PROTOCOL).build();
             urls.add(empty);
         }
         return urls;

@@ -314,7 +314,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             ServiceInstancesChangedListener serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (serviceInstancesChangedListener == null) {
                 serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
-                serviceInstancesChangedListener.setUrl(url);
                 for (String serviceName : serviceNames) {
                     List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
                     if (CollectionUtils.isNotEmpty(serviceInstances)) {
@@ -325,7 +324,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             }
 
             if (!serviceInstancesChangedListener.isDestroyed()) {
-                serviceInstancesChangedListener.setUrl(url);
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
