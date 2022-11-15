@@ -1,4 +1,4 @@
-package org.apache.dubbo.spring.boot.autoconfigure;
+package org.apache.dubbo.spring.boot.actuate.mertics;
 
 import org.apache.dubbo.metrics.DubboMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
