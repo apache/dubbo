@@ -20,8 +20,6 @@ import org.apache.dubbo.demo.hello.DubboGreeterTriple;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
-import java.util.concurrent.CompletableFuture;
-
 public class GreeterServiceImpl extends DubboGreeterTriple.GreeterImplBase {
     @Override
     public HelloReply greet(HelloRequest request) {
