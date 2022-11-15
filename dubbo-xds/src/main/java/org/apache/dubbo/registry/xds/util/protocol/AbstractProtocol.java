@@ -237,6 +237,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     if (observeScheduledMap.get(requestId) != null) {
                         observeScheduledMap.remove(requestId);
                     }
+                    observeResource(requestParam.get(requestId), consumer);
                 }
             }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
             observeScheduledMap.put(requestId, scheduledFuture);
