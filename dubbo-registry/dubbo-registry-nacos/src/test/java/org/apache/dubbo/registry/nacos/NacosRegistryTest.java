@@ -56,7 +56,7 @@ public class NacosRegistryTest {
     private static final String serviceInterface = "org.apache.dubbo.registry.nacos.NacosService";
 
     private final URL serviceUrl = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
-        serviceInterface + "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default");
+        serviceInterface + "&notify=false&methods=test1,test2&category=providers&version=1.0.0&group=default&side=provider");
 
     private NacosRegistryFactory nacosRegistryFactory;
 

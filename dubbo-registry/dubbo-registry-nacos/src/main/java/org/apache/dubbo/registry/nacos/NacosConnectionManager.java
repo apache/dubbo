@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
@@ -53,6 +69,9 @@ public class NacosConnectionManager {
     }
 
     public synchronized NamingService getNamingService() {
+        if (namingServiceList.isEmpty()) {
+            this.namingServiceList.add(createNamingService());
+        }
         return namingServiceList.get(ThreadLocalRandom.current().nextInt(namingServiceList.size()));
     }
 
@@ -63,7 +82,7 @@ public class NacosConnectionManager {
             this.namingServiceList.add(createNamingService());
             return getNamingService(selected);
         }
-        return copyOfNamingService.get(ThreadLocalRandom.current().nextInt(namingServiceList.size()));
+        return copyOfNamingService.get(ThreadLocalRandom.current().nextInt(copyOfNamingService.size()));
     }
 
     public synchronized void shutdownAll() {
@@ -74,6 +93,7 @@ public class NacosConnectionManager {
                 logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Unable to shutdown nacos naming service", e);
             }
         }
+        this.namingServiceList.clear();
     }
 
     /**
@@ -81,7 +101,7 @@ public class NacosConnectionManager {
      *
      * @return {@link NamingService}
      */
-    private NamingService createNamingService() {
+    protected NamingService createNamingService() {
         Properties nacosProperties = buildNacosProperties(this.connectionURL);
         NamingService namingService;
         try {

@@ -54,6 +54,14 @@ public class NacosNamingServiceWrapper {
         this.isSupportBatchRegister = MethodUtils.findMethod(NamingService.class, "batchRegisterInstance", String.class, String.class, List.class) != null;
     }
 
+    /**
+     * for uts only
+     */
+    @Deprecated
+    protected NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager, boolean isSupportBatchRegister) {
+        this.nacosConnectionManager = nacosConnectionManager;
+        this.isSupportBatchRegister = isSupportBatchRegister;
+    }
 
     public String getServerStatus() {
         return nacosConnectionManager.getNamingService().getServerStatus();
@@ -101,6 +109,7 @@ public class NacosNamingServiceWrapper {
 
                     NamingService namingService = previous.getNamingService();
                     instanceListToRegister.add(previous.getInstance());
+                    instanceListToRegister.add(instance);
 
                     try {
                         namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister);
