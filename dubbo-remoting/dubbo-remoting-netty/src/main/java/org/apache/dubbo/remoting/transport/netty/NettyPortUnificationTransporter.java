@@ -34,6 +34,6 @@ public class NettyPortUnificationTransporter implements PortUnificationTransport
 
     @Override
     public AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyConnectionClient(url, handler);
+        throw new RemotingException(url.toInetSocketAddress(), null, "connectionManager for netty3 spi not found.");
     }
 }
