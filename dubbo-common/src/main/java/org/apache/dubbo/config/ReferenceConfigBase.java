@@ -39,6 +39,7 @@ import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * ReferenceConfig
@@ -130,8 +131,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         super.preProcessRefresh();
         if (consumer == null) {
             consumer = getModuleConfigManager()
-                    .getDefaultConsumer()
-                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
+                .getDefaultConsumer()
+                .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
     }
 
@@ -166,6 +167,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     /**
      * Get service interface class of this reference.
      * The actual service type of remote provider.
+     *
      * @return
      */
     public Class<?> getServiceInterfaceClass() {
@@ -187,6 +189,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     /**
      * Get proxy interface class of this reference.
      * The proxy interface class is used to create proxy instance.
+     *
      * @return
      */
     public Class<?> getInterfaceClass() {
@@ -208,6 +211,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     /**
      * Determine the interface of the proxy class
+     *
      * @param generic
      * @param interfaceName
      * @return
@@ -303,9 +307,9 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {
-                    logger.warn("Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
                 } else {
-                    logger.warn("Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
             }
         }

@@ -46,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_POOL_EXHAUSTED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_CREATE_DUMP;
 
 /**
  * Abort Policy.
@@ -162,7 +163,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 new File(dumpPath, "Dubbo_JStack.log" + "." + dateStr))) {
                 JVMUtil.jstack(jStackStream);
             } catch (Throwable t) {
-                logger.error("dump jStack error", t);
+                logger.error(COMMON_UNEXPECTED_CREATE_DUMP, "", "", "dump jStack error", t);
             } finally {
                 guard.release();
             }
@@ -183,7 +184,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             if (dumpDirectory.mkdirs()) {
                 logger.info(format("Dubbo dump directory[%s] created", dumpDirectory.getAbsolutePath()));
             } else {
-                logger.warn(format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
+                logger.warn(COMMON_UNEXPECTED_CREATE_DUMP, "", "", format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
                     dumpDirectory.getAbsolutePath(), USER_HOME));
                 return USER_HOME;
             }

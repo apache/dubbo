@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.lang.reflect.Field;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -233,6 +234,22 @@ public class CollectionUtils {
         int len = pairs.length / 2;
         for (int i = 0; i < len; i++) {
             ret.put((K) pairs[2 * i], (V) pairs[2 * i + 1]);
+        }
+        return ret;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K, V> Map<K, V> objToMap(Object object) throws IllegalAccessException {
+        Map<K, V> ret = new HashMap<>();
+        if (object != null) {
+            Field[] fields = object.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(object);
+                if (value != null) {
+                    ret.put((K)field.getName(), (V)value);
+                }
+            }
         }
         return ret;
     }

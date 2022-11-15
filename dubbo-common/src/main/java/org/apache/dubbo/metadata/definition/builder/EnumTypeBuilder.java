@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metadata.definition.builder;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
@@ -25,11 +25,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
 /**
  * 2015/1/27.
  */
 public class EnumTypeBuilder implements TypeBuilder {
-    private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TypeDefinitionBuilder.class);
 
     @Override
     public boolean accept(Class<?> clazz) {
@@ -61,7 +63,7 @@ public class EnumTypeBuilder implements TypeBuilder {
             }
             return td;
         } catch (Throwable t) {
-            logger.error("There is an error while process class " + clazz, t);
+            logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "There is an error while process class " + clazz, t);
         }
         return td;
     }

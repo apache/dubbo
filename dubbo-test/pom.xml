@@ -34,6 +34,8 @@
         <module>dubbo-test-spring3.2</module>
         <module>dubbo-test-spring4.1</module>
         <module>dubbo-test-spring4.2</module>
+        <module>dubbo-dependencies-all</module>
+        <module>dubbo-test-modules</module>
     </modules>
 
     <properties>

@@ -534,7 +534,7 @@ public class ConfigTest {
             urls = bean.getExportedUrls();
             assertEquals(1, urls.size());
             URL url = urls.get(0);
-            assertEquals("sayName,getBox", url.getParameter("methods"));
+            assertEquals("getBox,sayName", url.getParameter("methods"));
         } finally {
             ctx.stop();
             ctx.close();

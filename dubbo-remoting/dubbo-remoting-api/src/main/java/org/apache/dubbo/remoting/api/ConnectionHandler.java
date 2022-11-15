@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.channel.Channel;
@@ -29,9 +29,11 @@ import io.netty.util.AttributeKey;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+
 @ChannelHandler.Sharable
 public class ConnectionHandler extends ChannelInboundHandlerAdapter {
-    private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(ConnectionHandler.class);
     private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
     private final Connection connection;
 
@@ -68,7 +70,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.warn(String.format("Channel error:%s", ctx.channel()), cause);
+        log.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Channel error:%s", ctx.channel()), cause);
         ctx.close();
     }
 

@@ -55,8 +55,8 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,8 +83,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -389,7 +389,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), COMMA_SEPARATOR));
+                List<String> copyOfMethods = new ArrayList<>(Arrays.asList(methods));
+                copyOfMethods.sort(Comparator.naturalOrder());
+                map.put(METHODS_KEY, String.join(COMMA_SEPARATOR, copyOfMethods));
             }
         }
 

@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.support.DemoService;
+import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class StubInvocationUtilTest {
 
     @Test
     void unaryCall() throws Throwable {
-        Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
+        Invoker<IGreeter> invoker = Mockito.mock(Invoker.class);
         URL url = Mockito.mock(URL.class);
         ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
@@ -51,13 +51,13 @@ class StubInvocationUtilTest {
         when(url.getServiceModel())
             .thenReturn(consumerModel);
         when(url.getServiceInterface())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(url.getProtocolServiceKey())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(invoker.getUrl())
             .thenReturn(url);
         when(invoker.getInterface())
-            .thenReturn(DemoService.class);
+            .thenReturn(IGreeter.class);
         Result result = Mockito.mock(Result.class);
         when(invoker.invoke(any(Invocation.class)))
             .thenReturn(result);
@@ -75,7 +75,7 @@ class StubInvocationUtilTest {
 
     @Test
     void unaryCall2() throws Throwable {
-        Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
+        Invoker<IGreeter> invoker = Mockito.mock(Invoker.class);
         URL url = Mockito.mock(URL.class);
         ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
@@ -83,13 +83,13 @@ class StubInvocationUtilTest {
         when(url.getServiceModel())
             .thenReturn(consumerModel);
         when(url.getServiceInterface())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(url.getProtocolServiceKey())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(invoker.getUrl())
             .thenReturn(url);
         when(invoker.getInterface())
-            .thenReturn(DemoService.class);
+            .thenReturn(IGreeter.class);
         Result result = Mockito.mock(Result.class);
         when(invoker.invoke(any(Invocation.class)))
             .thenThrow(new RuntimeException("a"))
@@ -118,7 +118,7 @@ class StubInvocationUtilTest {
 
     @Test
     void testUnaryCall() throws Throwable {
-        Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
+        Invoker<IGreeter> invoker = Mockito.mock(Invoker.class);
         URL url = Mockito.mock(URL.class);
         ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
@@ -126,13 +126,13 @@ class StubInvocationUtilTest {
         when(url.getServiceModel())
             .thenReturn(consumerModel);
         when(url.getServiceInterface())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(url.getProtocolServiceKey())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(invoker.getUrl())
             .thenReturn(url);
         when(invoker.getInterface())
-            .thenReturn(DemoService.class);
+            .thenReturn(IGreeter.class);
         Result result = Mockito.mock(Result.class);
         String response = "response";
         when(invoker.invoke(any(Invocation.class)))
@@ -168,7 +168,7 @@ class StubInvocationUtilTest {
 
     @Test
     void biOrClientStreamCall() throws InterruptedException {
-        Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
+        Invoker<IGreeter> invoker = Mockito.mock(Invoker.class);
         URL url = Mockito.mock(URL.class);
         ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
@@ -176,13 +176,13 @@ class StubInvocationUtilTest {
         when(url.getServiceModel())
             .thenReturn(consumerModel);
         when(url.getServiceInterface())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(url.getProtocolServiceKey())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(invoker.getUrl())
             .thenReturn(url);
         when(invoker.getInterface())
-            .thenReturn(DemoService.class);
+            .thenReturn(IGreeter.class);
         Result result = Mockito.mock(Result.class);
         String response = "response";
 
@@ -243,7 +243,7 @@ class StubInvocationUtilTest {
 
     @Test
     void serverStreamCall() throws InterruptedException {
-        Invoker<DemoService> invoker = Mockito.mock(Invoker.class);
+        Invoker<IGreeter> invoker = Mockito.mock(Invoker.class);
         URL url = Mockito.mock(URL.class);
         ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
@@ -251,13 +251,13 @@ class StubInvocationUtilTest {
         when(url.getServiceModel())
             .thenReturn(consumerModel);
         when(url.getServiceInterface())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(url.getProtocolServiceKey())
-            .thenReturn(DemoService.class.getName());
+            .thenReturn(IGreeter.class.getName());
         when(invoker.getUrl())
             .thenReturn(url);
         when(invoker.getInterface())
-            .thenReturn(DemoService.class);
+            .thenReturn(IGreeter.class);
         Result result = Mockito.mock(Result.class);
         String response = "response";
         when(invoker.invoke(any(Invocation.class)))
