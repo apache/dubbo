@@ -552,7 +552,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (!CollectionUtils.isEmptyMap(localUrlInvokerMap)) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroyAll();
+                    invoker.destroy();
                 } catch (Throwable t) {
                     // 1-15 - Failed to destroy service
                     logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
@@ -581,7 +581,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = entry.getValue();
             if (invoker != null) {
                 try {
-                    invoker.destroyAll();
+                    invoker.destroy();
                     if (logger.isDebugEnabled()) {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
