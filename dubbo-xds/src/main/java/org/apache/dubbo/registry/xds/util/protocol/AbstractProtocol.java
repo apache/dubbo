@@ -232,6 +232,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             }
             ScheduledFuture<?> scheduledFuture = pollingExecutor.scheduleAtFixedRate(() -> {
                 xdsChannel = new XdsChannel(xdsChannel.getUrl());
+                if (xdsChannel.getChannel() != null) {
+                    pollingExecutor.shutdown();
+                    if (observeScheduledMap.get(requestId) != null) {
+                        observeScheduledMap.remove(requestId);
+                    }
+                }
             }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
             observeScheduledMap.put(requestId, scheduledFuture);
         }

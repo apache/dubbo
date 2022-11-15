@@ -49,12 +49,16 @@ public class XdsChannel {
 
     public static final String USE_AGENT = "use-agent";
 
-    private final ManagedChannel channel;
+    private ManagedChannel channel;
 
     private URL url;
 
     public URL getUrl() {
         return url;
+    }
+
+    public ManagedChannel getChannel() {
+        return channel;
     }
 
     public XdsChannel(URL url) {
