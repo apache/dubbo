@@ -48,6 +48,7 @@ public class NacosNamingServiceWrapper {
 
     private final Map<InstanceId, InstancesInfo> registerStatus = new ConcurrentHashMap<>();
     private final Map<SubscribeInfo, NamingService> subscribeStatus = new ConcurrentHashMap<>();
+    private final Lock mapLock = new ReentrantLock();
 
     public NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager) {
         this.nacosConnectionManager = nacosConnectionManager;
@@ -90,10 +91,20 @@ public class NacosNamingServiceWrapper {
 
     public void registerInstance(String serviceName, String group, Instance instance) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
 
         try {
             instancesInfo.lock();
+            if (!instancesInfo.isValid()) {
+                registerInstance(serviceName, group, instance);
+                return;
+            }
             if (instancesInfo.getInstances().size() == 0) {
                 // directly register
                 NamingService namingService = nacosConnectionManager.getNamingService();
@@ -149,7 +160,13 @@ public class NacosNamingServiceWrapper {
 
     public void deregisterInstance(String serviceName, String group, String ip, int port) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
 
         try {
             instancesInfo.lock();
@@ -170,7 +187,13 @@ public class NacosNamingServiceWrapper {
 
     public void deregisterInstance(String serviceName, String group, Instance instance) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
-        InstancesInfo instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
 
         try {
             instancesInfo.lock();
@@ -183,6 +206,16 @@ public class NacosNamingServiceWrapper {
             }
             InstanceInfo instanceInfo = optional.get();
             instancesInfo.getInstances().remove(instanceInfo);
+
+            try {
+                mapLock.lock();
+                if (instancesInfo.getInstances().size() == 0) {
+                    registerStatus.remove(new InstanceId(nacosServiceName, group));
+                    instancesInfo.setValid(false);
+                }
+            } finally {
+                mapLock.unlock();
+            }
 
             // only one registered
             if (instancesInfo.getInstances().size() == 0) {
@@ -231,7 +264,7 @@ public class NacosNamingServiceWrapper {
         return serviceName.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);
     }
 
-    private static class InstanceId {
+    protected static class InstanceId {
         private final String serviceName;
         private final String group;
 
@@ -266,10 +299,11 @@ public class NacosNamingServiceWrapper {
         }
     }
 
-    private static class InstancesInfo {
+    protected static class InstancesInfo {
         private final Lock lock = new ReentrantLock();
         private final List<InstanceInfo> instances = new ArrayList<>();
         private volatile boolean batchRegistered = false;
+        private volatile boolean valid = true;
 
         public void lock() {
             lock.lock();
@@ -289,6 +323,14 @@ public class NacosNamingServiceWrapper {
 
         public void setBatchRegistered(boolean batchRegistered) {
             this.batchRegistered = batchRegistered;
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public void setValid(boolean valid) {
+            this.valid = valid;
         }
     }
 
@@ -337,5 +379,13 @@ public class NacosNamingServiceWrapper {
         public int hashCode() {
             return Objects.hash(serviceName, group, eventListener);
         }
+    }
+
+    /**
+     * for uts only
+     */
+    @Deprecated
+    protected Map<InstanceId, InstancesInfo> getRegisterStatus() {
+        return registerStatus;
     }
 }
