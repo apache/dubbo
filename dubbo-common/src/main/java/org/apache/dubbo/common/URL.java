@@ -433,15 +433,13 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        URL url;
+```suggestion
         if (urlAddress == null) {
-            url = new URL();
-            url.setHost(host);
+            return new ServiceConfigURL(getProtocol(), host, getPort(), getPath(), getParameters());
         } else {
             URLAddress newURLAddress = urlAddress.setHost(host);
-            url = returnURL(newURLAddress);
+            return returnURL(newURLAddress);
         }
-        return url;
     }
 
 
