@@ -14,24 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api.pu;
+package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionManager;
 
-@SPI(value = "netty4", scope = ExtensionScope.FRAMEWORK)
-public interface PortUnificationTransporter {
+import java.util.function.Consumer;
 
-    @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
-    AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException;
+public class NettyConnectionManager implements ConnectionManager {
+    public static final String NAME = "netty4";
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException;
+    @Override
+    public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
+        try {
+            return new NettyConnectionClient(url, handler);
+        } catch (RemotingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    @Override
+    public void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer) {
+        // Do nothing.
+    }
 }

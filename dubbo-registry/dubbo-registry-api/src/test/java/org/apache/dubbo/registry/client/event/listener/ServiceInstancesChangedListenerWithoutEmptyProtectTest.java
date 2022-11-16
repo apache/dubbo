@@ -73,7 +73,7 @@ import static org.mockito.Mockito.when;
  * @since 2.7.5
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ServiceInstancesChangedListenerTest {
+public class ServiceInstancesChangedListenerWithoutEmptyProtectTest {
 
     static List<ServiceInstance> app1Instances;
     static List<ServiceInstance> app2Instances;
@@ -113,7 +113,7 @@ public class ServiceInstancesChangedListenerTest {
     static URL multipleProtocolsConsumerURL = URL.valueOf("dubbo,tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=dubbo,tri&registry_cluster=default");
     static URL noProtocolConsumerURL = URL.valueOf("consumer://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&registry_cluster=default");
     static URL singleProtocolsConsumerURL = URL.valueOf("tri://127.0.0.1/org.apache.dubbo.demo.DemoService?interface=org.apache.dubbo.demo.DemoService&protocol=tri&registry_cluster=default");
-    static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService?enable-empty-protection=true");
+    static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
     static MetadataInfo metadataInfo_222;
@@ -368,7 +368,7 @@ public class ServiceInstancesChangedListenerTest {
         ArgumentCaptor<List<URL>> captor2 = ArgumentCaptor.forClass(List.class);
         Mockito.verify(demoService2Listener, Mockito.times(1)).notify(captor2.capture());
         List<URL> notifiedUrls2 = captor2.getValue();
-        Assertions.assertEquals(0, notifiedUrls2.size());
+        Assertions.assertEquals(1, notifiedUrls2.size());
 
         // notify app2 instance change
         ServiceInstancesChangedEvent app2_event = new ServiceInstancesChangedEvent("app2", app2Instances);
@@ -422,7 +422,7 @@ public class ServiceInstancesChangedListenerTest {
         ArgumentCaptor<List<URL>> captor2 = ArgumentCaptor.forClass(List.class);
         Mockito.verify(demoService2Listener1, Mockito.times(1)).notify(captor2.capture());
         List<URL> notifiedUrls2 = captor2.getValue();
-        Assertions.assertEquals(0, notifiedUrls2.size());
+        Assertions.assertEquals(1, notifiedUrls2.size());
 
         // notify app2 instance change
         ServiceInstancesChangedEvent app2_event = new ServiceInstancesChangedEvent("app2", app2Instances);
@@ -718,7 +718,7 @@ public class ServiceInstancesChangedListenerTest {
 
     private void clearMetadataCache() {
         try {
-            MockServiceDiscovery mockServiceDiscovery = (MockServiceDiscovery) ServiceInstancesChangedListenerTest.serviceDiscovery;
+            MockServiceDiscovery mockServiceDiscovery = (MockServiceDiscovery) ServiceInstancesChangedListenerWithoutEmptyProtectTest.serviceDiscovery;
             MetaCacheManager metaCacheManager = mockServiceDiscovery.getMetaCacheManager();
             Field cacheField = metaCacheManager.getClass().getDeclaredField("cache");
             cacheField.setAccessible(true);

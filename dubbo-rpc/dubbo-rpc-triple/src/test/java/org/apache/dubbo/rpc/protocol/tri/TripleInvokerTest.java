@@ -19,8 +19,15 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.api.ConnectionManager;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.SingleProtocolConnectionManager;
+import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
+import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServer;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
@@ -30,10 +37,13 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
 import io.netty.channel.Channel;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,27 +53,33 @@ class TripleInvokerTest {
 
     @Test
     public void testNewCall() throws NoSuchMethodException {
-        Channel channel = Mockito.mock(Channel.class);
-        Connection connection = Mockito.mock(Connection.class);
-        ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);
-        when(connectionManager.connect(any(URL.class)))
-            .thenReturn(connection);
-        when(connection.getChannel())
-            .thenReturn(channel);
         URL url = URL.valueOf("tri://127.0.0.1:9103/" + IGreeter.class.getName());
+        Channel channel = Mockito.mock(Channel.class);
+        AbstractConnectionClient connectionClient = Mockito.mock(AbstractConnectionClient.class);
+        ConnectionManager connectionManager = Mockito.mock(ConnectionManager.class);
+        when(connectionManager.connect(any(URL.class), any(ChannelHandler.class)))
+                .thenReturn(connectionClient);
+        when(connectionClient.getChannel(true))
+                .thenReturn(channel);
+        when(connectionClient.isAvailable()).thenReturn(true);
+
         ExecutorService executorService = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
-            .createExecutorIfAbsent(url);
+                .createExecutorIfAbsent(url);
         TripleClientCall call = Mockito.mock(TripleClientCall.class);
         StreamObserver streamObserver = Mockito.mock(StreamObserver.class);
         when(call.start(any(RequestMetadata.class), any(ClientCall.Listener.class)))
-            .thenReturn(streamObserver);
+                .thenReturn(streamObserver);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
+        invocation.setArguments(new Object[]{streamObserver, streamObserver});
         TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url,
-            Identity.MESSAGE_ENCODING, connectionManager, new HashSet<>(), executorService);
+                Identity.MESSAGE_ENCODING, connectionClient, new HashSet<>(), executorService);
         MethodDescriptor echoMethod = new ReflectionMethodDescriptor(
-            IGreeter.class.getDeclaredMethod("echo", String.class));
+                IGreeter.class.getDeclaredMethod("echo", String.class));
+        Assertions.assertTrue(invoker.isAvailable());
         invoker.invokeUnary(echoMethod, invocation, call);
+        invoker.destroy();
+        Assertions.assertFalse(invoker.isAvailable());
     }
 
 }

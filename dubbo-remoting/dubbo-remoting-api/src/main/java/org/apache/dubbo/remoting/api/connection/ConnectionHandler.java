@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.connection;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+public interface ConnectionHandler {
 
-import java.util.function.Consumer;
+    /**
+     * when server close connection gracefully.
+     *
+     * @param channel Channel
+     */
+    void onGoAway(Object channel);
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ConnectionManager {
-
-    Connection connect(URL url);
-
-    void forEachConnection(Consumer<Connection> connectionConsumer);
+    /**
+     * reconnect
+     *
+     * @param channel Channel
+     */
+    void reconnect(Object channel);
 
 }

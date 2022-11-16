@@ -25,8 +25,4 @@ import org.apache.dubbo.remoting.Client;
  */
 public interface ExchangeClient extends Client, ExchangeChannel {
 
-    default void closeAll(int timeout) {
-        close(timeout);
-    }
-
 }
