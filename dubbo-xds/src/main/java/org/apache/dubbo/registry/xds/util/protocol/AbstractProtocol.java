@@ -35,6 +35,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -231,20 +232,19 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             } else {
                 returnResult(null);
             }
-            AtomicInteger connectSuccessCount = new AtomicInteger(0);
+            AtomicBoolean isconnectFail = new AtomicBoolean(false);
             ScheduledFuture<?> scheduledFuture = pollingExecutor.scheduleAtFixedRate(() -> {
                 xdsChannel = new XdsChannel(xdsChannel.getUrl());
                 if (xdsChannel.getChannel() != null) {
                     observeResource(requestParam.get(requestId), consumer);
-                    if (connectSuccessCount.get() == 2) {
-                        connectSuccessCount.getAndIncrement();
+                    if (isconnectFail.get()) {
                         pollingExecutor.shutdown();
                         if (observeScheduledMap.get(requestId) != null) {
                             observeScheduledMap.remove(requestId);
                         }
                     }
                 } else {
-                    connectSuccessCount.incrementAndGet();
+                    isconnectFail.set(true);
                 }
             }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
             observeScheduledMap.put(requestId, scheduledFuture);
