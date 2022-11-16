@@ -92,14 +92,16 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     public void buildRouterChain() {
         RouterChain<T> routerChain = RouterChain.buildChain(getInterface(), getUrl());
-        routerChain.setInvokers(getInvokers());
+        routerChain.setInvokers(getInvokers(), ()->{});
         this.setRouterChain(routerChain);
     }
 
     public void notify(List<Invoker<T>> invokers) {
-        this.setInvokers(new BitList<>(invokers));
+        BitList<Invoker<T>> bitList = new BitList<>(invokers);
         if (routerChain != null) {
-            routerChain.setInvokers(this.getInvokers());
+            routerChain.setInvokers(bitList.clone(), () -> this.setInvokers(bitList));
+        } else {
+            this.setInvokers(bitList);
         }
     }
 

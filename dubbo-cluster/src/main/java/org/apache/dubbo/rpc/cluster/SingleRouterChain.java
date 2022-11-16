@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_STOP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 /**
  * Router chain
@@ -133,6 +134,12 @@ public class SingleRouterChain<T> {
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         currentConcurrency.incrementAndGet();
         try {
+            if (invokers.getOriginList() != availableInvokers.getOriginList()) {
+                logger.error(INTERNAL_ERROR, "", "Router's invoker size: " + invokers.getOriginList().size() +
+                        " Invocation's invoker size: " + availableInvokers.getOriginList().size(),
+                    "Reject to route, because the invokers has changed.");
+                throw new IllegalStateException("reject to route, because the invokers has changed.");
+            }
             if (RpcContext.getServiceContext().isNeedPrintRouterSnapshot()) {
                 return routeAndPrint(url, availableInvokers, invocation);
             } else {

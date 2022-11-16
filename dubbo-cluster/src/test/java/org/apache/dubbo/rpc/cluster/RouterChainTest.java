@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
-
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.ListenableStateRouter;
@@ -36,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -120,7 +120,7 @@ public class RouterChainTest {
         Invoker<DemoService> invoker5 = createNormalInvoker(map5);
 
         BitList<Invoker<DemoService>> invokers = new BitList<>(Arrays.asList(mockInvoker, invoker1, invoker2, invoker3, invoker4, invoker5));
-        routerChain.setInvokers(invokers);
+        routerChain.setInvokers(invokers, () -> {});
 
         // mesh rule for MeshStateRouter
         MeshRuleManager meshRuleManager = mockInvoker.getUrl().getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
