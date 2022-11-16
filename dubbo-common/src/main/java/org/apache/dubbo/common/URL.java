@@ -480,16 +480,12 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        URL url;
         if (urlAddress == null) {
-            url = new URL();
-            url.setHost(host);
-            url.setPort(port);
+            return new ServiceConfigURL(getProtocol(), host, port, getPath(), getParameters());
         } else {
             URLAddress newURLAddress = urlAddress.setAddress(host, port);
-            url = returnURL(newURLAddress);
+            return returnURL(newURLAddress);
         }
-        return url;
     }
 
     public String getIp() {
