@@ -450,15 +450,12 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        URL url;
         if (urlAddress == null) {
-            url = new URL();
-            url.setPort(port);
+            return new ServiceConfigURL(getProtocol(), getHost(), port, getPath(), getParameters());
         } else {
             URLAddress newURLAddress = urlAddress.setPort(port);
-            url = returnURL(newURLAddress);
+            return returnURL(newURLAddress);
         }
-        return url;
     }
 
     public int getPort(int defaultPort) {
