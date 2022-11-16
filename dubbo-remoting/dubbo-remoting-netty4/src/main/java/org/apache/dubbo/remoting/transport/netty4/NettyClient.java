@@ -52,8 +52,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CL
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DISCONNECT_PROVIDER;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
-import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.eventLoopGroup;
-import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
+import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.eventLoopGroup;
+import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
 
 /**
  * NettyClient.

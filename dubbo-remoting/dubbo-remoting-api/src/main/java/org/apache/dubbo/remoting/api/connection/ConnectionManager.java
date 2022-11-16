@@ -14,24 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api.pu;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 
-@SPI(value = "netty4", scope = ExtensionScope.FRAMEWORK)
-public interface PortUnificationTransporter {
+import java.util.function.Consumer;
 
-    @Adaptive({Constants.SERVER_KEY, Constants.TRANSPORTER_KEY})
-    AbstractPortUnificationServer bind(URL url, ChannelHandler handler) throws RemotingException;
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ConnectionManager {
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    AbstractConnectionClient connect(URL url, ChannelHandler handler) throws RemotingException;
+    AbstractConnectionClient connect(URL url, ChannelHandler handler);
+
+    void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer);
 
 }
