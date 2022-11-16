@@ -367,7 +367,16 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        return urlAddress == null ? null : returnURL(urlAddress.setPassword(password));
+
+        URL url;
+        if (urlAddress == null) {
+            url = new URL();
+            url.setPassword(password);
+        } else {
+            URLAddress newURLAddress = urlAddress.setPassword(password);
+            url = returnURL(newURLAddress);
+        }
+        return url;
     }
 
     /**
@@ -424,7 +433,15 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        return urlAddress == null ? null : returnURL(urlAddress.setHost(host));
+        URL url;
+        if (urlAddress == null) {
+            url = new URL();
+            url.setHost(host);
+        } else {
+            URLAddress newURLAddress = urlAddress.setHost(host);
+            url = returnURL(newURLAddress);
+        }
+        return url;
     }
 
 
@@ -433,7 +450,15 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        return urlAddress == null ? null : returnURL(urlAddress.setPort(port));
+        URL url;
+        if (urlAddress == null) {
+            url = new URL();
+            url.setPort(port);
+        } else {
+            URLAddress newURLAddress = urlAddress.setPort(port);
+            url = returnURL(newURLAddress);
+        }
+        return url;
     }
 
     public int getPort(int defaultPort) {
@@ -446,9 +471,6 @@ class URL implements Serializable {
     }
 
     public URL setAddress(String address) {
-        if (urlAddress == null) {
-            return null;
-        }
         int i = address.lastIndexOf(':');
         String host;
         int port = this.getPort();
@@ -458,8 +480,16 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        URLAddress newURLAddress = urlAddress.setAddress(host, port);
-        return returnURL(newURLAddress);
+        URL url;
+        if (urlAddress == null) {
+            url = new URL();
+            url.setHost(host);
+            url.setPort(port);
+        } else {
+            URLAddress newURLAddress = urlAddress.setAddress(host, port);
+            url = returnURL(newURLAddress);
+        }
+        return url;
     }
 
     public String getIp() {
@@ -499,7 +529,15 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        return urlAddress == null ? null : returnURL(urlAddress.setPath(path));
+        URL url;
+        if (urlAddress == null) {
+            url = new URL();
+            url.setPath(path);
+        } else {
+            URLAddress newURLAddress = urlAddress.setPath(path);
+            url = returnURL(newURLAddress);
+        }
+        return url;
     }
 
     public String getAbsolutePath() {
