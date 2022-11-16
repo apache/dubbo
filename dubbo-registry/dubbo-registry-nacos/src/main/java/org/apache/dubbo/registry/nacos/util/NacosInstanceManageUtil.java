@@ -19,12 +19,12 @@ package org.apache.dubbo.registry.nacos.util;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
-import com.alibaba.nacos.shaded.com.google.common.collect.Maps;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Instance manage util for multiple serviceNames
@@ -37,12 +37,12 @@ public class NacosInstanceManageUtil {
     /**
      * serviceName -> refreshed instance list
      */
-    private static final Map<String, List<Instance>> SERVICE_INSTANCE_LIST_MAP = Maps.newConcurrentMap();
+    private static final Map<String, List<Instance>> SERVICE_INSTANCE_LIST_MAP = new ConcurrentHashMap<>();
 
     /**
      * serviceName -> corresponding serviceName list
      */
-    private static final Map<String, Set<String>> CORRESPONDING_SERVICE_NAMES_MAP = Maps.newConcurrentMap();
+    private static final Map<String, Set<String>> CORRESPONDING_SERVICE_NAMES_MAP = new ConcurrentHashMap<>();
 
     public static void setCorrespondingServiceNames(String serviceName, Set<String> serviceNames) {
         CORRESPONDING_SERVICE_NAMES_MAP.put(serviceName, serviceNames);
@@ -58,9 +58,9 @@ public class NacosInstanceManageUtil {
 
     public static List<Instance> getAllCorrespondingServiceInstanceList(String serviceName) {
         if (!CORRESPONDING_SERVICE_NAMES_MAP.containsKey(serviceName)) {
-            return Lists.newArrayList();
+            return new ArrayList<>();
         }
-        List<Instance> allInstances = Lists.newArrayList();
+        List<Instance> allInstances = new ArrayList<>();
         for (String correspondingServiceName : CORRESPONDING_SERVICE_NAMES_MAP.get(serviceName)) {
             if (SERVICE_INSTANCE_LIST_MAP.containsKey(correspondingServiceName)
                 && CollectionUtils.isNotEmpty(SERVICE_INSTANCE_LIST_MAP.get(correspondingServiceName))) {
