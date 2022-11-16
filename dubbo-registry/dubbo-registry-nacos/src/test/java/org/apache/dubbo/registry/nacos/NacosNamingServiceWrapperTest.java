@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 class NacosNamingServiceWrapperTest {
     @Test
@@ -403,4 +404,94 @@ class NacosNamingServiceWrapperTest {
         Mockito.verify(namingServiceList.get(0), Mockito.times(2)).deregisterInstance("service_name", "test", instance3);
     }
 
+    @Test
+    void testConcurrency() throws NacosException, InterruptedException {
+        NacosConnectionManager connectionManager = Mockito.mock(NacosConnectionManager.class);
+
+
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch stopLatch = new CountDownLatch(1);
+        NamingService namingService = Mockito.mock(NamingService.class);
+        Mockito.when(connectionManager.getNamingService()).thenReturn(namingService);
+
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(connectionManager, false);
+
+        Instance instance = new Instance();
+        nacosNamingServiceWrapper.registerInstance("service_name", "test", instance);
+
+        NacosNamingServiceWrapper.InstancesInfo instancesInfo = nacosNamingServiceWrapper.getRegisterStatus().get(new NacosNamingServiceWrapper.InstanceId("service_name", "test"));
+        Assertions.assertEquals(1, instancesInfo.getInstances().size());
+
+        nacosNamingServiceWrapper.getRegisterStatus().put(new NacosNamingServiceWrapper.InstanceId("service_name", "test"), new NacosNamingServiceWrapper.InstancesInfo(){
+            private final NacosNamingServiceWrapper.InstancesInfo delegate = instancesInfo;
+
+            @Override
+            public void lock() {
+                delegate.lock();
+            }
+
+            @Override
+            public void unlock() {
+                delegate.unlock();
+            }
+
+            @Override
+            public List<NacosNamingServiceWrapper.InstanceInfo> getInstances() {
+                try {
+                    if (startLatch.getCount() > 0) {
+                        Thread.sleep(1000);
+                        startLatch.countDown();
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return delegate.getInstances();
+            }
+
+            @Override
+            public boolean isBatchRegistered() {
+                return delegate.isBatchRegistered();
+            }
+
+            @Override
+            public void setBatchRegistered(boolean batchRegistered) {
+                delegate.setBatchRegistered(batchRegistered);
+            }
+
+            @Override
+            public boolean isValid() {
+                return delegate.isValid();
+            }
+
+            @Override
+            public void setValid(boolean valid) {
+                delegate.setValid(valid);
+            }
+        });
+
+        new Thread(()->{
+            try {
+                startLatch.await();
+                nacosNamingServiceWrapper.registerInstance("service_name", "test", instance);
+                stopLatch.countDown();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        new Thread(()->{
+            try {
+                nacosNamingServiceWrapper.deregisterInstance("service_name", "test", instance);
+            } catch (NacosException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+        stopLatch.await();
+        NacosNamingServiceWrapper.InstancesInfo instancesInfoNew = nacosNamingServiceWrapper.getRegisterStatus().get(new NacosNamingServiceWrapper.InstanceId("service_name", "test"));
+        Assertions.assertEquals(1, instancesInfoNew.getInstances().size());
+
+        Assertions.assertNotEquals(instancesInfo, instancesInfoNew);
+    }
 }

@@ -334,7 +334,7 @@ public class NacosNamingServiceWrapper {
         }
     }
 
-    private static class InstanceInfo {
+    protected static class InstanceInfo {
         private final Instance instance;
         private final NamingService namingService;
 
