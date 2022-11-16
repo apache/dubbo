@@ -529,15 +529,12 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        URL url;
         if (urlAddress == null) {
-            url = new URL();
-            url.setPath(path);
+            return new ServiceConfigURL(getProtocol(), getHost(), getPort(), path, getParameters());
         } else {
             URLAddress newURLAddress = urlAddress.setPath(path);
-            url = returnURL(newURLAddress);
+            return returnURL(newURLAddress);
         }
-        return url;
     }
 
     public String getAbsolutePath() {
