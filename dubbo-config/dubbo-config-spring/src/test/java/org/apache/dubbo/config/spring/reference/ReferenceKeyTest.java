@@ -164,7 +164,7 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean name: demoService"), getStackTrace(e));
+            Assertions.assertTrue(getStackTrace(e).contains("Duplicate spring bean name: demoService"));
         }
     }
 
