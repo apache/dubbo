@@ -700,7 +700,11 @@ public class NacosRegistry extends FailbackRegistry {
         public void onEvent(Event event) {
             if (event instanceof NamingEvent) {
                 NamingEvent e = (NamingEvent) event;
-                notifier.notify(e.getInstances());
+                if (e.getInstances() != null) {
+                    notifier.notify(e.getInstances());
+                } else {
+                    notifier.notify(new ArrayList<>());
+                }
             }
         }
 
