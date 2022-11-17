@@ -42,6 +42,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
@@ -107,7 +108,10 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         // 0-1 - Thread pool is EXHAUSTED!
         logger.warn(COMMON_THREAD_POOL_EXHAUSTED, "too much client requesting provider", "", msg);
 
-        dumpJStack();
+        if (Boolean.parseBoolean(url.getParameter(DUMP_ENABLE, "true"))) {
+            dumpJStack();
+        }
+
         dispatchThreadPoolExhaustedEvent(msg);
 
         throw new RejectedExecutionException(msg);
