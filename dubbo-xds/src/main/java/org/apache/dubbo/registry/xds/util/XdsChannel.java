@@ -56,7 +56,7 @@ public class XdsChannel {
         ManagedChannel managedChannel = null;
         try {
             if (!url.getParameter(USE_AGENT, false)) {
-                if("plaintext".equals(System.getenv(IstioConstant.AUTHENTICATION_MODE))){
+                if("plaintext".equals(url.getParameter("secure"))){
                     managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).usePlaintext()
                         .build();
                 }else{
