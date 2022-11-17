@@ -187,7 +187,7 @@ public class RegistryConfig extends AbstractConfig {
     private String secure;
 
     public String getSecure() {
-        return secure == null ? "ssl" : secure;
+        return secure;
     }
 
     public void setSecure(String secure) {
