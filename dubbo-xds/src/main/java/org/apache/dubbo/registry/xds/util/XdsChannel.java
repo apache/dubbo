@@ -35,7 +35,6 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
-import org.apache.dubbo.registry.xds.istio.IstioConstant;
 import org.apache.dubbo.registry.xds.util.bootstrap.Bootstrapper;
 import org.apache.dubbo.registry.xds.util.bootstrap.BootstrapperImpl;
 

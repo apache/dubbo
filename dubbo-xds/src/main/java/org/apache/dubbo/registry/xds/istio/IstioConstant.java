@@ -106,6 +106,4 @@ public class IstioConstant {
     public final static String FIRST_PARTY_JWT = "first-party-jwt";
 
     public final static String THIRD_PARTY_JWT = "third-party-jwt";
-
-    public final static String AUTHENTICATION_MODE = "xds-authentications";
 }
