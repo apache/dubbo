@@ -349,8 +349,12 @@ class URL implements Serializable {
     }
 
     public URL setProtocol(String protocol) {
-        URLAddress newURLAddress = urlAddress.setProtocol(protocol);
-        return returnURL(newURLAddress);
+        if (urlAddress == null) {
+            return new ServiceConfigURL(getProtocol(), getHost(), getPort(), getPath(), getParameters());
+        } else {
+            URLAddress newURLAddress = urlAddress.setProtocol(protocol);
+            return returnURL(newURLAddress);
+        }
     }
 
     public String getUsername() {
@@ -358,8 +362,12 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        URLAddress newURLAddress = urlAddress.setUsername(username);
-        return returnURL(newURLAddress);
+        if (urlAddress == null) {
+            return new ServiceConfigURL(getProtocol(), getHost(), getPort(), getPath(), getParameters()).setUsername(username);
+        } else {
+            URLAddress newURLAddress = urlAddress.setUsername(username);
+            return returnURL(newURLAddress);
+        }
     }
 
     public String getPassword() {
@@ -368,7 +376,7 @@ class URL implements Serializable {
 
     public URL setPassword(String password) {
         if (urlAddress == null) {
-            return new ServiceConfigURL(getProtocol(), getHost(), port, getPath(), getParameters()).setPassword(password);
+            return new ServiceConfigURL(getProtocol(), getHost(), getPort(), getPath(), getParameters()).setPassword(password);
         } else {
             URLAddress newURLAddress = urlAddress.setPassword(password);
             return returnURL(newURLAddress);
@@ -429,7 +437,6 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-```suggestion
         if (urlAddress == null) {
             return new ServiceConfigURL(getProtocol(), host, getPort(), getPath(), getParameters());
         } else {
