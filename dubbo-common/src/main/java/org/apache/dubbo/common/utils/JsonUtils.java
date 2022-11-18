@@ -72,7 +72,7 @@ public class JsonUtils {
                         }
                     }
                     if (json == null) {
-                        throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson, gson) from jvm env. " +
+                        throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson, gson, jackson) from jvm env. " +
                             "Please import at least one json framework.");
                     }
                 }
