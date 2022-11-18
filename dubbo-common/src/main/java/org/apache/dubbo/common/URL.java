@@ -367,16 +367,12 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-
-        URL url;
         if (urlAddress == null) {
-            url = new URL();
-            url.setPassword(password);
+            return new ServiceConfigURL(getProtocol(), getHost(), port, getPath(), getParameters()).setPassword(password);
         } else {
             URLAddress newURLAddress = urlAddress.setPassword(password);
-            url = returnURL(newURLAddress);
+            return returnURL(newURLAddress);
         }
-        return url;
     }
 
     /**
