@@ -51,6 +51,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.MethodMetadata;
 
+import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.util.Collection;
@@ -305,6 +306,21 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
     }
 
+    /**
+     * Alternatives to the {@link #postProcessProperties(PropertyValues, Object, String)}, that removed as of Spring
+     * Framework 6.0.0, and in favor of {@link #postProcessProperties(PropertyValues, Object, String)}.
+     * <p>In order to be compatible with the lower version of Spring, it is still retained.
+     * @see #postProcessProperties
+     */
+    public PropertyValues postProcessPropertyValues(
+        PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
+        return postProcessProperties(pvs, bean, beanName);
+    }
+
+    /**
+     * Alternatives to the {@link #postProcessPropertyValues(PropertyValues, PropertyDescriptor[], Object, String)}.
+     * @see #postProcessPropertyValues
+     */
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
         throws BeansException {
