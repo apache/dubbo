@@ -49,22 +49,31 @@ public class XdsChannel {
 
     private static final String USE_AGENT = "use-agent";
 
+    private static final String SECURE = "secure";
+
+    private static final String PLAINTEXT = "plaintext";
+
     private final ManagedChannel channel;
 
     protected XdsChannel(URL url) {
         ManagedChannel managedChannel = null;
         try {
             if (!url.getParameter(USE_AGENT, false)) {
-                XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
-                    .getExtension(url.getParameter("signer", "istio"));
-                XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
-                SslContext context = GrpcSslContexts.forClient()
-                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
-                        new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
-                    .build();
-                managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
-                    .build();
+                if(PLAINTEXT.equals(url.getParameter(SECURE))){
+                    managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).usePlaintext()
+                        .build();
+                }else{
+                    XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class)
+                        .getExtension(url.getParameter("signer", "istio"));
+                    XdsCertificateSigner.CertPair certPair = signer.GenerateCert(url);
+                    SslContext context = GrpcSslContexts.forClient()
+                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                        .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)),
+                            new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                        .build();
+                    managedChannel = NettyChannelBuilder.forAddress(url.getHost(), url.getPort()).sslContext(context)
+                        .build();
+                }
             } else {
                 BootstrapperImpl bootstrapper = new BootstrapperImpl();
                 Bootstrapper.BootstrapInfo bootstrapInfo = bootstrapper.bootstrap();
