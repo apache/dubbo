@@ -28,7 +28,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.api.SslClientTlsHandler;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.transport.AbstractClient;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
