@@ -16,18 +16,18 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.json.impl.FastJsonImpl;
-import org.apache.dubbo.common.json.impl.GsonImpl;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.dubbo.common.json.impl.FastJsonImpl;
+import org.apache.dubbo.common.json.impl.GsonImpl;
+import org.apache.dubbo.common.json.impl.JacksonImpl;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JsonUtilsTest {
     @Test
@@ -52,6 +52,14 @@ public class JsonUtilsTest {
         // prefer use gson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "gson");
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
+        System.clearProperty("dubbo.json-framework.prefer");
+
+        // prefer use jackson
+        JsonUtils.setJson(null);
+        System.setProperty("dubbo.json-framework.prefer", "jackson");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
@@ -130,6 +138,11 @@ public class JsonUtilsTest {
         JsonUtils.setJson(null);
         // TCCL not found fastjson, gson
         removedPackages.set(Arrays.asList("com.alibaba.fastjson", "com.google.gson"));
+        Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
+
+        JsonUtils.setJson(null);
+        // TCCL not found fastjson, gson, jackson
+        removedPackages.set(Arrays.asList("com.alibaba.fastjson", "com.google.gson", "com.fasterxml.jackson.databind"));
         Assertions.assertThrows(IllegalStateException.class, JsonUtils::getJson);
 
         Thread.currentThread().setContextClassLoader(originClassLoader);

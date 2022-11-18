@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
-
-import java.util.Arrays;
-import java.util.List;
+import org.apache.dubbo.common.json.impl.JacksonImpl;
 
 public class JsonUtils {
     private static volatile JSON json;
@@ -42,6 +43,9 @@ public class JsonUtils {
                                 case "gson":
                                     instance = new GsonImpl();
                                     break;
+                                case "jackson":
+                                    instance = new JacksonImpl();
+                                    break;
                             }
                             if (instance != null && instance.isSupport()) {
                                 json = instance;
@@ -53,7 +57,8 @@ public class JsonUtils {
                     if (json == null) {
                         List<Class<? extends JSON>> jsonClasses = Arrays.asList(
                             FastJsonImpl.class,
-                            GsonImpl.class);
+                            GsonImpl.class,
+                            JacksonImpl.class);
                         for (Class<? extends JSON> jsonClass : jsonClasses) {
                             try {
                                 JSON instance = jsonClass.getConstructor().newInstance();
