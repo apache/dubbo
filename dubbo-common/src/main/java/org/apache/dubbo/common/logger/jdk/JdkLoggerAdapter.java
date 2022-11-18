@@ -33,11 +33,14 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 
     private File file;
 
+    private boolean propertiesLoaded = false;
+
     public JdkLoggerAdapter() {
         try {
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream("logging.properties");
             if (in != null) {
                 LogManager.getLogManager().readConfiguration(in);
+                propertiesLoaded = true;
             } else {
                 System.err.println("No such logging.properties in classpath for jdk logging config!");
             }
@@ -136,4 +139,8 @@ public class JdkLoggerAdapter implements LoggerAdapter {
 
     }
 
+    @Override
+    public boolean isConfigured() {
+        return propertiesLoaded;
+    }
 }

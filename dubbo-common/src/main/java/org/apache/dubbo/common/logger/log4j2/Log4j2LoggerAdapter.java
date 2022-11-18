@@ -29,7 +29,6 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
     private Level level;
 
     public Log4j2LoggerAdapter() {
-
     }
 
     private static org.apache.logging.log4j.Level toLog4j2Level(Level level) {
@@ -103,5 +102,10 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setFile(File file) {
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
     }
 }

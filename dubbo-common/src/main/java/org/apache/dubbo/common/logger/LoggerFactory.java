@@ -70,14 +70,41 @@ public class LoggerFactory {
                     JclLoggerAdapter.class,
                     JdkLoggerAdapter.class
                 );
+                boolean found = false;
+                // try to use the first available adapter
+                for (Class<? extends LoggerAdapter> clazz : candidates) {
+                    try {
+                        LoggerAdapter loggerAdapter = clazz.newInstance();
+                        loggerAdapter.getLogger(LoggerFactory.class);
+                        if (loggerAdapter.isConfigured()) {
+                            setLoggerAdapter(loggerAdapter);
+                            found = true;
+                            break;
+                        }
+                    } catch (Throwable ignored) {
+                    }
+                }
+                if (found) {
+                    break;
+                }
+
+                System.err.println("Dubbo: Unable to find a proper configured logger to log out.");
                 for (Class<? extends LoggerAdapter> clazz : candidates) {
                     try {
                         LoggerAdapter loggerAdapter = clazz.newInstance();
                         loggerAdapter.getLogger(LoggerFactory.class);
                         setLoggerAdapter(loggerAdapter);
+                        found = true;
                         break;
                     } catch (Throwable ignored) {
                     }
+                }
+                if (found) {
+                    System.err.println("Dubbo: Using default logger: " + LOGGER_ADAPTER.getClass().getName() + ". " +
+                        "If you cannot see any log, please configure -Ddubbo.application.logger property to your preferred logging framework.");
+                } else {
+                    System.err.println("Dubbo: Unable to find any available logger adapter to log out. Dubbo logs will be ignored. " +
+                        "Please configure -Ddubbo.application.logger property and add corresponding logging library to classpath.");
                 }
         }
     }
