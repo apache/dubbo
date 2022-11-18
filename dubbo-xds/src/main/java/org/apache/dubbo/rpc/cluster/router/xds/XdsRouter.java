@@ -94,8 +94,7 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
 
         // find match cluster
         String matchCluster = null;
-        Set<String> appNames = invokers.stream().map(inv -> inv.getUrl().getRemoteApplication())
-            .filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<String> appNames = subscribeApplications;
         for (String subscribeApplication : appNames) {
             List<XdsRouteRule> rules = xdsRouteRuleMap.get(subscribeApplication);
             if (CollectionUtils.isEmpty(rules)) {
