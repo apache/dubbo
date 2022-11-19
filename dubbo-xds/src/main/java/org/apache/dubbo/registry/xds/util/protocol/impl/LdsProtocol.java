@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.XdsResource;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaListener;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
@@ -32,16 +33,14 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
-
+    private static Set<XdsResource> resourceSet = new HashSet<>();
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
@@ -51,6 +50,21 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     @Override
     public String getTypeUrl() {
         return "type.googleapis.com/envoy.config.listener.v3.Listener";
+    }
+
+    @Override
+    public Set<Set<String>> getResouceNamesList() {
+        return resourceSet;
+    }
+
+    @Override
+    public void addResouceNames(Set<String> resourceNames) {
+
+    }
+
+    @Override
+    public boolean isExistResource(Set<String> resourceNames) {
+        return false;
     }
 
     public ListenerResult getListeners() {

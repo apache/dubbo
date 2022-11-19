@@ -18,23 +18,24 @@ package org.apache.dubbo.registry.xds.util.protocol;
 
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import java.util.concurrent.ConcurrentHashMap;
+
+
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.stub.StreamObserver;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -59,7 +60,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      * Store ADS Request Observer ( StreamObserver in Streaming Request )
      * K - requestId, V - StreamObserver
      */
-    private final Map<Long, StreamObserver<DiscoveryRequest>> requestObserverMap = new ConcurrentHashMap<>();
+    private final LinkedHashSet<StreamObserver<DiscoveryRequest>> requestObserverSet = new LinkedHashSet<>();
 
     /**
      * Store Delta-ADS Request Observer ( StreamObserver in Streaming Request )
@@ -73,16 +74,13 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     private final Map<Long, CompletableFuture<T>> streamResult = new ConcurrentHashMap<>();
 
-    private final ScheduledExecutorService pollingExecutor;
-
     private final int pollingTimeout;
 
-    protected final static AtomicLong requestId = new AtomicLong(0);
+//    protected final static AtomicLong requestId = new AtomicLong(0);
 
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
-        this.pollingExecutor = new ScheduledThreadPoolExecutor(pollingPoolSize, new NamedThreadFactory("Dubbo-registry-xds"));
         this.pollingTimeout = pollingTimeout;
     }
 
@@ -93,21 +91,28 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     public abstract String getTypeUrl();
 
+    public abstract Set<Set<String>> getResouceNamesList();
+    public abstract void addResouceNames(Set<String> resourceNaems);
+    public abstract boolean isExistResource(Set<String> resourceNames);
     @Override
     public T getResource(Set<String> resourceNames) {
-        long request = requestId.getAndIncrement();
+//        long request = requestId.getAndIncrement();
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
+        if (!resourceNames.isEmpty() && !isExistResource(resourceNames)) {
+            addResouceNames(resourceNames);
+        }
 
         // Store Request Parameter, which will be used for ACK
-        requestParam.put(request, resourceNames);
+//        requestParam.put(request, resourceNames);
 
         // create observer
-        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request, null));
+        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(null, null));
 
         // use future to get async result
         CompletableFuture<T> future = new CompletableFuture<>();
-        requestObserverMap.put(request, requestObserver);
-        streamResult.put(request, future);
+        requestObserverSet.add(requestObserver);
+//        requestObserverMap.put(request, requestObserver);
+//        streamResult.put(request, future);
 
         // send request to control panel
         requestObserver.onNext(buildDiscoveryRequest(resourceNames));
@@ -123,41 +128,45 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             //requestObserver.onCompleted();
 
             // remove temp
-            streamResult.remove(request);
-            requestObserverMap.remove(request);
-            requestParam.remove(request);
+//            streamResult.remove(request);
+//            requestObserverMap.remove(request);
+//            requestParam.remove(request);
         }
     }
 
     @Override
-    public long observeResource(Set<String> resourceNames, Consumer<T> consumer) {
-        long request = requestId.getAndIncrement();
+    public void observeResource(Set<String> resourceNames, Consumer<T> consumer) {
+//        long request = requestId.getAndIncrement();
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
-
+        if (!resourceNames.isEmpty() &&  !isExistResource(resourceNames)) {
+            addResouceNames(resourceNames);
+        }
         // Store Request Parameter, which will be used for ACK
-        requestParam.put(request, resourceNames);
+//        requestParam.put(request, resourceNames);
 
         // call once for full data
         consumer.accept(getResource(resourceNames));
 
         // channel reused
-        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request, consumer));
-        requestObserverMap.put(request, requestObserver);
-
+        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(null, consumer));
+//        requestObserverMap.put(request, requestObserver);
         try {
+            int requestObserverSetSize = requestObserverSet.size();
             // origin request, may changed by updateObserve
-            Set<String> names = requestParam.get(request);
+            Set<String> names = requestParam.get(requestObserverSetSize >= 2 ?
+                requestObserverSet.stream().skip(requestObserverSetSize - 2).findFirst().get(): null
+            );
 
             // use future to get async result, future complete on StreamObserver onNext
             CompletableFuture<T> future = new CompletableFuture<>();
-            streamResult.put(request, future);
+//            streamResult.put(request, future);
 
             // observer reused
-            StreamObserver<DiscoveryRequest> observer = requestObserverMap.get(request);
+            StreamObserver<DiscoveryRequest> observer = requestObserverSet.iterator().next();
 
             if (observer == null) {
-                observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request, consumer));
-                requestObserverMap.put(request, observer);
+                observer = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future, consumer));
+//                requestObserverMap.put(request, observer);
             }
 
             // send request to control panel
@@ -165,7 +174,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         } catch (Throwable t) {
             logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
         }
-        return request;
+//        return request;
     }
 
     @Override
@@ -195,19 +204,39 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     protected abstract T decodeDiscoveryResponse(DiscoveryResponse response);
 
     private class ResponseObserver implements StreamObserver<DiscoveryResponse> {
-        private final long requestId;
+//        private final long requestId;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            ResponseObserver that = (ResponseObserver) o;
+            return Objects.equals(consumer, that.consumer);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(consumer);
+        }
 
         private Consumer<T> consumer;
-        public ResponseObserver(long requestId, Consumer<T> consumer) {
-            this.requestId = requestId;
+
+        private CompletableFuture<T> future;
+        public ResponseObserver(CompletableFuture<T> future, Consumer<T> consumer) {
+//            this.requestId = requestId;
+            this.future = future;
             this.consumer = consumer;
         }
 
         @Override
         public void onNext(DiscoveryResponse value) {
-            logger.info("receive notification from xds server, type: " + getTypeUrl() + " requestId: " + requestId);
+            logger.info("receive notification from xds server, type: " + getTypeUrl());
             T result = decodeDiscoveryResponse(value);
-            StreamObserver<DiscoveryRequest> observer = requestObserverMap.get(requestId);
+            StreamObserver<DiscoveryRequest> observer = requestObserverSet.iterator().next();
             if (observer == null) {
                 return;
             }
@@ -215,7 +244,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
                 // get result
                 consumer.accept(result);
-                streamResult.remove(this.requestId);
+//                streamResult.remove(this.requestId);
             } else {
                 returnResult(result);
             }
@@ -227,30 +256,15 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             clear();
             if (consumer != null) {
                 consumer.accept(null);
-                streamResult.remove(this.requestId);
+//                streamResult.remove(this.requestId);
             } else {
                 returnResult(null);
             }
-            AtomicBoolean isconnectFail = new AtomicBoolean(false);
-            ScheduledFuture<?> scheduledFuture = pollingExecutor.scheduleAtFixedRate(() -> {
-                xdsChannel = new XdsChannel(xdsChannel.getUrl());
-                if (xdsChannel.getChannel() != null) {
-                    observeResource(requestParam.get(requestId), consumer);
-                    if (isconnectFail.get()) {
-                        pollingExecutor.shutdown();
-                        if (observeScheduledMap.get(requestId) != null) {
-                            observeScheduledMap.remove(requestId);
-                        }
-                    }
-                } else {
-                    isconnectFail.set(true);
-                }
-            }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
-            observeScheduledMap.put(requestId, scheduledFuture);
+            triggerReConnectTask(this.consumer);
         }
 
         private void returnResult(T result) {
-            CompletableFuture<T> future = streamResult.get(requestId);
+//            CompletableFuture<T> future = streamResult.get(requestId);
             if (future == null) {
                 return;
             }
@@ -259,13 +273,30 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
         @Override
         public void onCompleted() {
-            logger.info("xDS Client completed, requestId: " + requestId);
+            logger.info("xDS Client completed");
             clear();
         }
 
         private void clear() {
-            requestObserverMap.remove(requestId);
+//            requestObserverMap.remove(requestId);
         }
+    }
+
+    private void triggerReConnectTask(Consumer<T> consumer) {
+        AtomicBoolean isConnectFail = new AtomicBoolean(false);
+        ScheduledExecutorService scheduledFuture = ApplicationModel.defaultModel().getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+        scheduledFuture.schedule(() -> {
+            xdsChannel = new XdsChannel(xdsChannel.getUrl());
+            if (xdsChannel.getChannel() != null) {
+                observeResource(null, consumer);
+                if (isConnectFail.get()) {
+                    scheduledFuture.shutdown();
+                }
+            } else {
+                isConnectFail.set(true);
+            }
+        }, pollingTimeout, TimeUnit.SECONDS);
     }
 
 }
