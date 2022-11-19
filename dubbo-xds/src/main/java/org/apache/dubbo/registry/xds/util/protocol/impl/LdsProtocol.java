@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
-import org.apache.dubbo.registry.xds.util.protocol.XdsResource;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaListener;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
@@ -40,7 +39,6 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
-    private static Set<XdsResource> resourceSet = new HashSet<>();
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
@@ -52,19 +50,34 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
         return "type.googleapis.com/envoy.config.listener.v3.Listener";
     }
 
+    private HashMap<String, Object> resourcesMap = new HashMap<>();
     @Override
-    public Set<Set<String>> getResouceNamesList() {
-        return resourceSet;
+    public Set<String> getAllResouceNames() {
+        return resourcesMap.keySet();
     }
 
     @Override
-    public void addResouceNames(Set<String> resourceNames) {
-
+    public void addResouceNames(Map<String, Object> resourceNames) {
+        resourcesMap.putAll(resourceNames);
     }
 
     @Override
     public boolean isExistResource(Set<String> resourceNames) {
-        return false;
+        for (String resourceName : resourceNames) {
+            if (!resourcesMap.containsKey(resourceName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public ListenerResult getCacheResource(Set<String> resourceNames) {
+        Set<String> resourceSet = new HashSet<>();
+        for (String resourceName : resourceNames) {
+            resourceSet.add((String) resourcesMap.get(resourceName));
+        }
+        return new ListenerResult(resourceSet);
     }
 
     public ListenerResult getListeners() {

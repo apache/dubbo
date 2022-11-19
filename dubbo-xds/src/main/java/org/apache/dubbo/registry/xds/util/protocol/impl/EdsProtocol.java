@@ -32,9 +32,9 @@ import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
@@ -42,6 +42,9 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
+
+    private HashMap<String, Object> resourcesMap = new HashMap<>();
+
 
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);
@@ -51,6 +54,35 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     public String getTypeUrl() {
         return "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
     }
+    @Override
+    public Set<String> getAllResouceNames() {
+        return resourcesMap.keySet();
+    }
+
+    @Override
+    public void addResouceNames(Map<String, Object> resourceNames) {
+        resourcesMap.putAll(resourceNames);
+    }
+
+    @Override
+    public boolean isExistResource(Set<String> resourceNames) {
+        for (String resourceName : resourceNames) {
+            if (!resourcesMap.containsKey(resourceName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public EndpointResult getCacheResource(Set<String> resourceNames) {
+        Set<String> resourceSet = new HashSet<>();
+        for (String resourceName : resourceNames) {
+            resourceSet.add((String) resourcesMap.get(resourceName));
+        }
+        return new EndpointResult(resourceSet);
+    }
+
 
     @Override
     protected EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {

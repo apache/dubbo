@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
+import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 
 import com.google.protobuf.Any;
@@ -31,10 +32,7 @@ import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
@@ -43,6 +41,8 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
+    private HashMap<String, Object> resourcesMap = new HashMap<>();
+
     public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
@@ -50,6 +50,34 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     @Override
     public String getTypeUrl() {
         return "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
+    }
+    @Override
+    public Set<String> getAllResouceNames() {
+        return resourcesMap.keySet();
+    }
+
+    @Override
+    public void addResouceNames(Map<String, Object> resourceNames) {
+        resourcesMap.putAll(resourceNames);
+    }
+
+    @Override
+    public boolean isExistResource(Set<String> resourceNames) {
+        for (String resourceName : resourceNames) {
+            if (!resourcesMap.containsKey(resourceName)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public RouteResult getCacheResource(Set<String> resourceNames) {
+        Set<String> resourceSet = new HashSet<>();
+        for (String resourceName : resourceNames) {
+            resourceSet.add((String) resourcesMap.get(resourceName));
+        }
+        return new RouteResult(resourceSet);
     }
 
     @Override
