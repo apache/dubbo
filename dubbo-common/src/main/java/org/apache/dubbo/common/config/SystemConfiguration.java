@@ -61,6 +61,12 @@ public class SystemConfiguration implements Configuration {
         }
     }
 
+    public void overwriteCache(String key, Object value) {
+        if (value != null) {
+            cache.put(key, value);
+        }
+    }
+
     public Map<String, String> getProperties() {
         return (Map) System.getProperties();
     }
