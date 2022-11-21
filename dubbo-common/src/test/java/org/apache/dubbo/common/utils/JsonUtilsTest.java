@@ -16,16 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.json.impl.FastJson2Impl;
-import org.apache.dubbo.common.json.impl.FastJsonImpl;
-import org.apache.dubbo.common.json.impl.GsonImpl;
-import org.apache.dubbo.common.utils.json.TestEnum;
-import org.apache.dubbo.common.utils.json.TestObjectA;
-import org.apache.dubbo.common.utils.json.TestObjectB;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +23,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.dubbo.common.json.impl.FastJson2Impl;
+import org.apache.dubbo.common.json.impl.FastJsonImpl;
+import org.apache.dubbo.common.json.impl.GsonImpl;
+import org.apache.dubbo.common.json.impl.JacksonImpl;
+import org.apache.dubbo.common.utils.json.TestEnum;
+import org.apache.dubbo.common.utils.json.TestObjectA;
+import org.apache.dubbo.common.utils.json.TestObjectB;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class JsonUtilsTest {
     @Test
@@ -65,6 +65,14 @@ public class JsonUtilsTest {
         // prefer use gson
         JsonUtils.setJson(null);
         System.setProperty("dubbo.json-framework.prefer", "gson");
+        Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
+        Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
+        Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
+        System.clearProperty("dubbo.json-framework.prefer");
+
+        // prefer use jackson
+        JsonUtils.setJson(null);
+        System.setProperty("dubbo.json-framework.prefer", "jackson");
         Assertions.assertEquals("{\"a\":\"a\"}", JsonUtils.getJson().toJson(map));
         Assertions.assertEquals(map, JsonUtils.getJson().toJavaObject("{\"a\":\"a\"}", Map.class));
         Assertions.assertEquals(Collections.singletonList(map), JsonUtils.getJson().toJavaList("[{\"a\":\"a\"}]", Map.class));
@@ -153,11 +161,20 @@ public class JsonUtilsTest {
             String fromGson = JsonUtils.getJson().toJson(obj);
             System.clearProperty("dubbo.json-framework.prefer");
 
+            // prefer use jackson
+            JsonUtils.setJson(null);
+            System.setProperty("dubbo.json-framework.prefer", "jackson");
+            Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
+            String fromJackson = JsonUtils.getJson().toJson(obj);
+            System.clearProperty("dubbo.json-framework.prefer");
+
             JsonUtils.setJson(null);
 
             Assertions.assertEquals(fromFastjson1, fromFastjson2);
             Assertions.assertEquals(fromFastjson1, fromGson);
             Assertions.assertEquals(fromFastjson2, fromGson);
+            Assertions.assertEquals(fromFastjson1, fromJackson);
+            Assertions.assertEquals(fromFastjson2, fromJackson);
         }
     }
 
@@ -248,8 +265,13 @@ public class JsonUtilsTest {
         System.clearProperty("dubbo.json-framework.prefer");
 
         JsonUtils.setJson(null);
-        // TCCL not found fastjson, gson
+        // TCCL not found fastjson, gson, prefer use jackson
         removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.alibaba.fastjson", "com.google.gson"));
+        Assertions.assertInstanceOf(JacksonImpl.class, JsonUtils.getJson());
+
+        JsonUtils.setJson(null);
+        // TCCL not found fastjson, gson, jackson
+        removedPackages.set(Arrays.asList("com.alibaba.fastjson2", "com.alibaba.fastjson", "com.google.gson", "com.fasterxml.jackson.databind"));
         Assertions.assertThrows(IllegalStateException.class, JsonUtils::getJson);
 
         Thread.currentThread().setContextClassLoader(originClassLoader);
