@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ public class ServiceDefinitionBuilderTest {
 
     @Test
     public void testBuilderComplexObject() {
+        TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         checkComplexObjectAsParam(fullServiceDefinition);
     }
