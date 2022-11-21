@@ -49,7 +49,7 @@ public class ModuleServiceRepositoryTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         ModuleServiceRepository moduleServiceRepository = new ModuleServiceRepository(moduleModel);
         Assertions.assertEquals(moduleServiceRepository.getModuleModel(), moduleModel);
         ModuleServiceRepository repository = moduleModel.getServiceRepository();

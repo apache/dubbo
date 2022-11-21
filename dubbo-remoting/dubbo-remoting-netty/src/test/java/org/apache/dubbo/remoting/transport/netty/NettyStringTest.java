@@ -56,7 +56,7 @@ public class NettyStringTest {
     }
 
     @Test
-    public void testHandler() throws Exception {
+    void testHandler() throws Exception {
         //Thread.sleep(20000);
         /*client.request("world\r\n");
         Future future = client.request("world", 10000);

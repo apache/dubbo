@@ -84,7 +84,7 @@ public class MethodConfigCallbackTest {
     private HelloService helloServiceMethodCallBack2;
 
     @Test
-    public void testMethodAnnotationCallBack() {
+    void testMethodAnnotationCallBack() {
         int threadCnt = Math.min(4, Runtime.getRuntime().availableProcessors());
         int callCnt = 2 * threadCnt;
         for (int i = 0; i < threadCnt; i++) {

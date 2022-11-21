@@ -67,7 +67,7 @@ public class StartupTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Startup startup = new Startup(frameworkModel);
         CommandContext commandContext = new CommandContext("startup");
 

@@ -46,7 +46,7 @@ public class ScopeModelUtilTest {
     }
 
     @Test
-    public void test() {
+    void test() {
 
         Assertions.assertEquals(ScopeModelUtil.getFrameworkModel(null), FrameworkModel.defaultModel());
         Assertions.assertEquals(ScopeModelUtil.getFrameworkModel(frameworkModel), frameworkModel);

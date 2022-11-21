@@ -61,7 +61,7 @@ public class ReconnectTimerTaskTest {
     }
 
     @Test
-    public void testReconnect() throws Exception {
+    void testReconnect() throws Exception {
         long now = System.currentTimeMillis();
 
         url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");

@@ -68,7 +68,7 @@ public class WriteQueueTest {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
 
         WriteQueue writeQueue = new WriteQueue(channel);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
@@ -95,7 +95,7 @@ public class WriteQueueTest {
     }
 
     @Test
-    public void testChunk() throws Exception {
+    void testChunk() throws Exception {
         WriteQueue writeQueue = new WriteQueue(channel);
         // test deque chunk size
         writeMethodCalledTimes.set(0);

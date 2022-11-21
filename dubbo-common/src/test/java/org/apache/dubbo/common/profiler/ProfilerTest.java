@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 public class ProfilerTest {
 
     @Test
-    public void testProfiler() {
+    void testProfiler() {
         ProfilerEntry one = Profiler.start("1");
         ProfilerEntry two = Profiler.enter(one, "1-2");
 
@@ -79,7 +79,7 @@ public class ProfilerTest {
     }
 
     @Test
-    public void testBizProfiler() {
+    void testBizProfiler() {
         Assertions.assertNull(Profiler.getBizProfiler());
 
         ProfilerEntry one = Profiler.start("1");

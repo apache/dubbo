@@ -26,7 +26,7 @@ import org.mockito.Mockito;
 public class ClearTelnetHandlerTest {
 
     @Test
-    public void test() {
+    void test() {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 50; i++) {
             buf.append("\r\n");

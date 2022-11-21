@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 public class ServiceKeyTest {
     @Test
-    public void test() {
+    void test() {
         ServiceKey serviceKey = new ServiceKey("DemoService", "1.0.0", "group1");
 
         Assertions.assertEquals("DemoService", serviceKey.getInterfaceName());

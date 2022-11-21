@@ -47,7 +47,7 @@ public class GenericFilterTest {
     GenericFilter genericFilter = new GenericFilter();
 
     @Test
-    public void testInvokeWithDefault() throws Exception {
+    void testInvokeWithDefault() throws Exception {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -75,7 +75,7 @@ public class GenericFilterTest {
     }
 
     @Test
-    public void testInvokeWithJavaException() throws Exception {
+    void testInvokeWithJavaException() throws Exception {
         // temporary enable native java generic serialize
         System.setProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
         Assertions.assertThrows(RpcException.class, () -> {
@@ -102,7 +102,7 @@ public class GenericFilterTest {
     }
 
     @Test
-    public void testInvokeWithMethodNamtNot$Invoke() {
+    void testInvokeWithMethodNamtNot$Invoke() {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -126,7 +126,7 @@ public class GenericFilterTest {
     }
 
     @Test
-    public void testInvokeWithMethodArgumentSizeIsNot3() {
+    void testInvokeWithMethodArgumentSizeIsNot3() {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 

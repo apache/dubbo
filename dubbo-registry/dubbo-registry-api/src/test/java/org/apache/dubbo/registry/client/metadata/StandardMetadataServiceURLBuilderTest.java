@@ -50,7 +50,7 @@ public class StandardMetadataServiceURLBuilderTest {
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         ExtensionLoader<MetadataServiceURLBuilder> loader = ApplicationModel.defaultModel()
             .getExtensionLoader(MetadataServiceURLBuilder.class);
         MetadataServiceURLBuilder builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);

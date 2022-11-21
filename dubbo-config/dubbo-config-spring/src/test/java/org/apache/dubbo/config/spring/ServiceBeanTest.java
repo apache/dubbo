@@ -41,7 +41,7 @@ public class ServiceBeanTest {
     }
 
     @Test
-    public void testGetService() {
+    void testGetService() {
         TestService service = mock(TestService.class);
         ServiceBean serviceBean = new ServiceBean(service);
 

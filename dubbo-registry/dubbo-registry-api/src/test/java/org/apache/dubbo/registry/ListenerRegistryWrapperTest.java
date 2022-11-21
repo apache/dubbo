@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 public class ListenerRegistryWrapperTest {
 
     @Test
-    public void testSubscribe() {
+    void testSubscribe() {
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());

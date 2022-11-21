@@ -29,7 +29,7 @@ import java.lang.reflect.Field;
 public class ExchangeHandlerDispatcherTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         ExchangeHandlerDispatcher exchangeHandlerDispatcher = new ExchangeHandlerDispatcher();
 
         ChannelHandler channelHandler = Mockito.mock(ChannelHandler.class);

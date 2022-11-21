@@ -46,7 +46,7 @@ public class ConverterTest {
     }
 
     @Test
-    public void testGetConverter() {
+    void testGetConverter() {
         getExtensionLoader(Converter.class)
                 .getSupportedExtensionInstances()
                 .forEach(converter -> {
@@ -55,7 +55,7 @@ public class ConverterTest {
     }
 
     @Test
-    public void testConvertIfPossible() {
+    void testConvertIfPossible() {
         assertEquals(Integer.valueOf(2), converterUtil.convertIfPossible("2", Integer.class));
         assertEquals(Boolean.FALSE, converterUtil.convertIfPossible("false", Boolean.class));
         assertEquals(Double.valueOf(1), converterUtil.convertIfPossible("1", Double.class));

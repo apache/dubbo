@@ -54,7 +54,7 @@ public class ZoneAwareClusterInvokerTest {
     String unexpectedValue = "unexpected";
 
     @Test
-    public void testPreferredStrategy() {
+    void testPreferredStrategy() {
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
@@ -95,7 +95,7 @@ public class ZoneAwareClusterInvokerTest {
     }
 
     @Test
-    public void testRegistryZoneStrategy() {
+    void testRegistryZoneStrategy() {
         String zoneKey = "zone";
 
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
@@ -139,7 +139,7 @@ public class ZoneAwareClusterInvokerTest {
     }
 
     @Test
-    public void testRegistryZoneForceStrategy() {
+    void testRegistryZoneForceStrategy() {
         String zoneKey = "zone";
 
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});

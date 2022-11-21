@@ -49,7 +49,7 @@ public class MultipleServicesWithMethodConfigsTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void test() {
+    void test() {
 
         Map<String, ServiceBean> serviceBeanMap = applicationContext.getBeansOfType(ServiceBean.class);
         for (ServiceBean serviceBean : serviceBeanMap.values()) {

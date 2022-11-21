@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MemberUtilsTest {
 
     @Test
-    public void testIsStatic() throws NoSuchMethodException {
+    void testIsStatic() throws NoSuchMethodException {
 
         assertFalse(isStatic(getClass().getMethod("testIsStatic")));
         assertTrue(isStatic(getClass().getMethod("staticMethod")));

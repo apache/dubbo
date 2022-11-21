@@ -50,7 +50,7 @@ public class Issue6000Test {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6000Test.class);
         try {
 

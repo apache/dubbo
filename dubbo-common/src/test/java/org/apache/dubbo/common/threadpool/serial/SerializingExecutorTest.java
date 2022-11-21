@@ -40,7 +40,7 @@ public class SerializingExecutorTest {
     }
 
     @Test
-    public void test1() throws InterruptedException {
+    void test1() throws InterruptedException {
         int n = 2;
         int eachCount = 1000;
         int total = n * eachCount;

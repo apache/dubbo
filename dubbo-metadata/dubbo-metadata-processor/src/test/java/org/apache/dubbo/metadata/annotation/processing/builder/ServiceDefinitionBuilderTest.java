@@ -48,7 +48,7 @@ public class ServiceDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         ServiceDefinition serviceDefinition = build(processingEnv, getType(TestServiceImpl.class));
         assertEquals(TestServiceImpl.class.getTypeName(), serviceDefinition.getCanonicalName());
         assertEquals("org/apache/dubbo/metadata/tools/TestServiceImpl.class", serviceDefinition.getCodeSource());

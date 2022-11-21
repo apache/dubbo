@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 
 public class PayloadDropperTest {
     @Test
-    public void test() {
+    void test() {
         Request request = new Request(1);
         request.setData(new Object());
         Request requestWithoutData = (Request) PayloadDropper.getRequestWithoutData(request);

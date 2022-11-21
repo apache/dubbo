@@ -46,7 +46,7 @@ public class PropertyConfigurerTest {
     }
 
     @Test
-    public void testEarlyInit() {
+    void testEarlyInit() {
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext("org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml");
         try {

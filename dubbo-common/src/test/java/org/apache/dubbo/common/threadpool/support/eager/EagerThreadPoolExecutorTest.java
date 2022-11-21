@@ -56,7 +56,7 @@ public class EagerThreadPoolExecutorTest {
      * the thread pool create thread (but thread nums always less than max) instead of put task into queue.
      */
     @Test
-    public void testEagerThreadPool() throws Exception {
+    void testEagerThreadPool() throws Exception {
         String name = "eager-tf";
         int queues = 5;
         int cores = 5;
@@ -93,7 +93,7 @@ public class EagerThreadPoolExecutorTest {
     }
 
     @Test
-    public void testSPI() {
+    void testSPI() {
         ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
                 .getExtension("eager")
                 .getExecutor(URL);
@@ -102,7 +102,7 @@ public class EagerThreadPoolExecutorTest {
     }
 
     @Test
-    public void testEagerThreadPool_rejectExecution() throws Exception {
+    void testEagerThreadPool_rejectExecution() throws Exception {
         String name = "eager-tf";
         int cores = 1;
         int threads = 3;

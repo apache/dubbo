@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 public class MetricsConfigTest {
 
     @Test
-    public void testToUrl() {
+    void testToUrl() {
         MetricsConfig metrics = new MetricsConfig();
         metrics.setProtocol(PROTOCOL_PROMETHEUS);
 
@@ -59,14 +59,14 @@ public class MetricsConfigTest {
     }
 
     @Test
-    public void testProtocol() {
+    void testProtocol() {
         MetricsConfig metrics = new MetricsConfig();
         metrics.setProtocol(PROTOCOL_PROMETHEUS);
         assertThat(metrics.getProtocol(), equalTo(PROTOCOL_PROMETHEUS));
     }
 
     @Test
-    public void testPrometheus() {
+    void testPrometheus() {
         MetricsConfig metrics = new MetricsConfig();
 
         PrometheusConfig prometheus = new PrometheusConfig();
@@ -104,7 +104,7 @@ public class MetricsConfigTest {
     }
 
     @Test
-    public void testAggregation() {
+    void testAggregation() {
         MetricsConfig metrics = new MetricsConfig();
 
         AggregationConfig aggregation = new AggregationConfig();

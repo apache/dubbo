@@ -59,7 +59,7 @@ public class Issue7003Test {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue7003Test.class);
         try {
 

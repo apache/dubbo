@@ -48,7 +48,7 @@ public class SpringExtensionInjectorTest {
     }
 
     @Test
-    public void testSpringInjector() {
+    void testSpringInjector() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         try {
             context.setDisplayName("Context1");

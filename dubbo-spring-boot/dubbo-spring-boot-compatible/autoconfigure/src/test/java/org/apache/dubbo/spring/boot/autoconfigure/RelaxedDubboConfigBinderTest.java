@@ -68,7 +68,7 @@ public class RelaxedDubboConfigBinderTest {
     }
 
     @Test
-    public void testBinder() {
+    void testBinder() {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         Map<String, Object> properties = getSubProperties(environment.getPropertySources(), "dubbo.application");

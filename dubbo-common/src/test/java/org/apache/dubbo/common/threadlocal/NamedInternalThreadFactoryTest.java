@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class NamedInternalThreadFactoryTest {
 
     @Test
-    public void newThread() throws Exception {
+    void newThread() throws Exception {
         NamedInternalThreadFactory namedInternalThreadFactory = new NamedInternalThreadFactory();
         Thread t = namedInternalThreadFactory.newThread(new Runnable() {
             @Override

@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 public class ProtocolServiceKeyMatcherTest {
 
     @Test
-    public void testProtocol() {
+    void testProtocol() {
         Assertions.assertTrue(ProtocolServiceKey.Matcher.isMatch(
             new ProtocolServiceKey(null, null, null, "dubbo"),
             new ProtocolServiceKey(null, null, null, "dubbo")

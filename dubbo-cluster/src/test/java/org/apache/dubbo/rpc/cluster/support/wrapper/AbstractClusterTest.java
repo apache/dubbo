@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 public class AbstractClusterTest {
 
     @Test
-    public void testBuildClusterInvokerChain() {
+    void testBuildClusterInvokerChain() {
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());

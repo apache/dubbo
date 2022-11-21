@@ -79,7 +79,7 @@ public class ThreadNameTest {
     }
 
     @Test
-    public void testThreadName() throws Exception {
+    void testThreadName() throws Exception {
         client.send("hello");
         serverLatch.await(30, TimeUnit.SECONDS);
         clientLatch.await(30, TimeUnit.SECONDS);

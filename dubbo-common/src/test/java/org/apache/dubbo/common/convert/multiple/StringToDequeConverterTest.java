@@ -60,7 +60,7 @@ public class StringToDequeConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -88,7 +88,7 @@ public class StringToDequeConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
 
         Deque values = new ArrayDeque(asList(1, 2, 3));
 
@@ -107,12 +107,12 @@ public class StringToDequeConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
     }
 }

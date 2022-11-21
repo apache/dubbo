@@ -40,12 +40,12 @@ public class StringToLongConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, Long.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertEquals(Long.valueOf("1"), converter.convert("1"));
         assertNull(converter.convert(null));
         assertThrows(NumberFormatException.class, () -> {

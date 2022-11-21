@@ -48,7 +48,7 @@ public class MultiThreadTest {
     }
 
     @Test
-    public void testDubboMultiThreadInvoke() throws Exception {
+    void testDubboMultiThreadInvoke() throws Exception {
         ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService("TestService", DemoService.class);
         int port = NetUtils.getAvailablePort();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));

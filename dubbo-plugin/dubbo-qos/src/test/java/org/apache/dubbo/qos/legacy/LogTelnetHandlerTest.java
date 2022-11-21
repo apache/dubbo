@@ -34,7 +34,7 @@ public class LogTelnetHandlerTest {
     private Channel mockChannel;
 
     @Test
-    public void testChangeLogLevel() throws RemotingException {
+    void testChangeLogLevel() throws RemotingException {
         mockChannel = mock(Channel.class);
 
         String result = log.telnet(mockChannel, "error");
@@ -44,7 +44,7 @@ public class LogTelnetHandlerTest {
     }
 
     @Test
-    public void testPrintLog() throws RemotingException {
+    void testPrintLog() throws RemotingException {
         mockChannel = mock(Channel.class);
 
         String result = log.telnet(mockChannel, "100");

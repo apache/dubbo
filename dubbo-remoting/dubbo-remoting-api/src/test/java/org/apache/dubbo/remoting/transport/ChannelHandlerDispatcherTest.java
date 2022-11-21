@@ -29,7 +29,7 @@ import java.util.Collection;
 public class ChannelHandlerDispatcherTest {
 
     @Test
-    public void test() {
+    void test() {
         ChannelHandlerDispatcher channelHandlerDispatcher = new ChannelHandlerDispatcher();
         MockChannelHandler channelHandler1 = new MockChannelHandler();
         MockChannelHandler channelHandler2 = new MockChannelHandler();

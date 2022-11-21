@@ -52,7 +52,7 @@ public class Issue6252Test {
     private DemoService demoService;
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
         try {
             DemoService demoService = context.getBean(DemoService.class);

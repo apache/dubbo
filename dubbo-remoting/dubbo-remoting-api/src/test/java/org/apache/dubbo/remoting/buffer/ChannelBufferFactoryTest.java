@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 public class ChannelBufferFactoryTest {
 
     @Test
-    public void test() {
+    void test() {
         ChannelBufferFactory directChannelBufferFactory = DirectChannelBufferFactory.getInstance();
         ChannelBufferFactory heapChannelBufferFactory = HeapChannelBufferFactory.getInstance();
 

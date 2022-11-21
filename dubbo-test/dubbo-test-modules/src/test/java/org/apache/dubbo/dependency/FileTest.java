@@ -59,7 +59,7 @@ public class FileTest {
     }
 
     @Test
-    public void checkDubboBom() throws DocumentException {
+    void checkDubboBom() throws DocumentException {
         File baseFile = getBaseFile();
 
         List<File> poms = new LinkedList<>();
@@ -98,7 +98,7 @@ public class FileTest {
     }
 
     @Test
-    public void checkDubboDependenciesAll() throws DocumentException {
+    void checkDubboDependenciesAll() throws DocumentException {
         File baseFile = getBaseFile();
 
         List<File> poms = new LinkedList<>();
@@ -137,7 +137,7 @@ public class FileTest {
     }
 
     @Test
-    public void checkDubboAllDependencies() throws DocumentException {
+    void checkDubboAllDependencies() throws DocumentException {
         File baseFile = getBaseFile();
 
         List<File> poms = new LinkedList<>();
@@ -214,7 +214,7 @@ public class FileTest {
     }
 
     @Test
-    public void checkDubboAllShade() throws DocumentException {
+    void checkDubboAllShade() throws DocumentException {
         File baseFile = getBaseFile();
 
         List<File> poms = new LinkedList<>();
@@ -304,7 +304,7 @@ public class FileTest {
     }
 
     @Test
-    public void checkDubboAllTransform() throws DocumentException {
+    void checkDubboAllTransform() throws DocumentException {
         File baseFile = getBaseFile();
         List<String> spis = new LinkedList<>();
         readSPI(baseFile, spis);
@@ -343,7 +343,7 @@ public class FileTest {
     }
 
     @Test
-    public void checkSpiFiles() {
+    void checkSpiFiles() {
         File baseFile = getBaseFile();
         List<String> spis = new LinkedList<>();
         readSPI(baseFile, spis);

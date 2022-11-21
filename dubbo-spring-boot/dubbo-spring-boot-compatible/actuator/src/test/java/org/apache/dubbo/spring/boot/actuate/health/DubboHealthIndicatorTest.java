@@ -64,7 +64,7 @@ public class DubboHealthIndicatorTest {
     private DubboHealthIndicator dubboHealthIndicator;
 
     @Test
-    public void testResolveStatusCheckerNamesMap() {
+    void testResolveStatusCheckerNamesMap() {
 
         Map<String, String> statusCheckerNamesMap = dubboHealthIndicator.resolveStatusCheckerNamesMap();
 
@@ -79,7 +79,7 @@ public class DubboHealthIndicatorTest {
     }
 
     @Test
-    public void testHealth() {
+    void testHealth() {
 
         Health health = dubboHealthIndicator.health();
 

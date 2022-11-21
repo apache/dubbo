@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ListDoubleMatchTest {
 
     @Test
-    public void isMatch() {
+    void isMatch() {
         ListDoubleMatch listDoubleMatch = new ListDoubleMatch();
         List<DoubleMatch> oneof = new ArrayList<>();
 

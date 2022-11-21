@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class ConfigurationCacheTest {
 
     @Test
-    public void test() {
+    void test() {
         ConfigurationCache configurationCache = new ConfigurationCache();
         String value = configurationCache.computeIfAbsent("k1", k -> "v1");
         Assertions.assertEquals(value, "v1");

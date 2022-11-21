@@ -39,12 +39,12 @@ public class StringToCharArrayConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, char[].class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertArrayEquals(new char[]{'1', '2', '3'}, converter.convert("123"));
         assertNull(converter.convert(null));
     }

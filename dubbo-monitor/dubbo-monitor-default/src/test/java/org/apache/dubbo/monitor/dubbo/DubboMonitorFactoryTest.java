@@ -50,7 +50,7 @@ public class DubboMonitorFactoryTest {
     }
 
     @Test
-    public void testCreateMonitor() {
+    void testCreateMonitor() {
         URL urlWithoutPath = URL.valueOf("http://10.10.10.11");
         Monitor monitor = dubboMonitorFactory.createMonitor(urlWithoutPath);
         assertThat(monitor, not(nullValue()));

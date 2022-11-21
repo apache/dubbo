@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 public class CompositeConfigurationTest {
 
     @Test
-    public void test() {
+    void test() {
         InmemoryConfiguration inmemoryConfiguration1 = new InmemoryConfiguration();
         InmemoryConfiguration inmemoryConfiguration2 = new InmemoryConfiguration();
         InmemoryConfiguration inmemoryConfiguration3 = new InmemoryConfiguration();

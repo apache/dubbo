@@ -120,7 +120,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testEndpointsUpdate() throws Exception {
+    void testEndpointsUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -154,7 +154,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testPodsUpdate() throws Exception {
+    void testPodsUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -182,7 +182,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testServiceUpdate() throws Exception {
+    void testServiceUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -215,7 +215,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testGetInstance() {
+    void testGetInstance() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 

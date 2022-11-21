@@ -52,7 +52,7 @@ public class CompatibleDubboAutoConfigurationTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testBeans() {
+    void testBeans() {
         Assert.assertNotNull(serviceAnnotationPostProcessor);
         Assert.assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
 

@@ -60,7 +60,7 @@ public class HeartBeatTaskTest {
     }
 
     @Test
-    public void testHeartBeat() throws Exception {
+    void testHeartBeat() throws Exception {
         long now = System.currentTimeMillis();
 
         url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");

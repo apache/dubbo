@@ -49,7 +49,7 @@ public class ServiceInstanceMetadataCustomizerTest {
      * Only 'include' policy spicified in Customized Filter will take effect
      */
     @Test
-    public void testCustomizeWithIncludeFilters() {
+    void testCustomizeWithIncludeFilters() {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         ApplicationConfig applicationConfig = new ApplicationConfig("aa");
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
@@ -69,7 +69,7 @@ public class ServiceInstanceMetadataCustomizerTest {
      * Only 'exclude' policies specified in Exclude Filters will take effect
      */
     @Test
-    public void testCustomizeWithExcludeFilters() {
+    void testCustomizeWithExcludeFilters() {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         ApplicationConfig applicationConfig = new ApplicationConfig("aa");
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();

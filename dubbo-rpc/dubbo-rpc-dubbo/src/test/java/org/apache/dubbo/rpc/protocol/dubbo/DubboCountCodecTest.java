@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 public class DubboCountCodecTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         DubboCountCodec dubboCountCodec = new DubboCountCodec(FrameworkModel.defaultModel());
         ChannelBuffer buffer = ChannelBuffers.buffer(2048);
         Channel channel = new MockChannel();

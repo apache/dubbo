@@ -46,7 +46,7 @@ public class PublishMetadataTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         PublishMetadata publishMetadata = new PublishMetadata(frameworkModel);
 
         String result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[0]);

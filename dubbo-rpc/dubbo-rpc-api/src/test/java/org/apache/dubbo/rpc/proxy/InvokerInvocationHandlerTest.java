@@ -42,7 +42,7 @@ public class InvokerInvocationHandlerTest {
     }
 
     @Test
-    public void testInvokeToString() throws Throwable {
+    void testInvokeToString() throws Throwable {
         String methodName = "toString";
 
         when(invoker.toString()).thenReturn(methodName);

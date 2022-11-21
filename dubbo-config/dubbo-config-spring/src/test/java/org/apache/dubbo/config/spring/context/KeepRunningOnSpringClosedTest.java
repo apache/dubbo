@@ -31,7 +31,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class KeepRunningOnSpringClosedTest {
 
     @Test
-    public void test(){
+    void test(){
 
         // set KeepRunningOnSpringClosed flag for next spring context
         DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {

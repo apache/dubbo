@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 public class ConfigChangeTypeTest {
 
     @Test
-    public void testMembers() {
+    void testMembers() {
         assertArrayEquals(new ConfigChangeType[]{ADDED, MODIFIED, DELETED}, ConfigChangeType.values());
     }
 }

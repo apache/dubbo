@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class DefaultCommandExecutorTest {
     @Test
-    public void testExecute1() throws Exception {
+    void testExecute1() throws Exception {
         Assertions.assertThrows(NoSuchCommandException.class, () -> {
             DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
             executor.execute(CommandContextFactory.newInstance("not-exit"));
@@ -35,7 +35,7 @@ public class DefaultCommandExecutorTest {
     }
 
     @Test
-    public void testExecute2() throws Exception {
+    void testExecute2() throws Exception {
         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
         String result = executor.execute(CommandContextFactory.newInstance("greeting", new String[]{"dubbo"}, false));
         assertThat(result, equalTo("greeting dubbo"));

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 public class ScopeBeanFactoryTest {
 
     @Test
-    public void testInjection() {
+    void testInjection() {
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();

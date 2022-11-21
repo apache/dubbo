@@ -42,7 +42,7 @@ public class CompletableFutureTaskTest {
     private static final ExecutorService executor = new ThreadPoolExecutor(0, 10, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory("DubboMonitorCreator", true));
 
     @Test
-    public void testCreate() throws InterruptedException {
+    void testCreate() throws InterruptedException {
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
@@ -53,7 +53,7 @@ public class CompletableFutureTaskTest {
     }
 
     @Test
-    public void testRunnableResponse() throws ExecutionException, InterruptedException {
+    void testRunnableResponse() throws ExecutionException, InterruptedException {
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
             try {
                 Thread.sleep(500);
@@ -68,7 +68,7 @@ public class CompletableFutureTaskTest {
     }
 
     @Test
-    public void testListener() throws InterruptedException {
+    void testListener() throws InterruptedException {
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
             try {
                 Thread.sleep(500);
@@ -84,8 +84,8 @@ public class CompletableFutureTaskTest {
     }
 
 
-@Test
-    public void testCustomExecutor() {
+    @Test
+    void testCustomExecutor() {
         Executor mockedExecutor = mock(Executor.class);
         CompletableFuture<Integer> completableFuture = CompletableFuture.supplyAsync(() -> {
             return 0;

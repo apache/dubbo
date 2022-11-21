@@ -39,7 +39,7 @@ public class MigrationRuleTest {
     private static ServiceNameMapping mapping = mock(ServiceNameMapping.class);
 
     @Test
-    public void test_parse() {
+    void test_parse() {
         when(mapping.getCachedMapping(any(URL.class))).thenReturn(Collections.emptySet());
 
         String rule = "key: demo-consumer\n" +

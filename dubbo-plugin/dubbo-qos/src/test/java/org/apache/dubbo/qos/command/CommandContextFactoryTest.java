@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandContextFactoryTest {
     @Test
-    public void testNewInstance() throws Exception {
+    void testNewInstance() throws Exception {
         CommandContext context = CommandContextFactory.newInstance("test");
         assertThat(context.getCommandName(), equalTo("test"));
         context = CommandContextFactory.newInstance("command", new String[]{"hello"}, true);

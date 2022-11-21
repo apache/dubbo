@@ -122,7 +122,7 @@ public class ReferenceCreatorTest {
     }
 
     @Test
-    public void testBuild() throws Exception {
+    void testBuild() throws Exception {
 
         Field helloServiceField = findField(getClass(), "helloService");
         DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);

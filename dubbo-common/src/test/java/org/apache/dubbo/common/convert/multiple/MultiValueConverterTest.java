@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MultiValueConverterTest {
 
     @Test
-    public void testFind() {
+    void testFind() {
         MultiValueConverter converter = MultiValueConverter.find(String.class, String[].class);
         assertEquals(StringToArrayConverter.class, converter.getClass());
 

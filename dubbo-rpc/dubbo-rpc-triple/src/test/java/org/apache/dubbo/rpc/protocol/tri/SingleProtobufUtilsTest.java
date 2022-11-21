@@ -45,7 +45,7 @@ import java.io.IOException;
 public class SingleProtobufUtilsTest {
 
     @Test
-    public void test() throws IOException {
+    void test() throws IOException {
         Assertions.assertFalse(SingleProtobufUtils.isSupported(SingleProtobufUtilsTest.class));
         Assertions.assertTrue(SingleProtobufUtils.isSupported(Empty.class));
         Assertions.assertTrue(SingleProtobufUtils.isSupported(BoolValue.class));

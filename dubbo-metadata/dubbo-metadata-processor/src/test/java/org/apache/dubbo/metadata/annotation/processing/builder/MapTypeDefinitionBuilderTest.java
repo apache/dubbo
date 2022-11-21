@@ -77,7 +77,7 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, stringsField.asType()));
         assertTrue(builder.accept(processingEnv, colorsField.asType()));
         assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
@@ -86,7 +86,7 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
 
         buildAndAssertTypeDefinition(processingEnv, stringsField,
                 "java.util.Map<java.lang.String,java.lang.String>",

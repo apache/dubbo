@@ -36,7 +36,7 @@ public class TpsLimitFilterTest {
     private TpsLimitFilter filter = new TpsLimitFilter();
 
     @Test
-    public void testWithoutCount() throws Exception {
+    void testWithoutCount() throws Exception {
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
         url = url.addParameter(TPS_LIMIT_RATE_KEY, 5);
@@ -46,7 +46,7 @@ public class TpsLimitFilterTest {
     }
 
     @Test
-    public void testFail() throws Exception {
+    void testFail() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             URL url = URL.valueOf("test://test");
             url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");

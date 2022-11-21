@@ -45,7 +45,7 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
-    public void testGetExecutor() {
+    void testGetExecutor() {
         testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService"));
         testGet(URL.valueOf("dubbo://127.0.0.1:23456/TestService?side=consumer"));
 
@@ -67,7 +67,7 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
-    public void testUpdateExecutor() {
+    void testUpdateExecutor() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?threads=5");
         ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);
 
@@ -91,7 +91,7 @@ public class ExecutorRepositoryTest {
     }
 
     @Test
-    public void testSharedExecutor() throws Exception {
+    void testSharedExecutor() throws Exception {
         ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
         MockTask task1 = new MockTask(2000);
         MockTask task2 = new MockTask(100);

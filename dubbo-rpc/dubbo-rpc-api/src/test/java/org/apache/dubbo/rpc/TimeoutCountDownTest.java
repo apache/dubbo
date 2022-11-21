@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class TimeoutCountDownTest {
 
     @Test
-    public void testTimeoutCountDown() throws InterruptedException {
+    void testTimeoutCountDown() throws InterruptedException {
         TimeoutCountDown timeoutCountDown = TimeoutCountDown.newCountDown(5, TimeUnit.SECONDS);
         Assertions.assertEquals(5 * 1000, timeoutCountDown.getTimeoutInMilli());
         Assertions.assertFalse(timeoutCountDown.isExpired());

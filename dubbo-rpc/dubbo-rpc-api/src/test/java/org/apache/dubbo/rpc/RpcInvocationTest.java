@@ -24,7 +24,7 @@ import java.util.HashMap;
 public class RpcInvocationTest {
 
     @Test
-    public void testAttachment() {
+    void testAttachment() {
         RpcInvocation invocation = new RpcInvocation();
 
         invocation.setAttachment("objectKey1", "value1");

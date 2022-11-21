@@ -196,7 +196,7 @@ class TriRpcStatusTest {
     }
 
     @Test
-    public void fromMessage() {
+    void fromMessage() {
         String origin = "haha test 😊";
         final String encoded = TriRpcStatus.encodeMessage(origin);
         Assertions.assertNotEquals(origin, encoded);
@@ -205,7 +205,7 @@ class TriRpcStatusTest {
     }
 
     @Test
-    public void toMessage2() {
+    void toMessage2() {
         String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
         final TriRpcStatus status = TriRpcStatus.INTERNAL
             .withDescription(content);

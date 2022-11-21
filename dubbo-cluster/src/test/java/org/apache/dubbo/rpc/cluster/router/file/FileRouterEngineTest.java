@@ -75,7 +75,7 @@ public class FileRouterEngineTest {
     }
 
     @Test
-    public void testRouteNotAvailable() {
+    void testRouteNotAvailable() {
         if (isScriptUnsupported) return;
         URL url = initUrl("notAvailablerule.javascript");
         initInvocation("method1");
@@ -92,7 +92,7 @@ public class FileRouterEngineTest {
     }
 
     @Test
-    public void testRouteAvailable() {
+    void testRouteAvailable() {
         if (isScriptUnsupported) return;
         URL url = initUrl("availablerule.javascript");
         initInvocation("method1");
@@ -109,7 +109,7 @@ public class FileRouterEngineTest {
     }
 
     @Test
-    public void testRouteByMethodName() {
+    void testRouteByMethodName() {
         if (isScriptUnsupported) return;
         URL url = initUrl("methodrule.javascript");
         {

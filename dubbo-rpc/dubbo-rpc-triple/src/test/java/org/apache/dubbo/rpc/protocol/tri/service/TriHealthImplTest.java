@@ -36,7 +36,7 @@ import java.util.IdentityHashMap;
 public class TriHealthImplTest {
 
     @Test
-    public void testCheck() {
+    void testCheck() {
         TriHealthImpl triHealth = new TriHealthImpl();
 
         HealthCheckRequest request = HealthCheckRequest.newBuilder().build();
@@ -48,7 +48,7 @@ public class TriHealthImplTest {
     }
 
     @Test
-    public void testWatch() throws Exception {
+    void testWatch() throws Exception {
         TriHealthImpl triHealth = new TriHealthImpl();
 
         HealthCheckRequest request = HealthCheckRequest.newBuilder()

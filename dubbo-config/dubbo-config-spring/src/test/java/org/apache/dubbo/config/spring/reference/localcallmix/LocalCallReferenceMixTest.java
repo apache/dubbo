@@ -66,7 +66,7 @@ public class LocalCallReferenceMixTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testLocalCall() {
+    void testLocalCall() {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");

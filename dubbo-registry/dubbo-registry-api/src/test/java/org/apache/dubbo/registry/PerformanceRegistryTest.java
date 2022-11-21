@@ -33,7 +33,7 @@ public class PerformanceRegistryTest  {
     private static final Logger logger = LoggerFactory.getLogger(PerformanceRegistryTest.class);
 
     @Test
-    public void testRegistry() {
+    void testRegistry() {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9090");

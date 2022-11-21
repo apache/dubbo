@@ -38,7 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 public class ProtobufTypeBuilderTest {
     @Test
-    public void testProtobufBuilder() {
+    void testProtobufBuilder() {
         TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
 
         // TEST Pb Service metaData builder

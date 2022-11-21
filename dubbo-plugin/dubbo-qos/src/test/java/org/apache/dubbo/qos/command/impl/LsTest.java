@@ -55,7 +55,7 @@ public class LsTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Ls ls = new Ls(frameworkModel);
         String result = ls.execute(Mockito.mock(CommandContext.class), new String[0]);
         System.out.println(result);

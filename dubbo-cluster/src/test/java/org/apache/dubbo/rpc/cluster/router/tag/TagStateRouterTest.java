@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +71,7 @@ public class TagStateRouterTest {
     }
 
     @Test
-    public void testTagRoutePickInvokers() {
+    void testTagRoutePickInvokers() {
         StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
 
         List<Invoker<String>> originInvokers = new ArrayList<>();
@@ -102,7 +103,7 @@ public class TagStateRouterTest {
      * </pre>
      */
     @Test
-    public void tagRouterRuleParseTest() {
+    void tagRouterRuleParseTest() {
         String tagRouterRuleConfig = "---\n" +
             "force: false\n" +
             "runtime: true\n" +

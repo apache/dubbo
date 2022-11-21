@@ -33,7 +33,7 @@ public class TelnetUtilsTest {
      * x   - y   - z
      */
     @Test
-    public void testToList() {
+    void testToList() {
         List<List<String>> table = new LinkedList<>();
         table.add(Arrays.asList("abc","abc","abc"));
         table.add(Arrays.asList("1","2","3"));
@@ -56,7 +56,7 @@ public class TelnetUtilsTest {
      * +-----+-----+-----+
      */
     @Test
-    public void testToTable() {
+    void testToTable() {
         List<List<String>> table = new LinkedList<>();
         table.add(Arrays.asList("abc","abc","abc"));
         table.add(Arrays.asList("1","2","3"));

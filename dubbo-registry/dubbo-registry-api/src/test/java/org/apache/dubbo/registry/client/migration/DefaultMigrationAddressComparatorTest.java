@@ -36,7 +36,7 @@ import static org.apache.dubbo.registry.client.migration.DefaultMigrationAddress
 public class DefaultMigrationAddressComparatorTest {
 
     @Test
-    public void test() {
+    void test() {
         DefaultMigrationAddressComparator comparator = new DefaultMigrationAddressComparator();
 
         ClusterInvoker newInvoker = Mockito.mock(ClusterInvoker.class);

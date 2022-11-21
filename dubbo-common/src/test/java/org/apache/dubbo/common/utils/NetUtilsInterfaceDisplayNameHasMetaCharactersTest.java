@@ -34,7 +34,7 @@ public class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
     private static final String SELECTED_HOST_ADDR = "192.168.0.1";
 
     @Test
-    public void testIgnoreGivenInterfaceNameWithMetaCharacters() throws Exception {
+    void testIgnoreGivenInterfaceNameWithMetaCharacters() throws Exception {
         String originIgnoredInterfaces = this.getIgnoredInterfaces();
         // mock static methods of final class NetworkInterface
         try (MockedStatic<NetworkInterface> mockedStaticNetif = Mockito.mockStatic(NetworkInterface.class)) {

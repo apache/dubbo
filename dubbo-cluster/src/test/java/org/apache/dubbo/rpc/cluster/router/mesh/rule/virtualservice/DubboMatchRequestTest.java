@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DubboMatchRequestTest {
 
     @Test
-    public void isMatch() {
+    void isMatch() {
         DubboMatchRequest dubboMatchRequest = new DubboMatchRequest();
 
         // methodMatch

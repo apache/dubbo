@@ -53,7 +53,7 @@ public class FrameworkServiceRepositoryTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         FrameworkServiceRepository frameworkServiceRepository = frameworkModel.getServiceRepository();
         ModuleServiceRepository moduleServiceRepository = moduleModel.getServiceRepository();
 

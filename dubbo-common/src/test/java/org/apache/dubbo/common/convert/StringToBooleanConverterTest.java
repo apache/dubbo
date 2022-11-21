@@ -39,12 +39,12 @@ public class StringToBooleanConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, Boolean.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertTrue(converter.convert("true"));
         assertTrue(converter.convert("true"));
         assertTrue(converter.convert("True"));

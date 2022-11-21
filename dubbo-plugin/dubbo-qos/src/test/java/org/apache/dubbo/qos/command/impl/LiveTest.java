@@ -38,7 +38,7 @@ public class LiveTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Live live = new Live(frameworkModel);
         CommandContext commandContext = new CommandContext("live");
         String result = live.execute(commandContext, new String[0]);

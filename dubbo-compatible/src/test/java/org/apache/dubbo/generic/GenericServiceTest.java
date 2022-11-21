@@ -54,7 +54,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGeneric() {
+    void testGeneric() {
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -74,7 +74,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGeneric2() {
+    void testGeneric2() {
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -97,7 +97,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGenericCompatible() {
+    void testGenericCompatible() {
         DubboBootstrap.getInstance()
             .application("test-app")
             .initialize();
@@ -124,7 +124,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGenericComplexCompute4FullServiceMetadata() {
+    void testGenericComplexCompute4FullServiceMetadata() {
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -162,7 +162,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGenericFindComplexObject4FullServiceMetadata() {
+    void testGenericFindComplexObject4FullServiceMetadata() {
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();

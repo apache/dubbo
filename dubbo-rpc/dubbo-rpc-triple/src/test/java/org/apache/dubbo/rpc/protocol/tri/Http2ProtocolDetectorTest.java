@@ -16,11 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.buffer.ByteBufferBackedChannelBuffer;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
-import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -36,7 +34,7 @@ import org.mockito.Mockito;
 public class Http2ProtocolDetectorTest {
 
     @Test
-    public void testDetect() {
+    void testDetect() {
         ProtocolDetector detector = new Http2ProtocolDetector();
         ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);
 

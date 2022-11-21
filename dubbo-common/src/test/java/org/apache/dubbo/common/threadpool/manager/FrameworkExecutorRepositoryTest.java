@@ -42,14 +42,14 @@ public class FrameworkExecutorRepositoryTest {
     }
 
     @Test
-    public void testGetExecutor() {
+    void testGetExecutor() {
 
         Assertions.assertNotNull(frameworkExecutorRepository.getSharedExecutor());
         frameworkExecutorRepository.nextScheduledExecutor();
     }
 
     @Test
-    public void testSharedExecutor() throws Exception {
+    void testSharedExecutor() throws Exception {
         ExecutorService sharedExecutor = frameworkExecutorRepository.getSharedExecutor();
         FrameworkExecutorRepositoryTest.MockTask task1 = new FrameworkExecutorRepositoryTest.MockTask(2000);
         FrameworkExecutorRepositoryTest.MockTask task2 = new FrameworkExecutorRepositoryTest.MockTask(100);

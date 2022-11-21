@@ -40,12 +40,12 @@ public class StringToFloatConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, Float.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertEquals(Float.valueOf("1.0"), converter.convert("1.0"));
         assertNull(converter.convert(null));
         assertThrows(NumberFormatException.class, () -> {

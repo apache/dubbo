@@ -67,7 +67,7 @@ public class MetadataInfoTest {
         "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded");
 
     @Test
-    public void testEmptyRevision() {
+    void testEmptyRevision() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.setApp("demo");
 
@@ -75,7 +75,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testParamsFilterIncluded() {
+    void testParamsFilterIncluded() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -93,7 +93,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testParamsFilterExcluded() {
+    void testParamsFilterExcluded() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -111,7 +111,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testEqualsAndRevision() {
+    void testEqualsAndRevision() {
         // same metadata
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.addService(url);
@@ -144,7 +144,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testChanged() {
+    void testChanged() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.addService(url);
         metadataInfo.addService(url2);
@@ -156,7 +156,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testJsonFormat() {
+    void testJsonFormat() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -172,7 +172,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testJdkSerialize() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+    void testJdkSerialize() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
         MetadataInfo metadataInfo = new MetadataInfo("demo");
@@ -195,7 +195,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testCal() {
+    void testCal() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again

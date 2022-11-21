@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GsonUtilsTest {
     @Test
-    public void test1() {
+    void test1() {
         Object user = GsonUtils.fromJson("{'name':'Tom','age':24}", User.class);
         Assertions.assertInstanceOf(User.class, user);
         Assertions.assertEquals("Tom", ((User) user).getName());
@@ -40,7 +40,7 @@ public class GsonUtilsTest {
     }
 
     @Test
-    public void test2() {
+    void test2() {
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         AtomicReference<List<String>> removedPackages = new AtomicReference<>(Collections.emptyList());
         ClassLoader newClassLoader = new ClassLoader(originClassLoader) {

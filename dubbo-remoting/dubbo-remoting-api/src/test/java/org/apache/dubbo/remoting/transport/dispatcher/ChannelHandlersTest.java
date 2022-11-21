@@ -27,7 +27,7 @@ import org.mockito.Mockito;
 
 public class ChannelHandlersTest {
     @Test
-    public void test() {
+    void test() {
         ChannelHandlers instance1 = ChannelHandlers.getInstance();
         ChannelHandlers instance2 = ChannelHandlers.getInstance();
         Assertions.assertEquals(instance1, instance2);

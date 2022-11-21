@@ -23,6 +23,7 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -43,7 +44,7 @@ public class ConfigValidationUtilsTest {
 
 
     @Test
-    public void checkMock1() {
+    void checkMock1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock("return {a, b}");
@@ -53,7 +54,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void checkMock2() {
+    void checkMock2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock1.class.getName());
@@ -62,7 +63,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void checkMock3() {
+    void checkMock3() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock2.class.getName());
@@ -71,7 +72,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void testValidateMetadataConfig() {
+    void testValidateMetadataConfig() {
         MetadataReportConfig config = new MetadataReportConfig();
         config.setAddress("protocol://ip:host");
         try {
@@ -96,7 +97,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void testValidateApplicationConfig() throws Exception {
+    void testValidateApplicationConfig() throws Exception {
         try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class);) {
             mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(any())).thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
@@ -127,7 +128,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void testCheckQosInApplicationConfig() throws Exception {
+    void testCheckQosInApplicationConfig() throws Exception {
         ConfigValidationUtils mock = Mockito.mock(ConfigValidationUtils.class);
         ErrorTypeAwareLogger loggerMock = Mockito.mock(ErrorTypeAwareLogger.class);
         injectField(mock.getClass().getDeclaredField("logger"), loggerMock);

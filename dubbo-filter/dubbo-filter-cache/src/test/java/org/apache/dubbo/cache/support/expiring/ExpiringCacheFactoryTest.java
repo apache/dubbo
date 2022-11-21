@@ -38,13 +38,13 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
             "test://test:12/test?cache=expiring&cache.seconds=1&cache.interval=1";
 
     @Test
-    public void testExpiringCacheFactory() throws Exception {
+    void testExpiringCacheFactory() throws Exception {
         Cache cache = super.constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
     }
 
     @Test
-    public void testExpiringCacheGetExpired() throws Exception {
+    void testExpiringCacheGetExpired() throws Exception {
         URL url = URL.valueOf("test://test:12/test?cache=expiring&cache.seconds=1&cache.interval=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();
@@ -55,7 +55,7 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     }
 
     @Test
-    public void testExpiringCacheUnExpired() throws Exception {
+    void testExpiringCacheUnExpired() throws Exception {
         URL url = URL.valueOf("test://test:12/test?cache=expiring&cache.seconds=0&cache.interval=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();
@@ -66,7 +66,7 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     }
 
     @Test
-    public void testExpiringCache() throws Exception {
+    void testExpiringCache() throws Exception {
         Cache cache = constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
 
@@ -82,7 +82,7 @@ public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     }
 
     @Test
-    public void testExpiringCacheExpired() throws Exception {
+    void testExpiringCacheExpired() throws Exception {
         Cache cache = constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
 

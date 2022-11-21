@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class BaseServiceMetadataTest {
 
     @Test
-    public void test() {
+    void test() {
         BaseServiceMetadata baseServiceMetadata = new BaseServiceMetadata();
         baseServiceMetadata.setGroup("group1");
         baseServiceMetadata.setServiceInterfaceName("org.apache.dubbo.common.TestInterface");

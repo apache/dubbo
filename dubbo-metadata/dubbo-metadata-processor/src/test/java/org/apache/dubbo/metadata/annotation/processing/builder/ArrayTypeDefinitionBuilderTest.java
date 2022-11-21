@@ -74,7 +74,7 @@ public class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessing
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, integersField.asType()));
         assertTrue(builder.accept(processingEnv, stringsField.asType()));
         assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
@@ -83,7 +83,7 @@ public class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessing
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
 
         buildAndAssertTypeDefinition(processingEnv, integersField, "int[]", "int", builder);
 

@@ -51,7 +51,7 @@ public class GeneralTypeDefinitionBuilderTest extends AbstractAnnotationProcessi
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, getType(Model.class).asType()));
         assertTrue(builder.accept(processingEnv, getType(PrimitiveTypeModel.class).asType()));
         assertTrue(builder.accept(processingEnv, getType(SimpleTypeModel.class).asType()));
@@ -61,7 +61,7 @@ public class GeneralTypeDefinitionBuilderTest extends AbstractAnnotationProcessi
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
 
     }
 }

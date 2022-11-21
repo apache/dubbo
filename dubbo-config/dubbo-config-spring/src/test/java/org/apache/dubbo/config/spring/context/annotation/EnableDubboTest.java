@@ -65,7 +65,7 @@ public class EnableDubboTest {
     }
 
     @Test
-    public void testProvider() {
+    void testProvider() {
 
         context.register(TestProviderConfiguration.class);
 
@@ -88,7 +88,7 @@ public class EnableDubboTest {
     }
 
     @Test
-    public void testConsumer() {
+    void testConsumer() {
 
         context.register(TestProviderConfiguration.class, TestConsumerConfiguration.class);
         context.refresh();

@@ -113,7 +113,7 @@ public class InstanceAddressURLTest {
     }
 
     @Test
-    public void test1() {
+    void test1() {
         // test reading of keys in instance and metadata work fine
         assertEquals("value1", instanceURL.getParameter("key1"));//return instance key
         assertNull(instanceURL.getParameter("delay"));// no service key specified
@@ -169,7 +169,7 @@ public class InstanceAddressURLTest {
     }
 
     @Test
-    public void test2() {
+    void test2() {
         RpcServiceContext.getServiceContext().setConsumerUrl(null);
         Assertions.assertNull(instanceURL.getScopeModel());
 

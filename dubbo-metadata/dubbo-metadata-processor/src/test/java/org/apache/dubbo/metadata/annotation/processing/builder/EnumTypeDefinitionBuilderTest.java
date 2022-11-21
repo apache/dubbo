@@ -51,13 +51,13 @@ public class EnumTypeDefinitionBuilderTest extends AbstractAnnotationProcessingT
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         TypeElement typeElement = getType(Color.class);
         assertTrue(builder.accept(processingEnv, typeElement.asType()));
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         TypeElement typeElement = getType(Color.class);
         Map<String, TypeDefinition> typeCache = new HashMap<>();
         TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, typeElement, typeCache);

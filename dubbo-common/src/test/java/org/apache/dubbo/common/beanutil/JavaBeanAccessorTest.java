@@ -22,14 +22,14 @@ import org.junit.jupiter.api.Test;
 public class JavaBeanAccessorTest {
 
     @Test
-    public void testIsAccessByMethod(){
+    void testIsAccessByMethod(){
         Assertions.assertTrue(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.METHOD));
         Assertions.assertTrue(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.ALL));
         Assertions.assertFalse(JavaBeanAccessor.isAccessByMethod(JavaBeanAccessor.FIELD));
     }
 
     @Test
-    public void testIsAccessByField(){
+    void testIsAccessByField(){
         Assertions.assertTrue(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.FIELD));
         Assertions.assertTrue(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.ALL));
         Assertions.assertFalse(JavaBeanAccessor.isAccessByField(JavaBeanAccessor.METHOD));

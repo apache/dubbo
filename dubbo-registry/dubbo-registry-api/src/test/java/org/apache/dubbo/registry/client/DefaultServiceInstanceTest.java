@@ -61,7 +61,7 @@ public class DefaultServiceInstanceTest {
     }
 
     @Test
-    public void testSetAndGetValues() {
+    void testSetAndGetValues() {
         instance.setEnabled(false);
         instance.setHealthy(false);
 
@@ -74,7 +74,7 @@ public class DefaultServiceInstanceTest {
     }
 
     @Test
-    public void testInstanceOperations() {
+    void testInstanceOperations() {
         // test multiple protocols
         assertEquals(2, instance.getEndpoints().size());
         DefaultServiceInstance.Endpoint endpoint = getEndpoint(instance, "rest");

@@ -30,19 +30,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class LoggerUtilsTest {
 
     @Test
-    public void testLogger() {
+    void testLogger() {
         assertNotNull(LoggerUtils.LOGGER);
     }
 
     @Test
-    public void testInfo() {
+    void testInfo() {
         info("Hello,World");
         info("Hello,%s", "World");
         info("%s,%s", "Hello", "World");
     }
 
     @Test
-    public void testWarn() {
+    void testWarn() {
         warn("Hello,World");
         warn("Hello,%s", "World");
         warn("%s,%s", "Hello", "World");

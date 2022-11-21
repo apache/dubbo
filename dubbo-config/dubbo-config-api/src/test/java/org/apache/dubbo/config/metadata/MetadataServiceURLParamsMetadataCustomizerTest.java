@@ -26,7 +26,6 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
@@ -70,7 +69,7 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(DemoService.class);

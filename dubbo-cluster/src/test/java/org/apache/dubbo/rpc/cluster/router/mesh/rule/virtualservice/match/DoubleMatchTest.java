@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DoubleMatchTest {
 
     @Test
-    public void exactMatch() {
+    void exactMatch() {
         DoubleMatch doubleMatch = new DoubleMatch();
         doubleMatch.setExact(10.0);
 
@@ -35,7 +35,7 @@ public class DoubleMatchTest {
     }
 
     @Test
-    public void rangeStartMatch() {
+    void rangeStartMatch() {
         DoubleMatch doubleMatch = new DoubleMatch();
 
         DoubleRangeMatch doubleRangeMatch = new DoubleRangeMatch();
@@ -49,7 +49,7 @@ public class DoubleMatchTest {
 
 
     @Test
-    public void rangeEndMatch() {
+    void rangeEndMatch() {
         DoubleMatch doubleMatch = new DoubleMatch();
 
         DoubleRangeMatch doubleRangeMatch = new DoubleRangeMatch();
@@ -63,7 +63,7 @@ public class DoubleMatchTest {
 
 
     @Test
-    public void rangeStartEndMatch() {
+    void rangeStartEndMatch() {
         DoubleMatch doubleMatch = new DoubleMatch();
 
         DoubleRangeMatch doubleRangeMatch = new DoubleRangeMatch();
@@ -83,7 +83,7 @@ public class DoubleMatchTest {
     }
 
     @Test
-    public void modMatch() {
+    void modMatch() {
         DoubleMatch doubleMatch = new DoubleMatch();
 
         doubleMatch.setMod(2.0);

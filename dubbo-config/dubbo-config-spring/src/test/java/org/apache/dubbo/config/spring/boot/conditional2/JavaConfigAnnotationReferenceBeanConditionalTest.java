@@ -72,7 +72,7 @@ public class JavaConfigAnnotationReferenceBeanConditionalTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testConsumer() {
+    void testConsumer() {
 
         Map<String, HelloService> helloServiceMap = applicationContext.getBeansOfType(HelloService.class);
         Assertions.assertEquals(1, helloServiceMap.size());

@@ -34,7 +34,7 @@ import java.util.Set;
 public class ClassLoaderResourceLoaderTest {
 
     @Test
-    public void test() throws InterruptedException {
+    void test() throws InterruptedException {
         DubboInternalLoadingStrategy dubboInternalLoadingStrategy = new DubboInternalLoadingStrategy();
         String directory = dubboInternalLoadingStrategy.directory();
         String type = FooAppProvider.class.getName();

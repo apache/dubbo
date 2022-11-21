@@ -37,7 +37,7 @@ import static org.mockito.Mockito.verify;
 public class AbstractCodecTest {
 
     @Test
-    public void testCheckPayloadDefault8M() throws Exception {
+    void testCheckPayloadDefault8M() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1"));
 
@@ -56,7 +56,7 @@ public class AbstractCodecTest {
     }
 
     @Test
-    public void tesCheckPayloadMinusPayloadNoLimit() throws Exception {
+    void tesCheckPayloadMinusPayloadNoLimit() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1"));
 
@@ -66,7 +66,7 @@ public class AbstractCodecTest {
     }
 
     @Test
-    public void testIsClientSide() {
+    void testIsClientSide() {
         AbstractCodec codec = getAbstractCodec();
 
         Channel channel = mock(Channel.class);

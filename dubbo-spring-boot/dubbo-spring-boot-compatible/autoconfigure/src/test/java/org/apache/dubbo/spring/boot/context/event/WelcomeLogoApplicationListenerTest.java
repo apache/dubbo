@@ -39,7 +39,7 @@ public class WelcomeLogoApplicationListenerTest {
     private WelcomeLogoApplicationListener welcomeLogoApplicationListener;
 
     @Test
-    public void testOnApplicationEvent() {
+    void testOnApplicationEvent() {
 
         Assert.assertNotNull(welcomeLogoApplicationListener.buildBannerText());
 

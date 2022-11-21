@@ -38,7 +38,7 @@ public class CompatibleTypeUtilsTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCompatibleTypeConvert() throws Exception {
+    void testCompatibleTypeConvert() throws Exception {
         Object result;
 
         {

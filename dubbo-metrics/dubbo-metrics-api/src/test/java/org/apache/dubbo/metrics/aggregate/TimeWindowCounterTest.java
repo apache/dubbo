@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class TimeWindowCounterTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         TimeWindowCounter counter = new TimeWindowCounter(12, 1);
         counter.increment();
         Assertions.assertEquals(counter.get(), 1);

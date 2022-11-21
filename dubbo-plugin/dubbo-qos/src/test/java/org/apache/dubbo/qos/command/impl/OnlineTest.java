@@ -61,7 +61,7 @@ public class OnlineTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Online online = new Online(frameworkModel);
         String result = online.execute(mock(CommandContext.class), new String[]{DemoService.class.getName()});
         Assertions.assertEquals(result, "OK");

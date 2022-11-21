@@ -44,7 +44,7 @@ public class SpringAnnotationBeanTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(TestConfiguration.class);
         TestService testService = applicationContext.getBean(TestService.class);
         testService.test();

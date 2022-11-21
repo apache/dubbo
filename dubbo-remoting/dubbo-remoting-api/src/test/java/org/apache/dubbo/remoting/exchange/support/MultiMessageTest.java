@@ -29,7 +29,7 @@ import java.util.Iterator;
 public class MultiMessageTest {
 
     @Test
-    public void test() {
+    void test() {
         MultiMessage multiMessage = MultiMessage.create();
         Assertions.assertTrue(multiMessage instanceof Iterable);
 

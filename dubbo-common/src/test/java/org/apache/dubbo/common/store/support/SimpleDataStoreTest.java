@@ -29,7 +29,7 @@ public class SimpleDataStoreTest {
     private SimpleDataStore dataStore = new SimpleDataStore();
 
     @Test
-    public void testPutGet() throws Exception {
+    void testPutGet() throws Exception {
         assertNull(dataStore.get("xxx", "yyy"));
 
         dataStore.put("name", "key", "1");
@@ -39,7 +39,7 @@ public class SimpleDataStoreTest {
     }
 
     @Test
-    public void testRemove() throws Exception {
+    void testRemove() throws Exception {
         dataStore.remove("xxx", "yyy");
 
         dataStore.put("name", "key", "1");
@@ -48,7 +48,7 @@ public class SimpleDataStoreTest {
     }
 
     @Test
-    public void testGetComponent() throws Exception {
+    void testGetComponent() throws Exception {
         Map<String, Object> map = dataStore.get("component");
         assertTrue(map != null && map.isEmpty());
         dataStore.put("component", "key", "value");

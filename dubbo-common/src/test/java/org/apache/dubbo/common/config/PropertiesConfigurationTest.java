@@ -29,7 +29,7 @@ import java.util.Map;
 public class PropertiesConfigurationTest {
 
     @Test
-    public void test() {
+    void test() {
         PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration(ApplicationModel.defaultModel());
 
         Map<String, String> properties = propertiesConfiguration.getProperties();

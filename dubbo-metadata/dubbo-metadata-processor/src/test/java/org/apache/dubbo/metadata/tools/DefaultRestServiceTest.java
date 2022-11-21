@@ -34,7 +34,7 @@ import java.io.IOException;
 public class DefaultRestServiceTest {
 
     @Test
-    public void test() throws IOException {
+    void test() throws IOException {
         Compiler compiler = new Compiler();
         compiler.compile(User.class,
                 RestService.class,

@@ -55,7 +55,7 @@ public class NacosDynamicConfigurationTest {
     private static ConfigService nacosClient;
 
     @Test
-    public void testGetConfig() throws Exception {
+    void testGetConfig() throws Exception {
         put("org.apache.dubbo.nacos.testService.configurators", "hello");
         Thread.sleep(200);
         put("dubbo.properties", "test", "aaa=bbb");
@@ -68,7 +68,7 @@ public class NacosDynamicConfigurationTest {
     }
 
     @Test
-    public void testAddListener() throws Exception {
+    void testAddListener() throws Exception {
         CountDownLatch latch = new CountDownLatch(4);
         TestListener listener1 = new TestListener(latch);
         TestListener listener2 = new TestListener(latch);
@@ -143,7 +143,7 @@ public class NacosDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishConfig() {
+    void testPublishConfig() {
         String key = "user-service";
         String group = "org.apache.dubbo.service.UserService";
         String content = "test";

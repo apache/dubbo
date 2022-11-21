@@ -46,7 +46,7 @@ public class DynamicDirectoryTest {
      * verify simplified consumer url information that needs to be registered
      */
     @Test
-    public void testSimplifiedUrl() {
+    void testSimplifiedUrl() {
 
         // verify that the consumer url information that needs to be registered is not simplified by default
         Map<String, String> parameters = new HashMap<>();
@@ -112,7 +112,7 @@ public class DynamicDirectoryTest {
 
 
     @Test
-    public void testSubscribe() {
+    void testSubscribe() {
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());

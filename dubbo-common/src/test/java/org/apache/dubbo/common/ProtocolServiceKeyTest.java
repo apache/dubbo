@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 
 public class ProtocolServiceKeyTest {
     @Test
-    public void test() {
+    void test() {
         ProtocolServiceKey protocolServiceKey = new ProtocolServiceKey("DemoService", "1.0.0", "group1", "protocol1");
         Assertions.assertEquals("DemoService", protocolServiceKey.getInterfaceName());
         Assertions.assertEquals("1.0.0", protocolServiceKey.getVersion());

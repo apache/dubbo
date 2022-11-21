@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class ExtensionTest {
 
     @Test
-    public void testExtensionFactory() {
+    void testExtensionFactory() {
         try {
             ExtensionInjector myfactory = ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("myfactory");
             Assertions.assertTrue(myfactory instanceof ExtensionInjector);

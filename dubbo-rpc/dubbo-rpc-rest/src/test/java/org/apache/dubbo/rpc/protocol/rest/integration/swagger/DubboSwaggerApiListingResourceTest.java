@@ -38,7 +38,7 @@ public class DubboSwaggerApiListingResourceTest {
     private ServletConfig sc;
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
 
         DubboSwaggerApiListingResource resource = new  DubboSwaggerApiListingResource();
 

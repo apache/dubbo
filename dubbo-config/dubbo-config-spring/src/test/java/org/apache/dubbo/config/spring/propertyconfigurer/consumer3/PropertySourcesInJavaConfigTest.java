@@ -60,7 +60,7 @@ public class PropertySourcesInJavaConfigTest {
     }
 
     @Test
-    public void testImportPropertySource() {
+    void testImportPropertySource() {
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(PROVIDER_CONFIG_PATH);
         try {
@@ -88,7 +88,7 @@ public class PropertySourcesInJavaConfigTest {
     }
 
     @Test
-    public void testCustomPropertySourceBean() {
+    void testCustomPropertySourceBean() {
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(PROVIDER_CONFIG_PATH);
         try {

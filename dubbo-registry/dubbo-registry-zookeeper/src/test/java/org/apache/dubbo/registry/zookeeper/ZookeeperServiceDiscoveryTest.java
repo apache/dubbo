@@ -78,7 +78,7 @@ public class ZookeeperServiceDiscoveryTest {
     }
 
     @Test
-    public void testRegistration() throws InterruptedException {
+    void testRegistration() throws InterruptedException {
 
         CountDownLatch latch = new CountDownLatch(1);
 

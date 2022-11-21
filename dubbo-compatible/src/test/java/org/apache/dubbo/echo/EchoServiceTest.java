@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class EchoServiceTest {
 
     @Test
-    public void testEcho() {
+    void testEcho() {
         DemoService server = new DemoServiceImpl();
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();

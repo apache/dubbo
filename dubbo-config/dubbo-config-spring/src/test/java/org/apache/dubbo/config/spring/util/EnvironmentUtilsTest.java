@@ -39,7 +39,7 @@ import static org.apache.dubbo.config.spring.util.EnvironmentUtils.filterDubboPr
 public class EnvironmentUtilsTest {
 
     @Test
-    public void testExtraProperties() {
+    void testExtraProperties() {
 
         String key = "test.name";
         System.setProperty(key, "Tom");
@@ -71,7 +71,7 @@ public class EnvironmentUtilsTest {
     }
 
     @Test
-    public void testFilterDubboProperties() {
+    void testFilterDubboProperties() {
 
         MockEnvironment environment = new MockEnvironment();
         environment.setProperty("message", "Hello,World");

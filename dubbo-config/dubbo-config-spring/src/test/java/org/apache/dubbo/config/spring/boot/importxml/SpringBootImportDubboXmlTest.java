@@ -57,7 +57,7 @@ public class SpringBootImportDubboXmlTest {
     private HelloService helloService;
 
     @Test
-    public void testConsumer() {
+    void testConsumer() {
         try {
             helloService.sayHello("dubbo");
             Assertions.fail("Should not be called successfully");

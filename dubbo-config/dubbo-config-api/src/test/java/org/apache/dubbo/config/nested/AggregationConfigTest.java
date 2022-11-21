@@ -24,21 +24,21 @@ import static org.hamcrest.Matchers.equalTo;
 public class AggregationConfigTest {
 
     @Test
-    public void testEnabled() {
+    void testEnabled() {
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setEnabled(true);
         assertThat(aggregationConfig.getEnabled(), equalTo(true));
     }
 
     @Test
-    public void testBucketNum() {
+    void testBucketNum() {
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setBucketNum(5);
         assertThat(aggregationConfig.getBucketNum(), equalTo(5));
     }
 
     @Test
-    public void testTimeWindowSeconds() {
+    void testTimeWindowSeconds() {
         AggregationConfig aggregationConfig = new AggregationConfig();
         aggregationConfig.setTimeWindowSeconds(120);
         assertThat(aggregationConfig.getTimeWindowSeconds(), equalTo(120));

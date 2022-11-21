@@ -69,7 +69,7 @@ public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
     }
 
     @Test
-    public void testDuplicatedConfigsCase() {
+    void testDuplicatedConfigsCase() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(PropertySourceConfig.class, DubboConfig.class, XmlConfig.class);
 

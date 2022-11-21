@@ -63,7 +63,7 @@ public class TraceTelnetHandlerTest {
     }
 
     @Test
-    public void testTraceTelnetAddTracer() throws Exception {
+    void testTraceTelnetAddTracer() throws Exception {
         String method = "sayHello";
         String message = "org.apache.dubbo.qos.legacy.service.DemoService sayHello 1";
         Class<?> type = DemoService.class;

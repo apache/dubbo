@@ -57,7 +57,7 @@ public class TraceFilterTest {
     }
 
     @Test
-    public void testAddAndRemoveTracer() throws Exception {
+    void testAddAndRemoveTracer() throws Exception {
         String method = "sayHello";
         Class<?> type = DemoService.class;
         String key = type.getName() + "." + method;
@@ -85,7 +85,7 @@ public class TraceFilterTest {
     }
 
     @Test
-    public void testInvoke() throws Exception {
+    void testInvoke() throws Exception {
         String method = "sayHello";
         Class<?> type = DemoService.class;
         String key = type.getName() + "." + method;

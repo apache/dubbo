@@ -42,7 +42,7 @@ public class RouterTest {
     }
 
     @Test
-    public void testCompareTo () {
+    void testCompareTo () {
         try {
             Collections.sort(routers);
             Assertions.assertTrue(true);

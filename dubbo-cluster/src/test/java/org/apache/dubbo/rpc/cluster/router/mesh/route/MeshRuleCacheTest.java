@@ -49,7 +49,7 @@ public class MeshRuleCacheTest {
     }
 
     @Test
-    public void containMapKeyValue() {
+    void containMapKeyValue() {
         URL url = mock(URL.class);
         when(url.getServiceKey()).thenReturn("test");
 
@@ -77,7 +77,7 @@ public class MeshRuleCacheTest {
 
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
 
         Subset subset = new Subset();

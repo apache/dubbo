@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.is;
 
 public class MemoryLimitedLinkedBlockingQueueTest {
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         ByteBuddyAgent.install();
         final Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
         MemoryLimitedLinkedBlockingQueue<Runnable> queue = new MemoryLimitedLinkedBlockingQueue<>(1, instrumentation);

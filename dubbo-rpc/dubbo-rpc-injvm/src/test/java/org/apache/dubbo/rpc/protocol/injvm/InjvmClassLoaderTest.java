@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class InjvmClassLoaderTest {
     @Test
-    public void testDifferentClassLoaderRequest() throws Exception {
+    void testDifferentClassLoaderRequest() throws Exception {
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
         TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);

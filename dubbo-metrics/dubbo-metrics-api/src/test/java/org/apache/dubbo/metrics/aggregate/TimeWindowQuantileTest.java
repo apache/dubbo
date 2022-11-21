@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class TimeWindowQuantileTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         TimeWindowQuantile quantile = new TimeWindowQuantile(100, 12, 1);
         for (int i = 1; i <= 100; i++) {
             quantile.add(i);

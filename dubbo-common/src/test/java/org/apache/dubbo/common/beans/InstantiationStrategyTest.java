@@ -41,7 +41,7 @@ public class InstantiationStrategyTest {
     };
 
     @Test
-    public void testCreateBeanWithScopeModelArgument() throws ReflectiveOperationException {
+    void testCreateBeanWithScopeModelArgument() throws ReflectiveOperationException {
         InstantiationStrategy instantiationStrategy = new InstantiationStrategy(scopeModelAccessor);
 
         FooBeanWithFrameworkModel beanWithFrameworkModel = instantiationStrategy.instantiate(FooBeanWithFrameworkModel.class);

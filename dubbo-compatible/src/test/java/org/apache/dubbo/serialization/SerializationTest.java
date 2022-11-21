@@ -53,29 +53,29 @@ public class SerializationTest {
     }
 
     @Test
-    public void testContentType() {
+    void testContentType() {
         assertThat(mySerialization.getContentType(), is("x-application/my"));
     }
 
     @Test
-    public void testContentTypeId() {
+    void testContentTypeId() {
         assertThat(mySerialization.getContentTypeId(), is((byte) 101));
     }
 
     @Test
-    public void testObjectOutput() throws IOException {
+    void testObjectOutput() throws IOException {
         ObjectOutput objectOutput = mySerialization.serialize(null, mock(OutputStream.class));
         assertThat(objectOutput, Matchers.<ObjectOutput>instanceOf(MyObjectOutput.class));
     }
 
     @Test
-    public void testObjectInput() throws IOException {
+    void testObjectInput() throws IOException {
         ObjectInput objectInput = mySerialization.deserialize(null, mock(InputStream.class));
         assertThat(objectInput, Matchers.<ObjectInput>instanceOf(MyObjectInput.class));
     }
 
     @Test
-    public void testWriteUTF() throws IOException {
+    void testWriteUTF() throws IOException {
         myObjectOutput.writeUTF("Pace");
         myObjectOutput.writeUTF("和平");
         myObjectOutput.writeUTF(" Мир");

@@ -87,7 +87,7 @@ public class AvailableClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeNoException() {
+    void testInvokeNoException() {
 
         resetInvokerToNoException();
 
@@ -97,7 +97,7 @@ public class AvailableClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeWithException() {
+    void testInvokeWithException() {
 
         // remove invokers for test exception
         dic.list(invocation).removeAll(invokers);

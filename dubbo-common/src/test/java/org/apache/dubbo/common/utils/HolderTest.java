@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.is;
 
 public class HolderTest {
     @Test
-    public void testSetAndGet() throws Exception {
+    void testSetAndGet() throws Exception {
         Holder<String> holder = new Holder<String>();
         String message = "hello";
         holder.set(message);

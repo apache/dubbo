@@ -30,7 +30,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 public class MetadataIdentifierTest {
 
     @Test
-    public void testGetUniqueKey() {
+    void testGetUniqueKey() {
         String interfaceName = "org.apache.dubbo.metadata.integration.InterfaceNameTestService";
         String version = "1.0.0.zk.md";
         String group = null;

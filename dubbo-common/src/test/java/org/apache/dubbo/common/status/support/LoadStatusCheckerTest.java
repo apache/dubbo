@@ -30,7 +30,7 @@ public class LoadStatusCheckerTest {
     private static Logger logger = LoggerFactory.getLogger(LoadStatusCheckerTest.class);
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         LoadStatusChecker statusChecker = new LoadStatusChecker();
         Status status = statusChecker.check();
         assertThat(status, notNullValue());

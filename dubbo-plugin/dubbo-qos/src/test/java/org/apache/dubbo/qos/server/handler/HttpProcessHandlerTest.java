@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 public class HttpProcessHandlerTest {
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
@@ -53,7 +53,7 @@ public class HttpProcessHandlerTest {
     }
 
     @Test
-    public void test2() throws Exception {
+    void test2() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
@@ -70,7 +70,7 @@ public class HttpProcessHandlerTest {
     }
 
     @Test
-    public void test3() throws Exception {
+    void test3() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);

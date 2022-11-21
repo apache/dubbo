@@ -148,7 +148,7 @@ public class PerformanceServerTest  {
     }
 
     @Test
-    public void testServer() throws Exception {
+    void testServer() throws Exception {
         // Read port from property
         if (PerformanceUtils.getProperty("port", null) == null) {
             logger.warn("Please set -Dport=9911");

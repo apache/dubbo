@@ -84,7 +84,7 @@ public class ApolloDynamicConfigurationTest {
      * Test get rule.
      */
     @Test
-    public void testGetRule() {
+    void testGetRule() {
         String mockKey = "mockKey1";
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
@@ -101,7 +101,7 @@ public class ApolloDynamicConfigurationTest {
      * @throws InterruptedException the interrupted exception
      */
     @Test
-    public void testGetInternalProperty() throws InterruptedException {
+    void testGetInternalProperty() throws InterruptedException {
         String mockKey = "mockKey2";
         String mockValue = String.valueOf(new Random().nextInt());
         putMockRuleData(mockKey, mockValue, DEFAULT_NAMESPACE);
@@ -123,7 +123,7 @@ public class ApolloDynamicConfigurationTest {
      * @throws Exception the exception
      */
     @Test
-    public void testAddListener() throws Exception {
+    void testAddListener() throws Exception {
         String mockKey = "mockKey3";
         String mockValue = String.valueOf(new Random().nextInt());
 

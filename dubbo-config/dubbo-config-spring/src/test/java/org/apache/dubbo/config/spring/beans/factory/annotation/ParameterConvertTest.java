@@ -32,7 +32,7 @@ import java.util.Map;
 public class ParameterConvertTest {
 
     @Test
-    public void test() {
+    void test() {
         /**
          *     (array->map)
          *     ["a","b"] ==> {a=b}

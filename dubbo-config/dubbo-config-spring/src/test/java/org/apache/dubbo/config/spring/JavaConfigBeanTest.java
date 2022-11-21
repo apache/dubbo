@@ -60,7 +60,7 @@ public class JavaConfigBeanTest {
     }
 
     @Test
-    public void testBean() {
+    void testBean() {
 
         SysProps.setProperty("dubbo.application.owner", "Tom");
         SysProps.setProperty("dubbo.application.qos-enable", "false");

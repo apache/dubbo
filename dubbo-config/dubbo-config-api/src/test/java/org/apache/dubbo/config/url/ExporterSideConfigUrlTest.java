@@ -53,23 +53,23 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
     }
 
     @Test
-    public void exporterMethodConfigUrlTest() {
+    void exporterMethodConfigUrlTest() {
         verifyExporterUrlGeneration(methodConfForService, methodConfForServiceTable);
     }
 
     @Test
-    public void exporterServiceConfigUrlTest() {
+    void exporterServiceConfigUrlTest() {
         verifyExporterUrlGeneration(servConf, servConfTable);
     }
 
     @Test
-    public void exporterProviderConfigUrlTest() {
+    void exporterProviderConfigUrlTest() {
 
         verifyExporterUrlGeneration(provConf, provConfTable);
     }
 
     @Test
-    public void exporterRegistryConfigUrlTest() {
+    void exporterRegistryConfigUrlTest() {
 
         //verifyExporterUrlGeneration(regConfForService, regConfForServiceTable);
     }

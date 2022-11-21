@@ -19,6 +19,7 @@ package org.apache.dubbo.reactive;
 
 import org.apache.dubbo.reactive.handler.OneToManyMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,7 +38,7 @@ import static org.mockito.Mockito.doAnswer;
 public final class OneToManyMethodHandlerTest {
 
     @Test
-    public void testInvoke() {
+    void testInvoke() {
         String request = "1,2,3,4,5,6,7";
         AtomicInteger nextCounter = new AtomicInteger();
         AtomicInteger completeCounter = new AtomicInteger();
@@ -59,7 +60,7 @@ public final class OneToManyMethodHandlerTest {
     }
 
     @Test
-    public void testError() {
+    void testError() {
         String request = "1,2,3,4,5,6,7";
         AtomicInteger nextCounter = new AtomicInteger();
         AtomicInteger completeCounter = new AtomicInteger();

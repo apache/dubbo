@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 public class ApplicationModelTest {
 
     @Test
-    public void testInitialize() {
+    void testInitialize() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
 
@@ -60,7 +60,7 @@ public class ApplicationModelTest {
     }
 
     @Test
-    public void testDefaultApplication() {
+    void testDefaultApplication() {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         FrameworkModel frameworkModel = applicationModel.getFrameworkModel();
 
@@ -75,7 +75,7 @@ public class ApplicationModelTest {
     }
 
     @Test
-    public void testModule() {
+    void testModule() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
 
@@ -95,7 +95,7 @@ public class ApplicationModelTest {
     }
 
     @Test
-    public void testOfNullable() {
+    void testOfNullable() {
         ApplicationModel applicationModel = ApplicationModel.ofNullable(null);
         Assertions.assertEquals(ApplicationModel.defaultModel(), applicationModel);
         applicationModel.getFrameworkModel().destroy();
@@ -108,7 +108,7 @@ public class ApplicationModelTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
 

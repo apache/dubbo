@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class MetadataReportConfigTest {
     @Test
-    public void testFile() {
+    void testFile() {
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setFile("file");
         assertThat(metadataReportConfig.getFile(), equalTo("file"));

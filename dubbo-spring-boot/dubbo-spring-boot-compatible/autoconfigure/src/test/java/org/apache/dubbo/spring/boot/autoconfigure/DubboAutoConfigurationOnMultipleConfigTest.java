@@ -161,7 +161,7 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
     private Map<String, ConsumerConfig> consumers = new LinkedHashMap<>();
 
     @Test
-    public void testMultipleDubboConfigBindingProperties() {
+    void testMultipleDubboConfigBindingProperties() {
 
 
         Assert.assertEquals(1, applications.size());
@@ -181,7 +181,7 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
     }
 
     @Test
-    public void testApplicationContext() {
+    void testApplicationContext() {
 
         /**
          * Multiple {@link ApplicationConfig}
@@ -235,35 +235,35 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
     }
 
     @Test
-    public void testApplicationConfig() {
+    void testApplicationConfig() {
 
         Assert.assertEquals("dubbo-demo-application", application.getName());
 
     }
 
     @Test
-    public void testModuleConfig() {
+    void testModuleConfig() {
 
         Assert.assertEquals("dubbo-demo-module", module.getName());
 
     }
 
     @Test
-    public void testRegistryConfig() {
+    void testRegistryConfig() {
 
         Assert.assertEquals("zookeeper://192.168.99.100:32770", registry.getAddress());
 
     }
 
     @Test
-    public void testMonitorConfig() {
+    void testMonitorConfig() {
 
         Assert.assertEquals("zookeeper://127.0.0.1:32770", monitor.getAddress());
 
     }
 
     @Test
-    public void testProtocolConfig() {
+    void testProtocolConfig() {
 
         Assert.assertEquals("dubbo", protocol.getName());
         Assert.assertEquals(Integer.valueOf(20880), protocol.getPort());
@@ -271,7 +271,7 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
     }
 
     @Test
-    public void testConsumerConfig() {
+    void testConsumerConfig() {
 
         Assert.assertEquals("netty", consumer.getClient());
 

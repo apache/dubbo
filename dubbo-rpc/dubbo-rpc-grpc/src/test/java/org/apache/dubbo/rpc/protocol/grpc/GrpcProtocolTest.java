@@ -49,7 +49,7 @@ public class GrpcProtocolTest {
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @Test
-    public void testDemoProtocol() throws Exception {
+    void testDemoProtocol() throws Exception {
         DubboGreeterGrpc.IGreeter serviceImpl = new GrpcGreeterImpl();
 
         int availablePort = NetUtils.getAvailablePort();

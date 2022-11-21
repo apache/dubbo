@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class PojoUtilsForNonPublicStaticTest {
 
     @Test
-    public void testNonPublicStaticClass() {
+    void testNonPublicStaticClass() {
         NonPublicStaticData nonPublicStaticData = new NonPublicStaticData("horizon");
         PojoUtils.generalize(nonPublicStaticData);
     }

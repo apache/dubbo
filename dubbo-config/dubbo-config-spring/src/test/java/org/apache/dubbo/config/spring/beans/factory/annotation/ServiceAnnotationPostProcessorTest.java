@@ -71,7 +71,7 @@ public class ServiceAnnotationPostProcessorTest {
     private ConfigurableListableBeanFactory beanFactory;
 
     @Test
-    public void test() {
+    void test() {
 
         Map<String, HelloService> helloServicesMap = beanFactory.getBeansOfType(HelloService.class);
 
@@ -89,7 +89,7 @@ public class ServiceAnnotationPostProcessorTest {
     }
 
     @Test
-    public void testMethodAnnotation() {
+    void testMethodAnnotation() {
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
 

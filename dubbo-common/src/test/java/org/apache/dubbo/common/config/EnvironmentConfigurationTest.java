@@ -43,7 +43,7 @@ public class EnvironmentConfigurationTest {
     }
 
     @Test
-    public void testGetInternalProperty() {
+    void testGetInternalProperty() {
         Map<String, String> map = new HashMap<>();
         map.put(MOCK_KEY, MOCK_VALUE);
         try {

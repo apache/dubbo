@@ -44,7 +44,7 @@ public class Curator5ZookeeperTransporterTest {
     }
 
     @Test
-    public void testZookeeperClient() {
+    void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
     }

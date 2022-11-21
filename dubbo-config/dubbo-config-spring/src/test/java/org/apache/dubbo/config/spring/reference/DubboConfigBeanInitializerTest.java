@@ -78,7 +78,7 @@ public class DubboConfigBeanInitializerTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void test() {
+    void test() {
         Assertions.assertNotNull(fooService, "fooService is null");
         Assertions.assertNotNull(fooService.helloService, "ooService.helloService is null");
 

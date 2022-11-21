@@ -35,7 +35,7 @@ import static org.hamcrest.core.Is.is;
 
 public class JettyHttpBinderTest {
     @Test
-    public void shouldAbleHandleRequestForJettyBinder() throws Exception {
+    void shouldAbleHandleRequestForJettyBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("http", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});

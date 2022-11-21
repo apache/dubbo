@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RpcContextTest {
 
     @Test
-    public void testSetFuture() {
+    void testSetFuture() {
         CompletableFuture completableFuture = new CompletableFuture();
         RpcContext.getContext().setFuture(completableFuture);
 
@@ -37,7 +37,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testSetFutureAlibaba() {
+    void testSetFutureAlibaba() {
         CompletableFuture completableFuture = new CompletableFuture();
         RpcContext.getContext().setFuture(completableFuture);
 

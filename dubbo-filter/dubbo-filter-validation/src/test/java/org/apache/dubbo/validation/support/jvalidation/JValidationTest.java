@@ -30,7 +30,7 @@ import static org.hamcrest.core.Is.is;
 
 public class JValidationTest {
     @Test
-    public void testReturnTypeWithInvalidValidationProvider() {
+    void testReturnTypeWithInvalidValidationProvider() {
         Assertions.assertThrows(ValidationException.class, () -> {
             Validation jValidation = new JValidation();
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation?" +
@@ -41,7 +41,7 @@ public class JValidationTest {
     }
 
     @Test
-    public void testReturnTypeWithDefaultValidatorProvider() {
+    void testReturnTypeWithDefaultValidatorProvider() {
         Validation jValidation = new JValidation();
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.JValidation");
         Validator validator = jValidation.getValidator(url);

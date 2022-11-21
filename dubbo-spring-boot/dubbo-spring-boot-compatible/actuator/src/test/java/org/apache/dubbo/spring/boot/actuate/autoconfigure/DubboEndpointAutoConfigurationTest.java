@@ -109,7 +109,7 @@ public class DubboEndpointAutoConfigurationTest {
     private String actuatorBaseURL;
 
     @Test
-    public void testShutdown() throws Exception {
+    void testShutdown() throws Exception {
 
         Map<String, Object> value = dubboShutdownMetadata.shutdown();
 
@@ -123,7 +123,7 @@ public class DubboEndpointAutoConfigurationTest {
     }
 
     @Test
-    public void testConfigs() {
+    void testConfigs() {
 
         Map<String, Map<String, Map<String, Object>>> configsMap = dubboConfigsMetadata.configs();
 
@@ -160,7 +160,7 @@ public class DubboEndpointAutoConfigurationTest {
     }
 
     @Test
-    public void testServices() {
+    void testServices() {
 
         Map<String, Map<String, Object>> services = dubboServicesMetadata.services();
 
@@ -173,7 +173,7 @@ public class DubboEndpointAutoConfigurationTest {
     }
 
     @Test
-    public void testReferences() {
+    void testReferences() {
 
         Map<String, Map<String, Object>> references = dubboReferencesMetadata.references();
 
@@ -182,7 +182,7 @@ public class DubboEndpointAutoConfigurationTest {
     }
 
     @Test
-    public void testProperties() {
+    void testProperties() {
 
         SortedMap<String, Object> properties = dubboProperties.properties();
 
@@ -201,7 +201,7 @@ public class DubboEndpointAutoConfigurationTest {
     }
 
     @Test
-    public void testHttpEndpoints() throws JsonProcessingException {
+    void testHttpEndpoints() throws JsonProcessingException {
 //        testHttpEndpoint("/dubbo", dubboEndpoint::invoke);
         testHttpEndpoint("/dubbo/configs", dubboConfigsMetadata::configs);
         testHttpEndpoint("/dubbo/services", dubboServicesMetadata::services);

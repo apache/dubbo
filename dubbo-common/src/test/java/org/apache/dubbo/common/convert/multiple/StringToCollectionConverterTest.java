@@ -57,7 +57,7 @@ public class StringToCollectionConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertTrue(converter.accept(String.class, Collection.class));
 
@@ -85,7 +85,7 @@ public class StringToCollectionConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
 
         List values = asList(1L, 2L, 3L);
 
@@ -105,12 +105,12 @@ public class StringToCollectionConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 1, converter.getPriority());
     }
 }

@@ -74,7 +74,7 @@ public class MetadataServiceNameMappingTest {
     }
 
     @Test
-    public void testMap() {
+    void testMap() {
         ApplicationModel mockedApplicationModel = spy(applicationModel);
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
@@ -123,7 +123,7 @@ public class MetadataServiceNameMappingTest {
      * This test currently doesn't make any sense
      */
     @Test
-    public void testGet() {
+    void testGet() {
         Set<String> set = new HashSet<>();
         set.add("app1");
 
@@ -140,7 +140,7 @@ public class MetadataServiceNameMappingTest {
      * Same situation as testGet, so left empty.
      */
     @Test
-    public void testGetAndListen() {
+    void testGetAndListen() {
         // TODO
     }
 }

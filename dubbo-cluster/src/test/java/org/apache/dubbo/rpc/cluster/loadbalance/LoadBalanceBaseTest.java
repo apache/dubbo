@@ -160,7 +160,7 @@ public class LoadBalanceBaseTest {
     }
 
     @Test
-    public void testLoadBalanceWarmup() {
+    void testLoadBalanceWarmup() {
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(0));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(13));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));

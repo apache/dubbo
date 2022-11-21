@@ -93,7 +93,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testAll() {
+    void testAll() {
         List<Callable<Void>> testcases = new LinkedList<>();
         testcases.add(() -> {
             testConsumerSuccess();

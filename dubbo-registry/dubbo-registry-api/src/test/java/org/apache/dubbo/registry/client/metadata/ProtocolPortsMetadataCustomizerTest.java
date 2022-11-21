@@ -80,7 +80,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
         customizer.customize(instance, ApplicationModel.defaultModel());
         String endpoints = instance.getMetadata().get(ENDPOINTS);

@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AdaptiveClassCodeGeneratorTest {
 
     @Test
-    public void testGenerate() throws IOException {
+    void testGenerate() throws IOException {
         AdaptiveClassCodeGenerator generator = new AdaptiveClassCodeGenerator(HasAdaptiveExt.class, "adaptive");
         String value = generator.generate();
         URL url = getClass().getResource("/org/apache/dubbo/common/extension/adaptive/HasAdaptiveExt$Adaptive");

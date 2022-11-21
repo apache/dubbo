@@ -47,7 +47,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testRoundRobinLoadBalanceSelect() {
+    void testRoundRobinLoadBalanceSelect() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RoundRobinLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
@@ -57,7 +57,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testSelectByWeight() {
+    void testSelectByWeight() {
         final Map<Invoker, InvokeResult> totalMap = new HashMap<Invoker, InvokeResult>();
         final AtomicBoolean shouldBegin = new AtomicBoolean(false);
         final int runs = 10000;
@@ -98,7 +98,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testNodeCacheShouldNotRecycle() {
+    void testNodeCacheShouldNotRecycle() {
         int loop = 10000;
         //tmperately add a new invoker
         weightInvokers.add(weightInvokerTmp);
@@ -123,7 +123,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testNodeCacheShouldRecycle() {
+    void testNodeCacheShouldRecycle() {
         {
             Field recycleTimeField = null;
             try {

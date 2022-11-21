@@ -67,7 +67,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testGetProtocol() {
+    void testGetProtocol() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
         String protocol = abstractMetadataReport.getProtocol(url);
         assertEquals(protocol, "provider");
@@ -78,7 +78,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -89,7 +89,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -100,7 +100,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
+    void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
         //just for one method
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
@@ -119,7 +119,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testRetry() throws InterruptedException, ClassNotFoundException {
+    void testRetry() throws InterruptedException, ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retry";
         String group = null;
@@ -148,7 +148,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testRetryCancel() throws InterruptedException, ClassNotFoundException {
+    void testRetryCancel() throws InterruptedException, ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retrycancel";
         String group = null;
@@ -197,7 +197,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testPublishAll() throws ClassNotFoundException, InterruptedException {
+    void testPublishAll() throws ClassNotFoundException, InterruptedException {
 
         assertTrue(abstractMetadataReport.store.isEmpty());
         assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
@@ -250,7 +250,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testCalculateStartTime() {
+    void testCalculateStartTime() {
         for (int i = 0; i < 300; i++) {
             long t = abstractMetadataReport.calculateStartTime() + System.currentTimeMillis();
             Calendar c = Calendar.getInstance();

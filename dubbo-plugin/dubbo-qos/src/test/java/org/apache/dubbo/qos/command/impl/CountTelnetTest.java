@@ -75,7 +75,7 @@ public class CountTelnetTest {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         String methodName = "sayHello";
         String[] args = new String[]{"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
 

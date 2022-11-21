@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class NettyClientHandlerTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 20901);
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);
         ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);

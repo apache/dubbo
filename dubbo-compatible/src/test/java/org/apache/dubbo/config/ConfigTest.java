@@ -45,7 +45,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testConfig() {
+    void testConfig() {
         com.alibaba.dubbo.config.ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setApplication(applicationConfig);
         service.setRegistry(registryConfig);

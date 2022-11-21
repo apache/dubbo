@@ -38,7 +38,7 @@ public class StatItemTest {
     }
 
     @Test
-    public void testIsAllowable() throws Exception {
+    void testIsAllowable() throws Exception {
         statItem = new StatItem("test", 5, 1000L);
         long lastResetTime = statItem.getLastResetTime();
         assertTrue(statItem.isAllowable());
@@ -49,7 +49,7 @@ public class StatItemTest {
     }
 
     @Test
-    public void testAccuracy() throws Exception {
+    void testAccuracy() throws Exception {
         final int EXPECTED_RATE = 5;
         statItem = new StatItem("test", EXPECTED_RATE, 60_000L);
         for (int i = 1; i <= EXPECTED_RATE; i++) {
@@ -61,7 +61,7 @@ public class StatItemTest {
     }
 
     @Test
-    public void testConcurrency() throws Exception {
+    void testConcurrency() throws Exception {
         statItem = new StatItem("test", 100, 100000);
 
         List<Task> taskList = new ArrayList<>();

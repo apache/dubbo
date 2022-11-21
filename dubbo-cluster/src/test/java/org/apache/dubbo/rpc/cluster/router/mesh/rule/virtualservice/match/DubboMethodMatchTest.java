@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class DubboMethodMatchTest {
 
     @Test
-    public void nameMatch() {
+    void nameMatch() {
         DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
 
         StringMatch nameStringMatch = new StringMatch();
@@ -44,7 +44,7 @@ public class DubboMethodMatchTest {
 
 
     @Test
-    public void argcMatch() {
+    void argcMatch() {
         DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
         dubboMethodMatch.setArgc(1);
 
@@ -53,7 +53,7 @@ public class DubboMethodMatchTest {
     }
 
     @Test
-    public void argpMatch() {
+    void argpMatch() {
         DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
 
         List<StringMatch> argpMatch = new ArrayList<>();
@@ -76,7 +76,7 @@ public class DubboMethodMatchTest {
     }
 
     @Test
-    public void parametersMatch() {
+    void parametersMatch() {
 
         DubboMethodMatch dubboMethodMatch = new DubboMethodMatch();
 

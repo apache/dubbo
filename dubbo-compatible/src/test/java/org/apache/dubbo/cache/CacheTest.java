@@ -32,7 +32,7 @@ import java.util.Map;
 public class CacheTest {
 
     @Test
-    public void testCacheFactory() {
+    void testCacheFactory() {
         URL url = URL.valueOf("test://test:11/test?cache=jacache&.cache.write.expire=1");
         CacheFactory cacheFactory = new MyCacheFactory();
         Invocation invocation = new NullInvocation();

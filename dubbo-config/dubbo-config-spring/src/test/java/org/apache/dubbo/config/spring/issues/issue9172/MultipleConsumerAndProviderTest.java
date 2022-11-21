@@ -40,7 +40,7 @@ import org.springframework.context.annotation.PropertySource;
 public class MultipleConsumerAndProviderTest {
 
     @Test
-    public void test() {
+    void test() {
 
         AnnotationConfigApplicationContext providerContext = null;
         AnnotationConfigApplicationContext consumerContext = null;

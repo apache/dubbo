@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class ThrowableConsumerTest {
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         assertThrows(RuntimeException.class, () -> execute("Hello,World", m -> {
             throw new Exception(m);
         }), "Hello,World");

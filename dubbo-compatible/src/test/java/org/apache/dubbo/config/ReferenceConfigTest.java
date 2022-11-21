@@ -46,7 +46,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testInjvm() throws Exception {
+    void testInjvm() throws Exception {
 
         application.setName("test-protocol-random-port");
         registry.setAddress("multicast://224.5.6.7:1234");

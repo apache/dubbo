@@ -78,7 +78,7 @@ public class SelectTelnetTest {
     }
 
     @Test
-    public void testInvokeWithoutMethodList() throws RemotingException {
+    void testInvokeWithoutMethodList() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(null);
 
@@ -95,7 +95,7 @@ public class SelectTelnetTest {
     }
 
     @Test
-    public void testInvokeWithIllegalMessage() throws RemotingException {
+    void testInvokeWithIllegalMessage() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(methods);
 
@@ -118,7 +118,7 @@ public class SelectTelnetTest {
     }
 
     @Test
-    public void testInvokeWithNull() throws RemotingException {
+    void testInvokeWithNull() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(methods);
 

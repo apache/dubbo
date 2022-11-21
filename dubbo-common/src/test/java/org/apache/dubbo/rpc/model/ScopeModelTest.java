@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class ScopeModelTest {
 
     @Test
-    public void testCreateOnDestroy() throws InterruptedException {
+    void testCreateOnDestroy() throws InterruptedException {
         FrameworkModel.destroyAll();
 
         FrameworkModel frameworkModel = new FrameworkModel();

@@ -138,7 +138,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService renamedHelloService2;
 
     @Test
-    public void testAop() throws Exception {
+    void testAop() throws Exception {
 
         Assertions.assertTrue(context.containsBean("helloService"));
 
@@ -182,7 +182,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     }
 
     @Test
-    public void testGetInjectedFieldReferenceBeanMap() {
+    void testGetInjectedFieldReferenceBeanMap() {
 
         ReferenceAnnotationBeanPostProcessor beanPostProcessor = getReferenceAnnotationBeanPostProcessor();
 
@@ -215,7 +215,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     }
 
     @Test
-    public void testGetInjectedMethodReferenceBeanMap() {
+    void testGetInjectedMethodReferenceBeanMap() {
 
         ReferenceAnnotationBeanPostProcessor beanPostProcessor = getReferenceAnnotationBeanPostProcessor();
 
@@ -245,7 +245,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     }
 
     @Test
-    public void testReferenceBeansMethodAnnotation() {
+    void testReferenceBeansMethodAnnotation() {
 
         ReferenceBeanManager referenceBeanManager = context.getBean(ReferenceBeanManager.BEAN_NAME,
                 ReferenceBeanManager.class);

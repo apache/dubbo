@@ -63,7 +63,7 @@ public class GenericServiceTest {
     private ServiceBean serviceBean;
 
     @Test
-    public void testGeneric() {
+    void testGeneric() {
         assertNotNull(demoServiceRef);
         assertNotNull(serviceBean);
 

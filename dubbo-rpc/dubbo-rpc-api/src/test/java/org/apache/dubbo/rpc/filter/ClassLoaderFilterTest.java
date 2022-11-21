@@ -37,7 +37,7 @@ public class ClassLoaderFilterTest {
     private ClassLoaderFilter classLoaderFilter = new ClassLoaderFilter();
 
     @Test
-    public void testInvoke() throws Exception {
+    void testInvoke() throws Exception {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1");
 
         String path = DemoService.class.getResource("/").getPath();

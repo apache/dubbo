@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandContextTest {
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         CommandContext context = new CommandContext("test", new String[]{"hello"}, true);
         Object request = new Object();
         context.setOriginRequest(request);

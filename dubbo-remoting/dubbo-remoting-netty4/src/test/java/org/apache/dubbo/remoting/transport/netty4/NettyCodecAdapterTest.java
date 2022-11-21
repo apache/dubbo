@@ -32,7 +32,7 @@ import org.mockito.Mockito;
 public class NettyCodecAdapterTest {
 
     @Test
-    public void test() {
+    void test() {
         Codec2 codec2 = Mockito.mock(Codec2.class);
         URL url = Mockito.mock(URL.class);
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);

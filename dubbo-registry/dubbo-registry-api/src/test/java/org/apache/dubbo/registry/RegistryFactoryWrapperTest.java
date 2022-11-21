@@ -27,7 +27,7 @@ public class RegistryFactoryWrapperTest {
     private RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         RegistryServiceListener listener1 = Mockito.mock(RegistryServiceListener.class);
         RegistryServiceListener1.delegate = listener1;
         RegistryServiceListener listener2 = Mockito.mock(RegistryServiceListener.class);

@@ -49,7 +49,7 @@ public class DefaultDubboConfigBinderTest {
     private DubboConfigBinder dubboConfigBinder;
 
     @Test
-    public void testBinder() {
+    void testBinder() {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         dubboConfigBinder.bind("dubbo.application", applicationConfig);

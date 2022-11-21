@@ -37,7 +37,7 @@ import java.util.Collection;
 public class HeaderExchangeServerTest {
 
     @Test
-    public void test() throws InterruptedException, RemotingException {
+    void test() throws InterruptedException, RemotingException {
         RemotingServer server = Mockito.mock(RemotingServer.class);
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 20881);
         Mockito.when(server.getUrl()).thenReturn(url);

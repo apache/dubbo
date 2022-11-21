@@ -61,7 +61,7 @@ public class CompatibleDubboAutoConfigurationTestWithoutProperties {
     }
 
     @Test
-    public void testBeans() {
+    void testBeans() {
         Assert.assertNull(serviceAnnotationPostProcessor);
 
         ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =  DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);

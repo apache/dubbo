@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 
 public class ExitTelnetHandlerTest {
     @Test
-    public void test() {
+    void test() {
         Channel channel = Mockito.mock(Channel.class);
 
         ExitTelnetHandler exitTelnetHandler = new ExitTelnetHandler();

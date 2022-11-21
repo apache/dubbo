@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class TLadderTest {
     @Test
-    public void testRendering() throws Exception {
+    void testRendering() throws Exception {
         TLadder ladder = new TLadder();
         ladder.addItem("1");
         ladder.addItem("2");

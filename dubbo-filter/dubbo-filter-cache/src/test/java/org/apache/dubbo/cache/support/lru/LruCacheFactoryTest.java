@@ -27,7 +27,7 @@ import static org.hamcrest.core.Is.is;
 
 public class LruCacheFactoryTest extends AbstractCacheFactoryTest{
     @Test
-    public void testLruCacheFactory() throws Exception {
+    void testLruCacheFactory() throws Exception {
         Cache cache = super.constructCache();
         assertThat(cache instanceof LruCache, is(true));
     }

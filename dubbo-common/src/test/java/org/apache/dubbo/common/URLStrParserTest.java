@@ -57,7 +57,7 @@ public class URLStrParserTest {
     }
 
     @Test
-    public void testEncoded() {
+    void testEncoded() {
         testCases.forEach(testCase -> {
             assertThat(URLStrParser.parseEncodedStr(URL.encode(testCase)), equalTo(URL.valueOf(testCase)));
         });
@@ -69,7 +69,7 @@ public class URLStrParserTest {
     }
 
     @Test
-    public void testDecoded() {
+    void testDecoded() {
         testCases.forEach(testCase -> {
             assertThat(URLStrParser.parseDecodedStr(testCase), equalTo(URL.valueOf(testCase)));
         });

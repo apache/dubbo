@@ -26,7 +26,7 @@ import java.io.IOException;
 public class CompilerTest {
 
     @Test
-    public void testCompile() throws IOException {
+    void testCompile() throws IOException {
         Compiler compiler = new Compiler();
         compiler.compile(
                 TestServiceImpl.class,

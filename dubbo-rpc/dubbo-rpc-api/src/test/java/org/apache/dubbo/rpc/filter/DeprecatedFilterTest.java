@@ -37,7 +37,7 @@ public class DeprecatedFilterTest {
     Filter deprecatedFilter = new DeprecatedFilter();
 
     @Test
-    public void testDeprecatedFilter() {
+    void testDeprecatedFilter() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1&echo." + DEPRECATED_KEY + "=true");
         LogUtil.start();
         deprecatedFilter.invoke(new MyInvoker<DemoService>(url), new MockInvocation());

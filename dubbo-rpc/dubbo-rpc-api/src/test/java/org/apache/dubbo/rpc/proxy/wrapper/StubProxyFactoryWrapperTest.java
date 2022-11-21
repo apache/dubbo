@@ -36,7 +36,7 @@ import static org.apache.dubbo.rpc.Constants.STUB_KEY;
 public class StubProxyFactoryWrapperTest {
 
     @Test
-    public void test() {
+    void test() {
         ProxyFactory proxyFactory = Mockito.mock(ProxyFactory.class);
         Protocol protocol = Mockito.mock(Protocol.class);
         StubProxyFactoryWrapper stubProxyFactoryWrapper = new StubProxyFactoryWrapper(proxyFactory);

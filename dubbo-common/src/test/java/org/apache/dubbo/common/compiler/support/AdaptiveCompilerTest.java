@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 public class AdaptiveCompilerTest extends JavaCodeTest {
 
     @Test
-    public void testAvailableCompiler() throws Exception {
+    void testAvailableCompiler() throws Exception {
         AdaptiveCompiler.setDefaultCompiler("jdk");
         AdaptiveCompiler compiler = new AdaptiveCompiler();
         compiler.setFrameworkModel(FrameworkModel.defaultModel());

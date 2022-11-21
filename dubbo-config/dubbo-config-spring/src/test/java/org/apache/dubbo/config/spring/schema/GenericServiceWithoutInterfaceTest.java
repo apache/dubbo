@@ -56,7 +56,7 @@ public class GenericServiceWithoutInterfaceTest {
     private GenericService genericServiceWithoutInterfaceRef;
 
     @Test
-    public void testGenericWithoutInterface() {
+    void testGenericWithoutInterface() {
 
         // Test generic service without interface class locally
         Object result = genericServiceWithoutInterfaceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"generic"});

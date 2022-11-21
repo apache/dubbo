@@ -75,7 +75,7 @@ public class DubboRelaxedBinding2AutoConfigurationTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testBeans() {
+    void testBeans() {
 
 
         assertTrue(ClassUtils.isAssignableValue(BinderDubboConfigBinder.class, dubboConfigBinder));

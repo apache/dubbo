@@ -39,7 +39,7 @@ public class EnumBak {
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @Test
-    public void testNormal() {
+    void testNormal() {
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?proxy=jdk"
                 + "&interface=" + DemoService.class.getName()
@@ -65,7 +65,7 @@ public class EnumBak {
 
     @Disabled
     @Test
-    public void testExportService() throws InterruptedException {
+    void testExportService() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?proxy=jdk&timeout=" + Integer.MAX_VALUE
         );
@@ -87,7 +87,7 @@ public class EnumBak {
     }
 
     @Test
-    public void testNormalEnum() {
+    void testNormalEnum() {
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
@@ -112,7 +112,7 @@ public class EnumBak {
     // verify compatibility when 2.0.5 invokes 2.0.3
     @Disabled
     @Test
-    public void testEnumCompat() {
+    void testEnumCompat() {
         int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
@@ -130,7 +130,7 @@ public class EnumBak {
     // verify compatibility when 2.0.5 invokes 2.0.3
     @Disabled
     @Test
-    public void testGenricEnumCompat() {
+    void testGenricEnumCompat() {
         int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );
@@ -145,7 +145,7 @@ public class EnumBak {
     // verify compatibility when 2.0.5 invokes 2.0.3, enum in custom parameter
     @Disabled
     @Test
-    public void testGenricCustomArg() {
+    void testGenricCustomArg() {
 
         int port = NetUtils.getAvailablePort();
         URL consumerurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=2000000"
@@ -164,7 +164,7 @@ public class EnumBak {
 
     @Disabled
     @Test
-    public void testGenericExport() throws InterruptedException {
+    void testGenericExport() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
         //port = 20880;
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
@@ -179,7 +179,7 @@ public class EnumBak {
     }
 
     @Test
-    public void testGenericEnum() throws InterruptedException {
+    void testGenericEnum() throws InterruptedException {
         int port = NetUtils.getAvailablePort();
         URL serviceurl = URL.valueOf("dubbo://127.0.0.1:" + port + "/test?timeout=" + Integer.MAX_VALUE
         );

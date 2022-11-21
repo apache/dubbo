@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 
 public class TelnetProcessHandlerTest {
     @Test
-    public void testPrompt() throws Exception {
+    void testPrompt() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
         handler.channelRead0(context, "");
@@ -42,7 +42,7 @@ public class TelnetProcessHandlerTest {
     }
 
     @Test
-    public void testBye() throws Exception {
+    void testBye() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
         ChannelFuture future = mock(ChannelFuture.class);
@@ -52,7 +52,7 @@ public class TelnetProcessHandlerTest {
     }
 
     @Test
-    public void testUnknownCommand() throws Exception {
+    void testUnknownCommand() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
         handler.channelRead0(context, "unknown");
@@ -62,7 +62,7 @@ public class TelnetProcessHandlerTest {
     }
 
     @Test
-    public void testGreeting() throws Exception {
+    void testGreeting() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
         handler.channelRead0(context, "greeting");

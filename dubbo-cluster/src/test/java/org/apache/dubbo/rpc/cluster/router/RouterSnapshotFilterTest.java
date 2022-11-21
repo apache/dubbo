@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 public class RouterSnapshotFilterTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         RouterSnapshotSwitcher routerSnapshotSwitcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
         RouterSnapshotFilter routerSnapshotFilter = new RouterSnapshotFilter(frameworkModel);

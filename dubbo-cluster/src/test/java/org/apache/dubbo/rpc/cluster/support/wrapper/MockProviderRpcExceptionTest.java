@@ -53,7 +53,7 @@ public class MockProviderRpcExceptionTest {
      * Test if mock policy works fine: ProviderRpcException
      */
     @Test
-    public void testMockInvokerProviderRpcException() {
+    void testMockInvokerProviderRpcException() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloRpcService.class.getName());
         url = url.addParameter(MOCK_KEY, "true").addParameter("invoke_return_error", "true")
                 .addParameter(REFER_KEY,

@@ -54,7 +54,7 @@ public class SpringXmlConfigTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         SysProps.setProperty(SHUTDOWN_WAIT_KEY, "2000");
         // start provider context
         startProvider();

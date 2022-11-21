@@ -35,7 +35,7 @@ import static org.hamcrest.core.Is.is;
 
 public class TomcatHttpBinderTest {
     @Test
-    public void shouldAbleHandleRequestForTomcatBinder() throws Exception {
+    void shouldAbleHandleRequestForTomcatBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("http", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});

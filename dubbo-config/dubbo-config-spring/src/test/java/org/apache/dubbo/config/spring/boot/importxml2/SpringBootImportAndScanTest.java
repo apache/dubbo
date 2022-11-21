@@ -67,7 +67,7 @@ public class SpringBootImportAndScanTest implements ApplicationContextAware {
     private HelloService helloService;
 
     @Test
-    public void testProvider() {
+    void testProvider() {
 
         String result = helloService.sayHello("dubbo");
         Assertions.assertEquals("Hello, dubbo", result);

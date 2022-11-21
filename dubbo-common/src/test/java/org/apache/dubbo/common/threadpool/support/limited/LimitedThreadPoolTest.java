@@ -43,7 +43,7 @@ import static org.hamcrest.Matchers.startsWith;
 
 public class LimitedThreadPoolTest {
     @Test
-    public void getExecutor1() throws Exception {
+    void getExecutor1() throws Exception {
         URL url = URL.valueOf("dubbo://10.20.130.230:20880/context/path?" +
                 THREAD_NAME_KEY + "=demo&" +
                 CORE_THREADS_KEY + "=1&" +
@@ -73,7 +73,7 @@ public class LimitedThreadPoolTest {
     }
 
     @Test
-    public void getExecutor2() throws Exception {
+    void getExecutor2() throws Exception {
         URL url = URL.valueOf("dubbo://10.20.130.230:20880/context/path?" + QUEUES_KEY + "=1");
         ThreadPool threadPool = new LimitedThreadPool();
         ThreadPoolExecutor executor = (ThreadPoolExecutor) threadPool.getExecutor(url);

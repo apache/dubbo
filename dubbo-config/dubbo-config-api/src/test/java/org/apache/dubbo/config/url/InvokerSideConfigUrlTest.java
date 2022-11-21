@@ -147,18 +147,18 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
 
     @Test
-    public void consumerConfUrlTest() {
+    void consumerConfUrlTest() {
         verifyInvokerUrlGeneration(consumerConf, consumerConfTable);
     }
 
     @Test
-    public void refConfUrlTest() {
+    void refConfUrlTest() {
         verifyInvokerUrlGeneration(refConf, refConfTable);
     }
 
     @Disabled("parameter on register center will not be merged any longer with query parameter request from the consumer")
     @Test
-    public void regConfForConsumerUrlTest() {
+    void regConfForConsumerUrlTest() {
         verifyInvokerUrlGeneration(regConfForConsumer, regConfForConsumerTable);
     }
 

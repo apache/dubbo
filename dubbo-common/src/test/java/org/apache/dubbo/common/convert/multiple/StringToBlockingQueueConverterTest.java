@@ -60,7 +60,7 @@ public class StringToBlockingQueueConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -88,7 +88,7 @@ public class StringToBlockingQueueConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
 
         BlockingQueue values = new ArrayBlockingQueue(3);
         values.offer(1);
@@ -112,12 +112,12 @@ public class StringToBlockingQueueConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
     }
 }

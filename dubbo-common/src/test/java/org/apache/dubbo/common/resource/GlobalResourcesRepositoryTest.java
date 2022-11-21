@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutorService;
 public class GlobalResourcesRepositoryTest {
 
     @Test
-    public void test() throws NoSuchFieldException {
+    void test() throws NoSuchFieldException {
         GlobalResourcesRepository repository = GlobalResourcesRepository.getInstance();
 
         ExecutorService globalExecutorService = GlobalResourcesRepository.getGlobalExecutorService();

@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public class FutureContextTest {
 
     @Test
-    public void testFutureContext() throws Exception {
+    void testFutureContext() throws Exception {
         Thread thread1 = new Thread(() -> {
             FutureContext.getContext().setFuture(CompletableFuture.completedFuture("future from thread1"));
             try {

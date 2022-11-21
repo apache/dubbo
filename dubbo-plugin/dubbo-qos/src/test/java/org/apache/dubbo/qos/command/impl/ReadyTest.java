@@ -76,7 +76,7 @@ public class ReadyTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Ready ready = new Ready(frameworkModel);
         CommandContext commandContext = new CommandContext("ready");
 

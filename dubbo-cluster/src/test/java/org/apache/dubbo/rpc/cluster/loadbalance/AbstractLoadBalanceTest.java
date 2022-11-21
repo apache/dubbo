@@ -45,7 +45,7 @@ public class AbstractLoadBalanceTest {
     };
 
     @Test
-    public void testGetWeight() {
+    void testGetWeight() {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("say");
 
@@ -63,7 +63,7 @@ public class AbstractLoadBalanceTest {
     }
 
     @Test
-    public void testGetRegistryWeight() {
+    void testGetRegistryWeight() {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("say");
 

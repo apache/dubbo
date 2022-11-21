@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 public class TriBuiltinServiceTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         String serviceName = DubboHealthTriple.SERVICE_NAME;

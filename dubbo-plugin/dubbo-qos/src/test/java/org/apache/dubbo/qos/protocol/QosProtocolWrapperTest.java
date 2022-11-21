@@ -23,6 +23,7 @@ import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,7 +88,7 @@ public class QosProtocolWrapperTest {
     }
 
     @Test
-    public void testExport() throws Exception {
+    void testExport() throws Exception {
         wrapper.export(invoker);
         assertThat(server.isStarted(), is(true));
         assertThat(server.getHost(), is("localhost"));
@@ -97,7 +98,7 @@ public class QosProtocolWrapperTest {
     }
 
     @Test
-    public void testRefer() throws Exception {
+    void testRefer() throws Exception {
         wrapper.refer(BaseCommand.class, url);
         assertThat(server.isStarted(), is(true));
         assertThat(server.getHost(), is("localhost"));
@@ -107,7 +108,7 @@ public class QosProtocolWrapperTest {
     }
 
     @Test
-    public void testMultiProtocol() throws Exception {
+    void testMultiProtocol() throws Exception {
         //tri protocol start first, acceptForeignIp = true
         triWrapper.export(triInvoker);
         assertThat(server.isStarted(), is(true));

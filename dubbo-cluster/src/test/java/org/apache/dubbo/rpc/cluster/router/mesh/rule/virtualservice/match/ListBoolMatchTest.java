@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ListBoolMatchTest {
 
     @Test
-    public void isMatch() {
+    void isMatch() {
         ListBoolMatch listBoolMatch = new ListBoolMatch();
         List<BoolMatch> oneof = new ArrayList<>();
 

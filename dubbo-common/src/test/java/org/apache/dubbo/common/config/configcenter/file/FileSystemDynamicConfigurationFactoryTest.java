@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class FileSystemDynamicConfigurationFactoryTest {
 
     @Test
-    public void testGetFactory() {
+    void testGetFactory() {
         assertEquals(FileSystemDynamicConfigurationFactory.class, ConfigurationUtils.getDynamicConfigurationFactory(ApplicationModel.defaultModel(), "file").getClass());
     }
 }

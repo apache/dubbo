@@ -38,7 +38,7 @@ public class PerformanceClientCloseTest  {
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientCloseTest.class);
 
     @Test
-    public void testClient() throws Throwable {
+    void testClient() throws Throwable {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");

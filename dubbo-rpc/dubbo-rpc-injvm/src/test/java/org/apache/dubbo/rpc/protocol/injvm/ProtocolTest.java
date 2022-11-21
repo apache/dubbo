@@ -48,7 +48,7 @@ public class ProtocolTest {
     Invoker<IEcho> invoker = proxyFactory.getInvoker(echo, IEcho.class, url);
 
     @Test
-    public void test_destroyWontCloseAllProtocol() throws Exception {
+    void test_destroyWontCloseAllProtocol() throws Exception {
         Protocol autowireProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
         Protocol InjvmProtocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("injvm");

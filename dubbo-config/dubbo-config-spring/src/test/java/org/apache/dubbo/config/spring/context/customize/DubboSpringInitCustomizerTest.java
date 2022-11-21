@@ -48,7 +48,7 @@ public class DubboSpringInitCustomizerTest {
     }
 
     @Test
-    public void testReloadSpringContext() {
+    void testReloadSpringContext() {
 
         ClassPathXmlApplicationContext providerContext1 = null;
         ClassPathXmlApplicationContext providerContext2 = null;

@@ -52,7 +52,7 @@ public class ServiceCheckUtilsTest {
     private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     @Test
-    public void testIsRegistered() {
+    void testIsRegistered() {
         DemoService demoServiceImpl = new DemoServiceImpl();
 
         int availablePort = NetUtils.getAvailablePort();
@@ -77,7 +77,7 @@ public class ServiceCheckUtilsTest {
     }
 
     @Test
-    public void testGetConsumerAddressNum() {
+    void testGetConsumerAddressNum() {
         ConsumerModel consumerModel = Mockito.mock(ConsumerModel.class);
         ServiceMetadata serviceMetadata = Mockito.mock(ServiceMetadata.class);
         Mockito.when(consumerModel.getServiceMetadata()).thenReturn(serviceMetadata);

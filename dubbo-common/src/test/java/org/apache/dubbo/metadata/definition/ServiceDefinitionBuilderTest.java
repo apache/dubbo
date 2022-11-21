@@ -35,7 +35,7 @@ import java.util.List;
 public class ServiceDefinitionBuilderTest {
 
     @Test
-    public void testBuilderComplexObject() {
+    void testBuilderComplexObject() {
         TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         checkComplexObjectAsParam(fullServiceDefinition);

@@ -55,7 +55,7 @@ public class MigrationInvokerTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         RegistryProtocol registryProtocol = Mockito.mock(RegistryProtocol.class);
 
         ClusterInvoker invoker = Mockito.mock(ClusterInvoker.class);
@@ -226,7 +226,7 @@ public class MigrationInvokerTest {
     }
 
     @Test
-    public void testDecide() {
+    void testDecide() {
         RegistryProtocol registryProtocol = Mockito.mock(RegistryProtocol.class);
 
         ClusterInvoker invoker = Mockito.mock(ClusterInvoker.class);
@@ -286,7 +286,7 @@ public class MigrationInvokerTest {
     }
 
     @Test
-    public void testConcurrency() {
+    void testConcurrency() {
         // 独立线程
 
         // 独立线程invoker状态切换

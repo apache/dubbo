@@ -58,7 +58,7 @@ public class CloseTimerTaskTest {
     }
 
     @Test
-    public void testClose() throws Exception {
+    void testClose() throws Exception {
         long now = System.currentTimeMillis();
 
         url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");

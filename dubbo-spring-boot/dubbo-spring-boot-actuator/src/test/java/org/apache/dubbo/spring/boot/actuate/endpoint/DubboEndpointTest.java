@@ -66,7 +66,7 @@ public class DubboEndpointTest {
     }
 
     @Test
-    public void testInvoke() {
+    void testInvoke() {
 
         Map<String, Object> metadata = dubboEndpoint.invoke();
 

@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class BoolMatchTest {
 
     @Test
-    public void isMatch() {
+    void isMatch() {
         BoolMatch boolMatch =  new BoolMatch();
         boolMatch.setExact(true);
 

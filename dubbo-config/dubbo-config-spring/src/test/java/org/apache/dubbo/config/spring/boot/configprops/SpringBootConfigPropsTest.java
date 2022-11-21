@@ -97,7 +97,7 @@ public class SpringBootConfigPropsTest {
     private ModuleModel moduleModel;
 
     @Test
-    public void testConfigProps() {
+    void testConfigProps() {
 
         ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
