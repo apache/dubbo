@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ class TelnetHandlerAdapterTest {
         param.put("telnet", "status");
         URL url = new URL("p1", "127.0.0.1", 12345, "path1", param);
         Mockito.when(channel.getUrl()).thenReturn(url);
-        TelnetHandlerAdapter telnetHandlerAdapter = new TelnetHandlerAdapter();
+        TelnetHandlerAdapter telnetHandlerAdapter = new TelnetHandlerAdapter(FrameworkModel.defaultModel());
 
         String message = "--no-prompt status ";
         String expectedResult = "OK\r\n";

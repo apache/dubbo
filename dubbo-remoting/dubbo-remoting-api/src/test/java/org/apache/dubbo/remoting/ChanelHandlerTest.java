@@ -22,6 +22,7 @@ import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -99,6 +100,7 @@ public class ChanelHandlerTest  {
          * @param url
          */
         public PeformanceTestHandler(String url) {
+            super(FrameworkModel.defaultModel());
             this.url = url;
         }
 
