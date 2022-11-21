@@ -46,7 +46,7 @@ import static org.mockito.Mockito.mock;
  * RoundRobinLoadBalanceTest
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class LoadBalanceBaseTest {
+class LoadBalanceBaseTest {
     Invocation invocation;
     Invocation genericInvocation;
     List<Invoker<LoadBalanceBaseTest>> invokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
@@ -160,7 +160,7 @@ public class LoadBalanceBaseTest {
     }
 
     @Test
-    public void testLoadBalanceWarmup() {
+    void testLoadBalanceWarmup() {
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(0));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(13));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));

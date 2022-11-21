@@ -20,7 +20,7 @@ import org.apache.dubbo.rpc.cluster.Merger;
 
 import java.util.Arrays;
 
-public class IntFindFirstMerger implements Merger<Integer> {
+class IntFindFirstMerger implements Merger<Integer> {
 
     @Override
     public Integer merge(Integer... items) {

@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.cluster.Merger;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class FloatSumMerger implements Merger<Float> {
+class FloatSumMerger implements Merger<Float> {
 
     @Override
     public Float merge(Float... items) {

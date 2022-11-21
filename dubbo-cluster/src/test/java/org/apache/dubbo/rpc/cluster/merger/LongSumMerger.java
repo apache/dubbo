@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.cluster.Merger;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class LongSumMerger implements Merger<Long> {
+class LongSumMerger implements Merger<Long> {
 
     @Override
     public Long merge(Long... items) {

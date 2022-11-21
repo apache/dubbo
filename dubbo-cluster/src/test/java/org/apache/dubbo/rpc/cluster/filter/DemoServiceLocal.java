@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.cluster.filter;
  * <code>TestService</code>
  */
 
-public class DemoServiceLocal implements DemoService {
+class DemoServiceLocal implements DemoService {
 
     public DemoServiceLocal(DemoService demoService) {
     }
