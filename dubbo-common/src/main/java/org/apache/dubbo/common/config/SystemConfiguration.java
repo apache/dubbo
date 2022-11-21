@@ -67,6 +67,12 @@ public class SystemConfiguration implements Configuration {
         }
     }
 
+    public void clearCache() {
+        cache.clear();
+    }
+
+
+
     public Map<String, String> getProperties() {
         return (Map) System.getProperties();
     }
