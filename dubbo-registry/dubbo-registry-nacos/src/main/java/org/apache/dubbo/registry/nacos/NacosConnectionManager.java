@@ -59,7 +59,7 @@ public class NacosConnectionManager {
     }
 
     /**
-     * for ut only
+     * @deprecated for ut only
      */
     @Deprecated
     protected NacosConnectionManager(NamingService namingService) {
@@ -78,7 +78,7 @@ public class NacosConnectionManager {
     public synchronized NamingService getNamingService(Set<NamingService> selected) {
         List<NamingService> copyOfNamingService = new LinkedList<>(namingServiceList);
         copyOfNamingService.removeAll(selected);
-        if (copyOfNamingService.size() == 0) {
+        if (copyOfNamingService.isEmpty()) {
             this.namingServiceList.add(createNamingService());
             return getNamingService(selected);
         }

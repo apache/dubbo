@@ -42,6 +42,10 @@ public class NacosNamingServiceUtils {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
     private static final String NACOS_GROUP_KEY = "nacos.group";
 
+    private NacosNamingServiceUtils() {
+        throw new IllegalStateException("NacosNamingServiceUtils should not be instantiated");
+    }
+
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
      *

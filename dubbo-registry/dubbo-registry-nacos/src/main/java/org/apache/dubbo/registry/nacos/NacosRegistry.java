@@ -161,7 +161,7 @@ public class NacosRegistry extends FailbackRegistry {
                 urls.addAll(buildURLs(url, instances));
             }
             return urls;
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new RpcException("Failed to lookup " + url + " from nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -183,7 +183,7 @@ public class NacosRegistry extends FailbackRegistry {
             } else {
                 logger.info("Please set 'dubbo.registry.parameters.register-consumer-url=true' to turn on consumer url registration.");
             }
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new RpcException("Failed to register " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -197,7 +197,7 @@ public class NacosRegistry extends FailbackRegistry {
                 getUrl().getGroup(Constants.DEFAULT_GROUP),
                 instance.getIp()
                 , instance.getPort());
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new RpcException("Failed to unregister " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }

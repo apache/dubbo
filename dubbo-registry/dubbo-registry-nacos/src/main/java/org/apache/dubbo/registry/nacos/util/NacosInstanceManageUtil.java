@@ -44,6 +44,10 @@ public class NacosInstanceManageUtil {
      */
     private static final Map<String, Set<String>> CORRESPONDING_SERVICE_NAMES_MAP = Maps.newConcurrentMap();
 
+    private NacosInstanceManageUtil() {
+        throw new IllegalStateException("NacosInstanceManageUtil should not be instantiated");
+    }
+
     public static void setCorrespondingServiceNames(String serviceName, Set<String> serviceNames) {
         CORRESPONDING_SERVICE_NAMES_MAP.put(serviceName, serviceNames);
     }

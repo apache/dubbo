@@ -56,7 +56,7 @@ public class NacosNamingServiceWrapper {
     }
 
     /**
-     * for uts only
+     * @deprecated for uts only
      */
     @Deprecated
     protected NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager, boolean isSupportBatchRegister) {
@@ -71,7 +71,7 @@ public class NacosNamingServiceWrapper {
     public void subscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
         SubscribeInfo subscribeInfo = new SubscribeInfo(nacosServiceName, group, eventListener);
-        NamingService namingService = subscribeStatus.computeIfAbsent(subscribeInfo, (info) -> nacosConnectionManager.getNamingService());
+        NamingService namingService = subscribeStatus.computeIfAbsent(subscribeInfo, info -> nacosConnectionManager.getNamingService());
         namingService.subscribe(nacosServiceName, group, eventListener);
     }
 
@@ -105,7 +105,7 @@ public class NacosNamingServiceWrapper {
                 registerInstance(serviceName, group, instance);
                 return;
             }
-            if (instancesInfo.getInstances().size() == 0) {
+            if (instancesInfo.getInstances().isEmpty()) {
                 // directly register
                 NamingService namingService = nacosConnectionManager.getNamingService();
                 namingService.registerInstance(nacosServiceName, group, instance);
@@ -113,23 +113,21 @@ public class NacosNamingServiceWrapper {
                 return;
             }
 
-            if (instancesInfo.getInstances().size() == 1) {
-                if (isSupportBatchRegister) {
-                    InstanceInfo previous = instancesInfo.getInstances().get(0);
-                    List<Instance> instanceListToRegister = new ArrayList<>();
+            if (instancesInfo.getInstances().size() == 1 && isSupportBatchRegister) {
+                InstanceInfo previous = instancesInfo.getInstances().get(0);
+                List<Instance> instanceListToRegister = new ArrayList<>();
 
-                    NamingService namingService = previous.getNamingService();
-                    instanceListToRegister.add(previous.getInstance());
-                    instanceListToRegister.add(instance);
+                NamingService namingService = previous.getNamingService();
+                instanceListToRegister.add(previous.getInstance());
+                instanceListToRegister.add(instance);
 
-                    try {
-                        namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister);
-                        instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
-                        instancesInfo.setBatchRegistered(true);
-                        return;
-                    } catch (NacosException e) {
-                        // ignore
-                    }
+                try {
+                    namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister);
+                    instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
+                    instancesInfo.setBatchRegistered(true);
+                    return;
+                } catch (NacosException e) {
+                    // ignore
                 }
             }
 
@@ -209,7 +207,7 @@ public class NacosNamingServiceWrapper {
 
             try {
                 mapLock.lock();
-                if (instancesInfo.getInstances().size() == 0) {
+                if (instancesInfo.getInstances().isEmpty()) {
                     registerStatus.remove(new InstanceId(nacosServiceName, group));
                     instancesInfo.setValid(false);
                 }
@@ -218,7 +216,7 @@ public class NacosNamingServiceWrapper {
             }
 
             // only one registered
-            if (instancesInfo.getInstances().size() == 0) {
+            if (instancesInfo.getInstances().isEmpty()) {
                 // directly unregister
                 instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance);
                 instancesInfo.setBatchRegistered(false);
@@ -382,7 +380,7 @@ public class NacosNamingServiceWrapper {
     }
 
     /**
-     * for uts only
+     * @deprecated for uts only
      */
     @Deprecated
     protected Map<InstanceId, InstancesInfo> getRegisterStatus() {
