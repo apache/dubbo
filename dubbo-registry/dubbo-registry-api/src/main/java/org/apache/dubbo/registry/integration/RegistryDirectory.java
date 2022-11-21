@@ -232,7 +232,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
             Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
             if (invokerUrls.isEmpty()) {
-                if(localCachedInvokerUrls != null){
+                if(CollectionUtils.isNotEmpty(localCachedInvokerUrls)){
                     // 1-4 Empty address.
                     logger.warn(REGISTRY_EMPTY_ADDRESS, "configuration ", "",
                         "Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
