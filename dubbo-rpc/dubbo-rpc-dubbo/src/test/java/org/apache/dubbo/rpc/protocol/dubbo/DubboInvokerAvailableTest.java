@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
@@ -37,7 +38,6 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Check available status for dubboInvoker
@@ -52,7 +52,7 @@ public class DubboInvokerAvailableTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = new DubboProtocol(FrameworkModel.defaultModel());
     }
 
     @AfterAll
