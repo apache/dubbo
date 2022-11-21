@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
@@ -213,8 +213,8 @@ public class AsyncRpcResult implements Result {
         });
 
         // Whether set future to Thread Local when invocation mode is sync
-        String setFutureWhenSync = ConfigurationUtils.getSystemConfiguration(
-            invocation.getInvoker().getUrl().getScopeModel()).getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
+        String setFutureWhenSync = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration()
+            .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
 
         if (Boolean.parseBoolean(setFutureWhenSync) || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
             // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461
