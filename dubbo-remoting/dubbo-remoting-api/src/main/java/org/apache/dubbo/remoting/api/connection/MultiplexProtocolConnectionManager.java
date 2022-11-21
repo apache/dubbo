@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,7 @@ import java.util.function.Consumer;
 public class MultiplexProtocolConnectionManager implements ConnectionManager {
     public static final String NAME = "multiple";
 
-    private final ConcurrentMap<String, ConnectionManager> protocols = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConnectionManager> protocols = new ConcurrentHashMap<>(1);
 
     private FrameworkModel frameworkModel;
 
@@ -35,13 +36,13 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public Connection connect(URL url) {
+    public AbstractConnectionClient connect(URL url, ChannelHandler handler) {
         final ConnectionManager manager = protocols.computeIfAbsent(url.getProtocol(), this::createSingleProtocolConnectionManager);
-        return manager.connect(url);
+        return manager.connect(url, handler);
     }
 
     @Override
-    public void forEachConnection(Consumer<Connection> connectionConsumer) {
+    public void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer) {
         protocols.values().forEach(p -> p.forEachConnection(connectionConsumer));
     }
 

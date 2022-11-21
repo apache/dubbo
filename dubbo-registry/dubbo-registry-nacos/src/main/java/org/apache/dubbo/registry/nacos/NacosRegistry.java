@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryNotifier;
-import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -69,6 +68,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -209,13 +209,6 @@ public class NacosRegistry extends FailbackRegistry {
 
         Set<String> serviceNames = getServiceNames(url, nacosAggregateListener);
 
-        //Set corresponding serviceNames for easy search later
-        if (isServiceNamesWithCompatibleMode(url)) {
-            for (String serviceName : serviceNames) {
-                NacosInstanceManageUtil.setCorrespondingServiceNames(serviceName, serviceNames);
-            }
-        }
-
         doSubscribe(url, nacosAggregateListener, serviceNames);
     }
 
@@ -235,7 +228,6 @@ public class NacosRegistry extends FailbackRegistry {
                 for (String serviceName : serviceNames) {
                     List<Instance> instances = namingService.getAllInstances(serviceName,
                         getUrl().getGroup(Constants.DEFAULT_GROUP));
-                    NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
                     notifySubscriber(url, serviceName, listener, instances);
                 }
                 for (String serviceName : serviceNames) {
@@ -288,9 +280,6 @@ public class NacosRegistry extends FailbackRegistry {
                 Set<String> serviceNames = nacosAggregateListener.getServiceNames();
                 try {
                     doUnsubscribe(url, nacosAggregateListener, serviceNames);
-                    for (String serviceName : serviceNames) {
-                        NacosInstanceManageUtil.removeCorrespondingServiceNames(serviceName);
-                    }
                 } catch (NacosException e) {
                     logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to unsubscribe " + url + " to nacos " + getUrl() + ", cause: " + e.getMessage(), e);
                 }
@@ -545,7 +534,7 @@ public class NacosRegistry extends FailbackRegistry {
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
-        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
             logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Received empty url address list and empty protection is disabled, will clear current available addresses");
             URL empty = URLBuilder.from(consumerURL)
                 .setProtocol(EMPTY_PROTOCOL)
@@ -715,14 +704,6 @@ public class NacosRegistry extends FailbackRegistry {
                 @Override
                 protected void doNotify(Object rawAddresses) {
                     List<Instance> instances = (List<Instance>) rawAddresses;
-                    if (isServiceNamesWithCompatibleMode(consumerUrl)) {
-                        /**
-                         * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
-                         * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
-                         */
-                        NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
-                        instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
-                    }
                     NacosRegistry.this.notifySubscriber(consumerUrl, serviceName, listener, instances);
                 }
             };

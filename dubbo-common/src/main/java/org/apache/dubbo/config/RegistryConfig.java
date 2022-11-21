@@ -184,6 +184,16 @@ public class RegistryConfig extends AbstractConfig {
 
     private Boolean enableEmptyProtection;
 
+    private String secure;
+
+    public String getSecure() {
+        return secure;
+    }
+
+    public void setSecure(String secure) {
+        this.secure = secure;
+    }
+
     public RegistryConfig() {
     }
 

@@ -14,20 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.remoting.transport.netty4.api;
 
-package org.apache.dubbo.rpc.protocol.injvm;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.ProtocolDetector;
+import org.apache.dubbo.remoting.api.WireProtocol;
+import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.ssl.SslContext;
 
-import java.util.ArrayList;
-import java.util.List;
-
-
-public class Hello2ServiceImpl implements HelloService {
+public class EmptyWireProtocol implements WireProtocol {
+    @Override
+    public ProtocolDetector detector() {
+        return null;
+    }
 
     @Override
-    public List<String> hellos() {
-        List<String> res = new ArrayList<>();
-        res.add("consumer-hello-2");
-        return res;
+    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
+
+    }
+
+    @Override
+    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
 }

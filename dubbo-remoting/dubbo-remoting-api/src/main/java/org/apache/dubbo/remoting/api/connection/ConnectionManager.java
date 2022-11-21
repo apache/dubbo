@@ -14,34 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4;
+package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.ProtocolDetector;
-import org.apache.dubbo.remoting.api.WireProtocol;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.ChannelHandler;
 
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.ssl.SslContext;
+import java.util.function.Consumer;
 
-public class EmptyWireProtocol implements WireProtocol {
-    @Override
-    public ProtocolDetector detector() {
-        return null;
-    }
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ConnectionManager {
 
-    @Override
-    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
+    AbstractConnectionClient connect(URL url, ChannelHandler handler);
 
-    }
+    void forEachConnection(Consumer<AbstractConnectionClient> connectionConsumer);
 
-    @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-
-    }
-
-    @Override
-    public void close() {
-
-    }
 }
