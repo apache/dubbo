@@ -350,7 +350,7 @@ class URL implements Serializable {
 
     public URL setProtocol(String protocol) {
         if (urlAddress == null) {
-            return new ServiceConfigURL(getProtocol(), getHost(), getPort(), getPath(), getParameters());
+            return new ServiceConfigURL(protocol, getHost(), getPort(), getPath(), getParameters());
         } else {
             URLAddress newURLAddress = urlAddress.setProtocol(protocol);
             return returnURL(newURLAddress);
