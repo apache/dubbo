@@ -49,7 +49,7 @@ import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
         "dubbo.service.invoke.timeout=2000",
 })
 @ContextConfiguration(classes = RelaxedDubboConfigBinder.class)
-class RelaxedDubboConfigBinderTest {
+public class RelaxedDubboConfigBinderTest {
 
     @Autowired
     private ConfigurationBeanBinder dubboConfigBinder;
@@ -68,7 +68,7 @@ class RelaxedDubboConfigBinderTest {
     }
 
     @Test
-    void testBinder() {
+    public void testBinder() {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         Map<String, Object> properties = getSubProperties(environment.getPropertySources(), "dubbo.application");

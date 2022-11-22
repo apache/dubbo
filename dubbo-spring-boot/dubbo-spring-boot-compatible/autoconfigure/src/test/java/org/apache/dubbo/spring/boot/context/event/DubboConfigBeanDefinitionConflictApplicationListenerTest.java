@@ -36,7 +36,7 @@ import java.util.Map;
  *
  * @since 2.7.5
  */
-class DubboConfigBeanDefinitionConflictApplicationListenerTest {
+public class DubboConfigBeanDefinitionConflictApplicationListenerTest {
 
     @Before
     public void init() {
@@ -69,7 +69,7 @@ class DubboConfigBeanDefinitionConflictApplicationListenerTest {
     }
 
     @Test
-    void testDuplicatedConfigsCase() {
+    public void testDuplicatedConfigsCase() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(PropertySourceConfig.class, DubboConfig.class, XmlConfig.class);
 

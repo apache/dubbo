@@ -72,7 +72,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
         }
 )
 @EnableAutoConfiguration
-class DubboAutoConfigurationOnMultipleConfigTest {
+public class DubboAutoConfigurationOnMultipleConfigTest {
 
     @Autowired
     private Environment environment;
@@ -161,7 +161,7 @@ class DubboAutoConfigurationOnMultipleConfigTest {
     private Map<String, ConsumerConfig> consumers = new LinkedHashMap<>();
 
     @Test
-    void testMultipleDubboConfigBindingProperties() {
+    public void testMultipleDubboConfigBindingProperties() {
 
 
         Assert.assertEquals(1, applications.size());
@@ -181,7 +181,7 @@ class DubboAutoConfigurationOnMultipleConfigTest {
     }
 
     @Test
-    void testApplicationContext() {
+    public void testApplicationContext() {
 
         /**
          * Multiple {@link ApplicationConfig}
@@ -235,35 +235,35 @@ class DubboAutoConfigurationOnMultipleConfigTest {
     }
 
     @Test
-    void testApplicationConfig() {
+    public void testApplicationConfig() {
 
         Assert.assertEquals("dubbo-demo-application", application.getName());
 
     }
 
     @Test
-    void testModuleConfig() {
+    public void testModuleConfig() {
 
         Assert.assertEquals("dubbo-demo-module", module.getName());
 
     }
 
     @Test
-    void testRegistryConfig() {
+    public void testRegistryConfig() {
 
         Assert.assertEquals("zookeeper://192.168.99.100:32770", registry.getAddress());
 
     }
 
     @Test
-    void testMonitorConfig() {
+    public void testMonitorConfig() {
 
         Assert.assertEquals("zookeeper://127.0.0.1:32770", monitor.getAddress());
 
     }
 
     @Test
-    void testProtocolConfig() {
+    public void testProtocolConfig() {
 
         Assert.assertEquals("dubbo", protocol.getName());
         Assert.assertEquals(Integer.valueOf(20880), protocol.getPort());
@@ -271,7 +271,7 @@ class DubboAutoConfigurationOnMultipleConfigTest {
     }
 
     @Test
-    void testConsumerConfig() {
+    public void testConsumerConfig() {
 
         Assert.assertEquals("netty", consumer.getClient());
 

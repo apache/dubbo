@@ -62,7 +62,7 @@ import org.springframework.test.context.junit4.SpringRunner;
         classes = {DubboAutoConfigurationOnSingleConfigTest.class}
 )
 @EnableAutoConfiguration
-class DubboAutoConfigurationOnSingleConfigTest {
+public class DubboAutoConfigurationOnSingleConfigTest {
 
     @Autowired
     private ApplicationConfig applicationConfig;
@@ -102,35 +102,35 @@ class DubboAutoConfigurationOnSingleConfigTest {
     }
 
     @Test
-    void testApplicationConfig() {
+    public void testApplicationConfig() {
 
         Assert.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
     }
 
     @Test
-    void testModuleConfig() {
+    public void testModuleConfig() {
 
         Assert.assertEquals("dubbo-demo-module", moduleConfig.getName());
 
     }
 
     @Test
-    void testRegistryConfig() {
+    public void testRegistryConfig() {
 
         Assert.assertEquals("zookeeper://192.168.99.100:32770", registryConfig.getAddress());
 
     }
 
     @Test
-    void testMonitorConfig() {
+    public void testMonitorConfig() {
 
         Assert.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
     }
 
     @Test
-    void testProtocolConfig() {
+    public void testProtocolConfig() {
 
         Assert.assertEquals("dubbo", protocolConfig.getName());
         Assert.assertEquals(Integer.valueOf(20880), protocolConfig.getPort());
@@ -138,14 +138,14 @@ class DubboAutoConfigurationOnSingleConfigTest {
     }
 
     @Test
-    void testProviderConfig() {
+    public void testProviderConfig() {
 
         Assert.assertEquals("127.0.0.1", providerConfig.getHost());
 
     }
 
     @Test
-    void testConsumerConfig() {
+    public void testConsumerConfig() {
 
         Assert.assertEquals("netty", consumerConfig.getClient());
 

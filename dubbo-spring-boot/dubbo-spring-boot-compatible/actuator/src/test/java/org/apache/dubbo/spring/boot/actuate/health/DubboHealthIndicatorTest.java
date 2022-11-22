@@ -58,13 +58,13 @@ import java.util.Map;
 )
 @EnableConfigurationProperties(DubboHealthIndicatorProperties.class)
 @EnableDubboConfig
-class DubboHealthIndicatorTest {
+public class DubboHealthIndicatorTest {
 
     @Autowired
     private DubboHealthIndicator dubboHealthIndicator;
 
     @Test
-    void testResolveStatusCheckerNamesMap() {
+    public void testResolveStatusCheckerNamesMap() {
 
         Map<String, String> statusCheckerNamesMap = dubboHealthIndicator.resolveStatusCheckerNamesMap();
 
@@ -79,7 +79,7 @@ class DubboHealthIndicatorTest {
     }
 
     @Test
-    void testHealth() {
+    public void testHealth() {
 
         Health health = dubboHealthIndicator.health();
 
