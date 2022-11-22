@@ -50,10 +50,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZ
  * GenericServiceTest
  */
 @Disabled("Keeps failing on Travis, but can not be reproduced locally.")
-public class GenericServiceTest {
+class GenericServiceTest {
 
     @Test
-    public void testGenericServiceException() {
+    void testGenericServiceException() {
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
         service.setInterface(DemoService.class.getName());
         service.setRef(new GenericService() {
@@ -109,7 +109,7 @@ public class GenericServiceTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testGenericReferenceException() {
+    void testGenericReferenceException() {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setInterface(DemoService.class.getName());
         service.setRef(new DemoServiceImpl());
@@ -146,7 +146,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGenericSerializationJava() throws Exception {
+    void testGenericSerializationJava() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setInterface(DemoService.class.getName());
         DemoServiceImpl ref = new DemoServiceImpl();
@@ -216,7 +216,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGenericInvokeWithBeanSerialization() throws Exception {
+    void testGenericInvokeWithBeanSerialization() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setInterface(DemoService.class);
         DemoServiceImpl impl = new DemoServiceImpl();
@@ -256,7 +256,7 @@ public class GenericServiceTest {
     }
 
     @Test
-    public void testGenericImplementationWithBeanSerialization() throws Exception {
+    void testGenericImplementationWithBeanSerialization() throws Exception {
         final AtomicReference reference = new AtomicReference();
 
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();

@@ -43,7 +43,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 })
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:/META-INF/dubbo.properties")
-public class CompatibleDubboAutoConfigurationTest {
+class CompatibleDubboAutoConfigurationTest {
 
     @Autowired
     private ObjectProvider<ServiceAnnotationPostProcessor> serviceAnnotationPostProcessor;
@@ -52,7 +52,7 @@ public class CompatibleDubboAutoConfigurationTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testBeans() {
+    void testBeans() {
         Assert.assertNotNull(serviceAnnotationPostProcessor);
         Assert.assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
 

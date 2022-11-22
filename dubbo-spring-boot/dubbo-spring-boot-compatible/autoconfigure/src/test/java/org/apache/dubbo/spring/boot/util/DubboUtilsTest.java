@@ -44,10 +44,10 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.SPRING_APPLICATION_NA
  * @see DubboUtils
  * @since 2.7.0
  */
-public class DubboUtilsTest {
+class DubboUtilsTest {
 
     @Test
-    public void testConstants() {
+    void testConstants() {
 
         Assert.assertEquals("dubbo", DUBBO_PREFIX);
 

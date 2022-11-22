@@ -32,7 +32,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-public class PwdTelnetTest {
+class PwdTelnetTest {
     private static final BaseCommand pwdTelnet = new PwdTelnet();
     private Channel mockChannel;
     private CommandContext mockCommandContext;
@@ -55,21 +55,21 @@ public class PwdTelnetTest {
     }
 
     @Test
-    public void testService() throws RemotingException {
+    void testService() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         String result = pwdTelnet.execute(mockCommandContext, new String[0]);
         assertEquals("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService", result);
     }
 
     @Test
-    public void testSlash() throws RemotingException {
+    void testSlash() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         String result = pwdTelnet.execute(mockCommandContext, new String[0]);
         assertEquals("/", result);
     }
 
     @Test
-    public void testMessageError() throws RemotingException {
+    void testMessageError() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         String result = pwdTelnet.execute(mockCommandContext, new String[]{"test"});
         assertEquals("Unsupported parameter [test] for pwd.", result);

@@ -33,13 +33,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(
         classes = {WelcomeLogoApplicationListener.class}
 )
-public class WelcomeLogoApplicationListenerTest {
+class WelcomeLogoApplicationListenerTest {
 
     @Autowired
     private WelcomeLogoApplicationListener welcomeLogoApplicationListener;
 
     @Test
-    public void testOnApplicationEvent() {
+    void testOnApplicationEvent() {
 
         Assert.assertNotNull(welcomeLogoApplicationListener.buildBannerText());
 

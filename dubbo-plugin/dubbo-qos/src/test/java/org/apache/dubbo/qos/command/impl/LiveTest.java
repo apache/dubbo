@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class LiveTest {
+class LiveTest {
     private FrameworkModel frameworkModel;
 
     @BeforeEach
@@ -38,7 +38,7 @@ public class LiveTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Live live = new Live(frameworkModel);
         CommandContext commandContext = new CommandContext("live");
         String result = live.execute(commandContext, new String[0]);

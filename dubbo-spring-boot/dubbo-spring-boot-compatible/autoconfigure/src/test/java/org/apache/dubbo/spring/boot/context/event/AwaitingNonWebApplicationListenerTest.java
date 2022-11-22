@@ -24,7 +24,7 @@ import org.junit.Before;
 /**
  * {@link AwaitingNonWebApplicationListener} Test
  */
-public class AwaitingNonWebApplicationListenerTest {
+class AwaitingNonWebApplicationListenerTest {
 
     @Before
     public void before() {
