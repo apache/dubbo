@@ -80,7 +80,7 @@ class FileTest {
             .sorted()
             .collect(Collectors.toList());
 
-        String dubboBomPath = "dubbo-distribution/dubbo-bom/pom.xml";
+        String dubboBomPath = "dubbo-distribution" + File.separator + "dubbo-bom" + File.separator + "pom.xml";
         Document dubboBom = reader.read(new File(getBaseFile(), dubboBomPath));
         List<String> artifactIdsInDubboBom = dubboBom.getRootElement()
             .element("dependencyManagement")
@@ -120,7 +120,7 @@ class FileTest {
             .sorted()
             .collect(Collectors.toList());
 
-        String dubboDependenciesAllPath = "dubbo-test/dubbo-dependencies-all/pom.xml";
+        String dubboDependenciesAllPath = "dubbo-test" + File.separator + "dubbo-dependencies-all" + File.separator + "pom.xml";
         Document dubboDependenciesAll = reader.read(new File(getBaseFile(), dubboDependenciesAllPath));
         List<String> artifactIdsInDubboDependenciesAll = dubboDependenciesAll.getRootElement()
             .element("dependencies")
@@ -177,7 +177,7 @@ class FileTest {
             .sorted()
             .collect(Collectors.toList());
 
-        String dubboAllPath = "dubbo-distribution/dubbo-all/pom.xml";
+        String dubboAllPath = "dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml";
         Document dubboAll = reader.read(new File(getBaseFile(), dubboAllPath));
         List<String> artifactIdsInDubboAll = dubboAll.getRootElement()
             .element("dependencies")
@@ -191,12 +191,12 @@ class FileTest {
         expectedArtifactIds.removeIf(artifactId -> ignoredModules.stream().anyMatch(pattern -> pattern.matcher(artifactId).matches()));
         expectedArtifactIds.removeIf(artifactId -> ignoredModulesInDubboAll.stream().anyMatch(pattern -> pattern.matcher(artifactId).matches()));
 
-        Assertions.assertTrue(expectedArtifactIds.isEmpty(), "Newly created modules must be added to dubbo-all(dubbo-distribution/dubbo-all/pom.xml). Found modules: " + expectedArtifactIds);
+        Assertions.assertTrue(expectedArtifactIds.isEmpty(), "Newly created modules must be added to dubbo-all(dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml). Found modules: " + expectedArtifactIds);
 
         List<String> unexpectedArtifactIds = new LinkedList<>(artifactIdsInDubboAll);
         unexpectedArtifactIds.removeIf(artifactId -> !artifactIds.contains(artifactId));
         unexpectedArtifactIds.removeAll(deployedArtifactIds);
-        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Undeploy dependencies should not be added to dubbo-all(dubbo-distribution/dubbo-all/pom.xml). Found modules: " + unexpectedArtifactIds);
+        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Undeploy dependencies should not be added to dubbo-all(dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml). Found modules: " + unexpectedArtifactIds);
 
         unexpectedArtifactIds = new LinkedList<>();
         for (String artifactId : artifactIdsInDubboAll) {
@@ -210,7 +210,7 @@ class FileTest {
                 unexpectedArtifactIds.add(artifactId);
             }
         }
-        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Unexpected dependencies should not be added to dubbo-all(dubbo-distribution/dubbo-all/pom.xml). Found modules: " + unexpectedArtifactIds);
+        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Unexpected dependencies should not be added to dubbo-all(dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml). Found modules: " + unexpectedArtifactIds);
     }
 
     @Test
@@ -254,7 +254,7 @@ class FileTest {
             .sorted()
             .collect(Collectors.toList());
 
-        String dubboAllPath = "dubbo-distribution/dubbo-all/pom.xml";
+        String dubboAllPath = "dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml";
         Document dubboAll = reader.read(new File(getBaseFile(), dubboAllPath));
         List<String> artifactIdsInDubboAll = dubboAll.getRootElement()
             .element("build")
@@ -281,12 +281,12 @@ class FileTest {
         expectedArtifactIds.removeIf(artifactId -> ignoredModules.stream().anyMatch(pattern -> pattern.matcher(artifactId).matches()));
         expectedArtifactIds.removeIf(artifactId -> ignoredModulesInDubboAll.stream().anyMatch(pattern -> pattern.matcher(artifactId).matches()));
 
-        Assertions.assertTrue(expectedArtifactIds.isEmpty(), "Newly created modules must be added to dubbo-all (dubbo-distribution/dubbo-all/pom.xml in shade plugin). Found modules: " + expectedArtifactIds);
+        Assertions.assertTrue(expectedArtifactIds.isEmpty(), "Newly created modules must be added to dubbo-all (dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml in shade plugin). Found modules: " + expectedArtifactIds);
 
         List<String> unexpectedArtifactIds = new LinkedList<>(artifactIdsInDubboAll);
         unexpectedArtifactIds.removeIf(artifactId -> !artifactIds.contains(artifactId));
         unexpectedArtifactIds.removeAll(deployedArtifactIds);
-        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Undeploy dependencies should not be added to dubbo-all (dubbo-distribution/dubbo-all/pom.xml in shade plugin). Found modules: " + unexpectedArtifactIds);
+        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Undeploy dependencies should not be added to dubbo-all (dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml in shade plugin). Found modules: " + unexpectedArtifactIds);
 
         unexpectedArtifactIds = new LinkedList<>();
         for (String artifactId : artifactIdsInDubboAll) {
@@ -300,7 +300,7 @@ class FileTest {
                 unexpectedArtifactIds.add(artifactId);
             }
         }
-        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Unexpected dependencies should not be added to dubbo-all (dubbo-distribution/dubbo-all/pom.xml in shade plugin). Found modules: " + unexpectedArtifactIds);
+        Assertions.assertTrue(unexpectedArtifactIds.isEmpty(), "Unexpected dependencies should not be added to dubbo-all (dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml in shade plugin). Found modules: " + unexpectedArtifactIds);
     }
 
     @Test
@@ -309,7 +309,7 @@ class FileTest {
         List<String> spis = new LinkedList<>();
         readSPI(baseFile, spis);
 
-        String dubboAllPath = "dubbo-distribution/dubbo-all/pom.xml";
+        String dubboAllPath = "dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml";
 
         SAXReader reader = new SAXReader();
         Document dubboAll = reader.read(new File(baseFile, dubboAllPath));
@@ -335,11 +335,11 @@ class FileTest {
 
         List<String> expectedSpis = new LinkedList<>(spis);
         expectedSpis.removeAll(transformsInDubboAll);
-        Assertions.assertTrue(expectedSpis.isEmpty(), "Newly created SPI interface must be added to dubbo-all(dubbo-distribution/dubbo-all/pom.xml in shade plugin) to being transformed. Found spis: " + expectedSpis);
+        Assertions.assertTrue(expectedSpis.isEmpty(), "Newly created SPI interface must be added to dubbo-all(dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml in shade plugin) to being transformed. Found spis: " + expectedSpis);
 
         List<String> unexpectedSpis = new LinkedList<>(transformsInDubboAll);
         unexpectedSpis.removeAll(spis);
-        Assertions.assertTrue(unexpectedSpis.isEmpty(), "Class without `@SPI` declaration should not be added to dubbo-all(dubbo-distribution/dubbo-all/pom.xml in shade plugin) to being transformed. Found spis: " + unexpectedSpis);
+        Assertions.assertTrue(unexpectedSpis.isEmpty(), "Class without `@SPI` declaration should not be added to dubbo-all(dubbo-distribution" + File.separator + "dubbo-all" + File.separator + "pom.xml in shade plugin) to being transformed. Found spis: " + unexpectedSpis);
     }
 
     @Test
@@ -356,8 +356,8 @@ class FileTest {
 
         List<File> unexpectedSpis = new LinkedList<>();
         readSPIUnexpectedResource(baseFile, unexpectedSpis);
-        unexpectedSpis.removeIf(file -> file.getAbsolutePath().contains("dubbo-common/src/main/resources/META-INF/services/org.apache.dubbo.common.extension.LoadingStrategy"));
-        Assertions.assertTrue(unexpectedSpis.isEmpty(), "Dubbo native provided spi profiles must filed in `META-INF/dubbo/internal`. Please move to proper folder . Found spis: " + unexpectedSpis);
+        unexpectedSpis.removeIf(file -> file.getAbsolutePath().contains("dubbo-common" + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "services" + File.separator + "org.apache.dubbo.common.extension.LoadingStrategy"));
+        Assertions.assertTrue(unexpectedSpis.isEmpty(), "Dubbo native provided spi profiles must filed in `META-INF" + File.separator + "dubbo" + File.separator + "internal`. Please move to proper folder . Found spis: " + unexpectedSpis);
     }
 
     private static File getBaseFile() {
@@ -404,7 +404,7 @@ class FileTest {
             if (path.getAbsolutePath().contains("target")) {
                 return;
             }
-            if (path.getAbsolutePath().contains("src/main/java")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "java")) {
                 String content;
                 try {
                     content = FileUtils.readFileToString(path, StandardCharsets.UTF_8);
@@ -413,9 +413,10 @@ class FileTest {
                 }
                 if (content != null && content.contains("@SPI")) {
                     String absolutePath = path.getAbsolutePath();
-                    absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src/main/java/") + "src/main/java/".length());
+                    absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src" + File.separator + "main" + File.separator + "java" + File.separator)
+                        + ("src" + File.separator + "main" + File.separator + "java" + File.separator).length());
                     absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf(".java"));
-                    absolutePath = absolutePath.replaceAll("/", ".");
+                    absolutePath = absolutePath.replaceAll(File.separator, ".");
                     spis.add(absolutePath);
                 }
             }
@@ -434,10 +435,11 @@ class FileTest {
             if (path.getAbsolutePath().contains("target")) {
                 return;
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF/dubbo/internal/")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "internal" + File.separator)) {
                 String absolutePath = path.getAbsolutePath();
-                absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src/main/resources/META-INF/dubbo/internal/") + "src/main/resources/META-INF/dubbo/internal/".length());
-                absolutePath = absolutePath.replaceAll("/", ".");
+                absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "internal" + File.separator)
+                    + ("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "internal" + File.separator).length());
+                absolutePath = absolutePath.replaceAll( File.separator, ".");
                 spis.put(path, absolutePath);
             }
         }
@@ -455,35 +457,35 @@ class FileTest {
             if (path.getAbsolutePath().contains("target")) {
                 return;
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF/dubbo/org.apache.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "org.apache.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF/dubbo/com.alibaba.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "com.alibaba.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF/services/org.apache.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "services" + File.separator + "org.apache.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF/services/com.alibaba.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "services" + File.separator + "com.alibaba.dubbo")) {
                 spis.add(path);
             }
 
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF.dubbo/org.apache.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF.dubbo" + File.separator + "org.apache.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF.dubbo/com.alibaba.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF.dubbo" + File.separator + "com.alibaba.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF.services/org.apache.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF.services" + File.separator + "org.apache.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF.services/com.alibaba.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF.services" + File.separator + "com.alibaba.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF.dubbo.internal/org.apache.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF.dubbo.internal" + File.separator + "org.apache.dubbo")) {
                 spis.add(path);
             }
-            if (path.getAbsolutePath().contains("src/main/resources/META-INF.dubbo.internal/com.alibaba.dubbo")) {
+            if (path.getAbsolutePath().contains("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF.dubbo.internal" + File.separator + "com.alibaba.dubbo")) {
                 spis.add(path);
             }
         }
