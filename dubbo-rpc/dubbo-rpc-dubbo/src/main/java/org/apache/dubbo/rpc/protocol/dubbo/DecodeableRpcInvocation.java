@@ -137,13 +137,13 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ScopeModel scopeModel = channel.getUrl().getScopeModel();
-            if (scopeModel != null) {
+            if (scopeModel instanceof ModuleModel) {
                 scopeModel = scopeModel.getParent();
             } else {
                 scopeModel = ApplicationModel.defaultModel();
             }
             String serializationSecurityCheck = ConfigurationUtils.getSystemConfiguration(
-                scopeModel.getParent()).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
+                scopeModel).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
 
 
             if (Boolean.parseBoolean(serializationSecurityCheck)) {
