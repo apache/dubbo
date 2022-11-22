@@ -27,30 +27,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-public class ChannelBufferStreamTest {
+class ChannelBufferStreamTest {
     
     @Test
-    public void testChannelBufferOutputStreamWithNull() {
+    void testChannelBufferOutputStreamWithNull() {
         assertThrows(NullPointerException.class, () -> new ChannelBufferOutputStream(null));
     }
     
     @Test
-    public void testChannelBufferInputStreamWithNull() {
+    void testChannelBufferInputStreamWithNull() {
         assertThrows(NullPointerException.class, () -> new ChannelBufferInputStream(null));
     }
     
     @Test
-    public void testChannelBufferInputStreamWithNullAndLength() {
+    void testChannelBufferInputStreamWithNullAndLength() {
         assertThrows(NullPointerException.class, () -> new ChannelBufferInputStream(null, 0));
     }
     
     @Test
-    public void testChannelBufferInputStreamWithBadLength() {
+    void testChannelBufferInputStreamWithBadLength() {
         assertThrows(IllegalArgumentException.class, () -> new ChannelBufferInputStream(mock(ChannelBuffer.class), -1));
     }
     
     @Test
-    public void testChannelBufferInputStreamWithOutOfBounds() {
+    void testChannelBufferInputStreamWithOutOfBounds() {
         assertThrows(IndexOutOfBoundsException.class, () -> {
             ChannelBuffer buf = mock(ChannelBuffer.class);
             new ChannelBufferInputStream(buf, buf.capacity() + 1);
@@ -58,7 +58,7 @@ public class ChannelBufferStreamTest {
     }
     
     @Test
-    public void testChannelBufferWriteOutAndReadIn() {
+    void testChannelBufferWriteOutAndReadIn() {
         ChannelBuffer buf = ChannelBuffers.dynamicBuffer();
         testChannelBufferOutputStream(buf);
         testChannelBufferInputStream(buf);

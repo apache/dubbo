@@ -33,12 +33,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
  * ProformanceClient
  * The test class will report abnormal thread pool, because the judgment on the thread pool concurrency problems produced in DefaultChannelHandler (connected event has been executed asynchronously, judgment, then closed the thread pool, thread pool and execution error, this problem can be specified through the Constants.CHANNEL_HANDLER_KEY=connection.)
  */
-public class PerformanceClientCloseTest  {
+class PerformanceClientCloseTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientCloseTest.class);
 
     @Test
-    public void testClient() throws Throwable {
+    void testClient() throws Throwable {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");

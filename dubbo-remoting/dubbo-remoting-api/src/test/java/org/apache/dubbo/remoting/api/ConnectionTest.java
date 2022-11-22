@@ -26,7 +26,7 @@ import java.util.concurrent.CountDownLatch;
 class ConnectionTest {
 
     @Test
-    public void testRefCnt0() throws InterruptedException {
+    void testRefCnt0() throws InterruptedException {
         Connection connection = new Connection(URL.valueOf("empty://127.0.0.1:8080?foo=bar"));
         CountDownLatch latch = new CountDownLatch(1);
         connection.getClosePromise().addListener(future -> latch.countDown());
@@ -36,7 +36,7 @@ class ConnectionTest {
     }
 
     @Test
-    public void testRefCnt1() {
+    void testRefCnt1() {
         Connection connection = new Connection(URL.valueOf("empty://127.0.0.1:8080?foo=bar"));
         CountDownLatch latch = new CountDownLatch(1);
         connection.retain();
@@ -46,7 +46,7 @@ class ConnectionTest {
     }
 
     @Test
-    public void testRefCnt2() throws InterruptedException {
+    void testRefCnt2() throws InterruptedException {
         Connection connection = new Connection(URL.valueOf("empty://127.0.0.1:8080?foo=bar"));
         CountDownLatch latch = new CountDownLatch(1);
         connection.retain();

@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
-public class HeartbeatHandlerTest {
+class HeartbeatHandlerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(HeartbeatHandlerTest.class);
 
@@ -64,7 +64,7 @@ public class HeartbeatHandlerTest {
     }
 
     @Test
-    public void testServerHeartbeat() throws Exception {
+    void testServerHeartbeat() throws Exception {
         FakeChannelHandlers.resetChannelHandlers();
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56780))
             .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
@@ -91,7 +91,7 @@ public class HeartbeatHandlerTest {
     }
 
     @Test
-    public void testHeartbeat() throws Exception {
+    void testHeartbeat() throws Exception {
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56785))
             .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
             .addParameter(Constants.TRANSPORTER_KEY, "netty3")
@@ -112,7 +112,7 @@ public class HeartbeatHandlerTest {
     }
 
     @Test
-    public void testClientHeartbeat() throws Exception {
+    void testClientHeartbeat() throws Exception {
         FakeChannelHandlers.setTestingChannelHandlers();
         URL serverURL = URL.valueOf("telnet://localhost:" + NetUtils.getAvailablePort(56790))
             .addParameter(Constants.EXCHANGER_KEY, HeaderExchanger.NAME)
