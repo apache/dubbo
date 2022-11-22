@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * AbstractMonitorFactoryTest
  */
-public class AbstractMonitorFactoryTest {
+class AbstractMonitorFactoryTest {
 
     private MonitorFactory monitorFactory = new AbstractMonitorFactory() {
 
@@ -61,7 +61,7 @@ public class AbstractMonitorFactoryTest {
     };
 
     @Test
-    public void testMonitorFactoryCache() throws Exception {
+    void testMonitorFactoryCache() throws Exception {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
         Monitor monitor1 = monitorFactory.getMonitor(url);
         Monitor monitor2 = monitorFactory.getMonitor(url);
@@ -74,7 +74,7 @@ public class AbstractMonitorFactoryTest {
     }
 
     @Test
-    public void testMonitorFactoryIpCache() throws Exception {
+    void testMonitorFactoryIpCache() throws Exception {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":2233");
         Monitor monitor1 = monitorFactory.getMonitor(url);
         Monitor monitor2 = monitorFactory.getMonitor(url);
@@ -87,7 +87,7 @@ public class AbstractMonitorFactoryTest {
     }
 
     @Test
-    public void testMonitorFactoryGroupCache() throws Exception {
+    void testMonitorFactoryGroupCache() throws Exception {
         URL url1 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa");
         URL url2 = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb");
         Monitor monitor1 = monitorFactory.getMonitor(url1);

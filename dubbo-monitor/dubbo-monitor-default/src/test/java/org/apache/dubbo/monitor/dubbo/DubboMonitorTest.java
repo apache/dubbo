@@ -65,7 +65,7 @@ import static org.mockito.Mockito.verify;
 /**
  * DubboMonitorTest
  */
-public class DubboMonitorTest {
+class DubboMonitorTest {
 
     private final Invoker<MonitorService> monitorInvoker = new Invoker<MonitorService>() {
         @Override
@@ -105,7 +105,7 @@ public class DubboMonitorTest {
     };
 
     @Test
-    public void testCount() throws Exception {
+    void testCount() throws Exception {
         DubboMonitor monitor = new DubboMonitor(monitorInvoker, monitorService);
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(APPLICATION_KEY, "morgan")
@@ -141,7 +141,7 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testMonitorFactory() throws Exception {
+    void testMonitorFactory() throws Exception {
         MockMonitorService monitorService = new MockMonitorService();
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(APPLICATION_KEY, "morgan")
@@ -191,7 +191,7 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testAvailable() {
+    void testAvailable() {
         Invoker invoker = mock(Invoker.class);
         MonitorService monitorService = mock(MonitorService.class);
 
@@ -204,7 +204,7 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testSum() {
+    void testSum() {
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.11", 0)
                 .addParameter(APPLICATION_KEY, "morgan")
                 .addParameter(INTERFACE_KEY, "MemberService")
@@ -246,7 +246,7 @@ public class DubboMonitorTest {
     }
 
     @Test
-    public void testLookUp() {
+    void testLookUp() {
         Invoker invoker = mock(Invoker.class);
         MonitorService monitorService = mock(MonitorService.class);
 

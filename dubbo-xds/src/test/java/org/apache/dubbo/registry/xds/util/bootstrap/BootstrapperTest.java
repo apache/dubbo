@@ -16,19 +16,20 @@
  */
 package org.apache.dubbo.registry.xds.util.bootstrap;
 
-import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.registry.xds.XdsInitializationException;
+
+import io.grpc.netty.shaded.io.netty.channel.unix.DomainSocketAddress;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 
-public class BootstrapperTest {
+class BootstrapperTest {
     @Test
-    public void testParse() throws XdsInitializationException {
+    void testParse() throws XdsInitializationException {
         String rawData = "{\n" +
             "  \"xds_servers\": [\n" +
             "    {\n" +
@@ -133,7 +134,7 @@ public class BootstrapperTest {
     }
 
     @Test
-    public void testUrl() {
+    void testUrl() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456/TestService?useAgent=true");
         Assertions.assertTrue(url.getParameter("useAgent", false));
     }

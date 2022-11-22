@@ -21,9 +21,9 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
-public class TKvTest {
+class TKvTest {
     @Test
-    public void test1() {
+    void test1() {
         TKv tKv = new TKv(new TTable.ColumnDefine(TTable.Align.RIGHT), new TTable.ColumnDefine(10, false, TTable.Align.LEFT));
         tKv.add("KEY-1", "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         tKv.add("KEY-2", "1234567890");
@@ -48,7 +48,7 @@ public class TKvTest {
     }
 
     @Test
-    public void test2() throws Exception {
+    void test2() throws Exception {
         TKv tKv = new TKv();
         tKv.add("KEY-1", "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         tKv.add("KEY-2", "1234567890");

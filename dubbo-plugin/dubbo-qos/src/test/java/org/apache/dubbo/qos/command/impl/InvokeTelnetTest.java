@@ -39,7 +39,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-public class InvokeTelnetTest {
+class InvokeTelnetTest {
 
     private FrameworkModel frameworkModel;
     private BaseCommand invoke;
@@ -69,7 +69,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeWithoutServicePrefixAndWithoutDefaultService() throws RemotingException {
+    void testInvokeWithoutServicePrefixAndWithoutDefaultService() throws RemotingException {
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
         String result = invoke.execute(mockCommandContext, new String[]{"echo(\"ok\")"});
         assertTrue(result.contains("If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first," +
@@ -77,7 +77,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeDefaultService() throws RemotingException {
+    void testInvokeDefaultService() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
         given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
@@ -90,7 +90,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeWithSpecifyService() throws RemotingException {
+    void testInvokeWithSpecifyService() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
@@ -105,7 +105,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeByPassingNullValue() {
+    void testInvokeByPassingNullValue() {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
         given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
@@ -123,7 +123,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeByPassingEnumValue() throws RemotingException {
+    void testInvokeByPassingEnumValue() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
@@ -139,7 +139,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testOverriddenMethodWithSpecifyParamType() throws RemotingException {
+    void testOverriddenMethodWithSpecifyParamType() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
         given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
@@ -156,7 +156,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeOverriddenMethodBySelect() throws RemotingException {
+    void testInvokeOverriddenMethodBySelect() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_METHOD_KEY).set(null);
@@ -191,7 +191,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeMethodWithMapParameter() throws RemotingException {
+    void testInvokeMethodWithMapParameter() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
@@ -209,7 +209,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvokeMultiJsonParamMethod() throws RemotingException {
+    void testInvokeMultiJsonParamMethod() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
@@ -227,7 +227,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testMessageNull() throws RemotingException {
+    void testMessageNull() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
@@ -243,7 +243,7 @@ public class InvokeTelnetTest {
     }
 
     @Test
-    public void testInvalidMessage() throws RemotingException {
+    void testInvalidMessage() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
