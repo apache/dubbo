@@ -33,7 +33,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY
 /**
  * dubbo protocol lazy connect test
  */
-public class DubboLazyConnectTest {
+class DubboLazyConnectTest {
 
     @BeforeAll
     public static void setUpBeforeClass() {
@@ -49,7 +49,7 @@ public class DubboLazyConnectTest {
     }
 
     @Test
-    public void testSticky1() {
+    void testSticky1() {
         Assertions.assertThrows(RpcException.class, () -> {
             int port = NetUtils.getAvailablePort();
             URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
@@ -58,14 +58,14 @@ public class DubboLazyConnectTest {
     }
 
     @Test
-    public void testSticky2() {
+    void testSticky2() {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
         ProtocolUtils.refer(IDemoService.class, url);
     }
 
     @Test
-    public void testSticky3() {
+    void testSticky3() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             int port = NetUtils.getAvailablePort();
             URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
@@ -75,7 +75,7 @@ public class DubboLazyConnectTest {
     }
 
     @Test
-    public void testSticky4() {
+    void testSticky4() {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true&timeout=20000");
 

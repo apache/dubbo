@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * CacheTest
  */
-public class CacheTest {
+class CacheTest {
 
     @BeforeEach
     public void setUp() {
@@ -118,17 +118,17 @@ public class CacheTest {
     }
 
     @Test
-    public void testCacheLru() throws Exception {
+    void testCacheLru() throws Exception {
         testCache("lru");
     }
 
     @Test
-    public void testCacheThreadlocal() throws Exception {
+    void testCacheThreadlocal() throws Exception {
         testCache("threadlocal");
     }
 
     @Test
-    public void testCacheProvider() throws Exception {
+    void testCacheProvider() throws Exception {
         CacheFactory cacheFactory = ExtensionLoader.getExtensionLoader(CacheFactory.class).getAdaptiveExtension();
 
         Map<String, String> parameters = new HashMap<String, String>();

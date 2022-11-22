@@ -38,7 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class StartupTest {
+class StartupTest {
     private FrameworkModel frameworkModel;
     private ModuleDeployer moduleDeployer;
 
@@ -67,7 +67,7 @@ public class StartupTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Startup startup = new Startup(frameworkModel);
         CommandContext commandContext = new CommandContext("startup");
 

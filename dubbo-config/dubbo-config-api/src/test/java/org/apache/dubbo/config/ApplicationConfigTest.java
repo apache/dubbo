@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
-public class ApplicationConfigTest {
+class ApplicationConfigTest {
 
     @BeforeEach
     public void beforeEach() {
@@ -53,7 +53,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testName() throws Exception {
+    void testName() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("app");
         assertThat(application.getName(), equalTo("app"));
@@ -69,7 +69,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testVersion() throws Exception {
+    void testVersion() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setVersion("1.0.0");
         assertThat(application.getVersion(), equalTo("1.0.0"));
@@ -79,28 +79,28 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testOwner() throws Exception {
+    void testOwner() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setOwner("owner");
         assertThat(application.getOwner(), equalTo("owner"));
     }
 
     @Test
-    public void testOrganization() throws Exception {
+    void testOrganization() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setOrganization("org");
         assertThat(application.getOrganization(), equalTo("org"));
     }
 
     @Test
-    public void testArchitecture() throws Exception {
+    void testArchitecture() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setArchitecture("arch");
         assertThat(application.getArchitecture(), equalTo("arch"));
     }
 
     @Test
-    public void testEnvironment1() throws Exception {
+    void testEnvironment1() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setEnvironment("develop");
         assertThat(application.getEnvironment(), equalTo("develop"));
@@ -111,7 +111,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testEnvironment2() throws Exception {
+    void testEnvironment2() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ApplicationConfig application = new ApplicationConfig("app");
             application.setEnvironment("illegal-env");
@@ -119,7 +119,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testRegistry() throws Exception {
+    void testRegistry() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         RegistryConfig registry = new RegistryConfig();
         application.setRegistry(registry);
@@ -130,7 +130,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testMonitor() throws Exception {
+    void testMonitor() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setMonitor(new MonitorConfig("monitor-addr"));
         assertThat(application.getMonitor().getAddress(), equalTo("monitor-addr"));
@@ -139,21 +139,21 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testLogger() throws Exception {
+    void testLogger() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setLogger("log4j");
         assertThat(application.getLogger(), equalTo("log4j"));
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setDefault(true);
         assertThat(application.isDefault(), is(true));
     }
 
     @Test
-    public void testDumpDirectory() throws Exception {
+    void testDumpDirectory() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setDumpDirectory("/dump");
         assertThat(application.getDumpDirectory(), equalTo("/dump"));
@@ -163,7 +163,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testQosEnable() throws Exception {
+    void testQosEnable() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosEnable(true);
         assertThat(application.getQosEnable(), is(true));
@@ -173,14 +173,14 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testQosPort() throws Exception {
+    void testQosPort() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosPort(8080);
         assertThat(application.getQosPort(), equalTo(8080));
     }
 
     @Test
-    public void testQosAcceptForeignIp() throws Exception {
+    void testQosAcceptForeignIp() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosAcceptForeignIp(true);
         assertThat(application.getQosAcceptForeignIp(), is(true));
@@ -190,7 +190,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testParameters() throws Exception {
+    void testParameters() throws Exception {
         ApplicationConfig application = new ApplicationConfig("app");
         application.setQosAcceptForeignIp(true);
         Map<String, String> parameters = new HashMap<String, String>();
@@ -201,7 +201,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testAppendEnvironmentProperties() {
+    void testAppendEnvironmentProperties() {
         ApplicationConfig application = new ApplicationConfig("app");
         SysProps.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
         application.refresh();
@@ -229,14 +229,14 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         ApplicationConfig config = new ApplicationConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 
     @Test
-    public void testOverrideEmptyConfig() {
+    void testOverrideEmptyConfig() {
         String owner = "tom1";
         SysProps.setProperty("dubbo.application.name", "demo-app");
         SysProps.setProperty("dubbo.application.owner", owner);
@@ -255,7 +255,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testOverrideConfigById() {
+    void testOverrideConfigById() {
         String owner = "tom2";
         SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
@@ -277,7 +277,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testOverrideConfigByName() {
+    void testOverrideConfigByName() {
         String owner = "tom3";
         SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
@@ -296,7 +296,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testLoadConfig() {
+    void testLoadConfig() {
         String owner = "tom4";
         SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
@@ -315,7 +315,7 @@ public class ApplicationConfigTest {
     }
 
     @Test
-    public void testOverrideConfigConvertCase() {
+    void testOverrideConfigConvertCase() {
         SysProps.setProperty("dubbo.application.NAME", "demo-app");
         SysProps.setProperty("dubbo.application.qos-Enable", "false");
         SysProps.setProperty("dubbo.application.qos_host", "127.0.0.1");

@@ -39,7 +39,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-public class ChangeTelnetTest {
+class ChangeTelnetTest {
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
     private BaseCommand change;
 
@@ -80,14 +80,14 @@ public class ChangeTelnetTest {
     }
 
     @Test
-    public void testChangeSimpleName() {
+    void testChangeSimpleName() {
         ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         String result = change.execute(mockCommandContext, new String[]{"DemoService"});
         assertEquals("Used the DemoService as default.\r\nYou can cancel default service by command: cd /", result);
     }
 
     @Test
-    public void testChangeName() {
+    void testChangeName() {
         ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         String result = change.execute(mockCommandContext, new String[]{"org.apache.dubbo.qos.legacy.service.DemoService"});
         assertEquals("Used the org.apache.dubbo.qos.legacy.service.DemoService as default.\r\nYou can cancel default service by command: cd /",
@@ -95,32 +95,32 @@ public class ChangeTelnetTest {
     }
 
     @Test
-    public void testChangePath() {
+    void testChangePath() {
         ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         String result = change.execute(mockCommandContext, new String[]{"demo"});
         assertEquals("Used the demo as default.\r\nYou can cancel default service by command: cd /", result);
     }
 
     @Test
-    public void testChangeMessageNull() {
+    void testChangeMessageNull() {
         String result = change.execute(mockCommandContext, null);
         assertEquals("Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService", result);
     }
 
     @Test
-    public void testChangeServiceNotExport() {
+    void testChangeServiceNotExport() {
         String result = change.execute(mockCommandContext, new String[]{"demo"});
         assertEquals("No such service demo", result);
     }
 
     @Test
-    public void testChangeCancel() {
+    void testChangeCancel() {
         String result = change.execute(mockCommandContext, new String[]{".."});
         assertEquals("Cancelled default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.", result);
     }
 
     @Test
-    public void testChangeCancel2() {
+    void testChangeCancel2() {
         String result = change.execute(mockCommandContext, new String[]{"/"});
         assertEquals("Cancelled default service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.", result);
     }

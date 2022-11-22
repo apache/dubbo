@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private PrimitiveTypeDefinitionBuilder builder;
 
@@ -90,7 +90,7 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, zField.asType()));
         assertTrue(builder.accept(processingEnv, bField.asType()));
         assertTrue(builder.accept(processingEnv, cField.asType()));
@@ -102,7 +102,7 @@ public class PrimitiveTypeDefinitionBuilderTest extends AbstractAnnotationProces
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         buildAndAssertTypeDefinition(processingEnv, zField, builder);
         buildAndAssertTypeDefinition(processingEnv, bField, builder);
         buildAndAssertTypeDefinition(processingEnv, cField, builder);

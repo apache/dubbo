@@ -27,7 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 /**
  * test for Bzip2
  */
-public class Bzip2Test {
+class Bzip2Test {
 
     private static final String TEST_STR;
 

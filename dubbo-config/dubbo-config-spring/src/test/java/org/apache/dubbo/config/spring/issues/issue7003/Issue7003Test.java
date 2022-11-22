@@ -46,7 +46,7 @@ import java.util.Map;
 @EnableDubbo
 @ComponentScan
 @PropertySource("classpath:/META-INF/issues/issue7003/config.properties")
-public class Issue7003Test {
+class Issue7003Test {
 
     @BeforeAll
     public static void beforeAll() {
@@ -59,7 +59,7 @@ public class Issue7003Test {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue7003Test.class);
         try {
 

@@ -40,12 +40,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * ActiveLimitFilterTest.java
  */
-public class ActiveLimitFilterTest {
+class ActiveLimitFilterTest {
 
     ActiveLimitFilter activeLimitFilter = new ActiveLimitFilter();
 
     @Test
-    public void testInvokeNoActives() {
+    void testInvokeNoActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
         Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<ActiveLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
@@ -53,7 +53,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeLessActives() {
+    void testInvokeLessActives() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=10");
         Invoker<ActiveLimitFilterTest> invoker = new MyInvoker<ActiveLimitFilterTest>(url);
         Invocation invocation = new MockInvocation();
@@ -61,7 +61,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeGreaterActives() {
+    void testInvokeGreaterActives() {
         AtomicInteger count = new AtomicInteger(0);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=1&timeout=1");
         final Invoker<ActiveLimitFilterTest> invoker = new BlockMyInvoker<ActiveLimitFilterTest>(url, 100);
@@ -98,7 +98,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeTimeOut() throws Exception {
+    void testInvokeTimeOut() throws Exception {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1;
@@ -147,7 +147,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeNotTimeOut() throws Exception {
+    void testInvokeNotTimeOut() throws Exception {
         int totalThread = 100;
         int maxActives = 10;
         long timeout = 1000;
@@ -195,7 +195,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeRuntimeException() {
+    void testInvokeRuntimeException() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
             Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
@@ -209,7 +209,7 @@ public class ActiveLimitFilterTest {
     }
 
     @Test
-    public void testInvokeRuntimeExceptionWithActiveCountMatch() {
+    void testInvokeRuntimeExceptionWithActiveCountMatch() {
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&actives=0");
         Invoker<ActiveLimitFilterTest> invoker = new RuntimeExceptionInvoker(url);
         Invocation invocation = new MockInvocation();

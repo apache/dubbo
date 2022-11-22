@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class JsonUtilsTest {
+class JsonUtilsTest {
     @Test
-    public void testGetJson1() {
+    void testGetJson1() {
         Assertions.assertNotNull(JsonUtils.getJson());
         Assertions.assertEquals(JsonUtils.getJson(), JsonUtils.getJson());
 
@@ -162,7 +162,7 @@ public class JsonUtilsTest {
     }
 
     @Test
-    public void testGetJson2() {
+    void testGetJson2() {
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         AtomicReference<List<String>> removedPackages = new AtomicReference<>(Collections.emptyList());
         ClassLoader newClassLoader = new ClassLoader(originClassLoader) {

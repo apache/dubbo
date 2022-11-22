@@ -39,7 +39,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-public class PortTelnetTest {
+class PortTelnetTest {
     private BaseCommand port;
 
     private Invoker<DemoService> mockInvoker;
@@ -71,7 +71,7 @@ public class PortTelnetTest {
      * the address converted by NAT. In this case, check port only.
      */
     @Test
-    public void testListClient() throws Exception {
+    void testListClient() throws Exception {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         Thread.sleep(100);
@@ -86,25 +86,25 @@ public class PortTelnetTest {
     }
 
     @Test
-    public void testListDetail() throws RemotingException {
+    void testListDetail() throws RemotingException {
         String result = port.execute(mockCommandContext, new String[]{"-l"});
         assertEquals("dubbo://127.0.0.1:" + availablePort + "", result);
     }
 
     @Test
-    public void testListAllPort() throws RemotingException {
+    void testListAllPort() throws RemotingException {
         String result = port.execute(mockCommandContext, new String[0]);
         assertEquals("" + availablePort + "", result);
     }
 
     @Test
-    public void testErrorMessage() throws RemotingException {
+    void testErrorMessage() throws RemotingException {
         String result = port.execute(mockCommandContext, new String[]{"a"});
         assertEquals("Illegal port a, must be integer.", result);
     }
 
     @Test
-    public void testNoPort() throws RemotingException {
+    void testNoPort() throws RemotingException {
         String result = port.execute(mockCommandContext, new String[]{"-l", "20880"});
         assertEquals("No such port 20880", result);
     }

@@ -34,11 +34,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CompatibleTypeUtilsTest {
+class CompatibleTypeUtilsTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testCompatibleTypeConvert() throws Exception {
+    void testCompatibleTypeConvert() throws Exception {
         Object result;
 
         {

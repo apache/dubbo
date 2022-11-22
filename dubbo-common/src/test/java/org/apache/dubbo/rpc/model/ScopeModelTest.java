@@ -26,10 +26,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-public class ScopeModelTest {
+class ScopeModelTest {
 
     @Test
-    public void testCreateOnDestroy() throws InterruptedException {
+    void testCreateOnDestroy() throws InterruptedException {
         FrameworkModel.destroyAll();
 
         FrameworkModel frameworkModel = new FrameworkModel();

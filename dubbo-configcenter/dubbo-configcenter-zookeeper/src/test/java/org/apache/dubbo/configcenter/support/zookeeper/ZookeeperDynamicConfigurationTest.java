@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * TODO refactor using mockito
  */
 @Disabled("Disabled Due to Zookeeper in Github Actions")
-public class ZookeeperDynamicConfigurationTest {
+class ZookeeperDynamicConfigurationTest {
     private static CuratorFramework client;
 
     private static URL configUrl;
@@ -98,12 +98,12 @@ public class ZookeeperDynamicConfigurationTest {
     }
 
     @Test
-    public void testGetConfig() {
+    void testGetConfig() {
         Assertions.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
     }
 
     @Test
-    public void testAddListener() throws Exception {
+    void testAddListener() throws Exception {
         CountDownLatch latch = new CountDownLatch(4);
 
         String[] value1 = new String[1], value2 = new String[1], value3 = new String[1], value4 = new String[1];
@@ -141,7 +141,7 @@ public class ZookeeperDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishConfig() {
+    void testPublishConfig() {
         String key = "user-service";
         String group = "org.apache.dubbo.service.UserService";
         String content = "test";
@@ -151,7 +151,7 @@ public class ZookeeperDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishConfigCas() {
+    void testPublishConfigCas() {
         String key = "user-service-cas";
         String group = "org.apache.dubbo.service.UserService";
         String content = "test";

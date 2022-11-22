@@ -44,7 +44,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class ReferenceKeyTest {
+class ReferenceKeyTest {
 
     @BeforeEach
     protected void setUp() {
@@ -52,7 +52,7 @@ public class ReferenceKeyTest {
     }
 
     @Test
-    public void testReferenceKey() throws Exception {
+    void testReferenceKey() throws Exception {
 
         String helloService1 = getReferenceKey("helloService");
         String helloService2 = getReferenceKey("helloService2");
@@ -98,7 +98,7 @@ public class ReferenceKeyTest {
 
 
     @Test
-    public void testConfig() {
+    void testConfig() {
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
         context.start();
@@ -127,7 +127,7 @@ public class ReferenceKeyTest {
     }
 
     @Test
-    public void testConfig3() {
+    void testConfig3() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration3.class);
         context.start();
         Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
@@ -139,7 +139,7 @@ public class ReferenceKeyTest {
     }
 
     @Test
-    public void testConfig4() {
+    void testConfig4() {
         AnnotationConfigApplicationContext context = null;
         try {
             context = new AnnotationConfigApplicationContext(ConsumerConfiguration4.class);
@@ -157,7 +157,7 @@ public class ReferenceKeyTest {
     }
 
     @Test
-    public void testConfig5() {
+    void testConfig5() {
         try {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration5.class);
             context.start();
@@ -169,7 +169,7 @@ public class ReferenceKeyTest {
     }
 
     @Test
-    public void testConfig6() {
+    void testConfig6() {
         try {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration6.class);
             context.start();

@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test for NacosRegistry
  */
-public class NacosRegistryTest {
+class NacosRegistryTest {
 
     private static final String serviceInterface = "org.apache.dubbo.registry.nacos.NacosService";
 
@@ -83,7 +83,7 @@ public class NacosRegistryTest {
     }
 
     @Test
-    public void testRegister() {
+    void testRegister() {
         NamingService namingService = mock(NacosNamingService.class);
         try {
 
@@ -118,7 +118,7 @@ public class NacosRegistryTest {
     }
 
     @Test
-    public void testUnRegister() {
+    void testUnRegister() {
         NamingService namingService = mock(NacosNamingService.class);
 
         try {
@@ -158,7 +158,7 @@ public class NacosRegistryTest {
     }
 
     @Test
-    public void testSubscribe() {
+    void testSubscribe() {
         NamingService namingService = mock(NacosNamingService.class);
 
         try {
@@ -195,7 +195,7 @@ public class NacosRegistryTest {
     }
 
     @Test
-    public void testUnSubscribe() {
+    void testUnSubscribe() {
         NamingService namingService = mock(NacosNamingService.class);
 
         try {
@@ -240,7 +240,7 @@ public class NacosRegistryTest {
 
 
     @Test
-    public void testIsConformRules() {
+    void testIsConformRules() {
         NamingService namingService = mock(NacosNamingService.class);
         URL serviceUrlWithoutCategory = URL.valueOf("nacos://127.0.0.1:3333/" + serviceInterface + "?interface=" +
             serviceInterface + "&notify=false&methods=test1,test2&version=1.0.0&group=default");
