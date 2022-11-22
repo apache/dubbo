@@ -79,7 +79,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * ConfigTest
  */
-class ConfigTest {
+public class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
 
