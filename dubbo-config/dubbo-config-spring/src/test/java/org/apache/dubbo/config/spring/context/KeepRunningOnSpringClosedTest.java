@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class KeepRunningOnSpringClosedTest {
+class KeepRunningOnSpringClosedTest {
 
     @Test
-    public void test(){
+    void test(){
 
         // set KeepRunningOnSpringClosed flag for next spring context
         DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {

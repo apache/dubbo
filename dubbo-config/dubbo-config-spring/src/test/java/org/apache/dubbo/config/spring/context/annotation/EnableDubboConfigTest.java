@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  *
  * @since 2.5.8
  */
-public class EnableDubboConfigTest {
+class EnableDubboConfigTest {
 
     @BeforeEach
     public void setUp() {

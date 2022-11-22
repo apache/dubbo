@@ -19,15 +19,16 @@ package org.apache.dubbo.config.spring.beans.factory.config;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 
-public class DubboConfigDefaultPropertyValueBeanPostProcessorTest {
+class DubboConfigDefaultPropertyValueBeanPostProcessorTest {
 
     @Test
-    public void test() {
+    void test() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProviderConfiguration.class);
         try {
             context.start();
