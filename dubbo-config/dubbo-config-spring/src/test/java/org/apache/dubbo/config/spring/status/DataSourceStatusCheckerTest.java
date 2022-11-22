@@ -41,7 +41,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class DataSourceStatusCheckerTest {
+class DataSourceStatusCheckerTest {
     private DataSourceStatusChecker dataSourceStatusChecker;
 
     @Mock
@@ -60,14 +60,14 @@ public class DataSourceStatusCheckerTest {
     }
 
     @Test
-    public void testWithoutApplicationContext() {
+    void testWithoutApplicationContext() {
         Status status = dataSourceStatusChecker.check();
 
         assertThat(status.getLevel(), is(Status.Level.UNKNOWN));
     }
 
     @Test
-    public void testWithoutDatasource() {
+    void testWithoutDatasource() {
         Map<String, DataSource> map = new HashMap<String, DataSource>();
         given(applicationContext.getBeansOfType(eq(DataSource.class), anyBoolean(), anyBoolean())).willReturn(map);
 
@@ -77,7 +77,7 @@ public class DataSourceStatusCheckerTest {
     }
 
     @Test
-    public void testWithDatasourceHasNextResult() throws SQLException {
+    void testWithDatasourceHasNextResult() throws SQLException {
         Map<String, DataSource> map = new HashMap<String, DataSource>();
         DataSource dataSource = mock(DataSource.class);
         Connection connection = mock(Connection.class, Answers.RETURNS_DEEP_STUBS);
@@ -92,7 +92,7 @@ public class DataSourceStatusCheckerTest {
     }
 
     @Test
-    public void testWithDatasourceNotHasNextResult() throws SQLException {
+    void testWithDatasourceNotHasNextResult() throws SQLException {
         Map<String, DataSource> map = new HashMap<String, DataSource>();
         DataSource dataSource = mock(DataSource.class);
         Connection connection = mock(Connection.class, Answers.RETURNS_DEEP_STUBS);

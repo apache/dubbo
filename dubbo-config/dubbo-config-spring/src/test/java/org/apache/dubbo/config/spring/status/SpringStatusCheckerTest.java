@@ -31,7 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class SpringStatusCheckerTest {
+class SpringStatusCheckerTest {
 
 //    @Mock
 //    private ApplicationLifeCycle applicationContext;
@@ -47,7 +47,7 @@ public class SpringStatusCheckerTest {
     }
 
     @Test
-    public void testWithoutApplicationContext() {
+    void testWithoutApplicationContext() {
         SpringStatusChecker springStatusChecker = new SpringStatusChecker((ApplicationContext) null);
         Status status = springStatusChecker.check();
 
@@ -55,7 +55,7 @@ public class SpringStatusCheckerTest {
     }
 
     @Test
-    public void testWithLifeCycleRunning() {
+    void testWithLifeCycleRunning() {
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
         given(applicationLifeCycle.getConfigLocations()).willReturn(new String[]{"test1", "test2"});
         given(applicationLifeCycle.isRunning()).willReturn(true);
@@ -68,7 +68,7 @@ public class SpringStatusCheckerTest {
     }
 
     @Test
-    public void testWithoutLifeCycleRunning() {
+    void testWithoutLifeCycleRunning() {
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
         given(applicationLifeCycle.isRunning()).willReturn(false);
 
@@ -84,7 +84,7 @@ public class SpringStatusCheckerTest {
 
     // TODO improve GenericWebApplicationContext test scenario
     @Test
-    public void testGenericWebApplicationContext() {
+    void testGenericWebApplicationContext() {
         GenericWebApplicationContext context = mock(GenericWebApplicationContext.class);
         given(context.isRunning()).willReturn(true);
 

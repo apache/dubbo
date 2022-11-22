@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
-public class ProtocolConfigTest {
+class ProtocolConfigTest {
 
     @BeforeEach
     public void setUp() {
@@ -55,7 +55,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testName() throws Exception {
+    void testName() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         String protocolName = "xprotocol";
         protocol.setName(protocolName);
@@ -67,7 +67,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testHost() throws Exception {
+    void testHost() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setHost("host");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -77,7 +77,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testPort() throws Exception {
+    void testPort() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         int port = NetUtils.getAvailablePort();
         protocol.setPort(port);
@@ -88,7 +88,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testPath() throws Exception {
+    void testPath() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setContextpath("context-path");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -102,42 +102,42 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testCorethreads() throws Exception {
+    void testCorethreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setCorethreads(10);
         assertThat(protocol.getCorethreads(), is(10));
     }
 
     @Test
-    public void testThreads() throws Exception {
+    void testThreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setThreads(10);
         assertThat(protocol.getThreads(), is(10));
     }
 
     @Test
-    public void testIothreads() throws Exception {
+    void testIothreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setIothreads(10);
         assertThat(protocol.getIothreads(), is(10));
     }
 
     @Test
-    public void testQueues() throws Exception {
+    void testQueues() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setQueues(10);
         assertThat(protocol.getQueues(), is(10));
     }
 
     @Test
-    public void testAccepts() throws Exception {
+    void testAccepts() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setAccepts(10);
         assertThat(protocol.getAccepts(), is(10));
     }
 
     @Test
-    public void testCodec() throws Exception {
+    void testCodec() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
         protocol.setCodec("mockcodec");
@@ -145,98 +145,98 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testAccesslog() throws Exception {
+    void testAccesslog() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setAccesslog("access.log");
         assertThat(protocol.getAccesslog(), equalTo("access.log"));
     }
 
     @Test
-    public void testTelnet() throws Exception {
+    void testTelnet() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setTelnet("mocktelnethandler");
         assertThat(protocol.getTelnet(), equalTo("mocktelnethandler"));
     }
 
     @Test
-    public void testRegister() throws Exception {
+    void testRegister() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setRegister(true);
         assertThat(protocol.isRegister(), is(true));
     }
 
     @Test
-    public void testTransporter() throws Exception {
+    void testTransporter() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setTransporter("mocktransporter");
         assertThat(protocol.getTransporter(), equalTo("mocktransporter"));
     }
 
     @Test
-    public void testExchanger() throws Exception {
+    void testExchanger() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setExchanger("mockexchanger");
         assertThat(protocol.getExchanger(), equalTo("mockexchanger"));
     }
 
     @Test
-    public void testDispatcher() throws Exception {
+    void testDispatcher() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setDispatcher("mockdispatcher");
         assertThat(protocol.getDispatcher(), equalTo("mockdispatcher"));
     }
 
     @Test
-    public void testNetworker() throws Exception {
+    void testNetworker() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setNetworker("networker");
         assertThat(protocol.getNetworker(), equalTo("networker"));
     }
 
     @Test
-    public void testParameters() throws Exception {
+    void testParameters() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setParameters(Collections.singletonMap("k1", "v1"));
         assertThat(protocol.getParameters(), hasEntry("k1", "v1"));
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setDefault(true);
         assertThat(protocol.isDefault(), is(true));
     }
 
     @Test
-    public void testKeepAlive() throws Exception {
+    void testKeepAlive() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setKeepAlive(true);
         assertThat(protocol.getKeepAlive(), is(true));
     }
 
     @Test
-    public void testOptimizer() throws Exception {
+    void testOptimizer() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setOptimizer("optimizer");
         assertThat(protocol.getOptimizer(), equalTo("optimizer"));
     }
 
     @Test
-    public void testExtension() throws Exception {
+    void testExtension() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setExtension("extension");
         assertThat(protocol.getExtension(), equalTo("extension"));
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         ProtocolConfig config = new ProtocolConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "actual: "+metaData);
     }
 
     @Test
-    public void testOverrideEmptyConfig() {
+    void testOverrideEmptyConfig() {
         int port = NetUtils.getAvailablePort();
         //dubbo.protocol.name=rest
         //dubbo.protocol.port=port
@@ -259,7 +259,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testOverrideConfigByName() {
+    void testOverrideConfigByName() {
         int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest.port", String.valueOf(port));
 
@@ -280,7 +280,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testOverrideConfigById() {
+    void testOverrideConfigById() {
         int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
         SysProps.setProperty("dubbo.protocols.rest1.port",  String.valueOf(port));
@@ -303,7 +303,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testCreateConfigFromPropsWithId() {
+    void testCreateConfigFromPropsWithId() {
         int port1 = NetUtils.getAvailablePort();
         int port2 = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
@@ -331,7 +331,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testCreateConfigFromPropsWithName() {
+    void testCreateConfigFromPropsWithName() {
         int port1 = NetUtils.getAvailablePort();
         int port2 = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest.port", String.valueOf(port1));
@@ -358,7 +358,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testCreateDefaultConfigFromProps() {
+    void testCreateDefaultConfigFromProps() {
         int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocol.name", "rest");
         SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));

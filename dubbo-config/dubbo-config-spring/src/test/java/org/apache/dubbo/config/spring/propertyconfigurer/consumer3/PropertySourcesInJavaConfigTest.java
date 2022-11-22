@@ -38,7 +38,7 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class PropertySourcesInJavaConfigTest {
+class PropertySourcesInJavaConfigTest {
 
     private static final String SCAN_PACKAGE_NAME = "org.apache.dubbo.config.spring.propertyconfigurer.consumer3.notexist";
     private static final String PACKAGE_PATH = "/org/apache/dubbo/config/spring/propertyconfigurer/consumer3";
@@ -60,7 +60,7 @@ public class PropertySourcesInJavaConfigTest {
     }
 
     @Test
-    public void testImportPropertySource() {
+    void testImportPropertySource() {
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(PROVIDER_CONFIG_PATH);
         try {
@@ -88,7 +88,7 @@ public class PropertySourcesInJavaConfigTest {
     }
 
     @Test
-    public void testCustomPropertySourceBean() {
+    void testCustomPropertySourceBean() {
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(PROVIDER_CONFIG_PATH);
         try {
