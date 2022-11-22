@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-class MemberUtilsTest {
+public class MemberUtilsTest {
 
     @Test
     void testIsStatic() throws NoSuchMethodException {
