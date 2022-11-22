@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import io.netty.handler.codec.http2.Http2Exception;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
@@ -34,13 +35,13 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 import io.netty.channel.Channel;
-
+import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean headerSent;
     private boolean autoRequest = true;
     private boolean done;
+    private Http2Exception.StreamException streamException;
 
     public TripleClientCall(AbstractConnectionClient connectionClient, Executor executor,
                             FrameworkModel frameworkModel, TripleWriteQueue writeQueue) {
@@ -75,7 +77,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(byte[] message) {
+    public void onMessage(TripleFlowControlFrame data) {
+        byte[] message = data.getMessage();
         if (done) {
             LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "",
                 "Received message from closed stream,connection=" + connectionClient + " service="
@@ -200,6 +203,16 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         canceled = true;
+        if(t instanceof Http2Exception.StreamException && ((Http2Exception.StreamException) t).error().equals(FLOW_CONTROL_ERROR)){
+            TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t)
+                .withDescription("Due flowcontrol over pendingbytes, Cancelled by client");
+            stream.cancelByLocal(status);
+            streamException = (Http2Exception.StreamException) t;
+        }else{
+            TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t)
+                .withDescription("Cancelled by client");
+            stream.cancelByLocal(status);
+        }
         if (stream == null) {
             return;
         }
@@ -218,7 +231,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void sendMessage(Object message) {
-        if (canceled) {
+        if (canceled && null != streamException) {
+            throw new IllegalStateException("Due flowcontrol over pendingbytes, Call already canceled");
+        }else if (canceled){
             throw new IllegalStateException("Call already canceled");
         }
         if (!headerSent) {

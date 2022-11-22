@@ -38,7 +38,7 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
@@ -178,12 +178,14 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
     }
 
     @Override
-    public final void onMessage(byte[] message) {
+    public final void onMessage(TripleFlowControlFrame data) {
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
+            byte[] message =  data.getMessage();
             Object instance = parseSingleMessage(message);
-            listener.onMessage(instance);
+            data.setInstance(instance);
+            listener.onMessage(data);
         } catch (Throwable t) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
                 .withCause(t);

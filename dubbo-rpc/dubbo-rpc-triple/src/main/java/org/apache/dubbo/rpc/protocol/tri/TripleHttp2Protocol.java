@@ -48,7 +48,7 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.ssl.SslContext;
-
+import io.netty.util.AttributeKey;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.ArrayList;
@@ -79,6 +79,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_CLIENT");
 
     public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(LogLevel.DEBUG, "H2_SERVER");
+
+    private static final String CONNECTION_KEY = "tri_connection";
 
     private ExtensionLoader<HeaderFilter> filtersLoader;
     private FrameworkModel frameworkModel;
@@ -129,12 +131,18 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             .frameLogger(SERVER_LOGGER)
             .build();
         ExecutorSupport executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
+        //add triple flowcontroller
+        codec.connection().local().flowController(new TriHttp2LocalFlowController(codec.connection()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         TripleWriteQueue writeQueue = new TripleWriteQueue();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Http2StreamChannel>() {
                 @Override
                 protected void initChannel(Http2StreamChannel ch) {
                     final ChannelPipeline p = ch.pipeline();
+                    //add connection to channel  to flowcontrol
+                    AttributeKey key = AttributeKey.valueOf(CONNECTION_KEY);
+                    ch.attr(key).set(codec.connection());
                     p.addLast(new TripleCommandOutBoundHandler());
                     p.addLast(new TripleHttp2FrameServerHandler(frameworkModel, executorSupport,
                         headFilters, ch, writeQueue));
@@ -173,6 +181,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
+        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new TripleClientHandler(frameworkModel));
         pipeline.addLast(codec, handler, new TripleTailHandler());

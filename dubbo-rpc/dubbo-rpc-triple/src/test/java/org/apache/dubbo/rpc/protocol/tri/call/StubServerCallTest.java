@@ -36,7 +36,7 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 class StubServerCallTest {
 
     @Test
@@ -66,7 +66,8 @@ class StubServerCallTest {
             service, method,
             ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());
-        call.onMessage(new byte[0]);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(null,0,null,new byte[0]);
+        call.onMessage(tripleFlowControlFrame);
         call.onComplete();
     }
 }
