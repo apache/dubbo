@@ -82,7 +82,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
+class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
     private TypeElement testType;
 
@@ -98,7 +98,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsSimpleType() {
+    void testIsSimpleType() {
 
         assertTrue(isSimpleType(getType(Void.class)));
         assertTrue(isSimpleType(getType(Boolean.class)));
@@ -121,7 +121,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsSameType() {
+    void testIsSameType() {
         assertTrue(isSameType(getType(Void.class).asType(), "java.lang.Void"));
         assertFalse(isSameType(getType(String.class).asType(), "java.lang.Void"));
 
@@ -133,7 +133,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsArrayType() {
+    void testIsArrayType() {
         TypeElement type = getType(ArrayTypeModel.class);
         assertTrue(isArrayType(findField(type.asType(), "integers").asType()));
         assertTrue(isArrayType(findField(type.asType(), "strings").asType()));
@@ -146,7 +146,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsEnumType() {
+    void testIsEnumType() {
         TypeElement type = getType(Color.class);
         assertTrue(isEnumType(type.asType()));
 
@@ -158,7 +158,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsClassType() {
+    void testIsClassType() {
         TypeElement type = getType(ArrayTypeModel.class);
         assertTrue(isClassType(type.asType()));
 
@@ -170,7 +170,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsPrimitiveType() {
+    void testIsPrimitiveType() {
         TypeElement type = getType(PrimitiveTypeModel.class);
         getDeclaredFields(type.asType())
                 .stream()
@@ -184,7 +184,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsInterfaceType() {
+    void testIsInterfaceType() {
         TypeElement type = getType(CharSequence.class);
         assertTrue(isInterfaceType(type));
         assertTrue(isInterfaceType(type.asType()));
@@ -198,7 +198,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsAnnotationType() {
+    void testIsAnnotationType() {
         TypeElement type = getType(Override.class);
 
         assertTrue(isAnnotationType(type));
@@ -213,7 +213,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetHierarchicalTypes() {
+    void testGetHierarchicalTypes() {
         Set hierarchicalTypes = getHierarchicalTypes(testType.asType(), true, true, true);
         Iterator iterator = hierarchicalTypes.iterator();
         assertEquals(8, hierarchicalTypes.size());
@@ -288,7 +288,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
 
 
     @Test
-    public void testGetInterfaces() {
+    void testGetInterfaces() {
         TypeElement type = getType(Model.class);
         List<TypeMirror> interfaces = getInterfaces(type);
         assertTrue(interfaces.isEmpty());
@@ -305,7 +305,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetAllInterfaces() {
+    void testGetAllInterfaces() {
         Set<? extends TypeMirror> interfaces = getAllInterfaces(testType.asType());
         assertEquals(4, interfaces.size());
         Iterator<? extends TypeMirror> iterator = interfaces.iterator();
@@ -328,7 +328,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetType() {
+    void testGetType() {
         TypeElement element = TypeUtils.getType(processingEnv, String.class);
         assertEquals(element, TypeUtils.getType(processingEnv, element.asType()));
         assertEquals(element, TypeUtils.getType(processingEnv, "java.lang.String"));
@@ -340,7 +340,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetSuperType() {
+    void testGetSuperType() {
         TypeElement gtsTypeElement = getSuperType(testType);
         assertEquals(gtsTypeElement, getType(GenericTestService.class));
         TypeElement dtsTypeElement = getSuperType(gtsTypeElement);
@@ -356,7 +356,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetAllSuperTypes() {
+    void testGetAllSuperTypes() {
         Set<?> allSuperTypes = getAllSuperTypes(testType);
         Iterator<?> iterator = allSuperTypes.iterator();
         assertEquals(3, allSuperTypes.size());
@@ -376,7 +376,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsDeclaredType() {
+    void testIsDeclaredType() {
         assertTrue(isDeclaredType(testType));
         assertTrue(isDeclaredType(testType.asType()));
         assertFalse(isDeclaredType((Element) null));
@@ -387,7 +387,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testOfDeclaredType() {
+    void testOfDeclaredType() {
         assertEquals(testType.asType(), ofDeclaredType(testType));
         assertEquals(testType.asType(), ofDeclaredType(testType.asType()));
         assertEquals(ofDeclaredType(testType), ofDeclaredType(testType.asType()));
@@ -397,7 +397,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsTypeElement() {
+    void testIsTypeElement() {
         assertTrue(isTypeElement(testType));
         assertTrue(isTypeElement(testType.asType()));
 
@@ -406,7 +406,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testOfTypeElement() {
+    void testOfTypeElement() {
         assertEquals(testType, ofTypeElement(testType));
         assertEquals(testType, ofTypeElement(testType.asType()));
 
@@ -415,7 +415,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testOfDeclaredTypes() {
+    void testOfDeclaredTypes() {
         Set<DeclaredType> declaredTypes = ofDeclaredTypes(asList(getType(String.class), getType(TestServiceImpl.class), getType(Color.class)));
         assertTrue(declaredTypes.contains(getType(String.class).asType()));
         assertTrue(declaredTypes.contains(getType(TestServiceImpl.class).asType()));
@@ -425,7 +425,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testListDeclaredTypes() {
+    void testListDeclaredTypes() {
         List<DeclaredType> types = listDeclaredTypes(asList(testType, testType, testType));
         assertEquals(1, types.size());
         assertEquals(ofDeclaredType(testType), types.get(0));
@@ -435,7 +435,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testListTypeElements() {
+    void testListTypeElements() {
         List<TypeElement> typeElements = listTypeElements(asList(testType.asType(), ofDeclaredType(testType)));
         assertEquals(1, typeElements.size());
         assertEquals(testType, typeElements.get(0));
@@ -463,7 +463,7 @@ public class TypeUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetResourceName() {
+    void testGetResourceName() {
         assertEquals("java/lang/String.class", getResourceName("java.lang.String"));
         assertNull(getResourceName(null));
     }
