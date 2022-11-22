@@ -33,6 +33,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -416,7 +417,7 @@ class FileTest {
                     absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src" + File.separator + "main" + File.separator + "java" + File.separator)
                         + ("src" + File.separator + "main" + File.separator + "java" + File.separator).length());
                     absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf(".java"));
-                    absolutePath = absolutePath.replaceAll(File.separator, ".");
+                    absolutePath = absolutePath.replaceAll(Matcher.quoteReplacement(File.separator), ".");
                     spis.add(absolutePath);
                 }
             }
@@ -439,7 +440,7 @@ class FileTest {
                 String absolutePath = path.getAbsolutePath();
                 absolutePath = absolutePath.substring(absolutePath.lastIndexOf("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "internal" + File.separator)
                     + ("src" + File.separator + "main" + File.separator + "resources" + File.separator + "META-INF" + File.separator + "dubbo" + File.separator + "internal" + File.separator).length());
-                absolutePath = absolutePath.replaceAll( File.separator, ".");
+                absolutePath = absolutePath.replaceAll(Matcher.quoteReplacement(File.separator), ".");
                 spis.put(path, absolutePath);
             }
         }
