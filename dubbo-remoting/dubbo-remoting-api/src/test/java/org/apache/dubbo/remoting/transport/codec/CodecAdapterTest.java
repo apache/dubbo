@@ -20,7 +20,7 @@ import org.apache.dubbo.remoting.codec.ExchangeCodecTest;
 
 import org.junit.jupiter.api.BeforeEach;
 
-public class CodecAdapterTest extends ExchangeCodecTest {
+class CodecAdapterTest extends ExchangeCodecTest {
 
     @BeforeEach
     public void setUp() throws Exception {

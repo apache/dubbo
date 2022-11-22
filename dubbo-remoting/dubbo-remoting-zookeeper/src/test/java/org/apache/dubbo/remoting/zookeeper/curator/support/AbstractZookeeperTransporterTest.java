@@ -38,7 +38,7 @@ import static org.hamcrest.core.IsNull.nullValue;
  * AbstractZookeeperTransporterTest
  */
 @DisabledForJreRange(min = JRE.JAVA_16)
-public class AbstractZookeeperTransporterTest {
+class AbstractZookeeperTransporterTest {
     private ZookeeperClient zookeeperClient;
     private AbstractZookeeperTransporter abstractZookeeperTransporter;
 
@@ -61,13 +61,13 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testZookeeperClient() {
+    void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
     }
 
     @Test
-    public void testGetURLBackupAddress() {
+    void testGetURLBackupAddress() {
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + 9099 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         List<String> stringList = abstractZookeeperTransporter.getURLBackupAddress(url);
         Assertions.assertEquals(stringList.size(), 2);
@@ -76,7 +76,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testGetURLBackupAddressNoBack() {
+    void testGetURLBackupAddressNoBack() {
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         List<String> stringList = abstractZookeeperTransporter.getURLBackupAddress(url);
         Assertions.assertEquals(stringList.size(), 1);
@@ -84,7 +84,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testFetchAndUpdateZookeeperClientCache() throws Exception {
+    void testFetchAndUpdateZookeeperClientCache() throws Exception {
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zookeeperServerPort1 + ",127.0.0.1:" + zookeeperServerPort2 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
         //just for connected
@@ -105,7 +105,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testRepeatConnect() {
+    void testRepeatConnect() {
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
@@ -124,7 +124,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testNotRepeatConnect() throws Exception {
+    void testNotRepeatConnect() throws Exception {
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf(zookeeperConnectionAddress2 + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
         ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
@@ -143,7 +143,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testRepeatConnectForBackUpAdd() throws Exception {
+    void testRepeatConnectForBackUpAdd() throws Exception {
 
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zookeeperServerPort1 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.metadata.store.MetadataReport?backup=127.0.0.1:" + zookeeperServerPort2 + "&address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
@@ -163,7 +163,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testRepeatConnectForNoMatchBackUpAdd() throws Exception {
+    void testRepeatConnectForNoMatchBackUpAdd() throws Exception {
 
         URL url = URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zookeeperServerPort1 + "&application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
         URL url2 = URL.valueOf(zookeeperConnectionAddress2 + "/org.apache.dubbo.metadata.store.MetadataReport?address=zookeeper://127.0.0.1:2181&application=metadatareport-local-xml-provider2&cycle-report=false&interface=org.apache.dubbo.metadata.store.MetadataReport&retry-period=4590&retry-times=23&sync-report=true");
@@ -183,7 +183,7 @@ public class AbstractZookeeperTransporterTest {
     }
 
     @Test
-    public void testSameHostWithDifferentUser() throws Exception {
+    void testSameHostWithDifferentUser() throws Exception {
         URL url1 = URL.valueOf("zookeeper://us1:pw1@127.0.0.1:" + zookeeperServerPort1 + "/path1");
         URL url2 = URL.valueOf("zookeeper://us2:pw2@127.0.0.1:" + zookeeperServerPort1 + "/path2");
         ZookeeperClient client1 = abstractZookeeperTransporter.connect(url1);
