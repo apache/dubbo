@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class DeadlineFutureTest {
 
     @Test
-    public void test() throws InterruptedException, ExecutionException {
+    void test() throws InterruptedException, ExecutionException {
         String service = "service";
         String method = "method";
         String address = "localhost:12201";

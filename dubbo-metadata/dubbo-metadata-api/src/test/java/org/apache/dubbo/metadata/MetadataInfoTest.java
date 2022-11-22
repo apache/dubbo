@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Some construction and filter cases are covered in InMemoryMetadataServiceTest
  */
-public class MetadataInfoTest {
+class MetadataInfoTest {
     private static URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService2?" +
         "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
         "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService2" +
@@ -67,7 +67,7 @@ public class MetadataInfoTest {
         "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-customized,excluded");
 
     @Test
-    public void testEmptyRevision() {
+    void testEmptyRevision() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.setApp("demo");
 
@@ -75,7 +75,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testParamsFilterIncluded() {
+    void testParamsFilterIncluded() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -93,7 +93,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testParamsFilterExcluded() {
+    void testParamsFilterExcluded() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -111,7 +111,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testEqualsAndRevision() {
+    void testEqualsAndRevision() {
         // same metadata
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.addService(url);
@@ -144,7 +144,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testChanged() {
+    void testChanged() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.addService(url);
         metadataInfo.addService(url2);
@@ -156,7 +156,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testJsonFormat() {
+    void testJsonFormat() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
@@ -172,7 +172,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testJdkSerialize() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+    void testJdkSerialize() throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
         MetadataInfo metadataInfo = new MetadataInfo("demo");
@@ -195,7 +195,7 @@ public class MetadataInfoTest {
     }
 
     @Test
-    public void testCal() {
+    void testCal() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again

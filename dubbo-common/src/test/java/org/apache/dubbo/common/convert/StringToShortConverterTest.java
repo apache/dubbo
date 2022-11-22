@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToShortConverterTest {
+class StringToShortConverterTest {
 
     private StringToShortConverter converter;
 
@@ -40,12 +40,12 @@ public class StringToShortConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, Short.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertEquals(Short.valueOf("1"), converter.convert("1"));
         assertNull(converter.convert(null));
         assertThrows(NumberFormatException.class, () -> {

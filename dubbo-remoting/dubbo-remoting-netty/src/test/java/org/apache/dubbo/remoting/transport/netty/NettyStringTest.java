@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
  * Date: 4/26/11
  * Time: 4:13 PM
  */
-public class NettyStringTest {
+class NettyStringTest {
     static ExchangeServer server;
     static ExchangeChannel client;
 
@@ -56,7 +56,7 @@ public class NettyStringTest {
     }
 
     @Test
-    public void testHandler() throws Exception {
+    void testHandler() throws Exception {
         //Thread.sleep(20000);
         /*client.request("world\r\n");
         Future future = client.request("world", 10000);

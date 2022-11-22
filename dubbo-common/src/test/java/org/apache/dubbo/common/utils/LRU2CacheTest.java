@@ -24,9 +24,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LRU2CacheTest {
+class LRU2CacheTest {
     @Test
-    public void testCache() throws Exception {
+    void testCache() throws Exception {
         LRU2Cache<String, Integer> cache = new LRU2Cache<String, Integer>(3);
         cache.put("one", 1);
         cache.put("two", 2);
@@ -62,7 +62,7 @@ public class LRU2CacheTest {
     }
 
     @Test
-    public void testCapacity() throws Exception {
+    void testCapacity() throws Exception {
         LRU2Cache<String, Integer> cache = new LRU2Cache<String, Integer>();
         assertThat(cache.getMaxCapacity(), equalTo(1000));
         cache.setMaxCapacity(10);

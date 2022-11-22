@@ -43,7 +43,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 /**
  * The testcases are only for checking the process of exporting provider using injvm protocol.
  */
-public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
+class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterInjvmIntegrationTest.class);
 

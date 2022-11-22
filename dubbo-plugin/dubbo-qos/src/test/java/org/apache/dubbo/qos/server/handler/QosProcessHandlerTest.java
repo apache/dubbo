@@ -35,9 +35,9 @@ import java.util.Collections;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-public class QosProcessHandlerTest {
+class QosProcessHandlerTest {
     @Test
-    public void testDecodeHttp() throws Exception {
+    void testDecodeHttp() throws Exception {
         ByteBuf buf = Unpooled.wrappedBuffer(new byte[] {'G'});
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
@@ -51,7 +51,7 @@ public class QosProcessHandlerTest {
     }
 
     @Test
-    public void testDecodeTelnet() throws Exception {
+    void testDecodeTelnet() throws Exception {
         ByteBuf buf = Unpooled.wrappedBuffer(new byte[] {'A'});
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);

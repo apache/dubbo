@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ReferenceCacheTest {
+class ReferenceCacheTest {
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -39,7 +39,7 @@ public class ReferenceCacheTest {
     }
 
     @Test
-    public void testGetCacheSameReference() throws Exception {
+    void testGetCacheSameReference() throws Exception {
         ReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         assertEquals(0L, config.getCounter());
@@ -58,7 +58,7 @@ public class ReferenceCacheTest {
     }
 
     @Test
-    public void testGetCacheDiffReference() throws Exception {
+    void testGetCacheDiffReference() throws Exception {
         ReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         assertEquals(0L, config.getCounter());
@@ -76,7 +76,7 @@ public class ReferenceCacheTest {
     }
 
     @Test
-    public void testGetCacheWithKey() throws Exception {
+    void testGetCacheWithKey() throws Exception {
         ReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         FooService value = cache.get(config);
@@ -84,7 +84,7 @@ public class ReferenceCacheTest {
     }
 
     @Test
-    public void testGetCacheDiffName() throws Exception {
+    void testGetCacheDiffName() throws Exception {
         SimpleReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         assertEquals(0L, config.getCounter());
@@ -102,7 +102,7 @@ public class ReferenceCacheTest {
     }
 
     @Test
-    public void testDestroy() throws Exception {
+    void testDestroy() throws Exception {
         SimpleReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         cache.get(config);
@@ -118,7 +118,7 @@ public class ReferenceCacheTest {
     }
 
     @Test
-    public void testDestroyAll() throws Exception {
+    void testDestroyAll() throws Exception {
         SimpleReferenceCache cache = SimpleReferenceCache.getCache();
         MockReferenceConfig config = buildMockReferenceConfig("org.apache.dubbo.config.utils.service.FooService", "group1", "1.0.0");
         cache.get(config);

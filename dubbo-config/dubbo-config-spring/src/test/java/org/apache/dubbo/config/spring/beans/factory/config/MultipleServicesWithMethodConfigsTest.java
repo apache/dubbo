@@ -38,7 +38,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ContextConfiguration(classes = MultipleServicesWithMethodConfigsTest.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @ImportResource(locations = "classpath:/META-INF/spring/multiple-services-with-methods.xml")
-public class MultipleServicesWithMethodConfigsTest {
+class MultipleServicesWithMethodConfigsTest {
 
     @BeforeAll
     public static void setUp() {
@@ -49,7 +49,7 @@ public class MultipleServicesWithMethodConfigsTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void test() {
+    void test() {
 
         Map<String, ServiceBean> serviceBeanMap = applicationContext.getBeansOfType(ServiceBean.class);
         for (ServiceBean serviceBean : serviceBeanMap.values()) {
@@ -57,5 +57,4 @@ public class MultipleServicesWithMethodConfigsTest {
         }
     }
 }
-
 

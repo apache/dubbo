@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.metrics.model.sample;
 
 import org.apache.dubbo.common.metrics.model.MetricsCategory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class GaugeMetricSampleTest {
+class GaugeMetricSampleTest {
 
     private static String name;
     private static String description;
@@ -46,7 +47,7 @@ public class GaugeMetricSampleTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         GaugeMetricSample sample = new GaugeMetricSample(name, description, tags, category, baseUnit, supplier);
         Assertions.assertEquals(sample.getName(), name);
         Assertions.assertEquals(sample.getDescription(), description);

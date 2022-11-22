@@ -35,9 +35,9 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ExecutorUtilTest {
+class ExecutorUtilTest {
     @Test
-    public void testIsTerminated() throws Exception {
+    void testIsTerminated() throws Exception {
         ExecutorService executor = Mockito.mock(ExecutorService.class);
         when(executor.isTerminated()).thenReturn(true);
         assertThat(ExecutorUtil.isTerminated(executor), is(true));
@@ -46,7 +46,7 @@ public class ExecutorUtilTest {
     }
 
     @Test
-    public void testGracefulShutdown1() throws Exception {
+    void testGracefulShutdown1() throws Exception {
         ExecutorService executor = Mockito.mock(ExecutorService.class);
         when(executor.isTerminated()).thenReturn(false, true);
         when(executor.awaitTermination(20, TimeUnit.MILLISECONDS)).thenReturn(false);
@@ -56,7 +56,7 @@ public class ExecutorUtilTest {
     }
 
     @Test
-    public void testGracefulShutdown2() throws Exception {
+    void testGracefulShutdown2() throws Exception {
         ExecutorService executor = Mockito.mock(ExecutorService.class);
         when(executor.isTerminated()).thenReturn(false, false, false);
         when(executor.awaitTermination(20, TimeUnit.MILLISECONDS)).thenReturn(false);
@@ -68,7 +68,7 @@ public class ExecutorUtilTest {
     }
 
     @Test
-    public void testShutdownNow() throws Exception {
+    void testShutdownNow() throws Exception {
         ExecutorService executor = Mockito.mock(ExecutorService.class);
         when(executor.isTerminated()).thenReturn(false, true);
         ExecutorUtil.shutdownNow(executor, 20);
@@ -77,7 +77,7 @@ public class ExecutorUtilTest {
     }
 
     @Test
-    public void testSetThreadName() throws Exception {
+    void testSetThreadName() throws Exception {
         URL url = new ServiceConfigURL("dubbo", "localhost", 1234).addParameter(THREAD_NAME_KEY, "custom-thread");
         url = ExecutorUtil.setThreadName(url, "default-name");
         assertThat(url.getParameter(THREAD_NAME_KEY), equalTo("custom-thread-localhost:1234"));

@@ -27,14 +27,14 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class LogUtilTest {
+class LogUtilTest {
     @AfterEach
     public void tearDown() throws Exception {
         DubboAppender.logList.clear();
     }
 
     @Test
-    public void testStartStop() throws Exception {
+    void testStartStop() throws Exception {
         LogUtil.start();
         assertThat(DubboAppender.available, is(true));
         LogUtil.stop();
@@ -42,7 +42,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testCheckNoError() throws Exception {
+    void testCheckNoError() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogLevel()).thenReturn(Level.ERROR);
@@ -52,7 +52,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testFindName() throws Exception {
+    void testFindName() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogName()).thenReturn("a");
@@ -60,7 +60,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testFindLevel() throws Exception {
+    void testFindLevel() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogLevel()).thenReturn(Level.ERROR);
@@ -69,7 +69,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testFindLevelWithThreadName() throws Exception {
+    void testFindLevelWithThreadName() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogLevel()).thenReturn(Level.ERROR);
@@ -82,7 +82,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testFindThread() throws Exception {
+    void testFindThread() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogThread()).thenReturn("thread-1");
@@ -90,7 +90,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testFindMessage1() throws Exception {
+    void testFindMessage1() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogMessage()).thenReturn("message");
@@ -98,7 +98,7 @@ public class LogUtilTest {
     }
 
     @Test
-    public void testFindMessage2() throws Exception {
+    void testFindMessage2() throws Exception {
         Log log = mock(Log.class);
         DubboAppender.logList.add(log);
         when(log.getLogMessage()).thenReturn("message");

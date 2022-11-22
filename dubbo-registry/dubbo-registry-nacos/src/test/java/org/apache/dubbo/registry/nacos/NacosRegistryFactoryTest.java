@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for NacosRegistryFactory
  */
-public class NacosRegistryFactoryTest {
+class NacosRegistryFactoryTest {
 
     private NacosRegistryFactory nacosRegistryFactory;
 
@@ -41,7 +41,7 @@ public class NacosRegistryFactoryTest {
     }
 
     @Test
-    public void testCreateRegistryCacheKey() {
+    void testCreateRegistryCacheKey() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080");
         String registryCacheKey1 = nacosRegistryFactory.createRegistryCacheKey(url);
         String registryCacheKey2 = nacosRegistryFactory.createRegistryCacheKey(url);
@@ -49,7 +49,7 @@ public class NacosRegistryFactoryTest {
     }
 
     @Test
-    public void testCreateRegistryCacheKeyWithNamespace() {
+    void testCreateRegistryCacheKeyWithNamespace() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?namespace=test");
         String registryCacheKey1 = nacosRegistryFactory.createRegistryCacheKey(url);
         String registryCacheKey2 = nacosRegistryFactory.createRegistryCacheKey(url);

@@ -42,7 +42,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ContextConfiguration(classes = GenericServiceTest.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
-public class GenericServiceTest {
+class GenericServiceTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -63,7 +63,7 @@ public class GenericServiceTest {
     private ServiceBean serviceBean;
 
     @Test
-    public void testGeneric() {
+    void testGeneric() {
         assertNotNull(demoServiceRef);
         assertNotNull(serviceBean);
 

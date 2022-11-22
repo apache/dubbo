@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class AbstractConfigTest {
+class AbstractConfigTest {
 
     @BeforeEach
     public void beforeEach() {
@@ -99,7 +99,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testAppendProperties2() throws Exception {
+    void testAppendProperties2() throws Exception {
         try {
             System.setProperty("dubbo.properties.two.i", "2");
             PropertiesConfig config = new PropertiesConfig("two");
@@ -111,7 +111,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testAppendProperties3() throws Exception {
+    void testAppendProperties3() throws Exception {
         try {
             Properties p = new Properties();
             p.put("dubbo.properties.str", "dubbo");
@@ -126,7 +126,7 @@ public class AbstractConfigTest {
     }*/
 
     @Test
-    public void testValidateProtocolConfig() {
+    void testValidateProtocolConfig() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setCodec("exchange");
         protocolConfig.setName("test");
@@ -135,7 +135,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testAppendParameters1() throws Exception {
+    void testAppendParameters1() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("num", "ONE");
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"), "prefix");
@@ -148,7 +148,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testAppendParameters2() throws Exception {
+    void testAppendParameters2() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             Map<String, String> parameters = new HashMap<String, String>();
             AbstractConfig.appendParameters(parameters, new ParameterConfig());
@@ -156,14 +156,14 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testAppendParameters3() throws Exception {
+    void testAppendParameters3() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractConfig.appendParameters(parameters, null);
         assertTrue(parameters.isEmpty());
     }
 
     @Test
-    public void testAppendParameters4() throws Exception {
+    void testAppendParameters4() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"));
         Assertions.assertEquals("one", parameters.get("key.1"));
@@ -174,7 +174,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testAppendAttributes1() throws Exception {
+    void testAppendAttributes1() throws Exception {
         ParameterConfig config = new ParameterConfig(1, "hello/world", 30, "password","BEIJING");
         Map<String, String> parameters = new HashMap<>();
         AbstractConfig.appendParameters(parameters, config);
@@ -195,24 +195,24 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkExtension() throws Exception {
+    void checkExtension() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "world"));
     }
 
     @Test
-    public void checkMultiExtension1() throws Exception {
+    void checkMultiExtension1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class,
                 () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,world"));
     }
 
     @Test
-    public void checkMultiExtension2() throws Exception {
+    void checkMultiExtension2() throws Exception {
         Assertions.assertThrows(IllegalStateException.class,
                 () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,-world"));
     }
 
     @Test
-    public void checkLength() throws Exception {
+    void checkLength() throws Exception {
         Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
@@ -223,7 +223,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkPathLength() throws Exception {
+    void checkPathLength() throws Exception {
         Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
@@ -234,12 +234,12 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkName() throws Exception {
+    void checkName() throws Exception {
         Assertions.assertDoesNotThrow(() -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
-    public void checkNameHasSymbol() throws Exception {
+    void checkNameHasSymbol() throws Exception {
         try {
             ConfigValidationUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
             ConfigValidationUtils.checkNameHasSymbol("mock", "force:return world");
@@ -249,7 +249,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkKey() throws Exception {
+    void checkKey() throws Exception {
         try {
             ConfigValidationUtils.checkKey("hello", "*,-0123abcdABCD");
         } catch (Exception e) {
@@ -258,7 +258,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkMultiName() throws Exception {
+    void checkMultiName() throws Exception {
         try {
             ConfigValidationUtils.checkMultiName("hello", ",-._0123abcdABCD");
         } catch (Exception e) {
@@ -267,7 +267,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkPathName() throws Exception {
+    void checkPathName() throws Exception {
         try {
             ConfigValidationUtils.checkPathName("hello", "/-$._0123abcdABCD");
         } catch (Exception e) {
@@ -276,7 +276,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkMethodName() throws Exception {
+    void checkMethodName() throws Exception {
         try {
             ConfigValidationUtils.checkMethodName("hello", "abcdABCD0123abcd");
         } catch (Exception e) {
@@ -292,7 +292,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void checkParameterName() throws Exception {
+    void checkParameterName() throws Exception {
         Map<String, String> parameters = Collections.singletonMap("hello", ":*,/-._0123abcdABCD");
         try {
             ConfigValidationUtils.checkParameterName(parameters);
@@ -319,7 +319,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshAll() {
+    void testRefreshAll() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setAddress("override-config://127.0.0.1:2181");
@@ -358,7 +358,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshSystem() {
+    void testRefreshSystem() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setAddress("override-config://127.0.0.1:2181");
@@ -382,7 +382,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshProperties() throws Exception {
+    void testRefreshProperties() throws Exception {
         try {
             ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(new HashMap<>());
             OverrideConfig overrideConfig = new OverrideConfig();
@@ -407,7 +407,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshExternal() {
+    void testRefreshExternal() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setAddress("override-config://127.0.0.1:2181");
@@ -442,7 +442,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshById() {
+    void testRefreshById() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setId("override-id");
@@ -474,7 +474,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshParameters() {
+    void testRefreshParameters() {
         try {
             Map<String, String> parameters = new HashMap<>();
             parameters.put("key1", "value1");
@@ -507,7 +507,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshParametersWithAttribute() {
+    void testRefreshParametersWithAttribute() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             SysProps.setProperty("dubbo.override.parameters.key00", "value00");
@@ -519,7 +519,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshParametersWithOverrideConfigMode() {
+    void testRefreshParametersWithOverrideConfigMode() {
         FrameworkModel frameworkModel = new FrameworkModel();
         try {
             // test OVERRIDE_ALL configMode
@@ -578,7 +578,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testOnlyPrefixedKeyTakeEffect() {
+    void testOnlyPrefixedKeyTakeEffect() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setNotConflictKey("value-from-config");
@@ -600,7 +600,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void tetMetaData() {
+    void tetMetaData() {
         OverrideConfig overrideConfig = new OverrideConfig();
         overrideConfig.setId("override-id");
         overrideConfig.setAddress("override-config://127.0.0.1:2181");
@@ -625,7 +625,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         ApplicationConfig application1 = new ApplicationConfig();
         ApplicationConfig application2 = new ApplicationConfig();
         application1.setName("app1");
@@ -994,7 +994,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testMetaData() throws Exception {
+    void testMetaData() throws Exception {
 
         // Expect empty metadata for new instance
         // Check and set default value of field in checkDefault() method
@@ -1013,7 +1013,7 @@ public class AbstractConfigTest {
     }
 
     @Test
-    public void testRefreshNested() {
+    void testRefreshNested() {
         try {
             OuterConfig outerConfig = new OuterConfig();
 

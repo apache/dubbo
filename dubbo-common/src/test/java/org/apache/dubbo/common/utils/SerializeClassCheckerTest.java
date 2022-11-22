@@ -19,9 +19,9 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.constants.CommonConstants;
 
 import javassist.compiler.Javac;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.Socket;
@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-public class SerializeClassCheckerTest {
+class SerializeClassCheckerTest {
 
     @BeforeEach
     public void setUp() {
@@ -42,7 +42,7 @@ public class SerializeClassCheckerTest {
     }
 
     @Test
-    public void testCommon() {
+    void testCommon() {
         SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
 
         for (int i = 0; i < 10; i++) {
@@ -63,7 +63,7 @@ public class SerializeClassCheckerTest {
     }
 
     @Test
-    public void testAddAllow() {
+    void testAddAllow() {
         System.setProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, Socket.class.getName() + "," + Javac.class.getName());
 
         SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
@@ -76,7 +76,7 @@ public class SerializeClassCheckerTest {
     }
 
     @Test
-    public void testAddBlock() {
+    void testAddBlock() {
         System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST, LinkedList.class.getName() + "," + Integer.class.getName());
 
         SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
@@ -93,7 +93,7 @@ public class SerializeClassCheckerTest {
     }
 
     @Test
-    public void testBlockAll() {
+    void testBlockAll() {
         System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "true");
         System.setProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, LinkedList.class.getName());
 

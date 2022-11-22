@@ -32,10 +32,10 @@ import static org.apache.dubbo.common.utils.MethodUtils.getMethods;
 import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
 import static org.apache.dubbo.common.utils.MethodUtils.overrides;
 
-public class MethodUtilsTest {
+class MethodUtilsTest {
 
     @Test
-    public void testGetMethod() {
+    void testGetMethod() {
         Method getMethod = null;
         for (Method method : MethodTestClazz.class.getMethods()) {
             if (MethodUtils.isGetter(method)) {
@@ -47,7 +47,7 @@ public class MethodUtilsTest {
     }
 
     @Test
-    public void testSetMethod() {
+    void testSetMethod() {
         Method setMethod = null;
         for (Method method : MethodTestClazz.class.getMethods()) {
             if (MethodUtils.isSetter(method)) {
@@ -59,13 +59,13 @@ public class MethodUtilsTest {
     }
 
     @Test
-    public void testIsDeprecated() throws Exception {
+    void testIsDeprecated() throws Exception {
         Assertions.assertTrue(MethodUtils.isDeprecated(MethodTestClazz.class.getMethod("deprecatedMethod")));
         Assertions.assertFalse(MethodUtils.isDeprecated(MethodTestClazz.class.getMethod("getValue")));
     }
 
     @Test
-    public void testIsMetaMethod() {
+    void testIsMetaMethod() {
         boolean containMetaMethod = false;
         for (Method method : MethodTestClazz.class.getMethods()) {
             if (MethodUtils.isMetaMethod(method)) {
@@ -76,7 +76,7 @@ public class MethodUtilsTest {
     }
 
     @Test
-    public void testGetMethods() throws NoSuchMethodException {
+    void testGetMethods() throws NoSuchMethodException {
         Assertions.assertTrue(getDeclaredMethods(MethodTestClazz.class, excludedDeclaredClass(String.class)).size() > 0);
         Assertions.assertTrue(getMethods(MethodTestClazz.class).size() > 0);
         Assertions.assertTrue(getAllDeclaredMethods(MethodTestClazz.class).size() > 0);
@@ -97,7 +97,7 @@ public class MethodUtilsTest {
     }
 
     @Test
-    public void testExtractFieldName() throws Exception {
+    void testExtractFieldName() throws Exception {
         Method m1 = MethodFieldTestClazz.class.getMethod("is");
         Method m2 = MethodFieldTestClazz.class.getMethod("get");
         Method m3 = MethodFieldTestClazz.class.getMethod("getClass");

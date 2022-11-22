@@ -32,13 +32,13 @@ import java.util.Set;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class DubboSwaggerApiListingResourceTest {
+class DubboSwaggerApiListingResourceTest {
 
     private Application app;
     private ServletConfig sc;
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
 
         DubboSwaggerApiListingResource resource = new  DubboSwaggerApiListingResource();
 

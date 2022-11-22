@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.configurator.absent.AbsentConfigurator;
 import org.apache.dubbo.rpc.cluster.configurator.override.OverrideConfigurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,10 +31,10 @@ import java.util.Optional;
 /**
  * {@link Configurator}
  */
-public class ConfiguratorTest {
+class ConfiguratorTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
 
         Optional<List<Configurator>> emptyOptional = Configurator.toConfigurators(Collections.emptyList());
         Assertions.assertEquals(Optional.empty(), emptyOptional);

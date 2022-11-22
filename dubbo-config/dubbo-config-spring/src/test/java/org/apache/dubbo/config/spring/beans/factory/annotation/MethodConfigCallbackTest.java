@@ -52,7 +52,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class MethodConfigCallbackTest {
+class MethodConfigCallbackTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -84,7 +84,7 @@ public class MethodConfigCallbackTest {
     private HelloService helloServiceMethodCallBack2;
 
     @Test
-    public void testMethodAnnotationCallBack() {
+    void testMethodAnnotationCallBack() {
         int threadCnt = Math.min(4, Runtime.getRuntime().availableProcessors());
         int callCnt = 2 * threadCnt;
         for (int i = 0; i < threadCnt; i++) {

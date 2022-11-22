@@ -57,7 +57,7 @@ import static org.mockito.Mockito.when;
 /**
  * Test for NacosServiceDiscovery
  */
-public class NacosServiceDiscoveryTest {
+class NacosServiceDiscoveryTest {
 
     private static final String SERVICE_NAME = "NACOS_SERVICE";
 
@@ -132,7 +132,7 @@ public class NacosServiceDiscoveryTest {
     }
 
     @Test
-    public void testDoRegister() throws NacosException {
+    void testDoRegister() throws NacosException {
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         // register
         nacosServiceDiscovery.doRegister(serviceInstance);
@@ -147,7 +147,7 @@ public class NacosServiceDiscoveryTest {
     }
 
     @Test
-    public void testDoUnRegister() throws NacosException {
+    void testDoUnRegister() throws NacosException {
         // register
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         // register
@@ -166,7 +166,7 @@ public class NacosServiceDiscoveryTest {
     }
 
     @Test
-    public void testGetServices() throws NacosException {
+    void testGetServices() throws NacosException {
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         // register
         nacosServiceDiscovery.doRegister(serviceInstance);
@@ -187,7 +187,7 @@ public class NacosServiceDiscoveryTest {
     }
 
     @Test
-    public void testAddServiceInstancesChangedListener() {
+    void testAddServiceInstancesChangedListener() {
         List<ServiceInstance> serviceInstances = new LinkedList<>();
         // Add Listener
         nacosServiceDiscovery.addServiceInstancesChangedListener(

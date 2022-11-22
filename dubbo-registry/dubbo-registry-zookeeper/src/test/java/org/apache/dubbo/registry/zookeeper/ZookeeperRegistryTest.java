@@ -43,7 +43,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
-public class ZookeeperRegistryTest {
+class ZookeeperRegistryTest {
     private static String zookeeperConnectionAddress1;
     private ZookeeperRegistry zookeeperRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
@@ -66,7 +66,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testAnyHost() {
+    void testAnyHost() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
             new ZookeeperRegistryFactory(ApplicationModel.defaultModel()).createRegistry(errorUrl);
@@ -74,7 +74,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testRegister() {
+    void testRegister() {
         Set<URL> registered;
 
         for (int i = 0; i < 2; i++) {
@@ -88,7 +88,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testSubscribe() {
+    void testSubscribe() {
         NotifyListener listener = mock(NotifyListener.class);
         zookeeperRegistry.subscribe(serviceUrl, listener);
 
@@ -103,7 +103,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testAvailable() {
+    void testAvailable() {
         zookeeperRegistry.register(serviceUrl);
         assertThat(zookeeperRegistry.isAvailable(), is(true));
 
@@ -112,7 +112,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testLookup() {
+    void testLookup() {
         List<URL> lookup = zookeeperRegistry.lookup(serviceUrl);
         assertThat(lookup.size(), is(1));
 
@@ -122,7 +122,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testLookupIllegalUrl() {
+    void testLookupIllegalUrl() {
         try {
             zookeeperRegistry.lookup(null);
             fail();
@@ -133,7 +133,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testLookupWithException() {
+    void testLookupWithException() {
         URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
         Assertions.assertThrows(RpcException.class, () -> zookeeperRegistry.lookup(errorUrl));
     }
@@ -161,7 +161,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testSubscribeAnyValue() throws InterruptedException {
+    void testSubscribeAnyValue() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         zookeeperRegistry.register(serviceUrl);
         zookeeperRegistry.subscribe(anyUrl, urls -> latch.countDown());
@@ -170,14 +170,14 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         zookeeperRegistry.destroy();
         assertThat(zookeeperRegistry.isAvailable(), is(false));
     }
 
 
     @Test
-    public void testDoRegisterWithException() {
+    void testDoRegisterWithException() {
         Assertions.assertThrows(RpcException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
             zookeeperRegistry.doRegister(errorUrl);
@@ -185,7 +185,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testDoUnregisterWithException() {
+    void testDoUnregisterWithException() {
         Assertions.assertThrows(RpcException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
             zookeeperRegistry.doUnregister(errorUrl);
@@ -193,7 +193,7 @@ public class ZookeeperRegistryTest {
     }
 
     @Test
-    public void testDoSubscribeWithException() {
+    void testDoSubscribeWithException() {
         Assertions.assertThrows(RpcException.class,
             () -> zookeeperRegistry.doSubscribe(anyUrl, listener));
     }

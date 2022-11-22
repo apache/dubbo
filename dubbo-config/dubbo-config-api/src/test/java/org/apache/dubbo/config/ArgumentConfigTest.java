@@ -27,30 +27,30 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
-public class ArgumentConfigTest {
+class ArgumentConfigTest {
     @Test
-    public void testIndex() throws Exception {
+    void testIndex() throws Exception {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(1);
         assertThat(argument.getIndex(), is(1));
     }
 
     @Test
-    public void testType() throws Exception {
+    void testType() throws Exception {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setType("int");
         assertThat(argument.getType(), equalTo("int"));
     }
 
     @Test
-    public void testCallback() throws Exception {
+    void testCallback() throws Exception {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setCallback(true);
         assertThat(argument.isCallback(), is(true));
     }
 
     @Test
-    public void testArguments() throws Exception {
+    void testArguments() throws Exception {
         ArgumentConfig argument = new ArgumentConfig();
         argument.setIndex(1);
         argument.setType("int");
