@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToCharacterConverterTest {
+class StringToCharacterConverterTest {
 
     private StringToCharacterConverter converter;
 
@@ -40,12 +40,12 @@ public class StringToCharacterConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, Character.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertEquals('t', converter.convert("t"));
         assertNull(converter.convert(null));
         assertThrows(IllegalArgumentException.class, () -> {

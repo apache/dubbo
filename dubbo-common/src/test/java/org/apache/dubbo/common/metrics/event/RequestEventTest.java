@@ -18,13 +18,14 @@
 package org.apache.dubbo.common.metrics.event;
 
 import org.apache.dubbo.common.metrics.model.MethodMetric;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RequestEventTest {
+class RequestEventTest {
 
     @Test
-    public void testNewEvent() {
+    void testNewEvent() {
         MethodMetric metric = new MethodMetric();
         RequestEvent.Type type = RequestEvent.Type.TOTAL;
         RequestEvent event = new RequestEvent(metric, type);

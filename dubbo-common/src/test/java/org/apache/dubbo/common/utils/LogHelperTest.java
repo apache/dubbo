@@ -25,10 +25,10 @@ import org.mockito.Mockito;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class LogHelperTest {
+class LogHelperTest {
 
     @Test
-    public void testTrace() throws Exception {
+    void testTrace() throws Exception {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isTraceEnabled()).thenReturn(true);
         LogHelper.trace(logger, "trace");
@@ -41,7 +41,7 @@ public class LogHelperTest {
     }
 
     @Test
-    public void testDebug() throws Exception {
+    void testDebug() throws Exception {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
         LogHelper.debug(logger, "debug");
@@ -54,7 +54,7 @@ public class LogHelperTest {
     }
 
     @Test
-    public void testInfo() throws Exception {
+    void testInfo() throws Exception {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isInfoEnabled()).thenReturn(true);
         LogHelper.info(logger, "info");
@@ -67,7 +67,7 @@ public class LogHelperTest {
     }
 
     @Test
-    public void testWarn() throws Exception {
+    void testWarn() throws Exception {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isWarnEnabled()).thenReturn(true);
         LogHelper.warn(logger, "warn");
@@ -80,7 +80,7 @@ public class LogHelperTest {
     }
 
     @Test
-    public void testError() throws Exception {
+    void testError() throws Exception {
         Logger logger = Mockito.mock(Logger.class);
         when(logger.isErrorEnabled()).thenReturn(true);
         LogHelper.error(logger, "error");

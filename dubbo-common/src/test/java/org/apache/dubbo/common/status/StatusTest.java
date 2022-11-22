@@ -25,9 +25,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
-public class StatusTest {
+class StatusTest {
     @Test
-    public void testConstructor1() throws Exception {
+    void testConstructor1() throws Exception {
         Status status = new Status(OK, "message", "description");
         assertThat(status.getLevel(), is(OK));
         assertThat(status.getMessage(), equalTo("message"));
@@ -35,7 +35,7 @@ public class StatusTest {
     }
 
     @Test
-    public void testConstructor2() throws Exception {
+    void testConstructor2() throws Exception {
         Status status = new Status(OK, "message");
         assertThat(status.getLevel(), is(OK));
         assertThat(status.getMessage(), equalTo("message"));
@@ -43,7 +43,7 @@ public class StatusTest {
     }
 
     @Test
-    public void testConstructor3() throws Exception {
+    void testConstructor3() throws Exception {
         Status status = new Status(OK);
         assertThat(status.getLevel(), is(OK));
         assertThat(status.getMessage(), isEmptyOrNullString());

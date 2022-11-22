@@ -26,10 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  *
  * @since 2.7.5
  */
-public class ThrowableConsumerTest {
+class ThrowableConsumerTest {
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         assertThrows(RuntimeException.class, () -> execute("Hello,World", m -> {
             throw new Exception(m);
         }), "Hello,World");

@@ -31,14 +31,14 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 
-public class ExtensionDirectorTest {
+class ExtensionDirectorTest {
 
     String testFwSrvName = "testFwSrv";
     String testAppSrvName = "testAppSrv";
     String testMdSrvName = "testMdSrv";
 
     @Test
-    public void testInheritanceAndScope() {
+    void testInheritanceAndScope() {
 
         // Expecting:
         // 1. SPI extension only be created in ExtensionDirector which matched scope
@@ -78,12 +78,12 @@ public class ExtensionDirectorTest {
     }
 
     @Test
-    public void testPostProcessor() {
+    void testPostProcessor() {
 
     }
 
     @Test
-    public void testModelAware() {
+    void testModelAware() {
         // Expecting:
         // 1. Module scope SPI can be injected ModuleModel, ApplicationModel, FrameworkModel
         // 2. Application scope SPI can be injected ApplicationModel, FrameworkModel, but not ModuleModel
@@ -139,7 +139,7 @@ public class ExtensionDirectorTest {
     }
 
     @Test
-    public void testModelDataIsolation() {
+    void testModelDataIsolation() {
         //Model Tree
         //├─frameworkModel1
         //│  ├─applicationModel11
@@ -227,7 +227,7 @@ public class ExtensionDirectorTest {
     }
 
     @Test
-    public void testInjection() {
+    void testInjection() {
 
         // Expect:
         // 1. Framework scope extension can be injected to extensions of Framework/Application/Module scope
