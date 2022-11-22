@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 @DisabledForJreRange(min = JRE.JAVA_16)
-public class CuratorZookeeperClientTest {
+class CuratorZookeeperClientTest {
     private CuratorZookeeperClient curatorClient;
     CuratorFramework client = null;
 
@@ -65,7 +65,7 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
-    public void testCheckExists() {
+    void testCheckExists() {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
         assertThat(curatorClient.checkExists(path), is(true));
@@ -73,7 +73,7 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
-    public void testChildrenPath() {
+    void testChildrenPath() {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
         curatorClient.create(path + "/provider1", false);
@@ -102,7 +102,7 @@ public class CuratorZookeeperClientTest {
 
 
     @Test
-    public void testWithInvalidServer() {
+    void testWithInvalidServer() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
             curatorClient.create("/testPath", true);
@@ -119,27 +119,27 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
-    public void testRemoveChildrenListener() {
+    void testRemoveChildrenListener() {
         ChildListener childListener = mock(ChildListener.class);
         curatorClient.addChildListener("/children", childListener);
         curatorClient.removeChildListener("/children", childListener);
     }
 
     @Test
-    public void testCreateExistingPath() {
+    void testCreateExistingPath() {
         curatorClient.create("/pathOne", false);
         curatorClient.create("/pathOne", false);
     }
 
     @Test
-    public void testConnectedStatus() {
+    void testConnectedStatus() {
         curatorClient.createEphemeral("/testPath");
         boolean connected = curatorClient.isConnected();
         assertThat(connected, is(true));
     }
 
     @Test
-    public void testCreateContent4Persistent() {
+    void testCreateContent4Persistent() {
         String path = "/curatorTest4CrContent/content.data";
         String content = "createContentTest";
         curatorClient.delete(path);
@@ -152,7 +152,7 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
-    public void testCreateContent4Temp() {
+    void testCreateContent4Temp() {
         String path = "/curatorTest4CrContent/content.data";
         String content = "createContentTest";
         curatorClient.delete(path);
@@ -170,7 +170,7 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
-    public void testAddTargetDataListener() throws Exception {
+    void testAddTargetDataListener() throws Exception {
         String listenerPath = "/dubbo/service.name/configuration";
         String path = listenerPath + "/dat/data";
         String value = "vav";

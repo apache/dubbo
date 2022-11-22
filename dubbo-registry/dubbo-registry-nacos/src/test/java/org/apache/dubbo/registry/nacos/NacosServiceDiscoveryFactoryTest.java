@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Test for NacosServiceDiscoveryFactory
  */
-public class NacosServiceDiscoveryFactoryTest {
+class NacosServiceDiscoveryFactoryTest {
 
     private NacosServiceDiscoveryFactory nacosServiceDiscoveryFactory;
 
@@ -41,7 +41,7 @@ public class NacosServiceDiscoveryFactoryTest {
     }
 
     @Test
-    public void testGetServiceDiscoveryWithCache() {
+    void testGetServiceDiscoveryWithCache() {
         URL url = URL.valueOf("dubbo://test:8080");
         ServiceDiscovery discovery = nacosServiceDiscoveryFactory.createDiscovery(url);
 

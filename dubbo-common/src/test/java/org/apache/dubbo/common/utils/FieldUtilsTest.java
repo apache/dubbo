@@ -30,10 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  *
  * @since 2.7.6
  */
-public class FieldUtilsTest {
+class FieldUtilsTest {
 
     @Test
-    public void testGetDeclaredField() {
+    void testGetDeclaredField() {
         assertEquals("a", getDeclaredField(A.class, "a").getName());
         assertEquals("b", getDeclaredField(B.class, "b").getName());
         assertEquals("c", getDeclaredField(C.class, "c").getName());
@@ -42,7 +42,7 @@ public class FieldUtilsTest {
     }
 
     @Test
-    public void testFindField() {
+    void testFindField() {
         assertEquals("a", findField(A.class, "a").getName());
         assertEquals("a", findField(new A(), "a").getName());
         assertEquals("a", findField(B.class, "a").getName());
@@ -53,7 +53,7 @@ public class FieldUtilsTest {
     }
 
     @Test
-    public void testGetFieldValue() {
+    void testGetFieldValue() {
         assertEquals("a", getFieldValue(new A(), "a"));
         assertEquals("a", getFieldValue(new B(), "a"));
         assertEquals("b", getFieldValue(new B(), "b"));
@@ -63,7 +63,7 @@ public class FieldUtilsTest {
     }
 
     @Test
-    public void setSetFieldValue() {
+    void setSetFieldValue() {
         A a = new A();
         assertEquals("a", setFieldValue(a, "a", "x"));
         assertEquals("x", getFieldValue(a, "a"));

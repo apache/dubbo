@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-public class MigrationRuleListenerTest {
+class MigrationRuleListenerTest {
 
     private String localRule = "key: demo-consumer\n" +
         "step: APPLICATION_FIRST\n" +
@@ -75,7 +75,7 @@ public class MigrationRuleListenerTest {
      * Check local rule take effect
      */
     @Test
-    public void test() throws InterruptedException {
+    void test() throws InterruptedException {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
         ApplicationModel.reset();
@@ -110,7 +110,7 @@ public class MigrationRuleListenerTest {
      * Test listener started without local rule and config center, INIT should be used and no scheduled task should be started.
      */
     @Test
-    public void testWithInitAndNoLocalRule() {
+    void testWithInitAndNoLocalRule() {
         ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(null);
         ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule("");
         ApplicationConfig applicationConfig = new ApplicationConfig();
@@ -145,7 +145,7 @@ public class MigrationRuleListenerTest {
      * 2. remote rule change and all invokers gets notified
      */
     @Test
-    public void testWithConfigurationListenerAndLocalRule() throws InterruptedException {
+    void testWithConfigurationListenerAndLocalRule() throws InterruptedException {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
         Mockito.doReturn(remoteRule).when(dynamicConfiguration).getConfig(Mockito.anyString(), Mockito.anyString());
 

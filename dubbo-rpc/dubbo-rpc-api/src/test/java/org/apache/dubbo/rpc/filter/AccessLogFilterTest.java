@@ -39,13 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * AccessLogFilterTest.java
  */
-public class AccessLogFilterTest {
+class AccessLogFilterTest {
 
     Filter accessLogFilter = new AccessLogFilter();
 
     // Test filter won't throw an exception
     @Test
-    public void testInvokeException() {
+    void testInvokeException() {
         Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(null);
         Invocation invocation = new MockInvocation();
         LogUtil.start();
@@ -77,7 +77,7 @@ public class AccessLogFilterTest {
     }
 
     @Test
-    public void testCustom() {
+    void testCustom() {
         URL url = URL.valueOf("test://test:11/test?accesslog=custom-access.log");
         Invoker<AccessLogFilterTest> invoker = new MyInvoker<AccessLogFilterTest>(url);
         Invocation invocation = new MockInvocation();

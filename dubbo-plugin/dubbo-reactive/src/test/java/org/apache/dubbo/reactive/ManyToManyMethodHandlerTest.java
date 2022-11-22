@@ -20,6 +20,7 @@ package org.apache.dubbo.reactive;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.reactive.handler.ManyToManyMethodHandler;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.doAnswer;
 public final class ManyToManyMethodHandlerTest {
 
     @Test
-    public void testInvoke() throws ExecutionException, InterruptedException {
+    void testInvoke() throws ExecutionException, InterruptedException {
         AtomicInteger nextCounter = new AtomicInteger();
         AtomicInteger completeCounter = new AtomicInteger();
         AtomicInteger errorCounter = new AtomicInteger();

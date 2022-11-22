@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private CollectionTypeDefinitionBuilder builder;
 
@@ -72,7 +72,7 @@ public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProce
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, stringsField.asType()));
         assertTrue(builder.accept(processingEnv, colorsField.asType()));
         assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
@@ -81,7 +81,7 @@ public class CollectionTypeDefinitionBuilderTest extends AbstractAnnotationProce
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
 
         buildAndAssertTypeDefinition(processingEnv, stringsField, "java.util.Collection<java.lang.String>", "java.lang.String", builder);
 

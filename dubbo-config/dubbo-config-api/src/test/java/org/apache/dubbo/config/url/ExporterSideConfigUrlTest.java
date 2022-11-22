@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
-public class ExporterSideConfigUrlTest extends UrlTestBase {
+class ExporterSideConfigUrlTest extends UrlTestBase {
 
     private static final Logger log = LoggerFactory.getLogger(ExporterSideConfigUrlTest.class);
 
@@ -53,23 +53,23 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
     }
 
     @Test
-    public void exporterMethodConfigUrlTest() {
+    void exporterMethodConfigUrlTest() {
         verifyExporterUrlGeneration(methodConfForService, methodConfForServiceTable);
     }
 
     @Test
-    public void exporterServiceConfigUrlTest() {
+    void exporterServiceConfigUrlTest() {
         verifyExporterUrlGeneration(servConf, servConfTable);
     }
 
     @Test
-    public void exporterProviderConfigUrlTest() {
+    void exporterProviderConfigUrlTest() {
 
         verifyExporterUrlGeneration(provConf, provConfTable);
     }
 
     @Test
-    public void exporterRegistryConfigUrlTest() {
+    void exporterRegistryConfigUrlTest() {
 
         //verifyExporterUrlGeneration(regConfForService, regConfForServiceTable);
     }

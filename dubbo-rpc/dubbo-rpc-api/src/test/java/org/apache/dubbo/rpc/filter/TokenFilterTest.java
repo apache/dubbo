@@ -34,12 +34,12 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class TokenFilterTest {
+class TokenFilterTest {
 
     private TokenFilter tokenFilter = new TokenFilter();
 
     @Test
-    public void testInvokeWithToken() throws Exception {
+    void testInvokeWithToken() throws Exception {
         String token = "token";
 
         Invoker invoker = Mockito.mock(Invoker.class);
@@ -55,7 +55,7 @@ public class TokenFilterTest {
     }
 
     @Test
-    public void testInvokeWithWrongToken() throws Exception {
+    void testInvokeWithWrongToken() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             String token = "token";
 
@@ -74,7 +74,7 @@ public class TokenFilterTest {
     }
 
     @Test
-    public void testInvokeWithoutToken() throws Exception {
+    void testInvokeWithoutToken() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             String token = "token";
 

@@ -37,7 +37,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 /**
  * StaticDirectory Test
  */
-public class StaticDirectoryTest {
+class StaticDirectoryTest {
     private URL SCRIPT_URL = URL.valueOf("condition://0.0.0.0/com.foo.BarService");
 
     private URL getRouteUrl(String rule) {
@@ -45,7 +45,7 @@ public class StaticDirectoryTest {
     }
 
     @Test
-    public void testStaticDirectory() {
+    void testStaticDirectory() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
         List<StateRouter> routers = new ArrayList<StateRouter>();
         routers.add(router);

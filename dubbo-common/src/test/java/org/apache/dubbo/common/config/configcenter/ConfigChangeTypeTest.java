@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
  * @see ConfigChangeType
  * @since 2.7.5
  */
-public class ConfigChangeTypeTest {
+class ConfigChangeTypeTest {
 
     @Test
-    public void testMembers() {
+    void testMembers() {
         assertArrayEquals(new ConfigChangeType[]{ADDED, MODIFIED, DELETED}, ConfigChangeType.values());
     }
 }

@@ -34,7 +34,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.net.InetSocketAddress;
 
-public class PropertySourcesConfigurerTest {
+class PropertySourcesConfigurerTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -47,7 +47,7 @@ public class PropertySourcesConfigurerTest {
     }
 
     @Test
-    public void testEarlyInit() {
+    void testEarlyInit() {
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext("org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml");
         try {

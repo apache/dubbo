@@ -61,7 +61,7 @@ import java.util.concurrent.Future;
 
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
-public class MultiInstanceTest {
+class MultiInstanceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiInstanceTest.class);
 
@@ -125,7 +125,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testIsolatedApplications() {
+    void testIsolatedApplications() {
 
         DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(new FrameworkModel());
         DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(new FrameworkModel());
@@ -152,7 +152,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testDefaultProviderApplication() {
+    void testDefaultProviderApplication() {
         DubboBootstrap.reset();
         DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
         try {
@@ -163,7 +163,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testDefaultConsumerApplication() {
+    void testDefaultConsumerApplication() {
         SysProps.setProperty("dubbo.consumer.check", "false");
         DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
         try {
@@ -177,7 +177,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testDefaultMixedApplication() {
+    void testDefaultMixedApplication() {
         DubboBootstrap.reset();
         DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
         try {
@@ -193,7 +193,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testSharedApplications() {
+    void testSharedApplications() {
 
         FrameworkModel frameworkModel = new FrameworkModel();
         DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(frameworkModel);
@@ -215,7 +215,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testMultiModuleApplication() throws InterruptedException {
+    void testMultiModuleApplication() throws InterruptedException {
 
         //SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "100");
 
@@ -306,7 +306,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testMultiProviderApplicationsStopOneByOne() {
+    void testMultiProviderApplicationsStopOneByOne() {
 
         String version1 = "1.0";
         String version2 = "2.0";
@@ -424,7 +424,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testMultiModuleDeployAndReload() throws Exception {
+    void testMultiModuleDeployAndReload() throws Exception {
 
         String version1 = "1.0";
         String version2 = "2.0";
@@ -568,7 +568,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testBothStartByModuleAndByApplication() throws Exception {
+    void testBothStartByModuleAndByApplication() throws Exception {
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -649,7 +649,7 @@ public class MultiInstanceTest {
 
 
     @Test
-    public void testBothStartModuleAndApplicationNoWait() throws Exception {
+    void testBothStartModuleAndApplicationNoWait() throws Exception {
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -707,7 +707,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testOldApiDeploy() throws Exception {
+    void testOldApiDeploy() throws Exception {
 
         DubboBootstrap.reset();
         try {
@@ -784,7 +784,7 @@ public class MultiInstanceTest {
     }
 
     @Test
-    public void testAsyncExportAndReferServices() throws ExecutionException, InterruptedException {
+    void testAsyncExportAndReferServices() throws ExecutionException, InterruptedException {
         FrameworkModel frameworkModel = new FrameworkModel();
 
         DubboBootstrap providerBootstrap = DubboBootstrap.newInstance(frameworkModel);

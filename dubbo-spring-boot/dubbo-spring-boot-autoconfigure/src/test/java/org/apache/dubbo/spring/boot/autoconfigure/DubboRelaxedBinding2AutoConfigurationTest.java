@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
 })
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:/dubbo.properties")
-public class DubboRelaxedBinding2AutoConfigurationTest {
+class DubboRelaxedBinding2AutoConfigurationTest {
 
     @Autowired
     @Qualifier(BASE_PACKAGES_BEAN_NAME)
@@ -75,7 +75,7 @@ public class DubboRelaxedBinding2AutoConfigurationTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testBeans() {
+    void testBeans() {
 
 
         assertTrue(ClassUtils.isAssignableValue(BinderDubboConfigBinder.class, dubboConfigBinder));

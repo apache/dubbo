@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 class TripleClientStreamTest {
 
     @Test
-    public void progress() {
+    void progress() {
         final URL url = URL.valueOf("tri://127.0.0.1:8080/foo.bar.service");
         final ModuleServiceRepository repo = ApplicationModel.defaultModel().getDefaultModule()
             .getServiceRepository();

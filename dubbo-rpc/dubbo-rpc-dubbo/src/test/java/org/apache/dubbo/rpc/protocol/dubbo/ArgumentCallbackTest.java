@@ -42,7 +42,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
 
-public class ArgumentCallbackTest {
+class ArgumentCallbackTest {
 
     protected Exporter<IDemoService> exporter = null;
     protected Exporter<IHelloService> hello_exporter = null;
@@ -114,7 +114,7 @@ public class ArgumentCallbackTest {
     }
 
     @Test
-    public void TestCallbackNormalWithBindPort() throws Exception {
+    void TestCallbackNormalWithBindPort() throws Exception {
         initOrResetUrl(1, 10000000);
         consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY, "7653");
         initOrResetService();
@@ -135,7 +135,7 @@ public class ArgumentCallbackTest {
     }
 
     @Test
-    public void TestCallbackNormal() throws Exception {
+    void TestCallbackNormal() throws Exception {
 
         initOrResetUrl(1, 10000000);
         initOrResetService();
@@ -157,7 +157,7 @@ public class ArgumentCallbackTest {
     }
 
     @Test
-    public void TestCallbackMultiInstans() throws Exception {
+    void TestCallbackMultiInstans() throws Exception {
         initOrResetUrl(2, 3000);
         initOrResetService();
         IDemoCallback callback = new IDemoCallback() {
@@ -206,7 +206,7 @@ public class ArgumentCallbackTest {
     }
 
     @Test
-    public void TestCallbackConsumerLimit() throws Exception {
+    void TestCallbackConsumerLimit() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             initOrResetUrl(1, 1000);
             // URL cannot be transferred automatically from the server side to the client side by using API, instead,
@@ -233,7 +233,7 @@ public class ArgumentCallbackTest {
     }
 
     @Test
-    public void TestCallbackProviderLimit() throws Exception {
+    void TestCallbackProviderLimit() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
             initOrResetUrl(1, 1000);
             // URL cannot be transferred automatically from the server side to the client side by using API, instead,
@@ -275,7 +275,7 @@ public class ArgumentCallbackTest {
 
     @Disabled("need start with separate process")
     @Test
-    public void startProvider() throws Exception {
+    void startProvider() throws Exception {
         exportService();
         synchronized (ArgumentCallbackTest.class) {
             ArgumentCallbackTest.class.wait();

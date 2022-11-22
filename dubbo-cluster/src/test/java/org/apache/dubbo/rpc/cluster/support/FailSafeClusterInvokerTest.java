@@ -42,7 +42,7 @@ import static org.mockito.Mockito.mock;
  *
  */
 @SuppressWarnings("unchecked")
-public class FailSafeClusterInvokerTest {
+class FailSafeClusterInvokerTest {
     List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
     URL url = URL.valueOf("test://test:11/test");
     Invoker<DemoService> invoker = mock(Invoker.class);
@@ -82,7 +82,7 @@ public class FailSafeClusterInvokerTest {
 
     //TODO assert error log
     @Test
-    public void testInvokeExceptoin() {
+    void testInvokeExceptoin() {
         resetInvokerToException();
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
         invoker.invoke(invocation);
@@ -90,7 +90,7 @@ public class FailSafeClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeNoExceptoin() {
+    void testInvokeNoExceptoin() {
 
         resetInvokerToNoException();
 
@@ -100,7 +100,7 @@ public class FailSafeClusterInvokerTest {
     }
 
     @Test
-    public void testNoInvoke() {
+    void testNoInvoke() {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
