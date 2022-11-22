@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.metrics.model.sample;
 
 import org.apache.dubbo.common.metrics.model.MetricsCategory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MetricSampleTest {
+class MetricSampleTest {
 
     private static String name;
     private static String description;
@@ -45,7 +46,7 @@ public class MetricSampleTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         MetricSample sample = new MetricSample(name, description, tags, type, category, baseUnit);
         Assertions.assertEquals(sample.getName(), name);
         Assertions.assertEquals(sample.getDescription(), description);

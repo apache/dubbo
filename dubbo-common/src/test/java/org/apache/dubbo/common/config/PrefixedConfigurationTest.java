@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Test;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class PrefixedConfigurationTest {
+class PrefixedConfigurationTest {
 
     @Test
-    public void testPrefixedConfiguration() {
+    void testPrefixedConfiguration() {
         Map<String,String> props = new LinkedHashMap<>();
         props.put("dubbo.protocol.name", "dubbo");
         props.put("dubbo.protocol.port", "1234");

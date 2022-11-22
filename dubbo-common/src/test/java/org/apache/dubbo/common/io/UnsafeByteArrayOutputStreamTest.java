@@ -31,14 +31,14 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 
-public class UnsafeByteArrayOutputStreamTest {
+class UnsafeByteArrayOutputStreamTest {
     @Test
-    public void testWrongSize() {
+    void testWrongSize() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new UnsafeByteArrayOutputStream(-1));
     }
 
     @Test
-    public void testWrite() {
+    void testWrite() {
         UnsafeByteArrayOutputStream outputStream = new UnsafeByteArrayOutputStream(1);
         outputStream.write((int) 'a');
         outputStream.write("bc".getBytes(), 0, 2);
@@ -48,7 +48,7 @@ public class UnsafeByteArrayOutputStreamTest {
     }
 
     @Test
-    public void testToByteBuffer() {
+    void testToByteBuffer() {
         UnsafeByteArrayOutputStream outputStream = new UnsafeByteArrayOutputStream(1);
         outputStream.write((int) 'a');
 
@@ -57,7 +57,7 @@ public class UnsafeByteArrayOutputStreamTest {
     }
 
     @Test
-    public void testExtendLengthForBuffer() throws IOException {
+    void testExtendLengthForBuffer() throws IOException {
         UnsafeByteArrayOutputStream outputStream = new UnsafeByteArrayOutputStream(1);
         for (int i = 0; i < 10; i++) {
             outputStream.write(i);
@@ -70,7 +70,7 @@ public class UnsafeByteArrayOutputStreamTest {
     }
 
     @Test
-    public void testToStringWithCharset() throws IOException {
+    void testToStringWithCharset() throws IOException {
         UnsafeByteArrayOutputStream outputStream = new UnsafeByteArrayOutputStream();
         outputStream.write("Hòa Bình".getBytes());
 

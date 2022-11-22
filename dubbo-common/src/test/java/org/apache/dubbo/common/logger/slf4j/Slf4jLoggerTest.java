@@ -17,21 +17,19 @@
 package org.apache.dubbo.common.logger.slf4j;
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Marker;
 import org.slf4j.spi.LocationAwareLogger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-public class Slf4jLoggerTest {
+class Slf4jLoggerTest {
     @Test
-    public void testLocationAwareLogger() {
+    void testLocationAwareLogger() {
         LocationAwareLogger locationAwareLogger = mock(LocationAwareLogger.class);
         Slf4jLogger logger = new Slf4jLogger(locationAwareLogger);
 

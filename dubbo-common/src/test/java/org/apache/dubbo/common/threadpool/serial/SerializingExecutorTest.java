@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class SerializingExecutorTest {
+class SerializingExecutorTest {
 
     protected static SerializingExecutor serializingExecutor;
 
@@ -40,7 +40,7 @@ public class SerializingExecutorTest {
     }
 
     @Test
-    public void test1() throws InterruptedException {
+    void test1() throws InterruptedException {
         int n = 2;
         int eachCount = 1000;
         int total = n * eachCount;

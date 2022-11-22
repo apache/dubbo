@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * The type Environment configuration test.
  */
-public class EnvironmentConfigurationTest {
+class EnvironmentConfigurationTest {
 
     private static final String MOCK_KEY = "DUBBO_KEY";
     private static final String MOCK_VALUE = "mockValue";
@@ -43,7 +43,7 @@ public class EnvironmentConfigurationTest {
     }
 
     @Test
-    public void testGetInternalProperty() {
+    void testGetInternalProperty() {
         Map<String, String> map = new HashMap<>();
         map.put(MOCK_KEY, MOCK_VALUE);
         try {
