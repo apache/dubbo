@@ -29,6 +29,7 @@ import java.util.Enumeration;
 
 public class Log4jLoggerAdapter implements LoggerAdapter {
 
+    public static final String NAME = "log4j";
     private File file;
 
     @SuppressWarnings("unchecked")
@@ -49,7 +50,8 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
                     }
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
+            // ignore
         }
     }
 
@@ -126,7 +128,7 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setFile(File file) {
-
+        // ignore
     }
 
     @Override
@@ -149,7 +151,8 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
                     }
                 }
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
+            // ignore
         }
         return hasAppender;
     }

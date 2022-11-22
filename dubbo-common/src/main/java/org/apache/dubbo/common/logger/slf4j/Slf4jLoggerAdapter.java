@@ -24,7 +24,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import java.io.File;
 
 public class Slf4jLoggerAdapter implements LoggerAdapter {
-
+    public static final String NAME = "slf4j";
     private Level level;
     private File file;
 
@@ -64,6 +64,7 @@ public class Slf4jLoggerAdapter implements LoggerAdapter {
             ClassUtils.forName("org.slf4j.impl.StaticLoggerBinder");
             return true;
         } catch (ClassNotFoundException ignore) {
+            // ignore
         }
         return false;
     }

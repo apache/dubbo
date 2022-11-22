@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import java.io.File;
 
 public class Log4j2LoggerAdapter implements LoggerAdapter {
+    public static final String NAME = "log4j2";
 
     private Level level;
 
@@ -102,6 +103,7 @@ public class Log4j2LoggerAdapter implements LoggerAdapter {
 
     @Override
     public void setFile(File file) {
+        // ignore
     }
 
     @Override
