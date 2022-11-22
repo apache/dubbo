@@ -110,6 +110,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         nettyBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
+                NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
                 final ChannelPipeline pipeline = ch.pipeline();
                 SslContext sslContext = null;
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
@@ -120,7 +121,9 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast("connectionHandler", connectionHandler);
-                protocol.configClientPipeline(getUrl(), pipeline, sslContext);
+
+                NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
+                protocol.configClientPipeline(getUrl(), operator, sslContext);
                 // TODO support Socks5
             }
         });

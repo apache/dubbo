@@ -19,15 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
-import org.apache.dubbo.remoting.api.connection.SingleProtocolConnectionManager;
-import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
-import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
-import org.apache.dubbo.remoting.transport.netty4.NettyPortUnificationServer;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
@@ -38,12 +32,10 @@ import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 
 import io.netty.channel.Channel;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.HashSet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
