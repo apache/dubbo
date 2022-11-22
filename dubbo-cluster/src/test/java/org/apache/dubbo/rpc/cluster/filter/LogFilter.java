@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 
 @Activate(group = CONSUMER, value = "log")
-class LogFilter implements Filter, Filter.Listener {
+public class LogFilter implements Filter, Filter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {

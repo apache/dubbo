@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 
-class MyMockException extends RuntimeException {
+public class MyMockException extends RuntimeException {
 
     private static final long serialVersionUID = 2851692379597990457L;
 

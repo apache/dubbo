@@ -24,7 +24,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 
-class TagProviderURLMergeProcessor implements ProviderURLMergeProcessor {
+public class TagProviderURLMergeProcessor implements ProviderURLMergeProcessor {
 
     @Override
     public URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap) {
