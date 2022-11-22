@@ -27,7 +27,6 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
-import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -59,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DubboNamespaceHandlerTest {
 
-    private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
+    private static String resourcePath = "org.apache.dubbo.config.spring".replace('.', '/');
 
     @BeforeEach
     public void setUp() {
