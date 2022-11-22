@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * {@link StandardMetadataServiceURLBuilder} Test
  */
-public class StandardMetadataServiceURLBuilderTest {
+class StandardMetadataServiceURLBuilderTest {
 
     @BeforeAll
     public static void setUp() {
@@ -50,7 +50,7 @@ public class StandardMetadataServiceURLBuilderTest {
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         ExtensionLoader<MetadataServiceURLBuilder> loader = ApplicationModel.defaultModel()
             .getExtensionLoader(MetadataServiceURLBuilder.class);
         MetadataServiceURLBuilder builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);

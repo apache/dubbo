@@ -71,7 +71,7 @@ class AbstractServiceNameMappingTest {
     }
 
     @Test
-    public void testGetAndListener() {
+    void testGetAndListener() {
         URL registryURL = URL.valueOf("registry://127.0.0.1:7777/test");
         registryURL = registryURL.addParameter(SUBSCRIBED_SERVICE_NAMES_KEY, "registry-app1");
 
