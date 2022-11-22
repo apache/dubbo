@@ -136,7 +136,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             String serializationSecurityCheck = ConfigurationUtils.getSystemConfiguration(
-                channel.getUrl().getScopeModel()).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
+                channel.getUrl().getScopeModel().getParent()).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
 
             if (Boolean.parseBoolean(serializationSecurityCheck)) {
                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
