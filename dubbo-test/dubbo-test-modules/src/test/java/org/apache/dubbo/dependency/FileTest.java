@@ -23,6 +23,8 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@DisabledOnOs(value = OS.WINDOWS)
 class FileTest {
     private final static List<Pattern> ignoredModules = new LinkedList<>();
     private final static List<Pattern> ignoredModulesInDubboAll = new LinkedList<>();
