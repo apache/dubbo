@@ -42,11 +42,11 @@ import static org.mockito.Mockito.when;
 /**
  * ExceptionFilterTest
  */
-public class ExceptionFilterTest {
+class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testRpcException() {
+    void testRpcException() {
         Logger failLogger = mock(Logger.class);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
         RpcContext.getServiceContext().setRemoteAddress("127.0.0.1", 1234);
@@ -74,7 +74,7 @@ public class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testJavaException() {
+    void testJavaException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
@@ -94,7 +94,7 @@ public class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testRuntimeException() {
+    void testRuntimeException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
@@ -114,7 +114,7 @@ public class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testConvertToRunTimeException() throws Exception {
+    void testConvertToRunTimeException() throws Exception {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
