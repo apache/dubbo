@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.filter;
 
 
-public class DemoServiceImpl implements DemoService{
+class DemoServiceImpl implements DemoService{
 
     @Override
     public String sayHello(String name) {

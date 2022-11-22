@@ -33,10 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class DubboAttachmentMatchTest {
+class DubboAttachmentMatchTest {
 
     @Test
-    public void dubboContextMatch() {
+    void dubboContextMatch() {
         DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
 
         Map<String, StringMatch> dubbocontextMatchMap = new HashMap<>();
@@ -87,7 +87,7 @@ public class DubboAttachmentMatchTest {
 
 
     @Test
-    public void tracingContextMatch() {
+    void tracingContextMatch() {
         DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
 
         Map<String, StringMatch> tracingContextMatchMap = new HashMap<>();
@@ -130,7 +130,7 @@ public class DubboAttachmentMatchTest {
 
 
     @Test
-    public void contextMatch() {
+    void contextMatch() {
         DubboAttachmentMatch dubboAttachmentMatch = new DubboAttachmentMatch();
 
         Map<String, StringMatch> tracingContextMatchMap = new HashMap<>();
