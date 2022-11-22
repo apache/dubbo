@@ -43,6 +43,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -66,6 +68,7 @@ public class ConfigurableMetadataServiceExporter {
     private final ApplicationModel applicationModel;
     private MetadataServiceDelegation metadataService;
     private volatile ServiceConfig<MetadataService> serviceConfig;
+    private static final Set<String> UNACCEPTABLE_PROTOCOL = Stream.of("rest", "grpc").collect(Collectors.toSet());
 
     public ConfigurableMetadataServiceExporter(ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
         this.applicationModel = applicationModel;
@@ -208,6 +211,7 @@ public class ConfigurableMetadataServiceExporter {
             .flatMap(Collection::stream)
             .map(ConsumerConfig::getProtocol)
             .filter(StringUtils::isNotEmpty)
+            .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
             .findFirst()
             .orElse("");
         // <dubbo:provider/>
@@ -231,6 +235,7 @@ public class ConfigurableMetadataServiceExporter {
                     }
                 })
                 .filter(StringUtils::isNotEmpty)
+                .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
                 .findFirst()
                 .orElse("");
         }
@@ -239,7 +244,11 @@ public class ConfigurableMetadataServiceExporter {
             Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
             if (CollectionUtils.isNotEmpty(protocols)) {
                 protocol = protocols.stream()
-                    .map(ProtocolConfig::getName).filter(StringUtils::isNotEmpty).findFirst().orElse("");
+                    .map(ProtocolConfig::getName)
+                    .filter(StringUtils::isNotEmpty)
+                    .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
+                    .findFirst()
+                    .orElse("");
             }
         }
         // <dubbo:application/>
@@ -252,7 +261,7 @@ public class ConfigurableMetadataServiceExporter {
                 }
             }
         }
-        return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
+        return StringUtils.isNotEmpty(protocol) && !UNACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
     }
 
     private ServiceConfig<MetadataService> buildServiceConfig() {
