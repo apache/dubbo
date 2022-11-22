@@ -61,7 +61,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
  *         4-11 id (long)
  *         12 -15 datalength
  */
-public class ExchangeCodecTest extends TelnetCodecTest {
+class ExchangeCodecTest extends TelnetCodecTest {
     // magic header.
     private static final short MAGIC = (short) 0xdabb;
     private static final byte MAGIC_HIGH = (byte) Bytes.short2bytes(MAGIC)[0];

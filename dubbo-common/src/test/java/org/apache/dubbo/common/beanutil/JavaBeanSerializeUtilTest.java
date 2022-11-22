@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.apache.dubbo.common.utils.PojoUtilsTest;
 import org.apache.dubbo.rpc.model.person.BigPerson;
 import org.apache.dubbo.rpc.model.person.FullAddress;
 import org.apache.dubbo.rpc.model.person.PersonInfo;
@@ -300,12 +299,12 @@ class JavaBeanSerializeUtilTest {
 
     @Test
     void test_Circular_Reference() {
-        PojoUtilsTest.Parent parent = new PojoUtilsTest.Parent();
+        Parent parent = new Parent();
         parent.setAge(Integer.MAX_VALUE);
         parent.setEmail("a@b");
         parent.setName("zhangsan");
 
-        PojoUtilsTest.Child child = new PojoUtilsTest.Child();
+        Child child = new Child();
         child.setAge(100);
         child.setName("lisi");
         child.setParent(parent);
@@ -322,6 +321,91 @@ class JavaBeanSerializeUtilTest {
         Assertions.assertSame(descriptor, childDescriptor.getProperty("parent"));
         assertEqualsPrimitive(child.getName(), childDescriptor.getProperty("name"));
         assertEqualsPrimitive(child.getAge(), childDescriptor.getProperty("age"));
+    }
+
+    public static class Parent {
+        public String gender;
+        public String email;
+        String name;
+        int age;
+        Child child;
+        private String securityEmail;
+
+        public static Parent getNewParent() {
+            return new Parent();
+        }
+
+        public String getEmail() {
+            return this.securityEmail;
+        }
+
+        public void setEmail(String email) {
+            this.securityEmail = email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public Child getChild() {
+            return child;
+        }
+
+        public void setChild(Child child) {
+            this.child = child;
+        }
+    }
+
+    public static class Child {
+        public String gender;
+        public int age;
+        String toy;
+        Parent parent;
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public String getToy() {
+            return toy;
+        }
+
+        public void setToy(String toy) {
+            this.toy = toy;
+        }
+
+        public Parent getParent() {
+            return parent;
+        }
+
+        public void setParent(Parent parent) {
+            this.parent = parent;
+        }
     }
 
     @Test
