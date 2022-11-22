@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.HEARTBEAT_CHECK_TICK;
 
-class ReconnectTimerTaskTest {
+public class ReconnectTimerTaskTest {
 
     private URL url = URL.valueOf("dubbo://localhost:20880");
 
@@ -61,7 +61,7 @@ class ReconnectTimerTaskTest {
     }
 
     @Test
-    void testReconnect() throws Exception {
+    public void testReconnect() throws Exception {
         long now = System.currentTimeMillis();
 
         url = url.addParameter(DUBBO_VERSION_KEY, "2.1.1");

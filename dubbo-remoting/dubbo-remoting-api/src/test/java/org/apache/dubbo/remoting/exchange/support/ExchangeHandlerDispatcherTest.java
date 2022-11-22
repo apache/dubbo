@@ -26,10 +26,10 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 
-class ExchangeHandlerDispatcherTest {
+public class ExchangeHandlerDispatcherTest {
 
     @Test
-    void test() throws Exception {
+    public void test() throws Exception {
         ExchangeHandlerDispatcher exchangeHandlerDispatcher = new ExchangeHandlerDispatcher();
 
         ChannelHandler channelHandler = Mockito.mock(ChannelHandler.class);

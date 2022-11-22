@@ -29,10 +29,10 @@ import org.mockito.Mockito;
 /**
  * {@link DecodeHandler}
  */
-class DecodeHandlerTest {
+public class DecodeHandlerTest {
 
     @Test
-    void test() throws Exception {
+    public void test() throws Exception {
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);
         Channel channel = Mockito.mock(Channel.class);
         DecodeHandler decodeHandler = new DecodeHandler(handler);

@@ -29,10 +29,10 @@ import org.mockito.Mockito;
 /**
  * {@link NettyCodecAdapter}
  */
-class NettyCodecAdapterTest {
+public class NettyCodecAdapterTest {
 
     @Test
-    void test() {
+    public void test() {
         Codec2 codec2 = Mockito.mock(Codec2.class);
         URL url = Mockito.mock(URL.class);
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);

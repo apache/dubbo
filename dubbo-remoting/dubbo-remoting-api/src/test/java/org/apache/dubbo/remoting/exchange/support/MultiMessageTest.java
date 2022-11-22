@@ -26,10 +26,10 @@ import java.util.Iterator;
 /**
  * {@link MultiMessage}
  */
-class MultiMessageTest {
+public class MultiMessageTest {
 
     @Test
-    void test() {
+    public void test() {
         MultiMessage multiMessage = MultiMessage.create();
         Assertions.assertTrue(multiMessage instanceof Iterable);
 

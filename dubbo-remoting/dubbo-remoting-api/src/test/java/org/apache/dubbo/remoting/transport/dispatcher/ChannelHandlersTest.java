@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class ChannelHandlersTest {
+public class ChannelHandlersTest {
     @Test
-    void test() {
+    public void test() {
         ChannelHandlers instance1 = ChannelHandlers.getInstance();
         ChannelHandlers instance2 = ChannelHandlers.getInstance();
         Assertions.assertEquals(instance1, instance2);

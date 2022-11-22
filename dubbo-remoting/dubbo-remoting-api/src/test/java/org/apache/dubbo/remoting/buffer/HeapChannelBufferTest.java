@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 
-class HeapChannelBufferTest extends AbstractChannelBufferTest {
+public class HeapChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;
 

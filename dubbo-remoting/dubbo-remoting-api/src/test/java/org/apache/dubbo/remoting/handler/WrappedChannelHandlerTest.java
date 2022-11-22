@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-class WrappedChannelHandlerTest {
+public class WrappedChannelHandlerTest {
     WrappedChannelHandler handler;
     URL url = URL.valueOf("test://10.20.30.40:1234");
 
@@ -49,7 +49,7 @@ class WrappedChannelHandlerTest {
     }
 
     @Test
-    void test_Execute_Error() throws RemotingException {
+    public void test_Execute_Error() throws RemotingException {
 
     }
 
@@ -88,22 +88,22 @@ class WrappedChannelHandlerTest {
     }
 
     @Test
-    void testConnectBizError() throws RemotingException {
+    public void testConnectBizError() throws RemotingException {
         Assertions.assertThrows(RemotingException.class, () -> handler.connected(new MockedChannel()));
     }
 
     @Test
-    void testDisconnectBizError() throws RemotingException {
+    public void testDisconnectBizError() throws RemotingException {
         Assertions.assertThrows(RemotingException.class, () -> handler.disconnected(new MockedChannel()));
     }
 
     @Test
-    void testMessageReceivedBizError() throws RemotingException {
+    public void testMessageReceivedBizError() throws RemotingException {
         Assertions.assertThrows(RemotingException.class, () -> handler.received(new MockedChannel(), ""));
     }
 
     @Test
-    void testCaughtBizError() throws RemotingException {
+    public void testCaughtBizError() throws RemotingException {
         try {
             handler.caught(new MockedChannel(), new BizException());
             fail();
@@ -113,7 +113,7 @@ class WrappedChannelHandlerTest {
     }
 
     @Test
-    void testGetExecutor() {
+    public void testGetExecutor() {
         ExecutorService sharedExecutorService = handler.getSharedExecutorService();
         Assertions.assertNotNull(sharedExecutorService);
         ExecutorService preferredExecutorService = handler.getPreferredExecutorService(new Object());

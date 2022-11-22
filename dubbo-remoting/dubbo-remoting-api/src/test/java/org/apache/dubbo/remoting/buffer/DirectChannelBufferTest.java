@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.buffer;
 
 import org.junit.jupiter.api.Assertions;
 
-class DirectChannelBufferTest extends AbstractChannelBufferTest {
+public class DirectChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;
 

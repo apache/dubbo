@@ -24,10 +24,10 @@ import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class PortUnificationServerTest {
+public class PortUnificationServerTest {
 
     @Test
-    void testBind() throws RemotingException {
+    public void testBind() throws RemotingException {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
 

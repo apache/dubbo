@@ -34,10 +34,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-class AbstractCodecTest {
+public class AbstractCodecTest {
 
     @Test
-    void testCheckPayloadDefault8M() throws Exception {
+    public void testCheckPayloadDefault8M() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1"));
 
@@ -56,7 +56,7 @@ class AbstractCodecTest {
     }
 
     @Test
-    void tesCheckPayloadMinusPayloadNoLimit() throws Exception {
+    public void tesCheckPayloadMinusPayloadNoLimit() throws Exception {
         Channel channel = mock(Channel.class);
         given(channel.getUrl()).willReturn(URL.valueOf("dubbo://1.1.1.1?payload=-1"));
 
@@ -66,7 +66,7 @@ class AbstractCodecTest {
     }
 
     @Test
-    void testIsClientSide() {
+    public void testIsClientSide() {
         AbstractCodec codec = getAbstractCodec();
 
         Channel channel = mock(Channel.class);

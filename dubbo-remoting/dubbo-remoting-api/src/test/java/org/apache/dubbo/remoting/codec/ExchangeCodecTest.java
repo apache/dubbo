@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
+import static org.apache.dubbo.common.serialize.Constants.FASTJSON2_SERIALIZATION_ID;
 
 /**
  *
@@ -127,7 +128,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Error_MagicNum() throws IOException {
+    public void test_Decode_Error_MagicNum() throws IOException {
         HashMap<byte[], Object> inputBytes = new HashMap<byte[], Object>();
         inputBytes.put(new byte[]{0}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
         inputBytes.put(new byte[]{MAGIC_HIGH, 0}, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
@@ -139,7 +140,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Error_Length() throws IOException {
+    public void test_Decode_Error_Length() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
@@ -154,7 +155,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Error_Response_Object() throws IOException {
+    public void test_Decode_Error_Response_Object() throws IOException {
         //00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -168,7 +169,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void testInvalidSerializaitonId() throws Exception {
+    public void testInvalidSerializaitonId() throws Exception {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x8F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Object obj =  decode(header);
         Assertions.assertTrue(obj instanceof Request);
@@ -185,7 +186,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Check_Payload() throws IOException {
+    public void test_Decode_Check_Payload() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         byte[] request = assemblyDataProtocol(header);
 
@@ -204,19 +205,19 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Header_Need_Readmore() throws IOException {
+    public void test_Decode_Header_Need_Readmore() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         testDecode_assertEquals(header, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
     }
 
     @Test
-    void test_Decode_Body_Need_Readmore() throws IOException {
+    public void test_Decode_Body_Need_Readmore() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 'a', 'a'};
         testDecode_assertEquals(header, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
     }
 
     @Test
-    void test_Decode_MigicCodec_Contain_ExchangeHeader() throws IOException {
+    public void test_Decode_MigicCodec_Contain_ExchangeHeader() throws IOException {
         byte[] header = new byte[]{0, 0, MAGIC_HIGH, MAGIC_LOW, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         Channel channel = getServerSideChannel(url);
@@ -228,7 +229,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Return_Response_Person() throws IOException {
+    public void test_Decode_Return_Response_Person() throws IOException {
         //00000010-response/oneway/hearbeat=false/hessian |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -251,7 +252,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Return_Request_Event_Object() throws IOException {
+    public void test_Decode_Return_Request_Event_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -268,7 +269,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Return_Request_Event_String() throws IOException {
+    public void test_Decode_Return_Request_Event_String() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         String event = READONLY_EVENT;
@@ -283,7 +284,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Return_Request_Heartbeat_Object() throws IOException {
+    public void test_Decode_Return_Request_Heartbeat_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         byte[] request = getRequestBytes(null, header);
@@ -296,7 +297,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Return_Request_Object() throws IOException {
+    public void test_Decode_Return_Request_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -313,7 +314,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Decode_Error_Request_Object() throws IOException {
+    public void test_Decode_Error_Request_Object() throws IOException {
         //00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) (SERIALIZATION_BYTE | (byte) 0xe0), 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -328,7 +329,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Header_Response_NoSerializationFlag() throws IOException {
+    public void test_Header_Response_NoSerializationFlag() throws IOException {
         //00000010-response/oneway/hearbeat=false/noset |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -341,7 +342,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Header_Response_Heartbeat() throws IOException {
+    public void test_Header_Response_Heartbeat() throws IOException {
         //00000010-response/oneway/hearbeat=true |20-stats=ok|id=0|length=0
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, SERIALIZATION_BYTE, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
@@ -354,7 +355,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Encode_Request() throws IOException {
+    public void test_Encode_Request() throws IOException {
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(2014);
         Channel channel = getClientSideChannel(url);
         Request request = new Request();
@@ -375,7 +376,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Encode_Response() throws IOException {
+    public void test_Encode_Response() throws IOException {
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(1024);
         Channel channel = getClientSideChannel(url);
         Response response = new Response();
@@ -404,7 +405,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void test_Encode_Error_Response() throws IOException {
+    public void test_Encode_Error_Response() throws IOException {
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(1024);
         Channel channel = getClientSideChannel(url);
         Response response = new Response();
@@ -433,7 +434,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void testMessageLengthGreaterThanMessageActualLength() throws Exception {
+    public void testMessageLengthGreaterThanMessageActualLength() throws Exception {
         Channel channel = getClientSideChannel(url);
         Request request = new Request(1L);
         request.setVersion(Version.getProtocolVersion());
@@ -467,7 +468,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     }
 
     @Test
-    void testMessageLengthExceedPayloadLimitWhenEncode() throws Exception {
+    public void testMessageLengthExceedPayloadLimitWhenEncode() throws Exception {
         Request request = new Request(1L);
         request.setData("hello");
         ChannelBuffer encodeBuffer = ChannelBuffers.dynamicBuffer(512);

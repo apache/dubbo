@@ -33,7 +33,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-class ChanelHandlerTest  {
+public class ChanelHandlerTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(ChanelHandlerTest.class);
 
@@ -74,7 +74,7 @@ class ChanelHandlerTest  {
     }
 
     @Test
-    void testClient() throws Throwable {
+    public void testClient() throws Throwable {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
             logger.warn("Please set -Dserver=127.0.0.1:9911");

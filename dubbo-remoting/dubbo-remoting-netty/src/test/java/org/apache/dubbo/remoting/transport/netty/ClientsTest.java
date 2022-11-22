@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-class ClientsTest {
+public class ClientsTest {
 
     @Test
-    void testGetTransportEmpty() {
+    public void testGetTransportEmpty() {
         try {
             ExtensionLoader.getExtensionLoader(Transporter.class).getExtension("");
             fail();
@@ -41,7 +41,7 @@ class ClientsTest {
     }
 
     @Test
-    void testGetTransportNull() {
+    public void testGetTransportNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             String name = null;
             ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name);
@@ -49,13 +49,13 @@ class ClientsTest {
     }
 
     @Test
-    void testGetTransport3() {
+    public void testGetTransport3() {
         String name = "netty3";
         assertEquals(NettyTransporter.class, ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
     }
 
     @Test
-    void testGetTransportWrong() {
+    public void testGetTransportWrong() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             String name = "nety";
             assertNull(ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());

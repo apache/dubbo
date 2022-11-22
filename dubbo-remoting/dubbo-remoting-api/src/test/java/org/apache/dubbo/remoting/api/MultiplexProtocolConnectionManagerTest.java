@@ -29,11 +29,11 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Consumer;
 
-class MultiplexProtocolConnectionManagerTest {
+public class MultiplexProtocolConnectionManagerTest {
     private ConnectionManager connectionManager = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
 
     @Test
-    void testConnect() throws Exception {
+    public void testConnect() throws Exception {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
         Connection connection = connectionManager.connect(url);
         Assertions.assertNotNull(connection);
@@ -45,7 +45,7 @@ class MultiplexProtocolConnectionManagerTest {
     }
 
     @Test
-    void testForEachConnection() throws RemotingException {
+    public void testForEachConnection() throws RemotingException {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
         Connection connect1 = connectionManager.connect(url);
 

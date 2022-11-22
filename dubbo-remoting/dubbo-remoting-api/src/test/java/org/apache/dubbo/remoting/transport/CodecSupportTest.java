@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,10 +29,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 
-class CodecSupportTest {
+public class CodecSupportTest {
 
     @Test
-    void testHeartbeat() throws Exception {
+    public void testHeartbeat() throws Exception {
         Byte proto = CodecSupport.getIDByName(DefaultSerializationSelector.getDefaultRemotingSerialization());
         Serialization serialization = CodecSupport.getSerializationById(proto);
         byte[] nullBytes = CodecSupport.getNullBytesOf(serialization);

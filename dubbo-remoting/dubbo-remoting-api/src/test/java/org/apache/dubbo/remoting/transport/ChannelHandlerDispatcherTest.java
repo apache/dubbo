@@ -26,10 +26,10 @@ import org.mockito.Mockito;
 
 import java.util.Collection;
 
-class ChannelHandlerDispatcherTest {
+public class ChannelHandlerDispatcherTest {
 
     @Test
-    void test() {
+    public void test() {
         ChannelHandlerDispatcher channelHandlerDispatcher = new ChannelHandlerDispatcher();
         MockChannelHandler channelHandler1 = new MockChannelHandler();
         MockChannelHandler channelHandler2 = new MockChannelHandler();

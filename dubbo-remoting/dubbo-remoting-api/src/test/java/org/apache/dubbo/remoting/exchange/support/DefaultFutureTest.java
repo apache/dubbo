@@ -35,18 +35,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class DefaultFutureTest {
+public class DefaultFutureTest {
 
     private static final AtomicInteger index = new AtomicInteger();
 
     @Test
-    void newFuture() {
+    public void newFuture() {
         DefaultFuture future = defaultFuture(3000);
         Assertions.assertNotNull(future, "new future return null");
     }
 
     @Test
-    void isDone() {
+    public void isDone() {
         DefaultFuture future = defaultFuture(3000);
         Assertions.assertTrue(!future.isDone(), "init future is finished!");
 
@@ -127,7 +127,7 @@ class DefaultFutureTest {
      * after a future is timeout , time is : 2021-01-22 10:55:05
      */
     @Test
-    void interruptSend() throws Exception {
+    public void interruptSend() throws Exception {
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
         // timeout after 1 seconds.
@@ -159,7 +159,7 @@ class DefaultFutureTest {
     }
 
     @Test
-    void testClose() throws Exception {
+    public void testClose() throws Exception {
         Channel channel = new MockedChannel();
         Request request = new Request(123);
         ExecutorService executor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)

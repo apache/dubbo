@@ -35,10 +35,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class NettyClientHandlerTest {
+public class NettyClientHandlerTest {
 
     @Test
-    void test() throws Exception {
+    public void test() throws Exception {
         URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 20901);
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);
         ChannelHandlerContext ctx = Mockito.mock(ChannelHandlerContext.class);

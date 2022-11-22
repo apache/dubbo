@@ -34,7 +34,7 @@ import java.util.List;
  * Date: 5/3/11
  * Time: 5:47 PM
  */
-class NettyClientTest {
+public class NettyClientTest {
     static RemotingServer server;
     static int port = NetUtils.getAvailablePort();
 
@@ -58,7 +58,7 @@ class NettyClientTest {
     }
 
     @Test
-    void testClientClose() throws Exception {
+    public void testClientClose() throws Exception {
         List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
         for (int i = 0; i < 100; i++) {
             ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3&codec=exchange"));
@@ -72,7 +72,7 @@ class NettyClientTest {
     }
 
     @Test
-    void testServerClose() throws Exception {
+    public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
             RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3&codec=exchange"), new TelnetServerHandler());
             aServer.close();

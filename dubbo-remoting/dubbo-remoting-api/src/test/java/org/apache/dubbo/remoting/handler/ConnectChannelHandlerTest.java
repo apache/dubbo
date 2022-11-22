@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
+public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -41,7 +41,7 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     }
 
     @Test
-    void testConnectBlocked() throws RemotingException {
+    public void testConnectBlocked() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(false), url);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "connectionExecutor", 1);
         Assertions.assertEquals(1, executor.getMaximumPoolSize());
@@ -77,7 +77,7 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     }
 
     @Test
-    void testConnectExecuteError() throws RemotingException {
+    public void testConnectExecuteError() throws RemotingException {
         Assertions.assertThrows(ExecutionException.class, () -> {
             handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(false), url);
             ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "connectionExecutor", 1);
@@ -87,7 +87,7 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     }
 
     @Test
-    void testDisconnectExecuteError() throws RemotingException {
+    public void testDisconnectExecuteError() throws RemotingException {
         Assertions.assertThrows(ExecutionException.class, () -> {
             handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(false), url);
             ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "connectionExecutor", 1);
@@ -104,7 +104,7 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
 
     //throw  ChannelEventRunnable.runtimeExeception(int logger) not in execute exception
     @Test
-    void testCaughtBizError() throws RemotingException {
+    public void testCaughtBizError() throws RemotingException {
         handler.caught(new MockedChannel(), new BizException());
     }
 
@@ -127,7 +127,7 @@ class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
     @SuppressWarnings("deprecation")
     @Disabled("Heartbeat is processed in HeartbeatHandler not WrappedChannelHandler.")
     @Test
-    void testReceivedEventInvokeDirect() throws RemotingException {
+    public void testReceivedEventInvokeDirect() throws RemotingException {
         handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(false), url);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) getField(handler, "SHARED_EXECUTOR", 1);
         executor.shutdown();

@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.buffer;
 
 import java.nio.ByteBuffer;
 
-class ByteBufferBackedChannelBufferTest extends AbstractChannelBufferTest {
+public class ByteBufferBackedChannelBufferTest extends AbstractChannelBufferTest {
 
     private ChannelBuffer buffer;
 

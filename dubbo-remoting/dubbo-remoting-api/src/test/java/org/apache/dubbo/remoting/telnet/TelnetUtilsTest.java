@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-class TelnetUtilsTest {
+public class TelnetUtilsTest {
 
     /**
      * abc - abc - abc
@@ -33,7 +33,7 @@ class TelnetUtilsTest {
      * x   - y   - z
      */
     @Test
-    void testToList() {
+    public void testToList() {
         List<List<String>> table = new LinkedList<>();
         table.add(Arrays.asList("abc","abc","abc"));
         table.add(Arrays.asList("1","2","3"));
@@ -56,7 +56,7 @@ class TelnetUtilsTest {
      * +-----+-----+-----+
      */
     @Test
-    void testToTable() {
+    public void testToTable() {
         List<List<String>> table = new LinkedList<>();
         table.add(Arrays.asList("abc","abc","abc"));
         table.add(Arrays.asList("1","2","3"));

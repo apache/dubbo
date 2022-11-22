@@ -42,10 +42,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class JettyLoggerAdapterTest {
+public class JettyLoggerAdapterTest {
 
     @Test
-    void testJettyUseDubboLogger() throws Exception{
+    public void testJettyUseDubboLogger() throws Exception{
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("http", "localhost", port,
             new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
@@ -64,7 +64,7 @@ class JettyLoggerAdapterTest {
 
 
     @Test
-    void testSuccessLogger() throws Exception{
+    public void testSuccessLogger() throws Exception{
         Logger successLogger = mock(Logger.class);
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
         JettyLoggerAdapter jettyLoggerAdapter = (JettyLoggerAdapter) clazz.newInstance();
@@ -98,7 +98,7 @@ class JettyLoggerAdapterTest {
 
 
     @Test
-    void testNewLogger(){
+    public void testNewLogger(){
         JettyLoggerAdapter loggerAdapter = new JettyLoggerAdapter();
         org.eclipse.jetty.util.log.Logger logger = loggerAdapter.newLogger(this.getClass().getName());
         assertThat(logger.getClass().isAssignableFrom(JettyLoggerAdapter.class), is(true));
@@ -106,7 +106,7 @@ class JettyLoggerAdapterTest {
 
 
     @Test
-    void testDebugEnabled(){
+    public void testDebugEnabled(){
         JettyLoggerAdapter loggerAdapter = new JettyLoggerAdapter();
         loggerAdapter.setDebugEnabled(true);
         assertThat(loggerAdapter.isDebugEnabled(), is(true));
@@ -114,7 +114,7 @@ class JettyLoggerAdapterTest {
 
 
     @Test
-    void testLoggerFormat() throws Exception{
+    public void testLoggerFormat() throws Exception{
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
         Object newInstance = clazz.newInstance();
 

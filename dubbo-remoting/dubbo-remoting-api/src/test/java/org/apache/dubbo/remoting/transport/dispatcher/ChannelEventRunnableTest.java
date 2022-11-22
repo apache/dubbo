@@ -29,10 +29,10 @@ import java.util.Arrays;
 /**
  * {@link ChannelEventRunnable}
  */
-class ChannelEventRunnableTest {
+public class ChannelEventRunnableTest {
 
     @Test
-    void test() throws Exception {
+    public void test() throws Exception {
         ChannelEventRunnable.ChannelState[] values = ChannelEventRunnable.ChannelState.values();
         Assertions.assertEquals(Arrays.toString(values), "[CONNECTED, DISCONNECTED, SENT, RECEIVED, CAUGHT]");
 

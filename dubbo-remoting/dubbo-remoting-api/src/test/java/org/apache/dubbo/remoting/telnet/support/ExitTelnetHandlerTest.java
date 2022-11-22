@@ -25,9 +25,9 @@ import org.mockito.Mockito;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-class ExitTelnetHandlerTest {
+public class ExitTelnetHandlerTest {
     @Test
-    void test() {
+    public void test() {
         Channel channel = Mockito.mock(Channel.class);
 
         ExitTelnetHandler exitTelnetHandler = new ExitTelnetHandler();

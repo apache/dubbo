@@ -21,9 +21,9 @@ import org.apache.dubbo.common.URL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class UrlUtilsTest {
+public class UrlUtilsTest {
     @Test
-    void testGetIdleTimeout() {
+    public void testGetIdleTimeout() {
         URL url1 = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000");
         URL url2 = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000&heartbeat.timeout=50000");
         URL url3 = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000&heartbeat.timeout=10000");
@@ -33,7 +33,7 @@ class UrlUtilsTest {
     }
 
     @Test
-    void testGetHeartbeat() {
+    public void testGetHeartbeat() {
         URL url = URL.valueOf("dubbo://127.0.0.1:12345?heartbeat=10000");
         Assertions.assertEquals(UrlUtils.getHeartbeat(url), 10000);
     }
