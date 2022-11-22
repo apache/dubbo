@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.cluster.Merger;
 import java.util.Arrays;
 import java.util.Objects;
 
-class IntSumMerger implements Merger<Integer> {
+public class IntSumMerger implements Merger<Integer> {
 
     @Override
     public Integer merge(Integer... items) {
