@@ -30,16 +30,16 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-public class ProviderConfigTest {
+class ProviderConfigTest {
     @Test
-    public void testProtocol() throws Exception {
+    void testProtocol() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setProtocol("protocol");
         assertThat(provider.getProtocol().getName(), equalTo("protocol"));
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setDefault(true);
         Map<String, String> parameters = new HashMap<String, String>();
@@ -49,7 +49,7 @@ public class ProviderConfigTest {
     }
 
     @Test
-    public void testHost() throws Exception {
+    void testHost() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setHost("demo-host");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -59,7 +59,7 @@ public class ProviderConfigTest {
     }
 
     @Test
-    public void testPort() throws Exception {
+    void testPort() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setPort(8080);
         Map<String, String> parameters = new HashMap<String, String>();
@@ -69,7 +69,7 @@ public class ProviderConfigTest {
     }
 
     @Test
-    public void testPath() throws Exception {
+    void testPath() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setPath("/path");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -80,7 +80,7 @@ public class ProviderConfigTest {
     }
 
     @Test
-    public void testContextPath() throws Exception {
+    void testContextPath() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setContextpath("/context-path");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -91,70 +91,70 @@ public class ProviderConfigTest {
 
 
     @Test
-    public void testThreads() throws Exception {
+    void testThreads() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setThreads(10);
         assertThat(provider.getThreads(), is(10));
     }
 
     @Test
-    public void testIothreads() throws Exception {
+    void testIothreads() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setIothreads(10);
         assertThat(provider.getIothreads(), is(10));
     }
 
     @Test
-    public void testQueues() throws Exception {
+    void testQueues() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setQueues(10);
         assertThat(provider.getQueues(), is(10));
     }
 
     @Test
-    public void testAccepts() throws Exception {
+    void testAccepts() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setAccepts(10);
         assertThat(provider.getAccepts(), is(10));
     }
 
     @Test
-    public void testCharset() throws Exception {
+    void testCharset() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setCharset("utf-8");
         assertThat(provider.getCharset(), equalTo("utf-8"));
     }
 
     @Test
-    public void testPayload() throws Exception {
+    void testPayload() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setPayload(10);
         assertThat(provider.getPayload(), is(10));
     }
 
     @Test
-    public void testBuffer() throws Exception {
+    void testBuffer() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setBuffer(10);
         assertThat(provider.getBuffer(), is(10));
     }
 
     @Test
-    public void testServer() throws Exception {
+    void testServer() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setServer("demo-server");
         assertThat(provider.getServer(), equalTo("demo-server"));
     }
 
     @Test
-    public void testClient() throws Exception {
+    void testClient() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setClient("client");
         assertThat(provider.getClient(), equalTo("client"));
     }
 
     @Test
-    public void testPrompt() throws Exception {
+    void testPrompt() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setPrompt("#");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -164,21 +164,21 @@ public class ProviderConfigTest {
     }
 
     @Test
-    public void testDispatcher() throws Exception {
+    void testDispatcher() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setDispatcher("mockdispatcher");
         assertThat(provider.getDispatcher(), equalTo("mockdispatcher"));
     }
 
     @Test
-    public void testNetworker() throws Exception {
+    void testNetworker() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setNetworker("networker");
         assertThat(provider.getNetworker(), equalTo("networker"));
     }
 
     @Test
-    public void testWait() throws Exception {
+    void testWait() throws Exception {
         ProviderConfig provider = new ProviderConfig();
         provider.setWait(10);
         assertThat(provider.getWait(), equalTo(10));
