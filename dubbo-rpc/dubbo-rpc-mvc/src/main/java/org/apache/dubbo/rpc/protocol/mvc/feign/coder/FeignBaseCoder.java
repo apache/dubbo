@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.protocol.mvc.feign.coder;
 
+import org.apache.dubbo.rpc.protocol.mvc.servlet.MvcConfigurationSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -22,7 +23,9 @@ public class FeignBaseCoder {
 
     // TODO add  WebMvcConfigurationSupport , fastjson , extend
     public static List<HttpMessageConverter> getHttpMessageConverters() {
-        List<HttpMessageConverter> converters = new ArrayList();
+
+        return new ArrayList<>(MvcConfigurationSupport.getDefaultHttpMessageConverters());
+//        List<HttpMessageConverter> converters = new ArrayList();
 //        if (ClassUtils.isPresent("org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport", (ClassLoader) null)) {
 //            converters.addAll((new WebMvcConfigurationSupport() {
 //                public List<HttpMessageConverter<?>> defaultMessageConverters() {
@@ -34,16 +37,15 @@ public class FeignBaseCoder {
 //        }
 
 
-
-        converters.add(new ByteArrayHttpMessageConverter());
-        converters.add(new StringHttpMessageConverter());
-        converters.add(new ResourceHttpMessageConverter());
-        converters.add(new SourceHttpMessageConverter());
-        converters.add(new AllEncompassingFormHttpMessageConverter());
-        converters.add(new MappingJackson2HttpMessageConverter());
-        converters.add(new Jaxb2RootElementHttpMessageConverter());
-
-        return converters;
+//        converters.add(new ByteArrayHttpMessageConverter());
+//        converters.add(new StringHttpMessageConverter());
+//        converters.add(new ResourceHttpMessageConverter());
+//        converters.add(new SourceHttpMessageConverter());
+//        converters.add(new AllEncompassingFormHttpMessageConverter());
+//        converters.add(new MappingJackson2HttpMessageConverter());
+//        converters.add(new Jaxb2RootElementHttpMessageConverter());
+//
+//        return converters;
     }
 
     protected static HttpHeaders getHttpHeaders(Map<String, Collection<String>> headers) {
