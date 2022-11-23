@@ -81,7 +81,7 @@ public class LoggerFactory {
                             found = true;
                             break;
                         }
-                    } catch (Exception ignored) {
+                    } catch (Exception | LinkageError ignored) {
                         // ignore
                     }
                 }
