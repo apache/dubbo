@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
 import java.io.IOException;
@@ -34,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 public class ClassLoaderResourceLoader {
-
+    private static Logger logger = LoggerFactory.getLogger(ClassLoaderResourceLoader.class);
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
     static {
@@ -86,7 +88,7 @@ public class ClassLoaderResourceLoader {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Exception occurred when reading SPI definitions. SPI path: " + fileName + " ClassLoader name: " + currentClassLoader, e);
             }
             urlCache.put(fileName, set);
         }
