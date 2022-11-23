@@ -55,7 +55,7 @@ public class JdkCompiler extends AbstractCompiler {
 
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-    private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();
+    private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
 
     private final ClassLoaderImpl classLoader;
 
@@ -83,7 +83,7 @@ public class JdkCompiler extends AbstractCompiler {
                 && (!"sun.misc.Launcher$AppClassLoader".equals(loader.getClass().getName()))) {
             try {
                 URLClassLoader urlClassLoader = (URLClassLoader) loader;
-                List<File> files = new ArrayList<File>();
+                List<File> files = new ArrayList<>();
                 for (URL url : urlClassLoader.getURLs()) {
                     files.add(new File(url.getFile()));
                 }
@@ -172,7 +172,7 @@ public class JdkCompiler extends AbstractCompiler {
 
         private final ClassLoaderImpl classLoader;
 
-        private final Map<URI, JavaFileObject> fileObjects = new HashMap<URI, JavaFileObject>();
+        private final Map<URI, JavaFileObject> fileObjects = new HashMap<>();
 
         public JavaFileManagerImpl(JavaFileManager fileManager, ClassLoaderImpl classLoader) {
             super(fileManager);
@@ -224,7 +224,7 @@ public class JdkCompiler extends AbstractCompiler {
 
             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
-            ArrayList<JavaFileObject> files = new ArrayList<JavaFileObject>();
+            ArrayList<JavaFileObject> files = new ArrayList<>();
 
             if (location == StandardLocation.CLASS_PATH && kinds.contains(JavaFileObject.Kind.CLASS)) {
                 for (JavaFileObject file : fileObjects.values()) {
@@ -252,7 +252,7 @@ public class JdkCompiler extends AbstractCompiler {
 
     private static final class ClassLoaderImpl extends ClassLoader {
 
-        private final Map<String, JavaFileObject> classes = new HashMap<String, JavaFileObject>();
+        private final Map<String, JavaFileObject> classes = new HashMap<>();
 
         ClassLoaderImpl(final ClassLoader parentClassLoader) {
             super(parentClassLoader);

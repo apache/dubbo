@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class InstanceAddressURLTest {
+class InstanceAddressURLTest {
     private static URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
         "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=1000&deprecated=false&dubbo=2.0.2" +
         "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
@@ -113,7 +113,7 @@ public class InstanceAddressURLTest {
     }
 
     @Test
-    public void test1() {
+    void test1() {
         // test reading of keys in instance and metadata work fine
         assertEquals("value1", instanceURL.getParameter("key1"));//return instance key
         assertNull(instanceURL.getParameter("delay"));// no service key specified
@@ -169,7 +169,7 @@ public class InstanceAddressURLTest {
     }
 
     @Test
-    public void test2() {
+    void test2() {
         RpcServiceContext.getServiceContext().setConsumerUrl(null);
         Assertions.assertNull(instanceURL.getScopeModel());
 

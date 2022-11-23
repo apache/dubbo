@@ -41,7 +41,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ProtocolPortsMetadataCustomizerTest {
+class ProtocolPortsMetadataCustomizerTest {
 
     public DefaultServiceInstance instance;
     private MetadataService mockedMetadataService;
@@ -80,7 +80,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
         customizer.customize(instance, ApplicationModel.defaultModel());
         String endpoints = instance.getMetadata().get(ENDPOINTS);

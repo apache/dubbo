@@ -47,7 +47,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class RestProtocolTest {
+class RestProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("rest");
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
@@ -61,7 +61,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testRestProtocol() {
+    void testRestProtocol() {
         URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
         DemoServiceImpl server = new DemoServiceImpl();
 
@@ -80,7 +80,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testRestProtocolWithContextPath() {
+    void testRestProtocolWithContextPath() {
         DemoServiceImpl server = new DemoServiceImpl();
         Assertions.assertFalse(server.isCalled());
         int port = NetUtils.getAvailablePort();
@@ -101,7 +101,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testExport() {
+    void testExport() {
         DemoService server = new DemoServiceImpl();
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -118,7 +118,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testNettyServer() {
+    void testNettyServer() {
         DemoService server = new DemoServiceImpl();
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -135,7 +135,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testServletWithoutWebConfig() {
+    void testServletWithoutWebConfig() {
         Assertions.assertThrows(RpcException.class, () -> {
             DemoService server = new DemoServiceImpl();
 
@@ -148,7 +148,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testErrorHandler() {
+    void testErrorHandler() {
         Assertions.assertThrows(RpcException.class, () -> {
             DemoService server = new DemoServiceImpl();
 
@@ -164,7 +164,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testInvoke() {
+    void testInvoke() {
         DemoService server = new DemoServiceImpl();
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -178,7 +178,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testFilter() {
+    void testFilter() {
         DemoService server = new DemoServiceImpl();
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -197,7 +197,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testRpcContextFilter() {
+    void testRpcContextFilter() {
         DemoService server = new DemoServiceImpl();
 
         URL url = this.registerProvider(exportUrl, server, DemoService.class);
@@ -230,7 +230,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testRegFail() {
+    void testRegFail() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             DemoService server = new DemoServiceImpl();
 
@@ -242,7 +242,7 @@ public class RestProtocolTest {
     }
 
     @Test
-    public void testDefaultPort() {
+    void testDefaultPort() {
         assertThat(protocol.getDefaultPort(), is(80));
     }
 

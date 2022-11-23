@@ -25,7 +25,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
 import org.apache.dubbo.common.json.GsonUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.PojoUtils;
@@ -54,6 +54,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -61,7 +62,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
-    private final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(GenericFilter.class);
 
     private ApplicationModel applicationModel;
 
@@ -119,7 +120,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                             "If you are sure this is a mistake, " +
                             "please set `" + CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE + "` enable in configuration! " +
                             "Before doing so, please make sure you have configure JEP290 to prevent serialization attack.";
-                        logger.error(notice);
+                        logger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", notice);
                         throw new RpcException(new IllegalStateException(notice));
                     }
 
@@ -205,9 +206,9 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
         }).toArray();
     }
 
-    private String getGenericValueFromRpcContext(){
+    private String getGenericValueFromRpcContext() {
         String generic = RpcContext.getServerAttachment().getAttachment(GENERIC_KEY);
-        if (StringUtils.isBlank(generic)){
+        if (StringUtils.isBlank(generic)) {
             generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
         }
         return generic;

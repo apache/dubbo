@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class WrapperTest {
+class WrapperTest {
     @Test
-    public void testMain() throws Exception {
+    void testMain() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
         String[] ns = w.getDeclaredMethodNames();
         assertEquals(ns.length, 5);
@@ -42,11 +42,17 @@ public class WrapperTest {
         assertEquals(w.getPropertyValue(obj, "name"), "changed");
 
         w.invokeMethod(obj, "hello", new Class<?>[]{String.class}, new Object[]{"qianlei"});
+
+        w.setPropertyValues(obj, new String[]{"name", "float"}, new Object[]{"mrh", 1.0f});
+        Object[] propertyValues = w.getPropertyValues(obj, new String[]{"name", "float"});
+        Assertions.assertEquals(propertyValues.length, 2);
+        Assertions.assertEquals(propertyValues[0], "mrh");
+        Assertions.assertEquals(propertyValues[1], 1.0f);
     }
 
     // bug: DUBBO-132
     @Test
-    public void test_unwantedArgument() throws Exception {
+    void test_unwantedArgument() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
         Object obj = new Impl1();
         try {
@@ -59,12 +65,12 @@ public class WrapperTest {
 
     //bug: DUBBO-425
     @Test
-    public void test_makeEmptyClass() throws Exception {
+    void test_makeEmptyClass() throws Exception {
         Wrapper.getWrapper(EmptyServiceImpl.class);
     }
 
     @Test
-    public void testHasMethod() throws Exception {
+    void testHasMethod() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
         Assertions.assertTrue(w.hasMethod("setName"));
         Assertions.assertTrue(w.hasMethod("hello"));
@@ -75,15 +81,17 @@ public class WrapperTest {
     }
 
     @Test
-    public void testWrapperObject() throws Exception {
+    void testWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
         Assertions.assertEquals(4, w.getMethodNames().length);
+        Assertions.assertEquals(4, w.getDeclaredMethodNames().length);
         Assertions.assertEquals(0, w.getPropertyNames().length);
         Assertions.assertNull(w.getPropertyType(null));
+        Assertions.assertFalse(w.hasProperty(null));
     }
 
     @Test
-    public void testGetPropertyValue() throws Exception {
+    void testGetPropertyValue() throws Exception {
         Assertions.assertThrows(NoSuchPropertyException.class, () -> {
             Wrapper w = Wrapper.getWrapper(Object.class);
             w.getPropertyValue(null, null);
@@ -91,7 +99,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testSetPropertyValue() throws Exception {
+    void testSetPropertyValue() throws Exception {
         Assertions.assertThrows(NoSuchPropertyException.class, () -> {
             Wrapper w = Wrapper.getWrapper(Object.class);
             w.setPropertyValue(null, null, null);
@@ -99,17 +107,26 @@ public class WrapperTest {
     }
 
     @Test
-    public void testInvokeWrapperObject() throws Exception {
+    void testWrapPrimitive() throws Exception {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            Wrapper.getWrapper(Byte.TYPE);
+        });
+    }
+    
+    @Test
+    void testInvokeWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
         Object instance = new Object();
-        Assertions.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
+        Assertions.assertEquals(instance.getClass(), w.invokeMethod(instance, "getClass", null, null));
         Assertions.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
-        Assertions.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
-        Assertions.assertTrue((boolean)w.invokeMethod(instance, "equals", null, new Object[] {instance}));
+        Assertions.assertEquals(instance.toString(), w.invokeMethod(instance, "toString", null, null));
+        Assertions.assertTrue((boolean) w.invokeMethod(instance, "equals", new Class[]{instance.getClass()}, new Object[]{instance}));
+        Assertions.assertThrows(IllegalArgumentException.class,
+            () -> w.invokeMethod(instance, "equals", new Class[]{instance.getClass()}, new Object[]{instance, instance}));
     }
 
     @Test
-    public void testNoSuchMethod() throws Exception {
+    void testNoSuchMethod() throws Exception {
         Assertions.assertThrows(NoSuchMethodException.class, () -> {
             Wrapper w = Wrapper.getWrapper(Object.class);
             w.invokeMethod(new Object(), "__XX__", null, null);
@@ -117,7 +134,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testOverloadMethod() throws Exception {
+    void testOverloadMethod() throws Exception {
         Wrapper w = Wrapper.getWrapper(I2.class);
         assertEquals(2, w.getMethodNames().length);
 
@@ -137,7 +154,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
+    void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
         assertArrayEquals(new String[]{"hello",}, ClassUtils.getMethodNames(Parent1.class));
 
@@ -146,9 +163,26 @@ public class WrapperTest {
     }
 
     @Test
-    public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
+    void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
         assertArrayEquals(new String[]{"hello", "world"}, ClassUtils.getMethodNames(Son.class));
+    }
+
+    @Test
+    void testWrapImplClass(){
+        Wrapper w = Wrapper.getWrapper(Impl0.class);
+
+        String[] propertyNames = w.getPropertyNames();
+        Assertions.assertArrayEquals(propertyNames, new String[]{"a", "b", "c"});
+        // fields that do not contain the static|final|transient modifier
+        Assertions.assertFalse(w.hasProperty("f"));
+        Assertions.assertFalse(w.hasProperty("l"));
+        Assertions.assertFalse(w.hasProperty("ch"));
+
+        // only has public methods, do not contain the private or comes from object methods
+        Assertions.assertTrue(w.hasMethod("publicMethod"));
+        Assertions.assertFalse(w.hasMethod("privateMethod"));
+        Assertions.assertFalse(w.hasMethod("hashcode"));
     }
 
     public interface I0 {
@@ -191,6 +225,17 @@ public class WrapperTest {
 
     public static class Impl0 {
         public float a, b, c;
+        public transient boolean f;
+        public static long l = 1;
+        public final char ch = 'c';
+
+        private void privateMethod() {
+
+        }
+
+        public void publicMethod() {
+
+        }
     }
 
     public static class Impl1 implements I1 {

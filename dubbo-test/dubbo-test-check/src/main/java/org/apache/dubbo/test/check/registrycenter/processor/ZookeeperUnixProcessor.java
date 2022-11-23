@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.test.check.registrycenter.processor;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.Context;
@@ -29,12 +29,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_START_ZOOKEEPER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_STOP_ZOOKEEPER;
+
 /**
  * The abstract implementation of {@link Processor} is to provide some common methods on Unix OS.
  */
 public abstract class ZookeeperUnixProcessor implements Processor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperUnixProcessor.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ZookeeperUnixProcessor.class);
 
     @Override
     public void process(Context context) throws DubboTestException {
@@ -47,7 +50,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
             try {
                 process.destroy();
             } catch (Throwable cause) {
-                logger.warn(String.format("Failed to kill the process, with client port %s !", clientPort), cause);
+                logger.warn(REGISTRY_FAILED_STOP_ZOOKEEPER, "", "", String.format("Failed to kill the process, with client port %s !", clientPort), cause);
             }
         }
     }
@@ -61,7 +64,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                logger.error(line);
+                logger.error(REGISTRY_FAILED_START_ZOOKEEPER,"","",line);
             }
         } catch (IOException e) {
             /* eat quietly */

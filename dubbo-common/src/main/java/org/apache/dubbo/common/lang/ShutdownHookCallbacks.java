@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.lang;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
@@ -31,7 +32,7 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
  *
  * @since 2.7.5
  */
-public class ShutdownHookCallbacks {
+public class ShutdownHookCallbacks implements Disposable {
 
     private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
 
@@ -56,7 +57,7 @@ public class ShutdownHookCallbacks {
         }
     }
 
-    public void clear() {
+    public void destroy() {
         synchronized (this) {
             callbacks.clear();
         }

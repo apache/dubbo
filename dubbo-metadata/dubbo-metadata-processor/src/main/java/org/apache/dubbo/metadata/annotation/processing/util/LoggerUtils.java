@@ -17,10 +17,11 @@
 package org.apache.dubbo.metadata.annotation.processing.util;
 
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import static java.lang.String.format;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METADATA_PROCESSOR;
 
 /**
  * Logger Utils
@@ -29,7 +30,7 @@ import static java.lang.String.format;
  */
 public interface LoggerUtils {
 
-    Logger LOGGER = LoggerFactory.getLogger("dubbo-metadata-processor");
+    ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger("dubbo-metadata-processor");
 
     static void info(String format, Object... args) {
         if (LOGGER.isInfoEnabled()) {
@@ -39,7 +40,7 @@ public interface LoggerUtils {
 
     static void warn(String format, Object... args) {
         if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn(format(format, args));
+            LOGGER.warn(COMMON_METADATA_PROCESSOR, "", "", format(format, args));
         }
     }
 }

@@ -17,10 +17,11 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,6 +36,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -42,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
 
 /**
@@ -61,7 +64,7 @@ import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
 @Activate(group = PROVIDER, value = ACCESS_LOG_KEY)
 public class AccessLogFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AccessLogFilter.class);
 
     private static final String LOG_KEY = "dubbo.accesslog";
 
@@ -102,17 +105,25 @@ public class AccessLogFilter implements Filter {
                 .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
                 .scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
         }
+        Optional<AccessLogData> optionalAccessLogData = Optional.empty();
+        String accessLogKey = null;
         try {
-            String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
+            accessLogKey = invoker.getUrl().getParameter(Constants.ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
-                AccessLogData logData = AccessLogData.newLogData();
-                logData.buildAccessLogData(invoker, inv);
-                log(accessLogKey, logData);
+                optionalAccessLogData = Optional.of(buildAccessLogData(invoker, inv));
             }
         } catch (Throwable t) {
-            logger.warn("Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")", t);
+            logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", "Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")", t);
         }
-        return invoker.invoke(inv);
+        try {
+            return invoker.invoke(inv);
+        } finally {
+            String finalAccessLogKey = accessLogKey;
+            optionalAccessLogData.ifPresent(logData -> {
+                logData.setOutTime(new Date());
+                log(finalAccessLogKey, logData);
+            });
+        }
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
@@ -121,7 +132,7 @@ public class AccessLogFilter implements Filter {
         if (logQueue.size() < LOG_MAX_BUFFER) {
             logQueue.add(accessLogData);
         } else {
-            logger.warn("AccessLog buffer is full. Do a force writing to file to clear buffer.");
+            logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "","AccessLog buffer is full. Do a force writing to file to clear buffer.");
             //just write current logSet to file.
             writeLogSetToFile(accessLog, logQueue);
             //after force writing, add accessLogData to current logSet
@@ -143,7 +154,7 @@ public class AccessLogFilter implements Filter {
                 processWithAccessKeyLogger(logSet, file);
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", e.getMessage(), e);
         }
     }
 
@@ -201,7 +212,7 @@ public class AccessLogFilter implements Filter {
             String now = fileNameFormatter.format(new Date());
             String last = fileNameFormatter.format(new Date(file.lastModified()));
             if (!now.equals(last)) {
-                File archive = new File(file.getAbsolutePath() + "." + last);
+                File archive = new File(file.getAbsolutePath() + "." + now);
                 file.renameTo(archive);
             }
         }

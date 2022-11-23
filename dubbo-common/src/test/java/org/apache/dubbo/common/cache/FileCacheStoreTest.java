@@ -26,11 +26,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FileCacheStoreTest {
-    FileCacheStore cacheStore;
+class FileCacheStoreTest {
+    private FileCacheStore cacheStore;
 
     @Test
-    public void testCache() throws Exception {
+    void testCache() throws Exception {
         String directoryPath = getDirectoryOfClassPath();
         String filePath = "test-cache.dubbo.cache";
         cacheStore = FileCacheStoreFactory.getInstance(directoryPath, filePath);
@@ -54,7 +54,7 @@ public class FileCacheStoreTest {
     }
 
     @Test
-    public void testFileSizeExceed() throws Exception {
+    void testFileSizeExceed() throws Exception {
         String directoryPath = getDirectoryOfClassPath();
         Map<String, String> newProperties = new HashMap<>();
         newProperties.put("newKey1", "newValue1");

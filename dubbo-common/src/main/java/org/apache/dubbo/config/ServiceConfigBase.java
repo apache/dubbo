@@ -107,68 +107,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    @Deprecated
-    private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
-        if (CollectionUtils.isEmpty(providers)) {
-            return null;
-        }
-        List<ProtocolConfig> protocols = new ArrayList<ProtocolConfig>(providers.size());
-        for (ProviderConfig provider : providers) {
-            protocols.add(convertProviderToProtocol(provider));
-        }
-        return protocols;
-    }
-
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         if (this.provider != null && this.provider.getScopeModel() != scopeModel) {
             this.provider.setScopeModel(scopeModel);
         }
-    }
-
-    @Deprecated
-    private static List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
-        if (CollectionUtils.isEmpty(protocols)) {
-            return null;
-        }
-        List<ProviderConfig> providers = new ArrayList<ProviderConfig>(protocols.size());
-        for (ProtocolConfig provider : protocols) {
-            providers.add(convertProtocolToProvider(provider));
-        }
-        return providers;
-    }
-
-    @Deprecated
-    private static ProtocolConfig convertProviderToProtocol(ProviderConfig provider) {
-        ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName(provider.getProtocol().getName());
-        protocol.setServer(provider.getServer());
-        protocol.setClient(provider.getClient());
-        protocol.setCodec(provider.getCodec());
-        protocol.setHost(provider.getHost());
-        protocol.setPort(provider.getPort());
-        protocol.setPath(provider.getPath());
-        protocol.setPayload(provider.getPayload());
-        protocol.setThreads(provider.getThreads());
-        protocol.setParameters(provider.getParameters());
-        return protocol;
-    }
-
-    @Deprecated
-    private static ProviderConfig convertProtocolToProvider(ProtocolConfig protocol) {
-        ProviderConfig provider = new ProviderConfig();
-        provider.setProtocol(protocol);
-        provider.setServer(protocol.getServer());
-        provider.setClient(protocol.getClient());
-        provider.setCodec(protocol.getCodec());
-        provider.setHost(protocol.getHost());
-        provider.setPort(protocol.getPort());
-        provider.setPath(protocol.getPath());
-        provider.setPayload(protocol.getPayload());
-        provider.setThreads(protocol.getThreads());
-        provider.setParameters(protocol.getParameters());
-        return provider;
     }
 
     public boolean shouldExport() {
@@ -399,35 +343,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
-//    @Override
-//    public void setMock(String mock) {
-//        throw new IllegalArgumentException("mock doesn't support on provider side");
-//    }
-//
-//    @Override
-//    public void setMock(Object mock) {
-//        throw new IllegalArgumentException("mock doesn't support on provider side");
-//    }
-
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
-
-//    /**
-//     * @deprecated Replace to getProtocols()
-//     */
-//    @Deprecated
-//    public List<ProviderConfig> getProviders() {
-//        return convertProtocolToProvider(protocols);
-//    }
-//
-//    /**
-//     * @deprecated Replace to setProtocols()
-//     */
-//    @Deprecated
-//    public void setProviders(List<ProviderConfig> providers) {
-//        this.protocols = convertProviderToProtocol(providers);
-//    }
 
     @Override
     @Parameter(excluded = true, attribute = false)

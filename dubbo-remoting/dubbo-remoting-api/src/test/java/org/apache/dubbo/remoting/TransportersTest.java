@@ -22,12 +22,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class TransportersTest {
+class TransportersTest {
     private String url = "dubbo://127.0.0.1:12345?transporter=mockTransporter";
     private ChannelHandler channel = Mockito.mock(ChannelHandler.class);
 
     @Test
-    public void testBind() throws RemotingException {
+    void testBind() throws RemotingException {
         Assertions.assertThrows(RuntimeException.class, () -> Transporters.bind((String) null));
         Assertions.assertThrows(RuntimeException.class, () -> Transporters.bind((URL) null));
         Assertions.assertThrows(RuntimeException.class, () -> Transporters.bind(url));
@@ -36,7 +36,7 @@ public class TransportersTest {
     }
 
     @Test
-    public void testConnect() throws RemotingException {
+    void testConnect() throws RemotingException {
         Assertions.assertThrows(RuntimeException.class, () -> Transporters.connect((String) null));
         Assertions.assertThrows(RuntimeException.class, () -> Transporters.connect((URL) null));
         Assertions.assertNotNull(Transporters.connect(url));

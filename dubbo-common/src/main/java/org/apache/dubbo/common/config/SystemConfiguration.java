@@ -20,10 +20,7 @@ package org.apache.dubbo.common.config;
 import java.util.Map;
 
 /**
- * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
- *
- * @See ConfigUtils#getProperty(String)
- * @see PropertiesConfiguration
+ * Configuration from system properties
  */
 public class SystemConfiguration implements Configuration {
 

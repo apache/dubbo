@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 
 /**
  * dubbo protocol support class.
@@ -39,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_S
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
-    private final static Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
+    private final static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountExchangeClient.class);
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
@@ -158,22 +159,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void close(int timeout) {
-        closeInternal(timeout, false);
-    }
-
-    @Override
-    public void closeAll(int timeout) {
-        closeInternal(timeout, true);
-    }
-
-    /**
-     * when destroy unused invoker, closeAll should be true
-     *
-     * @param timeout
-     * @param closeAll
-     */
-    private void closeInternal(int timeout, boolean closeAll) {
-        if (closeAll || referenceCount.decrementAndGet() <= 0) {
+        if (referenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
                 client.close();
 
@@ -199,7 +185,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private void replaceWithLazyClient() {
         // start warning at second replaceWithLazyClient()
         if (disconnectCount.getAndIncrement() % warningPeriod == 1) {
-            logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
+            logger.warn(PROTOCOL_FAILED_REQUEST, "", "", url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
         }
 
         // the order of judgment in the if statement cannot be changed.

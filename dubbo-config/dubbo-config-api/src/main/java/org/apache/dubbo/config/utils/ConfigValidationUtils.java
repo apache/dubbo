@@ -20,12 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.PropertiesConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -99,6 +100,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
@@ -143,7 +145,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class ConfigValidationUtils {
-    private static final Logger logger = LoggerFactory.getLogger(ConfigValidationUtils.class);
+    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigValidationUtils.class);
     /**
      * The maximum length of a <b>parameter's value</b>
      */
@@ -488,6 +490,17 @@ public class ConfigValidationUtils {
         checkName(ARCHITECTURE, config.getArchitecture());
         checkName(ENVIRONMENT, config.getEnvironment());
         checkParameterName(config.getParameters());
+        checkQosDependency(config);
+    }
+
+    private static void checkQosDependency(ApplicationConfig config) {
+        if (!Boolean.FALSE.equals(config.getQosEnable())) {
+            try {
+                ClassUtils.forName("org.apache.dubbo.qos.protocol.QosProtocolWrapper");
+            } catch (ClassNotFoundException e) {
+                logger.warn("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly.", e);
+            }
+        }
     }
 
     public static void validateModuleConfig(ModuleConfig config) {
@@ -726,12 +739,14 @@ public class ConfigValidationUtils {
             return;
         }
         if (value.length() > maxlength) {
-            logger.error("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
+            logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "the value content is too long", "", "Parameter value format error. Invalid " +
+                property + "=\"" + value + "\" is longer than " + maxlength);
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                logger.error("Invalid " + property + "=\"" + value + "\" contains illegal " +
+                logger.error(CONFIG_PARAMETER_FORMAT_ERROR, "the value content is illegal character", "", "Parameter value format error. Invalid " +
+                    property + "=\"" + value + "\" contains illegal " +
                     "character, only digit, letter, '-', '_' or '.' is legal.");
             }
         }

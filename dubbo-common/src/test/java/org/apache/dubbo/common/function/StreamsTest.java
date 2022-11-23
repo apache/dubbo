@@ -35,22 +35,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.5
  */
-public class StreamsTest {
+class StreamsTest {
 
     @Test
-    public void testFilterStream() {
+    void testFilterStream() {
         Stream<Integer> stream = filterStream(asList(1, 2, 3, 4, 5), i -> i % 2 == 0);
         assertEquals(asList(2, 4), stream.collect(toList()));
     }
 
     @Test
-    public void testFilterList() {
+    void testFilterList() {
         List<Integer> list = filterList(asList(1, 2, 3, 4, 5), i -> i % 2 == 0);
         assertEquals(asList(2, 4), list);
     }
 
     @Test
-    public void testFilterSet() {
+    void testFilterSet() {
         Set<Integer> set = filterSet(asList(1, 2, 3, 4, 5), i -> i % 2 == 0);
         assertEquals(new LinkedHashSet<>(asList(2, 4)), set);
     }

@@ -19,10 +19,10 @@ package org.apache.dubbo.rpc.support;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ProtocolUtilsTest {
+class ProtocolUtilsTest {
 
     @Test
-    public void testGetServiceKey() {
+    void testGetServiceKey() {
         final String serviceName = "com.abc.demoService";
         final int port = 1001;
 

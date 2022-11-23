@@ -18,19 +18,20 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 
 /**
  * HeartbeatTimerTask
  */
 public class HeartbeatTimerTask extends AbstractTimerTask {
 
-    private static final Logger logger = LoggerFactory.getLogger(HeartbeatTimerTask.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(HeartbeatTimerTask.class);
 
     private final int heartbeat;
 
@@ -46,7 +47,7 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
             Long lastWrite = lastWrite(channel);
             Long now = now();
             if ((lastRead != null && now - lastRead > heartbeat)
-                    || (lastWrite != null && now - lastWrite > heartbeat)) {
+                || (lastWrite != null && now - lastWrite > heartbeat)) {
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
@@ -54,12 +55,12 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
                 channel.send(req);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Send heartbeat to remote channel " + channel.getRemoteAddress()
-                            + ", cause: The channel has no data-transmission exceeds a heartbeat period: "
-                            + heartbeat + "ms");
+                        + ", cause: The channel has no data-transmission exceeds a heartbeat period: "
+                        + heartbeat + "ms");
                 }
             }
         } catch (Throwable t) {
-            logger.warn("Exception when heartbeat to remote channel " + channel.getRemoteAddress(), t);
+            logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Exception when heartbeat to remote channel " + channel.getRemoteAddress(), t);
         }
     }
 }

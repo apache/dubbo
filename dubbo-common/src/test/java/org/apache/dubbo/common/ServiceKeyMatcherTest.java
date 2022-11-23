@@ -19,10 +19,10 @@ package org.apache.dubbo.common;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ServiceKeyMatcherTest {
+class ServiceKeyMatcherTest {
 
     @Test
-    public void testInterface() {
+    void testInterface() {
         Assertions.assertTrue(ServiceKey.Matcher.isMatch(
             new ServiceKey(null, null, null),
             new ServiceKey(null, null, null)
@@ -48,7 +48,7 @@ public class ServiceKeyMatcherTest {
     }
 
     @Test
-    public void testVersion() {
+    void testVersion() {
         Assertions.assertTrue(ServiceKey.Matcher.isMatch(
             new ServiceKey(null, "1.0.0", null),
             new ServiceKey(null, "1.0.0", null)
@@ -142,7 +142,7 @@ public class ServiceKeyMatcherTest {
     }
 
     @Test
-    public void testGroup() {
+    void testGroup() {
         Assertions.assertTrue(ServiceKey.Matcher.isMatch(
             new ServiceKey(null, null, "group1"),
             new ServiceKey(null, null, "group1")

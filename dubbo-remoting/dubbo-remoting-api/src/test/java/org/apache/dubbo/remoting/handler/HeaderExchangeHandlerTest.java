@@ -37,10 +37,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
 //TODO response test
-public class HeaderExchangeHandlerTest {
+class HeaderExchangeHandlerTest {
 
     @Test
-    public void testReceivedRequestOneway() throws RemotingException {
+    void testReceivedRequestOneway() throws RemotingException {
         final Channel mockChannel = new MockedChannel();
 
         final Person requestData = new Person("charles");
@@ -59,7 +59,7 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedRequestTwoway() throws RemotingException {
+    void testReceivedRequestTwoway() throws RemotingException {
         final Person requestData = new Person("charles");
         final Request request = new Request();
         request.setTwoWay(true);
@@ -95,12 +95,12 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedRequestTwowayErrorWithNullHandler() throws RemotingException {
+    void testReceivedRequestTwowayErrorWithNullHandler() throws RemotingException {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new HeaderExchangeHandler(null));
     }
 
     @Test
-    public void testReceivedRequestTwowayErrorReply() throws RemotingException {
+    void testReceivedRequestTwowayErrorReply() throws RemotingException {
         final Person requestData = new Person("charles");
         final Request request = new Request();
         request.setTwoWay(true);
@@ -131,7 +131,7 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedRequestTwowayErrorRequestBroken() throws RemotingException {
+    void testReceivedRequestTwowayErrorRequestBroken() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
         request.setData(new BizException());
@@ -156,7 +156,7 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedRequestEventReadonly() throws RemotingException {
+    void testReceivedRequestEventReadonly() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
         request.setEvent(READONLY_EVENT);
@@ -168,7 +168,7 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedRequestEventOtherDiscard() throws RemotingException {
+    void testReceivedRequestEventOtherDiscard() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
         request.setEvent("my event");
@@ -197,7 +197,7 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedResponseHeartbeatEvent() throws Exception {
+    void testReceivedResponseHeartbeatEvent() throws Exception {
         Channel mockChannel = new MockedChannel();
         HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(new MockedExchangeHandler());
         Response response = new Response(1);
@@ -208,7 +208,7 @@ public class HeaderExchangeHandlerTest {
     }
 
     @Test
-    public void testReceivedResponse() throws Exception {
+    void testReceivedResponse() throws Exception {
         Request request = new Request(1);
         request.setTwoWay(true);
         Channel mockChannel = new MockedChannel();

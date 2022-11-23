@@ -19,9 +19,9 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RegexPropertiesTest {
+class RegexPropertiesTest {
     @Test
-    public void testGetProperty(){
+    void testGetProperty(){
         RegexProperties regexProperties = new RegexProperties();
         regexProperties.setProperty("org.apache.dubbo.provider.*", "http://localhost:20880");
         regexProperties.setProperty("org.apache.dubbo.provider.config.*", "http://localhost:30880");

@@ -41,10 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class URLTest {
+class URLTest {
 
     @Test
-    public void test_ignore_pond() {
+    void test_ignore_pond() {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path#index?version=1.0.0&id=org.apache.dubbo.config.RegistryConfig#0");
         assertURLStrDecoder(url);
         assertEquals("dubbo", url.getProtocol());
@@ -60,7 +60,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_valueOf_noProtocolAndHost() throws Exception {
+    void test_valueOf_noProtocolAndHost() throws Exception {
         URL url = URL.valueOf("/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
         assertNull(url.getProtocol());
@@ -98,7 +98,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_valueOf_noProtocol() throws Exception {
+    void test_valueOf_noProtocol() throws Exception {
         URL url = URL.valueOf("10.20.130.230");
         assertURLStrDecoder(url);
         assertNull(url.getProtocol());
@@ -158,7 +158,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_valueOf_noHost() throws Exception {
+    void test_valueOf_noHost() throws Exception {
         URL url = URL.valueOf("file:///home/user1/router.js");
         assertURLStrDecoder(url);
         assertEquals("file", url.getProtocol());
@@ -237,7 +237,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_valueOf_WithProtocolHost() throws Exception {
+    void test_valueOf_WithProtocolHost() throws Exception {
         URL url = URL.valueOf("dubbo://10.20.130.230");
         assertURLStrDecoder(url);
         assertEquals("dubbo", url.getProtocol());
@@ -313,7 +313,7 @@ public class URLTest {
 
     // TODO Do not want to use spaces? See: DUBBO-502, URL class handles special conventions for special characters.
     @Test
-    public void test_valueOf_spaceSafe() throws Exception {
+    void test_valueOf_spaceSafe() throws Exception {
         URL url = URL.valueOf("http://1.2.3.4:8080/path?key=value1 value2");
         assertURLStrDecoder(url);
         assertEquals("http://1.2.3.4:8080/path?key=value1 value2", url.toString());
@@ -321,7 +321,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_noValueKey() throws Exception {
+    void test_noValueKey() throws Exception {
         URL url = URL.valueOf("http://1.2.3.4:8080/path?k0=&k1=v1");
 
         assertURLStrDecoder(url);
@@ -332,7 +332,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_valueOf_Exception_noProtocol() throws Exception {
+    void test_valueOf_Exception_noProtocol() throws Exception {
         try {
             URL.valueOf("://1.2.3.4:8080/path");
             fail();
@@ -357,14 +357,14 @@ public class URLTest {
     }
 
     @Test
-    public void test_getAddress() throws Exception {
+    void test_getAddress() throws Exception {
         URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url1);
         assertEquals("10.20.130.230:20880", url1.getAddress());
     }
 
     @Test
-    public void test_getAbsolutePath() throws Exception {
+    void test_getAbsolutePath() throws Exception {
         URL url = new ServiceConfigURL("p1", "1.2.2.2", 33);
         assertURLStrDecoder(url);
         assertNull(url.getAbsolutePath());
@@ -375,7 +375,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_equals() throws Exception {
+    void test_equals() throws Exception {
         URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url1);
 
@@ -389,7 +389,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_toString() throws Exception {
+    void test_toString() throws Exception {
         URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url1);
         assertThat(url1.toString(), anyOf(
@@ -399,7 +399,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_toFullString() throws Exception {
+    void test_toFullString() throws Exception {
         URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url1);
         assertThat(url1.toFullString(), anyOf(
@@ -409,7 +409,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_set_methods() throws Exception {
+    void test_set_methods() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
 
@@ -499,7 +499,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_removeParameters() throws Exception {
+    void test_removeParameters() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&k1=v1&k2=v2");
         assertURLStrDecoder(url);
 
@@ -552,7 +552,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_addParameter() throws Exception {
+    void test_addParameter() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
         url = url.addParameter("k1", "v1");
 
@@ -570,7 +570,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_addParameter_sameKv() throws Exception {
+    void test_addParameter_sameKv() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan&k1=v1");
         URL newUrl = url.addParameter("k1", "v1");
 
@@ -580,7 +580,7 @@ public class URLTest {
 
 
     @Test
-    public void test_addParameters() throws Exception {
+    void test_addParameters() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
         url = url.addParameters(CollectionUtils.toStringMap("k1", "v1", "k2", "v2"));
 
@@ -660,7 +660,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_addParameters_SameKv() throws Exception {
+    void test_addParameters_SameKv() throws Exception {
         {
             URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan&k1=v1");
             URL newUrl = url.addParameters(CollectionUtils.toStringMap("k1", "v1"));
@@ -678,7 +678,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_addParameterIfAbsent() throws Exception {
+    void test_addParameterIfAbsent() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
         url = url.addParameterIfAbsent("application", "xxx");
 
@@ -695,7 +695,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_windowAbsolutePathBeginWithSlashIsValid() throws Exception {
+    void test_windowAbsolutePathBeginWithSlashIsValid() throws Exception {
         final String osProperty = System.getProperties().getProperty(OS_NAME_KEY);
         if (!osProperty.toLowerCase().contains(OS_WIN_PREFIX)) return;
 
@@ -715,7 +715,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_javaNetUrl() throws Exception {
+    void test_javaNetUrl() throws Exception {
         java.net.URL url = new java.net.URL("http://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan#anchor1");
 
         assertEquals("http", url.getProtocol());
@@ -731,7 +731,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_Anyhost() throws Exception {
+    void test_Anyhost() throws Exception {
         URL url = URL.valueOf("dubbo://0.0.0.0:20880");
         assertURLStrDecoder(url);
         assertEquals("0.0.0.0", url.getHost());
@@ -739,7 +739,7 @@ public class URLTest {
     }
 
     @Test
-    public void test_Localhost() throws Exception {
+    void test_Localhost() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880");
         assertURLStrDecoder(url);
         assertEquals("127.0.0.1", url.getHost());
@@ -760,14 +760,14 @@ public class URLTest {
     }
 
     @Test
-    public void test_Path() throws Exception {
+    void test_Path() throws Exception {
         URL url = new ServiceConfigURL("dubbo", "localhost", 20880, "////path");
         assertURLStrDecoder(url);
         assertEquals("path", url.getPath());
     }
 
     @Test
-    public void testAddParameters() throws Exception {
+    void testAddParameters() throws Exception {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880");
         assertURLStrDecoder(url);
 
@@ -778,7 +778,7 @@ public class URLTest {
     }
 
     @Test
-    public void testUserNamePasswordContainsAt() {
+    void testUserNamePasswordContainsAt() {
         // Test username or password contains "@"
         URL url = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
@@ -796,7 +796,7 @@ public class URLTest {
 
 
     @Test
-    public void testIpV6Address() {
+    void testIpV6Address() {
         // Test username or password contains "@"
         URL url = URL.valueOf("ad@min111:haha@1234@2001:0db8:85a3:08d3:1319:8a2e:0370:7344:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
@@ -813,7 +813,7 @@ public class URLTest {
     }
 
     @Test
-    public void testIpV6AddressWithScopeId() {
+    void testIpV6AddressWithScopeId() {
         URL url = URL.valueOf("2001:0db8:85a3:08d3:1319:8a2e:0370:7344%5/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
         assertNull(url.getProtocol());
@@ -827,13 +827,13 @@ public class URLTest {
     }
 
     @Test
-    public void testDefaultPort() {
+    void testDefaultPort() {
         Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10:0", 2181));
         Assertions.assertEquals("10.20.153.10:2181", URL.appendDefaultPort("10.20.153.10", 2181));
     }
 
     @Test
-    public void testGetServiceKey() {
+    void testGetServiceKey() {
         URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName");
         assertURLStrDecoder(url1);
         Assertions.assertEquals("org.apache.dubbo.test.interfaceName", url1.getServiceKey());
@@ -856,7 +856,7 @@ public class URLTest {
     }
 
     @Test
-    public void testGetColonSeparatedKey() {
+    void testGetColonSeparatedKey() {
         URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
         assertURLStrDecoder(url1);
         Assertions.assertEquals("org.apache.dubbo.test.interfaceName:1.0.0:group", url1.getColonSeparatedKey());
@@ -883,7 +883,7 @@ public class URLTest {
     }
 
     @Test
-    public void testValueOf() {
+    void testValueOf() {
         URL url = URL.valueOf("10.20.130.230");
         assertURLStrDecoder(url);
 
@@ -904,7 +904,7 @@ public class URLTest {
      * @since 2.7.8
      */
     @Test
-    public void testGetParameters() {
+    void testGetParameters() {
         URL url = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
         Map<String, String> parameters = url.getParameters(i -> "version".equals(i));
         String version = parameters.get("version");
@@ -913,14 +913,14 @@ public class URLTest {
     }
 
     @Test
-    public void testGetParameter() {
+    void testGetParameter() {
         URL url = URL.valueOf("http://127.0.0.1:8080/path?i=1&b=false");
         assertEquals(Integer.valueOf(1), url.getParameter("i", Integer.class));
         assertEquals(Boolean.FALSE, url.getParameter("b", Boolean.class));
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
         URL url2 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
         Assertions.assertEquals(url1, url2);
@@ -956,7 +956,7 @@ public class URLTest {
 
 
     @Test
-    public void testEqualsWithPassword() {
+    void testEqualsWithPassword() {
         URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url2 = URL.valueOf("ad@min:hello@4321@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
@@ -968,7 +968,7 @@ public class URLTest {
     }
 
     @Test
-    public void testEqualsWithPath() {
+    void testEqualsWithPath() {
         URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path1?version=1.0.0&application=morgan");
         URL url2 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path2?version=1.0.0&application=morgan");
         URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path1?version=1.0.0&application=morgan");
@@ -980,7 +980,7 @@ public class URLTest {
     }
 
     @Test
-    public void testEqualsWithPort() {
+    void testEqualsWithPort() {
         URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url2 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20881/context/path?version=1.0.0&application=morgan");
         URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
@@ -992,7 +992,7 @@ public class URLTest {
     }
 
     @Test
-    public void testEqualsWithProtocol() {
+    void testEqualsWithProtocol() {
         URL url1 = URL.valueOf("dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url2 = URL.valueOf("file://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url3 = URL.valueOf("dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
@@ -1004,7 +1004,7 @@ public class URLTest {
     }
 
     @Test
-    public void testEqualsWithUser() {
+    void testEqualsWithUser() {
         URL url1 = URL.valueOf("ad@min1:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url2 = URL.valueOf("ad@min2:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         URL url3 = URL.valueOf("ad@min1:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
@@ -1016,7 +1016,7 @@ public class URLTest {
     }
 
     @Test
-    public void testHashcode() {
+    void testHashcode() {
         URL url1 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
             "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
             "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=1599556506417");
@@ -1037,7 +1037,7 @@ public class URLTest {
     }
 
     @Test
-    public void testParameterContainPound() {
+    void testParameterContainPound() {
         URL url = URL.valueOf(
             "dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&pound=abcd#efg&protocol=registry");
         Assertions.assertEquals("abcd#efg", url.getParameter("pound"));
@@ -1045,13 +1045,13 @@ public class URLTest {
     }
 
     @Test
-    public void test_valueOfHasNameWithoutValue() throws Exception {
+    void test_valueOfHasNameWithoutValue() throws Exception {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue");
         Assertions.assertEquals("noValue", url.getParameter("noValue"));
     }
 
     @Test
-    public void testGetAuthority() {
+    void testGetAuthority() {
         URL url = URL.valueOf("admin1:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=app1");
         assertEquals("admin1:hello1234@10.20.130.230:20880", url.getAuthority());
 
@@ -1069,7 +1069,7 @@ public class URLTest {
     }
 
     @Test
-    public void testGetUserInformation() {
+    void testGetUserInformation() {
         URL url = URL.valueOf("admin1:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=app1");
         assertEquals("admin1:hello1234", url.getUserInformation());
 
@@ -1081,5 +1081,14 @@ public class URLTest {
 
         URL urlWithoutUserInformation = URL.valueOf("10.20.130.230:20880/context/path?version=1.0.0&application=app1");
         assertEquals("10.20.130.230:20880", urlWithoutUserInformation.getAuthority());
+    }
+
+
+    @Test
+    void testIPV6() {
+        URL url = URL.valueOf("dubbo://[2408:4004:194:8896:3e8a:82ae:814a:398]:20881?name=apache");
+        assertEquals("[2408:4004:194:8896:3e8a:82ae:814a:398]", url.getHost());
+        assertEquals(20881, url.getPort());
+        assertEquals("apache", url.getParameter("name"));
     }
 }

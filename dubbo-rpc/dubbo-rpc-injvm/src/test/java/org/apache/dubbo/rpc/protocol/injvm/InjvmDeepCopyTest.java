@@ -36,10 +36,10 @@ import org.junit.jupiter.api.Test;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class InjvmDeepCopyTest {
+class InjvmDeepCopyTest {
 
     @Test
-    public void testDeepCopy() {
+    void testDeepCopy() {
         ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("TestInjvm"));
 

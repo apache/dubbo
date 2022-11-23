@@ -37,7 +37,7 @@ import java.util.stream.Stream;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class CacheFilterTest {
+class CacheFilterTest {
     private RpcInvocation invocation;
     private CacheFilter cacheFilter = new CacheFilter();
     private Invoker<?> invoker = mock(Invoker.class);

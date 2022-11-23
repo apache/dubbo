@@ -26,10 +26,10 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
  *
  * @since 2.7.5
  */
-public class ThrowableActionTest {
+class ThrowableActionTest {
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Assertions.assertThrows(RuntimeException.class, () -> execute(() -> {
             throw new Exception("Test");
         }), "Test");

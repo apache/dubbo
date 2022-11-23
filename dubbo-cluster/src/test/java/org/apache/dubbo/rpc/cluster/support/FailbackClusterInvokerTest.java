@@ -55,7 +55,7 @@ import static org.mockito.Mockito.mock;
  * add annotation @TestMethodOrder, the testARetryFailed Method must to first execution
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class FailbackClusterInvokerTest {
+class FailbackClusterInvokerTest {
 
     List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=2");
@@ -104,7 +104,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeWithIllegalRetriesParam() {
+    void testInvokeWithIllegalRetriesParam() {
         URL url = URL.valueOf("test://test:11/test?retries=-1&failbacktasks=2");
         Directory<FailbackClusterInvokerTest> dic = mock(Directory.class);
         given(dic.getUrl()).willReturn(url);
@@ -117,7 +117,7 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeWithIllegalFailbacktasksParam() {
+    void testInvokeWithIllegalFailbacktasksParam() {
         URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=-1");
         Directory<FailbackClusterInvokerTest> dic = mock(Directory.class);
         given(dic.getUrl()).willReturn(url);

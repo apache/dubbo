@@ -51,6 +51,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
@@ -103,14 +105,14 @@ public class RestProtocol extends AbstractProxyProtocol {
             ServletContext servletContext = ServletManager.getInstance().getServletContext(ServletManager.EXTERNAL_SERVER_PORT);
             if (servletContext == null) {
                 throw new RpcException("No servlet context found. Since you are using server='servlet', " +
-                        "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
+                    "make sure that you've configured " + BootstrapListener.class.getName() + " in web.xml");
             }
             String webappPath = servletContext.getContextPath();
             if (StringUtils.isNotEmpty(webappPath)) {
                 webappPath = webappPath.substring(1);
                 if (!contextPath.startsWith(webappPath)) {
                     throw new RpcException("Since you are using server='servlet', " +
-                            "make sure that the 'contextpath' property starts with the path of external webapp");
+                        "make sure that the 'contextpath' property starts with the path of external webapp");
                 }
                 contextPath = contextPath.substring(webappPath.length());
                 if (contextPath.startsWith("/")) {
@@ -230,7 +232,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 }
                 entry.getValue().close();
             } catch (Throwable t) {
-                logger.warn("Error closing rest server", t);
+                logger.warn(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Error closing rest server", t);
             }
         }
         serverMap.clear();
@@ -243,7 +245,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 // destroy directly regardless of the current reference count.
                 client.destroy();
             } catch (Throwable t) {
-                logger.warn("Error closing rest client", t);
+                logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Error closing rest client", t);
             }
         }
         clients.clear();
@@ -280,7 +282,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                 connectionMonitor.destroyManager(url);
             }
         } catch (Exception e) {
-            logger.warn("Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
+            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
         }
     }
 

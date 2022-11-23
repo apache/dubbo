@@ -22,8 +22,10 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,11 +34,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ActivateComparator implements Comparator<Class<?>> {
 
-    private final ExtensionDirector extensionDirector;
+    private final List<ExtensionDirector> extensionDirectors;
     private final Map<Class<?>, ActivateInfo> activateInfoMap = new ConcurrentHashMap<>();
 
     public ActivateComparator(ExtensionDirector extensionDirector) {
-        this.extensionDirector = extensionDirector;
+        extensionDirectors = new ArrayList<>();
+        extensionDirectors.add(extensionDirector);
+    }
+
+    public ActivateComparator(List<ExtensionDirector> extensionDirectors) {
+        this.extensionDirectors = extensionDirectors;
     }
 
     @Override
@@ -60,9 +67,16 @@ public class ActivateComparator implements Comparator<Class<?>> {
         ActivateInfo a2 = parseActivate(o2);
 
         if ((a1.applicableToCompare() || a2.applicableToCompare()) && inf != null) {
-            ExtensionLoader<?> extensionLoader = extensionDirector.getExtensionLoader(inf);
             if (a1.applicableToCompare()) {
-                String n2 = extensionLoader.getExtensionName(o2);
+                String n2 = null;
+                for (ExtensionDirector director : extensionDirectors) {
+                    ExtensionLoader<?> extensionLoader = director.getExtensionLoader(inf);
+                    n2 = extensionLoader.getExtensionName(o2);
+                    if (n2 != null) {
+                        break;
+                    }
+                }
+
                 if (a1.isLess(n2)) {
                     return -1;
                 }
@@ -73,7 +87,15 @@ public class ActivateComparator implements Comparator<Class<?>> {
             }
 
             if (a2.applicableToCompare()) {
-                String n1 = extensionLoader.getExtensionName(o1);
+                String n1 = null;
+                for (ExtensionDirector director : extensionDirectors) {
+                    ExtensionLoader<?> extensionLoader = director.getExtensionLoader(inf);
+                    n1 = extensionLoader.getExtensionName(o1);
+                    if (n1 != null) {
+                        break;
+                    }
+                }
+
                 if (a2.isLess(n1)) {
                     return 1;
                 }

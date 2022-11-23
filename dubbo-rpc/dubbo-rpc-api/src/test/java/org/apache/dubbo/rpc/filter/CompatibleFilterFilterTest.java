@@ -38,7 +38,7 @@ import static org.mockito.Mockito.mock;
 /**
  * CompatibleFilterTest.java
  */
-public class CompatibleFilterFilterTest {
+class CompatibleFilterFilterTest {
     private CompatibleFilter compatibleFilter = new CompatibleFilter();
     private Invocation invocation;
     private Invoker invoker;
@@ -49,7 +49,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testInvokerGeneric() {
+    void testInvokerGeneric() {
         invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("$enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
@@ -69,7 +69,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testResultHasException() {
+    void testResultHasException() {
         invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
@@ -90,7 +90,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testInvokerJsonPojoSerialization() throws Exception {
+    void testInvokerJsonPojoSerialization() throws Exception {
         invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Type[].class});
@@ -113,7 +113,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testInvokerNonJsonEnumSerialization() throws Exception {
+    void testInvokerNonJsonEnumSerialization() throws Exception {
         invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Type[].class});
@@ -136,7 +136,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testInvokerNonJsonNonPojoSerialization() {
+    void testInvokerNonJsonNonPojoSerialization() {
         invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("echo");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});
@@ -156,7 +156,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testInvokerNonJsonPojoSerialization() {
+    void testInvokerNonJsonPojoSerialization() {
         invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("echo");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{String.class});

@@ -18,7 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.cache.FileCacheStore;
 import org.apache.dubbo.common.cache.FileCacheStoreFactory;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -32,8 +32,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_LOAD_MAPPING_CACHE;
+
 public abstract class AbstractCacheManager<V> implements Disposable {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private ScheduledExecutorService executorService;
 
@@ -46,7 +48,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         try {
             cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName, enableFileCache);
             Map<String, String> properties = cacheStore.loadCache(entrySize);
-            logger.info("Successfully loaded mapping cache from file " + fileName + ", entries " + properties.size());
+            logger.info("Successfully loaded " + getName() + " cache from file " + fileName + ", entries " + properties.size());
             for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -61,7 +63,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
 
             this.executorService.scheduleWithFixedDelay(new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize), 10, interval, TimeUnit.MINUTES);
         } catch (Exception e) {
-            logger.error("Load mapping from local cache file error ", e);
+            logger.error(COMMON_FAILED_LOAD_MAPPING_CACHE, "", "", "Load mapping from local cache file error ", e);
         }
     }
 
@@ -117,7 +119,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     }
 
     public static class CacheRefreshTask<V> implements Runnable {
-        private final Logger logger = LoggerFactory.getLogger(getClass());
+        private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
         private static final String DEFAULT_COMMENT = "Dubbo cache";
         private final FileCacheStore cacheStore;
         private final LRUCache<String, V> cache;

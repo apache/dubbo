@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -43,13 +43,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_STOP;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 /**
  * Router chain
  */
 public class RouterChain<T> {
-    private static final Logger logger = LoggerFactory.getLogger(RouterChain.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RouterChain.class);
 
     /**
      * full list of addresses from registry, classified by method name.
@@ -241,6 +243,7 @@ public class RouterChain<T> {
         RouterSnapshotNode<T> commonRouterNode = new RouterSnapshotNode<T>("CommonRouter", resultInvokers.clone());
         parentNode.appendNode(commonRouterNode);
         List<Invoker<T>> commonRouterResult = resultInvokers;
+
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
@@ -296,7 +299,7 @@ public class RouterChain<T> {
                 if (routerSnapshotSwitcher.isEnable()) {
                     routerSnapshotSwitcher.setSnapshot(message);
                 }
-                logger.warn(message);
+                logger.warn(CLUSTER_NO_VALID_PROVIDER,"No provider available after route for the service","",message);
             }
         } else {
             if (logger.isInfoEnabled()) {
@@ -344,7 +347,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error("Error trying to stop router " + router.getClass(), e);
+                logger.error(CLUSTER_FAILED_STOP,"route stop failed","","Error trying to stop router " + router.getClass(),e);
             }
         }
         routers = Collections.emptyList();
@@ -354,7 +357,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                logger.error("Error trying to stop stateRouter " + router.getClass(), e);
+                logger.error(CLUSTER_FAILED_STOP,"StateRouter stop failed","","Error trying to stop StateRouter " + router.getClass(),e);
             }
         }
         stateRouters = Collections.emptyList();

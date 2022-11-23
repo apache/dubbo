@@ -31,10 +31,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 
-public class DefaultFilterChainBuilderTest {
+class DefaultFilterChainBuilderTest {
 
     @Test
-    public void testBuildInvokerChainForLocalReference() {
+    void testBuildInvokerChainForLocalReference() {
         DefaultFilterChainBuilder defaultFilterChainBuilder = new DefaultFilterChainBuilder();
 
         // verify that no filter is built by default
@@ -69,7 +69,7 @@ public class DefaultFilterChainBuilderTest {
     }
 
     @Test
-    public void testBuildInvokerChainForRemoteReference() {
+    void testBuildInvokerChainForRemoteReference() {
         DefaultFilterChainBuilder defaultFilterChainBuilder = new DefaultFilterChainBuilder();
 
         // verify that no filter is built by default

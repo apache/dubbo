@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.cluster.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.extension.support.MultiInstanceActivateComparator;
+import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
@@ -113,7 +113,7 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
     }
 
     private <T> List<T> sortingAndDeduplication(List<T> filters, List<ExtensionDirector> directors) {
-        Map<Class<?>, T> filtersSet = new TreeMap<>(new MultiInstanceActivateComparator(directors));
+        Map<Class<?>, T> filtersSet = new TreeMap<>(new ActivateComparator(directors));
         for (T filter : filters) {
             filtersSet.putIfAbsent(filter.getClass(), filter);
         }

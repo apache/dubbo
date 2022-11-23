@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * ReferenceConfig
@@ -65,6 +67,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * The consumer config (default)
      */
     protected ConsumerConfig consumer;
+
+    /**
+     * In the mesh mode, uninstall the directory, router and load balance related to the cluster in the currently invoked invoker.
+     * Delegate retry, load balancing, timeout and other traffic management capabilities to Sidecar.
+     */
+    protected Boolean unloadClusterRelated;
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -123,8 +131,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         super.preProcessRefresh();
         if (consumer == null) {
             consumer = getModuleConfigManager()
-                    .getDefaultConsumer()
-                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
+                .getDefaultConsumer()
+                .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
     }
 
@@ -159,13 +167,14 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     /**
      * Get service interface class of this reference.
      * The actual service type of remote provider.
+     *
      * @return
      */
     public Class<?> getServiceInterfaceClass() {
         Class<?> actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
-                if(getInterfaceClassLoader() != null) {
+                if (getInterfaceClassLoader() != null) {
                     actualInterface = Class.forName(interfaceName, false, getInterfaceClassLoader());
                 } else {
                     actualInterface = Class.forName(interfaceName);
@@ -180,6 +189,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     /**
      * Get proxy interface class of this reference.
      * The proxy interface class is used to create proxy instance.
+     *
      * @return
      */
     public Class<?> getInterfaceClass() {
@@ -191,7 +201,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (StringUtils.isBlank(generic) && getConsumer() != null) {
             generic = getConsumer().getGeneric();
         }
-        if(getInterfaceClassLoader() != null) {
+        if (getInterfaceClassLoader() != null) {
             interfaceClass = determineInterfaceClass(generic, interfaceName, getInterfaceClassLoader());
         } else {
             interfaceClass = determineInterfaceClass(generic, interfaceName);
@@ -201,6 +211,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     /**
      * Determine the interface of the proxy class
+     *
      * @param generic
      * @param interfaceName
      * @return
@@ -257,6 +268,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         this.consumer = consumer;
     }
 
+    @Parameter(key = UNLOAD_CLUSTER_RELATED)
+    public Boolean getUnloadClusterRelated() {
+        return unloadClusterRelated;
+    }
+
+    public void setUnloadClusterRelated(Boolean unloadClusterRelated) {
+        this.unloadClusterRelated = unloadClusterRelated;
+    }
+
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
     }
@@ -274,7 +294,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             }
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new RegexProperties();
-                try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
+                try (FileInputStream fis = new FileInputStream(resolveFile)) {
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to load " + resolveFile + ", cause: " + e.getMessage(), e);
@@ -283,13 +303,13 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 resolve = properties.getProperty(interfaceName);
             }
         }
-        if (resolve != null && resolve.length() > 0) {
+        if (StringUtils.isNotEmpty(resolve)) {
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {
-                    logger.warn("Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using default dubbo resolve file " + resolveFile + " replace " + interfaceName + "" + resolve + " to p2p invoke remote service.");
                 } else {
-                    logger.warn("Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Using -D" + interfaceName + "=" + resolve + " to p2p invoke remote service.");
                 }
             }
         }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.cache;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
@@ -30,10 +30,16 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
 
 /**
  * Local file interaction class that can back different caches.
@@ -41,7 +47,7 @@ import java.util.Map;
  * All items in local file are of human friendly format.
  */
 public class FileCacheStore {
-    private static final Logger logger = LoggerFactory.getLogger(FileCacheStore.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FileCacheStore.class);
 
     private String cacheFilePath;
     private File cacheFile;
@@ -71,10 +77,14 @@ public class FileCacheStore {
             }
 
             if (count > entrySize) {
-                logger.warn("Cache file was truncated for exceeding the maximum entry size " + entrySize);
+                logger.warn(COMMON_CACHE_MAX_FILE_SIZE_LIMIT_EXCEED, "mis-configuration of system properties",
+                    "Check Java system property 'dubbo.mapping.cache.entrySize' and 'dubbo.meta.cache.entrySize'.",
+                    "Cache file was truncated for exceeding the maximum entry size: " + entrySize);
             }
         } catch (IOException e) {
-            logger.warn("Load cache failed ", e);
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Load cache failed ", e);
+
             throw e;
         }
         return properties;
@@ -88,6 +98,9 @@ public class FileCacheStore {
                 directoryLock.channel().close();
                 deleteFile(lockFile);
             } catch (IOException e) {
+                logger.error(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                    "Failed to release cache path's lock file:" + lockFile, e);
+
                 throw new RuntimeException("Failed to release cache path's lock file:" + lockFile, e);
             }
         }
@@ -102,29 +115,41 @@ public class FileCacheStore {
                  new LimitedLengthBufferedWriter(
                      new OutputStreamWriter(
                          new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8), maxFileSize)) {
+
             bw.write("#" + comment);
             bw.newLine();
             bw.write("#" + new Date());
             bw.newLine();
+
             for (Map.Entry<String, String> e : properties.entrySet()) {
                 String key = e.getKey();
                 String val = e.getValue();
                 bw.write(key + "=" + val);
                 bw.newLine();
             }
+
             bw.flush();
+
             long remainSize = bw.getRemainSize();
             if (remainSize < 0) {
-                logger.info("Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
+                logger.warn(COMMON_CACHE_MAX_ENTRY_COUNT_LIMIT_EXCEED, "mis-configuration of system properties",
+                    "Check Java system property 'dubbo.mapping.cache.maxFileSize' and 'dubbo.meta.cache.maxFileSize'.",
+                    "Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
             }
         } catch (IOException e) {
-            logger.warn("Update cache error.");
+            logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
+                "Update cache error.", e);
         }
     }
 
     private static void deleteFile(File f) {
-        if (!f.delete()) {
-            logger.debug("Failed to delete file " + f.getAbsolutePath());
+
+        Path pathOfFile = f.toPath();
+
+        try {
+            Files.delete(pathOfFile);
+        } catch (IOException ioException) {
+            logger.debug("Failed to delete file " + f.getAbsolutePath(), ioException);
         }
     }
 
@@ -179,6 +204,9 @@ public class FileCacheStore {
         }
     }
 
+    /**
+     * An empty (or fallback) implementation of FileCacheStore. Used when cache file creation failed.
+     */
     protected static class Empty extends FileCacheStore {
 
         private Empty(String cacheFilePath) {
@@ -196,9 +224,13 @@ public class FileCacheStore {
 
         @Override
         public void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
+            // No-op.
         }
     }
 
+    /**
+     * A BufferedWriter which limits the length (in bytes). When limit exceed, this writer stops writing.
+     */
     private static class LimitedLengthBufferedWriter extends BufferedWriter {
 
         private long remainSize;

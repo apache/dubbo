@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-@Activate(group = CommonConstants.PROVIDER, order = -10000)
+@Activate(group = CommonConstants.PROVIDER, value = Constants.SERVICE_AUTH, order = -10000)
 public class ProviderAuthFilter implements Filter {
     private ApplicationModel applicationModel;
 

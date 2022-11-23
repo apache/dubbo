@@ -18,7 +18,7 @@ package org.apache.dubbo.qos.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.pu.QosWireProtocol;
@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -43,7 +44,7 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 @Activate(order = 200)
 public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
-    private final Logger logger = LoggerFactory.getLogger(QosProtocolWrapper.class);
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(QosProtocolWrapper.class);
 
     private AtomicBoolean hasStarted = new AtomicBoolean(false);
 
@@ -99,7 +100,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
             boolean qosEnable = url.getParameter(QOS_ENABLE, true);
             WireProtocol qosWireProtocol = frameworkModel.getExtensionLoader(WireProtocol.class).getExtension("qos");
-            if(qosWireProtocol != null) {
+            if (qosWireProtocol != null) {
                 ((QosWireProtocol) qosWireProtocol).setQosEnable(qosEnable);
             }
             if (!qosEnable) {
@@ -113,13 +114,18 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
+
+            if (server.isStarted()) {
+                return;
+            }
+
             server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
             server.start();
 
         } catch (Throwable throwable) {
-            logger.warn("Fail to start qos server: ", throwable);
+            logger.warn(QOS_FAILED_START_SERVER, "", "", "Fail to start qos server: ", throwable);
         }
     }
 

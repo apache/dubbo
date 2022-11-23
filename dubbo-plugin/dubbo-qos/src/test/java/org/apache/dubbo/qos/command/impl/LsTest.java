@@ -37,7 +37,7 @@ import org.mockito.Mockito;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LsTest {
+class LsTest {
     private FrameworkModel frameworkModel;
     private ModuleServiceRepository repository;
 
@@ -55,7 +55,7 @@ public class LsTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Ls ls = new Ls(frameworkModel);
         String result = ls.execute(Mockito.mock(CommandContext.class), new String[0]);
         System.out.println(result);

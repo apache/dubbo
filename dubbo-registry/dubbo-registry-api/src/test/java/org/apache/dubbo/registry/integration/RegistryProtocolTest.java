@@ -64,7 +64,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class RegistryProtocolTest {
+class RegistryProtocolTest {
 
     @AfterEach
     public void tearDown() throws IOException {
@@ -76,7 +76,7 @@ public class RegistryProtocolTest {
      * verify the generated consumer url information
      */
     @Test
-    public void testConsumerUrlWithoutProtocol() {
+    void testConsumerUrlWithoutProtocol() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 
@@ -143,7 +143,7 @@ public class RegistryProtocolTest {
      * verify that when the protocol is configured, the protocol of consumer url is the configured protocol
      */
     @Test
-    public void testConsumerUrlWithProtocol() {
+    void testConsumerUrlWithProtocol() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 
@@ -214,7 +214,7 @@ public class RegistryProtocolTest {
      * @see FailoverCluster
      */
     @Test
-    public void testReferWithoutGroup() {
+    void testReferWithoutGroup() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 
@@ -275,7 +275,7 @@ public class RegistryProtocolTest {
      * @see MergeableCluster
      */
     @Test
-    public void testReferWithGroup() {
+    void testReferWithGroup() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 
@@ -340,7 +340,7 @@ public class RegistryProtocolTest {
      * @see MigrationRuleListener
      */
     @Test
-    public void testInterceptInvokerForMigrationRuleListener() {
+    void testInterceptInvokerForMigrationRuleListener() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 
@@ -405,7 +405,7 @@ public class RegistryProtocolTest {
      * @see CountRegistryProtocolListener
      */
     @Test
-    public void testInterceptInvokerForCustomRegistryProtocolListener() {
+    void testInterceptInvokerForCustomRegistryProtocolListener() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 
@@ -468,7 +468,7 @@ public class RegistryProtocolTest {
      * verify the registered consumer url
      */
     @Test
-    public void testRegisterConsumerUrl() {
+    void testRegisterConsumerUrl() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
 

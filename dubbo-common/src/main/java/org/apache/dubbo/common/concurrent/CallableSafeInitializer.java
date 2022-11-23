@@ -88,10 +88,11 @@ public class CallableSafeInitializer<T> {
     public T remove(Consumer<? super T> action) {
         // release
         T value = reference.getAndSet(null);
-        if (value != null && action != null) {
+        if (value != null) {
             if (action != null) {
                 action.accept(value);
-            } else if (value instanceof Disposable) {
+            }
+            if (value instanceof Disposable) {
                 ((Disposable) value).destroy();
             }
         }

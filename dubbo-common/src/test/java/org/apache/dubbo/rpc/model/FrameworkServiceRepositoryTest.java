@@ -35,7 +35,7 @@ import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
 /**
  * {@link FrameworkServiceRepository}
  */
-public class FrameworkServiceRepositoryTest {
+class FrameworkServiceRepositoryTest {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
@@ -53,7 +53,7 @@ public class FrameworkServiceRepositoryTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         FrameworkServiceRepository frameworkServiceRepository = frameworkModel.getServiceRepository();
         ModuleServiceRepository moduleServiceRepository = moduleModel.getServiceRepository();
 

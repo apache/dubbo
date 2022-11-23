@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -86,20 +88,20 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
         this.zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
-                logger.warn("Trying to fetch the latest urls, in case there are provider changes during connection loss.\n" +
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Trying to fetch the latest urls, in case there are provider changes during connection loss.\n" +
                     " Since ephemeral ZNode will not get deleted for a connection lose, " +
                     "there's no need to re-register url of this instance.");
                 ZookeeperRegistry.this.fetchLatestAddresses();
             } else if (state == StateListener.NEW_SESSION_CREATED) {
-                logger.warn("Trying to re-register urls and re-subscribe listeners of this instance to registry...");
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Trying to re-register urls and re-subscribe listeners of this instance to registry...");
 
                 try {
                     ZookeeperRegistry.this.recover();
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", e.getMessage(), e);
                 }
             } else if (state == StateListener.SESSION_LOST) {
-                logger.warn("Url of this instance will be deleted from registry soon. " +
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Url of this instance will be deleted from registry soon. " +
                     "Dubbo client will try to re-register once a new session is created.");
             } else if (state == StateListener.SUSPENDED) {
 
@@ -117,6 +119,29 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     @Override
     public void destroy() {
         super.destroy();
+
+        // remove child listener
+        Set<URL> urls = zkListeners.keySet();
+        for (URL url : urls) {
+            ConcurrentMap<NotifyListener, ChildListener> map = zkListeners.get(url);
+            if (CollectionUtils.isEmptyMap(map)) {
+                continue;
+            }
+            Collection<ChildListener> childListeners = map.values();
+            if (CollectionUtils.isEmpty(childListeners)) {
+                continue;
+            }
+            if (ANY_VALUE.equals(url.getServiceInterface())) {
+                String root = toRootPath();
+                childListeners.stream().forEach(childListener -> zkClient.removeChildListener(root, childListener));
+            } else {
+                for (String path : toCategoriesPath(url)) {
+                    childListeners.stream().forEach(childListener -> zkClient.removeChildListener(path, childListener));
+                }
+            }
+        }
+        zkListeners.clear();
+
         // Just release zkClient reference, but can not close zk client here for zk client is shared somewhere else.
         // See org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
         zkClient = null;
@@ -185,6 +210,14 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 try {
                     List<URL> urls = new ArrayList<>();
 
+                    /*
+                        Iterate over the category value in URL.
+                        With default settings, the path variable can be when url is a consumer URL:
+
+                            /dubbo/[service name]/providers,
+                            /dubbo/[service name]/configurators
+                            /dubbo/[service name]/routers
+                    */
                     for (String path : toCategoriesPath(url)) {
                         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                         ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
@@ -193,9 +226,13 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                             ((RegistryChildListenerImpl) zkListener).setLatch(latch);
                         }
 
+                        // create "directories".
                         zkClient.create(path, false);
+
+                        // Add children (i.e. service items).
                         List<String> children = zkClient.addChildListener(path, zkListener);
                         if (children != null) {
+                            // The invocation point that may cause 1-1.
                             urls.addAll(toUrlsWithEmpty(url, path, children));
                         }
                     }
@@ -213,6 +250,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
+        super.doUnsubscribe(url, listener);
         checkDestroyed();
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
@@ -321,6 +359,11 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         return UrlUtils.isMatch(subscribeUrl, providerUrl);
     }
 
+    /**
+     * Triggered when children get changed. It will be invoked by implementation of CuratorWatcher.
+     * <p>
+     * 'org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
+     */
     private class RegistryChildListenerImpl implements ChildListener {
         private final ZookeeperRegistryNotifier notifier;
         private volatile CountDownLatch latch;
@@ -336,11 +379,13 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
         @Override
         public void childChanged(String path, List<String> children) {
+            // Notify 'notifiers' one by one.
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                logger.warn("Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
             }
+
             notifier.notify(path, children);
         }
     }

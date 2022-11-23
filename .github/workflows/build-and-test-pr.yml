@@ -1,0 +1,341 @@
+name: Build and Test For PR
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+env:
+  FORK_COUNT: 2
+  FAIL_FAST: 0
+  SHOW_ERROR_DETAIL: 1
+  #multi-version size limit
+  VERSIONS_LIMIT: 4
+  CANDIDATE_VERSIONS: '
+    spring.version:4.3.30.RELEASE;
+    spring-boot.version:1.5.22.RELEASE;
+    spring-boot.version:2.4.1;
+    '
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check License
+        uses: apache/skywalking-eyes@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Set up JDK 17"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - name: "Compile Dubbo (Linux)"
+        run: |
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+      - name: Check Dependencies' License
+        uses: apache/skywalking-eyes/dependency@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          config: .licenserc.yaml
+          mode: check
+
+  build-source:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.dubbo-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: dubbo
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 8
+      - uses: actions/cache@v3
+        name: "Cache local Maven repository"
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
+      - name: "Dubbo cache"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+      - name: "Build Dubbo with Maven"
+        run: |
+          cd ./dubbo
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean source:jar install -Pjacoco,rat,checkstyle -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+      - name: "Pack rat file if failure"
+        if: failure()
+        run: 7z a ${{ github.workspace }}/rat.zip *rat.txt -r
+      - name: "Upload rat file if failure"
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: "rat-file"
+          path: ${{ github.workspace }}/rat.zip
+      - name: "Pack checkstyle file if failure"
+        if: failure()
+        run: 7z a ${{ github.workspace }}/checkstyle.zip *checkstyle* -r
+      - name: "Upload checkstyle file if failure"
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: "checkstyle-file"
+          path: ${{ github.workspace }}/checkstyle.zip
+      - name: "Calculate Dubbo Version"
+        id: dubbo-version
+        run: |
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          echo "version=$REVISION" >> $GITHUB_OUTPUT
+          echo "dubbo version: $REVISION"
+
+  unit-test-prepare:
+    name: "Preparation for Unit Test"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    env:
+      ZOOKEEPER_VERSION: 3.6.3
+    steps:
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+      - name: "Set up msys2 if necessary"
+        if: ${{ startsWith( matrix.os, 'windows') && steps.cache-zookeeper.outputs.cache-hit != 'true' }}
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false  # support cache, see https://github.com/msys2/setup-msys2#context
+      - name: "Download zookeeper binary archive in Linux OS"
+        run: |
+          mkdir -p ${{ github.workspace }}/.tmp/zookeeper
+          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c https://apache.website-solution.net/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-${{ env.ZOOKEEPER_VERSION }}/apache-zookeeper-${{ env.ZOOKEEPER_VERSION }}-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          echo "list the downloaded zookeeper binary archive"
+          ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+      - uses: actions/cache@v3
+        name: "Cache secret key"
+        id: "cache-secret-cert"
+        with:
+          path: ${{ github.workspace }}/.tmp/rsa
+          key: secret-rsa-${{ runner.os }}-${{ github.run_id }}
+      - name: "Create Secret"
+        run: |
+          mkdir -p ${{ github.workspace }}/.tmp/rsa
+          cd ${{ github.workspace }}/.tmp/rsa
+          openssl genrsa -out rsa_private.pem 1024
+          openssl rsa -in rsa_private.pem -pubout -out rsa_public.pem
+          echo "Current workflow run id: ${{ github.run_id }}"
+          echo "Start Print Rsa Public Key ---"
+          cat rsa_public.pem
+          echo "--- End Print Rsa Public Key"
+
+  unit-test:
+    needs: [build-source, unit-test-prepare]
+    name: "Unit Test On ubuntu-latest"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    env:
+      DISABLE_FILE_SYSTEM_TEST: true
+      CURRENT_ROLE: ${{ matrix.case-role }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: "Set up JDK ${{ matrix.jdk }}"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+      - uses: actions/cache@v3
+        name: "Cache local Maven repository"
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-
+      - uses: actions/cache@v3
+        name: "Cache secret key"
+        id: "cache-secret-cert"
+        with:
+          path: ${{ github.workspace }}/.tmp/rsa
+          key: secret-rsa-${{ runner.os }}-${{ github.run_id }}
+      - name: "Get sonarcloud token"
+        if: ${{ github.repository == 'apache/dubbo' }}
+        run: |
+          curl "http://dubbo-vm.apache.org:8000/token?workflow_id=${{ github.run_id }}" -o ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token
+          openssl rsautl -decrypt -in ${{ github.workspace }}/.tmp/encrypted-sonarcloud-token -out ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token -inkey ${{ github.workspace }}/.tmp/rsa/rsa_private.pem
+      - name: "Test with Maven with SonarCloud Scan"
+        if: ${{ github.repository == 'apache/dubbo' }}
+        timeout-minutes: 70
+        env:
+          # Needed to get some information about the pull request, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          source ${{ github.workspace }}/.tmp/decrypted-sonarcloud-token
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Pjacoco -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=apache -Dsonar.projectKey=apache_dubbo -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper -Dsonar.coverage.jacoco.xmlReportPaths=dubbo-test/dubbo-dependencies-all/target/site/jacoco-aggregate/jacoco.xml -Dsonar.login=${SONAR_TOKEN}
+      - name: "Test with Maven without SonarCloud Scan"
+        if: ${{ github.repository != 'apache/dubbo' }}
+        timeout-minutes: 70
+        run: |
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Pjacoco -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Dcheckstyle_unix.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true -DembeddedZookeeperPath=${{ github.workspace }}/.tmp/zookeeper
+      - name: "Upload coverage to Codecov"
+        uses: codecov/codecov-action@v3
+
+  integration-test-prepare:
+    runs-on: ubuntu-latest
+    env:
+      JOB_COUNT: 3
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'apache/dubbo-samples'
+          ref: master
+      - name: "Prepare test list"
+        run: |
+          bash ./test/scripts/prepare-test.sh
+      - name: "Upload test list"
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-list
+          path: test/jobs
+
+  integration-test-job:
+    needs: [build-source, integration-test-prepare]
+    name: "Integration Test on ubuntu-latest (JobId: ${{matrix.job_id}})"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      JAVA_VER: 8
+      TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
+    strategy:
+      fail-fast: false
+      matrix:
+        job_id: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'apache/dubbo-samples'
+          ref: master
+      - name: "Cache local Maven repository"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            ${{ runner.os }}-maven-
+      - name: "Restore Dubbo cache"
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+            ${{ runner.os }}-dubbo-snapshot-
+      - name: "Download test list"
+        uses: actions/download-artifact@v3
+        with:
+          name: test-list
+          path: test/jobs/
+      - name: "Set up JDK 8"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 8
+      - name: "Init Candidate Versions"
+        run: |
+          DUBBO_VERSION="${{needs.build-source.outputs.version}}"
+          CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;compiler.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS;dubbo.compiler.version:$DUBBO_VERSION"
+          echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
+      - name: "Build test image"
+        run: |
+          cd test && bash ./build-test-image.sh
+      - name: "Run tests"
+        run: cd test && bash ./run-tests.sh
+      - name: "Upload test result"
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-result
+          path: test/jobs/*-result*
+
+  integration-test-result:
+    needs: [integration-test-job]
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      JAVA_VER: 8
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: 'apache/dubbo-samples'
+          ref: master
+      - name: "Download test result"
+        uses: actions/download-artifact@v3
+        with:
+          name: test-result
+          path: test/jobs/
+      - name: "Merge test result"
+        run: ./test/scripts/merge-test-results.sh
+
+  error-code-inspecting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: "./dubbo"
+
+      - uses: actions/checkout@v3
+        with:
+          repository: 'apache/dubbo-test-tools'
+          ref: main
+          path: "./dubbo-test-tools"
+
+      - name: "Set up JDK 17"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - name: "Compile Dubbo (Linux)"
+        run: |
+          cd ${{ github.workspace }}/dubbo
+          ./mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C clean install -DskipTests=true -DskipIntegrationTests=true -Dcheckstyle.skip=true -Dcheckstyle_unix.skip=true -Drat.skip=true -Dmaven.javadoc.skip=true
+      - name: "Run Error Code Inspecting"
+        env:
+          "dubbo.eci.report-as-error": false
+        run: |
+          cd ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector
+          ../mvnw --batch-mode --no-snapshot-updates -e --no-transfer-progress --fail-fast -T 2C package exec:java -Dmaven.test.skip=true -Dmaven.test.skip.exec=true -Ddubbo.eci.path=${{ github.workspace }}/dubbo
+
+      - name: "Upload error code inspection result"
+        uses: actions/upload-artifact@v3
+        with:
+          name: "error-inspection-result"
+          path: ${{ github.workspace }}/dubbo-test-tools/dubbo-error-code-inspector/error-inspection-result.txt

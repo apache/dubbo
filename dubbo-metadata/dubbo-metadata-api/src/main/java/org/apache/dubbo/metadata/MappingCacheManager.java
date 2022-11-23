@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -65,11 +64,5 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
     @Override
     protected String getName() {
         return "mapping";
-    }
-
-    public void update(Map<String, Set<String>> newCache) {
-        for (Map.Entry<String, Set<String>> entry : newCache.entrySet()) {
-            cache.put(entry.getKey(), entry.getValue());
-        }
     }
 }

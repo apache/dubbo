@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 
-public class DelegateProviderMetaDataInvokerTest {
+class DelegateProviderMetaDataInvokerTest {
     private ServiceConfig service;
     private Invoker<Greeting> invoker;
 
@@ -40,7 +40,7 @@ public class DelegateProviderMetaDataInvokerTest {
     }
 
     @Test
-    public void testDelegate() throws Exception {
+    void testDelegate() throws Exception {
         DelegateProviderMetaDataInvoker<Greeting> delegate =
                 new DelegateProviderMetaDataInvoker<Greeting>(invoker, service);
         delegate.getInterface();

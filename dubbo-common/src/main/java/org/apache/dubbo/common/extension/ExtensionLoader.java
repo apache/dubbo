@@ -23,7 +23,7 @@ import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.extension.support.WrapperComparator;
 import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -80,6 +80,8 @@ import static java.util.stream.StreamSupport.stream;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_LOAD_EXTENSION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
 
 /**
  * {@link org.apache.dubbo.rpc.model.ApplicationModel}, {@code DubboBootstrap} and this class are
@@ -101,7 +103,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  */
 public class ExtensionLoader<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ExtensionLoader.class);
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
     private static final String SPECIAL_SPI_PROPERTIES = "special_spi.properties";
@@ -131,9 +133,9 @@ public class ExtensionLoader<T> {
 
     private static volatile LoadingStrategy[] strategies = loadLoadingStrategies();
 
-    private static Map<String,String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
+    private static Map<String, String> specialSPILoadingStrategyMap = getSpecialSPILoadingStrategyMap();
 
-    private static SoftReference<Map<java.net.URL,List<String>>> urlListMapCache = new SoftReference<>(new ConcurrentHashMap<>());
+    private static SoftReference<Map<java.net.URL, List<String>>> urlListMapCache = new SoftReference<>(new ConcurrentHashMap<>());
 
     private static List<String> ignoredInjectMethodsDesc = getIgnoredInjectMethodsDesc();
 
@@ -169,6 +171,7 @@ public class ExtensionLoader<T> {
     /**
      * some spi are implements by dubbo framework only and scan multi classloaders resources may cause
      * application startup very slow
+     *
      * @return
      */
     private static Map<String, String> getSpecialSPILoadingStrategyMap() {
@@ -243,7 +246,7 @@ public class ExtensionLoader<T> {
                 try {
                     disposable.destroy();
                 } catch (Exception e) {
-                    logger.error("Error destroying extension " + disposable, e);
+                    logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Error destroying extension " + disposable, e);
                 }
             }
         });
@@ -257,7 +260,7 @@ public class ExtensionLoader<T> {
                 try {
                     disposable.destroy();
                 } catch (Exception e) {
-                    logger.error("Error destroying extension " + disposable, e);
+                    logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Error destroying extension " + disposable, e);
                 }
             }
         }
@@ -524,8 +527,9 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
-     * will be thrown.
+     * Find the extension with the given name.
+     *
+     * @throws IllegalStateException If the specified extension is not found.
      */
     public T getExtension(String name) {
         T extension = getExtension(name, true);
@@ -874,12 +878,12 @@ public class ExtensionLoader<T> {
                         method.invoke(instance, object);
                     }
                 } catch (Exception e) {
-                    logger.error("Failed to inject via method " + method.getName()
+                    logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Failed to inject via method " + method.getName()
                         + " of interface " + type.getName() + ": " + e.getMessage(), e);
                 }
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", e.getMessage(), e);
         }
         return instance;
     }
@@ -934,7 +938,7 @@ public class ExtensionLoader<T> {
                     try {
                         classes = loadExtensionClasses();
                     } catch (InterruptedException e) {
-                        logger.error("Exception occurred when loading extension class (interface: " + type + ")", e);
+                        logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Exception occurred when loading extension class (interface: " + type + ")", e);
                         throw new IllegalStateException("Exception occurred when loading extension class (interface: " + type + ")", e);
                     }
                     cachedClasses.set(classes);
@@ -1016,16 +1020,16 @@ public class ExtensionLoader<T> {
                 }
             }
 
-            if (specialSPILoadingStrategyMap.containsKey(type)){
+            if (specialSPILoadingStrategyMap.containsKey(type)) {
                 String internalDirectoryType = specialSPILoadingStrategyMap.get(type);
                 //skip to load spi when name don't match
                 if (!LoadingStrategy.ALL.equals(internalDirectoryType)
-                    && !internalDirectoryType.equals(loadingStrategy.getName())){
+                    && !internalDirectoryType.equals(loadingStrategy.getName())) {
                     return;
                 }
                 classLoadersToLoad.clear();
                 classLoadersToLoad.add(ExtensionLoader.class.getClassLoader());
-            }else {
+            } else {
                 // load from scope model
                 Set<ClassLoader> classLoaders = scopeModel.getClassLoaders();
 
@@ -1054,7 +1058,7 @@ public class ExtensionLoader<T> {
         } catch (InterruptedException e) {
             throw e;
         } catch (Throwable t) {
-            logger.error("Exception occurred when loading extension class (interface: " +
+            logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Exception occurred when loading extension class (interface: " +
                 type + ", description file: " + fileName + ").", t);
         }
     }
@@ -1074,34 +1078,27 @@ public class ExtensionLoader<T> {
             List<String> newContentList = getResourceContent(resourceURL);
             String clazz;
             for (String line : newContentList) {
-                final int ci = line.indexOf('#');
-                if (ci >= 0) {
-                    line = line.substring(0, ci);
-                }
-                line = line.trim();
-                if (line.length() > 0) {
-                    try {
-                        String name = null;
-                        int i = line.indexOf('=');
-                        if (i > 0) {
-                            name = line.substring(0, i).trim();
-                            clazz = line.substring(i + 1).trim();
-                        } else {
-                            clazz = line;
-                        }
-                        if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages) && isIncluded(clazz, includedPackages)
-                            && !isExcludedByClassLoader(clazz, classLoader, onlyExtensionClassLoaderPackages)) {
-                            loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
-                        }
-                    } catch (Throwable t) {
-                        IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type +
-                            ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
-                        exceptions.put(line, e);
+                try {
+                    String name = null;
+                    int i = line.indexOf('=');
+                    if (i > 0) {
+                        name = line.substring(0, i).trim();
+                        clazz = line.substring(i + 1).trim();
+                    } else {
+                        clazz = line;
                     }
+                    if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages) && isIncluded(clazz, includedPackages)
+                        && !isExcludedByClassLoader(clazz, classLoader, onlyExtensionClassLoaderPackages)) {
+                        loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
+                    }
+                } catch (Throwable t) {
+                    IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type +
+                        ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
+                    exceptions.put(line, e);
                 }
             }
         } catch (Throwable t) {
-            logger.error("Exception occurred when loading extension class (interface: " +
+            logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", "Exception occurred when loading extension class (interface: " +
                 type + ", class file: " + resourceURL + ") in " + resourceURL, t);
         }
     }
@@ -1117,7 +1114,7 @@ public class ExtensionLoader<T> {
             }
         }
 
-        List<String> contentList = urlListMap.computeIfAbsent(resourceURL,key->{
+        List<String> contentList = urlListMap.computeIfAbsent(resourceURL, key -> {
             List<String> newContentList = new ArrayList<>();
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
@@ -1228,7 +1225,7 @@ public class ExtensionLoader<T> {
             // duplicate implementation is unacceptable
             unacceptableExceptions.add(name);
             String duplicateMsg = "Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName();
-            logger.error(duplicateMsg);
+            logger.error(COMMON_ERROR_LOAD_EXTENSION, "", "", duplicateMsg);
             throw new IllegalStateException(duplicateMsg);
         }
     }
@@ -1366,7 +1363,7 @@ public class ExtensionLoader<T> {
                     }
                 }
             } catch (IOException ex) {
-                logger.error("load properties failed.", ex);
+                logger.error(CONFIG_FAILED_LOAD_ENV_VARIABLE, "", "", "load properties failed.", ex);
             }
         }
 

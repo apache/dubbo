@@ -36,7 +36,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class LoggerAdapterTest {
+class LoggerAdapterTest {
     static Stream<Arguments> data() {
         return Stream.of(
                 Arguments.of(JclLoggerAdapter.class, JclLogger.class),

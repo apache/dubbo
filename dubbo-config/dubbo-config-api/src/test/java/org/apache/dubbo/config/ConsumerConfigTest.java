@@ -33,7 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-public class ConsumerConfigTest {
+class ConsumerConfigTest {
 
     @BeforeEach
     public void setUp() {
@@ -46,7 +46,7 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testTimeout() throws Exception {
+    void testTimeout() throws Exception {
         System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(10);
@@ -55,49 +55,49 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setDefault(true);
         assertThat(consumer.isDefault(), is(true));
     }
 
     @Test
-    public void testClient() throws Exception {
+    void testClient() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setClient("client");
         assertThat(consumer.getClient(), equalTo("client"));
     }
 
     @Test
-    public void testThreadpool() throws Exception {
+    void testThreadpool() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setThreadpool("fixed");
         assertThat(consumer.getThreadpool(), equalTo("fixed"));
     }
 
     @Test
-    public void testCorethreads() throws Exception {
+    void testCorethreads() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setCorethreads(10);
         assertThat(consumer.getCorethreads(), equalTo(10));
     }
 
     @Test
-    public void testThreads() throws Exception {
+    void testThreads() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setThreads(20);
         assertThat(consumer.getThreads(), equalTo(20));
     }
 
     @Test
-    public void testQueues() throws Exception {
+    void testQueues() throws Exception {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setQueues(5);
         assertThat(consumer.getQueues(), equalTo(5));
     }
 
     @Test
-    public void testOverrideConfigSingle() {
+    void testOverrideConfigSingle() {
         SysProps.setProperty("dubbo.consumer.check", "false");
         SysProps.setProperty("dubbo.consumer.group", "demo");
         SysProps.setProperty("dubbo.consumer.threads", "10");
@@ -124,7 +124,7 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testOverrideConfigByPluralityId() {
+    void testOverrideConfigByPluralityId() {
         SysProps.setProperty("dubbo.consumer.group", "demoA");  //ignore
         SysProps.setProperty("dubbo.consumers.consumerA.check", "false");
         SysProps.setProperty("dubbo.consumers.consumerA.group", "demoB");
@@ -152,7 +152,7 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testOverrideConfigBySingularId() {
+    void testOverrideConfigBySingularId() {
         // override success
         SysProps.setProperty("dubbo.consumer.group", "demoA");
         SysProps.setProperty("dubbo.consumer.threads", "15");
@@ -183,7 +183,7 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testOverrideConfigByDubboProps() {
+    void testOverrideConfigByDubboProps() {
         ApplicationModel.defaultModel().getDefaultModule();
         ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
         ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
@@ -212,7 +212,7 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testReferenceAndConsumerConfigOverlay() {
+    void testReferenceAndConsumerConfigOverlay() {
         SysProps.setProperty("dubbo.consumer.group", "demo");
         SysProps.setProperty("dubbo.consumer.threads", "12");
         SysProps.setProperty("dubbo.consumer.timeout", "1234");
@@ -238,7 +238,7 @@ public class ConsumerConfigTest {
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         ConsumerConfig consumerConfig = new ConsumerConfig();
         Map<String, String> metaData = consumerConfig.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);

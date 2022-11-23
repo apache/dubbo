@@ -43,6 +43,8 @@
         <dubbo.version>${revision}</dubbo.version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <log4j2_version>2.17.2</log4j2_version>
+        <!-- Spring boot buddy is lower than the delivery dependency package version and can only show the defined dependency version -->
+        <byte-buddy.version>1.12.14</byte-buddy.version>
     </properties>
 
     <dependencyManagement>
@@ -79,7 +81,18 @@
             <version>${junit_jupiter_version}</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-test-check</artifactId>

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
  */
 public abstract class AbstractExporter<T> implements Exporter<T> {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private final Invoker<T> invoker;
 

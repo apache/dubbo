@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -27,9 +26,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
-
 /**
  * MetricsConfig
  */
@@ -38,6 +34,11 @@ public class MetricsConfig extends AbstractConfig {
     private static final long serialVersionUID = -9089919311611546383L;
 
     private String protocol;
+
+    /**
+     * Enable jvm metrics when collecting.
+     */
+    private Boolean enableJvmMetrics;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -69,14 +70,11 @@ public class MetricsConfig extends AbstractConfig {
         Map<String, String> map = new HashMap<>();
         appendParameters(map, this);
 
-        // use 'prometheus' as the default metrics service.
-        if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
-            map.put(PROTOCOL_KEY, PROTOCOL_PROMETHEUS);
-        }
-
         // ignore address parameter, use specified url in each metrics server config
         // the address "localhost" here is meaningless
-        return UrlUtils.parseURL("localhost", map);
+        URL url = UrlUtils.parseURL("localhost", map);
+        url = url.setScopeModel(getScopeModel());
+        return url;
     }
 
     public String getProtocol() {
@@ -85,6 +83,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public Boolean getEnableJvmMetrics() {
+        return enableJvmMetrics;
+    }
+
+    public void setEnableJvmMetrics(Boolean enableJvmMetrics) {
+        this.enableJvmMetrics = enableJvmMetrics;
     }
 
     public String getPort() {

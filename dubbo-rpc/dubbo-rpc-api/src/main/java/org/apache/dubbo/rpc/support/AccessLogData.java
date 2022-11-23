@@ -38,13 +38,14 @@ import java.util.Map;
  */
 public final class AccessLogData {
 
-    private static final String MESSAGE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private static final String MESSAGE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSS";
     private static final DateTimeFormatter MESSAGE_DATE_FORMATTER = DateTimeFormatter.ofPattern(MESSAGE_DATE_FORMAT);
     private static final String VERSION = "version";
     private static final String GROUP = "group";
     private static final String SERVICE = "service";
     private static final String METHOD_NAME = "method-name";
     private static final String INVOCATION_TIME = "invocation-time";
+    private static final String OUT_TIME = "out-time";
     private static final String TYPES = "types";
     private static final String ARGUMENTS = "arguments";
     private static final String REMOTE_HOST = "remote-host";
@@ -113,6 +114,15 @@ public final class AccessLogData {
      */
     public void setInvocationTime(Date invocationTime) {
         set(INVOCATION_TIME, invocationTime);
+    }
+
+    /**
+     * Set the out date. As an argument it accept date string.
+     *
+     * @param outTime
+     */
+    public void setOutTime(Date outTime) {
+        set(OUT_TIME, outTime);
     }
 
     /**
@@ -191,8 +201,12 @@ public final class AccessLogData {
     public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
-        sn.append('[')
+        sn.append("[")
             .append(LocalDateTime.ofInstant(getInvocationTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
+            .append("] ")
+            .append("-> ")
+            .append("[")
+            .append(LocalDateTime.ofInstant(getOutTime().toInstant(), ZoneId.systemDefault()).format(MESSAGE_DATE_FORMATTER))
             .append("] ")
             .append(get(REMOTE_HOST))
             .append(':')
@@ -242,6 +256,10 @@ public final class AccessLogData {
 
     private Date getInvocationTime() {
         return (Date) get(INVOCATION_TIME);
+    }
+
+    private Date getOutTime() {
+        return (Date)get(OUT_TIME);
     }
 
     /**

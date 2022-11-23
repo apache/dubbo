@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
@@ -37,9 +37,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
+
 public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
 
-    private static final Logger logger = LoggerFactory.getLogger(EdsProtocol.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);
@@ -86,7 +88,7 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
         try {
             return any.unpack(ClusterLoadAssignment.class);
         } catch (InvalidProtocolBufferException e) {
-            logger.error("Error occur when decode xDS response.", e);
+            logger.error(REGISTRY_ERROR_RESPONSE_XDS, "", "", "Error occur when decode xDS response.", e);
             return null;
         }
     }

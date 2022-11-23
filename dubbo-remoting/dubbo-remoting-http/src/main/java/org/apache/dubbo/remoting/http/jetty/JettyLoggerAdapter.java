@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.remoting.http.jetty;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import org.eclipse.jetty.util.log.AbstractLogger;
 import org.eclipse.jetty.util.log.Logger;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * logger adapter for jetty
@@ -27,21 +30,21 @@ import org.eclipse.jetty.util.log.Logger;
 public class JettyLoggerAdapter extends AbstractLogger {
     protected String name;
 
-    private final org.apache.dubbo.common.logger.Logger logger;
+    private final ErrorTypeAwareLogger logger;
 
     private static boolean debugEnabled = false;
 
-    public JettyLoggerAdapter(){
+    public JettyLoggerAdapter() {
         this("org.apache.dubbo.remoting.http.jetty");
     }
 
-    public JettyLoggerAdapter(Class<?> clazz){
+    public JettyLoggerAdapter(Class<?> clazz) {
         this(clazz.getName());
     }
 
     public JettyLoggerAdapter(String name) {
         this.name = name;
-        this.logger = LoggerFactory.getLogger(name);
+        this.logger = LoggerFactory.getErrorTypeAwareLogger(name);
     }
 
     @Override
@@ -56,42 +59,42 @@ public class JettyLoggerAdapter extends AbstractLogger {
 
     @Override
     public void warn(String msg, Object... objects) {
-        if (logger.isWarnEnabled()){
-            logger.warn(this.format(msg, objects));
+        if (logger.isWarnEnabled()) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", this.format(msg, objects));
         }
     }
 
     @Override
     public void warn(Throwable throwable) {
-        if (logger.isWarnEnabled()){
-            logger.warn(throwable);
+        if (logger.isWarnEnabled()) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", throwable.getMessage(), throwable);
         }
     }
 
     @Override
     public void warn(String msg, Throwable throwable) {
-        if (logger.isWarnEnabled()){
-            logger.warn(msg, throwable);
+        if (logger.isWarnEnabled()) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", msg, throwable);
         }
     }
 
     @Override
     public void info(String msg, Object... objects) {
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info(this.format(msg, objects));
         }
     }
 
     @Override
     public void info(Throwable throwable) {
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info(throwable);
         }
     }
 
     @Override
     public void info(String msg, Throwable throwable) {
-        if (logger.isInfoEnabled()){
+        if (logger.isInfoEnabled()) {
             logger.info(msg, throwable);
         }
     }
@@ -108,29 +111,29 @@ public class JettyLoggerAdapter extends AbstractLogger {
 
     @Override
     public void debug(String msg, Object... objects) {
-        if (debugEnabled && logger.isDebugEnabled()){
+        if (debugEnabled && logger.isDebugEnabled()) {
             logger.debug(this.format(msg, objects));
         }
     }
 
     @Override
     public void debug(Throwable throwable) {
-        if (debugEnabled && logger.isDebugEnabled()){
+        if (debugEnabled && logger.isDebugEnabled()) {
             logger.debug(throwable);
         }
     }
 
     @Override
     public void debug(String msg, Throwable throwable) {
-        if (debugEnabled && logger.isDebugEnabled()){
+        if (debugEnabled && logger.isDebugEnabled()) {
             logger.debug(msg, throwable);
         }
     }
 
     @Override
     public void ignore(Throwable throwable) {
-        if (logger.isWarnEnabled()){
-            logger.warn("IGNORED EXCEPTION ", throwable);
+        if (logger.isWarnEnabled()) {
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "IGNORED EXCEPTION ", throwable);
         }
     }
 

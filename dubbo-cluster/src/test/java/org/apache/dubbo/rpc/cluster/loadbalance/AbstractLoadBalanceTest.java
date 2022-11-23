@@ -35,7 +35,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class AbstractLoadBalanceTest {
+class AbstractLoadBalanceTest {
 
     private AbstractLoadBalance balance = new AbstractLoadBalance() {
         @Override
@@ -45,7 +45,7 @@ public class AbstractLoadBalanceTest {
     };
 
     @Test
-    public void testGetWeight() {
+    void testGetWeight() {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("say");
 
@@ -63,7 +63,7 @@ public class AbstractLoadBalanceTest {
     }
 
     @Test
-    public void testGetRegistryWeight() {
+    void testGetRegistryWeight() {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("say");
 

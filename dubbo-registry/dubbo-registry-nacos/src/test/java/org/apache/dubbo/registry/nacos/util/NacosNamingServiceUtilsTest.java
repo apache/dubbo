@@ -34,18 +34,18 @@ import static org.mockito.Mockito.mock;
 /**
  * Test for NacosNamingServiceUtils
  */
-public class NacosNamingServiceUtilsTest {
+class NacosNamingServiceUtilsTest {
     private static MetadataReport metadataReport = Mockito.mock(MetadataReport.class);
 
     @Test
-    public void testToInstance() {
+    void testToInstance() {
         ServiceInstance serviceInstance = mock(ServiceInstance.class);
         Instance instance = NacosNamingServiceUtils.toInstance(serviceInstance);
         Assertions.assertNotNull(instance);
     }
 
     @Test
-    public void testToServiceInstance() {
+    void testToServiceInstance() {
         URL registryUrl = URL.valueOf("test://test:8080/test");
         Instance instance = new Instance();
         instance.setServiceName("serviceName");
@@ -66,7 +66,7 @@ public class NacosNamingServiceUtilsTest {
     }
 
     @Test
-    public void testCreateNamingService() {
+    void testCreateNamingService() {
         URL url = URL.valueOf("test://test:8080/test?backup=backup");
         NacosNamingServiceWrapper namingService = NacosNamingServiceUtils.createNamingService(url);
         Assertions.assertNotNull(namingService);

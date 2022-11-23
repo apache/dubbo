@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link FrameworkModel}
  */
-public class FrameworkModelTest {
+class FrameworkModelTest {
     @Test
-    public void testInitialize() {
+    void testInitialize() {
         FrameworkModel.destroyAll();
         FrameworkModel frameworkModel = new FrameworkModel();
 
@@ -52,7 +52,7 @@ public class FrameworkModelTest {
     }
 
     @Test
-    public void testDefaultModel() {
+    void testDefaultModel() {
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         Assertions.assertTrue(FrameworkModel.getAllInstances().contains(frameworkModel));
         String desc = frameworkModel.getDesc();
@@ -61,7 +61,7 @@ public class FrameworkModelTest {
     }
 
     @Test
-    public void testApplicationModel() {
+    void testApplicationModel() {
         FrameworkModel frameworkModel = new FrameworkModel();
 
         ApplicationModel applicationModel = frameworkModel.defaultApplication();
@@ -81,7 +81,7 @@ public class FrameworkModelTest {
     }
 
     @Test
-    public void destroyAll() {
+    void destroyAll() {
         FrameworkModel frameworkModel = new FrameworkModel();
         frameworkModel.defaultApplication();
         frameworkModel.newApplication();

@@ -42,7 +42,7 @@ import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "classpath:/dubbo.properties")
 @ContextConfiguration(classes = BinderDubboConfigBinder.class)
-public class BinderDubboConfigBinderTest {
+class BinderDubboConfigBinderTest {
 
     @Autowired
     private ConfigurationBeanBinder dubboConfigBinder;
@@ -51,7 +51,7 @@ public class BinderDubboConfigBinderTest {
     private ConfigurableEnvironment environment;
 
     @Test
-    public void testBinder() {
+    void testBinder() {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         Map<String, Object> properties = getSubProperties(environment.getPropertySources(), "dubbo.application");

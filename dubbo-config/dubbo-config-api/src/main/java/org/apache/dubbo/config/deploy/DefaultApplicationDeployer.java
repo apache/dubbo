@@ -31,7 +31,7 @@ import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -73,6 +73,11 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTORY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
@@ -84,7 +89,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  */
 public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationModel> implements ApplicationDeployer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultApplicationDeployer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultApplicationDeployer.class);
 
     private final ApplicationModel applicationModel;
 
@@ -619,7 +624,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     public void prepareInternalModule() {
-        if(hasPreparedInternalModule){
+        if (hasPreparedInternalModule) {
             return;
         }
         synchronized (internalModuleLock) {
@@ -635,7 +640,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 try {
                     future.get(5, TimeUnit.SECONDS);
                 } catch (Exception e) {
-                    logger.warn("wait for internal module startup failed: " + e.getMessage(), e);
+                    logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
             }
         }
@@ -671,7 +676,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
-                    logger.warn("The configuration center failed to initialize", e);
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "","The configuration center failed to initialize", e);
                     configCenter.setInitialized(false);
                     return null;
                 } else {
@@ -722,7 +727,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
-            logger.error("Register instance error", e);
+            logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
@@ -738,7 +743,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     }
                 } catch (Exception e) {
                     if (!applicationModel.isDestroyed()) {
-                        logger.error("Refresh instance and metadata error", e);
+                        logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
                     }
                 }
             }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
@@ -764,15 +769,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             onStopping();
 
-            destroyRegistries();
-            destroyServiceDiscoveries();
-            destroyMetadataReports();
+            unregisterServiceInstance();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }
-            unregisterServiceInstance();
         }
     }
 
@@ -784,6 +786,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             try {
+                destroyRegistries();
+                destroyMetadataReports();
+
                 executeShutdownCallbacks();
 
                 // TODO should we close unused protocol server which only used by this application?
@@ -923,7 +928,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
                 }
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle starting event", e);
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
             }
         }
     }
@@ -957,7 +962,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                 }
             } catch (Exception e) {
-                logger.error("refresh meta and instance failed: " + e.getMessage(), e);
+                logger.error(CONFIG_REFRESH_INSTANCE_ERROR, "", "", "Refresh instance and metadata error.", e);
             }
         } finally {
             // complete future
@@ -1002,7 +1007,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void onFailed(String msg, Throwable ex) {
         try {
             setFailed(ex);
-            logger.error(msg, ex);
+            logger.error(CONFIG_FAILED_START_MODEL, "", "", msg, ex);
         } finally {
             completeStartFuture(false);
         }
@@ -1024,7 +1029,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 serviceDiscovery.destroy();
             } catch (Throwable ignored) {
-                logger.warn(ignored.getMessage(), ignored);
+                logger.warn(CONFIG_FAILED_EXECUTE_DESTORY, "", "", ignored.getMessage(), ignored);
             }
         });
         if (logger.isDebugEnabled()) {

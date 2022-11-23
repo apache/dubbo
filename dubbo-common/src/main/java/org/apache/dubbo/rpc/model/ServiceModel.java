@@ -23,12 +23,11 @@ import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 public class ServiceModel {
     private String serviceKey;
     private Object proxyObject;
-    private Callable<Void> destroyCaller;
+    private Runnable destroyRunner;
     private ClassLoader classLoader;
 
     private final ClassLoader interfaceClassLoader;
@@ -165,12 +164,12 @@ public class ServiceModel {
         return moduleModel;
     }
 
-    public Callable<Void> getDestroyCaller() {
-        return destroyCaller;
+    public Runnable getDestroyRunner() {
+        return destroyRunner;
     }
 
-    public void setDestroyCaller(Callable<Void> destroyCaller) {
-        this.destroyCaller = destroyCaller;
+    public void setDestroyRunner(Runnable destroyRunner) {
+        this.destroyRunner = destroyRunner;
     }
 
     public ClassLoader getInterfaceClassLoader() {
@@ -186,11 +185,11 @@ public class ServiceModel {
             return false;
         }
         ServiceModel that = (ServiceModel) o;
-        return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(proxyObject, that.proxyObject) && Objects.equals(destroyCaller, that.destroyCaller) && Objects.equals(classLoader, that.classLoader) && Objects.equals(interfaceClassLoader, that.interfaceClassLoader) && Objects.equals(moduleModel, that.moduleModel) && Objects.equals(serviceModel, that.serviceModel) && Objects.equals(serviceMetadata, that.serviceMetadata);
+        return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(proxyObject, that.proxyObject) && Objects.equals(destroyRunner, that.destroyRunner) && Objects.equals(classLoader, that.classLoader) && Objects.equals(interfaceClassLoader, that.interfaceClassLoader) && Objects.equals(moduleModel, that.moduleModel) && Objects.equals(serviceModel, that.serviceModel) && Objects.equals(serviceMetadata, that.serviceMetadata);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serviceKey, proxyObject, destroyCaller, classLoader, interfaceClassLoader, moduleModel, serviceModel, serviceMetadata);
+        return Objects.hash(serviceKey, proxyObject, destroyRunner, classLoader, interfaceClassLoader, moduleModel, serviceModel, serviceMetadata);
     }
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_UNSUPPORTED_INVOKER;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 /**
@@ -44,7 +45,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         EchoService.class, Destroyable.class
     };
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractProxyFactory.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProxyFactory.class);
 
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
@@ -98,7 +99,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 }
                 interfaces.remove(invoker.getInterface());
 
-                logger.error("Error occur when creating proxy. Invoker is in generic mode. Trying to create proxy without real interface class.", t);
+                logger.error(PROXY_UNSUPPORTED_INVOKER, "", "", "Error occur when creating proxy. Invoker is in generic mode. Trying to create proxy without real interface class.", t);
                 return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
             } else {
                 throw t;

@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class PrometheusConfigTest {
+class PrometheusConfigTest {
 
     @Test
-    public void testExporter() {
+    void testExporter() {
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
 
@@ -43,7 +43,7 @@ public class PrometheusConfigTest {
     }
 
     @Test
-    public void testPushgateway() {
+    void testPushgateway() {
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
 

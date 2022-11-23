@@ -38,7 +38,7 @@ public abstract class AbstractProxyTest {
     public static ProxyFactory factory;
 
     @Test
-    public void testGetProxy() throws Exception {
+    void testGetProxy() throws Exception {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
         MyInvoker<DemoService> invoker = new MyInvoker<>(url);
@@ -61,10 +61,10 @@ public abstract class AbstractProxyTest {
     }
 
     @Test
-    public void testGetInvoker() throws Exception {
+    void testGetInvoker() throws Exception {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
 
-        DemoService origin = new org.apache.dubbo.rpc.support.DemoServiceImpl();
+        DemoService origin = new DemoServiceImpl();
 
         Invoker<DemoService> invoker = factory.getInvoker(new DemoServiceImpl(), DemoService.class, url);
 
