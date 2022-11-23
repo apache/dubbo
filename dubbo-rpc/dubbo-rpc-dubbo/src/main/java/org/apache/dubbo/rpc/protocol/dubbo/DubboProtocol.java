@@ -33,6 +33,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
+import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -65,6 +66,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 import static org.apache.dubbo.remoting.Constants.CHANNEL_READONLYEVENT_SENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
@@ -140,7 +145,7 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                 }
                 if (!hasMethod) {
-                    logger.warn(new IllegalStateException("The methodName " + inv.getMethodName()
+                    logger.warn(PROTOCOL_FAILED_REFER_INVOKER, "", "", new IllegalStateException("The methodName " + inv.getMethodName()
                         + " not found in callback service interface ,invoke will be ignored."
                         + " please update the api interface. url is:"
                         + invoker.getUrl()) + " ,invocation is :" + inv);
@@ -184,7 +189,7 @@ public class DubboProtocol extends AbstractProtocol {
                     }
                     received(channel, invocation);
                 } catch (Throwable t) {
-                    logger.warn("Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
+                    logger.warn(PROTOCOL_FAILED_REFER_INVOKER, "", "", "Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
                 }
             }
         }
@@ -315,8 +320,8 @@ public class DubboProtocol extends AbstractProtocol {
             String stubServiceMethods = url.getParameter(STUB_EVENT_METHODS_KEY);
             if (stubServiceMethods == null || stubServiceMethods.length() == 0) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn(new IllegalStateException("consumer [" + url.getParameter(INTERFACE_KEY) +
-                        "], has set stub proxy support event ,but no stub methods founded."));
+                    logger.warn(PROTOCOL_UNSUPPORTED, "", "", "consumer [" + url.getParameter(INTERFACE_KEY) +
+                        "], has set stub proxy support event ,but no stub methods founded.");
                 }
 
             }
@@ -334,6 +339,7 @@ public class DubboProtocol extends AbstractProtocol {
         String key = url.getAddress();
         // client can export a service which only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
+
         if (isServer) {
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
@@ -634,7 +640,7 @@ public class DubboProtocol extends AbstractProtocol {
                 server.close(getServerShutdownTimeout(protocolServer));
 
             } catch (Throwable t) {
-                logger.warn("Close dubbo server [" + server.getLocalAddress() + "] failed: " + t.getMessage(), t);
+                logger.warn(PROTOCOL_ERROR_CLOSE_SERVER, "", "", "Close dubbo server [" + server.getLocalAddress() + "] failed: " + t.getMessage(), t);
             }
         }
         serverMap.clear();
@@ -653,6 +659,7 @@ public class DubboProtocol extends AbstractProtocol {
                 }
             }
         }
+        PortUnificationExchanger.close();
         referenceClientMap.clear();
 
         super.destroy();
@@ -682,7 +689,7 @@ public class DubboProtocol extends AbstractProtocol {
              */
 
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
         }
     }
 

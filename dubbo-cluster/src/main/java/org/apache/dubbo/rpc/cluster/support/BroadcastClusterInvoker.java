@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -28,16 +28,18 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
-import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_ERROR_RESPONSE;
 
 /**
  * BroadcastClusterInvoker
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(BroadcastClusterInvoker.class);
     private static final String BROADCAST_FAIL_PERCENT_KEY = "broadcast.fail.percent";
     private static final int MAX_BROADCAST_FAIL_PERCENT = 100;
     private static final int MIN_BROADCAST_FAIL_PERCENT = 0;
@@ -67,16 +69,21 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         int failThresholdIndex = invokers.size() * broadcastFailPercent / MAX_BROADCAST_FAIL_PERCENT;
         int failIndex = 0;
-        for (Invoker<T> invoker : invokers) {
+        for (int i = 0, invokersSize = invokers.size(); i < invokersSize; i++) {
+            Invoker<T> invoker = invokers.get(i);
+            RpcContext.RestoreContext restoreContext = new RpcContext.RestoreContext();
             try {
-                RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
-                subInvocation.setAttachment(ASYNC_KEY, "true");
+                RpcInvocation subInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
+                    invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                    invocation.getParameterTypes(), invocation.getArguments(), invocation.copyObjectAttachments(),
+                    invocation.getInvoker(), Collections.synchronizedMap(new HashMap<>(invocation.getAttributes())),
+                    invocation instanceof RpcInvocation ? ((RpcInvocation) invocation).getInvokeMode() : null);
                 result = invokeWithContext(invoker, subInvocation);
                 if (null != result && result.hasException()) {
                     Throwable resultException = result.getException();
                     if (null != resultException) {
                         exception = getRpcException(result.getException());
-                        logger.warn(exception.getMessage(), exception);
+                        logger.warn(CLUSTER_ERROR_RESPONSE,"provider return error response","",exception.getMessage(),exception);
                         failIndex++;
                         if (failIndex == failThresholdIndex) {
                             break;
@@ -85,10 +92,14 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
             } catch (Throwable e) {
                 exception = getRpcException(e);
-                logger.warn(exception.getMessage(), exception);
+                logger.warn(CLUSTER_ERROR_RESPONSE,"provider return error response","",exception.getMessage(),exception);
                 failIndex++;
                 if (failIndex == failThresholdIndex) {
                     break;
+                }
+            } finally {
+                if (i != invokersSize - 1) {
+                    restoreContext.restore();
                 }
             }
         }

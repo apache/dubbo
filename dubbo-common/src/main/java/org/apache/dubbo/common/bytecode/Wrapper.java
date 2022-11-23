@@ -293,6 +293,7 @@ public abstract class Wrapper {
             throw new RuntimeException(e.getMessage(), e);
         } finally {
             cc.release();
+            pts.clear();
             ms.clear();
             mns.clear();
             dmns.clear();

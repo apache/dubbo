@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
@@ -65,6 +65,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -72,7 +74,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleInvoker.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleInvoker.class);
 
 
     private final Connection connection;
@@ -82,11 +84,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final String acceptEncodings;
 
     public TripleInvoker(Class<T> serviceType,
-        URL url,
-        String acceptEncodings,
-        ConnectionManager connectionManager,
-        Set<Invoker<?>> invokers,
-        ExecutorService streamExecutor) {
+                         URL url,
+                         String acceptEncodings,
+                         ConnectionManager connectionManager,
+                         Set<Invoker<?>> invokers,
+                         ExecutorService streamExecutor) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connection = connectionManager.connect(url);
@@ -104,7 +106,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!connection.isAvailable()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE.withDescription(
-                    String.format("upstream %s is unavailable", getUrl().getAddress()))
+                String.format("upstream %s is unavailable", getUrl().getAddress()))
                 .asException();
             future.completeExceptionally(exception);
             return new AsyncRpcResult(future, invocation);
@@ -143,7 +145,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             try {
                 call.cancelByLocal(e);
             } catch (Throwable t1) {
-                LOGGER.error("Cancel triple request failed", t1);
+                LOGGER.error(PROTOCOL_FAILED_REQUEST, "", "", "Cancel triple request failed", t1);
             }
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             future.completeExceptionally(e);
@@ -152,7 +154,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeServerStream(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                                      ClientCall call) {
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[1];
         final StreamObserver<Object> requestObserver = streamCall(call, request, responseObserver);
@@ -162,7 +164,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeBiOrClientStream(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                                          ClientCall call) {
         final AsyncRpcResult result;
         RequestMetadata request = createRequest(methodDescriptor, invocation, null);
         StreamObserver<Object> responseObserver = (StreamObserver<Object>) invocation.getArguments()[0];
@@ -173,8 +175,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     StreamObserver<Object> streamCall(ClientCall call,
-        RequestMetadata metadata,
-        StreamObserver<Object> responseObserver) {
+                                      RequestMetadata metadata,
+                                      StreamObserver<Object> responseObserver) {
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(
             responseObserver);
         StreamObserver<Object> streamObserver = call.start(metadata, listener);
@@ -190,10 +192,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     AsyncRpcResult invokeUnary(MethodDescriptor methodDescriptor, Invocation invocation,
-        ClientCall call) {
+                               ClientCall call) {
         ExecutorService callbackExecutor = getCallbackExecutor(getUrl(), invocation);
+
         int timeout = calculateTimeout(invocation, invocation.getMethodName());
+        if (timeout <= 0) {
+            return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                "No time left for making the following call: " + invocation.getServiceName() + "."
+                    + invocation.getMethodName() + ", terminate directly."), invocation);
+        }
         invocation.setAttachment(TIMEOUT_KEY, timeout);
+
         final AsyncRpcResult result;
         DeadlineFuture future = DeadlineFuture.newFuture(getUrl().getPath(),
             methodDescriptor.getMethodName(), getUrl().getAddress(), timeout, callbackExecutor);
@@ -220,7 +229,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     RequestMetadata createRequest(MethodDescriptor methodDescriptor, Invocation invocation,
-        Integer timeout) {
+                                  Integer timeout) {
         final String methodName = RpcUtils.getMethodName(invocation);
         Objects.requireNonNull(methodDescriptor,
             "MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(
@@ -232,6 +241,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         } else {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
+        meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config
@@ -281,7 +291,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 try {
                     connection.release();
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", t.getMessage(), t);
                 }
 
             } finally {
@@ -292,7 +302,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private int calculateTimeout(Invocation invocation, String methodName) {
         if (invocation.getObjectAttachment(TIMEOUT_KEY) != null) {
-            return (int) invocation.getObjectAttachment(TIMEOUT_KEY);
+            return (int) RpcUtils.getTimeoutFromInvocation(invocation, 3000);
         }
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;

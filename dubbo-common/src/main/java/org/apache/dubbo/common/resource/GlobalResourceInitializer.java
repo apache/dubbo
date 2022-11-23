@@ -37,7 +37,7 @@ public class GlobalResourceInitializer<T> extends CallableSafeInitializer<T> {
         super(initializer);
     }
 
-    public GlobalResourceInitializer(Callable initializer, Consumer<T> disposeAction) {
+    public GlobalResourceInitializer(Callable<T> initializer, Consumer<T> disposeAction) {
         super(initializer);
         this.disposeAction = disposeAction;
     }
@@ -59,7 +59,4 @@ public class GlobalResourceInitializer<T> extends CallableSafeInitializer<T> {
         return value;
     }
 
-    public interface DestroyHandler<T> {
-        void dispose(GlobalResourceInitializer<T> initializer);
-    }
 }

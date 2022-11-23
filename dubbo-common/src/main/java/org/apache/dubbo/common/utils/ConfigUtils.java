@@ -20,7 +20,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -46,10 +46,11 @@ import java.util.regex.Pattern;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 
 public class ConfigUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ConfigUtils.class);
     private static Pattern VARIABLE_PATTERN = Pattern.compile(
         "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z]+)\\s*\\}?");
     private static int PID = -1;
@@ -136,7 +137,7 @@ public class ConfigUtils {
     }
 
     public static String replaceProperty(String expression, Configuration configuration) {
-        if (StringUtils.isEmpty(expression)|| expression.indexOf('$') < 0) {
+        if (StringUtils.isEmpty(expression) || expression.indexOf('$') < 0) {
             return expression;
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
@@ -221,7 +222,7 @@ public class ConfigUtils {
                     input.close();
                 }
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
             return properties;
         }
@@ -236,12 +237,12 @@ public class ConfigUtils {
                 return a;
             });
         } catch (Throwable t) {
-            logger.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
+            logger.warn(COMMON_IO_EXCEPTION, "", "", "Fail to load " + fileName + " file: " + t.getMessage(), t);
         }
 
         if (CollectionUtils.isEmpty(set)) {
             if (!optional) {
-                logger.warn("No " + fileName + " found on the class path.");
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "No " + fileName + " found on the class path.");
             }
             return properties;
         }
@@ -250,14 +251,14 @@ public class ConfigUtils {
             if (set.size() > 1) {
                 String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
                     fileName, set.size(), set);
-                logger.warn(errMsg);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", errMsg);
             }
 
             // fall back to use method getResourceAsStream
             try {
                 properties.load(ClassUtils.getClassLoader().getResourceAsStream(fileName));
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
             return properties;
         }
@@ -280,7 +281,7 @@ public class ConfigUtils {
                     }
                 }
             } catch (Throwable e) {
-                logger.warn("Fail to load " + fileName + " file from " + url + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Fail to load " + fileName + " file from " + url + "(ignore this file): " + e.getMessage(), e);
             }
         }
 
@@ -295,7 +296,7 @@ public class ConfigUtils {
                     return readString(input);
                 }
             } catch (Throwable e) {
-                logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+                logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
         }
 
@@ -312,7 +313,7 @@ public class ConfigUtils {
                 }
             }
         } catch (Throwable e) {
-            logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
+            logger.warn(COMMON_IO_EXCEPTION, "", "", "Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
         }
         return rawRule;
     }
@@ -330,7 +331,7 @@ public class ConfigUtils {
                 buffer = new char[10];
             }
         } catch (IOException e) {
-            logger.error("Read migration file error.", e);
+            logger.error(COMMON_IO_EXCEPTION, "", "", "Read migration file error.", e);
         }
 
         return stringBuilder.toString();

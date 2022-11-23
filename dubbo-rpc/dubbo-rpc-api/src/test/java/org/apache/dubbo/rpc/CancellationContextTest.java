@@ -25,10 +25,10 @@ import java.util.concurrent.CountDownLatch;
 /**
  * {@link CancellationContext}
  */
-public class CancellationContextTest {
+class CancellationContextTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         CancellationContext cancellationContext = new CancellationContext();
 
         CountDownLatch latch = new CountDownLatch(2);
@@ -47,7 +47,7 @@ public class CancellationContextTest {
     }
 
     @Test
-    public void testAddListenerAfterCancel() throws Exception {
+    void testAddListenerAfterCancel() throws Exception {
         CancellationContext cancellationContext = new CancellationContext();
 
         cancellationContext.cancel(null);

@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_PARSE_DYNAMIC_CONFIG;
 import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
@@ -109,7 +110,7 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         } catch (Exception e) {
             // 1-14 - Failed to parse raw dynamic config.
 
-            logger.warn("1-14", "", "",
+            logger.warn(REGISTRY_FAILED_PARSE_DYNAMIC_CONFIG, "", "",
                 "Failed to parse raw dynamic config and it will not take effect, the raw config is: "
                     + rawConfig + ", cause: " + e.getMessage());
 

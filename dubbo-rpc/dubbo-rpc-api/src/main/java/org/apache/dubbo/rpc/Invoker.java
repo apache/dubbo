@@ -43,11 +43,4 @@ public interface Invoker<T> extends Node {
      */
     Result invoke(Invocation invocation) throws RpcException;
 
-    /**
-     * destroy all
-     */
-    default void destroyAll() {
-        destroy();
-    }
-
 }

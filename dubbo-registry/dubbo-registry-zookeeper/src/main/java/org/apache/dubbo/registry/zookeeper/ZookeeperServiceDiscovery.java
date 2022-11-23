@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
@@ -55,7 +56,7 @@ import static org.apache.dubbo.rpc.RpcException.REGISTRY_EXCEPTION;
  */
 public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     public static final String DEFAULT_GROUP = "/services";
 
@@ -165,7 +166,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
             } catch (KeeperException.NoNodeException e) {
                 // ignored
                 if (logger.isErrorEnabled()) {
-                    logger.error(e.getMessage());
+                    logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", e.getMessage());
                 }
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -189,12 +190,12 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 watcher.setLatch(latch);
                 curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
             } catch (Exception e) {
-                logger.error("Trying to recover from new zkClient session failed, path is " + path + ", error msg: " + e.getMessage());
+                logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Trying to recover from new zkClient session failed, path is " + path + ", error msg: " + e.getMessage());
             }
 
-            List<ServiceInstance> instances = this.getInstances(serviceName);
+            List<ServiceInstance> instances = this.getInstances(watcher.getServiceName());
             for (ServiceInstancesChangedListener listener : listeners) {
-                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
+                listener.onEvent(new ServiceInstancesChangedEvent(watcher.getServiceName(), instances));
             }
             latch.countDown();
         });

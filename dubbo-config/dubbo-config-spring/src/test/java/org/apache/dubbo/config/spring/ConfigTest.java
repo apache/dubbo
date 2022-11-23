@@ -79,7 +79,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * ConfigTest
  */
-public class ConfigTest {
+class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
 
@@ -113,7 +113,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testServiceClass() {
+    void testServiceClass() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/service-class.xml");
         try {
             ctx.start();
@@ -221,7 +221,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testMultiProtocol() {
+    void testMultiProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/multi-protocol.xml");
 
         try {
@@ -358,7 +358,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testRmiTimeout() throws Exception {
+    void testRmiTimeout() throws Exception {
         System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(1000);
@@ -408,7 +408,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testAppendFilter() throws Exception {
+    void testAppendFilter() throws Exception {
         ApplicationConfig application = new ApplicationConfig("provider");
 
         ProviderConfig provider = new ProviderConfig();
@@ -457,7 +457,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testInitReference() throws Exception {
+    void testInitReference() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider.xml",
                 resourcePath + "/demo-provider-properties.xml");
@@ -524,7 +524,7 @@ public class ConfigTest {
 
     // DUBBO-571 methods key in provider's URLONE doesn't contain the methods from inherited super interface
     @Test
-    public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
+    void test_noMethodInterface_methodsKeyHasValue() throws Exception {
         List<URL> urls = null;
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/demo-provider-no-methods-interface.xml");
         try {
@@ -534,7 +534,7 @@ public class ConfigTest {
             urls = bean.getExportedUrls();
             assertEquals(1, urls.size());
             URL url = urls.get(0);
-            assertEquals("sayName,getBox", url.getParameter("methods"));
+            assertEquals("getBox,sayName", url.getParameter("methods"));
         } finally {
             ctx.stop();
             ctx.close();
@@ -550,7 +550,7 @@ public class ConfigTest {
     // DUBBO-147 find all invoker instances which have been tried from RpcContext
     @Disabled("waiting-to-fix")
     @Test
-    public void test_RpcContext_getUrls() throws Exception {
+    void test_RpcContext_getUrls() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider-long-waiting.xml");
 
@@ -707,7 +707,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testSystemPropertyOverrideProtocol() throws Exception {
+    void testSystemPropertyOverrideProtocol() throws Exception {
         SysProps.setProperty("dubbo.protocols.tri.port", ""); // empty config should be ignored
         SysProps.setProperty("dubbo.protocols.dubbo.port", "20812"); // override success
         SysProps.setProperty("dubbo.protocol.port", "20899"); // override fail
@@ -723,7 +723,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testSystemPropertyOverrideMultiProtocol() throws Exception {
+    void testSystemPropertyOverrideMultiProtocol() throws Exception {
         SysProps.setProperty("dubbo.protocols.dubbo.port", "20814");
         SysProps.setProperty("dubbo.protocols.tri.port", "10914");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath +
@@ -795,7 +795,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testSystemPropertyOverrideReferenceConfig() throws Exception {
+    void testSystemPropertyOverrideReferenceConfig() throws Exception {
         SysProps.setProperty("dubbo.reference.org.apache.dubbo.config.spring.api.DemoService.retries", "5");
         SysProps.setProperty("dubbo.consumer.check", "false");
         SysProps.setProperty("dubbo.consumer.timeout", "1234");
@@ -1009,7 +1009,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testDubboProtocolPortOverride() throws Exception {
+    void testDubboProtocolPortOverride() throws Exception {
         int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
         ServiceConfig<DemoService> service = null;
@@ -1119,7 +1119,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testGenericServiceConfig() throws Exception {
+    void testGenericServiceConfig() throws Exception {
         ServiceConfig<GenericService> service = new ServiceConfig<GenericService>();
         service.setRegistry(new RegistryConfig("mock://localhost"));
         service.setInterface(DemoService.class.getName());
@@ -1143,7 +1143,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testGenericServiceConfigThroughSpring() throws Exception {
+    void testGenericServiceConfigThroughSpring() throws Exception {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/generic-export.xml");
         try {
             ctx.start();

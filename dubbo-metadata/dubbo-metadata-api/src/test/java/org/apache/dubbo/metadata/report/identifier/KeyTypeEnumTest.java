@@ -25,13 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.8
  */
-public class KeyTypeEnumTest {
+class KeyTypeEnumTest {
 
     /**
      * {@link KeyTypeEnum#build(String, String...)}
      */
     @Test
-    public void testBuild() {
+    void testBuild() {
         assertEquals("/A/B/C", KeyTypeEnum.PATH.build("/A", "/B", "C"));
         assertEquals("A:B:C", KeyTypeEnum.UNIQUE_KEY.build("A", "B", "C"));
     }

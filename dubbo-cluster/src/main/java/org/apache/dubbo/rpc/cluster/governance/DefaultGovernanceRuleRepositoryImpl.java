@@ -19,9 +19,8 @@ package org.apache.dubbo.rpc.cluster.governance;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository, ScopeModelAware {
+public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository {
 
     private ModuleModel moduleModel;
 

@@ -83,7 +83,7 @@ import java.util.function.Supplier;
         })
 @EnableAutoConfiguration
 @Disabled
-public class DubboEndpointAnnotationAutoConfigurationTest {
+class DubboEndpointAnnotationAutoConfigurationTest {
 
     @Autowired
     private DubboMetadataEndpoint dubboEndpoint;
@@ -122,7 +122,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
     }
 
     @Test
-    public void testShutdown() throws Exception {
+    void testShutdown() throws Exception {
 
         Map<String, Object> value = dubboShutdownEndpoint.shutdown();
 
@@ -136,7 +136,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
     }
 
     @Test
-    public void testConfigs() {
+    void testConfigs() {
 
         Map<String, Map<String, Map<String, Object>>> configsMap = dubboConfigsMetadataEndpoint.configs();
 
@@ -173,7 +173,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
     }
 
     @Test
-    public void testServices() {
+    void testServices() {
 
         Map<String, Map<String, Object>> services = dubboServicesMetadataEndpoint.services();
 
@@ -186,7 +186,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
     }
 
     @Test
-    public void testReferences() {
+    void testReferences() {
 
         Map<String, Map<String, Object>> references = dubboReferencesMetadataEndpoint.references();
 
@@ -200,7 +200,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
     }
 
     @Test
-    public void testProperties() {
+    void testProperties() {
 
         SortedMap<String, Object> properties = dubboPropertiesEndpoint.properties();
 
@@ -219,7 +219,7 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
     }
 
     @Test
-    public void testHttpEndpoints() throws JsonProcessingException {
+    void testHttpEndpoints() throws JsonProcessingException {
 //        testHttpEndpoint("/dubbo", dubboEndpoint::invoke);
         testHttpEndpoint("/dubbo/configs", dubboConfigsMetadataEndpoint::configs);
         testHttpEndpoint("/dubbo/services", dubboServicesMetadataEndpoint::services);

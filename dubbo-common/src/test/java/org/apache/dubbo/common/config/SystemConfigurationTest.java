@@ -51,7 +51,7 @@ class SystemConfigurationTest {
      * Test get sys property.
      */
     @Test
-    public void testGetSysProperty() {
+    void testGetSysProperty() {
         Assertions.assertNull(sysConfig.getInternalProperty(MOCK_KEY));
         Assertions.assertFalse(sysConfig.containsKey(MOCK_KEY));
         Assertions.assertNull(sysConfig.getString(MOCK_KEY));
@@ -67,7 +67,7 @@ class SystemConfigurationTest {
      * Test convert.
      */
     @Test
-    public void testConvert() {
+    void testConvert() {
         Assertions.assertEquals(
             MOCK_STRING_VALUE, sysConfig.convert(String.class, NOT_EXIST_KEY, MOCK_STRING_VALUE));
         System.setProperty(MOCK_KEY, String.valueOf(MOCK_BOOL_VALUE));

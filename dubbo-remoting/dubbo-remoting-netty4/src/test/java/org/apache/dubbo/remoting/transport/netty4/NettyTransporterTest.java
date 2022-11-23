@@ -32,9 +32,9 @@ import java.util.concurrent.CountDownLatch;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class NettyTransporterTest {
+class NettyTransporterTest {
     @Test
-    public void shouldAbleToBindNetty4() throws Exception {
+    void shouldAbleToBindNetty4() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("telnet", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
@@ -45,7 +45,7 @@ public class NettyTransporterTest {
     }
 
     @Test
-    public void shouldConnectToNetty4Server() throws Exception {
+    void shouldConnectToNetty4Server() throws Exception {
         final CountDownLatch lock = new CountDownLatch(1);
 
         int port = NetUtils.getAvailablePort();

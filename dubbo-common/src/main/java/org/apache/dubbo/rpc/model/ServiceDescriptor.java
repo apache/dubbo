@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * ServiceModel and ServiceMetadata are to some extend duplicated with each other. We should merge them in the future.
+ * ServiceModel and ServiceMetadata are to some extent duplicated with each other. We should merge them in the future.
  */
 public interface ServiceDescriptor {
 

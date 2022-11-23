@@ -42,10 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link FileSystemDynamicConfiguration} Test
  */
-// Test often failed on Github Actions Platform because of file system on Azure
-// Change to Disabled because DisabledIfEnvironmentVariable does not work on Github.
+// Test often failed on GitHub Actions Platform because of file system on Azure
+// Change to Disabled because DisabledIfEnvironmentVariable does not work on GitHub.
 @Disabled
-public class FileSystemDynamicConfigurationTest {
+class FileSystemDynamicConfigurationTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -79,7 +79,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testInit() {
+    void testInit() {
 
         assertEquals(new File(getClassPath(), "config-center"), configuration.getRootDirectory());
         assertEquals("UTF-8", configuration.getEncoding());
@@ -95,7 +95,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishAndGetConfig() {
+    void testPublishAndGetConfig() {
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
         assertTrue(configuration.publishConfig(KEY, CONTENT));
@@ -103,7 +103,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testAddAndRemoveListener() throws InterruptedException {
+    void testAddAndRemoveListener() throws InterruptedException {
 
         configuration.publishConfig(KEY, "A");
 
@@ -160,7 +160,7 @@ public class FileSystemDynamicConfigurationTest {
     }
 
     @Test
-    public void testRemoveConfig() throws Exception {
+    void testRemoveConfig() throws Exception {
 
         assertTrue(configuration.publishConfig(KEY, DEFAULT_GROUP, "A"));
 

@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -62,16 +61,17 @@ class MetadataReportInstanceTest {
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
         when(applicationModel.getApplicationConfigManager()).thenReturn(configManager);
+        when(applicationModel.getApplicationConfigManager().getApplicationOrElseThrow()).thenReturn(new ApplicationConfig("test"));
         when(applicationModel.getCurrentConfig()).thenReturn(new ApplicationConfig("test"));
 
     }
 
     @Test
-    public void test() {
+    void test() {
         Assertions.assertNull(metadataReportInstance.getMetadataReport(registryId), "the metadata report was not initialized.");
         assertThat(metadataReportInstance.getMetadataReports(true), Matchers.anEmptyMap());
 
-        metadataReportInstance.init(Arrays.asList(metadataReportConfig));
+        metadataReportInstance.init(Collections.singletonList(metadataReportConfig));
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryId);
         Assertions.assertNotNull(metadataReport);
 

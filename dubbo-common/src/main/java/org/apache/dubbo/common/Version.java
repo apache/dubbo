@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -32,11 +32,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
 /**
  * Version
  */
 public final class Version {
-    private static final Logger logger = LoggerFactory.getLogger(Version.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Version.class);
 
     private static final Pattern PREFIX_DIGITS_PATTERN = Pattern.compile("^([0-9]*).*");
 
@@ -74,12 +76,13 @@ public final class Version {
 
     /**
      * Compare versions
+     *
      * @return the value {@code 0} if {@code version1 == version2};
-     *         a value less than {@code 0} if {@code version1 < version2}; and
-     *         a value greater than {@code 0} if {@code version1 > version2}
+     * a value less than {@code 0} if {@code version1 < version2}; and
+     * a value greater than {@code 0} if {@code version1 > version2}
      */
     public static int compare(String version1, String version2) {
-        return Integer.compare (getIntVersion(version1), getIntVersion(version2));
+        return Integer.compare(getIntVersion(version1), getIntVersion(version2));
     }
 
     /**
@@ -89,10 +92,8 @@ public final class Version {
         if (StringUtils.isEmpty(version)) {
             return false;
         }
-        if (getIntVersion(version) >= 2070000) {
-            return true;
-        }
-        return false;
+
+        return getIntVersion(version) >= 2070000;
     }
 
     /**
@@ -133,9 +134,9 @@ public final class Version {
                     v = v * 100;
                 }
             } catch (Exception e) {
-                logger.warn("Please make sure your version value has the right format: " +
-                        "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. " +
-                        "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "Please make sure your version value has the right format: " +
+                    "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. " +
+                    "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
                 v = LEGACY_DUBBO_PROTOCOL_VERSION;
             }
             VERSION2INT.put(version, v);
@@ -192,11 +193,11 @@ public final class Version {
             }
 
             URL location = codeSource.getLocation();
-            if (location == null){
+            if (location == null) {
                 logger.info("No location for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
                 return defaultVersion;
             }
-            String file =  location.getFile();
+            String file = location.getFile();
             if (!StringUtils.isEmpty(file) && file.endsWith(".jar")) {
                 version = getFromFile(file);
             }
@@ -205,7 +206,7 @@ public final class Version {
             return StringUtils.isEmpty(version) ? defaultVersion : version;
         } catch (Throwable e) {
             // return default version when any exception is thrown
-            logger.error("return default version, ignore exception " + e.getMessage(), e);
+            logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "return default version, ignore exception " + e.getMessage(), e);
             return defaultVersion;
         }
     }
@@ -259,11 +260,11 @@ public final class Version {
                 if (failOnError) {
                     throw new IllegalStateException(error);
                 } else {
-                    logger.error(error);
+                    logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", error);
                 }
             }
         } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
+            logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
         }
     }
 

@@ -46,6 +46,9 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_SITE_SELECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -205,7 +208,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
             // 2-1 - Failed to execute routing.
-            logger.error("2-1", "", "",
+            logger.error(CLUSTER_FAILED_SITE_SELECTION, "", "",
                 "Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
 
             return BitList.emptyList();
@@ -299,7 +302,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             }
         } catch (Throwable t) {
             // 1-8: Failed to unregister / unsubscribe url on destroy.
-            logger.warn("1-8", "", "",
+            logger.warn(REGISTRY_FAILED_DESTROY_UNREGISTER_URL, "", "",
                 "unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
@@ -310,7 +313,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             }
         } catch (Throwable t) {
             // 1-8: Failed to unregister / unsubscribe url on destroy.
-            logger.warn("1-8", "", "",
+            logger.warn(REGISTRY_FAILED_DESTROY_UNREGISTER_URL, "", "",
                 "unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
@@ -327,7 +330,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                 destroyAllInvokers();
             } catch (Throwable t) {
                 // 1-15 - Failed to destroy service.
-                logger.warn("1-15", "", "",
+                logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
                     "Failed to destroy service " + serviceKey, t);
             }
             routerChain.destroy();
@@ -344,7 +347,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             destroyAllInvokers();
         } catch (Throwable t) {
             // 1-15 - Failed to destroy service.
-            logger.warn("1-15", "", "",
+            logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
                 "Failed to destroy service " + serviceKey, t);
         }
     }

@@ -92,6 +92,8 @@ public interface Constants {
 
     String SERVER_KEY = "server";
 
+    String IS_PU_SERVER_KEY = "ispuserver";
+
     String CLIENT_KEY = "client";
 
     String DEFAULT_REMOTING_CLIENT = "netty";

@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
  * FailfastClusterInvokerTest
  */
 @SuppressWarnings("unchecked")
-public class FailfastClusterInvokerTest {
+class FailfastClusterInvokerTest {
     List<Invoker<FailfastClusterInvokerTest>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test");
     Invoker<FailfastClusterInvokerTest> invoker1 = mock(Invoker.class);
@@ -83,7 +83,7 @@ public class FailfastClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeException() {
+    void testInvokeException() {
         Assertions.assertThrows(RpcException.class, () -> {
             resetInvoker1ToException();
             FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<>(dic);
@@ -93,7 +93,7 @@ public class FailfastClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeBizException() {
+    void testInvokeBizException() {
         given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.BIZ_EXCEPTION));
         given(invoker1.getUrl()).willReturn(url);
         given(invoker1.getInterface()).willReturn(FailfastClusterInvokerTest.class);
@@ -109,7 +109,7 @@ public class FailfastClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeNoException() {
+    void testInvokeNoException() {
 
         resetInvoker1ToNoException();
 
@@ -119,7 +119,7 @@ public class FailfastClusterInvokerTest {
     }
 
     @Test
-    public void testNoInvoke() {
+    void testNoInvoke() {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);

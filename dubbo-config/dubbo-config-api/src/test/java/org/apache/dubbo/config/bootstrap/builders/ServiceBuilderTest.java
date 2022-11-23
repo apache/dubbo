@@ -74,7 +74,7 @@ class ServiceBuilderTest {
     }
 
     @Test
-    public void generic() throws Exception {
+    void generic() throws Exception {
         ServiceBuilder builder = new ServiceBuilder();
         builder.generic(GENERIC_SERIALIZATION_DEFAULT);
         assertThat(builder.build().getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
@@ -85,7 +85,7 @@ class ServiceBuilderTest {
     }
 
     @Test
-    public void generic1() throws Exception {
+    void generic1() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceBuilder builder = new ServiceBuilder();
             builder.generic("illegal").build();

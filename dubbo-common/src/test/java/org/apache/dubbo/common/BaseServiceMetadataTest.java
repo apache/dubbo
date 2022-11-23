@@ -22,10 +22,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class BaseServiceMetadataTest {
+class BaseServiceMetadataTest {
 
     @Test
-    public void test() {
+    void test() {
         BaseServiceMetadata baseServiceMetadata = new BaseServiceMetadata();
         baseServiceMetadata.setGroup("group1");
         baseServiceMetadata.setServiceInterfaceName("org.apache.dubbo.common.TestInterface");

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -71,7 +72,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
     private transient ApplicationModel applicationModel;
-    private transient InstanceAddressURL instanceAddressURL = null;
+    private transient Map<String, InstanceAddressURL> instanceAddressURL = new ConcurrentHashMap<>();
 
     public DefaultServiceInstance() {
     }
@@ -286,15 +287,13 @@ public class DefaultServiceInstance implements ServiceInstance {
     @Override
     public void setServiceMetadata(MetadataInfo serviceMetadata) {
         this.serviceMetadata = serviceMetadata;
-        this.instanceAddressURL = null;
+        this.instanceAddressURL.clear();
     }
 
     @Override
     public InstanceAddressURL toURL(String protocol) {
-        if (instanceAddressURL == null) {
-            instanceAddressURL = new InstanceAddressURL(this, serviceMetadata, protocol);
-        }
-        return instanceAddressURL;
+        return instanceAddressURL.computeIfAbsent(protocol,
+            key -> new InstanceAddressURL(this, serviceMetadata, protocol));
     }
 
     @Override

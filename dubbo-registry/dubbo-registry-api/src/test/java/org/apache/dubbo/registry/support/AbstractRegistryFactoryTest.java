@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * AbstractRegistryFactoryTest
  */
-public class AbstractRegistryFactoryTest {
+class AbstractRegistryFactoryTest {
 
     private AbstractRegistryFactory registryFactory;
 
@@ -91,7 +91,7 @@ public class AbstractRegistryFactoryTest {
     }
 
     @Test
-    public void testRegistryFactoryCache() throws Exception {
+    void testRegistryFactoryCache() throws Exception {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":2233");
         Registry registry1 = registryFactory.getRegistry(url);
         Registry registry2 = registryFactory.getRegistry(url);
@@ -109,14 +109,14 @@ public class AbstractRegistryFactoryTest {
     }
 
     @Test
-    public void testRegistryFactoryGroupCache() throws Exception {
+    void testRegistryFactoryGroupCache() throws Exception {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=aaa"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2233?group=bbb"));
         Assertions.assertNotSame(registry1, registry2);
     }
 
     @Test
-    public void testDestroyAllRegistries() {
+    void testDestroyAllRegistries() {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":8888?group=xxx"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":9999?group=yyy"));
         Registry registry3 = new AbstractRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2020?group=yyy")) {

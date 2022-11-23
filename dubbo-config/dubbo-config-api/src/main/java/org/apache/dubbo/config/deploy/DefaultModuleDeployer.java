@@ -46,6 +46,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNABLE_DESTROY_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFERENCE_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_WAIT_EXPORT_REFER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_REFER_SERVICE;
+
 /**
  * Export/refer services of module
  */
@@ -125,7 +132,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    public synchronized Future start() throws IllegalStateException {
+    public Future start() throws IllegalStateException {
+        // initialize，maybe deadlock applicationDeployer lock & moduleDeployer lock
+        applicationDeployer.initialize();
+
+        return startSync();
+    }
+
+    private synchronized Future startSync() throws IllegalStateException {
         if (isStopping() || isStopped() || isFailed()) {
             throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
         }
@@ -137,8 +151,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             onModuleStarting();
 
-            // initialize
-            applicationDeployer.initialize();
+
             initialize();
 
             // export services
@@ -164,7 +177,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         // wait for refer finish
                         waitReferFinish();
                     } catch (Throwable e) {
-                        logger.warn("wait for export/refer services occurred an exception", e);
+                        logger.warn(CONFIG_FAILED_WAIT_EXPORT_REFER, "", "", "wait for export/refer services occurred an exception", e);
                     } finally {
                         onModuleStarted();
                     }
@@ -213,22 +226,22 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
             for (ConsumerModel consumerModel : consumerModels) {
                 try {
-                    if (consumerModel.getDestroyCaller() != null) {
-                        consumerModel.getDestroyCaller().call();
+                    if (consumerModel.getDestroyRunner() != null) {
+                        consumerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
-                    logger.error("5-13", "there are problems with the custom implementation.", "", "Unable to destroy model: consumerModel.", t);
+                    logger.error(CONFIG_UNABLE_DESTROY_MODEL, "there are problems with the custom implementation.", "", "Unable to destroy model: consumerModel.", t);
                 }
             }
 
             List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
             for (ProviderModel providerModel : exportedServices) {
                 try {
-                    if (providerModel.getDestroyCaller() != null) {
-                        providerModel.getDestroyCaller().call();
+                    if (providerModel.getDestroyRunner() != null) {
+                        providerModel.getDestroyRunner().run();
                     }
                 } catch (Throwable t) {
-                    logger.error("5-13", "there are problems with the custom implementation.", "", "Unable to destroy model: providerModel.", t);
+                    logger.error(CONFIG_UNABLE_DESTROY_MODEL, "there are problems with the custom implementation.", "", "Unable to destroy model: providerModel.", t);
                 }
             }
             serviceRepository.destroy();
@@ -259,7 +272,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleFailed(String msg, Throwable ex) {
         try {
             setFailed(ex);
-            logger.error("5-14", "", "", "Model start failed: " + msg, ex);
+            logger.error(CONFIG_FAILED_START_MODEL, "", "", "Model start failed: " + msg, ex);
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
         } finally {
             completeStartFuture(false);
@@ -327,7 +340,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                         exportedServices.add(sc);
                     }
                 } catch (Throwable t) {
-                    logger.error("5-9", "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
+                    logger.error(CONFIG_FAILED_EXPORT_SERVICE, "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                 }
             }, executor);
 
@@ -374,7 +387,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                             try {
                                 referenceCache.get(rc);
                             } catch (Throwable t) {
-                                logger.error("5-9", "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
+                                logger.error(CONFIG_FAILED_EXPORT_SERVICE, "", "", "Failed to async export service config: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                             }
                         }, executor);
 
@@ -384,7 +397,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     }
                 }
             } catch (Throwable t) {
-                logger.error("5-15", "", "", "Model reference failed: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
+                logger.error(CONFIG_FAILED_REFERENCE_MODEL, "", "", "Model reference failed: " + getIdentifier() + " , catch error : " + t.getMessage(), t);
                 referenceCache.destroy(rc);
                 throw t;
             }
@@ -410,7 +423,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             exportFuture.get();
         } catch (Throwable e) {
-            logger.warn(getIdentifier() + " export services occurred an exception: " + e.toString());
+            logger.warn(CONFIG_FAILED_EXPORT_SERVICE, "","",getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
@@ -423,7 +436,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             referFuture = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
             referFuture.get();
         } catch (Throwable e) {
-            logger.warn(getIdentifier() + " refer services occurred an exception: " + e.toString());
+            logger.warn(CONFIG_FAILED_REFER_SERVICE, "", "", getIdentifier() + " refer services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();

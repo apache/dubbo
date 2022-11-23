@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -47,6 +47,7 @@ import java.util.concurrent.Executors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CLOSE;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
@@ -55,7 +56,7 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
  */
 public class NettyServer extends AbstractServer implements RemotingServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyServer.class);
 
     private Map<String, Channel> channels; // <ip:port, channel>
 
@@ -109,7 +110,7 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                 channel.close();
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
@@ -118,12 +119,12 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                     try {
                         channel.close();
                     } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
+                        logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
                     }
                 }
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             if (bootstrap != null) {
@@ -131,14 +132,14 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                 bootstrap.releaseExternalResources();
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
         try {
             if (channels != null) {
                 channels.clear();
             }
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_FAILED_CLOSE, "", "", e.getMessage(), e);
         }
     }
 

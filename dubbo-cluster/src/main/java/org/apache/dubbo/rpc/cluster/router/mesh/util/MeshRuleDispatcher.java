@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.util;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -27,9 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_RULE_LISTENER;
+
 
 public class MeshRuleDispatcher {
-    public static final Logger logger = LoggerFactory.getLogger(MeshRuleDispatcher.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MeshRuleDispatcher.class);
 
     private final String appName;
     private final Map<String, Set<MeshRuleListener>> listenerMap = new ConcurrentHashMap<>();
@@ -55,7 +57,7 @@ public class MeshRuleDispatcher {
                         listener.onRuleChange(appName, entry.getValue());
                     }
                 } else {
-                    logger.warn("Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
+                    logger.warn(CLUSTER_NO_RULE_LISTENER,"Receive mesh rule but none of listener has been registered","","Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
                 }
             }
             // clear rule listener not being notified in this time

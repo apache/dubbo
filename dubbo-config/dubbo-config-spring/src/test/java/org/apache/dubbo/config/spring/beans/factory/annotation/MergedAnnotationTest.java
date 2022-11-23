@@ -29,10 +29,10 @@ import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 
-public class MergedAnnotationTest {
+class MergedAnnotationTest {
 
     @Test
-    public void testMergedReference() {
+    void testMergedReference() {
         Field field = ReflectionUtils.findField(TestBean1.class, "demoService");
         Reference reference = AnnotatedElementUtils.getMergedAnnotation(field, Reference.class);
         Assertions.assertEquals("dubbo", reference.group());
@@ -45,7 +45,7 @@ public class MergedAnnotationTest {
     }
 
     @Test
-    public void testMergedService() {
+    void testMergedService() {
         Service service1 = AnnotatedElementUtils.getMergedAnnotation(DemoServiceImpl1.class, Service.class);
         Assertions.assertEquals("dubbo", service1.group());
         Assertions.assertEquals("1.0.0", service1.version());

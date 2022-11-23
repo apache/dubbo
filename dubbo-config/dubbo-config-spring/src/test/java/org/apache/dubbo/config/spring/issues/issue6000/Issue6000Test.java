@@ -37,7 +37,7 @@ import org.springframework.context.annotation.PropertySource;
 @EnableDubbo
 @ComponentScan
 @PropertySource("classpath:/META-INF/issues/issue6000/config.properties")
-public class Issue6000Test {
+class Issue6000Test {
 
     @BeforeAll
     public static void beforeAll() {
@@ -50,7 +50,7 @@ public class Issue6000Test {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6000Test.class);
         try {
 

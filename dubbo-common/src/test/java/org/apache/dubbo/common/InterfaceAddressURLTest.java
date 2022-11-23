@@ -27,13 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 
-public class InterfaceAddressURLTest {
+class InterfaceAddressURLTest {
     private static final String rawURL = "dubbo://10.20.130.230:20880/context/path?version=1.0.0&group=g1&application=provider&timeout=1000&category=provider&side=provider&sayHello.weight=222";
     private static final URL overrideURL = URL.valueOf("override://10.20.130.230:20880/context/path?version=1.0.0&application=morgan&timeout=2000&category=configurators&sayHello.overrideKey=override");
     private static final URL consumerURL = URL.valueOf("consumer://10.20.130.230/context/path?version=2.0.0,1.0.0&group=g2&application=morgan&timeout=3000&side=consumer&sayHello.timeout=5000");
 
     @Test
-    public void testMergeOverriden() {
+    void testMergeOverriden() {
         URL url = URL.valueOf(rawURL);
         ServiceAddressURL interfaceAddressURL = new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), null, null);
         assertEquals("1000", interfaceAddressURL.getParameter(TIMEOUT_KEY));
@@ -46,7 +46,7 @@ public class InterfaceAddressURLTest {
     }
 
     @Test
-    public void testGetParameter() {
+    void testGetParameter() {
         URL url = URL.valueOf(rawURL);
         ServiceAddressURL interfaceAddressURL = new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
 
@@ -64,7 +64,7 @@ public class InterfaceAddressURLTest {
     }
 
     @Test
-    public void testGetMethodParameter() {
+    void testGetMethodParameter() {
         URL url = URL.valueOf(rawURL);
         ServiceAddressURL interfaceAddressURL = new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, (ServiceConfigURL) overrideURL);
 
@@ -76,7 +76,7 @@ public class InterfaceAddressURLTest {
     }
 
     @Test
-    public void testURLEquals() {
+    void testURLEquals() {
         URL url1 = URL.valueOf(rawURL);
         URL url2 = URL.valueOf(rawURL);
         assertNotSame(url1, url2);
@@ -95,7 +95,7 @@ public class InterfaceAddressURLTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         URL url1 = URL.valueOf(rawURL);
         System.out.println(url1.toString());
         ServiceAddressURL withConsumer = new DubboServiceAddressURL(url1.getUrlAddress(), url1.getUrlParam(), consumerURL, null);
