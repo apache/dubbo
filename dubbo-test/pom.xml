@@ -28,14 +28,13 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>dubbo-test-integration</module>
         <module>dubbo-test-check</module>
         <module>dubbo-test-common</module>
         <module>dubbo-test-spring</module>
         <module>dubbo-test-spring3.2</module>
         <module>dubbo-test-spring4.1</module>
         <module>dubbo-test-spring4.2</module>
-        <module>dubbo-dependencies-all</module>
-        <module>dubbo-test-modules</module>
     </modules>
 
     <properties>

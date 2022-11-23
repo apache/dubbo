@@ -16,10 +16,15 @@
  */
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.demo.provider.registry.EmbeddedZooKeeper;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Application {
     public static void main(String[] args) throws Exception {
+        // Spin up an embedded server, please use separate registry cluster in production
+        new EmbeddedZooKeeper(2181, false).start();
+
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider.xml");
         context.start();
         System.in.read();

@@ -16,22 +16,15 @@
  */
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.demo.hello.DubboGreeterTriple;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
-import java.util.concurrent.CompletableFuture;
-
-public class GreeterServiceImpl implements GreeterService {
-
+public class GreeterServiceImpl extends DubboGreeterTriple.GreeterImplBase {
     @Override
-    public HelloReply sayHello(HelloRequest request) {
+    public HelloReply greet(HelloRequest request) {
         return HelloReply.newBuilder()
-                .setMessage("Hello " + request.getName())
-                .build();
-    }
-
-    @Override
-    public CompletableFuture<String> sayHelloAsync(String name) {
-        return CompletableFuture.supplyAsync(() -> name);
+            .setMessage("Hello " + request.getName())
+            .build();
     }
 }
