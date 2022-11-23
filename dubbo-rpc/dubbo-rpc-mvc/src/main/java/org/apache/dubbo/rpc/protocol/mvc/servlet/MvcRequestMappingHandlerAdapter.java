@@ -21,7 +21,7 @@ public class MvcRequestMappingHandlerAdapter extends RequestMappingHandlerAdapte
     @Override
     public void afterPropertiesSet() {
 
-        HashSet<HttpMessageConverter> httpMessageConverters = new HashSet<>();
+        HashSet<HttpMessageConverter<?>> httpMessageConverters = new HashSet<>();
         MvcConfigurationSupport.addDefaultHttpMessageConverters(httpMessageConverters);
         setMessageConverters(new ArrayList<>(httpMessageConverters));
         super.afterPropertiesSet();

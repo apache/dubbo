@@ -1,5 +1,6 @@
 package org.apache.dubbo.demo;
 
+import org.apache.dubbo.demo.api.SpringmvcDemoService;
 import org.apache.dubbo.rpc.protocol.mvc.feign.FeignClientBuilder;
 import org.junit.jupiter.api.Test;
 

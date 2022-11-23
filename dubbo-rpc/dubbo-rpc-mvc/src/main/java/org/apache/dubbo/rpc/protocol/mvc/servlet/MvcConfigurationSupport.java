@@ -37,7 +37,7 @@ public class MvcConfigurationSupport {
         ClassUtils.isPresent("com.google.gson.Gson", WebMvcConfigurationSupport.class.getClassLoader());
 
 
-    public static void addDefaultHttpMessageConverters(Set<HttpMessageConverter> tmpMessageConverters) {
+    public static void addDefaultHttpMessageConverters(Set<HttpMessageConverter<?>> tmpMessageConverters) {
         StringHttpMessageConverter stringConverter = new StringHttpMessageConverter();
         stringConverter.setWriteAcceptCharset(false);
 
@@ -67,9 +67,9 @@ public class MvcConfigurationSupport {
     }
 
 
-    public static Set<HttpMessageConverter> getDefaultHttpMessageConverters() {
+    public static Set<HttpMessageConverter<?>> getDefaultHttpMessageConverters() {
 
-        HashSet<HttpMessageConverter> httpMessageConverters = new HashSet<>();
+        HashSet<HttpMessageConverter<?>> httpMessageConverters = new HashSet<>();
         addDefaultHttpMessageConverters(httpMessageConverters);
         return httpMessageConverters;
     }
