@@ -81,7 +81,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     public abstract String getTypeUrl();
 
     public abstract Set<String> getAllResouceNames();
-    public abstract void addResouceNames(Map<String, Object> resourceNames);
     public abstract boolean isExistResource(Set<String> resourceNames);
 
     public abstract T getCacheResource(Set<String> resourceNames);

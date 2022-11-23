@@ -57,11 +57,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     @Override
-    public void addResouceNames(Map<String, Object> resourceNames) {
-        resourcesMap.putAll(resourceNames);
-    }
-
-    @Override
     public boolean isExistResource(Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
             if (!resourcesMap.containsKey(resourceName)) {

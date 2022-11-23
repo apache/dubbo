@@ -41,7 +41,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
-    private HashMap<String, Object> resourcesMap = new HashMap<>();
+    private static HashMap<String, Object> resourcesMap = new HashMap<>();
 
     public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         super(xdsChannel, node, pollingPoolSize, pollingTimeout);
@@ -56,10 +56,11 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
         return resourcesMap.keySet();
     }
 
-    @Override
-    public void addResouceNames(Map<String, Object> resourceNames) {
-        resourcesMap.putAll(resourceNames);
-    }
+
+//    @Override
+//    public void addResouceNames(Map<String, Object> resourceNames) {
+//        resourcesMap.putAll(resourceNames);
+//    }
 
     @Override
     public boolean isExistResource(Set<String> resourceNames) {
@@ -73,11 +74,11 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     @Override
     public RouteResult getCacheResource(Set<String> resourceNames) {
-        Set<String> resourceSet = new HashSet<>();
+        Map<String, Set<String>> resourceMap = new HashMap<>();
         for (String resourceName : resourceNames) {
-            resourceSet.add((String) resourcesMap.get(resourceName));
+            resourceMap.putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
         }
-        return new RouteResult(resourceSet);
+        return new RouteResult(resourceMap);
     }
 
     @Override
@@ -107,6 +108,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                 for (String domain : virtualHost.getDomainsList()) {
                     map.put(domain, cluster);
                 }
+                resourcesMap.put(resource.getName(), map);
             });
         return map;
     }

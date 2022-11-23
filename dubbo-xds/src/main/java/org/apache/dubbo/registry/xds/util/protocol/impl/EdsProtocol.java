@@ -43,7 +43,7 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
-    private HashMap<String, Object> resourcesMap = new HashMap<>();
+    private static HashMap<String, Object> resourcesMap = new HashMap<>();
 
 
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
@@ -60,11 +60,6 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     }
 
     @Override
-    public void addResouceNames(Map<String, Object> resourceNames) {
-        resourcesMap.putAll(resourceNames);
-    }
-
-    @Override
     public boolean isExistResource(Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
             if (!resourcesMap.containsKey(resourceName)) {
@@ -76,9 +71,9 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
 
     @Override
     public EndpointResult getCacheResource(Set<String> resourceNames) {
-        Set<String> resourceSet = new HashSet<>();
+        Set<Endpoint> resourceSet = new HashSet<>();
         for (String resourceName : resourceNames) {
-            resourceSet.add((String) resourcesMap.get(resourceName));
+            resourceSet.add((Endpoint) resourcesMap.get(resourceName));
         }
         return new EndpointResult(resourceSet);
     }
@@ -98,10 +93,12 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     }
 
     private static Set<Endpoint> decodeResourceToEndpoint(ClusterLoadAssignment resource) {
-        return resource.getEndpointsList().stream()
+        Set<Endpoint> endpoints =  resource.getEndpointsList().stream()
             .flatMap((e) -> e.getLbEndpointsList().stream())
             .map(EdsProtocol::decodeLbEndpointToEndpoint)
             .collect(Collectors.toSet());
+        resourcesMap.put(resource.getClusterName(), endpoints);
+        return endpoints;
     }
 
     private static Endpoint decodeLbEndpointToEndpoint(LbEndpoint lbEndpoint) {
