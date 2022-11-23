@@ -567,6 +567,31 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>jacoco089</id>
+            <properties>
+                <maven_jacoco_version>0.8.9-SNAPSHOT</maven_jacoco_version>
+            </properties>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>apache.snapshots</id>
+                    <name>Apache Snapshot Repository</name>
+                    <url>https://repository.apache.org/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>oss.snapshots</id>
+                    <name>Oss Repository</name>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
     </profiles>
 
     <build>
