@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
  * <p>
  * 16/9/22.
  */
-public class MetadataTest {
+class MetadataTest {
 
     @BeforeAll
     public static void setup() {
@@ -46,7 +46,7 @@ public class MetadataTest {
      *
      */
     @Test
-    public void testInnerClassType() {
+    void testInnerClassType() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(OuterClass.InnerClass.class, OuterClass.InnerClass.class);
         System.out.println(">> testInnerClassType: " + JsonUtils.getJson().toJson(td));
@@ -73,7 +73,7 @@ public class MetadataTest {
      *
      */
     @Test
-    public void testRawMap() {
+    void testRawMap() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(ResultWithRawCollections.class, ResultWithRawCollections.class);
         System.out.println(">> testRawMap: " + JsonUtils.getJson().toJson(td));
@@ -99,7 +99,7 @@ public class MetadataTest {
     }
 
     @Test
-    public void testEnum() {
+    void testEnum() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(ColorEnum.class, ColorEnum.class);
         System.out.println(">> testEnum: " + JsonUtils.getJson().toJson(td));
@@ -126,7 +126,7 @@ public class MetadataTest {
     }
 
     @Test
-    public void testExtendsMap() {
+    void testExtendsMap() {
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         TypeDefinition td = builder.build(ClassExtendsMap.class, ClassExtendsMap.class);
         System.out.println(">> testExtendsMap: " + JsonUtils.getJson().toJson(td));

@@ -31,10 +31,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("rawtypes")
-public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
+class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
-    public void testConsistentHashLoadBalanceInGenericCall() {
+    void testConsistentHashLoadBalanceInGenericCall() {
         int runs = 10000;
         Map<Invoker, AtomicLong> genericInvokeCounter = getGenericInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
         Map<Invoker, AtomicLong> invokeCounter = getInvokeCounter(runs, ConsistentHashLoadBalance.NAME);
@@ -62,7 +62,7 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testConsistentHashLoadBalance() {
+    void testConsistentHashLoadBalance() {
         int runs = 10000;
         long unHitedInvokerCount = 0;
         Map<Invoker, Long> hitedInvokers = new HashMap<>();

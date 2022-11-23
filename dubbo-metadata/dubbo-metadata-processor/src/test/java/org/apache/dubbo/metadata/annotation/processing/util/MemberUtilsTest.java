@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
+class MemberUtilsTest extends AbstractAnnotationProcessingTest {
 
     private TypeElement testType;
 
@@ -61,13 +61,13 @@ public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsPublicNonStatic() {
+    void testIsPublicNonStatic() {
         assertFalse(isPublicNonStatic(null));
         methodsIn(getDeclaredMembers(testType.asType())).forEach(method -> assertTrue(isPublicNonStatic(method)));
     }
 
     @Test
-    public void testHasModifiers() {
+    void testHasModifiers() {
         assertFalse(hasModifiers(null));
         List<? extends Element> members = getAllDeclaredMembers(testType.asType());
         List<VariableElement> fields = fieldsIn(members);
@@ -75,7 +75,7 @@ public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testDeclaredMembers() {
+    void testDeclaredMembers() {
         TypeElement type = getType(Model.class);
         List<? extends Element> members = getDeclaredMembers(type.asType());
         List<VariableElement> fields = fieldsIn(members);
@@ -105,7 +105,7 @@ public class MemberUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testMatchParameterTypes() {
+    void testMatchParameterTypes() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
         assertTrue(matchParameterTypes(method.getParameters(), "java.lang.String"));
         assertFalse(matchParameterTypes(method.getParameters(), "java.lang.Object"));

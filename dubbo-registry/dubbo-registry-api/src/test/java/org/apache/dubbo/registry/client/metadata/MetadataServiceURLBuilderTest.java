@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
  *
  * @since 2.7.5
  */
-public class MetadataServiceURLBuilderTest {
+class MetadataServiceURLBuilderTest {
 
     static ServiceInstance serviceInstance = new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel());
 

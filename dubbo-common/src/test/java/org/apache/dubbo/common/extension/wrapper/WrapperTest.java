@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
-public class WrapperTest {
+class WrapperTest {
 
     @Test
-    public void testWrapper() {
+    void testWrapper() {
         Demo demoWrapper = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo");
         assertTrue(demoWrapper instanceof DemoWrapper);
         Demo demoWrapper2 = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo2");

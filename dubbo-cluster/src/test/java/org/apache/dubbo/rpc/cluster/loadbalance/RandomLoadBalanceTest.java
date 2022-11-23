@@ -28,9 +28,9 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * RandomLoadBalance Test
  */
-public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
+class RandomLoadBalanceTest extends LoadBalanceBaseTest {
     @Test
-    public void testRandomLoadBalanceSelect() {
+    void testRandomLoadBalanceSelect() {
         int runs = 1000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, RandomLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
@@ -55,7 +55,7 @@ public class RandomLoadBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testSelectByWeight() {
+    void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker3 = 0;

@@ -23,9 +23,9 @@ import org.junit.jupiter.api.condition.JRE;
 
 import java.lang.reflect.Method;
 
-public class JavassistCompilerTest extends JavaCodeTest {
+class JavassistCompilerTest extends JavaCodeTest {
     @Test
-    public void testCompileJavaClass() throws Exception {
+    void testCompileJavaClass() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JavassistCompiler.class.getClassLoader());
 
@@ -55,7 +55,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void testCompileJavaClass1() throws Exception {
+    void testCompileJavaClass1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavassistCompiler compiler = new JavassistCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
@@ -66,7 +66,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void testCompileJavaClassWithImport() throws Exception {
+    void testCompileJavaClassWithImport() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithImports(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
@@ -75,7 +75,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void testCompileJavaClassWithExtends() throws Exception {
+    void testCompileJavaClassWithExtends() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithWithExtends(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();

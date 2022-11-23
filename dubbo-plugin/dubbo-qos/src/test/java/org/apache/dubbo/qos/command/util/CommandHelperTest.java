@@ -65,17 +65,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CommandHelperTest {
+class CommandHelperTest {
     private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
 
     @Test
-    public void testHasCommand() throws Exception {
+    void testHasCommand() throws Exception {
         assertTrue(commandHelper.hasCommand("greeting"));
         assertFalse(commandHelper.hasCommand("not-exiting"));
     }
 
     @Test
-    public void testGetAllCommandClass() throws Exception {
+    void testGetAllCommandClass() throws Exception {
         List<Class<?>> classes = commandHelper.getAllCommandClass();
 
         // update this list when introduce a new command
@@ -119,7 +119,7 @@ public class CommandHelperTest {
     }
 
     @Test
-    public void testGetCommandClass() throws Exception {
+    void testGetCommandClass() throws Exception {
         assertThat(commandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
         assertNull(commandHelper.getCommandClass("not-exiting"));
     }

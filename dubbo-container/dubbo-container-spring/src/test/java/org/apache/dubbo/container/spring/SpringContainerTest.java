@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 /**
  * StandaloneContainerTest
  */
-public class SpringContainerTest {
+class SpringContainerTest {
 
     @Test
-    public void testContainer() {
+    void testContainer() {
         SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
         container.start();
         Assertions.assertEquals(SpringContainer.class, container.context.getBean("container").getClass());

@@ -44,17 +44,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ExtensionLoader_Adaptive_Test {
+class ExtensionLoader_Adaptive_Test {
 
     @Test
-    public void test_useAdaptiveClass() throws Exception {
+    void test_useAdaptiveClass() throws Exception {
         ExtensionLoader<HasAdaptiveExt> loader = ExtensionLoader.getExtensionLoader(HasAdaptiveExt.class);
         HasAdaptiveExt ext = loader.getAdaptiveExtension();
         assertTrue(ext instanceof HasAdaptiveExt_ManualAdaptive);
     }
 
     @Test
-    public void test_getAdaptiveExtension_defaultAdaptiveKey() throws Exception {
+    void test_getAdaptiveExtension_defaultAdaptiveKey() throws Exception {
         {
             SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
@@ -78,7 +78,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_customizeAdaptiveKey() throws Exception {
+    void test_getAdaptiveExtension_customizeAdaptiveKey() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
@@ -94,7 +94,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_protocolKey() throws Exception {
+    void test_getAdaptiveExtension_protocolKey() throws Exception {
         UseProtocolKeyExt ext = ExtensionLoader.getExtensionLoader(UseProtocolKeyExt.class).getAdaptiveExtension();
 
         {
@@ -130,7 +130,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_UrlNpe() throws Exception {
+    void test_getAdaptiveExtension_UrlNpe() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
         try {
@@ -142,7 +142,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNoAdaptiveMethodOnInterface() throws Exception {
+    void test_getAdaptiveExtension_ExceptionWhenNoAdaptiveMethodOnInterface() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(NoAdaptiveMethodExt.class).getAdaptiveExtension();
             fail();
@@ -163,7 +163,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNotAdaptiveMethod() throws Exception {
+    void test_getAdaptiveExtension_ExceptionWhenNotAdaptiveMethod() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
@@ -181,7 +181,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_ExceptionWhenNoUrlAttribute() throws Exception {
+    void test_getAdaptiveExtension_ExceptionWhenNoUrlAttribute() throws Exception {
         try {
             ExtensionLoader.getExtensionLoader(NoUrlParamExt.class).getAdaptiveExtension();
             fail();
@@ -192,7 +192,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension() throws Exception {
+    void test_urlHolder_getAdaptiveExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
@@ -207,7 +207,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_noExtension() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_noExtension() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
@@ -233,7 +233,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_UrlNpe() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_UrlNpe() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         try {
@@ -252,7 +252,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_ExceptionWhenNotAdativeMethod() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_ExceptionWhenNotAdativeMethod() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         Map<String, String> map = new HashMap<String, String>();
@@ -270,7 +270,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_urlHolder_getAdaptiveExtension_ExceptionWhenNameNotProvided() throws Exception {
+    void test_urlHolder_getAdaptiveExtension_ExceptionWhenNameNotProvided() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getAdaptiveExtension();
 
         URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
@@ -296,7 +296,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_inject() throws Exception {
+    void test_getAdaptiveExtension_inject() throws Exception {
         LogUtil.start();
         Ext6 ext = ExtensionLoader.getExtensionLoader(Ext6.class).getAdaptiveExtension();
 
@@ -314,7 +314,7 @@ public class ExtensionLoader_Adaptive_Test {
     }
 
     @Test
-    public void test_getAdaptiveExtension_InjectNotExtFail() throws Exception {
+    void test_getAdaptiveExtension_InjectNotExtFail() throws Exception {
         Ext6 ext = ExtensionLoader.getExtensionLoader(Ext6.class).getExtension("impl2");
 
         Ext6Impl2 impl = (Ext6Impl2) ext;

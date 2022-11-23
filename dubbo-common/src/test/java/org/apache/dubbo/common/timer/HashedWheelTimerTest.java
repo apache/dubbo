@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class HashedWheelTimerTest {
+class HashedWheelTimerTest {
     private CountDownLatch tryStopTaskCountDownLatch = new CountDownLatch(1);
     private CountDownLatch errorTaskCountDownLatch = new CountDownLatch(1);
 
@@ -68,7 +68,7 @@ public class HashedWheelTimerTest {
     }
 
     @Test
-    public void constructorTest() {
+    void constructorTest() {
         // use weak reference to let gc work every time
         // which can check finalize method and reduce memory usage in time
         WeakReference<Timer> timer = new WeakReference<>(new HashedWheelTimer());
@@ -133,7 +133,7 @@ public class HashedWheelTimerTest {
     }
 
     @Test
-    public void createTaskTest() throws InterruptedException {
+    void createTaskTest() throws InterruptedException {
         HashedWheelTimer timer = new HashedWheelTimer(
                 new NamedThreadFactory("dubbo-future-timeout", true),
                 10,
@@ -178,7 +178,7 @@ public class HashedWheelTimerTest {
     }
 
     @Test
-    public void stopTaskTest() throws InterruptedException {
+    void stopTaskTest() throws InterruptedException {
         Timer timer = new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true));
         timer.newTimeout(new TryStopTask(timer), 10, TimeUnit.MILLISECONDS);
         tryStopTaskCountDownLatch.await();

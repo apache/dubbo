@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.codec;
+package org.apache.dubbo.remoting.codec;
 
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.io.Bytes;

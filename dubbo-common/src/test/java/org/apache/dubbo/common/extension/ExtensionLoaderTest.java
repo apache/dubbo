@@ -97,14 +97,14 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ExtensionLoaderTest {
+class ExtensionLoaderTest {
 
     private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         return ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(type);
     }
 
     @Test
-    public void test_getExtensionLoader_Null() {
+    void test_getExtensionLoader_Null() {
         try {
             getExtensionLoader(null);
             fail();
@@ -115,7 +115,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtensionLoader_NotInterface() {
+    void test_getExtensionLoader_NotInterface() {
         try {
             getExtensionLoader(ExtensionLoaderTest.class);
             fail();
@@ -126,7 +126,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtensionLoader_NotSpiAnnotation() {
+    void test_getExtensionLoader_NotSpiAnnotation() {
         try {
             getExtensionLoader(NoSpiExt.class);
             fail();
@@ -139,7 +139,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getDefaultExtension() {
+    void test_getDefaultExtension() {
         SimpleExt ext = getExtensionLoader(SimpleExt.class).getDefaultExtension();
         assertThat(ext, instanceOf(SimpleExtImpl1.class));
 
@@ -148,7 +148,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getDefaultExtension_NULL() {
+    void test_getDefaultExtension_NULL() {
         Ext2 ext = getExtensionLoader(Ext2.class).getDefaultExtension();
         assertNull(ext);
 
@@ -157,13 +157,13 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtension() {
+    void test_getExtension() {
         assertTrue(getExtensionLoader(SimpleExt.class).getExtension("impl1") instanceof SimpleExtImpl1);
         assertTrue(getExtensionLoader(SimpleExt.class).getExtension("impl2") instanceof SimpleExtImpl2);
     }
 
     @Test
-    public void test_getExtension_WithWrapper() {
+    void test_getExtension_WithWrapper() {
         WrappedExt impl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1");
         assertThat(impl1, anyOf(instanceOf(Ext6Wrapper1.class), instanceOf(Ext6Wrapper2.class)));
         assertThat(impl1, instanceOf(WrappedExtWrapper.class));
@@ -194,7 +194,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtension_withWrapperAnnotation() {
+    void test_getExtension_withWrapperAnnotation() {
         WrappedExt impl3 = getExtensionLoader(WrappedExt.class).getExtension("impl3");
         assertThat(impl3, instanceOf(Ext6Wrapper3.class));
         WrappedExt originImpl3 = impl3;
@@ -221,7 +221,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getActivateExtension_WithWrapper() {
+    void test_getActivateExtension_WithWrapper() {
         URL url = URL.valueOf("test://localhost/test");
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
             .getActivateExtension(url, new String[]{}, "order");
@@ -229,7 +229,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtension_ExceptionNoExtension() {
+    void test_getExtension_ExceptionNoExtension() {
         try {
             getExtensionLoader(SimpleExt.class).getExtension("XXX");
             fail();
@@ -239,7 +239,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtension_ExceptionNoExtension_WrapperNotAffactName() {
+    void test_getExtension_ExceptionNoExtension_WrapperNotAffactName() {
         try {
             getExtensionLoader(WrappedExt.class).getExtension("XXX");
             fail();
@@ -249,7 +249,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getExtension_ExceptionNullArg() {
+    void test_getExtension_ExceptionNullArg() {
         try {
             getExtensionLoader(SimpleExt.class).getExtension(null);
             fail();
@@ -259,7 +259,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_hasExtension() {
+    void test_hasExtension() {
         assertTrue(getExtensionLoader(SimpleExt.class).hasExtension("impl1"));
         assertFalse(getExtensionLoader(SimpleExt.class).hasExtension("impl1,impl2"));
         assertFalse(getExtensionLoader(SimpleExt.class).hasExtension("xxx"));
@@ -273,7 +273,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_hasExtension_wrapperIsNotExt() {
+    void test_hasExtension_wrapperIsNotExt() {
         assertTrue(getExtensionLoader(WrappedExt.class).hasExtension("impl1"));
         assertFalse(getExtensionLoader(WrappedExt.class).hasExtension("impl1,impl2"));
         assertFalse(getExtensionLoader(WrappedExt.class).hasExtension("xxx"));
@@ -289,7 +289,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getSupportedExtensions() {
+    void test_getSupportedExtensions() {
         Set<String> exts = getExtensionLoader(SimpleExt.class).getSupportedExtensions();
 
         Set<String> expected = new HashSet<String>();
@@ -301,7 +301,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getSupportedExtensions_wrapperIsNotExt() {
+    void test_getSupportedExtensions_wrapperIsNotExt() {
         Set<String> exts = getExtensionLoader(WrappedExt.class).getSupportedExtensions();
 
         Set<String> expected = new HashSet<String>();
@@ -314,7 +314,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_AddExtension() {
+    void test_AddExtension() {
         try {
             getExtensionLoader(AddExt1.class).getExtension("Manual1");
             fail();
@@ -330,7 +330,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_AddExtension_NoExtend() {
+    void test_AddExtension_NoExtend() {
         getExtensionLoader(Ext9Empty.class).addExtension("ext9", Ext9EmptyImpl.class);
         Ext9Empty ext = getExtensionLoader(Ext9Empty.class).getExtension("ext9");
 
@@ -339,7 +339,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_AddExtension_ExceptionWhenExistedExtension() {
+    void test_AddExtension_ExceptionWhenExistedExtension() {
         SimpleExt ext = getExtensionLoader(SimpleExt.class).getExtension("impl1");
 
         try {
@@ -351,7 +351,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_AddExtension_Adaptive() {
+    void test_AddExtension_Adaptive() {
         ExtensionLoader<AddExt2> loader = getExtensionLoader(AddExt2.class);
         loader.addExtension(null, AddExt2_ManualAdaptive.class);
 
@@ -360,7 +360,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_AddExtension_Adaptive_ExceptionWhenExistedAdaptive() {
+    void test_AddExtension_Adaptive_ExceptionWhenExistedAdaptive() {
         ExtensionLoader<AddExt1> loader = getExtensionLoader(AddExt1.class);
 
         loader.getAdaptiveExtension();
@@ -374,7 +374,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_addExtension_with_error_class() {
+    void test_addExtension_with_error_class() {
         try {
             getExtensionLoader(SimpleExt.class).addExtension("impl1", ExtensionLoaderTest.class);
         } catch (IllegalStateException expected) {
@@ -385,7 +385,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_addExtension_with_interface() {
+    void test_addExtension_with_interface() {
         try {
             getExtensionLoader(SimpleExt.class).addExtension("impl1", SimpleExt.class);
         } catch (IllegalStateException expected) {
@@ -396,7 +396,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_addExtension_without_adaptive_annotation() {
+    void test_addExtension_without_adaptive_annotation() {
         try {
             getExtensionLoader(NoAdaptiveExt.class).addExtension(null, NoAdaptiveExtImpl.class);
         } catch (IllegalStateException expected) {
@@ -407,7 +407,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getLoadedExtension_name_with_null() {
+    void test_getLoadedExtension_name_with_null() {
         try {
             getExtensionLoader(SimpleExt.class).getLoadedExtension(null);
         } catch (IllegalArgumentException expected) {
@@ -416,13 +416,13 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getLoadedExtension_null() {
+    void test_getLoadedExtension_null() {
         SimpleExt impl1 = getExtensionLoader(SimpleExt.class).getLoadedExtension("XXX");
         assertNull(impl1);
     }
 
     @Test
-    public void test_getLoadedExtension() {
+    void test_getLoadedExtension() {
         SimpleExt simpleExt = getExtensionLoader(SimpleExt.class).getExtension("impl1");
         assertThat(simpleExt, instanceOf(SimpleExtImpl1.class));
 
@@ -431,7 +431,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getLoadedExtensions() {
+    void test_getLoadedExtensions() {
         SimpleExt simpleExt1 = getExtensionLoader(SimpleExt.class).getExtension("impl1");
         assertThat(simpleExt1, instanceOf(SimpleExtImpl1.class));
 
@@ -443,7 +443,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_getLoadedExtensionInstances() {
+    void test_getLoadedExtensionInstances() {
         SimpleExt simpleExt1 = getExtensionLoader(SimpleExt.class).getExtension("impl1");
         assertThat(simpleExt1, instanceOf(SimpleExtImpl1.class));
 
@@ -455,7 +455,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_replaceExtension_with_error_class() {
+    void test_replaceExtension_with_error_class() {
         try {
             getExtensionLoader(SimpleExt.class).replaceExtension("impl1", ExtensionLoaderTest.class);
         } catch (IllegalStateException expected) {
@@ -466,7 +466,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_replaceExtension_with_interface() {
+    void test_replaceExtension_with_interface() {
         try {
             getExtensionLoader(SimpleExt.class).replaceExtension("impl1", SimpleExt.class);
         } catch (IllegalStateException expected) {
@@ -477,7 +477,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_replaceExtension() {
+    void test_replaceExtension() {
         try {
             getExtensionLoader(AddExt1.class).getExtension("Manual2");
             fail();
@@ -501,7 +501,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_replaceExtension_Adaptive() {
+    void test_replaceExtension_Adaptive() {
         ExtensionLoader<AddExt3> loader = getExtensionLoader(AddExt3.class);
 
         AddExt3 adaptive = loader.getAdaptiveExtension();
@@ -514,7 +514,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_replaceExtension_ExceptionWhenNotExistedExtension() {
+    void test_replaceExtension_ExceptionWhenNotExistedExtension() {
         AddExt1 ext = getExtensionLoader(AddExt1.class).getExtension("impl1");
 
         try {
@@ -526,7 +526,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_replaceExtension_Adaptive_ExceptionWhenNotExistedExtension() {
+    void test_replaceExtension_Adaptive_ExceptionWhenNotExistedExtension() {
         ExtensionLoader<AddExt4> loader = getExtensionLoader(AddExt4.class);
 
         try {
@@ -538,7 +538,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void test_InitError() {
+    void test_InitError() {
         ExtensionLoader<InitErrorExt> loader = getExtensionLoader(InitErrorExt.class);
 
         loader.getExtension("ok");
@@ -553,7 +553,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testLoadActivateExtension() {
+    void testLoadActivateExtension() {
         // test default
         URL url = URL.valueOf("test://localhost/test");
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
@@ -596,7 +596,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testLoadDefaultActivateExtension() {
+    void testLoadDefaultActivateExtension() {
         // test default
         URL url = URL.valueOf("test://localhost/test?ext=order1,default");
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
@@ -621,7 +621,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testInjectExtension() {
+    void testInjectExtension() {
         // register bean for test ScopeBeanExtensionInjector
         DemoImpl demoBean = new DemoImpl();
         ApplicationModel.defaultModel().getBeanFactory().registerBean(demoBean);
@@ -647,7 +647,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testGetOrDefaultExtension() {
+    void testGetOrDefaultExtension() {
         ExtensionLoader<InjectExt> loader = getExtensionLoader(InjectExt.class);
         InjectExt injectExt = loader.getOrDefaultExtension("non-exists");
         assertEquals(InjectExtImpl.class, injectExt.getClass());
@@ -655,7 +655,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testGetSupported() {
+    void testGetSupported() {
         ExtensionLoader<InjectExt> loader = getExtensionLoader(InjectExt.class);
         assertEquals(1, loader.getSupportedExtensions().size());
         assertEquals(Collections.singleton("injection"), loader.getSupportedExtensions());
@@ -665,7 +665,7 @@ public class ExtensionLoaderTest {
      * @since 2.7.7
      */
     @Test
-    public void testOverridden() {
+    void testOverridden() {
         ExtensionLoader<Converter> loader = getExtensionLoader(Converter.class);
 
         Converter converter = loader.getExtension("string-to-boolean");
@@ -691,7 +691,7 @@ public class ExtensionLoaderTest {
      * @since 2.7.7
      */
     @Test
-    public void testGetLoadingStrategies() {
+    void testGetLoadingStrategies() {
         List<LoadingStrategy> strategies = getLoadingStrategies();
 
         assertEquals(4, strategies.size());
@@ -717,7 +717,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testDuplicatedImplWithoutOverriddenStrategy() {
+    void testDuplicatedImplWithoutOverriddenStrategy() {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(false),
                 new DubboInternalLoadingStrategyTest(false));
@@ -735,7 +735,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testDuplicatedImplWithOverriddenStrategy() {
+    void testDuplicatedImplWithOverriddenStrategy() {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(true),
                 new DubboInternalLoadingStrategyTest(true));
@@ -747,7 +747,7 @@ public class ExtensionLoaderTest {
     }
 
     @Test
-    public void testLoadByDubboInternalSPI() {
+    void testLoadByDubboInternalSPI() {
         ExtensionLoader<SPI1> extensionLoader = getExtensionLoader(SPI1.class);
         SPI1 spi1 = extensionLoader.getExtension("1",true);
         assertNotNull(spi1);

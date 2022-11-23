@@ -48,7 +48,7 @@ import static org.apache.dubbo.config.integration.Constants.MULTIPLE_CONFIG_CENT
 /**
  * The testcases are only for checking the process of exporting provider using service-discovery-registry protocol.
  */
-public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements IntegrationTest {
+class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest.class);
 

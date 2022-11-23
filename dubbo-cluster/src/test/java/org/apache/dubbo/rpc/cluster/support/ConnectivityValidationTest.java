@@ -46,7 +46,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("all")
-public class ConnectivityValidationTest {
+class ConnectivityValidationTest {
     private Invoker invoker1;
     private Invoker invoker2;
     private Invoker invoker3;
@@ -134,7 +134,7 @@ public class ConnectivityValidationTest {
     }
 
     @Test
-    public void testBasic() throws InterruptedException {
+    void testBasic() throws InterruptedException {
         Invocation invocation = new RpcInvocation();
         LoadBalance loadBalance = new RandomLoadBalance();
 
@@ -181,7 +181,7 @@ public class ConnectivityValidationTest {
     }
 
     @Test
-    public void testRetry() throws InterruptedException {
+    void testRetry() throws InterruptedException {
         Invocation invocation = new RpcInvocation();
         LoadBalance loadBalance = new RandomLoadBalance();
 
@@ -204,7 +204,7 @@ public class ConnectivityValidationTest {
     }
 
     @Test
-    public void testRandomSelect() throws InterruptedException {
+    void testRandomSelect() throws InterruptedException {
         Invocation invocation = new RpcInvocation();
         LoadBalance loadBalance = new RandomLoadBalance();
 

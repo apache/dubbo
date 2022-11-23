@@ -51,7 +51,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-public class MethodConfigTest {
+class MethodConfigTest {
     private static final String METHOD_NAME = "sayHello";
     private static final int TIMEOUT = 1300;
     private static final int RETRIES = 4;
@@ -91,7 +91,7 @@ public class MethodConfigTest {
 
     //TODO remove this test
     @Test
-    public void testStaticConstructor() throws NoSuchFieldException {
+    void testStaticConstructor() throws NoSuchFieldException {
         Method[] methods = this.getClass().getDeclaredField("testField").getAnnotation(Reference.class).methods();
         List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
         MethodConfig methodConfig = methodConfigs.get(0);
@@ -119,7 +119,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testName() throws Exception {
+    void testName() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setName("hello");
         assertThat(method.getName(), equalTo("hello"));
@@ -129,42 +129,42 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testStat() throws Exception {
+    void testStat() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setStat(10);
         assertThat(method.getStat(), equalTo(10));
     }
 
     @Test
-    public void testRetry() throws Exception {
+    void testRetry() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setRetry(true);
         assertThat(method.isRetry(), is(true));
     }
 
     @Test
-    public void testReliable() throws Exception {
+    void testReliable() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setReliable(true);
         assertThat(method.isReliable(), is(true));
     }
 
     @Test
-    public void testExecutes() throws Exception {
+    void testExecutes() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setExecutes(10);
         assertThat(method.getExecutes(), equalTo(10));
     }
 
     @Test
-    public void testDeprecated() throws Exception {
+    void testDeprecated() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setDeprecated(true);
         assertThat(method.getDeprecated(), is(true));
     }
 
     @Test
-    public void testArguments() throws Exception {
+    void testArguments() throws Exception {
         MethodConfig method = new MethodConfig();
         ArgumentConfig argument = new ArgumentConfig();
         method.setArguments(Collections.singletonList(argument));
@@ -173,7 +173,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testSticky() throws Exception {
+    void testSticky() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setSticky(true);
         assertThat(method.getSticky(), is(true));
@@ -193,7 +193,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOnReturnMethod() throws Exception {
+    void testOnReturnMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOnreturnMethod("on-return-method");
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
@@ -219,7 +219,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOnThrowMethod() throws Exception {
+    void testOnThrowMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOnthrowMethod("on-throw-method");
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
@@ -245,7 +245,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOnInvokeMethod() throws Exception {
+    void testOnInvokeMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
@@ -258,14 +258,14 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testReturn() throws Exception {
+    void testReturn() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));
     }
 
     @Test
-    public void testOverrideMethodConfigOfReference() {
+    void testOverrideMethodConfigOfReference() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
@@ -297,7 +297,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testAddMethodConfigOfReference() {
+    void testAddMethodConfigOfReference() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
@@ -331,7 +331,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOverrideMethodConfigOfService() {
+    void testOverrideMethodConfigOfService() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
@@ -367,7 +367,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testAddMethodConfigOfService() {
+    void testAddMethodConfigOfService() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
@@ -411,7 +411,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testVerifyMethodConfigOfService() {
+    void testVerifyMethodConfigOfService() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.service."+ interfaceName +".sayHello.timeout", "1234");
@@ -443,7 +443,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testIgnoreInvalidMethodConfigOfService() {
+    void testIgnoreInvalidMethodConfigOfService() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.service."+ interfaceName +".sayHello.timeout", "1234");
@@ -471,7 +471,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         MethodConfig methodConfig = new MethodConfig();
         Map<String, String> metaData = methodConfig.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);

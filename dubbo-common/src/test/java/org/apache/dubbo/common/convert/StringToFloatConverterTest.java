@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToFloatConverterTest {
+class StringToFloatConverterTest {
 
     private StringToFloatConverter converter;
 
@@ -40,12 +40,12 @@ public class StringToFloatConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, Float.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertEquals(Float.valueOf("1.0"), converter.convert("1.0"));
         assertNull(converter.convert(null));
         assertThrows(NumberFormatException.class, () -> {

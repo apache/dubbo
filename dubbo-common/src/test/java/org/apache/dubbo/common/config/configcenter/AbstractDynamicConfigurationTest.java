@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  *
  * @since 2.7.5
  */
-public class AbstractDynamicConfigurationTest {
+class AbstractDynamicConfigurationTest {
 
     private AbstractDynamicConfiguration configuration;
 
@@ -69,7 +69,7 @@ public class AbstractDynamicConfigurationTest {
     }
 
     @Test
-    public void testConstants() {
+    void testConstants() {
         assertEquals("dubbo.config-center.", PARAM_NAME_PREFIX);
         assertEquals("dubbo.config-center.workers", DEFAULT_THREAD_POOL_PREFIX);
         assertEquals("dubbo.config-center.thread-pool.prefix", THREAD_POOL_PREFIX_PARAM_NAME);
@@ -84,7 +84,7 @@ public class AbstractDynamicConfigurationTest {
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         URL url = URL.valueOf("default://")
                 .addParameter(THREAD_POOL_PREFIX_PARAM_NAME, "test")
                 .addParameter(THREAD_POOL_SIZE_PARAM_NAME, 10)
@@ -121,7 +121,7 @@ public class AbstractDynamicConfigurationTest {
     }
 
     @Test
-    public void testPublishConfig() {
+    void testPublishConfig() {
         assertFalse(configuration.publishConfig(null, null));
         assertFalse(configuration.publishConfig(null, null, null));
     }
@@ -132,36 +132,36 @@ public class AbstractDynamicConfigurationTest {
 //    }
 
     @Test
-    public void testGetConfig() {
+    void testGetConfig() {
         assertNull(configuration.getConfig(null, null));
         assertNull(configuration.getConfig(null, null, 200));
     }
 
     @Test
-    public void testGetInternalProperty() {
+    void testGetInternalProperty() {
         assertNull(configuration.getInternalProperty(null));
     }
 
     @Test
-    public void testGetProperties() {
+    void testGetProperties() {
         assertNull(configuration.getProperties(null, null));
         assertNull(configuration.getProperties(null, null, 100L));
     }
 
     @Test
-    public void testAddListener() {
+    void testAddListener() {
         configuration.addListener(null, null);
         configuration.addListener(null, null, null);
     }
 
     @Test
-    public void testRemoveListener() {
+    void testRemoveListener() {
         configuration.removeListener(null, null);
         configuration.removeListener(null, null, null);
     }
 
     @Test
-    public void testClose() throws Exception {
+    void testClose() throws Exception {
         configuration.close();
     }
 
@@ -172,7 +172,7 @@ public class AbstractDynamicConfigurationTest {
      * @since 2.7.8
      */
     @Test
-    public void testGetGroupAndGetDefaultGroup() {
+    void testGetGroupAndGetDefaultGroup() {
         assertEquals(configuration.getGroup(), configuration.getDefaultGroup());
         assertEquals(DEFAULT_GROUP, configuration.getDefaultGroup());
     }
@@ -184,7 +184,7 @@ public class AbstractDynamicConfigurationTest {
      * @since 2.7.8
      */
     @Test
-    public void testGetTimeoutAndGetDefaultTimeout() {
+    void testGetTimeoutAndGetDefaultTimeout() {
         assertEquals(configuration.getTimeout(), configuration.getDefaultTimeout());
         assertEquals(-1L, configuration.getDefaultTimeout());
     }
@@ -196,7 +196,7 @@ public class AbstractDynamicConfigurationTest {
      * @since 2.7.8
      */
     @Test
-    public void testRemoveConfigAndDoRemoveConfig() throws Exception {
+    void testRemoveConfigAndDoRemoveConfig() throws Exception {
         String key = null;
         String group = null;
         assertEquals(configuration.removeConfig(key, group), configuration.doRemoveConfig(key, group));

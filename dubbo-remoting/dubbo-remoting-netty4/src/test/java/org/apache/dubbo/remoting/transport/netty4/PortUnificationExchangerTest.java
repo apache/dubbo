@@ -24,10 +24,10 @@ import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PortUnificationExchangerTest {
+class PortUnificationExchangerTest {
 
     @Test
-    public void test() {
+    void test() {
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
         PortUnificationExchanger.bind(url, new DefaultPuHandler());

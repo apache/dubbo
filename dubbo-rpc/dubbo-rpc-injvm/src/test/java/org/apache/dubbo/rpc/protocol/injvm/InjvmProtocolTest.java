@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <code>ProxiesTest</code>
  */
 
-public class InjvmProtocolTest {
+class InjvmProtocolTest {
 
 
     private final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -66,7 +66,7 @@ public class InjvmProtocolTest {
     }
 
     @Test
-    public void testLocalProtocol() throws Exception {
+    void testLocalProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(INTERFACE_KEY, DemoService.class.getName()));
         assertTrue(invoker.isAvailable());
@@ -82,7 +82,7 @@ public class InjvmProtocolTest {
     }
 
     @Test
-    public void testLocalProtocolWithToken() throws Exception {
+    void testLocalProtocolWithToken() throws Exception {
         DemoService service = new DemoServiceImpl();
         Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService?token=abc").addParameter(INTERFACE_KEY, DemoService.class.getName()));
         assertTrue(invoker.isAvailable());
@@ -93,7 +93,7 @@ public class InjvmProtocolTest {
     }
 
     @Test
-    public void testIsInjvmRefer() throws Exception {
+    void testIsInjvmRefer() throws Exception {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
@@ -124,7 +124,7 @@ public class InjvmProtocolTest {
     }
 
     @Test
-    public void testLocalProtocolAsync() throws Exception {
+    void testLocalProtocolAsync() throws Exception {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("injvm://127.0.0.1/TestService")
             .addParameter(ASYNC_KEY, true)
