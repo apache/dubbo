@@ -538,7 +538,7 @@
                         <configuration>
                             <useSystemClassLoader>true</useSystemClassLoader>
                             <forkMode>once</forkMode>
-                            <argLine>${argline}
+                            <argLine>${argline} ${jacocoArgLine}
                             </argLine>
                             <systemProperties>
                                 <!-- common shared -->
