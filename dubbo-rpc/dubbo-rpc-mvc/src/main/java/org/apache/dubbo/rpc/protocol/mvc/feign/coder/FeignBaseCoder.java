@@ -23,6 +23,7 @@ public class FeignBaseCoder {
 
     // TODO add  WebMvcConfigurationSupport , fastjson , extend
     public static List<HttpMessageConverter> getHttpMessageConverters() {
+        List<HttpMessageConverter> converters = new ArrayList();
 
         return new ArrayList<>(MvcConfigurationSupport.getDefaultHttpMessageConverters());
 //        List<HttpMessageConverter> converters = new ArrayList();
