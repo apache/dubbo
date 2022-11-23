@@ -19,7 +19,7 @@ public class DubboMetrics implements MeterBinder {
     protected static volatile Set<Gauge.Builder> gaugeBuilder = new HashSet<>();
     private ScheduledExecutorService collectorSyncJobExecutor;
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
-    private static final int DEFAULT_SCHEDULE_PERIOD = 30;
+    private static final int DEFAULT_SCHEDULE_PERIOD = 5;
 
     @Override
     public void bindTo(MeterRegistry registry) {
