@@ -44,7 +44,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
  * <p>
  * mvn clean test -Dtest=*PerformanceServerTest -Dport=9911
  */
-public class PerformanceServerTest  {
+class PerformanceServerTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceServerTest.class);
     private static ExchangeServer server = null;
@@ -148,7 +148,7 @@ public class PerformanceServerTest  {
     }
 
     @Test
-    public void testServer() throws Exception {
+    void testServer() throws Exception {
         // Read port from property
         if (PerformanceUtils.getProperty("port", null) == null) {
             logger.warn("Please set -Dport=9911");

@@ -38,13 +38,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
  * The testcases are only for checking the process of exporting metadata service.
  */
-public class MultipleRegistryCenterExportMetadataIntegrationTest implements IntegrationTest {
+class MultipleRegistryCenterExportMetadataIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterExportMetadataIntegrationTest.class);
 
@@ -154,32 +156,16 @@ public class MultipleRegistryCenterExportMetadataIntegrationTest implements Inte
         //  registering service-discovery-registry.
         //  So, all testcases may need to be modified.
         // There are two exported exporters
-        // 1. Metadata Service exporter with dubbo protocol
+        // 1. Metadata Service exporter with Injvm protocol
         // 2. MultipleRegistryCenterExportMetadataService exporter with Injvm protocol
         Assertions.assertEquals(exporterListener.getExportedExporters().size(), 2);
-        // Obtain MultipleRegistryCenterExportMetadataService exporter with Injvm protocol
-        Exporter<?> injvmExporter = (Exporter<?>) exporterListener.getExportedExporters()
+        List<Exporter<?>> injvmExporters = exporterListener.getExportedExporters()
             .stream()
             .filter(
                 exporter -> PROTOCOL_NAME.equalsIgnoreCase(exporter.getInvoker().getUrl().getProtocol())
-            )
-            .findFirst()
-            .get();
-        // Obtain Metadata Service exporter with dubbo protocol
-        Exporter<?> metadataExporter = (Exporter<?>) exporterListener.getExportedExporters()
-            .stream()
-            .filter(
-                exporter -> !PROTOCOL_NAME.equalsIgnoreCase(exporter.getInvoker().getUrl().getProtocol())
-            )
-            .filter(
-                exporter -> exporter.getInvoker().getInterface().equals(MetadataService.class)
-            )
-            .findFirst()
-            .get();
-        // Make sure injvmExporter is not null
-        Assertions.assertNotNull(injvmExporter);
-        // Make sure metadataExporter is not null
-        Assertions.assertNotNull(metadataExporter);
+            ).collect(Collectors.toList());
+        // Make sure there two injvmExporters
+        Assertions.assertEquals(injvmExporters.size(), 2);
     }
 
     @AfterEach

@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.mockito.Mockito.when;
 
-public class TagStateRouterTest {
+class TagStateRouterTest {
     private URL url;
     private ModuleModel originModel;
     private ModuleModel moduleModel;
@@ -70,7 +71,7 @@ public class TagStateRouterTest {
     }
 
     @Test
-    public void testTagRoutePickInvokers() {
+    void testTagRoutePickInvokers() {
         StateRouter router = new TagStateRouterFactory().getRouter(TagRouterRule.class, url);
 
         List<Invoker<String>> originInvokers = new ArrayList<>();
@@ -102,7 +103,7 @@ public class TagStateRouterTest {
      * </pre>
      */
     @Test
-    public void tagRouterRuleParseTest() {
+    void tagRouterRuleParseTest() {
         String tagRouterRuleConfig = "---\n" +
             "force: false\n" +
             "runtime: true\n" +

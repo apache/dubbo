@@ -36,7 +36,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class DubboMonitorFactoryTest {
+class DubboMonitorFactoryTest {
     private DubboMonitorFactory dubboMonitorFactory;
     @Mock
     private ProxyFactory proxyFactory;
@@ -50,7 +50,7 @@ public class DubboMonitorFactoryTest {
     }
 
     @Test
-    public void testCreateMonitor() {
+    void testCreateMonitor() {
         URL urlWithoutPath = URL.valueOf("http://10.10.10.11");
         Monitor monitor = dubboMonitorFactory.createMonitor(urlWithoutPath);
         assertThat(monitor, not(nullValue()));

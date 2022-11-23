@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 /**
  * test for snappy
  */
-public class SnappyTest {
+class SnappyTest {
 
     private static final String TEST_STR;
 

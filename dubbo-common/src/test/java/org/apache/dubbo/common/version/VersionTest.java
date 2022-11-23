@@ -22,15 +22,15 @@ import org.apache.dubbo.common.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class VersionTest {
+class VersionTest {
 
     @Test
-    public void testGetProtocolVersion() {
+    void testGetProtocolVersion() {
         Assertions.assertEquals(Version.getProtocolVersion(), Version.DEFAULT_DUBBO_PROTOCOL_VERSION);
     }
 
     @Test
-    public void testSupportResponseAttachment() {
+    void testSupportResponseAttachment() {
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.2"));
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.3"));
         Assertions.assertTrue(Version.isSupportResponseAttachment("2.0.99"));
@@ -47,7 +47,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testGetIntVersion() {
+    void testGetIntVersion() {
         Assertions.assertEquals(2060100, Version.getIntVersion("2.6.1"));
         Assertions.assertEquals(2060101, Version.getIntVersion("2.6.1.1"));
         Assertions.assertEquals(2070001, Version.getIntVersion("2.7.0.1"));
@@ -60,7 +60,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testCompare() {
+    void testCompare() {
         Assertions.assertEquals(0, Version.compare("3.0.0", "3.0.0"));
         Assertions.assertEquals(0, Version.compare("3.0.0-SNAPSHOT", "3.0.0"));
         Assertions.assertEquals(1, Version.compare("3.0.0.1", "3.0.0"));
@@ -71,7 +71,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testIsFramework270OrHigher() {
+    void testIsFramework270OrHigher() {
         Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0"));
         Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0.1"));
         Assertions.assertTrue(Version.isRelease270OrHigher("2.7.0.2"));
@@ -81,7 +81,7 @@ public class VersionTest {
     }
 
     @Test
-    public void testIsFramework263OrHigher() {
+    void testIsFramework263OrHigher() {
         Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.7.0.1"));
         Assertions.assertTrue(Version.isRelease263OrHigher("2.6.4"));

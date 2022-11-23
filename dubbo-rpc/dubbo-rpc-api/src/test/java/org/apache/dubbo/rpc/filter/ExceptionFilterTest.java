@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invoker;
@@ -30,8 +31,8 @@ import org.apache.dubbo.rpc.support.LocalException;
 import com.alibaba.com.caucho.hessian.HessianException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -41,12 +42,13 @@ import static org.mockito.Mockito.when;
 /**
  * ExceptionFilterTest
  */
-public class ExceptionFilterTest {
+class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testRpcException() {
-        Logger logger = mock(Logger.class);
+    void testRpcException() {
+        Logger failLogger = mock(Logger.class);
+        FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
         RpcContext.getServiceContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
 
@@ -60,19 +62,19 @@ public class ExceptionFilterTest {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
-            exceptionFilter.setLogger(logger);
+            exceptionFilter.setLogger(failsafeLogger);
             exceptionFilter.onError(e, invoker, invocation);
         }
 
-        Mockito.verify(logger).error(eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
-                + DemoService.class.getName() + ", method: sayHello, exception: "
-                + RpcException.class.getName() + ": TestRpcException"), eq(exception));
+        failsafeLogger.error(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
+            + DemoService.class.getName() + ", method: sayHello, exception: "
+            + RpcException.class.getName() + ": TestRpcException"), eq(exception));
         RpcContext.removeContext();
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testJavaException() {
+    void testJavaException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
@@ -92,7 +94,7 @@ public class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testRuntimeException() {
+    void testRuntimeException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
@@ -112,7 +114,7 @@ public class ExceptionFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testConvertToRunTimeException() throws Exception {
+    void testConvertToRunTimeException() throws Exception {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
         RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});

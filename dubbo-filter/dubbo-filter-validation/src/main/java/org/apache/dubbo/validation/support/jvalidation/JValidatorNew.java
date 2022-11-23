@@ -18,7 +18,7 @@ package org.apache.dubbo.validation.support.jvalidation;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.ClassGenerator;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.validation.MethodValidated;
@@ -67,6 +67,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
+
 /**
  * Implementation of JValidationNew. JValidationNew is invoked if configuration validation attribute value is 'jvalidationNew'.
  * <pre>
@@ -75,7 +77,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class JValidatorNew implements Validator {
 
-    private static final Logger logger = LoggerFactory.getLogger(JValidatorNew.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(JValidatorNew.class);
 
     private final Class<?> clazz;
 
@@ -116,7 +118,7 @@ public class JValidatorNew implements Validator {
             }
             return parameterBean;
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", e.getMessage(), e);
             return null;
         }
     }

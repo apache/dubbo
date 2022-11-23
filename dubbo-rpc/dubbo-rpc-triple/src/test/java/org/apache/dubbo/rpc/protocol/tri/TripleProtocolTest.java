@@ -43,10 +43,10 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.rpc.protocol.tri.support.IGreeter.SERVER_MSG;
 
 
-public class TripleProtocolTest {
+class TripleProtocolTest {
 
     @Test
-    public void testDemoProtocol() throws Exception {
+    void testDemoProtocol() throws Exception {
         IGreeter serviceImpl = new IGreeterImpl();
 
         int availablePort = NetUtils.getAvailablePort();

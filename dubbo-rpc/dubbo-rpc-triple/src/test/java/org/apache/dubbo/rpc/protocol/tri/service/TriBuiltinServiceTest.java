@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link TriBuiltinService}
  */
-public class TriBuiltinServiceTest {
+class TriBuiltinServiceTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
         String serviceName = DubboHealthTriple.SERVICE_NAME;

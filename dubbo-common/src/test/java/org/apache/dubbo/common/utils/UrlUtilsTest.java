@@ -37,12 +37,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UrlUtilsTest {
+class UrlUtilsTest {
 
     String localAddress = "127.0.0.1";
 
     @Test
-    public void testAddressNull() {
+    void testAddressNull() {
         String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
         try {
             UrlUtils.parseURL(null, null);
@@ -52,7 +52,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testParseUrl() {
+    void testParseUrl() {
         String address = "remote://root:alibaba@127.0.0.1:9090/dubbo.test.api";
         URL url = UrlUtils.parseURL(address, null);
         assertEquals(localAddress + ":9090", url.getAddress());
@@ -64,13 +64,13 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testParseURLWithSpecial() {
+    void testParseURLWithSpecial() {
         String address = "127.0.0.1:2181?backup=127.0.0.1:2182,127.0.0.1:2183";
         assertEquals("dubbo://" + address, UrlUtils.parseURL(address, null).toString());
     }
 
     @Test
-    public void testDefaultUrl() {
+    void testDefaultUrl() {
         String address = "127.0.0.1";
         URL url = UrlUtils.parseURL(address, null);
         assertEquals(localAddress + ":9090", url.getAddress());
@@ -82,7 +82,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testParseFromParameter() {
+    void testParseFromParameter() {
         String address = "127.0.0.1";
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("username", "root");
@@ -104,7 +104,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testParseUrl2() {
+    void testParseUrl2() {
         String address = "192.168.0.1";
         String backupAddress1 = "192.168.0.2";
         String backupAddress2 = "192.168.0.3";
@@ -124,7 +124,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testParseUrls() {
+    void testParseUrls() {
         String addresses = "192.168.0.1|192.168.0.2|192.168.0.3";
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("username", "root");
@@ -137,7 +137,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testParseUrlsAddressNull() {
+    void testParseUrlsAddressNull() {
         String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
         try {
             UrlUtils.parseURLs(null, null);
@@ -147,7 +147,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testConvertRegister() {
+    void testConvertRegister() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         register.put(key, null);
@@ -156,7 +156,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testConvertRegister2() {
+    void testConvertRegister2() {
         String key = "dubbo.test.api.HelloService";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
@@ -169,7 +169,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testSubscribe() {
+    void testSubscribe() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, String> subscribe = new HashMap<String, String>();
         subscribe.put(key, null);
@@ -178,7 +178,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testSubscribe2() {
+    void testSubscribe2() {
         String key = "dubbo.test.api.HelloService";
         Map<String, String> subscribe = new HashMap<String, String>();
         subscribe.put(key, "version=1.0.0&group=test&dubbo.version=2.0.0");
@@ -187,7 +187,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertRegister() {
+    void testRevertRegister() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
@@ -201,7 +201,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertRegister2() {
+    void testRevertRegister2() {
         String key = "dubbo.test.api.HelloService";
         Map<String, Map<String, String>> register = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
@@ -215,7 +215,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertSubscribe() {
+    void testRevertSubscribe() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, String> subscribe = new HashMap<String, String>();
         subscribe.put(key, null);
@@ -226,7 +226,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertSubscribe2() {
+    void testRevertSubscribe2() {
         String key = "dubbo.test.api.HelloService";
         Map<String, String> subscribe = new HashMap<String, String>();
         subscribe.put(key, null);
@@ -235,7 +235,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertNotify() {
+    void testRevertNotify() {
         String key = "dubbo.test.api.HelloService";
         Map<String, Map<String, String>> notify = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
@@ -249,7 +249,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertNotify2() {
+    void testRevertNotify2() {
         String key = "perf/dubbo.test.api.HelloService:1.0.0";
         Map<String, Map<String, String>> notify = new HashMap<String, Map<String, String>>();
         Map<String, String> service = new HashMap<String, String>();
@@ -264,7 +264,7 @@ public class UrlUtilsTest {
 
     // backward compatibility for version 2.0.0
     @Test
-    public void testRevertForbid() {
+    void testRevertForbid() {
         String service = "dubbo.test.api.HelloService";
         List<String> forbid = new ArrayList<String>();
         forbid.add(service);
@@ -277,13 +277,13 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testRevertForbid2() {
+    void testRevertForbid2() {
         List<String> newForbid = UrlUtils.revertForbid(null, null);
         assertNull(newForbid);
     }
 
     @Test
-    public void testRevertForbid3() {
+    void testRevertForbid3() {
         String service1 = "dubbo.test.api.HelloService:1.0.0";
         String service2 = "dubbo.test.api.HelloService:2.0.0";
         List<String> forbid = new ArrayList<String>();
@@ -294,42 +294,42 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testIsMatch() {
+    void testIsMatch() {
         URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=1.0.0&group=test");
         URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
-    public void testIsMatch2() {
+    void testIsMatch2() {
         URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=2.0.0&group=test");
         URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertFalse(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
-    public void testIsMatch3() {
+    void testIsMatch3() {
         URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=1.0.0&group=aa");
         URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertFalse(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
-    public void testIsMatch4() {
+    void testIsMatch4() {
         URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=1.0.0&group=*");
         URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
-    public void testIsMatch5() {
+    void testIsMatch5() {
         URL consumerUrl = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?version=*&group=test");
         URL providerUrl = URL.valueOf("http://127.0.0.1:8080/com.xxx.XxxService?version=1.0.0&group=test");
         assertTrue(UrlUtils.isMatch(consumerUrl, providerUrl));
     }
 
     @Test
-    public void testIsItemMatch() throws Exception {
+    void testIsItemMatch() throws Exception {
         assertTrue(UrlUtils.isItemMatch(null, null));
         assertTrue(!UrlUtils.isItemMatch("1", null));
         assertTrue(!UrlUtils.isItemMatch(null, "1"));
@@ -341,7 +341,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testIsServiceKeyMatch() throws Exception {
+    void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.1");
         URL pattern = url.addParameter(GROUP_KEY, "test")
                 .addParameter(INTERFACE_KEY, "test")
@@ -357,13 +357,13 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testGetEmptyUrl() throws Exception {
+    void testGetEmptyUrl() throws Exception {
         URL url = UrlUtils.getEmptyUrl("dubbo/a.b.c.Foo:1.0.0", "test");
         assertThat(url.toFullString(), equalTo("empty://0.0.0.0/a.b.c.Foo?category=test&group=dubbo&version=1.0.0"));
     }
 
     @Test
-    public void testIsMatchGlobPattern() throws Exception {
+    void testIsMatchGlobPattern() throws Exception {
         assertTrue(UrlUtils.isMatchGlobPattern("*", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("", null));
         assertFalse(UrlUtils.isMatchGlobPattern("", "value"));
@@ -375,7 +375,7 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void testIsMatchUrlWithDefaultPrefix() {
+    void testIsMatchUrlWithDefaultPrefix() {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?default.version=1.0.0&default.group=test");
         assertEquals("1.0.0", url.getVersion());
         assertEquals("1.0.0", url.getParameter("default.version"));

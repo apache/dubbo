@@ -28,9 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JValidatorTest {
+class JValidatorTest {
     @Test
-    public void testItWithNonExistMethod() throws Exception {
+    void testItWithNonExistMethod() throws Exception {
         Assertions.assertThrows(NoSuchMethodException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
@@ -39,14 +39,14 @@ public class JValidatorTest {
     }
 
     @Test
-    public void testItWithExistMethod() throws Exception {
+    void testItWithExistMethod() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         jValidator.validate("someMethod1", new Class<?>[]{String.class}, new Object[]{"anything"});
     }
 
     @Test
-    public void testItWhenItViolatedConstraint() throws Exception {
+    void testItWhenItViolatedConstraint() throws Exception {
         Assertions.assertThrows(ValidationException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
@@ -55,28 +55,28 @@ public class JValidatorTest {
     }
 
     @Test
-    public void testItWhenItMeetsConstraint() throws Exception {
+    void testItWhenItMeetsConstraint() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter("NotBeNull")});
     }
 
     @Test
-    public void testItWithArrayArg() throws Exception {
+    void testItWithArrayArg() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         jValidator.validate("someMethod3", new Class<?>[]{ValidationParameter[].class}, new Object[]{new ValidationParameter[]{new ValidationParameter("parameter")}});
     }
 
     @Test
-    public void testItWithCollectionArg() throws Exception {
+    void testItWithCollectionArg() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         jValidator.validate("someMethod4", new Class<?>[]{List.class}, new Object[]{Arrays.asList("parameter")});
     }
 
     @Test
-    public void testItWithMapArg() throws Exception {
+    void testItWithMapArg() throws Exception {
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
         JValidator jValidator = new JValidator(url);
         Map<String, String> map = new HashMap<>();

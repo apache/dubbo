@@ -61,6 +61,8 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
@@ -229,14 +231,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         this.originalUrls = invokerUrls;
 
         if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            logger.warn("Received url with EMPTY protocol, will clear all available addresses.");
+            logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received url with EMPTY protocol, will clear all available addresses.");
             this.forbidden = true; // Forbid to access
             routerChain.setInvokers(BitList.emptyList());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
             if (CollectionUtils.isEmpty(invokerUrls)) {
-                logger.warn("Received empty url list, will ignore for protection purpose.");
+                logger.warn(PROTOCOL_UNSUPPORTED, "", "", "Received empty url list, will ignore for protection purpose.");
                 return;
             }
 
@@ -253,7 +255,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-                logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+                logger.error(PROTOCOL_UNSUPPORTED, "", "", "Unsupported protocol.", new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
@@ -266,7 +268,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 try {
                     destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
                 } catch (Exception e) {
-                    logger.warn("destroyUnusedInvokers error. ", e);
+                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "destroyUnusedInvokers error. ", e);
                 }
             }
         }
@@ -300,9 +302,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
                 logger.error(PROTOCOL_UNSUPPORTED, "protocol extension does not installed", "", "Unsupported protocol.",
                     new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
-                    " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
-                    " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                        " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
+                        " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
+                        getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
 
                 continue;
             }
@@ -351,7 +353,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                             }
                         }
                     } catch (Throwable t) {
-                        logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + instanceAddressURL + ")" + t.getMessage(), t);
+                        logger.error(PROTOCOL_FAILED_REFER_INVOKER, "", "", "Failed to refer invoker for interface:" + serviceType + ",url:(" + instanceAddressURL + ")" + t.getMessage(), t);
                     }
                     if (invoker != null) { // Put new invoker in cache
                         newUrlInvokerMap.put(protocolServiceKeyWithAddress, invoker);
@@ -423,9 +425,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroyAll();
+                    invoker.destroy();
                 } catch (Throwable t) {
-                    logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
+                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
             }
             localUrlInvokerMap.clear();
@@ -456,12 +458,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = entry.getValue();
             if (invoker != null) {
                 try {
-                    invoker.destroyAll();
+                    invoker.destroy();
                     if (logger.isDebugEnabled()) {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
                 } catch (Exception e) {
-                    logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
+                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", "destroy invoker[" + invoker.getUrl() + "]failed." + e.getMessage(), e);
                 }
             }
         }

@@ -30,10 +30,10 @@ import java.util.concurrent.Executors;
 /**
  * {@link ThreadPoolStatusChecker}
  */
-public class ThreadPoolStatusCheckerTest {
+class ThreadPoolStatusCheckerTest {
 
     @Test
-    public void test() {
+    void test() {
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         ExecutorService executorService1 = Executors.newFixedThreadPool(1);
         ExecutorService executorService2 = Executors.newFixedThreadPool(10);

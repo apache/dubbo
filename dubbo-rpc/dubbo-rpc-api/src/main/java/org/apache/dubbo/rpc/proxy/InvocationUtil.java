@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
@@ -29,9 +29,10 @@ import org.apache.dubbo.rpc.RpcServiceContext;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_REQUEST;
 
 public class InvocationUtil {
-    private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(InvokerInvocationHandler.class);
 
     public static Object invoke(Invoker<?> invoker, RpcInvocation rpcInvocation) throws Throwable {
         URL url = invoker.getUrl();
@@ -71,7 +72,7 @@ public class InvocationUtil {
                         attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
                     });
 
-                    logger.warn(String.format(
+                    logger.warn(PROXY_TIMEOUT_REQUEST, "", "", String.format(
                         "[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" + "invocation context:\n%s" + "thread info: \n%s",
                         rpcInvocation.getProtocolServiceKey(),
                         rpcInvocation.getMethodName(),

@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class WrapperTest {
+class WrapperTest {
     @Test
-    public void testMain() throws Exception {
+    void testMain() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
         String[] ns = w.getDeclaredMethodNames();
         assertEquals(ns.length, 5);
@@ -52,7 +52,7 @@ public class WrapperTest {
 
     // bug: DUBBO-132
     @Test
-    public void test_unwantedArgument() throws Exception {
+    void test_unwantedArgument() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
         Object obj = new Impl1();
         try {
@@ -65,12 +65,12 @@ public class WrapperTest {
 
     //bug: DUBBO-425
     @Test
-    public void test_makeEmptyClass() throws Exception {
+    void test_makeEmptyClass() throws Exception {
         Wrapper.getWrapper(EmptyServiceImpl.class);
     }
 
     @Test
-    public void testHasMethod() throws Exception {
+    void testHasMethod() throws Exception {
         Wrapper w = Wrapper.getWrapper(I1.class);
         Assertions.assertTrue(w.hasMethod("setName"));
         Assertions.assertTrue(w.hasMethod("hello"));
@@ -81,7 +81,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testWrapperObject() throws Exception {
+    void testWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
         Assertions.assertEquals(4, w.getMethodNames().length);
         Assertions.assertEquals(4, w.getDeclaredMethodNames().length);
@@ -91,7 +91,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testGetPropertyValue() throws Exception {
+    void testGetPropertyValue() throws Exception {
         Assertions.assertThrows(NoSuchPropertyException.class, () -> {
             Wrapper w = Wrapper.getWrapper(Object.class);
             w.getPropertyValue(null, null);
@@ -99,7 +99,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testSetPropertyValue() throws Exception {
+    void testSetPropertyValue() throws Exception {
         Assertions.assertThrows(NoSuchPropertyException.class, () -> {
             Wrapper w = Wrapper.getWrapper(Object.class);
             w.setPropertyValue(null, null, null);
@@ -107,14 +107,14 @@ public class WrapperTest {
     }
 
     @Test
-    public void testWrapPrimitive() throws Exception {
+    void testWrapPrimitive() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             Wrapper.getWrapper(Byte.TYPE);
         });
     }
     
     @Test
-    public void testInvokeWrapperObject() throws Exception {
+    void testInvokeWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
         Object instance = new Object();
         Assertions.assertEquals(instance.getClass(), w.invokeMethod(instance, "getClass", null, null));
@@ -126,7 +126,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testNoSuchMethod() throws Exception {
+    void testNoSuchMethod() throws Exception {
         Assertions.assertThrows(NoSuchMethodException.class, () -> {
             Wrapper w = Wrapper.getWrapper(Object.class);
             w.invokeMethod(new Object(), "__XX__", null, null);
@@ -134,7 +134,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testOverloadMethod() throws Exception {
+    void testOverloadMethod() throws Exception {
         Wrapper w = Wrapper.getWrapper(I2.class);
         assertEquals(2, w.getMethodNames().length);
 
@@ -154,7 +154,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
+    void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
         assertArrayEquals(new String[]{"hello",}, ClassUtils.getMethodNames(Parent1.class));
 
@@ -163,13 +163,13 @@ public class WrapperTest {
     }
 
     @Test
-    public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
+    void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
         assertArrayEquals(new String[]{"hello", "world"}, ClassUtils.getMethodNames(Son.class));
     }
 
     @Test
-    public void testWrapImplClass(){
+    void testWrapImplClass(){
         Wrapper w = Wrapper.getWrapper(Impl0.class);
 
         String[] propertyNames = w.getPropertyNames();

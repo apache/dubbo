@@ -23,10 +23,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StringMatchTest {
+class StringMatchTest {
 
     @Test
-    public void exactMatch() {
+    void exactMatch() {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setExact("qinliujie");
 
@@ -37,7 +37,7 @@ public class StringMatchTest {
 
 
     @Test
-    public void prefixMatch() {
+    void prefixMatch() {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setPrefix("org.apache.dubbo.rpc.cluster.router.mesh");
 
@@ -48,7 +48,7 @@ public class StringMatchTest {
 
 
     @Test
-    public void regxMatch() {
+    void regxMatch() {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setRegex("org.apache.dubbo.rpc.cluster.router.mesh.*");
 
@@ -60,7 +60,7 @@ public class StringMatchTest {
 
 
     @Test
-    public void emptyMatch() {
+    void emptyMatch() {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setEmpty("empty");
 
@@ -70,7 +70,7 @@ public class StringMatchTest {
     }
 
     @Test
-    public void noEmptyMatch() {
+    void noEmptyMatch() {
         StringMatch stringMatch = new StringMatch();
         stringMatch.setNoempty("noempty");
 

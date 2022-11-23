@@ -34,9 +34,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class LocalHostPermitHandlerTest {
+class LocalHostPermitHandlerTest {
     @Test
-    public void testHandlerAdded() throws Exception {
+    void testHandlerAdded() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);

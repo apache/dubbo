@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -33,9 +34,9 @@ import static org.mockito.Mockito.verify;
 /**
  * Tests for FailsafeErrorTypeAwareLogger to test whether it 'ignores' exceptions thrown by logger or not.
  */
-public class FailsafeErrorTypeAwareLoggerTest {
+class FailsafeErrorTypeAwareLoggerTest {
     @Test
-    public void testFailsafeErrorTypeAwareForLoggingMethod() {
+    void testFailsafeErrorTypeAwareForLoggingMethod() {
         Logger failLogger = mock(Logger.class);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
 
@@ -45,8 +46,8 @@ public class FailsafeErrorTypeAwareLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(anyString());
         doThrow(new RuntimeException()).when(failLogger).trace(anyString());
 
-        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error");
-        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn");
+        failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error");
+        failsafeLogger.warn(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn");
 
         doThrow(new RuntimeException()).when(failLogger).error(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).warn(any(Throwable.class));
@@ -54,27 +55,27 @@ public class FailsafeErrorTypeAwareLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).trace(any(Throwable.class));
 
-        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error", new Exception("error"));
-        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn", new Exception("warn"));
+        failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error", new Exception("error"));
+        failsafeLogger.warn(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn", new Exception("warn"));
     }
 
     @Test
-    public void testSuccessLogger() {
+    void testSuccessLogger() {
         Logger successLogger = mock(Logger.class);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(successLogger);
 
-        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error");
-        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn");
+        failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error");
+        failsafeLogger.warn(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn");
 
         verify(successLogger).error(anyString());
         verify(successLogger).warn(anyString());
 
-        failsafeLogger.error("1-1", "Registry center", "May be it's offline.", "error", new Exception("error"));
-        failsafeLogger.warn("1-1", "Registry center", "May be it's offline.", "warn", new Exception("warn"));
+        failsafeLogger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "error", new Exception("error"));
+        failsafeLogger.warn(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.", "warn", new Exception("warn"));
     }
 
     @Test
-    public void testGetLogger() {
+    void testGetLogger() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             Logger failLogger = mock(Logger.class);
             FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
@@ -85,15 +86,15 @@ public class FailsafeErrorTypeAwareLoggerTest {
     }
 
     @Test
-    public void testInstructionShownOrNot() {
+    void testInstructionShownOrNot() {
         LoggerFactory.setLoggerAdapter(FrameworkModel.defaultModel(), "jdk");
 
         ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailsafeErrorTypeAwareLoggerTest.class);
 
-        logger.error("1-1", "Registry center", "May be it's offline.",
+        logger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.",
             "error message", new Exception("error"));
 
-        logger.error("-1", "Registry center", "May be it's offline.",
+        logger.error(REGISTRY_ADDRESS_INVALID, "Registry center", "May be it's offline.",
             "error message", new Exception("error"));
     }
 }

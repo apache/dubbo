@@ -25,9 +25,9 @@ import java.lang.instrument.Instrumentation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class MemoryLimitedLinkedBlockingQueueTest {
+class MemoryLimitedLinkedBlockingQueueTest {
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         ByteBuddyAgent.install();
         final Instrumentation instrumentation = ByteBuddyAgent.getInstrumentation();
         MemoryLimitedLinkedBlockingQueue<Runnable> queue = new MemoryLimitedLinkedBlockingQueue<>(1, instrumentation);

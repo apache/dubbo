@@ -25,10 +25,10 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ScopeBeanFactoryTest {
+class ScopeBeanFactoryTest {
 
     @Test
-    public void testInjection() {
+    void testInjection() {
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();

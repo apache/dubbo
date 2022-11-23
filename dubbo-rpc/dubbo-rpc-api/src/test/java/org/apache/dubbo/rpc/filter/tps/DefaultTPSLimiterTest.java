@@ -31,13 +31,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_INTERVAL_KEY;
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 
-public class DefaultTPSLimiterTest {
+class DefaultTPSLimiterTest {
 
     private static final int TEST_LIMIT_RATE = 2;
     private final DefaultTPSLimiter defaultTPSLimiter = new DefaultTPSLimiter();
 
     @Test
-    public void testIsAllowable() throws Exception {
+    void testIsAllowable() throws Exception {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -49,7 +49,7 @@ public class DefaultTPSLimiterTest {
     }
 
     @Test
-    public void testIsNotAllowable() throws Exception {
+    void testIsNotAllowable() throws Exception {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -65,7 +65,7 @@ public class DefaultTPSLimiterTest {
     }
 
     @Test
-    public void testTPSLimiterForMethodLevelConfig() throws Exception {
+    void testTPSLimiterForMethodLevelConfig() throws Exception {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -83,7 +83,7 @@ public class DefaultTPSLimiterTest {
     }
 
     @Test
-    public void testConfigChange() throws Exception {
+    void testConfigChange() throws Exception {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
@@ -102,7 +102,7 @@ public class DefaultTPSLimiterTest {
     }
 
     @Test
-    public void testMultiThread() throws InterruptedException {
+    void testMultiThread() throws InterruptedException {
         Invocation invocation = new MockInvocation();
         URL url = URL.valueOf("test://test");
         url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");

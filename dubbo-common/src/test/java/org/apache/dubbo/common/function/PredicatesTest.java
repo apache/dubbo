@@ -30,20 +30,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
-public class PredicatesTest {
+class PredicatesTest {
 
     @Test
-    public void testAlwaysTrue() {
+    void testAlwaysTrue() {
         assertTrue(alwaysTrue().test(null));
     }
 
     @Test
-    public void testAlwaysFalse() {
+    void testAlwaysFalse() {
         assertFalse(alwaysFalse().test(null));
     }
 
     @Test
-    public void testAnd() {
+    void testAnd() {
         assertTrue(and(alwaysTrue(), alwaysTrue(), alwaysTrue()).test(null));
         assertFalse(and(alwaysFalse(), alwaysFalse(), alwaysFalse()).test(null));
         assertFalse(and(alwaysTrue(), alwaysFalse(), alwaysFalse()).test(null));
@@ -51,7 +51,7 @@ public class PredicatesTest {
     }
 
     @Test
-    public void testOr() {
+    void testOr() {
         assertTrue(or(alwaysTrue(), alwaysTrue(), alwaysTrue()).test(null));
         assertTrue(or(alwaysTrue(), alwaysTrue(), alwaysFalse()).test(null));
         assertTrue(or(alwaysTrue(), alwaysFalse(), alwaysFalse()).test(null));

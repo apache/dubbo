@@ -66,13 +66,13 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void initialState() {
+    void initialState() {
         assertEquals(CAPACITY, buffer.capacity());
         assertEquals(0, buffer.readerIndex());
     }
 
     @Test
-    public void readerIndexBoundaryCheck1() {
+    void readerIndexBoundaryCheck1() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             try {
                 buffer.writerIndex(0);
@@ -84,7 +84,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void readerIndexBoundaryCheck2() {
+    void readerIndexBoundaryCheck2() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             try {
                 buffer.writerIndex(buffer.capacity());
@@ -96,7 +96,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void readerIndexBoundaryCheck3() {
+    void readerIndexBoundaryCheck3() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             try {
                 buffer.writerIndex(CAPACITY / 2);
@@ -108,7 +108,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void readerIndexBoundaryCheck4() {
+    void readerIndexBoundaryCheck4() {
         buffer.writerIndex(0);
         buffer.readerIndex(0);
         buffer.writerIndex(buffer.capacity());
@@ -116,14 +116,14 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void writerIndexBoundaryCheck1() {
+    void writerIndexBoundaryCheck1() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             buffer.writerIndex(-1);
         });
     }
 
     @Test
-    public void writerIndexBoundaryCheck2() {
+    void writerIndexBoundaryCheck2() {
 
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             try {
@@ -137,7 +137,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void writerIndexBoundaryCheck3() {
+    void writerIndexBoundaryCheck3() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             try {
                 buffer.writerIndex(CAPACITY);
@@ -150,74 +150,74 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void writerIndexBoundaryCheck4() {
+    void writerIndexBoundaryCheck4() {
         buffer.writerIndex(0);
         buffer.readerIndex(0);
         buffer.writerIndex(CAPACITY);
     }
 
     @Test
-    public void getByteBoundaryCheck1() {
+    void getByteBoundaryCheck1() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getByte(-1));
     }
 
     @Test
-    public void getByteBoundaryCheck2() {
+    void getByteBoundaryCheck2() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getByte(buffer.capacity()));
     }
 
     @Test
-    public void getByteArrayBoundaryCheck1() {
+    void getByteArrayBoundaryCheck1() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, new byte[0]));
     }
 
     @Test
-    public void getByteArrayBoundaryCheck2() {
+    void getByteArrayBoundaryCheck2() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, new byte[0], 0, 0));
     }
 
     @Test
-    public void getByteBufferBoundaryCheck() {
+    void getByteBufferBoundaryCheck() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, ByteBuffer.allocate(0)));
     }
 
     @Test
-    public void copyBoundaryCheck1() {
+    void copyBoundaryCheck1() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(-1, 0));
     }
 
     @Test
-    public void copyBoundaryCheck2() {
+    void copyBoundaryCheck2() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(0, buffer.capacity() + 1));
     }
 
     @Test
-    public void copyBoundaryCheck3() {
+    void copyBoundaryCheck3() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(buffer.capacity() + 1, 0));
     }
 
     @Test
-    public void copyBoundaryCheck4() {
+    void copyBoundaryCheck4() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.copy(buffer.capacity(), 1));
     }
 
     @Test
-    public void setIndexBoundaryCheck1() {
+    void setIndexBoundaryCheck1() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.setIndex(-1, CAPACITY));
     }
 
     @Test
-    public void setIndexBoundaryCheck2() {
+    void setIndexBoundaryCheck2() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.setIndex(CAPACITY / 2, CAPACITY / 4));
     }
 
     @Test
-    public void setIndexBoundaryCheck3() {
+    void setIndexBoundaryCheck3() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.setIndex(0, CAPACITY + 1));
     }
 
     @Test
-    public void getByteBufferState() {
+    void getByteBufferState() {
         ByteBuffer dst = ByteBuffer.allocate(4);
         dst.position(1);
         dst.limit(3);
@@ -239,12 +239,12 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void getDirectByteBufferBoundaryCheck() {
+    void getDirectByteBufferBoundaryCheck() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> buffer.getBytes(-1, ByteBuffer.allocateDirect(0)));
     }
 
     @Test
-    public void getDirectByteBufferState() {
+    void getDirectByteBufferState() {
         ByteBuffer dst = ByteBuffer.allocateDirect(4);
         dst.position(1);
         dst.limit(3);
@@ -266,7 +266,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomByteAccess() {
+    void testRandomByteAccess() {
         for (int i = 0; i < buffer.capacity(); i++) {
             byte value = (byte) random.nextInt();
             buffer.setByte(i, value);
@@ -280,7 +280,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialByteAccess() {
+    void testSequentialByteAccess() {
         buffer.writerIndex(0);
         for (int i = 0; i < buffer.capacity(); i++) {
             byte value = (byte) random.nextInt();
@@ -308,7 +308,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testByteArrayTransfer() {
+    void testByteArrayTransfer() {
         byte[] value = new byte[BLOCK_SIZE * 2];
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
             random.nextBytes(value);
@@ -328,7 +328,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomByteArrayTransfer1() {
+    void testRandomByteArrayTransfer1() {
         byte[] value = new byte[BLOCK_SIZE];
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
             random.nextBytes(value);
@@ -348,7 +348,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomByteArrayTransfer2() {
+    void testRandomByteArrayTransfer2() {
         byte[] value = new byte[BLOCK_SIZE * 2];
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
             random.nextBytes(value);
@@ -369,7 +369,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomHeapBufferTransfer1() {
+    void testRandomHeapBufferTransfer1() {
         byte[] valueContent = new byte[BLOCK_SIZE];
         ChannelBuffer value = wrappedBuffer(valueContent);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
@@ -396,7 +396,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomHeapBufferTransfer2() {
+    void testRandomHeapBufferTransfer2() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = wrappedBuffer(valueContent);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
@@ -418,7 +418,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomDirectBufferTransfer() {
+    void testRandomDirectBufferTransfer() {
         byte[] tmp = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = directBuffer(BLOCK_SIZE * 2);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
@@ -441,7 +441,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testRandomByteBufferTransfer() {
+    void testRandomByteBufferTransfer() {
         ByteBuffer value = ByteBuffer.allocate(BLOCK_SIZE * 2);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
             random.nextBytes(value.array());
@@ -465,7 +465,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialByteArrayTransfer1() {
+    void testSequentialByteArrayTransfer1() {
         byte[] value = new byte[BLOCK_SIZE];
         buffer.writerIndex(0);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
@@ -489,7 +489,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialByteArrayTransfer2() {
+    void testSequentialByteArrayTransfer2() {
         byte[] value = new byte[BLOCK_SIZE * 2];
         buffer.writerIndex(0);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
@@ -515,7 +515,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialHeapBufferTransfer1() {
+    void testSequentialHeapBufferTransfer1() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = wrappedBuffer(valueContent);
         buffer.writerIndex(0);
@@ -546,7 +546,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialHeapBufferTransfer2() {
+    void testSequentialHeapBufferTransfer2() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = wrappedBuffer(valueContent);
         buffer.writerIndex(0);
@@ -582,7 +582,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialDirectBufferTransfer1() {
+    void testSequentialDirectBufferTransfer1() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = directBuffer(BLOCK_SIZE * 2);
         buffer.writerIndex(0);
@@ -615,7 +615,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialDirectBufferTransfer2() {
+    void testSequentialDirectBufferTransfer2() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = directBuffer(BLOCK_SIZE * 2);
         buffer.writerIndex(0);
@@ -654,7 +654,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialByteBufferBackedHeapBufferTransfer1() {
+    void testSequentialByteBufferBackedHeapBufferTransfer1() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = wrappedBuffer(ByteBuffer.allocate(BLOCK_SIZE * 2));
         value.writerIndex(0);
@@ -688,7 +688,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialByteBufferBackedHeapBufferTransfer2() {
+    void testSequentialByteBufferBackedHeapBufferTransfer2() {
         byte[] valueContent = new byte[BLOCK_SIZE * 2];
         ChannelBuffer value = wrappedBuffer(ByteBuffer.allocate(BLOCK_SIZE * 2));
         value.writerIndex(0);
@@ -728,7 +728,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialByteBufferTransfer() {
+    void testSequentialByteBufferTransfer() {
         buffer.writerIndex(0);
         ByteBuffer value = ByteBuffer.allocate(BLOCK_SIZE * 2);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
@@ -753,7 +753,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSequentialCopiedBufferTransfer1() {
+    void testSequentialCopiedBufferTransfer1() {
         buffer.writerIndex(0);
         for (int i = 0; i < buffer.capacity() - BLOCK_SIZE + 1; i += BLOCK_SIZE) {
             byte[] value = new byte[BLOCK_SIZE];
@@ -779,7 +779,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testStreamTransfer1() throws Exception {
+    void testStreamTransfer1() throws Exception {
         byte[] expected = new byte[buffer.capacity()];
         random.nextBytes(expected);
 
@@ -798,7 +798,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testStreamTransfer2() throws Exception {
+    void testStreamTransfer2() throws Exception {
         byte[] expected = new byte[buffer.capacity()];
         random.nextBytes(expected);
         buffer.clear();
@@ -821,7 +821,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testCopy() {
+    void testCopy() {
         for (int i = 0; i < buffer.capacity(); i++) {
             byte value = (byte) random.nextInt();
             buffer.setByte(i, value);
@@ -848,7 +848,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testToByteBuffer1() {
+    void testToByteBuffer1() {
         byte[] value = new byte[buffer.capacity()];
         random.nextBytes(value);
         buffer.clear();
@@ -858,7 +858,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testToByteBuffer2() {
+    void testToByteBuffer2() {
         byte[] value = new byte[buffer.capacity()];
         random.nextBytes(value);
         buffer.clear();
@@ -870,7 +870,7 @@ public abstract class AbstractChannelBufferTest {
     }
 
     @Test
-    public void testSkipBytes1() {
+    void testSkipBytes1() {
         buffer.setIndex(CAPACITY / 4, CAPACITY / 2);
 
         buffer.skipBytes(CAPACITY / 4);

@@ -48,15 +48,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class StringUtilsTest {
+class StringUtilsTest {
     @Test
-    public void testLength() throws Exception {
+    void testLength() throws Exception {
         assertThat(StringUtils.length(null), equalTo(0));
         assertThat(StringUtils.length("abc"), equalTo(3));
     }
 
     @Test
-    public void testRepeat() throws Exception {
+    void testRepeat() throws Exception {
         assertThat(StringUtils.repeat(null, 2), nullValue());
         assertThat(StringUtils.repeat("", 0), equalTo(""));
         assertThat(StringUtils.repeat("", 2), equalTo(""));
@@ -74,7 +74,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testStripEnd() throws Exception {
+    void testStripEnd() throws Exception {
         assertThat(StringUtils.stripEnd(null, "*"), nullValue());
         assertThat(StringUtils.stripEnd("", null), equalTo(""));
         assertThat(StringUtils.stripEnd("abc", ""), equalTo("abc"));
@@ -87,7 +87,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testReplace() throws Exception {
+    void testReplace() throws Exception {
         assertThat(StringUtils.replace(null, "*", "*"), nullValue());
         assertThat(StringUtils.replace("", "*", "*"), equalTo(""));
         assertThat(StringUtils.replace("any", null, "*"), equalTo("any"));
@@ -110,21 +110,21 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testIsBlank() throws Exception {
+    void testIsBlank() throws Exception {
         assertTrue(StringUtils.isBlank(null));
         assertTrue(StringUtils.isBlank(""));
         assertFalse(StringUtils.isBlank("abc"));
     }
 
     @Test
-    public void testIsEmpty() throws Exception {
+    void testIsEmpty() throws Exception {
         assertTrue(StringUtils.isEmpty(null));
         assertTrue(StringUtils.isEmpty(""));
         assertFalse(StringUtils.isEmpty("abc"));
     }
 
     @Test
-    public void testIsNoneEmpty() throws Exception {
+    void testIsNoneEmpty() throws Exception {
         assertFalse(StringUtils.isNoneEmpty(null));
         assertFalse(StringUtils.isNoneEmpty(""));
         assertTrue(StringUtils.isNoneEmpty(" "));
@@ -136,7 +136,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testIsAnyEmpty() throws Exception {
+    void testIsAnyEmpty() throws Exception {
         assertTrue(StringUtils.isAnyEmpty(null));
         assertTrue(StringUtils.isAnyEmpty(""));
         assertFalse(StringUtils.isAnyEmpty(" "));
@@ -148,14 +148,14 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testIsNotEmpty() throws Exception {
+    void testIsNotEmpty() throws Exception {
         assertFalse(StringUtils.isNotEmpty(null));
         assertFalse(StringUtils.isNotEmpty(""));
         assertTrue(StringUtils.isNotEmpty("abc"));
     }
 
     @Test
-    public void testIsEquals() throws Exception {
+    void testIsEquals() throws Exception {
         assertTrue(StringUtils.isEquals(null, null));
         assertFalse(StringUtils.isEquals(null, ""));
         assertTrue(StringUtils.isEquals("abc", "abc"));
@@ -163,20 +163,20 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testIsInteger() throws Exception {
+    void testIsInteger() throws Exception {
         assertFalse(StringUtils.isNumber(null));
         assertFalse(StringUtils.isNumber(""));
         assertTrue(StringUtils.isNumber("123"));
     }
 
     @Test
-    public void testParseInteger() throws Exception {
+    void testParseInteger() throws Exception {
         assertThat(StringUtils.parseInteger(null), equalTo(0));
         assertThat(StringUtils.parseInteger("123"), equalTo(123));
     }
 
     @Test
-    public void testIsJavaIdentifier() throws Exception {
+    void testIsJavaIdentifier() throws Exception {
         assertThat(StringUtils.isJavaIdentifier(""), is(false));
         assertThat(StringUtils.isJavaIdentifier("1"), is(false));
         assertThat(StringUtils.isJavaIdentifier("abc123"), is(true));
@@ -184,26 +184,26 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testExceptionToString() throws Exception {
+    void testExceptionToString() throws Exception {
         assertThat(StringUtils.toString(new RuntimeException("abc")), containsString("java.lang.RuntimeException: abc"));
     }
 
     @Test
-    public void testExceptionToStringWithMessage() throws Exception {
+    void testExceptionToStringWithMessage() throws Exception {
         String s = StringUtils.toString("greeting", new RuntimeException("abc"));
         assertThat(s, containsString("greeting"));
         assertThat(s, containsString("java.lang.RuntimeException: abc"));
     }
 
     @Test
-    public void testParseQueryString() throws Exception {
+    void testParseQueryString() throws Exception {
         assertThat(StringUtils.getQueryStringValue("key1=value1&key2=value2", "key1"), equalTo("value1"));
         assertThat(StringUtils.getQueryStringValue("key1=value1&key2=value2", "key2"), equalTo("value2"));
         assertThat(StringUtils.getQueryStringValue("", "key1"), isEmptyOrNullString());
     }
 
     @Test
-    public void testGetServiceKey() throws Exception {
+    void testGetServiceKey() throws Exception {
         Map<String, String> map = new HashMap<String, String>();
         map.put(GROUP_KEY, "dubbo");
         map.put(INTERFACE_KEY, "a.b.c.Foo");
@@ -212,7 +212,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testToQueryString() throws Exception {
+    void testToQueryString() throws Exception {
         Map<String, String> map = new HashMap<String, String>();
         map.put("key1", "value1");
         map.put("key2", "value2");
@@ -222,7 +222,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testJoin() throws Exception {
+    void testJoin() throws Exception {
         String[] s = {"1", "2", "3"};
         assertEquals(StringUtils.join(s), "123");
         assertEquals(StringUtils.join(s, ','), "1,2,3");
@@ -230,7 +230,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSplit() throws Exception {
+    void testSplit() throws Exception {
         String str = "d,1,2,4";
 
         assertEquals(4, StringUtils.split(str, ',').length);
@@ -247,7 +247,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSplitToList() throws Exception {
+    void testSplitToList() throws Exception {
         String str = "d,1,2,4";
 
         assertEquals(4, splitToList(str, ',').size());
@@ -266,7 +266,7 @@ public class StringUtilsTest {
      * @since 2.7.8
      */
     @Test
-    public void testSplitToSet() {
+    void testSplitToSet() {
         String value = "1# 2#3 #4#3";
         Set<String> values = splitToSet(value, '#', false);
         assertEquals(ofSet("1", " 2", "3 ", "4", "3"), values);
@@ -277,14 +277,14 @@ public class StringUtilsTest {
 
 
     @Test
-    public void testTranslate() throws Exception {
+    void testTranslate() throws Exception {
         String s = "16314";
         assertEquals(StringUtils.translate(s, "123456", "abcdef"), "afcad");
         assertEquals(StringUtils.translate(s, "123456", "abcd"), "acad");
     }
 
     @Test
-    public void testIsContains() throws Exception {
+    void testIsContains() throws Exception {
         assertThat(StringUtils.isContains("a,b, c", "b"), is(true));
         assertThat(StringUtils.isContains("", "b"), is(false));
         assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
@@ -302,7 +302,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testIsNumeric() throws Exception {
+    void testIsNumeric() throws Exception {
         assertThat(StringUtils.isNumeric("123", false), is(true));
         assertThat(StringUtils.isNumeric("1a3", false), is(false));
         assertThat(StringUtils.isNumeric(null, false), is(false));
@@ -322,7 +322,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testJoinCollectionString() throws Exception {
+    void testJoinCollectionString() throws Exception {
         List<String> list = new ArrayList<String>();
         assertEquals("", StringUtils.join(list, ","));
 
@@ -336,7 +336,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testCamelToSplitName() throws Exception {
+    void testCamelToSplitName() throws Exception {
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("abCdEf", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
         assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
@@ -352,7 +352,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testSnakeCaseToSplitName() throws Exception {
+    void testSnakeCaseToSplitName() throws Exception {
         assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_Cd_Ef", "-"));
         assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("Ab_Cd_Ef", "-"));
         assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_cd_ef", "-"));
@@ -363,7 +363,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testConvertToSplitName() {
+    void testConvertToSplitName() {
         assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_Cd_Ef", "-"));
         assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab_Cd_Ef", "-"));
         assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_cd_ef", "-"));
@@ -380,7 +380,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testToArgumentString() throws Exception {
+    void testToArgumentString() throws Exception {
         String s = StringUtils.toArgumentString(new Object[]{"a", 0, Collections.singletonMap("enabled", true)});
         assertThat(s, containsString("a,"));
         assertThat(s, containsString("0,"));
@@ -388,20 +388,20 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testTrim() {
+    void testTrim() {
         assertEquals("left blank", StringUtils.trim(" left blank"));
         assertEquals("right blank", StringUtils.trim("right blank "));
         assertEquals("bi-side blank", StringUtils.trim(" bi-side blank "));
     }
 
     @Test
-    public void testToURLKey() {
+    void testToURLKey() {
         assertEquals("dubbo.tag1", StringUtils.toURLKey("dubbo_tag1"));
         assertEquals("dubbo.tag1.tag11", StringUtils.toURLKey("dubbo-tag1_tag11"));
     }
 
     @Test
-    public void testToOSStyleKey() {
+    void testToOSStyleKey() {
         assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo_tag1"));
         assertEquals("DUBBO_TAG1", StringUtils.toOSStyleKey("dubbo.tag1"));
         assertEquals("DUBBO_TAG1_TAG11", StringUtils.toOSStyleKey("dubbo.tag1.tag11"));
@@ -409,7 +409,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testParseParameters() {
+    void testParseParameters() {
         String legalStr = "[{key1:value1},{key2:value2}]";
         Map<String, String> legalMap = StringUtils.parseParameters(legalStr);
         assertEquals(2, legalMap.size());
@@ -448,7 +448,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testEncodeParameters() {
+    void testEncodeParameters() {
         Map<String, String> nullValueMap = new LinkedHashMap<>();
         nullValueMap.put("client", null);
         String str = StringUtils.encodeParameters(nullValueMap);
@@ -475,7 +475,7 @@ public class StringUtilsTest {
      * @since 2.7.8
      */
     @Test
-    public void testToCommaDelimitedString() {
+    void testToCommaDelimitedString() {
         String value = toCommaDelimitedString(null);
         assertNull(value);
 
@@ -496,7 +496,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void testStartsWithIgnoreCase() {
+    void testStartsWithIgnoreCase() {
         assertTrue(startsWithIgnoreCase("dubbo.application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));

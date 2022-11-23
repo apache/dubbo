@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 /**
  * {@link TripleHttp2ClientResponseHandler }
  */
-public class TripleHttp2ClientResponseHandlerTest {
+class TripleHttp2ClientResponseHandlerTest {
     private TripleHttp2ClientResponseHandler handler;
     private ChannelHandlerContext ctx;
     private AbstractH2TransportListener transportListener;
@@ -51,7 +51,7 @@ public class TripleHttp2ClientResponseHandlerTest {
     }
 
     @Test
-    public void testUserEventTriggered() throws Exception {
+    void testUserEventTriggered() throws Exception {
         // test Http2GoAwayFrame
         Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil
                 .writeAscii(ByteBufAllocator.DEFAULT, "app_requested"));
@@ -65,7 +65,7 @@ public class TripleHttp2ClientResponseHandlerTest {
     }
 
     @Test
-    public void testChannelRead0() throws Exception {
+    void testChannelRead0() throws Exception {
         final Http2Headers headers = new DefaultHttp2Headers(true);
         DefaultHttp2HeadersFrame headersFrame = new DefaultHttp2HeadersFrame(headers, true);
         handler.channelRead0(ctx, headersFrame);
@@ -73,7 +73,7 @@ public class TripleHttp2ClientResponseHandlerTest {
     }
 
     @Test
-    public void testExceptionCaught() {
+    void testExceptionCaught() {
         RuntimeException exception = new RuntimeException();
         handler.exceptionCaught(ctx, exception);
         Mockito.verify(ctx).close();

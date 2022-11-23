@@ -44,6 +44,7 @@ import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 
 /**
@@ -137,7 +138,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         return unmodifiableSortedSet(getServiceURLs(getAllServiceURLs(), serviceKey, protocol));
     }
 
-    private Map<String, SortedSet<URL>> getAllServiceURLs () {
+    private Map<String, SortedSet<URL>> getAllServiceURLs() {
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         Map<String, SortedSet<URL>> allServiceURLs = new HashMap<>();
         for (ServiceDiscovery sd : serviceDiscoveries) {
@@ -182,7 +183,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         }
 
         if (logger.isWarnEnabled()) {
-            logger.warn("metadata not found for revision: " + revision);
+            logger.warn(REGISTRY_FAILED_LOAD_METADATA, "", "", "metadata not found for revision: " + revision);
         }
         return null;
     }

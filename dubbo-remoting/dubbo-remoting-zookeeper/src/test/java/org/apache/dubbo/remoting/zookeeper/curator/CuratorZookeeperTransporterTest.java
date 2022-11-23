@@ -30,7 +30,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
 @DisabledForJreRange(min = JRE.JAVA_16)
-public class CuratorZookeeperTransporterTest {
+class CuratorZookeeperTransporterTest {
     private ZookeeperClient zookeeperClient;
     private CuratorZookeeperTransporter curatorZookeeperTransporter;
     private static String zookeeperConnectionAddress1;
@@ -47,7 +47,7 @@ public class CuratorZookeeperTransporterTest {
     }
 
     @Test
-    public void testZookeeperClient() {
+    void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
     }

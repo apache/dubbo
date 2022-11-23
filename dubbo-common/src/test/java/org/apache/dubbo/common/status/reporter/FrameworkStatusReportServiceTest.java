@@ -36,10 +36,10 @@ import static org.apache.dubbo.common.status.reporter.FrameworkStatusReportServi
 /**
  * {@link FrameworkStatusReportService}
  */
-public class FrameworkStatusReportServiceTest {
+class FrameworkStatusReportServiceTest {
 
     @Test
-    public void test() {
+    void test() {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
         ApplicationConfig app = new ApplicationConfig("APP");

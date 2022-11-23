@@ -17,11 +17,12 @@
 
 package org.apache.dubbo.metrics.prometheus;
 
-import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.micrometer.prometheus.PrometheusMeterRegistry;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
-public class PrometheusMetricsReporterTest {
+class PrometheusMetricsReporterTest {
 
     private MetricsConfig metricsConfig;
     private ApplicationModel applicationModel;
@@ -58,7 +59,7 @@ public class PrometheusMetricsReporterTest {
     }
 
     @Test
-    public void testJvmMetrics() {
+    void testJvmMetrics() {
         metricsConfig.setEnableJvmMetrics(true);
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
@@ -72,7 +73,7 @@ public class PrometheusMetricsReporterTest {
     }
 
     @Test
-    public void testExporter() {
+    void testExporter() {
         int port = NetUtils.getAvailablePort();
 
         PrometheusConfig prometheusConfig = new PrometheusConfig();
@@ -101,7 +102,7 @@ public class PrometheusMetricsReporterTest {
     }
 
     @Test
-    public void testPushgateway() {
+    void testPushgateway() {
         PrometheusConfig prometheusConfig = new PrometheusConfig();
         PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
         pushgateway.setJob("mock");

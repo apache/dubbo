@@ -78,7 +78,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 @Configuration
 @ComponentScan
 @EnableDubbo
-public class SpringBootConfigPropsTest {
+class SpringBootConfigPropsTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -97,7 +97,7 @@ public class SpringBootConfigPropsTest {
     private ModuleModel moduleModel;
 
     @Test
-    public void testConfigProps() {
+    void testConfigProps() {
 
         ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());

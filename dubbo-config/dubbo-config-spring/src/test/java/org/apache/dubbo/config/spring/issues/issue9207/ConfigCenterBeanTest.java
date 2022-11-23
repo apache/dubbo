@@ -44,13 +44,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class ConfigCenterBeanTest {
+class ConfigCenterBeanTest {
 
     private static final String DUBBO_PROPERTIES_FILE = "/META-INF/issues/issue9207/dubbo-properties-in-configcenter.properties";
     private static final String DUBBO_EXTERNAL_CONFIG_KEY = "my-dubbo.properties";
 
     @Test
-    public void testConfigCenterBeanFromProps() throws IOException {
+    void testConfigCenterBeanFromProps() throws IOException {
         SysProps.setProperty("dubbo.config-center.include-spring-env", "true");
         SysProps.setProperty("dubbo.config-center.config-file", DUBBO_EXTERNAL_CONFIG_KEY);
 

@@ -35,7 +35,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 /**
  * MockInvocation.java
  */
-public class MockDirInvocation implements Invocation {
+class MockDirInvocation implements Invocation {
 
     private Map<String, Object> attachments;
 

@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.support.SerializableClassRegistry;
 import org.apache.dubbo.common.serialize.support.SerializationOptimizer;
@@ -45,13 +45,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OPTIMIZER_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 
 /**
  * abstract ProtocolSupport.
  */
 public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<>();
 
@@ -107,13 +108,13 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
                     }
                     invoker.destroy();
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", t.getMessage(), t);
                 }
             }
         }
         invokers.clear();
 
-        exporterMap.forEach((key, exporter)-> {
+        exporterMap.forEach((key, exporter) -> {
             if (exporter != null) {
                 try {
                     if (logger.isInfoEnabled()) {
@@ -121,7 +122,7 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
                     }
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(PROTOCOL_FAILED_DESTROY_INVOKER, "", "", t.getMessage(), t);
                 }
             }
         });

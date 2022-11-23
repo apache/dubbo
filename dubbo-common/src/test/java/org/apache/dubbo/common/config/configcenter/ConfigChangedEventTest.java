@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @since 2.7.5
  */
-public class ConfigChangedEventTest {
+class ConfigChangedEventTest {
 
     private static final String KEY = "k";
 
@@ -35,7 +35,7 @@ public class ConfigChangedEventTest {
     private static final String CONTENT = "c";
 
     @Test
-    public void testGetter() {
+    void testGetter() {
 
         ConfigChangedEvent event = new ConfigChangedEvent(KEY, GROUP, CONTENT);
 
@@ -55,7 +55,7 @@ public class ConfigChangedEventTest {
     }
 
     @Test
-    public void testEqualsAndHashCode() {
+    void testEqualsAndHashCode() {
         for (ConfigChangeType type : ConfigChangeType.values()) {
             assertEquals(new ConfigChangedEvent(KEY, GROUP, CONTENT, type), new ConfigChangedEvent(KEY, GROUP, CONTENT, type));
             assertEquals(new ConfigChangedEvent(KEY, GROUP, CONTENT, type).hashCode(), new ConfigChangedEvent(KEY, GROUP, CONTENT, type).hashCode());
@@ -64,7 +64,7 @@ public class ConfigChangedEventTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         ConfigChangedEvent event = new ConfigChangedEvent(KEY, GROUP, CONTENT);
         assertNotNull(event.toString());
     }
