@@ -32,9 +32,11 @@ import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Objects;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
