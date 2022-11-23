@@ -355,7 +355,7 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_SKIP_UNUSED_STREAM = "6-15";
 
-    String TRANSPORT_FAILED_RECONNECT = "6-3";
+    String TRANSPORT_FAILED_RECONNECT = "6-16";
 
     // qos plugin
     String QOS_PROFILER_DISABLED = "7-1";
