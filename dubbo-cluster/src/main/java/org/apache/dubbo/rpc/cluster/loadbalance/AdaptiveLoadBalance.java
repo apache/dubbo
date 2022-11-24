@@ -52,7 +52,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         Invoker invoker = selectByP2C(invokers,url,invocation);
-        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
+        invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
         long startTime = System.currentTimeMillis();
         invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME,startTime);
         adaptiveMetrics.addConsumerReq(buildServiceKey(invoker,invocation));
