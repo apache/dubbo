@@ -19,8 +19,8 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 
 
-public class FeignBaseEncoder extends FeignBaseCoder implements Encoder {
-    private static final Log log = LogFactory.getLog(FeignBaseEncoder.class);
+public class FeignEncoder extends FeignBaseCoder implements Encoder {
+    private static final Log log = LogFactory.getLog(FeignEncoder.class);
 
     @Override
     public void encode(Object requestBody, Type bodyType, RequestTemplate request)

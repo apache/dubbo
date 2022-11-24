@@ -17,7 +17,7 @@ import java.lang.reflect.WildcardType;
 
 
 
-public class FeignBaseDecoder extends FeignBaseCoder implements Decoder {
+public class FeignDecoder extends FeignBaseCoder implements Decoder {
     @Override
     public Object decode(final Response response, Type type)
             throws IOException, FeignException {
