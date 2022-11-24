@@ -313,7 +313,7 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public ExecutorRepository getApplicationExecutorRepository() {
-        return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        return ExecutorRepository.getInstance(this);
     }
 
     public ApplicationConfig getCurrentConfig() {

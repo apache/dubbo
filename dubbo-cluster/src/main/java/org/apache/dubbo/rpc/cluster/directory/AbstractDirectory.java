@@ -50,6 +50,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
@@ -260,6 +261,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             invokersToReconnect.add(invoker);
             // 3. try start check connectivity task
             checkConnectivity();
+
+            logger.info("The invoker " + invoker.getUrl() + " has been added to invalidate list due to connectivity problem. " +
+                "Will trying to reconnect to it in the background.");
         }
     }
 
@@ -434,4 +438,15 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
 
+    protected String joinValidInvokerAddresses() {
+        BitList<Invoker<T>> validInvokers = getValidInvokers().clone();
+        if (validInvokers.isEmpty()) {
+            return "empty";
+        }
+        return validInvokers.stream()
+            .limit(5)
+            .map(Invoker::getUrl)
+            .map(URL::getAddress)
+            .collect(Collectors.joining(","));
+    }
 }

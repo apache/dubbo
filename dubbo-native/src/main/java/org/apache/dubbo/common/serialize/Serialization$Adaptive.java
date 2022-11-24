@@ -27,7 +27,7 @@ throw new UnsupportedOperationException("The method public abstract java.lang.St
 public org.apache.dubbo.common.serialize.ObjectInput deserialize(org.apache.dubbo.common.URL arg0, java.io.InputStream arg1) throws java.io.IOException {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
-String extName = url.getParameter("serialization", "hessian2");
+String extName = url.getParameter("serialization", "adaptive");
 if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.common.serialize.Serialization) name from url (" + url.toString() + ") use keys([serialization])");
 ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.common.serialize.Serialization.class);
 org.apache.dubbo.common.serialize.Serialization extension = (org.apache.dubbo.common.serialize.Serialization)scopeModel.getExtensionLoader(org.apache.dubbo.common.serialize.Serialization.class).getExtension(extName);
@@ -36,7 +36,7 @@ return extension.deserialize(arg0, arg1);
 public org.apache.dubbo.common.serialize.ObjectOutput serialize(org.apache.dubbo.common.URL arg0, java.io.OutputStream arg1) throws java.io.IOException {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
-String extName = url.getParameter("serialization", "hessian2");
+String extName = url.getParameter("serialization", "adaptive");
 if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.common.serialize.Serialization) name from url (" + url.toString() + ") use keys([serialization])");
 ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.common.serialize.Serialization.class);
 org.apache.dubbo.common.serialize.Serialization extension = (org.apache.dubbo.common.serialize.Serialization)scopeModel.getExtensionLoader(org.apache.dubbo.common.serialize.Serialization.class).getExtension(extName);
