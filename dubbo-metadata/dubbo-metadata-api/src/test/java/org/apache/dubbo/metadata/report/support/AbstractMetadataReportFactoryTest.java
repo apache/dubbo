@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 2018/9/14
  */
-public class AbstractMetadataReportFactoryTest {
+class AbstractMetadataReportFactoryTest {
 
     private AbstractMetadataReportFactory metadataReportFactory = new AbstractMetadataReportFactory() {
         @Override
@@ -112,7 +112,7 @@ public class AbstractMetadataReportFactoryTest {
     };
 
     @Test
-    public void testGetOneMetadataReport() {
+    void testGetOneMetadataReport() {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url);
         MetadataReport metadataReport2 = metadataReportFactory.getMetadataReport(url);
@@ -120,7 +120,7 @@ public class AbstractMetadataReportFactoryTest {
     }
 
     @Test
-    public void testGetOneMetadataReportForIpFormat() {
+    void testGetOneMetadataReportForIpFormat() {
         String hostName = NetUtils.getLocalAddress().getHostName();
         String ip = NetUtils.getIpByHost(hostName);
         URL url1 = URL.valueOf("zookeeper://" + hostName + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
@@ -131,7 +131,7 @@ public class AbstractMetadataReportFactoryTest {
     }
 
     @Test
-    public void testGetForDiffService() {
+    void testGetForDiffService() {
         URL url1 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService1?version=1.0.0&application=vic");
         URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService2?version=1.0.0&application=vic");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);
@@ -140,7 +140,7 @@ public class AbstractMetadataReportFactoryTest {
     }
 
     @Test
-    public void testGetForDiffGroup() {
+    void testGetForDiffGroup() {
         URL url1 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&group=aaa");
         URL url2 = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&group=bbb");
         MetadataReport metadataReport1 = metadataReportFactory.getMetadataReport(url1);

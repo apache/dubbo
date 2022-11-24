@@ -34,7 +34,7 @@ import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class FailbackRegistryTest {
+class FailbackRegistryTest {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private URL serviceUrl;
@@ -60,7 +60,7 @@ public class FailbackRegistryTest {
      * @throws Exception
      */
     @Test
-    public void testDoRetry() throws Exception {
+    void testDoRetry() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
 
@@ -95,7 +95,7 @@ public class FailbackRegistryTest {
     }
 
     @Test
-    public void testDoRetryRegister() throws Exception {
+    void testDoRetryRegister() throws Exception {
 
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
@@ -115,7 +115,7 @@ public class FailbackRegistryTest {
     }
 
     @Test
-    public void testDoRetrySubscribe() throws Exception {
+    void testDoRetrySubscribe() throws Exception {
 
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
@@ -143,7 +143,7 @@ public class FailbackRegistryTest {
     }
 
     @Test
-    public void testRecover() throws Exception {
+    void testRecover() throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(6);
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);

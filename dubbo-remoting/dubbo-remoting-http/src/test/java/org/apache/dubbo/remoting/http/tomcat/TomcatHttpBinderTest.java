@@ -33,9 +33,9 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class TomcatHttpBinderTest {
+class TomcatHttpBinderTest {
     @Test
-    public void shouldAbleHandleRequestForTomcatBinder() throws Exception {
+    void shouldAbleHandleRequestForTomcatBinder() throws Exception {
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("http", "localhost", port,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});

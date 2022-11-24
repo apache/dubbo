@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.apache.dubbo.common.utils.PojoUtilsTest;
 import org.apache.dubbo.rpc.model.person.BigPerson;
 import org.apache.dubbo.rpc.model.person.FullAddress;
 import org.apache.dubbo.rpc.model.person.PersonInfo;
@@ -35,10 +34,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class JavaBeanSerializeUtilTest {
+class JavaBeanSerializeUtilTest {
 
     @Test
-    public void testSerialize_Primitive() {
+    void testSerialize_Primitive() {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(Integer.MAX_VALUE);
         Assertions.assertTrue(descriptor.isPrimitiveType());
@@ -51,14 +50,14 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testSerialize_Primitive_NUll() {
+    void testSerialize_Primitive_NUll() {
         JavaBeanDescriptor descriptor;
         descriptor = JavaBeanSerializeUtil.serialize(null);
         Assertions.assertNull(descriptor);
     }
 
     @Test
-    public void testDeserialize_Primitive() {
+    void testDeserialize_Primitive() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_PRIMITIVE);
         descriptor.setPrimitiveProperty(Long.MAX_VALUE);
         Assertions.assertEquals(Long.MAX_VALUE, JavaBeanSerializeUtil.deserialize(descriptor));
@@ -73,7 +72,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testDeserialize_Primitive0() {
+    void testDeserialize_Primitive0() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
                     JavaBeanDescriptor.TYPE_BEAN + 1);
@@ -81,14 +80,14 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testDeserialize_Null() {
+    void testDeserialize_Null() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(null, JavaBeanDescriptor.TYPE_BEAN);
         });
     }
 
     @Test
-    public void testDeserialize_containsProperty() {
+    void testDeserialize_containsProperty() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
                     JavaBeanDescriptor.TYPE_PRIMITIVE);
@@ -97,7 +96,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testSetEnumNameProperty() {
+    void testSetEnumNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
                     JavaBeanDescriptor.TYPE_PRIMITIVE);
@@ -115,7 +114,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testGetEnumNameProperty() {
+    void testGetEnumNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
                     JavaBeanDescriptor.TYPE_PRIMITIVE);
@@ -124,7 +123,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testSetClassNameProperty() {
+    void testSetClassNameProperty() {
 
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
@@ -143,7 +142,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testGetClassNameProperty() {
+    void testGetClassNameProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(),
                     JavaBeanDescriptor.TYPE_PRIMITIVE);
@@ -152,7 +151,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testSetPrimitiveProperty() {
+    void testSetPrimitiveProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
                     JavaBeanDescriptor.TYPE_BEAN);
@@ -161,7 +160,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testGetPrimitiveProperty() {
+    void testGetPrimitiveProperty() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavaBeanDescriptor descriptor = new JavaBeanDescriptor(JavaBeanDescriptor.class.getName(),
                     JavaBeanDescriptor.TYPE_BEAN);
@@ -170,7 +169,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testDeserialize_get_and_set() {
+    void testDeserialize_get_and_set() {
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(long.class.getName(), JavaBeanDescriptor.TYPE_BEAN);
         descriptor.setType(JavaBeanDescriptor.TYPE_PRIMITIVE);
         Assertions.assertEquals(descriptor.getType(), JavaBeanDescriptor.TYPE_PRIMITIVE);
@@ -179,7 +178,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testSerialize_Array() {
+    void testSerialize_Array() {
         int[] array = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         JavaBeanDescriptor descriptor = JavaBeanSerializeUtil.serialize(array, JavaBeanAccessor.METHOD);
         Assertions.assertTrue(descriptor.isArrayType());
@@ -226,7 +225,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testConstructorArg() {
+    void testConstructorArg() {
         Assertions.assertFalse((boolean) JavaBeanSerializeUtil.getConstructorArg(boolean.class));
         Assertions.assertFalse((boolean) JavaBeanSerializeUtil.getConstructorArg(Boolean.class));
         Assertions.assertEquals((byte) 0, JavaBeanSerializeUtil.getConstructorArg(byte.class));
@@ -247,7 +246,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testDeserialize_Array() {
+    void testDeserialize_Array() {
         final int len = 10;
         JavaBeanDescriptor descriptor = new JavaBeanDescriptor(int.class.getName(), JavaBeanDescriptor.TYPE_ARRAY);
         for (int i = 0; i < len; i++) {
@@ -299,13 +298,13 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void test_Circular_Reference() {
-        PojoUtilsTest.Parent parent = new PojoUtilsTest.Parent();
+    void test_Circular_Reference() {
+        Parent parent = new Parent();
         parent.setAge(Integer.MAX_VALUE);
         parent.setEmail("a@b");
         parent.setName("zhangsan");
 
-        PojoUtilsTest.Child child = new PojoUtilsTest.Child();
+        Child child = new Child();
         child.setAge(100);
         child.setName("lisi");
         child.setParent(parent);
@@ -324,8 +323,93 @@ public class JavaBeanSerializeUtilTest {
         assertEqualsPrimitive(child.getAge(), childDescriptor.getProperty("age"));
     }
 
+    public static class Parent {
+        public String gender;
+        public String email;
+        String name;
+        int age;
+        Child child;
+        private String securityEmail;
+
+        public static Parent getNewParent() {
+            return new Parent();
+        }
+
+        public String getEmail() {
+            return this.securityEmail;
+        }
+
+        public void setEmail(String email) {
+            this.securityEmail = email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public Child getChild() {
+            return child;
+        }
+
+        public void setChild(Child child) {
+            this.child = child;
+        }
+    }
+
+    public static class Child {
+        public String gender;
+        public int age;
+        String toy;
+        Parent parent;
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }
+
+        public String getToy() {
+            return toy;
+        }
+
+        public void setToy(String toy) {
+            this.toy = toy;
+        }
+
+        public Parent getParent() {
+            return parent;
+        }
+
+        public void setParent(Parent parent) {
+            this.parent = parent;
+        }
+    }
+
     @Test
-    public void testBeanSerialize() {
+    void testBeanSerialize() {
         Bean bean = new Bean();
         bean.setDate(new Date());
         bean.setStatus(PersonStatus.ENABLED);
@@ -375,7 +459,7 @@ public class JavaBeanSerializeUtilTest {
     }
 
     @Test
-    public void testDeserializeBean() {
+    void testDeserializeBean() {
         Bean bean = new Bean();
         bean.setDate(new Date());
         bean.setStatus(PersonStatus.ENABLED);

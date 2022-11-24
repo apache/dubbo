@@ -25,6 +25,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 
-public class AggregateMetricsCollectorTest {
+class AggregateMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
     private DefaultMetricsCollector defaultCollector;
@@ -77,7 +81,7 @@ public class AggregateMetricsCollectorTest {
     }
 
     @Test
-    public void testRequestsMetrics() {
+    void testRequestsMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
         defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
         defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
@@ -109,7 +113,7 @@ public class AggregateMetricsCollectorTest {
     }
 
     @Test
-    public void testRTMetrics() {
+    void testRTMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
         defaultCollector.addRT(interfaceName, methodName, group, version, 10L);
 

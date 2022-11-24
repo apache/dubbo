@@ -44,14 +44,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class RpcUtilsTest {
+class RpcUtilsTest {
 
     /**
      * regular scenario: async invocation in URL
      * verify: 1. whether invocationId is set correctly, 2. idempotent or not
      */
     @Test
-    public void testAttachInvocationIdIfAsync_normal() {
+    void testAttachInvocationIdIfAsync_normal() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
         Map<String, Object> attachments = new HashMap<>();
         attachments.put("aa", "bb");
@@ -70,7 +70,7 @@ public class RpcUtilsTest {
      * verify: no id attribute added in attachment
      */
     @Test
-    public void testAttachInvocationIdIfAsync_sync() {
+    void testAttachInvocationIdIfAsync_sync() {
         URL url = URL.valueOf("dubbo://localhost/");
         Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[] {}, new String[] {});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
@@ -82,7 +82,7 @@ public class RpcUtilsTest {
      * verify: no error report when the original attachment is null
      */
     @Test
-    public void testAttachInvocationIdIfAsync_nullAttachments() {
+    void testAttachInvocationIdIfAsync_nullAttachments() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
         Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[] {}, new String[] {});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
@@ -94,7 +94,7 @@ public class RpcUtilsTest {
      * verify: no id attribute added in attachment
      */
     @Test
-    public void testAttachInvocationIdIfAsync_forceNotAttache() {
+    void testAttachInvocationIdIfAsync_forceNotAttache() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true&" + AUTO_ATTACH_INVOCATIONID_KEY + "=false");
         Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[] {}, new String[] {});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
@@ -106,7 +106,7 @@ public class RpcUtilsTest {
      * verify: id attribute added in attachment
      */
     @Test
-    public void testAttachInvocationIdIfAsync_forceAttache() {
+    void testAttachInvocationIdIfAsync_forceAttache() {
         URL url = URL.valueOf("dubbo://localhost/?" + AUTO_ATTACH_INVOCATIONID_KEY + "=true");
         Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[] {}, new String[] {});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
@@ -114,7 +114,7 @@ public class RpcUtilsTest {
     }
 
     @Test
-    public void testGetReturnType() {
+    void testGetReturnType() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
@@ -154,7 +154,7 @@ public class RpcUtilsTest {
     }
 
     @Test
-    public void testGetReturnTypesUseCache() throws Exception {
+    void testGetReturnTypesUseCache() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
@@ -218,7 +218,7 @@ public class RpcUtilsTest {
     }
 
     @Test
-    public void testGetReturnTypesWithoutCache() throws Exception {
+    void testGetReturnTypesWithoutCache() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
@@ -283,7 +283,7 @@ public class RpcUtilsTest {
 
 
     @Test
-    public void testGetReturnTypesWhenGeneric() throws Exception {
+    void testGetReturnTypesWhenGeneric() throws Exception {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
@@ -326,7 +326,7 @@ public class RpcUtilsTest {
         Assertions.assertNull(types5);
     }
     @Test
-    public void testGetParameterTypes() {
+    void testGetParameterTypes() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
@@ -414,7 +414,7 @@ public class RpcUtilsTest {
     }
 
     @Test
-    public void testGet_$invoke_Arguments() {
+    void testGet_$invoke_Arguments() {
         Object[] args = new Object[] {"hello", "dubbo", 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
@@ -434,7 +434,7 @@ public class RpcUtilsTest {
     }
 
     @Test
-    public void testIsAsync() {
+    void testIsAsync() {
         Object[] args = new Object[] {"hello", "dubbo", 520};
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
@@ -454,20 +454,20 @@ public class RpcUtilsTest {
     }
 
     @Test
-    public void testIsGenericCall() {
+    void testIsGenericCall() {
         Assertions.assertTrue(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invoke"));
         Assertions.assertTrue(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invokeAsync"));
         Assertions.assertFalse(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "testMethod"));
     }
 
     @Test
-    public void testIsEcho() {
+    void testIsEcho() {
         Assertions.assertTrue(RpcUtils.isEcho("Ljava/lang/Object;", "$echo"));
         Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/Object;", "testMethod"));
         Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/String;", "$echo"));
     }
     @Test
-    public void testIsReturnTypeFuture() {
+    void testIsReturnTypeFuture() {
         Class<?> demoServiceClass = DemoService.class;
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);

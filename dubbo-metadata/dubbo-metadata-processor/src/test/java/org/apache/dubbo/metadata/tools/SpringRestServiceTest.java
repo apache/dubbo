@@ -29,10 +29,10 @@ import java.io.IOException;
  *
  * @since 2.7.6
  */
-public class SpringRestServiceTest {
+class SpringRestServiceTest {
 
     @Test
-    public void test() throws IOException {
+    void test() throws IOException {
         Compiler compiler = new Compiler();
         compiler.compile(User.class, RestService.class, SpringRestService.class);
     }

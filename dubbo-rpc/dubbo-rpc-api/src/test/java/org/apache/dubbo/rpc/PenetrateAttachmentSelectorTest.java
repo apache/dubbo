@@ -30,10 +30,10 @@ import java.util.Set;
 /**
  * {@link PenetrateAttachmentSelector}
  */
-public class PenetrateAttachmentSelectorTest {
+class PenetrateAttachmentSelectorTest {
 
     @Test
-    public void test() {
+    void test() {
         ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ApplicationModel.defaultModel().getExtensionLoader(PenetrateAttachmentSelector.class);
         Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
         Map<String, Object> allSelected = new HashMap<>();

@@ -42,7 +42,7 @@ import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
  * <p>
  * mvn clean test -Dtest=*PerformanceClientTest -Dserver=10.20.153.187:9911
  */
-public class PerformanceClientTest  {
+class PerformanceClientTest  {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceClientTest.class);
 

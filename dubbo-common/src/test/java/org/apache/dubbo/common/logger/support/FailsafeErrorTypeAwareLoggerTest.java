@@ -34,9 +34,9 @@ import static org.mockito.Mockito.verify;
 /**
  * Tests for FailsafeErrorTypeAwareLogger to test whether it 'ignores' exceptions thrown by logger or not.
  */
-public class FailsafeErrorTypeAwareLoggerTest {
+class FailsafeErrorTypeAwareLoggerTest {
     @Test
-    public void testFailsafeErrorTypeAwareForLoggingMethod() {
+    void testFailsafeErrorTypeAwareForLoggingMethod() {
         Logger failLogger = mock(Logger.class);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
 
@@ -60,7 +60,7 @@ public class FailsafeErrorTypeAwareLoggerTest {
     }
 
     @Test
-    public void testSuccessLogger() {
+    void testSuccessLogger() {
         Logger successLogger = mock(Logger.class);
         FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(successLogger);
 
@@ -75,7 +75,7 @@ public class FailsafeErrorTypeAwareLoggerTest {
     }
 
     @Test
-    public void testGetLogger() {
+    void testGetLogger() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             Logger failLogger = mock(Logger.class);
             FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
@@ -86,7 +86,7 @@ public class FailsafeErrorTypeAwareLoggerTest {
     }
 
     @Test
-    public void testInstructionShownOrNot() {
+    void testInstructionShownOrNot() {
         LoggerFactory.setLoggerAdapter(FrameworkModel.defaultModel(), "jdk");
 
         ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FailsafeErrorTypeAwareLoggerTest.class);

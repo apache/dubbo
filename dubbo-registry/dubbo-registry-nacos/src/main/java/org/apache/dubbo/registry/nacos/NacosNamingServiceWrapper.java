@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import com.alibaba.nacos.api.exception.NacosException;
@@ -24,7 +25,16 @@ import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class NacosNamingServiceWrapper {
 
@@ -32,52 +42,213 @@ public class NacosNamingServiceWrapper {
 
     private static final String INNERCLASS_COMPATIBLE_SYMBOL = "___";
 
-    private final NamingService namingService;
+    private final NacosConnectionManager nacosConnectionManager;
 
-    public NacosNamingServiceWrapper(NamingService namingService) {
-        this.namingService = namingService;
+    private final boolean isSupportBatchRegister;
+
+    private final Map<InstanceId, InstancesInfo> registerStatus = new ConcurrentHashMap<>();
+    private final Map<SubscribeInfo, NamingService> subscribeStatus = new ConcurrentHashMap<>();
+    private final Lock mapLock = new ReentrantLock();
+
+    public NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager) {
+        this.nacosConnectionManager = nacosConnectionManager;
+        this.isSupportBatchRegister = MethodUtils.findMethod(NamingService.class, "batchRegisterInstance", String.class, String.class, List.class) != null;
     }
 
+    /**
+     * @deprecated for uts only
+     */
+    @Deprecated
+    protected NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager, boolean isSupportBatchRegister) {
+        this.nacosConnectionManager = nacosConnectionManager;
+        this.isSupportBatchRegister = isSupportBatchRegister;
+    }
 
     public String getServerStatus() {
-        return namingService.getServerStatus();
+        return nacosConnectionManager.getNamingService().getServerStatus();
     }
 
     public void subscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
-        namingService.subscribe(handleInnerSymbol(serviceName), group, eventListener);
+        String nacosServiceName = handleInnerSymbol(serviceName);
+        SubscribeInfo subscribeInfo = new SubscribeInfo(nacosServiceName, group, eventListener);
+        NamingService namingService = subscribeStatus.computeIfAbsent(subscribeInfo, info -> nacosConnectionManager.getNamingService());
+        namingService.subscribe(nacosServiceName, group, eventListener);
     }
 
     public void unsubscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
-        namingService.unsubscribe(handleInnerSymbol(serviceName), group, eventListener);
+        String nacosServiceName = handleInnerSymbol(serviceName);
+        SubscribeInfo subscribeInfo = new SubscribeInfo(nacosServiceName, group, eventListener);
+        NamingService namingService = subscribeStatus.get(subscribeInfo);
+        if (namingService != null) {
+            namingService.unsubscribe(nacosServiceName, group, eventListener);
+            subscribeStatus.remove(subscribeInfo);
+        }
     }
 
     public List<Instance> getAllInstances(String serviceName, String group) throws NacosException {
-        return namingService.getAllInstances(handleInnerSymbol(serviceName), group);
+        return nacosConnectionManager.getNamingService().getAllInstances(handleInnerSymbol(serviceName), group);
     }
 
     public void registerInstance(String serviceName, String group, Instance instance) throws NacosException {
-        namingService.registerInstance(handleInnerSymbol(serviceName), group, instance);
+        String nacosServiceName = handleInnerSymbol(serviceName);
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
+
+        try {
+            instancesInfo.lock();
+            if (!instancesInfo.isValid()) {
+                registerInstance(serviceName, group, instance);
+                return;
+            }
+            if (instancesInfo.getInstances().isEmpty()) {
+                // directly register
+                NamingService namingService = nacosConnectionManager.getNamingService();
+                namingService.registerInstance(nacosServiceName, group, instance);
+                instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
+                return;
+            }
+
+            if (instancesInfo.getInstances().size() == 1 && isSupportBatchRegister) {
+                InstanceInfo previous = instancesInfo.getInstances().get(0);
+                List<Instance> instanceListToRegister = new ArrayList<>();
+
+                NamingService namingService = previous.getNamingService();
+                instanceListToRegister.add(previous.getInstance());
+                instanceListToRegister.add(instance);
+
+                try {
+                    namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister);
+                    instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
+                    instancesInfo.setBatchRegistered(true);
+                    return;
+                } catch (NacosException e) {
+                    // ignore
+                }
+            }
+
+            if (instancesInfo.isBatchRegistered()) {
+                NamingService namingService = instancesInfo.getInstances().get(0).getNamingService();
+                List<Instance> instanceListToRegister = new ArrayList<>();
+                for (InstanceInfo instanceInfo : instancesInfo.getInstances()) {
+                    instanceListToRegister.add(instanceInfo.getInstance());
+                }
+                instanceListToRegister.add(instance);
+                namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister);
+                instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
+                return;
+            }
+
+            // fallback to register one by one
+            Set<NamingService> selectedNamingServices = instancesInfo.getInstances()
+                .stream()
+                .map(InstanceInfo::getNamingService)
+                .collect(Collectors.toSet());
+            NamingService namingService = nacosConnectionManager.getNamingService(selectedNamingServices);
+            namingService.registerInstance(nacosServiceName, group, instance);
+            instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
+        } finally {
+            instancesInfo.unlock();
+        }
     }
 
     public void deregisterInstance(String serviceName, String group, String ip, int port) throws NacosException {
-        namingService.deregisterInstance(handleInnerSymbol(serviceName), group, ip, port);
+        String nacosServiceName = handleInnerSymbol(serviceName);
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
+
+        try {
+            instancesInfo.lock();
+
+            List<Instance> instances = instancesInfo.getInstances()
+                .stream()
+                .map(InstanceInfo::getInstance)
+                .filter(instance -> Objects.equals(instance.getIp(), ip) && instance.getPort() == port)
+                .collect(Collectors.toList());
+            for (Instance instance : instances) {
+                deregisterInstance(serviceName, group, instance);
+            }
+        } finally {
+            instancesInfo.unlock();
+        }
     }
 
 
     public void deregisterInstance(String serviceName, String group, Instance instance) throws NacosException {
-        namingService.deregisterInstance(handleInnerSymbol(serviceName), group, instance);
+        String nacosServiceName = handleInnerSymbol(serviceName);
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
+
+        try {
+            instancesInfo.lock();
+            Optional<InstanceInfo> optional = instancesInfo.getInstances()
+                .stream()
+                .filter(instanceInfo -> instanceInfo.getInstance().equals(instance))
+                .findAny();
+            if (!optional.isPresent()) {
+                return;
+            }
+            InstanceInfo instanceInfo = optional.get();
+            instancesInfo.getInstances().remove(instanceInfo);
+
+            try {
+                mapLock.lock();
+                if (instancesInfo.getInstances().isEmpty()) {
+                    registerStatus.remove(new InstanceId(nacosServiceName, group));
+                    instancesInfo.setValid(false);
+                }
+            } finally {
+                mapLock.unlock();
+            }
+
+            // only one registered
+            if (instancesInfo.getInstances().isEmpty()) {
+                // directly unregister
+                instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance);
+                instancesInfo.setBatchRegistered(false);
+                return;
+            }
+
+            if (instancesInfo.isBatchRegistered()) {
+                // register the rest instances
+                List<Instance> instanceListToRegister = new ArrayList<>();
+                for (InstanceInfo info : instancesInfo.getInstances()) {
+                    instanceListToRegister.add(info.getInstance());
+                }
+                instanceInfo.getNamingService().batchRegisterInstance(nacosServiceName, group, instanceListToRegister);
+            } else {
+                // unregister one
+                instanceInfo.getNamingService().deregisterInstance(nacosServiceName, group, instance);
+            }
+        } finally {
+            instancesInfo.unlock();
+        }
     }
 
     public ListView<String> getServicesOfServer(int pageNo, int pageSize, String group) throws NacosException {
-        return namingService.getServicesOfServer(pageNo, pageSize, group);
+        return nacosConnectionManager.getNamingService().getServicesOfServer(pageNo, pageSize, group);
     }
 
     public List<Instance> selectInstances(String serviceName, String group, boolean healthy) throws NacosException {
-        return namingService.selectInstances(handleInnerSymbol(serviceName), group, healthy);
+        return nacosConnectionManager.getNamingService().selectInstances(handleInnerSymbol(serviceName), group, healthy);
     }
 
     public void shutdown() throws NacosException {
-        this.namingService.shutDown();
+        this.nacosConnectionManager.shutdownAll();
     }
 
     /**
@@ -89,5 +260,130 @@ public class NacosNamingServiceWrapper {
             return null;
         }
         return serviceName.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);
+    }
+
+    protected static class InstanceId {
+        private final String serviceName;
+        private final String group;
+
+        public InstanceId(String serviceName, String group) {
+            this.serviceName = serviceName;
+            this.group = group;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public String getGroup() {
+            return group;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            InstanceId that = (InstanceId) o;
+            return Objects.equals(serviceName, that.serviceName) && Objects.equals(group, that.group);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(serviceName, group);
+        }
+    }
+
+    protected static class InstancesInfo {
+        private final Lock lock = new ReentrantLock();
+        private final List<InstanceInfo> instances = new ArrayList<>();
+        private volatile boolean batchRegistered = false;
+        private volatile boolean valid = true;
+
+        public void lock() {
+            lock.lock();
+        }
+
+        public void unlock() {
+            lock.unlock();
+        }
+
+        public List<InstanceInfo> getInstances() {
+            return instances;
+        }
+
+        public boolean isBatchRegistered() {
+            return batchRegistered;
+        }
+
+        public void setBatchRegistered(boolean batchRegistered) {
+            this.batchRegistered = batchRegistered;
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public void setValid(boolean valid) {
+            this.valid = valid;
+        }
+    }
+
+    protected static class InstanceInfo {
+        private final Instance instance;
+        private final NamingService namingService;
+
+        public InstanceInfo(Instance instance, NamingService namingService) {
+            this.instance = instance;
+            this.namingService = namingService;
+        }
+
+        public Instance getInstance() {
+            return instance;
+        }
+
+        public NamingService getNamingService() {
+            return namingService;
+        }
+    }
+
+    private static class SubscribeInfo {
+        private final String serviceName;
+        private final String group;
+        private final EventListener eventListener;
+
+        public SubscribeInfo(String serviceName, String group, EventListener eventListener) {
+            this.serviceName = serviceName;
+            this.group = group;
+            this.eventListener = eventListener;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            SubscribeInfo that = (SubscribeInfo) o;
+            return Objects.equals(serviceName, that.serviceName) && Objects.equals(group, that.group) && Objects.equals(eventListener, that.eventListener);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(serviceName, group, eventListener);
+        }
+    }
+
+    /**
+     * @deprecated for uts only
+     */
+    @Deprecated
+    protected Map<InstanceId, InstancesInfo> getRegisterStatus() {
+        return registerStatus;
     }
 }

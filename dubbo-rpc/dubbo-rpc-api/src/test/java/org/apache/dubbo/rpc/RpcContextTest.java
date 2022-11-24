@@ -30,10 +30,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class RpcContextTest {
+class RpcContextTest {
 
     @Test
-    public void testGetContext() {
+    void testGetContext() {
 
         RpcContext rpcContext = RpcContext.getClientAttachment();
         Assertions.assertNotNull(rpcContext);
@@ -53,7 +53,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testAddress() {
+    void testAddress() {
         RpcContext context = RpcContext.getServiceContext();
         context.setLocalAddress("127.0.0.1", 20880);
         Assertions.assertEquals(20880, context.getLocalAddress().getPort());
@@ -72,7 +72,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testCheckSide() {
+    void testCheckSide() {
 
         RpcContext context = RpcContext.getServiceContext();
 
@@ -89,7 +89,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testAttachments() {
+    void testAttachments() {
 
         RpcContext context = RpcContext.getClientAttachment();
         Map<String, Object> map = new HashMap<>();
@@ -117,7 +117,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testObject() {
+    void testObject() {
 
         RpcContext context = RpcContext.getClientAttachment();
         Map<String, Object> map = new HashMap<String, Object>();
@@ -147,7 +147,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testAsync() {
+    void testAsync() {
 
         RpcContext rpcContext = RpcContext.getServiceContext();
         Assertions.assertFalse(rpcContext.isAsyncStarted());
@@ -164,7 +164,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testAsyncCall() {
+    void testAsyncCall() {
         CompletableFuture<String> rpcFuture = RpcContext.getClientAttachment().asyncCall(() -> {
             throw new NullPointerException();
         });
@@ -184,7 +184,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testObjectAttachment() {
+    void testObjectAttachment() {
         RpcContext rpcContext = RpcContext.getClientAttachment();
 
         rpcContext.setAttachment("objectKey1", "value1");
@@ -217,7 +217,7 @@ public class RpcContextTest {
     }
 
     @Test
-    public void testRestore() {
+    void testRestore() {
 
     }
 

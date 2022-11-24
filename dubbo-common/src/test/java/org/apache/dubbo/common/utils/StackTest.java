@@ -26,9 +26,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-public class StackTest {
+class StackTest {
     @Test
-    public void testOps() throws Exception {
+    void testOps() throws Exception {
         Stack<String> stack = new Stack<String>();
         stack.push("one");
         assertThat(stack.get(0), equalTo("one"));
@@ -49,7 +49,7 @@ public class StackTest {
     }
 
     @Test
-    public void testClear() throws Exception {
+    void testClear() throws Exception {
         Stack<String> stack = new Stack<String>();
         stack.push("one");
         stack.push("two");
@@ -59,7 +59,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalPop() throws Exception {
+    void testIllegalPop() throws Exception {
         Assertions.assertThrows(EmptyStackException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.pop();
@@ -67,7 +67,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalPeek() throws Exception {
+    void testIllegalPeek() throws Exception {
         Assertions.assertThrows(EmptyStackException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.peek();
@@ -75,7 +75,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalGet() throws Exception {
+    void testIllegalGet() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.get(1);
@@ -83,7 +83,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalGetNegative() throws Exception {
+    void testIllegalGetNegative() throws Exception {
         Stack<String> stack = new Stack<String>();
         stack.push("one");
         stack.get(-1);
@@ -94,7 +94,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalSet() throws Exception {
+    void testIllegalSet() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.set(1, "illegal");
@@ -102,7 +102,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalSetNegative() throws Exception {
+    void testIllegalSetNegative() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.set(-1, "illegal");
@@ -110,7 +110,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalRemove() throws Exception {
+    void testIllegalRemove() throws Exception {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             Stack<String> stack = new Stack<String>();
             stack.remove(1);
@@ -118,7 +118,7 @@ public class StackTest {
     }
 
     @Test
-    public void testIllegalRemoveNegative() throws Exception {
+    void testIllegalRemoveNegative() throws Exception {
         Stack<String> stack = new Stack<String>();
         stack.push("one");
 

@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 class MeshRuleDispatcherTest {
 
     @Test
-    public void post() {
+    void post() {
         MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
 
         Map<String, List<Map<String, Object>>> ruleMap = new HashMap<>();
@@ -107,7 +107,7 @@ class MeshRuleDispatcherTest {
     }
 
     @Test
-    public void register() {
+    void register() {
         MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
 
         MeshRuleListener listener1 = new MeshRuleListener() {
@@ -134,7 +134,7 @@ class MeshRuleDispatcherTest {
     }
 
     @Test
-    public void unregister() {
+    void unregister() {
         MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
 
         MeshRuleListener listener1 = new MeshRuleListener() {

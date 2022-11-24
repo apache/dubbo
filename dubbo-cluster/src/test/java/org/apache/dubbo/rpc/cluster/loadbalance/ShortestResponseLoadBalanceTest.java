@@ -34,7 +34,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest {
+class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
     @Order(0)

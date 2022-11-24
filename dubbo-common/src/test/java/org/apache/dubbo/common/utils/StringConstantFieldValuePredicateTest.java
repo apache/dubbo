@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.8
  */
-public class StringConstantFieldValuePredicateTest {
+class StringConstantFieldValuePredicateTest {
 
     public static final String S1 = "1";
 
@@ -38,7 +38,7 @@ public class StringConstantFieldValuePredicateTest {
     public static final Object O2 = 3;
 
     @Test
-    public void test() {
+    void test() {
         Predicate<String> predicate = of(getClass());
         assertTrue(predicate.test("1"));
         assertTrue(predicate.test("2"));

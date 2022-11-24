@@ -27,9 +27,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class FailsafeLoggerTest {
+class FailsafeLoggerTest {
     @Test
-    public void testFailSafeForLoggingMethod() {
+    void testFailSafeForLoggingMethod() {
         Logger failLogger = mock(Logger.class);
         FailsafeLogger failsafeLogger = new FailsafeLogger(failLogger);
 
@@ -65,7 +65,7 @@ public class FailsafeLoggerTest {
     }
 
     @Test
-    public void testSuccessLogger() {
+    void testSuccessLogger() {
         Logger successLogger = mock(Logger.class);
         FailsafeLogger failsafeLogger = new FailsafeLogger(successLogger);
         failsafeLogger.error("error");
@@ -94,7 +94,7 @@ public class FailsafeLoggerTest {
     }
 
     @Test
-    public void testGetLogger() {
+    void testGetLogger() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             Logger failLogger = mock(Logger.class);
             FailsafeLogger failsafeLogger = new FailsafeLogger(failLogger);

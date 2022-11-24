@@ -46,7 +46,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @PropertySource("classpath:/org/apache/dubbo/config/spring/reference/localcallam/local-call-config.properties")
 @ContextConfiguration(classes = {LocalCallMultipleReferenceAnnotationsTest.class, LocalCallMultipleReferenceAnnotationsTest.LocalCallConfiguration.class})
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-public class LocalCallMultipleReferenceAnnotationsTest {
+class LocalCallMultipleReferenceAnnotationsTest {
 
     @BeforeAll
     public static void setUp() {
@@ -63,7 +63,7 @@ public class LocalCallMultipleReferenceAnnotationsTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testLocalCall() {
+    void testLocalCall() {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");

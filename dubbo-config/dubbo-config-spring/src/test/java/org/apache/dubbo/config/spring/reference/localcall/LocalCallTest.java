@@ -37,7 +37,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ContextConfiguration(locations = {"classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-provider.xml",
         "classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-consumer.xml"})
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-public class LocalCallTest {
+class LocalCallTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -57,7 +57,7 @@ public class LocalCallTest {
     private HelloService localHelloService;
 
     @Test
-    public void testLocalCall() {
+    void testLocalCall() {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");

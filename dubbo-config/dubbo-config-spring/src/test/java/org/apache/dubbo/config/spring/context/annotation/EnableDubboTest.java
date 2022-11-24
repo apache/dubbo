@@ -48,7 +48,7 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  *
  * @since 2.5.8
  */
-public class EnableDubboTest {
+class EnableDubboTest {
 
     private AnnotationConfigApplicationContext context;
 
@@ -65,7 +65,7 @@ public class EnableDubboTest {
     }
 
     @Test
-    public void testProvider() {
+    void testProvider() {
 
         context.register(TestProviderConfiguration.class);
 
@@ -88,7 +88,7 @@ public class EnableDubboTest {
     }
 
     @Test
-    public void testConsumer() {
+    void testConsumer() {
 
         context.register(TestProviderConfiguration.class, TestConsumerConfiguration.class);
         context.refresh();

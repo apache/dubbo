@@ -47,7 +47,7 @@ import java.io.IOException;
 /**
  * The testcases are only for checking the core process of exporting provider.
  */
-public class MultipleRegistryCenterExportProviderIntegrationTest implements IntegrationTest {
+class MultipleRegistryCenterExportProviderIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterExportProviderIntegrationTest.class);
 
