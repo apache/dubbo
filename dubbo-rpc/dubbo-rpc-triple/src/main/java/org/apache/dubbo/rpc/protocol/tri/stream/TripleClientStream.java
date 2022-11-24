@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -52,6 +52,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+
 
 /**
  * ClientStream is an abstraction for bi-directional messaging. It maintains a {@link WriteQueue} to
@@ -60,7 +62,7 @@ import java.util.concurrent.Executor;
  */
 public class TripleClientStream extends AbstractStream implements ClientStream {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleClientStream.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientStream.class);
 
     public final ClientStream.Listener listener;
     private final WriteQueue writeQueue;
@@ -69,9 +71,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
     // for test
     TripleClientStream(FrameworkModel frameworkModel,
-        Executor executor,
-        WriteQueue writeQueue,
-        ClientStream.Listener listener) {
+                       Executor executor,
+                       WriteQueue writeQueue,
+                       ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = null;
         this.listener = listener;
@@ -79,9 +81,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
     }
 
     public TripleClientStream(FrameworkModel frameworkModel,
-        Executor executor,
-        Channel parent,
-        ClientStream.Listener listener) {
+                              Executor executor,
+                              Channel parent,
+                              ClientStream.Listener listener) {
         super(executor, frameworkModel);
         this.parent = parent;
         this.listener = listener;
@@ -213,7 +215,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                     }
                 });
             } else {
-                LOGGER.error("Triple convertNoLowerCaseHeader error, obj is not String");
+                LOGGER.error(COMMON_FAILED_REFLECT, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
             }
             return attachments;
         }

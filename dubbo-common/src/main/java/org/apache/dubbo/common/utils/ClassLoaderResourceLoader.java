@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
@@ -35,13 +35,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
+
 public class ClassLoaderResourceLoader {
-    private static Logger logger = LoggerFactory.getLogger(ClassLoaderResourceLoader.class);
+    private static ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ClassLoaderResourceLoader.class);
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
     static {
         // register resources destroy listener
-        GlobalResourcesRepository.registerGlobalDisposable(()-> destroy());
+        GlobalResourcesRepository.registerGlobalDisposable(() -> destroy());
     }
 
     public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) throws InterruptedException {
@@ -88,7 +90,7 @@ public class ClassLoaderResourceLoader {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Exception occurred when reading SPI definitions. SPI path: " + fileName + " ClassLoader name: " + currentClassLoader, e);
+                logger.error(COMMON_IO_EXCEPTION, "", "", "Exception occurred when reading SPI definitions. SPI path: " + fileName + " ClassLoader name: " + currentClassLoader, e);
             }
             urlCache.put(fileName, set);
         }
