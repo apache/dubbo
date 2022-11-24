@@ -77,8 +77,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     // stream listener start
     @Override
-    public void onMessage(TripleFlowControlFrame data) {
-        byte[] message = data.getMessage();
+    public void onMessage(Object data) {
+        TripleFlowControlFrame tripleFlowControlFrame = (TripleFlowControlFrame)data;
+        byte[] message = tripleFlowControlFrame.getMessage();
         if (done) {
             LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "",
                 "Received message from closed stream,connection=" + connectionClient + " service="

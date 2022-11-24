@@ -43,7 +43,7 @@ public interface Stream {
          *
          * @param message message received from remote peer
          */
-        void onMessage(TripleFlowControlFrame message);
+        void onMessage(Object message);
 
         /**
          * Callback when receive cancel signal.

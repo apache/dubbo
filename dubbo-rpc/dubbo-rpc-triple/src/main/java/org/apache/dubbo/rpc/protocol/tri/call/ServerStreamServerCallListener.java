@@ -17,14 +17,19 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TriRpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TriHttp2LocalFlowController;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2WindowUpdateFrame;
 import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
+
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ServerStreamServerCallListener.class);
 
     private Http2Connection http2Connection;
 
@@ -42,16 +47,17 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(TripleFlowControlFrame message) {
-        if (message.getInstance() instanceof Object[]) {
-            Object[] data = (Object[])message.getInstance();
+    public void onMessage(Object message) {
+        TripleFlowControlFrame tripleFlowControlFrame = (TripleFlowControlFrame)message;
+        if (tripleFlowControlFrame.getInstance() instanceof Object[]) {
+            Object[] data = (Object[])tripleFlowControlFrame.getInstance();
             invocation.setArguments(new Object[]{data[0], responseObserver});
         }else{
-            invocation.setArguments(new Object[]{message.getInstance(), responseObserver});
+            invocation.setArguments(new Object[]{tripleFlowControlFrame.getInstance(), responseObserver});
         }
-        http2WindowUpdateFrame = message.getHttp2WindowUpdateFrame();
-        http2Connection = message.getHttp2Connection();
-        windowSizeIncrement = windowSizeIncrement +  message.getHttp2WindowUpdateFrame().windowSizeIncrement();
+        http2WindowUpdateFrame = tripleFlowControlFrame.getTripleFlowControlBean().getHttp2WindowUpdateFrame();
+        http2Connection = tripleFlowControlFrame.getTripleFlowControlBean().getHttp2Connection();
+        windowSizeIncrement = windowSizeIncrement +  tripleFlowControlFrame.getTripleFlowControlBean().getHttp2WindowUpdateFrame().windowSizeIncrement();
     }
 
     @Override
@@ -63,6 +69,13 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-        invoke(new TripleFlowControlFrame(http2Connection,windowSizeIncrement,http2WindowUpdateFrame,null));
+        invoke();
+        try {
+            //unary and serverstream add flowcontrol update windowsize
+            TriHttp2LocalFlowController triHttp2LocalFlowController = (TriHttp2LocalFlowController)http2Connection.local().flowController();
+            triHttp2LocalFlowController.consumeTriBytes(http2Connection.stream(http2WindowUpdateFrame.stream().id()),windowSizeIncrement);
+        }catch (Exception e){
+            LOGGER.error("flowcontrol exception",e);
+        }
     }
 }

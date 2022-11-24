@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.TriRpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import java.util.Map;
 
 /**
@@ -38,7 +37,7 @@ public interface ServerCall {
          *
          * @param message message received
          */
-        void onMessage(TripleFlowControlFrame message);
+        void onMessage(Object message);
 
         /**
          * @param status when the call is canceled.

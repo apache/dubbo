@@ -66,7 +66,7 @@ class StubServerCallTest {
             service, method,
             ImmediateEventExecutor.INSTANCE);
         call.onHeader(Collections.emptyMap());
-        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(null,0,null,new byte[0]);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(new byte[0],null,null);
         call.onMessage(tripleFlowControlFrame);
         call.onComplete();
     }

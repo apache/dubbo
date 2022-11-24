@@ -16,6 +16,7 @@
  */
 
 package org.apache.dubbo.rpc.protocol.tri.frame;
+import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlBean;
 import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
@@ -154,10 +155,9 @@ public class TriDecoder implements Deframer {
         // unknown until all bytes are read, and we don't know when it happens.
         byte[] streams = compressedFlag ? getCompressedBody() : getUncompressedBody();
         int bytes = flowControlledBytes;
-        flowControlledBytes = 0;
-        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(connection,0,new DefaultHttp2WindowUpdateFrame(bytes).stream(stream),streams);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(streams,null,new TripleFlowControlBean(connection,bytes,new DefaultHttp2WindowUpdateFrame(bytes).stream(stream)));
         listener.onRawMessage(tripleFlowControlFrame);
-
+        flowControlledBytes = 0;
         // Done with this frame, begin processing the next header.
         state = GrpcDecodeState.HEADER;
         requiredLength = HEADER_LENGTH;

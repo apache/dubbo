@@ -37,7 +37,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
         ServerCallToObserverAdapter<Object> responseObserver) {
         super(invocation, invoker, responseObserver);
         invocation.setArguments(new Object[]{responseObserver});
-        invoke(null);
+        invoke();
     }
 
     @Override
@@ -46,23 +46,24 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     }
 
     @Override
-    public void onMessage(TripleFlowControlFrame message) {
-        if (message.getInstance() instanceof Object[]) {
-            Object[] data = (Object[])message.getInstance();
+    public void onMessage(Object message) {
+        TripleFlowControlFrame tripleFlowControlFrame = (TripleFlowControlFrame)message;
+        if (tripleFlowControlFrame.getInstance() instanceof Object[]) {
+            Object[] data = (Object[])tripleFlowControlFrame.getInstance();
             requestObserver.onNext(data[0]);
         }else{
-            requestObserver.onNext(message.getInstance());
+            requestObserver.onNext(tripleFlowControlFrame.getInstance());
         }
         if (responseObserver.isAutoRequestN()) {
             responseObserver.request(1);
         }
-        Http2WindowUpdateFrame stream = message.getHttp2WindowUpdateFrame();
-        Http2Connection connection = message.getHttp2Connection();
+        Http2WindowUpdateFrame stream = tripleFlowControlFrame.getTripleFlowControlBean().getHttp2WindowUpdateFrame();
+        Http2Connection connection = tripleFlowControlFrame.getTripleFlowControlBean().getHttp2Connection();
         //stream add flowcontrol update windowsize
         if(null != stream && null != connection.stream(stream.stream().id())) {
             try {
                 TriHttp2LocalFlowController triHttp2LocalFlowController = (TriHttp2LocalFlowController) connection.local().flowController();
-                triHttp2LocalFlowController.consumeTriBytes(connection.stream(stream.stream().id()), stream.windowSizeIncrement());
+                triHttp2LocalFlowController.consumeTriBytes(connection.stream(stream.stream().id()), tripleFlowControlFrame.getTripleFlowControlBean().getWindowSizeIncrement());
             } catch (Exception e) {
                 LOGGER.error("flowcontroller failed ", e);
             }

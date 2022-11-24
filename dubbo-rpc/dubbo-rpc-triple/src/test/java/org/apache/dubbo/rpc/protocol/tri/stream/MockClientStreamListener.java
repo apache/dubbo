@@ -39,8 +39,9 @@ public class MockClientStreamListener implements ClientStream.Listener {
     }
 
     @Override
-    public void onMessage(TripleFlowControlFrame message) {
-        this.message = message.getMessage();
+    public void onMessage(Object message) {
+        TripleFlowControlFrame tripleFlowControlFrame = (TripleFlowControlFrame)message;
+        this.message = tripleFlowControlFrame.getMessage();
     }
 
     @Override

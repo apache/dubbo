@@ -88,7 +88,7 @@ class ReflectionServerCallTest {
             Collections.emptyList(),
             ImmediateEventExecutor.INSTANCE);
         call2.onHeader(Collections.emptyMap());
-        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(null,0,null,new byte[0]);
+        TripleFlowControlFrame tripleFlowControlFrame = new TripleFlowControlFrame(new byte[0],null,null);
         call2.onMessage(tripleFlowControlFrame);
         call2.onComplete();
     }
