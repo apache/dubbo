@@ -85,7 +85,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         }
     }
     private void addAdaptiveResponse(Result appResponse,Invoker<?> invoker, Invocation invocation) {
-        String adaptiveLoadAttachment = invocation.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
+        String adaptiveLoadAttachment = (String) invocation.getAttributes().get(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
         if (StringUtils.isNotEmpty(adaptiveLoadAttachment)) {
             //TODO
 //            String[] indexes = adaptiveLoadAttachment.split(",");

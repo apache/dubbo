@@ -22,23 +22,19 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 
 /**
  * AdaptiveLoadBalance
  * </p>
  */
-public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeModelAware {
+public class AdaptiveLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "adaptive";
 
@@ -47,32 +43,20 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
 
     private final int default_timeout = 30_000;
 
-    private ApplicationModel scopeModel;
-
     private AdaptiveMetrics adaptiveMetrics;
 
-    @Override
-    public void setApplicationModel(ApplicationModel scopeModel){
-        AdaptiveMetrics bean = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
-        if (bean == null) {
-            scopeModel.getBeanFactory().registerBean(new AdaptiveMetrics());
-        }
-        this.scopeModel = scopeModel;
-    }
-
-    private AdaptiveMetrics getAdaptiveMetricsInstance(){
-        if (adaptiveMetrics == null) {
-            adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
-        }
-        return adaptiveMetrics;
+    public AdaptiveLoadBalance(ApplicationModel scopeModel){
+        adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
     }
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         Invoker invoker = selectByP2C(invokers,url,invocation);
-        invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
-        getAdaptiveMetricsInstance().addConsumerReq(buildServiceKey(invoker,invocation));
-        getAdaptiveMetricsInstance().setPickTime(buildServiceKey(invoker,invocation),System.currentTimeMillis());
+        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
+        long startTime = System.currentTimeMillis();
+        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME,startTime);
+        adaptiveMetrics.addConsumerReq(buildServiceKey(invoker,invocation));
+        adaptiveMetrics.setPickTime(buildServiceKey(invoker,invocation),startTime);
 
         return invoker;
     }
@@ -88,9 +72,9 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
         }
 
         int pos1 = ThreadLocalRandom.current().nextInt(length);
-        int pos2 = ThreadLocalRandom.current().nextInt(length);
-        while(pos1 == pos2) {
-            pos2 = ThreadLocalRandom.current().nextInt(length);
+        int pos2 = ThreadLocalRandom.current().nextInt(length - 1);
+        if (pos2 >= pos1) {
+            pos2 = pos2 + 1;
         }
 
         return chooseLowLoadInvoker(invokers.get(pos1),invokers.get(pos2),invocation);
@@ -98,20 +82,15 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
 
     private String buildServiceKey(Invoker<?> invoker,Invocation invocation){
         URL url = invoker.getUrl();
-        return url.getAddress() + ":" + invocation.getProtocolServiceKey();
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(url.getAddress()).append(":").append(invocation.getProtocolServiceKey());
+        return sb.toString();
     }
 
     private int getTimeout(Invoker<?> invoker, Invocation invocation) {
         URL url = invoker.getUrl();
-        Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
-        int timeout;
-        if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(url, invocation.getMethodName(), RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
-        } else {
-            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
-            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
-        }
-        return timeout;
+        String methodName = RpcUtils.getMethodName(invocation);
+        return (int) RpcUtils.getTimeout(url,methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
     }
 
     private <T> Invoker<T> chooseLowLoadInvoker(Invoker<T> invoker1,Invoker<T> invoker2,Invocation invocation){
@@ -119,8 +98,8 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance implements ScopeMod
         int weight2 = getWeight(invoker2, invocation);
         int timeout1 = getTimeout(invoker2, invocation);
         int timeout2 = getTimeout(invoker2, invocation);
-        long load1 = Double.doubleToLongBits(getAdaptiveMetricsInstance().getLoad(buildServiceKey(invoker1,invocation),weight1,timeout1 ));
-        long load2 = Double.doubleToLongBits(getAdaptiveMetricsInstance().getLoad(buildServiceKey(invoker2,invocation),weight2,timeout2 ));
+        long load1 = Double.doubleToLongBits(adaptiveMetrics.getLoad(buildServiceKey(invoker1,invocation),weight1,timeout1 ));
+        long load2 = Double.doubleToLongBits(adaptiveMetrics.getLoad(buildServiceKey(invoker2,invocation),weight2,timeout2 ));
 
         if (load1 == load2) {
             // The sum of weights

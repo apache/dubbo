@@ -49,7 +49,9 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         int sumInvoker3 = 0;
         int loop = 10000;
 
-        AdaptiveLoadBalance lb = new AdaptiveLoadBalance();
+        ApplicationModel scopeModel = ApplicationModel.defaultModel();
+
+        AdaptiveLoadBalance lb = new AdaptiveLoadBalance(scopeModel);
         for (int i = 0; i < loop; i++) {
             Invoker selected = lb.select(weightInvokers, null, weightTestInvocation);
 
@@ -93,10 +95,8 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         int sumInvoker5 = 0;
         int loop = 10000;
 
-        AdaptiveLoadBalance lb = new AdaptiveLoadBalance();
         scopeModel = ApplicationModel.defaultModel();
-        lb.setApplicationModel(scopeModel);
-
+        AdaptiveLoadBalance lb = new AdaptiveLoadBalance(scopeModel);
 
         lb.select(weightInvokersSR, null, weightTestInvocation);
 

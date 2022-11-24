@@ -17,8 +17,6 @@
 package org.apache.dubbo.rpc.cluster.filter.support;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.profiler.Profiler;
-import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,7 +29,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,25 +45,18 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
  * @see org.apache.dubbo.rpc.Filter
  * @see org.apache.dubbo.rpc.RpcContext
  */
-@Activate(group = CONSUMER, order = -200000)
-public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.Listener , ScopeModelAware {
+@Activate(group = CONSUMER, order = -200000, value = {"loadbalance:adaptive"})
+public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.Listener {
 
     /**
      * uses a single worker thread operating off an bounded queue
      */
     private ThreadPoolExecutor executor = null;
 
-    private ApplicationModel scopeModel;
-
     private AdaptiveMetrics adaptiveMetrics;
 
-    @Override
-    public void setApplicationModel(ApplicationModel scopeModel) {
-        AdaptiveMetrics bean = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
-        if (bean == null) {
-            scopeModel.getBeanFactory().registerBean(new AdaptiveMetrics());
-        }
-        this.scopeModel = scopeModel;
+    public AdaptiveLoadBalanceFilter(ApplicationModel scopeModel) {
+        adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
     }
 
     private ThreadPoolExecutor getExecutor(){
@@ -82,20 +72,15 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         return executor;
     }
 
-    private AdaptiveMetrics getAdaptiveMetricsInstance(){
-        if (adaptiveMetrics == null) {
-            adaptiveMetrics = scopeModel.getBeanFactory().getBean(AdaptiveMetrics.class);
-        }
-        return adaptiveMetrics;
-    }
-
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         return invoker.invoke(invocation);
     }
 
     private String buildServiceKey(Invocation invocation){
-        return invocation.getInvoker().getUrl().getAddress() + ":" + invocation.getProtocolServiceKey();
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(invocation.getInvoker().getUrl().getAddress()).append(":").append(invocation.getProtocolServiceKey());
+        return sb.toString();
         //return url.getAddress() + ProtocolUtils.serviceKey(url.getPort(), url.getPath(), url.getVersion(), url.getGroup());
     }
 
@@ -105,7 +90,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         try {
             if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
                 && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
-                getAdaptiveMetricsInstance().addConsumerSuccess(buildServiceKey(invocation));
+                adaptiveMetrics.addConsumerSuccess(buildServiceKey(invocation));
             }
             String attachment = appResponse.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
             if (StringUtils.isNotEmpty(attachment)) {
@@ -121,12 +106,14 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
                     }
                     metricsMap.put(groups[0], groups[1]);
                 }
-                ProfilerEntry profilerEntry = (ProfilerEntry) invocation.getAttributes().get(Profiler.PROFILER_KEY);
-                long rt = (System.nanoTime() - profilerEntry.getStartTime()) / 1000_000L;
-                metricsMap.put("rt", String.valueOf(rt));
+
+                Long startTime = (Long) invocation.getAttributes().get(Constants.ADAPTIVE_LOADBALANCE_START_TIME);
+                if (null != startTime) {
+                    metricsMap.put("rt", String.valueOf(System.currentTimeMillis() - startTime));
+                }
 
                 getExecutor().execute(() -> {
-                    getAdaptiveMetricsInstance().setProviderMetrics(buildServiceKey(invocation), metricsMap);
+                    adaptiveMetrics.setProviderMetrics(buildServiceKey(invocation), metricsMap);
                 });
             }
         }
@@ -141,7 +128,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
             && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
             getExecutor().execute(() -> {
-                getAdaptiveMetricsInstance().addErrorReq(buildServiceKey(invocation));
+                adaptiveMetrics.addErrorReq(buildServiceKey(invocation));
             });
         }
     }
