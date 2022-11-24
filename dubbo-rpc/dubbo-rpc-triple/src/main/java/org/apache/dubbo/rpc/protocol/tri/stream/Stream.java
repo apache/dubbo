@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.TriRpcStatus;
 
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.concurrent.Future;
-import org.apache.dubbo.rpc.protocol.tri.TripleFlowControlFrame;
 import java.net.SocketAddress;
 
 /**
