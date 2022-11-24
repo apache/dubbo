@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
  * {@link OnlineApp}
  * {@link OnlineInterface}
  */
-public class OnlineTest {
+class OnlineTest {
     private FrameworkModel frameworkModel;
     private ModuleServiceRepository repository;
     private ProviderModel.RegisterStatedURL registerStatedURL;
@@ -61,7 +61,7 @@ public class OnlineTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Online online = new Online(frameworkModel);
         String result = online.execute(mock(CommandContext.class), new String[]{DemoService.class.getName()});
         Assertions.assertEquals(result, "OK");

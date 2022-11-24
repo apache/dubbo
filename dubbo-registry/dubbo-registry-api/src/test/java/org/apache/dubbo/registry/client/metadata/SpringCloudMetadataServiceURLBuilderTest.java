@@ -32,12 +32,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.5
  */
-public class SpringCloudMetadataServiceURLBuilderTest {
+class SpringCloudMetadataServiceURLBuilderTest {
 
     private SpringCloudMetadataServiceURLBuilder builder = new SpringCloudMetadataServiceURLBuilder();
 
     @Test
-    public void testBuild() {
+    void testBuild() {
         List<URL> urls = builder.build(new DefaultServiceInstance("127.0.0.1", "test", 8080, ApplicationModel.defaultModel()));
         assertEquals(0, urls.size());
 

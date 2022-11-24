@@ -36,7 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MultiThreadTest {
+class MultiThreadTest {
 
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -48,7 +48,7 @@ public class MultiThreadTest {
     }
 
     @Test
-    public void testDubboMultiThreadInvoke() throws Exception {
+    void testDubboMultiThreadInvoke() throws Exception {
         ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService("TestService", DemoService.class);
         int port = NetUtils.getAvailablePort();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));

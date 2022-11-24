@@ -23,16 +23,17 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class DubboAppenderTest {
+class DubboAppenderTest {
     private LoggingEvent event;
 
     @BeforeEach
@@ -51,7 +52,7 @@ public class DubboAppenderTest {
     }
 
     @Test
-    public void testAvailable() {
+    void testAvailable() {
         assumeFalse(DubboAppender.available);
         DubboAppender.doStart();
         assertThat(DubboAppender.available, is(true));
@@ -60,7 +61,7 @@ public class DubboAppenderTest {
     }
 
     @Test
-    public void testAppend() {
+    void testAppend() {
         DubboAppender appender = new DubboAppender();
         appender.append(event);
         assumeTrue(0 == DubboAppender.logList.size());
@@ -71,7 +72,7 @@ public class DubboAppenderTest {
     }
 
     @Test
-    public void testClear() {
+    void testClear() {
         DubboAppender.doStart();
         DubboAppender appender = new DubboAppender();
         appender.append(event);

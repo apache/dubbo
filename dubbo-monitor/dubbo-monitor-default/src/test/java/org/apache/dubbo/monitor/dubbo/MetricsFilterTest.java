@@ -65,7 +65,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
-public class MetricsFilterTest {
+class MetricsFilterTest {
     private int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
 
     private final Function<URL, Invoker<DemoService>> invokerFunction = (url) -> {
@@ -93,7 +93,7 @@ public class MetricsFilterTest {
     }
 
     @Test
-    public void testAll() {
+    void testAll() {
         List<Callable<Void>> testcases = new LinkedList<>();
         testcases.add(() -> {
             testConsumerSuccess();

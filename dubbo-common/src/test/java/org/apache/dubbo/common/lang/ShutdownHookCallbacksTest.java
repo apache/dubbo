@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
-public class ShutdownHookCallbacksTest {
+class ShutdownHookCallbacksTest {
 
     private ShutdownHookCallbacks callbacks;
 
@@ -40,12 +40,12 @@ public class ShutdownHookCallbacksTest {
     }
 
     @Test
-    public void testSingleton() {
+    void testSingleton() {
         assertNotNull(callbacks);
     }
 
     @Test
-    public void testCallback() {
+    void testCallback() {
         callbacks.callback();
         DefaultShutdownHookCallback callback = (DefaultShutdownHookCallback) callbacks.getCallbacks().iterator().next();
         assertTrue(callback.isExecuted());

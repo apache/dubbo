@@ -42,7 +42,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_K
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 
-public class DefaultMetricsCollectorTest {
+class DefaultMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
     private String interfaceName;
@@ -70,7 +70,7 @@ public class DefaultMetricsCollectorTest {
     }
 
     @Test
-    public void testRequestsMetrics() {
+    void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         collector.increaseTotalRequests(interfaceName, methodName, group, version);
@@ -103,7 +103,7 @@ public class DefaultMetricsCollectorTest {
     }
 
     @Test
-    public void testRTMetrics() {
+    void testRTMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         collector.addRT(interfaceName, methodName, group, version, 10L);
@@ -132,7 +132,7 @@ public class DefaultMetricsCollectorTest {
     }
 
     @Test
-    public void testListener() {
+    void testListener() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
 

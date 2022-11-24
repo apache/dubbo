@@ -38,7 +38,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
@@ -52,6 +54,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 public class InternalServiceConfigBuilder<T> {
 
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
+    private static final Set<String> UNACCEPTABLE_PROTOCOL = Stream.of("rest", "grpc").collect(Collectors.toSet());
 
     private final ApplicationModel applicationModel;
     private String  protocol;
@@ -115,6 +118,7 @@ public class InternalServiceConfigBuilder<T> {
             .flatMap(Collection::stream)
             .map(ConsumerConfig::getProtocol)
             .filter(StringUtils::isNotEmpty)
+            .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
             .findFirst()
             .orElse("");
         // <dubbo:provider/>
@@ -138,6 +142,7 @@ public class InternalServiceConfigBuilder<T> {
                     }
                 })
                 .filter(StringUtils::isNotEmpty)
+                .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
                 .findFirst()
                 .orElse("");
         }
@@ -146,7 +151,11 @@ public class InternalServiceConfigBuilder<T> {
             Collection<ProtocolConfig> protocols = applicationModel.getApplicationConfigManager().getProtocols();
             if (CollectionUtils.isNotEmpty(protocols)) {
                 protocol = protocols.stream()
-                    .map(ProtocolConfig::getName).filter(StringUtils::isNotEmpty).findFirst().orElse("");
+                    .map(ProtocolConfig::getName)
+                    .filter(StringUtils::isNotEmpty)
+                    .filter(p -> !UNACCEPTABLE_PROTOCOL.contains(p))
+                    .findFirst()
+                    .orElse("");
             }
         }
         // <dubbo:application/>
@@ -159,7 +168,7 @@ public class InternalServiceConfigBuilder<T> {
                 }
             }
         }
-        return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
+        return StringUtils.isNotEmpty(protocol) && !UNACCEPTABLE_PROTOCOL.contains(protocol) ? protocol : DUBBO_PROTOCOL;
     }
 
     public InternalServiceConfigBuilder<T> protocol(String protocol) {

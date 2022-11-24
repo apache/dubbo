@@ -24,10 +24,10 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link ConfigConfigurationAdapter}
  */
-public class ConfigConfigurationAdapterTest {
+class ConfigConfigurationAdapterTest {
 
     @Test
-    public void test() {
+    void test() {
         RegistryConfig registryConfig = new RegistryConfig();
         registryConfig.setAddress("127.0.0.1");
         registryConfig.setPort(2181);

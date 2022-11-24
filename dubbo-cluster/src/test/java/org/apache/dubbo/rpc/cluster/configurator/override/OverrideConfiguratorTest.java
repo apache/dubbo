@@ -30,10 +30,10 @@ import java.util.Map;
 /**
  * OverrideConfiguratorTest
  */
-public class OverrideConfiguratorTest {
+class OverrideConfiguratorTest {
 
     @Test
-    public void testOverride_Application() {
+    void testOverride_Application() {
         OverrideConfigurator configurator = new OverrideConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
@@ -50,7 +50,7 @@ public class OverrideConfiguratorTest {
     }
 
     @Test
-    public void testOverride_Host() {
+    void testOverride_Host() {
         OverrideConfigurator configurator = new OverrideConfigurator(URL.valueOf("override://" + NetUtils.getLocalHost() + "/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
@@ -70,7 +70,7 @@ public class OverrideConfiguratorTest {
 
     // Test the version after 2.7
     @Test
-    public void testOverrideForVersion27() {
+    void testOverrideForVersion27() {
         {
             String consumerUrlV27 = "dubbo://172.24.160.179/com.foo.BarService?application=foo&side=consumer&timeout=100";
 

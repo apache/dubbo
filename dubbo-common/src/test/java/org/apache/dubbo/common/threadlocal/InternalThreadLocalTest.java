@@ -34,7 +34,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class InternalThreadLocalTest {
+class InternalThreadLocalTest {
 
     private static final int THREADS = 10;
 
@@ -48,7 +48,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testInternalThreadLocal() throws InterruptedException {
+    void testInternalThreadLocal() throws InterruptedException {
         final AtomicInteger index = new AtomicInteger(0);
 
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
@@ -70,7 +70,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testRemoveAll() throws InterruptedException {
+    void testRemoveAll() throws InterruptedException {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, (int)internalThreadLocal.get(), "set failed");
@@ -85,7 +85,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testSize() throws InterruptedException {
+    void testSize() throws InterruptedException {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, InternalThreadLocal.size(), "size method is wrong!");
@@ -97,7 +97,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testSetAndGet() {
+    void testSetAndGet() {
         final Integer testVal = 10;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(testVal);
@@ -105,7 +105,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
         Assertions.assertEquals(1, (int)internalThreadLocal.get(), "get method false!");
@@ -115,7 +115,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testOnRemove() {
+    void testOnRemove() {
         final Integer[] valueToRemove = {null};
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>() {
             @Override
@@ -132,7 +132,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testMultiThreadSetAndGet() throws InterruptedException {
+    void testMultiThreadSetAndGet() throws InterruptedException {
         final Integer testVal1 = 10;
         final Integer testVal2 = 20;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
@@ -167,7 +167,7 @@ public class InternalThreadLocalTest {
      * This test is based on a Machine with 4 core and 16g memory.
      */
     @Test
-    public void testPerformanceTradition() {
+    void testPerformanceTradition() {
         final ThreadLocal<String>[] caches1 = new ThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
@@ -202,7 +202,7 @@ public class InternalThreadLocalTest {
      * This test is based on a Machine with 4 core and 16g memory.
      */
     @Test
-    public void testPerformance() {
+    void testPerformance() {
         final InternalThreadLocal<String>[] caches = new InternalThreadLocal[PERFORMANCE_THREAD_COUNT];
         final Thread mainThread = Thread.currentThread();
         for (int i = 0; i < PERFORMANCE_THREAD_COUNT; i++) {
@@ -231,7 +231,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testConstructionWithIndex() throws Exception {
+    void testConstructionWithIndex() throws Exception {
         int ARRAY_LIST_CAPACITY_MAX_SIZE = Integer.MAX_VALUE - 8;
         Field nextIndexField =
             InternalThreadLocalMap.class.getDeclaredField("NEXT_INDEX");
@@ -260,7 +260,7 @@ public class InternalThreadLocalTest {
     }
 
     @Test
-    public void testInternalThreadLocalMapExpand() throws Exception {
+    void testInternalThreadLocalMapExpand() throws Exception {
         final AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
         Runnable runnable = new Runnable() {
             @Override

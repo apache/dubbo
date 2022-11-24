@@ -42,10 +42,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AbstractClusterTest {
+class AbstractClusterTest {
 
     @Test
-    public void testBuildClusterInvokerChain() {
+    void testBuildClusterInvokerChain() {
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());

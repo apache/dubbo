@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToSetConverterTest {
+class StringToSetConverterTest {
 
     private StringToSetConverter converter;
 
@@ -60,7 +60,7 @@ public class StringToSetConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -88,7 +88,7 @@ public class StringToSetConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         Set values = new HashSet(asList(1.0, 2.0, 3.0));
 
         Set result = (Set<Double>) converter.convert("1.0,2.0,3.0", Queue.class, Double.class);
@@ -107,12 +107,12 @@ public class StringToSetConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 2, converter.getPriority());
     }
 }

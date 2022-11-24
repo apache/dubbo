@@ -51,7 +51,7 @@ public abstract class AnnotatedMethodParameterProcessorTest extends AbstractAnno
     protected abstract String getExpectedAnnotationType();
 
     @Test
-    public void testGetAnnotationType() {
+    void testGetAnnotationType() {
         String expectedAnnotationType = getExpectedAnnotationType();
         assertNull(processor.getAnnotationType());
         assertEquals(expectedAnnotationType, processor.getAnnotationType());

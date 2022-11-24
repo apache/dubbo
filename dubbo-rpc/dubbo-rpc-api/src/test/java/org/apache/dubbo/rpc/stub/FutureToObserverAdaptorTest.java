@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class FutureToObserverAdaptorTest {
 
     @Test
-    public void testAdapt() throws ExecutionException, InterruptedException, TimeoutException {
+    void testAdapt() throws ExecutionException, InterruptedException, TimeoutException {
         CompletableFuture<String> done = CompletableFuture.completedFuture("a");
         FutureToObserverAdaptor<String> adaptor = new FutureToObserverAdaptor<>(done);
         try {

@@ -46,7 +46,7 @@ import static org.apache.dubbo.rpc.protocol.tri.transport.WriteQueue.DEQUE_CHUNK
 /**
  * {@link WriteQueue}
  */
-public class WriteQueueTest {
+class WriteQueueTest {
     private final AtomicInteger writeMethodCalledTimes = new AtomicInteger(0);
     private Channel channel;
 
@@ -72,7 +72,7 @@ public class WriteQueueTest {
     }
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
 
         WriteQueue writeQueue = new WriteQueue();
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
@@ -99,7 +99,7 @@ public class WriteQueueTest {
     }
 
     @Test
-    public void testChunk() throws Exception {
+    void testChunk() throws Exception {
         WriteQueue writeQueue = new WriteQueue();
         // test deque chunk size
         writeMethodCalledTimes.set(0);

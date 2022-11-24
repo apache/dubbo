@@ -23,11 +23,17 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.*;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
-public class MethodMetricTest {
+class MethodMetricTest {
 
     private static final String applicationName = null;
     private static String interfaceName;
@@ -44,7 +50,7 @@ public class MethodMetricTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
         Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);

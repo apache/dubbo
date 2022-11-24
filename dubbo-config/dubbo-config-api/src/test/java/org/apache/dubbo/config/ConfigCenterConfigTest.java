@@ -35,7 +35,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
-public class ConfigCenterConfigTest {
+class ConfigCenterConfigTest {
 
     @BeforeEach
     public void setUp() {
@@ -48,7 +48,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testPrefix() {
+    void testPrefix() {
         ConfigCenterConfig config = new ConfigCenterConfig();
         Assertions.assertEquals(Arrays.asList("dubbo.config-center"), config.getPrefixes());
 
@@ -58,7 +58,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testToUrl() {
+    void testToUrl() {
         ConfigCenterConfig config = new ConfigCenterConfig();
         config.setNamespace("namespace");
         config.setGroup("group");
@@ -74,7 +74,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testOverrideConfig() {
+    void testOverrideConfig() {
 
         String zkAddr = ZookeeperRegistryCenterConfig.getConnectionAddress();
         // sysprops has no id
@@ -105,7 +105,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testOverrideConfig2() {
+    void testOverrideConfig2() {
 
         String zkAddr = "nacos://127.0.0.1:8848";
         // sysprops has no id
@@ -131,7 +131,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testOverrideConfigBySystemProps() {
+    void testOverrideConfigBySystemProps() {
 
         //Config instance has Id, but sysprops without id
         SysProps.setProperty("dubbo.config-center.check", "false");
@@ -156,7 +156,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testOverrideConfigByDubboProps() {
+    void testOverrideConfigByDubboProps() {
 
         ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has no id
@@ -185,7 +185,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testOverrideConfigBySystemPropsWithId() {
+    void testOverrideConfigBySystemPropsWithId() {
 
         // Both config instance and sysprops have id
         SysProps.setProperty("dubbo.config-centers.configcenterA.check", "false");
@@ -211,7 +211,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testOverrideConfigByDubboPropsWithId() {
+    void testOverrideConfigByDubboPropsWithId() {
 
         ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has id
@@ -241,14 +241,14 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         ConfigCenterConfig configCenter = new ConfigCenterConfig();
         Map<String, String> metaData = configCenter.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 
     @Test
-    public void testParameters() {
+    void testParameters() {
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setParameters(new LinkedHashMap<>());
         cc.getParameters().put(CLIENT_KEY, null);
@@ -265,7 +265,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testAttributes() {
+    void testAttributes() {
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
         Map<String, String> attributes = new LinkedHashMap<>();
@@ -280,7 +280,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testSetAddress() {
+    void testSetAddress() {
         String address = ZookeeperRegistryCenterConfig.getConnectionAddress();
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setUsername("user123"); // set username first

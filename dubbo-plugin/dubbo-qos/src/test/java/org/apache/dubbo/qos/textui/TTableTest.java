@@ -21,9 +21,9 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class TTableTest {
+class TTableTest {
     @Test
-    public void test1() throws Exception {
+    void test1() throws Exception {
         TTable table = new TTable(4);
         table.addRow(1, "one", "uno", "un");
         table.addRow(2, "two", "dos", "deux");
@@ -38,7 +38,7 @@ public class TTableTest {
     }
 
     @Test
-    public void test2() throws Exception {
+    void test2() throws Exception {
         TTable table = new TTable(new TTable.ColumnDefine[]{
                 new TTable.ColumnDefine(5, true, TTable.Align.LEFT),
                 new TTable.ColumnDefine(10, false, TTable.Align.MIDDLE),

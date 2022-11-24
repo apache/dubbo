@@ -27,7 +27,7 @@ import org.apache.dubbo.remoting.exchange.support.Replier;
 /**
  * NettyClientToServerTest
  */
-public class NettyClientToServerTest extends ClientToServerTest {
+class NettyClientToServerTest extends ClientToServerTest {
 
     protected ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException {
         // add heartbeat cycle to avoid unstable ut.

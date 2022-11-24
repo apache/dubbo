@@ -44,12 +44,12 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class GrpcProtocolTest {
+class GrpcProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @Test
-    public void testDemoProtocol() throws Exception {
+    void testDemoProtocol() throws Exception {
         DubboGreeterGrpc.IGreeter serviceImpl = new GrpcGreeterImpl();
 
         int availablePort = NetUtils.getAvailablePort();

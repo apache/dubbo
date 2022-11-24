@@ -33,10 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
-public class DestinationRuleTest {
+class DestinationRuleTest {
 
     @Test
-    public void parserTest() {
+    void parserTest() {
         Yaml yaml = new Yaml();
         DestinationRule destinationRule = yaml.loadAs(this.getClass().getClassLoader().getResourceAsStream("DestinationRuleTest.yaml"), DestinationRule.class);
 
@@ -84,7 +84,7 @@ public class DestinationRuleTest {
 
 
     @Test
-    public void parserMultiRuleTest() {
+    void parserMultiRuleTest() {
         Yaml yaml = new Yaml();
         Yaml yaml2 = new Yaml();
         Iterable objectIterable = yaml.loadAll(this.getClass().getClassLoader().getResourceAsStream("DestinationRuleTest2.yaml"));

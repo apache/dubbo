@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link OrderedPropertiesConfiguration}
  */
-public class OrderedPropertiesConfigurationTest {
+class OrderedPropertiesConfigurationTest {
 
     @Test
-    public void testOrderPropertiesProviders() {
+    void testOrderPropertiesProviders() {
         OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel().getDefaultModule());
         Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
     }

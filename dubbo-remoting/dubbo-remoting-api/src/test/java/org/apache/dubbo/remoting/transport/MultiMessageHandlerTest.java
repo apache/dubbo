@@ -28,10 +28,10 @@ import org.mockito.Mockito;
 /**
  * {@link MultiMessageHandler}
  */
-public class MultiMessageHandlerTest {
+class MultiMessageHandlerTest {
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         ChannelHandler handler = Mockito.mock(ChannelHandler.class);
         Channel channel = Mockito.mock(Channel.class);
         MultiMessageHandler multiMessageHandler = new MultiMessageHandler(handler);

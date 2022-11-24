@@ -57,7 +57,7 @@ public class UrlUtils {
      */
     public static Byte serializationId(URL url) {
         Byte serializationId;
-        // Obtain the value from prefer_serialization. Such as:fastjson2,hessian2
+        // Obtain the value from prefer_serialization. Such as.fastjson2,hessian2
         List<String> preferSerials = preferSerialization(url);
         for (String preferSerial : preferSerials) {
             if ((serializationId = CodecSupport.getIDByName(preferSerial)) != null) {
@@ -81,6 +81,7 @@ public class UrlUtils {
      * @return {@link String}
      */
     public static String serializationOrDefault(URL url) {
+        //noinspection OptionalGetWithoutIsPresent
         return allSerializations(url).stream().findFirst().get();
     }
 
@@ -92,8 +93,7 @@ public class UrlUtils {
      */
     public static Collection<String> allSerializations(URL url) {
         // preferSerialization -> serialization -> default serialization
-        Set<String> serializations = new LinkedHashSet<>();
-        UrlUtils.preferSerialization(url).forEach(serializations::add);
+        Set<String> serializations = new LinkedHashSet<>(preferSerialization(url));
         Optional.ofNullable(url.getParameter(SERIALIZATION_KEY)).filter(StringUtils::isNotBlank).ifPresent(serializations::add);
         serializations.add(DefaultSerializationSelector.getDefaultRemotingSerialization());
         return Collections.unmodifiableSet(serializations);

@@ -61,7 +61,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ServiceDiscoveryRegistryTest {
+class ServiceDiscoveryRegistryTest {
     public static final String APP_NAME1 = "app1";
     public static final String APP_NAME2 = "app2";
     public static final String APP_NAME3 = "app3";
@@ -122,7 +122,7 @@ public class ServiceDiscoveryRegistryTest {
      *   - check=false
      */
     @Test
-    public void testDoSubscribe() {
+    void testDoSubscribe() {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
         // Exceptional case, no interface-app mapping found
@@ -180,7 +180,7 @@ public class ServiceDiscoveryRegistryTest {
      * - instance listener and service listener rightly mapped
      */
     @Test
-    public void testSubscribeURLs() {
+    void testSubscribeURLs() {
         // interface to single app mapping
         Set<String> singleApp = new TreeSet<>();
         singleApp.add(APP_NAME1);
@@ -240,12 +240,12 @@ public class ServiceDiscoveryRegistryTest {
      * repeat of {@link this#testSubscribeURLs()} with multi threads
      */
     @Test
-    public void testConcurrencySubscribe() {
+    void testConcurrencySubscribe() {
         // TODO
     }
 
     @Test
-    public void testUnsubscribe() {
+    void testUnsubscribe() {
         // do subscribe to prepare for unsubscribe verification
         Set<String> multiApps = new TreeSet<>();
         multiApps.add(APP_NAME1);
