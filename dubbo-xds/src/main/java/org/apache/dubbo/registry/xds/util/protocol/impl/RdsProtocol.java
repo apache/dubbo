@@ -58,15 +58,12 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
         return resourcesMap.keySet();
     }
 
-
-//    @Override
-//    public void addResouceNames(Map<String, Object> resourceNames) {
-//        resourcesMap.putAll(resourceNames);
-//    }
-
     @Override
     public boolean isExistResource(Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
+            if ("".equals(resourceName)) {
+                continue;
+            }
             if (!resourcesMap.containsKey(resourceName)) {
                 return false;
             }
@@ -76,11 +73,14 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     @Override
     public RouteResult getCacheResource(Set<String> resourceNames) {
-        Map<String, Set<String>> resourceMap = new HashMap<>();
+        Map<String, Set<String>> resultMap = new HashMap<>();
         for (String resourceName : resourceNames) {
-            resourceMap.putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
+            if (resourceName.length() == 0) {
+                continue;
+            }
+            resultMap.putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
         }
-        return new RouteResult(resourceMap);
+        return new RouteResult(resultMap);
     }
 
     @Override

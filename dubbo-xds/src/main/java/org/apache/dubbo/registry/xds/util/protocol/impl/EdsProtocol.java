@@ -75,11 +75,10 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     public EndpointResult getCacheResource(Set<String> resourceNames) {
         Set<Endpoint> resourceSet = new HashSet<>();
         for (String resourceName : resourceNames) {
-            resourceSet.add((Endpoint) resourcesMap.get(resourceName));
+            resourceSet.addAll((Set<Endpoint>) resourcesMap.get(resourceName));
         }
         return new EndpointResult(resourceSet);
     }
-
 
     @Override
     protected EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {

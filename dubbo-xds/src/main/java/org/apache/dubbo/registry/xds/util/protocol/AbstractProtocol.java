@@ -94,6 +94,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         CompletableFuture<T> future = new CompletableFuture<>();
         // create observer
         StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future, null));
+        streamObserverList.add(requestObserver);
         // send request to control panel
         requestObserver.onNext(buildDiscoveryRequest(resourceNames));
         try {
@@ -187,7 +188,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             T result = decodeDiscoveryResponse(value);
             StreamObserver<DiscoveryRequest> observer = null;
             if (!streamObserverList.isEmpty()) {
-                observer = streamObserverList.get(0);
+                observer = streamObserverList.remove(0);
             }
             if (observer == null) {
                 return;
