@@ -48,6 +48,9 @@ public @interface Method {
     int actives() default -1;
 
     int executes() default -1;
+    String flowcontrol() default "";
+
+    int staticflowcontrol() default -1;
 
     boolean deprecated() default false;
 

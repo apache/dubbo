@@ -579,4 +579,9 @@ public interface CommonConstants {
      */
     String UNLOAD_CLUSTER_RELATED = "unloadClusterRelated";
 
+    String FLOW_CONTROL_KEY = "flowcontrol";
+    String STATIC_FLOW_CONTROL_KEY = "staticflowcontrol";
+    String STATIC_FLOW_CONTROL = "staticFlowControl";
+    String DEFAULT_FLOW_CONTROL = "heuristicSmoothingFlowControl";
+
 }

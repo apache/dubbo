@@ -92,6 +92,9 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
     // max allowed execute times
     private Integer executes;
 
+    private String flowcontrol;
+    private Integer staticflowcontrol;
+
     /**
      * Whether to register
      */
@@ -201,6 +204,16 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         return getThis();
     }
 
+    public B flowcontrol(String flowControl){
+        this.flowcontrol = flowControl;
+        return getThis();
+    }
+
+    public B staticflowcontrol(Integer staticFlowControl){
+        this.staticflowcontrol = staticFlowControl;
+        return getThis();
+    }
+
     public B register(Boolean register) {
         this.register = register;
         return getThis();
@@ -258,6 +271,12 @@ public abstract class AbstractServiceBuilder<T extends AbstractServiceConfig, B 
         }
         if (executes != null) {
             instance.setExecutes(executes);
+        }
+        if(flowcontrol != null){
+            instance.setFlowcontrol(flowcontrol);
+        }
+        if(staticflowcontrol != null){
+            instance.setStaticflowcontrol(staticflowcontrol);
         }
         if (register != null) {
             instance.setRegister(register);

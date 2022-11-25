@@ -53,6 +53,10 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
      */
     private Integer executes;
 
+    private String flowcontrol;
+    private Integer staticflowcontrol;
+
+
     /**
      * If it's deprecated
      */
@@ -134,6 +138,15 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
         return getThis();
     }
 
+    public MethodBuilder flowcontrol(String flowControl){
+        this.flowcontrol = flowControl;
+        return getThis();
+    }
+    public MethodBuilder staticflowcontrol(Integer staticFlowControl){
+        this.staticflowcontrol = staticFlowControl;
+        return getThis();
+    }
+
     public MethodBuilder deprecated(Boolean deprecated) {
         this.deprecated = deprecated;
         return getThis();
@@ -212,6 +225,8 @@ public class MethodBuilder extends AbstractMethodBuilder<MethodConfig, MethodBui
         methodConfig.setArguments(arguments);
         methodConfig.setDeprecated(deprecated);
         methodConfig.setExecutes(executes);
+        methodConfig.setFlowcontrol(flowcontrol);
+        methodConfig.setStaticflowcontrol(staticflowcontrol);
         methodConfig.setName(name);
         methodConfig.setOninvoke(oninvoke);
         methodConfig.setOninvokeMethod(oninvokeMethod);
