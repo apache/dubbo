@@ -99,10 +99,12 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
 
         try {
-            if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
-                && LoadbalanceRules.ADAPTIVE.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
-                adaptiveMetrics.addConsumerSuccess(getServiceKey(invocation));
+            String loadBalance = (String) invocation.getAttributes().get(LOADBALANCE_KEY);
+            if (StringUtils.isEmpty(loadBalance)
+                || !LoadbalanceRules.ADAPTIVE.equals(loadBalance)) {
+                return;
             }
+            adaptiveMetrics.addConsumerSuccess(getServiceKey(invocation));
             String attachment = appResponse.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
             if (StringUtils.isNotEmpty(attachment)) {
                 String[] parties = COMMA_SPLIT_PATTERN.split(attachment);
@@ -136,8 +138,9 @@ public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
-            && LoadbalanceRules.ADAPTIVE.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
+        String loadBalance = (String) invocation.getAttributes().get(LOADBALANCE_KEY);
+        if (StringUtils.isNotEmpty(loadBalance)
+            && LoadbalanceRules.ADAPTIVE.equals(loadBalance)) {
             getExecutor().execute(() -> {
                 adaptiveMetrics.addErrorReq(getServiceKey(invocation));
             });

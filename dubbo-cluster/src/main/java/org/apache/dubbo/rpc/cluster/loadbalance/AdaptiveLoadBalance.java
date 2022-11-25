@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoadbalanceRules;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Constants;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 
 /**
  * AdaptiveLoadBalance
@@ -54,6 +56,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
         invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
         long startTime = System.currentTimeMillis();
         invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME,startTime);
+        invocation.getAttributes().put(LOADBALANCE_KEY,LoadbalanceRules.ADAPTIVE);
         adaptiveMetrics.addConsumerReq(getServiceKey(invoker,invocation));
         adaptiveMetrics.setPickTime(getServiceKey(invoker,invocation),startTime);
 
