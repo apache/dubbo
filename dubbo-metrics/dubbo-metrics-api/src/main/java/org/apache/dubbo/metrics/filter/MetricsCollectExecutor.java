@@ -90,9 +90,11 @@ public class MetricsCollectExecutor {
     private void init(Invocation invocation) {
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
-        if (invocation instanceof RpcInvocation &&
-            isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)) {
-            methodName = (String) invocation.getArguments()[0];
+        if (invocation instanceof RpcInvocation
+            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
+            && invocation.getArguments() != null
+            && invocation.getArguments().length == 3) {
+            methodName = ((String) invocation.getArguments()[0]).trim();
         }
         String group = null;
         String interfaceAndVersion;
