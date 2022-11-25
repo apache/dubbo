@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
@@ -35,9 +35,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
+
 public class StreamUtils {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
+    protected static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(StreamUtils.class);
 
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
@@ -132,14 +134,13 @@ public class StreamUtils {
                 String str = encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.HEADER_BIN_SUFFIX, str);
             } else {
-                LOGGER.warn("Unsupported attachment k: " + key + " class: " + v.getClass().getName());
+                LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Unsupported attachment k: " + key + " class: " + v.getClass().getName());
             }
         } catch (Throwable t) {
-            LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v,
+            LOGGER.warn(PROTOCOL_UNSUPPORTED, "", "", "Meet exception when convert single attachment key:" + key + " value=" + v,
                 t);
         }
     }
-
 
 
 }

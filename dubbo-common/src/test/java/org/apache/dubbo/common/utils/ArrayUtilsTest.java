@@ -22,17 +22,17 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ArrayUtilsTest {
+class ArrayUtilsTest {
 
     @Test
-    public void isEmpty() throws Exception {
+    void isEmpty() throws Exception {
         assertTrue(ArrayUtils.isEmpty(null));
         assertTrue(ArrayUtils.isEmpty(new Object[0]));
         assertFalse(ArrayUtils.isEmpty(new Object[]{"abc"}));
     }
 
     @Test
-    public void isNotEmpty() throws Exception {
+    void isNotEmpty() throws Exception {
         assertFalse(ArrayUtils.isNotEmpty(null));
         assertFalse(ArrayUtils.isNotEmpty(new Object[0]));
         assertTrue(ArrayUtils.isNotEmpty(new Object[]{"abc"}));

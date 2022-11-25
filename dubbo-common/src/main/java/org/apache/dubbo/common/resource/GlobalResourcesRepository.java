@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.resource;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
@@ -26,13 +26,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+
 /**
  * Global resource repository between all framework models.
  * It will be destroyed only after all framework model is destroyed.
  */
 public class GlobalResourcesRepository {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalResourcesRepository.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(GlobalResourcesRepository.class);
 
     private volatile static GlobalResourcesRepository instance;
     private volatile ExecutorService executorService;
@@ -56,6 +58,7 @@ public class GlobalResourcesRepository {
     /**
      * Register a global reused disposable. The disposable will be executed when all dubbo FrameworkModels are destroyed.
      * Note: the global disposable should be registered in static code, it's reusable and will not be removed when dubbo shutdown.
+     *
      * @param disposable
      */
     public static void registerGlobalDisposable(Disposable disposable) {
@@ -107,7 +110,7 @@ public class GlobalResourcesRepository {
             try {
                 disposable.destroy();
             } catch (Exception e) {
-                logger.warn("destroy resources failed: " + e.getMessage(), e);
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
             }
         }
         // clear one-off disposable
@@ -118,7 +121,7 @@ public class GlobalResourcesRepository {
             try {
                 disposable.destroy();
             } catch (Exception e) {
-                logger.warn("destroy resources failed: " + e.getMessage(), e);
+                logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "destroy resources failed: " + e.getMessage(), e);
             }
         }
 
@@ -129,6 +132,7 @@ public class GlobalResourcesRepository {
 
     /**
      * Register a one-off disposable, the disposable is removed automatically on first shutdown.
+     *
      * @param disposable
      */
     public void registerDisposable(Disposable disposable) {

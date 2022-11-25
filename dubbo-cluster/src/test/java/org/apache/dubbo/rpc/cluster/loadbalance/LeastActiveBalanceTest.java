@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
+class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     @Disabled
     @Test
-    public void testLeastActiveLoadBalance_select() {
+    void testLeastActiveLoadBalance_select() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
@@ -40,7 +40,7 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testSelectByWeight() {
+    void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int loop = 10000;

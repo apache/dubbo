@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.http.jetty;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -41,10 +42,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class JettyLoggerAdapterTest {
+class JettyLoggerAdapterTest {
 
     @Test
-    public void testJettyUseDubboLogger() throws Exception{
+    void testJettyUseDubboLogger() throws Exception{
         int port = NetUtils.getAvailablePort();
         URL url = new ServiceConfigURL("http", "localhost", port,
             new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
@@ -63,14 +64,14 @@ public class JettyLoggerAdapterTest {
 
 
     @Test
-    public void testSuccessLogger() throws Exception{
+    void testSuccessLogger() throws Exception{
         Logger successLogger = mock(Logger.class);
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
         JettyLoggerAdapter jettyLoggerAdapter = (JettyLoggerAdapter) clazz.newInstance();
 
         Field loggerField = clazz.getDeclaredField("logger");
         loggerField.setAccessible(true);
-        loggerField.set(jettyLoggerAdapter, successLogger);
+        loggerField.set(jettyLoggerAdapter, new FailsafeErrorTypeAwareLogger(successLogger));
         jettyLoggerAdapter.setDebugEnabled(true);
 
         when(successLogger.isDebugEnabled()).thenReturn(true);
@@ -97,7 +98,7 @@ public class JettyLoggerAdapterTest {
 
 
     @Test
-    public void testNewLogger(){
+    void testNewLogger(){
         JettyLoggerAdapter loggerAdapter = new JettyLoggerAdapter();
         org.eclipse.jetty.util.log.Logger logger = loggerAdapter.newLogger(this.getClass().getName());
         assertThat(logger.getClass().isAssignableFrom(JettyLoggerAdapter.class), is(true));
@@ -105,7 +106,7 @@ public class JettyLoggerAdapterTest {
 
 
     @Test
-    public void testDebugEnabled(){
+    void testDebugEnabled(){
         JettyLoggerAdapter loggerAdapter = new JettyLoggerAdapter();
         loggerAdapter.setDebugEnabled(true);
         assertThat(loggerAdapter.isDebugEnabled(), is(true));
@@ -113,7 +114,7 @@ public class JettyLoggerAdapterTest {
 
 
     @Test
-    public void testLoggerFormat() throws Exception{
+    void testLoggerFormat() throws Exception{
         Class<?> clazz = Class.forName("org.apache.dubbo.remoting.http.jetty.JettyLoggerAdapter");
         Object newInstance = clazz.newInstance();
 

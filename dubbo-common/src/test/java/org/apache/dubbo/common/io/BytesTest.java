@@ -25,14 +25,14 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BytesTest {
+class BytesTest {
     private final byte[] b1 = "adpfioha;eoh;aldfadl;kfadslkfdajfio123431241235123davas;odvwe;lmzcoqpwoewqogineopwqihwqetup\n\tejqf;lajsfd中文字符0da0gsaofdsf==adfasdfs".getBytes();
     private final String C64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="; //default base64.
     private byte[] bytes1 = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67, 23};
     private byte[] bytes2 = {3, 12, 14, 41, 12, 2, 3, 12, 4, 67};
 
     @Test
-    public void testMain() throws Exception {
+    void testMain() throws Exception {
         short s = (short) 0xabcd;
         assertThat(s, is(Bytes.bytes2short(Bytes.short2bytes(s))));
 
@@ -66,27 +66,27 @@ public class BytesTest {
     }
 
     @Test
-    public void testWrongBase64Code() {
+    void testWrongBase64Code() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 1, new char[]{'a'}));
     }
 
     @Test
-    public void testWrongOffSet() {
+    void testWrongOffSet() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), -1, 1));
     }
 
     @Test
-    public void testLargeLength() {
+    void testLargeLength() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, 100000));
     }
 
     @Test
-    public void testSmallLength() {
+    void testSmallLength() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2base64("dubbo".getBytes(), 0, -1));
     }
 
     @Test
-    public void testBase64S2b2sFailCaseLog() throws Exception {
+    void testBase64S2b2sFailCaseLog() throws Exception {
         String s1 = Bytes.bytes2base64(bytes1);
         byte[] out1 = Bytes.base642bytes(s1);
         assertThat(bytes1, is(out1));
@@ -97,7 +97,7 @@ public class BytesTest {
     }
 
     @Test
-    public void testBase642bCharArrCall() {
+    void testBase642bCharArrCall() {
         byte[] stringCall = Bytes.base642bytes("ZHViYm8=", C64);
         byte[] charArrCall = Bytes.base642bytes("ZHViYm8=", C64.toCharArray());
 
@@ -105,25 +105,25 @@ public class BytesTest {
     }
 
     @Test
-    public void testHex() {
+    void testHex() {
         String str = Bytes.bytes2hex(b1);
         assertThat(b1, is(Bytes.hex2bytes(str)));
     }
 
     @Test
-    public void testMD5ForString() {
+    void testMD5ForString() {
         byte[] md5 = Bytes.getMD5("dubbo");
         assertThat(md5, is(Bytes.base642bytes("qk4bjCzJ3u2W/gEu8uB1Kg==")));
     }
 
     @Test
-    public void testMD5ForFile() throws IOException {
+    void testMD5ForFile() throws IOException {
         byte[] md5 = Bytes.getMD5(new File(getClass().getClassLoader().getResource("md5.testfile.txt").getFile()));
         assertThat(md5, is(Bytes.base642bytes("iNZ+5qHafVNPLJxHwLKJ3w==")));
     }
 
     @Test
-    public void testZip() throws IOException {
+    void testZip() throws IOException {
         String s = "hello world";
         byte[] zip = Bytes.zip(s.getBytes());
         byte[] unzip = Bytes.unzip(zip);
@@ -131,12 +131,12 @@ public class BytesTest {
     }
 
     @Test
-    public void testBytes2HexWithWrongOffset() {
+    void testBytes2HexWithWrongOffset() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2hex("hello".getBytes(), -1, 1));
     }
 
     @Test
-    public void testBytes2HexWithWrongLength() {
+    void testBytes2HexWithWrongLength() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> Bytes.bytes2hex("hello".getBytes(), 0, 6));
     }
 

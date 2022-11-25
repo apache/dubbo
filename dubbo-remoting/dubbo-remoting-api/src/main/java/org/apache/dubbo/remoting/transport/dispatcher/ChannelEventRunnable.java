@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.remoting.transport.dispatcher;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+
 public class ChannelEventRunnable implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(ChannelEventRunnable.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ChannelEventRunnable.class);
 
     private final ChannelHandler handler;
     private final Channel channel;
@@ -58,43 +60,43 @@ public class ChannelEventRunnable implements Runnable {
             try {
                 handler.received(channel, message);
             } catch (Exception e) {
-                logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
-                        + ", message is " + message, e);
+                logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                    + ", message is " + message, e);
             }
         } else {
             switch (state) {
-            case CONNECTED:
-                try {
-                    handler.connected(channel);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
-                }
-                break;
-            case DISCONNECTED:
-                try {
-                    handler.disconnected(channel);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
-                }
-                break;
-            case SENT:
-                try {
-                    handler.sent(channel, message);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                case CONNECTED:
+                    try {
+                        handler.connected(channel);
+                    } catch (Exception e) {
+                        logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
+                    }
+                    break;
+                case DISCONNECTED:
+                    try {
+                        handler.disconnected(channel);
+                    } catch (Exception e) {
+                        logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
+                    }
+                    break;
+                case SENT:
+                    try {
+                        handler.sent(channel, message);
+                    } catch (Exception e) {
+                        logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                             + ", message is " + message, e);
-                }
-                break;
-            case CAUGHT:
-                try {
-                    handler.caught(channel, exception);
-                } catch (Exception e) {
-                    logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                    }
+                    break;
+                case CAUGHT:
+                    try {
+                        handler.caught(channel, exception);
+                    } catch (Exception e) {
+                        logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                             + ", message is: " + message + ", exception is " + exception, e);
-                }
-                break;
-            default:
-                logger.warn("unknown state: " + state + ", message is " + message);
+                    }
+                    break;
+                default:
+                    logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "unknown state: " + state + ", message is " + message);
             }
         }
         InternalThreadLocal.removeAll();
@@ -102,8 +104,6 @@ public class ChannelEventRunnable implements Runnable {
 
     /**
      * ChannelState
-     *
-     *
      */
     public enum ChannelState {
 

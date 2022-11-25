@@ -31,22 +31,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.5
  */
-public class PrioritizedTest {
+class PrioritizedTest {
 
     @Test
-    public void testConstants() {
+    void testConstants() {
         assertEquals(Integer.MAX_VALUE, Prioritized.MIN_PRIORITY);
         assertEquals(Integer.MIN_VALUE, Prioritized.MAX_PRIORITY);
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Prioritized.NORMAL_PRIORITY, new Prioritized() {
         }.getPriority());
     }
 
     @Test
-    public void testComparator() {
+    void testComparator() {
 
         List<Object> list = new LinkedList<>();
 

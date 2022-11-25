@@ -41,7 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ReadyTest {
+class ReadyTest {
 
     private FrameworkModel frameworkModel;
     private ModuleDeployer moduleDeployer;
@@ -76,7 +76,7 @@ public class ReadyTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         Ready ready = new Ready(frameworkModel);
         CommandContext commandContext = new CommandContext("ready");
 

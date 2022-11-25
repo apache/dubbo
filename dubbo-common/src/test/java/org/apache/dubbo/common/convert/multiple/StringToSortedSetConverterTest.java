@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToSortedSetConverterTest {
+class StringToSortedSetConverterTest {
 
     private MultiValueConverter converter;
 
@@ -59,7 +59,7 @@ public class StringToSortedSetConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -87,7 +87,7 @@ public class StringToSortedSetConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
 
         Set values = new TreeSet(asList(1, 2, 3));
 
@@ -106,12 +106,12 @@ public class StringToSortedSetConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 3, converter.getPriority());
     }
 }

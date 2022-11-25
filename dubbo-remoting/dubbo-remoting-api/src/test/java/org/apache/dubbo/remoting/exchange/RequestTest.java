@@ -19,10 +19,10 @@ package org.apache.dubbo.remoting.exchange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RequestTest {
+class RequestTest {
 
     @Test
-    public void test() {
+    void test() {
         Request request = new Request();
         request.setTwoWay(true);
         request.setBroken(true);

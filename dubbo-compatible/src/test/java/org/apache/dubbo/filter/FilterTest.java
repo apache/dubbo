@@ -29,12 +29,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class FilterTest {
+class FilterTest {
 
     Filter myFilter = new MyFilter();
 
     @Test
-    public void testInvokeException() {
+    void testInvokeException() {
         try {
             Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
             Invocation invocation = new LegacyInvocation("aa");
@@ -46,7 +46,7 @@ public class FilterTest {
     }
 
     @Test
-    public void testDefault() {
+    void testDefault() {
         Invoker<FilterTest> invoker = new LegacyInvoker<FilterTest>(null);
         Invocation invocation = new LegacyInvocation("bbb");
         Result res = myFilter.invoke(invoker, invocation);

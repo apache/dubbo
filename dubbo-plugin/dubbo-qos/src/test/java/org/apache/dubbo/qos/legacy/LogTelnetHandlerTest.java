@@ -28,13 +28,13 @@ import static org.mockito.Mockito.mock;
 /**
  * LogTelnetHandlerTest.java
  */
-public class LogTelnetHandlerTest {
+class LogTelnetHandlerTest {
 
     private static TelnetHandler log = new LogTelnetHandler();
     private Channel mockChannel;
 
     @Test
-    public void testChangeLogLevel() throws RemotingException {
+    void testChangeLogLevel() throws RemotingException {
         mockChannel = mock(Channel.class);
 
         String result = log.telnet(mockChannel, "error");
@@ -44,7 +44,7 @@ public class LogTelnetHandlerTest {
     }
 
     @Test
-    public void testPrintLog() throws RemotingException {
+    void testPrintLog() throws RemotingException {
         mockChannel = mock(Channel.class);
 
         String result = log.telnet(mockChannel, "100");

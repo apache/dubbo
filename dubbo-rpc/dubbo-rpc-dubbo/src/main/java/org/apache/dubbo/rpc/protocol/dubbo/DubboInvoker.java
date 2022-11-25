@@ -52,6 +52,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHME
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -145,20 +146,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
-        destroyInternal(false);
-    }
-
-    @Override
-    public void destroyAll() {
-        destroyInternal(true);
-    }
-
-    /**
-     * when destroy unused invoker, closeAll should be true
-     *
-     * @param closeAll
-     */
-    private void destroyInternal(boolean closeAll) {
         // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
         // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be
         // closed.
@@ -175,13 +162,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 }
                 for (ExchangeClient client : clients) {
                     try {
-                        if (closeAll) {
-                            client.closeAll(serverShutdownTimeout);
-                        } else {
-                            client.close(serverShutdownTimeout);
-                        }
+                        client.close(serverShutdownTimeout);
                     } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+                        logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
                     }
                 }
 

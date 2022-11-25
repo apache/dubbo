@@ -17,8 +17,9 @@
 package org.apache.dubbo.registry.kubernetes;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
@@ -30,7 +31,6 @@ import org.apache.dubbo.registry.kubernetes.util.KubernetesConfigUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import com.alibaba.fastjson.JSONObject;
 import io.fabric8.kubernetes.api.model.EndpointAddress;
 import io.fabric8.kubernetes.api.model.EndpointPort;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
@@ -53,8 +53,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_MATCH_KUBERNETES;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_ACCESS_KUBERNETES;
+
 public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private KubernetesClient kubernetesClient;
 
@@ -96,7 +100,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     "Please check your url config." +
                     " Master URL: " + config.getMasterUrl() +
                     " Hostname: " + currentHostname;
-            logger.error(message);
+            logger.error(REGISTRY_UNABLE_ACCESS_KUBERNETES,"","",message);
         } else {
             KubernetesMeshEnvListener.injectKubernetesEnv(kubernetesClient, namespace);
         }
@@ -126,7 +130,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     .edit(pod ->
                             new PodBuilder(pod)
                                     .editOrNewMetadata()
-                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
+                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JsonUtils.getJson().toJson(serviceInstance.getMetadata()))
                                     .endMetadata()
                                     .build());
             if (logger.isInfoEnabled()) {
@@ -403,8 +407,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                 Pod pod = pods.get(address.getTargetRef().getName());
                 String ip = address.getIp();
                 if (pod == null) {
-                    logger.warn("Unable to match Kubernetes Endpoint address with Pod. " +
-                            "EndpointAddress Hostname: " + address.getTargetRef().getName());
+                    logger.warn(REGISTRY_UNABLE_MATCH_KUBERNETES, "", "", "Unable to match Kubernetes Endpoint address with Pod. " +
+                        "EndpointAddress Hostname: " + address.getTargetRef().getName());
                     continue;
                 }
                 instancePorts.forEach(port -> {
@@ -412,10 +416,10 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
 
                     String properties = pod.getMetadata().getAnnotations().get(KUBERNETES_PROPERTIES_KEY);
                     if (StringUtils.isNotEmpty(properties)) {
-                        serviceInstance.getMetadata().putAll(JSONObject.parseObject(properties, Map.class));
+                        serviceInstance.getMetadata().putAll(JsonUtils.getJson().toJavaObject(properties, Map.class));
                         instances.add(serviceInstance);
                     } else {
-                        logger.warn("Unable to find Service Instance metadata in Pod Annotations. " +
+                        logger.warn(REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES, "", "", "Unable to find Service Instance metadata in Pod Annotations. " +
                                 "Possibly cause: provider has not been initialized successfully. " +
                                 "EndpointAddress Hostname: " + address.getTargetRef().getName());
                     }

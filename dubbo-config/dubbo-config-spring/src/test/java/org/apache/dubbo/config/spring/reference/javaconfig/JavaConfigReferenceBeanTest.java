@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class JavaConfigReferenceBeanTest {
+class JavaConfigReferenceBeanTest {
 
     @BeforeEach
     public void setUp() {
@@ -58,7 +58,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testAnnotationAtField() {
+    void testAnnotationAtField() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
             AnnotationAtFieldConfiguration.class);
 
@@ -104,7 +104,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testAnnotationBean() {
+    void testAnnotationBean() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
                 AnnotationBeanConfiguration.class);
 
@@ -126,7 +126,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testGenericServiceAnnotationBean() {
+    void testGenericServiceAnnotationBean() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
             GenericServiceAnnotationBeanConfiguration.class);
 
@@ -163,7 +163,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testReferenceBean() {
+    void testReferenceBean() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
                 ReferenceBeanConfiguration.class);
 
@@ -188,7 +188,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testGenericServiceReferenceBean() {
+    void testGenericServiceReferenceBean() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
             GenericServiceReferenceBeanConfiguration.class);
 
@@ -215,7 +215,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testRawReferenceBean() {
+    void testRawReferenceBean() {
         AnnotationConfigApplicationContext context = null;
         try {
             context = new AnnotationConfigApplicationContext(CommonConfig.class, ReferenceBeanWithoutGenericTypeConfiguration.class);
@@ -234,7 +234,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testInconsistentBean() {
+    void testInconsistentBean() {
         AnnotationConfigApplicationContext context = null;
         try {
             context = new AnnotationConfigApplicationContext(CommonConfig.class, InconsistentBeanConfiguration.class);
@@ -252,7 +252,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testMissingGenericTypeBean() {
+    void testMissingGenericTypeBean() {
         AnnotationConfigApplicationContext context = null;
         try {
             context = new AnnotationConfigApplicationContext(CommonConfig.class, MissingGenericTypeAnnotationBeanConfiguration.class);
@@ -269,7 +269,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testMissingInterfaceTypeBean() {
+    void testMissingInterfaceTypeBean() {
         AnnotationConfigApplicationContext context = null;
         try {
             context = new AnnotationConfigApplicationContext(CommonConfig.class, MissingInterfaceTypeAnnotationBeanConfiguration.class);

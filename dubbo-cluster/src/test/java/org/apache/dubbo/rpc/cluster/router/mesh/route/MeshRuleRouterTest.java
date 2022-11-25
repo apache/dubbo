@@ -52,7 +52,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class MeshRuleRouterTest {
+class MeshRuleRouterTest {
     private final static String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
         "kind: DestinationRule\n" +
         "metadata: { name: demo-route }\n" +
@@ -210,7 +210,7 @@ public class MeshRuleRouterTest {
 
 
     @Test
-    public void testNotify() {
+    void testNotify() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
         meshRuleRouter.notify(null);
         assertEquals(0, meshRuleRouter.getRemoteAppName().size());
@@ -236,7 +236,7 @@ public class MeshRuleRouterTest {
     }
 
     @Test
-    public void testRuleChange() {
+    void testRuleChange() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
 
         Yaml yaml = new Yaml(new SafeConstructor());
@@ -262,7 +262,7 @@ public class MeshRuleRouterTest {
     }
 
     @Test
-    public void testRoute1() {
+    void testRoute1() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
         BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
         assertEquals(invokers, meshRuleRouter.route(invokers.clone(), null, null, false, null));
@@ -272,7 +272,7 @@ public class MeshRuleRouterTest {
     }
 
     @Test
-    public void testRoute2() {
+    void testRoute2() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
 
         Yaml yaml = new Yaml(new SafeConstructor());

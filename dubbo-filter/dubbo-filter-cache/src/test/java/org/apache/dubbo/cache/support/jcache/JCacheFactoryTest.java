@@ -29,16 +29,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class JCacheFactoryTest extends AbstractCacheFactoryTest {
+class JCacheFactoryTest extends AbstractCacheFactoryTest {
 
     @Test
-    public void testJCacheFactory() throws Exception {
+    void testJCacheFactory() throws Exception {
         Cache cache = super.constructCache();
         assertThat(cache instanceof JCache, is(true));
     }
 
     @Test
-    public void testJCacheGetExpired() throws Exception {
+    void testJCacheGetExpired() throws Exception {
         URL url = URL.valueOf("test://test:12/test?cache=jacache&cache.write.expire=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();

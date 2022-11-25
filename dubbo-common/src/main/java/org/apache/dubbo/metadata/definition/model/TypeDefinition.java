@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.definition.model;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -46,7 +44,6 @@ public class TypeDefinition implements Serializable {
      * <p>
      * if this type is not ParameterizedType, the items is null or empty
      */
-    @SerializedName("items")
     private List<String> items;
 
     /**
@@ -54,7 +51,6 @@ public class TypeDefinition implements Serializable {
      * <p>
      * If this type is not enum, enums is null or empty
      */
-    @SerializedName("enum")
     private List<String> enums;
 
     /**

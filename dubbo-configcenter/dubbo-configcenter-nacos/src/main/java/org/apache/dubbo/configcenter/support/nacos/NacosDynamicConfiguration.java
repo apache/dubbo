@@ -23,7 +23,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -44,6 +44,7 @@ import java.util.concurrent.Executor;
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ERROR_NACOS;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
@@ -55,7 +56,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private static final String GET_CONFIG_KEYS_PATH = "/v1/cs/configs";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
     /**
      * the default timeout in millis to get config from nacos
      */
@@ -87,7 +88,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             configService = NacosFactory.createConfigService(nacosProperties);
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getErrMsg(), e);
+                logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
             }
             throw new IllegalStateException(e);
         }
@@ -172,7 +173,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
     }
 
@@ -194,7 +195,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             return configService.getConfig(key, group, nacosTimeout);
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
         return null;
     }
@@ -214,7 +215,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             return configService.getConfig(key, DEFAULT_GROUP, getDefaultTimeout());
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
         return null;
     }
@@ -225,7 +226,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             published = configService.publishConfig(key, group, content);
         } catch (NacosException e) {
-            logger.error(e.getErrMsg(), e);
+            logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
         }
         return published;
     }
@@ -238,7 +239,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             return configService.publishConfigCas(key, group, content, (String) ticket);
         } catch (NacosException e) {
-            logger.warn("nacos publishConfigCas failed.", e);
+            logger.warn(CONFIG_ERROR_NACOS, "nacos publishConfigCas failed.", "", e.getMessage(), e);
             return false;
         }
     }
@@ -255,7 +256,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             removed = configService.removeConfig(key, group);
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getMessage(), e);
+                logger.error(CONFIG_ERROR_NACOS, "", "", e.getMessage(), e);
             }
         }
         return removed;

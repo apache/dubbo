@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.common.extension.SPI;
+
 /**
  * The interface to resolve the {@link ServiceRestMetadata REST metadata} from the specified
  * Dubbo Service interface or type.
  *
  * @since 2.7.6
  */
+@SPI
 public interface ServiceRestMetadataResolver {
 
     /**

@@ -30,9 +30,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
 
-public class StatusUtilsTest {
+class StatusUtilsTest {
     @Test
-    public void testGetSummaryStatus1() throws Exception {
+    void testGetSummaryStatus1() throws Exception {
         Status status1 = new Status(Status.Level.ERROR);
         Status status2 = new Status(Status.Level.WARN);
         Status status3 = new Status(Status.Level.OK);
@@ -48,7 +48,7 @@ public class StatusUtilsTest {
     }
 
     @Test
-    public void testGetSummaryStatus2() throws Exception {
+    void testGetSummaryStatus2() throws Exception {
         Status status1 = new Status(Status.Level.WARN);
         Status status2 = new Status(Status.Level.OK);
         Map<String, Status> statuses = new HashMap<String, Status>();
@@ -61,7 +61,7 @@ public class StatusUtilsTest {
     }
 
     @Test
-    public void testGetSummaryStatus3() throws Exception {
+    void testGetSummaryStatus3() throws Exception {
         Status status1 = new Status(Status.Level.OK);
         Map<String, Status> statuses = new HashMap<String, Status>();
         statuses.put("status1", status1);

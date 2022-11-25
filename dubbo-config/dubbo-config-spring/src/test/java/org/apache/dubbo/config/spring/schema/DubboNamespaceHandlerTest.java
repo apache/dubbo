@@ -27,7 +27,6 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
-import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -57,9 +56,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DubboNamespaceHandlerTest {
+class DubboNamespaceHandlerTest {
 
-    private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
+    private static String resourcePath = "org.apache.dubbo.config.spring".replace('.', '/');
 
     @BeforeEach
     public void setUp() {
@@ -79,7 +78,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testProviderXmlOnConfigurationClass() {
+    void testProviderXmlOnConfigurationClass() {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
         applicationContext.register(XmlConfiguration.class);
         applicationContext.refresh();
@@ -87,7 +86,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testProviderXml() {
+    void testProviderXml() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider.xml",
                 resourcePath + "/demo-provider-properties.xml"
@@ -124,7 +123,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testMultiProtocol() {
+    void testMultiProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/multi-protocol.xml");
         ctx.start();
 
@@ -143,7 +142,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testDefaultProtocol() {
+    void testDefaultProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/override-protocol.xml");
         ctx.start();
 
@@ -153,7 +152,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testCustomParameter() {
+    void testCustomParameter() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/customize-parameter.xml");
         ctx.start();
 
@@ -168,7 +167,7 @@ public class DubboNamespaceHandlerTest {
 
 
     @Test
-    public void testDelayFixedTime() {
+    void testDelayFixedTime() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:/" + resourcePath + "/delay-fixed-time.xml");
         ctx.start();
 
@@ -176,7 +175,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testTimeoutConfig() {
+    void testTimeoutConfig() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-nested-service.xml");
         ctx.start();
 
@@ -196,7 +195,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testMonitor() {
+    void testMonitor() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-with-monitor.xml");
         ctx.start();
 
@@ -220,7 +219,7 @@ public class DubboNamespaceHandlerTest {
 //    }
 
     @Test
-    public void testModuleInfo() {
+    void testModuleInfo() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-with-module.xml");
         ctx.start();
 
@@ -229,7 +228,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testNotificationWithWrongBean() {
+    void testNotificationWithWrongBean() {
         Assertions.assertThrows(BeanCreationException.class, () -> {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/consumer-notification.xml");
             ctx.start();
@@ -237,7 +236,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testProperty() {
+    void testProperty() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/service-class.xml");
         ctx.start();
 
@@ -248,7 +247,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testMetricsAggregation() {
+    void testMetricsAggregation() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-aggregation.xml");
         ctx.start();
 
@@ -269,7 +268,7 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testMetricsPrometheus() {
+    void testMetricsPrometheus() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-prometheus.xml");
         ctx.start();
 

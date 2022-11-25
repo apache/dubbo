@@ -41,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
@@ -192,31 +193,35 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         boolean check = url.getParameter(CHECK_KEY, false);
 
+        Set<String> mappingByUrl = ServiceNameMapping.getMappingByUrl(url);
+
         String key = ServiceNameMapping.buildMappingKey(url);
-        Lock mappingLock = serviceNameMapping.getMappingLock(key);
-        try {
-            mappingLock.lock();
-            Set<String> subscribedServices = serviceNameMapping.getCachedMapping(url);
+
+        if(mappingByUrl == null) {
+            Lock mappingLock = serviceNameMapping.getMappingLock(key);
             try {
-                MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
-                subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
-                mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
-            } catch (Exception e) {
-                logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
-            }
+                mappingLock.lock();
+                Set<String> subscribedServices = serviceNameMapping.getMapping(url);
+                try {
+                    MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
+                    mappingByUrl = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
+                    mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
+                } catch (Exception e) {
+                    logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
+                }
 
-            if (CollectionUtils.isEmpty(subscribedServices)) {
-                logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
-//                if (check) {
-//                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-//                }
-                return;
+                if (CollectionUtils.isEmpty(mappingByUrl)) {
+                    logger.info("No interface-apps mapping found in local cache, stop subscribing, will automatically wait for mapping listener callback: " + url);
+                    //                if (check) {
+                    //                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+                    //                }
+                    return;
+                }
+            } finally {
+                mappingLock.unlock();
             }
-
-            subscribeURLs(url, listener, subscribedServices);
-        } finally {
-            mappingLock.unlock();
         }
+        subscribeURLs(url, listener, mappingByUrl);
     }
 
     @Override
@@ -241,7 +246,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         // TODO: remove service name mapping listener
         serviceDiscovery.unsubscribe(url, listener);
         String protocolServiceKey = url.getProtocolServiceKey();
-        Set<String> serviceNames = serviceNameMapping.getCachedMapping(url);
+        Set<String> serviceNames = serviceNameMapping.getMapping(url);
         serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             String serviceNamesKey = toStringKeys(serviceNames);
@@ -309,7 +314,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             ServiceInstancesChangedListener serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (serviceInstancesChangedListener == null) {
                 serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
-                serviceInstancesChangedListener.setUrl(url);
                 for (String serviceName : serviceNames) {
                     List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
                     if (CollectionUtils.isNotEmpty(serviceInstances)) {
@@ -320,7 +324,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             }
 
             if (!serviceInstancesChangedListener.isDestroyed()) {
-                serviceInstancesChangedListener.setUrl(url);
                 listener.addServiceListener(serviceInstancesChangedListener);
                 serviceInstancesChangedListener.addListenerAndNotify(url, listener);
                 serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
@@ -365,7 +368,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             logger.info("Received mapping notification from meta server, " + event);
 
             if (stopped) {
-                logger.warn("Listener has been stopped, ignore mapping notification, check why listener is not removed.");
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Listener has been stopped, ignore mapping notification, check why listener is not removed.");
                 return;
             }
             Set<String> newApps = event.getApps();

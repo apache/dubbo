@@ -27,7 +27,7 @@ import java.util.List;
 /**
  *
  */
-public class RouterTest {
+class RouterTest {
 
     private static List<Router> routers = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public class RouterTest {
     }
 
     @Test
-    public void testCompareTo () {
+    void testCompareTo () {
         try {
             Collections.sort(routers);
             Assertions.assertTrue(true);

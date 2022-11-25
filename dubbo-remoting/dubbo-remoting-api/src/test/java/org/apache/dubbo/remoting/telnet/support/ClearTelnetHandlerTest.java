@@ -23,10 +23,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ClearTelnetHandlerTest {
+class ClearTelnetHandlerTest {
 
     @Test
-    public void test() {
+    void test() {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 50; i++) {
             buf.append("\r\n");

@@ -69,7 +69,7 @@ import static org.springframework.util.ReflectionUtils.findField;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {ReferenceCreatorTest.class, ReferenceCreatorTest.ConsumerConfiguration.class})
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-public class ReferenceCreatorTest {
+class ReferenceCreatorTest {
 
     private static final String MODULE_CONFIG_ID = "mymodule";
     private static final String CONSUMER_CONFIG_ID = "myconsumer";
@@ -122,7 +122,7 @@ public class ReferenceCreatorTest {
     }
 
     @Test
-    public void testBuild() throws Exception {
+    void testBuild() throws Exception {
 
         Field helloServiceField = findField(getClass(), "helloService");
         DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);

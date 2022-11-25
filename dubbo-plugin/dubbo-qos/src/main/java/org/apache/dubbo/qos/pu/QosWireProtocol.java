@@ -27,9 +27,6 @@ import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.ssl.SslContext;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,12 +49,6 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(handler));
         operator.configChannelHandler(handlers);
-    }
-
-
-    @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
-
     }
 
 }

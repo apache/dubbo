@@ -44,6 +44,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
 /**
  * AbstractProxyProtocol
@@ -95,7 +96,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                     try {
                         runnable.run();
                     } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
+                        logger.warn(PROTOCOL_UNSUPPORTED, "", "", t.getMessage(), t);
                     }
                 }
             }

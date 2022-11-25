@@ -24,5 +24,5 @@ public interface ProviderConstants {
     /**
      * Default prefer serialization,multiple separated by commas
      */
-    String DEFAULT_PREFER_SERIALIZATION = "hessian2";
+    String DEFAULT_PREFER_SERIALIZATION = "fastjson2,hessian2";
 }

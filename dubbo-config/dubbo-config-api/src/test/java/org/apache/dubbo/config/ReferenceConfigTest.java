@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
@@ -52,6 +45,14 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
+
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -121,7 +122,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
-public class ReferenceConfigTest {
+class ReferenceConfigTest {
     private static String zkUrl1;
     private static String zkUrl2;
     private static String registryUrl1;
@@ -152,7 +153,7 @@ public class ReferenceConfigTest {
      * Test whether the configuration required for the aggregation service reference meets expectations
      */
     @Test
-    public void testAppendConfig() {
+    void testAppendConfig() {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
@@ -393,7 +394,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testShouldJvmRefer() {
+    void testShouldJvmRefer() {
 
         Map<String, String> parameters = new HashMap<>();
 
@@ -455,7 +456,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testCreateInvokerForLocalRefer() {
+    void testCreateInvokerForLocalRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setScope(LOCAL_KEY);
@@ -477,9 +478,10 @@ public class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Invoker<?> withFilter = ((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker();
-        withFilter = ((MockClusterInvoker<?>) withFilter).getDirectory().getAllInvokers().get(0);
-        Assertions.assertTrue(withFilter instanceof InjvmInvoker);
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Invoker<?> withFilter = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper);
+        Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
         URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
@@ -492,7 +494,7 @@ public class ReferenceConfigTest {
      * Verify the configuration of the registry protocol for remote reference
      */
     @Test
-    public void testCreateInvokerForRemoteRefer() {
+    void testCreateInvokerForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -537,7 +539,7 @@ public class ReferenceConfigTest {
      * Verify that the remote url is directly configured for remote reference
      */
     @Test
-    public void testCreateInvokerWithRemoteUrlForRemoteRefer() {
+    void testCreateInvokerWithRemoteUrlForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -578,7 +580,7 @@ public class ReferenceConfigTest {
      * Verify that the registry url is directly configured for remote reference
      */
     @Test
-    public void testCreateInvokerWithRegistryUrlForRemoteRefer() {
+    void testCreateInvokerWithRegistryUrlForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -618,7 +620,7 @@ public class ReferenceConfigTest {
      * Verify the service reference of multiple registries
      */
     @Test
-    public void testMultipleRegistryForRemoteRefer() {
+    void testMultipleRegistryForRemoteRefer() {
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
         referenceConfig.setProtocol("dubbo");
@@ -712,7 +714,7 @@ public class ReferenceConfigTest {
      * unit test for dubbo-1765
      */
     @Test
-    public void test1ReferenceRetry() {
+    void test1ReferenceRetry() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         application.setEnableFileCache(false);
@@ -759,7 +761,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void test2ReferenceRetry() {
+    void test2ReferenceRetry() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry2");
         application.setEnableFileCache(false);
@@ -810,7 +812,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         ReferenceConfig config = new ReferenceConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
@@ -830,7 +832,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testGetPrefixes() {
+    void testGetPrefixes() {
 
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setInterface(DemoService.class);
@@ -848,7 +850,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testGenericAndInterfaceConflicts() {
+    void testGenericAndInterfaceConflicts() {
 
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setInterface(DemoService.class);
@@ -864,7 +866,7 @@ public class ReferenceConfigTest {
 
 
     @Test
-    public void testLargeReferences() throws InterruptedException {
+    void testLargeReferences() throws InterruptedException {
         int amount = 10000;
         ModuleConfigManager configManager = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager();
 
@@ -944,7 +946,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testConstructWithReferenceAnnotation() throws NoSuchFieldException {
+    void testConstructWithReferenceAnnotation() throws NoSuchFieldException {
         Reference reference = getClass().getDeclaredField("innerTest").getAnnotation(Reference.class);
         ReferenceConfig referenceConfig = new ReferenceConfig(reference);
         Assertions.assertEquals(1, referenceConfig.getMethods().size());
@@ -962,7 +964,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testDifferentClassLoader() throws Exception {
+    void testDifferentClassLoader() throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
         ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);

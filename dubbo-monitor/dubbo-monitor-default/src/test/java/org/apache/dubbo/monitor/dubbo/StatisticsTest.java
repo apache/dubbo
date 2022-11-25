@@ -40,9 +40,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-public class StatisticsTest {
+class StatisticsTest {
     @Test
-    public void testEquals() {
+    void testEquals() {
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
                 .addParameter(APPLICATION_KEY, "morgan")
                 .addParameter(INTERFACE_KEY, "MemberService")
@@ -76,7 +76,7 @@ public class StatisticsTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Statistics statistics = new Statistics(new ServiceConfigURL("dubbo", "10.20.153.10", 0));
         statistics.setApplication("demo");
         statistics.setMethod("findPerson");

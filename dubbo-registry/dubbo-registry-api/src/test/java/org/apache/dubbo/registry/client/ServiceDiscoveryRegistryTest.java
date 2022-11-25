@@ -45,6 +45,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -60,7 +61,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ServiceDiscoveryRegistryTest {
+class ServiceDiscoveryRegistryTest {
     public static final String APP_NAME1 = "app1";
     public static final String APP_NAME2 = "app2";
     public static final String APP_NAME3 = "app3";
@@ -121,7 +122,7 @@ public class ServiceDiscoveryRegistryTest {
      *   - check=false
      */
     @Test
-    public void testDoSubscribe() {
+    void testDoSubscribe() {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
         // Exceptional case, no interface-app mapping found
@@ -158,6 +159,15 @@ public class ServiceDiscoveryRegistryTest {
         } finally {
             serviceDiscoveryRegistry.unsubscribe(checkURL, testServiceListener);
         }
+
+        //test provider case
+        checkURL = url.addParameter(PROVIDED_BY, APP_NAME1);
+
+        try {
+            serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
+        } finally {
+            serviceDiscoveryRegistry.unsubscribe(checkURL, testServiceListener);
+        }
     }
 
     /**
@@ -170,7 +180,7 @@ public class ServiceDiscoveryRegistryTest {
      * - instance listener and service listener rightly mapped
      */
     @Test
-    public void testSubscribeURLs() {
+    void testSubscribeURLs() {
         // interface to single app mapping
         Set<String> singleApp = new TreeSet<>();
         singleApp.add(APP_NAME1);
@@ -230,12 +240,12 @@ public class ServiceDiscoveryRegistryTest {
      * repeat of {@link this#testSubscribeURLs()} with multi threads
      */
     @Test
-    public void testConcurrencySubscribe() {
+    void testConcurrencySubscribe() {
         // TODO
     }
 
     @Test
-    public void testUnsubscribe() {
+    void testUnsubscribe() {
         // do subscribe to prepare for unsubscribe verification
         Set<String> multiApps = new TreeSet<>();
         multiApps.add(APP_NAME1);
@@ -248,12 +258,12 @@ public class ServiceDiscoveryRegistryTest {
         assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
 
         // do unsubscribe
-        when(mapping.getCachedMapping(url2)).thenReturn(multiApps);
+        when(mapping.getMapping(url2)).thenReturn(multiApps);
         serviceDiscoveryRegistry.doUnsubscribe(url2, testServiceListener2);
         assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
         ServiceInstancesChangedListener instancesChangedListener = serviceDiscoveryRegistry.getServiceListeners().entrySet().iterator().next().getValue();
         assertTrue(instancesChangedListener.hasListeners());
-        when(mapping.getCachedMapping(url)).thenReturn(multiApps);
+        when(mapping.getMapping(url)).thenReturn(multiApps);
         serviceDiscoveryRegistry.doUnsubscribe(url, testServiceListener);
         assertEquals(0, serviceDiscoveryRegistry.getServiceListeners().size());
         assertFalse(instancesChangedListener.hasListeners());

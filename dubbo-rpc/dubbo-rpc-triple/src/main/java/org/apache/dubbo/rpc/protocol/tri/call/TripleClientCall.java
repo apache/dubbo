@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -33,12 +33,13 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
+import io.netty.channel.Channel;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,10 +47,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-public class TripleClientCall implements ClientCall, ClientStream.Listener {
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_RESPONSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_SERIALIZE_TRIPLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_STREAM_LISTENER;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleClientCall.class);
-    private final Connection connection;
+public class TripleClientCall implements ClientCall, ClientStream.Listener {
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(TripleClientCall.class);
+    private final AbstractConnectionClient connectionClient;
     private final Executor executor;
     private final FrameworkModel frameworkModel;
     private final TripleWriteQueue writeQueue;
@@ -61,21 +65,20 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
     private boolean autoRequest = true;
     private boolean done;
 
-    public TripleClientCall(Connection connection, Executor executor,
+    public TripleClientCall(AbstractConnectionClient connectionClient, Executor executor,
                             FrameworkModel frameworkModel, TripleWriteQueue writeQueue) {
-        this.connection = connection;
+        this.connectionClient = connectionClient;
         this.executor = executor;
         this.frameworkModel = frameworkModel;
         this.writeQueue= writeQueue;
     }
 
-
     // stream listener start
     @Override
     public void onMessage(byte[] message) {
         if (done) {
-            LOGGER.warn(
-                "Received message from closed stream,connection=" + connection + " service="
+            LOGGER.warn(PROTOCOL_STREAM_LISTENER, "", "",
+                "Received message from closed stream,connection=" + connectionClient + " service="
                     + requestMetadata.service + " method="
                     + requestMetadata.method.getMethodName());
             return;
@@ -86,8 +89,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         } catch (Throwable t) {
             cancelByLocal(TriRpcStatus.INTERNAL.withDescription("Deserialize response failed")
                 .withCause(t).asException());
-            LOGGER.error(String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
-                connection ,requestMetadata.service, requestMetadata.method.getMethodName()),t);
+            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", String.format("Failed to deserialize triple response, service=%s, method=%s,connection=%s",
+                    connectionClient, requestMetadata.service, requestMetadata.method.getMethodName()), t);
         }
     }
 
@@ -105,7 +108,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public void onComplete(TriRpcStatus status, Map<String, Object> attachments,
-        Map<String, String> excludeHeaders) {
+                           Map<String, String> excludeHeaders) {
         if (done) {
             return;
         }
@@ -177,7 +180,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                 // support others type but now only support this
             }
         } catch (Throwable t) {
-            LOGGER.error("tran from grpc-status-details error", t);
+            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "tran from grpc-status-details error", t);
         }
         return map;
     }
@@ -236,7 +239,7 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
                     }
                 });
         } catch (Throwable t) {
-            LOGGER.error(String.format("Serialize triple request failed, service=%s method=%s",
+            LOGGER.error(PROTOCOL_FAILED_SERIALIZE_TRIPLE, "", "", String.format("Serialize triple request failed, service=%s method=%s",
                 requestMetadata.service,
                 requestMetadata.method), t);
             cancelByLocal(t);
@@ -269,10 +272,10 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     @Override
     public StreamObserver<Object> start(RequestMetadata metadata,
-        ClientCall.Listener responseListener) {
+                                        ClientCall.Listener responseListener) {
         this.requestMetadata = metadata;
         this.listener = responseListener;
-        this.stream = new TripleClientStream(frameworkModel, executor, connection.getChannel(),
+        this.stream = new TripleClientStream(frameworkModel, executor, (Channel) connectionClient.getChannel(true),
             this, writeQueue);
         return new ClientCallToObserverAdapter<>(this);
     }

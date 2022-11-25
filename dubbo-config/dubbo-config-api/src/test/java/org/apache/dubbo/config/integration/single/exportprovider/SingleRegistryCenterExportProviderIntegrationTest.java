@@ -53,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 /**
  * The testcases are only for checking the core process of exporting provider.
  */
-public class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTest {
+class SingleRegistryCenterExportProviderIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterExportProviderIntegrationTest.class);
 

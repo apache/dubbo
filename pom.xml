@@ -120,7 +120,7 @@
         <maven_javadoc_version>3.2.0</maven_javadoc_version>
         <maven_jetty_version>9.4.38.v20210224</maven_jetty_version>
         <maven_checkstyle_version>3.1.2</maven_checkstyle_version>
-        <maven_jacoco_version>0.8.7</maven_jacoco_version>
+        <maven_jacoco_version>0.8.8</maven_jacoco_version>
         <maven_flatten_version>1.3.0</maven_flatten_version>
         <maven_enforce_version>3.0.0-M3</maven_enforce_version>
         <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.2.0-beta.1-SNAPSHOT</revision>
+        <revision>3.2.0-beta.2-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -327,6 +327,7 @@
                                         **/org/apache/dubbo/common/utils/Utf8Utils.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                        **/org/apache/dubbo/test/common/utils/TestSocketUtils.java,
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/istio/v1/auth/**/*,
                                         **/com/google/rpc/*,
@@ -500,7 +501,7 @@
             </build>
         </profile>
         <profile>
-            <id>jdk15ge</id>
+            <id>jdk15ge-add-open</id>
             <activation>
                 <jdk>[15,</jdk>
             </activation>
@@ -528,6 +529,29 @@
             </build>
         </profile>
         <profile>
+            <id>jdk15ge-simple</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <useSystemClassLoader>true</useSystemClassLoader>
+                            <forkMode>once</forkMode>
+                            <argLine>${argline} ${jacocoArgLine}
+                            </argLine>
+                            <systemProperties>
+                                <!-- common shared -->
+                            </systemProperties>
+                            <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                            <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>jdk9-compile</id>
             <activation>
                 <jdk>[1.9,)</jdk>
@@ -542,6 +566,31 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>jacoco089</id>
+            <properties>
+                <maven_jacoco_version>0.8.9-SNAPSHOT</maven_jacoco_version>
+            </properties>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>apache.snapshots</id>
+                    <name>Apache Snapshot Repository</name>
+                    <url>https://repository.apache.org/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+                <pluginRepository>
+                    <id>oss.snapshots</id>
+                    <name>Oss Repository</name>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                </pluginRepository>
+            </pluginRepositories>
         </profile>
     </profiles>
 
@@ -599,8 +648,16 @@
                         <id>report-aggregate</id>
                         <phase>verify</phase>
                         <goals>
+                            <goal>report</goal>
                             <goal>report-aggregate</goal>
                         </goals>
+                        <configuration>
+                            <includes>
+                                <include>target/classes/**/*</include>
+                                <include>target/classes/**</include>
+                                <include>**/*</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -666,6 +723,7 @@
                         <exclude>**/*.bat</exclude>
                         <exclude>**/*.md</exclude>
                         <exclude>.git/</exclude>
+                        <exclude>.tmp/</exclude>
                         <exclude>.gitignore</exclude>
                         <!-- ASF jenkins box puts the Maven repo in our root directory. -->
                         <exclude>.repository/</exclude>

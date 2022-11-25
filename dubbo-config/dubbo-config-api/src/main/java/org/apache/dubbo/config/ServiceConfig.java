@@ -52,8 +52,8 @@ import org.apache.dubbo.rpc.service.GenericService;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -62,20 +62,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNEXPORT_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_USE_RANDOM_PORT;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
@@ -244,7 +247,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     protected void doDelayExport() {
-        getScopeModel().getDefaultExtension(ExecutorRepository.class).getServiceExportExecutor()
+        ExecutorRepository.getInstance(getScopeModel().getApplicationModel()).getServiceExportExecutor()
             .schedule(() -> {
                 try {
                     doExport();
@@ -419,7 +422,25 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         URL url = buildUrl(protocolConfig, map);
 
+        processServiceExecutor(url);
+
         exportUrl(url, registryURLs);
+    }
+
+    private void processServiceExecutor(URL url) {
+        if (getExecutor() != null) {
+            String mode = application.getExecutorManagementMode();
+            if (!EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
+                logger.warn("The current executor management mode is " + mode +
+                    ", the configured service executor cannot take effect unless the mode is configured as " + EXECUTOR_MANAGEMENT_MODE_ISOLATION);
+                return;
+            }
+            /**
+             * Because executor is not a string type, it cannot be attached to the url parameter, so it is added to URL#attributes
+             * and obtained it in IsolationExecutorRepository#createExecutor method
+             */
+            url.getAttributes().put(SERVICE_EXECUTOR, getExecutor());
+        }
     }
 
     private Map<String, String> buildAttributes(ProtocolConfig protocolConfig) {
@@ -457,7 +478,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 logger.warn(CONFIG_NO_METHOD_FOUND, "", "", "No method found in service interface: " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
+                List<String> copyOfMethods = new ArrayList<>(Arrays.asList(methods));
+                copyOfMethods.sort(Comparator.naturalOrder());
+                map.put(METHODS_KEY, String.join(COMMA_SEPARATOR, copyOfMethods));
             }
         }
 
@@ -599,23 +622,27 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 // export to extra protocol is used in remote export
                 String extProtocol = url.getParameter("ext.protocol", "");
                 List<String> protocols = new ArrayList<>();
-                // export original url
-                url = URLBuilder.from(url).
-                    addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
-                    removeParameter("ext.protocol").
-                    build();
+
+                if (StringUtils.isNotBlank(extProtocol)) {
+                    // export original url
+                    url = URLBuilder.from(url).
+                        addParameter(IS_PU_SERVER_KEY, Boolean.TRUE.toString()).
+                        removeParameter("ext.protocol").
+                        build();
+                }
+
                 url = exportRemote(url, registryURLs);
                 if (!isGeneric(generic) && !getScopeModel().isInternal()) {
                     MetadataUtils.publishServiceDefinition(url, providerModel.getServiceModel(), getApplicationModel());
                 }
 
-                if (!extProtocol.equals("")) {
+                if (StringUtils.isNotBlank(extProtocol)) {
                     String[] extProtocols = extProtocol.split(",", -1);
                     protocols.addAll(Arrays.asList(extProtocols));
                 }
                 // export extra protocols
                 for(String protocol : protocols) {
-                    if(!protocol.equals("")){
+                    if(StringUtils.isNotBlank(protocol)){
                         URL localUrl = URLBuilder.from(url).
                             setProtocol(protocol).
                             build();

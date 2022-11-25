@@ -80,6 +80,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_P
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTORY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
@@ -127,7 +130,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        executorRepository = ExecutorRepository.getInstance(applicationModel);
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
 
         // load spi listener
@@ -659,7 +662,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     public void prepareInternalModule() {
-        if(hasPreparedInternalModule){
+        if (hasPreparedInternalModule) {
             return;
         }
         synchronized (internalModuleLock) {
@@ -675,7 +678,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 try {
                     future.get(5, TimeUnit.SECONDS);
                 } catch (Exception e) {
-                    logger.warn("wait for internal module startup failed: " + e.getMessage(), e);
+                    logger.warn(CONFIG_FAILED_START_MODEL, "", "", "wait for internal module startup failed: " + e.getMessage(), e);
                 }
             }
         }
@@ -729,7 +732,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
-                    logger.warn("The configuration center failed to initialize", e);
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "","The configuration center failed to initialize", e);
                     configCenter.setInitialized(false);
                     return null;
                 } else {
@@ -825,8 +828,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             unexportMetricsService();
 
             unregisterServiceInstance();
-            destroyRegistries();
-            destroyMetadataReports();
 
             unRegisterShutdownHook();
             if (asyncMetadataFuture != null) {
@@ -844,6 +845,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             try {
+                destroyRegistries();
+                destroyMetadataReports();
+
                 executeShutdownCallbacks();
 
                 // TODO should we close unused protocol server which only used by this application?
@@ -983,7 +987,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
                 }
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle starting event", e);
+                logger.error(CONFIG_FAILED_START_MODEL, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
             }
         }
     }
@@ -1062,7 +1066,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void onFailed(String msg, Throwable ex) {
         try {
             setFailed(ex);
-            logger.error(msg, ex);
+            logger.error(CONFIG_FAILED_START_MODEL, "", "", msg, ex);
         } finally {
             completeStartFuture(false);
         }
@@ -1072,7 +1076,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // shutdown export/refer executor
         executorRepository.shutdownServiceExportExecutor();
         executorRepository.shutdownServiceReferExecutor();
-        getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
+        ExecutorRepository.getInstance(applicationModel).destroyAll();
     }
 
     private void destroyRegistries() {
@@ -1084,7 +1088,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 serviceDiscovery.destroy();
             } catch (Throwable ignored) {
-                logger.warn(ignored.getMessage(), ignored);
+                logger.warn(CONFIG_FAILED_EXECUTE_DESTORY, "", "", ignored.getMessage(), ignored);
             }
         });
         if (logger.isDebugEnabled()) {

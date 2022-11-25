@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * 2019-04-30
  */
-public class MultipleRegistry2S2RTest {
+class MultipleRegistry2S2RTest {
 
     private static final String SERVICE_NAME = "org.apache.dubbo.registry.MultipleService2S2R";
     private static final String SERVICE2_NAME = "org.apache.dubbo.registry.MultipleService2S2R2";
@@ -68,7 +68,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testParamConfig() {
+    void testParamConfig() {
 
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
@@ -107,7 +107,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testRegistryAndUnRegistry() throws InterruptedException {
+    void testRegistryAndUnRegistry() throws InterruptedException {
         URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
 //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
@@ -138,7 +138,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testSubscription() throws InterruptedException {
+    void testSubscription() throws InterruptedException {
         URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
 //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
@@ -176,7 +176,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testAggregation() {
+    void testAggregation() {
         List<URL> result = new ArrayList<URL>();
         List<URL> listToAggregate = new ArrayList<URL>();
         URL url1= URL.valueOf("dubbo://127.0.0.1:20880/service1");
