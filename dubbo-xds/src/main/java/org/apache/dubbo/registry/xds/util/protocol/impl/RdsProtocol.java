@@ -45,8 +45,8 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static HashMap<String, Object> resourcesMap = new HashMap<>();
 
-    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
-        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
+    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
+        super(xdsChannel, node, pollingTimeout);
     }
 
     @Override

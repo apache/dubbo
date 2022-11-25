@@ -45,8 +45,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
-    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
-        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
+    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
+        super(xdsChannel, node, pollingTimeout);
     }
 
     @Override

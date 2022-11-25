@@ -29,12 +29,7 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -54,12 +49,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     protected final Node node;
 
     /**
-     * Store Request Parameter ( resourceNames )
-     * K - requestId, V - resourceNames
-     */
-    protected final Map<Long, Set<String>> requestParam = new ConcurrentHashMap<>();
-
-    /**
      * Store ADS Request Observer ( StreamObserver in Streaming Request )
      * K - requestId, V - StreamObserver
      */
@@ -67,7 +56,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int pollingTimeout;
 
-    public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+    public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
         this.pollingTimeout = pollingTimeout;
@@ -125,12 +114,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         } catch (Throwable t) {
             logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
         }
-    }
-
-    @Override
-    public void updateObserve(long request, Set<String> resourceNames) {
-        // send difference in resourceNames
-        requestParam.put(request, resourceNames);
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -205,7 +188,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
-            clear();
             if (consumer != null) {
                 consumer.accept(null);
 //                streamResult.remove(this.requestId);
@@ -216,7 +198,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         }
 
         private void returnResult(T result) {
-//            CompletableFuture<T> future = streamResult.get(requestId);
             if (future == null) {
                 return;
             }
@@ -226,11 +207,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onCompleted() {
             logger.info("xDS Client completed");
-            clear();
-        }
-
-        private void clear() {
-//            requestObserverMap.remove(requestId);
         }
     }
 

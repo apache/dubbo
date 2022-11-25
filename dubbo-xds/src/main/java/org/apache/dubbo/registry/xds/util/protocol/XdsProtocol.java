@@ -37,12 +37,4 @@ public interface XdsProtocol<T> {
      * @return requestId, used when resourceNames update with {@link XdsProtocol#updateObserve(long, Set)}
      */
     void observeResource(Set<String> resourceNames, Consumer<T> consumer);
-
-    /**
-     * Update observed resource list in {@link XdsProtocol#observeResource(Set, Consumer)}
-     *
-     * @param request       requestId returned by {@link XdsProtocol#observeResource(Set, Consumer)}
-     * @param resourceNames new resource name list to observe
-     */
-    void updateObserve(long request, Set<String> resourceNames);
 }

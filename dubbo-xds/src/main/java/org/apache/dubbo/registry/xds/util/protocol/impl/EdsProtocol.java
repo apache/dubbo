@@ -48,8 +48,8 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     private static HashMap<String, Object> resourcesMap = new HashMap<>();
 
 
-    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
-        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
+    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
+        super(xdsChannel, node, pollingTimeout);
     }
 
     @Override

@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -46,28 +47,25 @@ public class PilotExchanger {
     private ListenerResult listenerResult;
 
     private RouteResult routeResult;
-
-    private final AtomicLong observeRouteRequest = new AtomicLong(-1);
-
+    private final AtomicBoolean isRdsObserve = new AtomicBoolean(false);
     private final HashSet<String> domainObserveRequest = new HashSet<>();
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
 
     private PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
-        int pollingPoolSize = url.getParameter("pollingPoolSize", 10);
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
-        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
-        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
-        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
+        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout);
+        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout);
+        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout);
 
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.getRouteConfigNames());
 
         // Observer RDS update
         if (CollectionUtils.isNotEmpty(listenerResult.getRouteConfigNames())) {
-//            this.observeRouteRequest.set(createRouteObserve());
             createRouteObserve();
+            isRdsObserve.set(true);
         }
 
         // Observe LDS updated
@@ -76,13 +74,8 @@ public class PilotExchanger {
             if (!newListener.equals(listenerResult)) {
                 this.listenerResult = newListener;
                 // update RDS observation
-                synchronized (observeRouteRequest) {
-                    if (observeRouteRequest.get() == -1) {
-                        createRouteObserve();
-//                        this.observeRouteRequest.set(createRouteObserve());
-                    } else {
-                        rdsProtocol.updateObserve(observeRouteRequest.get(), newListener.getRouteConfigNames());
-                    }
+                synchronized (isRdsObserve) {
+                    createRouteObserve();
                 }
             }
         });
@@ -96,14 +89,9 @@ public class PilotExchanger {
                 if (!routeResult.searchDomain(domain).equals(newRoute)) {
                     // routers in observed domain has been updated
 //                    Long domainRequest = domainObserveRequest.get(domain);
-                    if (!domainObserveRequest.contains(domain)) {
                         // router list is empty when observeEndpoints() called and domainRequest has not been created yet
                         // create new observation
                         doObserveEndpoints(domain);
-                    } else {
-                        // update observation by domainRequest
-//                        edsProtocol.updateObserve(domainRequest, newRoute);
-                    }
                 }
             });
             // update local cache
