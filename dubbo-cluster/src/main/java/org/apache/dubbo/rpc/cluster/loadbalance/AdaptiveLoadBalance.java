@@ -83,13 +83,13 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
 
     private String getServiceKey(Invoker<?> invoker,Invocation invocation){
 
-        String key = (String) invocation.getAttributes().get(Constants.ADAPTIVE_LOADBALANCE_KEY);
+        String key = (String) invocation.getAttributes().get(invoker);
         if (StringUtils.isNotEmpty(key)){
             return key;
         }
 
         key = buildServiceKey(invoker,invocation);
-        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_KEY,key);
+        invocation.getAttributes().put(invoker,key);
         return key;
     }
 

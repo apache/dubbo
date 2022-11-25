@@ -86,13 +86,13 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
 
     private String getServiceKey(Invocation invocation){
 
-        String key = (String) invocation.getAttributes().get(Constants.ADAPTIVE_LOADBALANCE_KEY);
+        String key = (String) invocation.getAttributes().get(invocation.getInvoker());
         if (StringUtils.isNotEmpty(key)){
             return key;
         }
 
         key = buildServiceKey(invocation);
-        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_KEY,key);
+        invocation.getAttributes().put(invocation.getInvoker(),key);
         return key;
     }
 

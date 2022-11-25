@@ -106,7 +106,6 @@ public interface Constants {
 
     String ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY = "lb_adaptive";
     String ADAPTIVE_LOADBALANCE_START_TIME = "adaptive_startTime";
-    String ADAPTIVE_LOADBALANCE_KEY = "adaptive_service_key";
     String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
     
 }
