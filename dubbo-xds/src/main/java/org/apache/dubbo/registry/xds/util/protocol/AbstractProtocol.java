@@ -29,9 +29,12 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -137,8 +140,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     protected abstract T decodeDiscoveryResponse(DiscoveryResponse response);
 
     private class ResponseObserver implements StreamObserver<DiscoveryResponse> {
-//        private final long requestId;
-
         @Override
         public boolean equals(Object o) {
             if (this == o) {
