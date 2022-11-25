@@ -84,13 +84,25 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         //return url.getAddress() + ProtocolUtils.serviceKey(url.getPort(), url.getPath(), url.getVersion(), url.getGroup());
     }
 
+    private String getServiceKey(Invocation invocation){
+
+        String key = (String) invocation.getAttributes().get(Constants.ADAPTIVE_LOADBALANCE_KEY);
+        if (StringUtils.isNotEmpty(key)){
+            return key;
+        }
+
+        key = buildServiceKey(invocation);
+        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_KEY,key);
+        return key;
+    }
+
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
 
         try {
             if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
                 && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
-                adaptiveMetrics.addConsumerSuccess(buildServiceKey(invocation));
+                adaptiveMetrics.addConsumerSuccess(getServiceKey(invocation));
             }
             String attachment = appResponse.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
             if (StringUtils.isNotEmpty(attachment)) {
@@ -113,7 +125,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
                 }
 
                 getExecutor().execute(() -> {
-                    adaptiveMetrics.setProviderMetrics(buildServiceKey(invocation), metricsMap);
+                    adaptiveMetrics.setProviderMetrics(getServiceKey(invocation), metricsMap);
                 });
             }
         }
@@ -128,7 +140,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
             && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
             getExecutor().execute(() -> {
-                adaptiveMetrics.addErrorReq(buildServiceKey(invocation));
+                adaptiveMetrics.addErrorReq(getServiceKey(invocation));
             });
         }
     }

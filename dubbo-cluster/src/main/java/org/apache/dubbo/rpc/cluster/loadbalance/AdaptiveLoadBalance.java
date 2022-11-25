@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invocation;
@@ -55,8 +56,8 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
         invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
         long startTime = System.currentTimeMillis();
         invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME,startTime);
-        adaptiveMetrics.addConsumerReq(buildServiceKey(invoker,invocation));
-        adaptiveMetrics.setPickTime(buildServiceKey(invoker,invocation),startTime);
+        adaptiveMetrics.addConsumerReq(getServiceKey(invoker,invocation));
+        adaptiveMetrics.setPickTime(getServiceKey(invoker,invocation),startTime);
 
         return invoker;
     }
@@ -80,6 +81,18 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
         return chooseLowLoadInvoker(invokers.get(pos1),invokers.get(pos2),invocation);
     }
 
+    private String getServiceKey(Invoker<?> invoker,Invocation invocation){
+
+        String key = (String) invocation.getAttributes().get(Constants.ADAPTIVE_LOADBALANCE_KEY);
+        if (StringUtils.isNotEmpty(key)){
+            return key;
+        }
+
+        key = buildServiceKey(invoker,invocation);
+        invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_KEY,key);
+        return key;
+    }
+
     private String buildServiceKey(Invoker<?> invoker,Invocation invocation){
         URL url = invoker.getUrl();
         StringBuilder sb = new StringBuilder(128);
@@ -98,8 +111,8 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
         int weight2 = getWeight(invoker2, invocation);
         int timeout1 = getTimeout(invoker2, invocation);
         int timeout2 = getTimeout(invoker2, invocation);
-        long load1 = Double.doubleToLongBits(adaptiveMetrics.getLoad(buildServiceKey(invoker1,invocation),weight1,timeout1 ));
-        long load2 = Double.doubleToLongBits(adaptiveMetrics.getLoad(buildServiceKey(invoker2,invocation),weight2,timeout2 ));
+        long load1 = Double.doubleToLongBits(adaptiveMetrics.getLoad(getServiceKey(invoker1,invocation),weight1,timeout1 ));
+        long load2 = Double.doubleToLongBits(adaptiveMetrics.getLoad(getServiceKey(invoker2,invocation),weight2,timeout2 ));
 
         if (load1 == load2) {
             // The sum of weights
