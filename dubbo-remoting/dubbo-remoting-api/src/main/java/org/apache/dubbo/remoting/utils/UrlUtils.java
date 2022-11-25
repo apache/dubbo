@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -82,7 +81,8 @@ public class UrlUtils {
      */
     public static String serializationOrDefault(URL url) {
         //noinspection OptionalGetWithoutIsPresent
-        return allSerializations(url).stream().findFirst().get();
+        Optional<String> serializations = allSerializations(url).stream().findFirst();
+        return serializations.orElseGet(DefaultSerializationSelector::getDefaultRemotingSerialization);
     }
 
     /**
