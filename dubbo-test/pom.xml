@@ -28,6 +28,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>dubbo-test-integration</module>
         <module>dubbo-test-check</module>
         <module>dubbo-test-common</module>
         <module>dubbo-test-spring</module>

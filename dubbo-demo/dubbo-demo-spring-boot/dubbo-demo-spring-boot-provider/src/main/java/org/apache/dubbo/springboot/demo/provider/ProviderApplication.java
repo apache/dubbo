@@ -19,6 +19,8 @@ package org.apache.dubbo.springboot.demo.provider;
 
 
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.springboot.demo.provider.registry.EmbeddedZooKeeper;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -28,6 +30,9 @@ import java.util.concurrent.CountDownLatch;
 @EnableDubbo(scanBasePackages = {"org.apache.dubbo.springboot.demo.provider"})
 public class ProviderApplication {
     public static void main(String[] args) throws Exception {
+        // Spin up an embedded server
+        new EmbeddedZooKeeper(2181, false).start();
+
         SpringApplication.run(ProviderApplication.class, args);
         System.out.println("dubbo service started");
         new CountDownLatch(1).await();

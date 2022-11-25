@@ -30,6 +30,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>dubbo-demo-api-interface</module>
         <module>dubbo-demo-api-provider</module>
         <module>dubbo-demo-api-consumer</module>
     </modules>
@@ -40,22 +41,5 @@
     </properties>
 
     <artifactId>dubbo-demo-api</artifactId>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

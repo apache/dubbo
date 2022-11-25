@@ -18,6 +18,7 @@ package org.apache.dubbo.demo.provider;
 
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.demo.provider.registry.EmbeddedZooKeeper;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,9 @@ import org.springframework.context.annotation.PropertySource;
 
 public class Application {
     public static void main(String[] args) throws Exception {
+        // Spin up an embedded server, please use separate registry cluster in production
+        new EmbeddedZooKeeper(2181, false).start();
+
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ProviderConfiguration.class);
         context.start();
         System.in.read();

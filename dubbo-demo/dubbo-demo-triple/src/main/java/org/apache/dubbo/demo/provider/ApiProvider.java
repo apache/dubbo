@@ -16,19 +16,24 @@
  */
 package org.apache.dubbo.demo.provider;
 
+
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.demo.GreeterService;
 import org.apache.dubbo.demo.GreeterServiceImpl;
+import org.apache.dubbo.demo.hello.Greeter;
+import org.apache.dubbo.demo.registry.EmbeddedZooKeeper;
 
 public class ApiProvider {
-    public static void main(String[] args) throws InterruptedException {
-        ServiceConfig<GreeterService> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterface(GreeterService.class);
+    public static void main(String[] args) {
+        // Spin up an embedded server, please use separate registry cluster in production
+        new EmbeddedZooKeeper(2181, false).start();
+
+        ServiceConfig<Greeter> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(Greeter.class);
         serviceConfig.setRef(new GreeterServiceImpl());
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();

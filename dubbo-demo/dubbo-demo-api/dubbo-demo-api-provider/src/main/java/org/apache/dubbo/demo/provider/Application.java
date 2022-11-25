@@ -24,11 +24,15 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.demo.provider.registry.EmbeddedZooKeeper;
 
 import java.util.concurrent.CountDownLatch;
 
 public class Application {
     public static void main(String[] args) throws Exception {
+        // Spin up an embedded server, please use separate registry cluster in production
+        new EmbeddedZooKeeper(2181, false).start();
+
         if (isClassic(args)) {
             startWithExport();
         } else {

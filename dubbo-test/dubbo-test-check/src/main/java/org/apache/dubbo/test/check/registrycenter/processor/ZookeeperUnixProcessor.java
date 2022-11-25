@@ -64,7 +64,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                logger.error(REGISTRY_FAILED_START_ZOOKEEPER,"","",line);
+                logger.error(REGISTRY_FAILED_START_ZOOKEEPER, "", "", line);
             }
         } catch (IOException e) {
             /* eat quietly */
