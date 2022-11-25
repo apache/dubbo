@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.filter.support;
+package org.apache.dubbo.rpc.filter;
 
+import org.apache.dubbo.common.constants.LoadbalanceRules;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.rpc.cluster.loadbalance.AdaptiveLoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
@@ -36,9 +36,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
  * if the load balance is adaptive ,set attachment to get the metrics of the server
@@ -46,12 +46,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
  * @see org.apache.dubbo.rpc.RpcContext
  */
 @Activate(group = CONSUMER, order = -200000, value = {"loadbalance:adaptive"})
-public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.Listener {
+public class AdaptiveLoadBalanceFilter implements Filter, Filter.Listener {
 
     /**
      * uses a single worker thread operating off an bounded queue
      */
-    private ThreadPoolExecutor executor = null;
+    private volatile ThreadPoolExecutor executor = null;
 
     private AdaptiveMetrics adaptiveMetrics;
 
@@ -81,7 +81,6 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
         StringBuilder sb = new StringBuilder(128);
         sb.append(invocation.getInvoker().getUrl().getAddress()).append(":").append(invocation.getProtocolServiceKey());
         return sb.toString();
-        //return url.getAddress() + ProtocolUtils.serviceKey(url.getPort(), url.getPath(), url.getVersion(), url.getGroup());
     }
 
     private String getServiceKey(Invocation invocation){
@@ -101,7 +100,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
 
         try {
             if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
-                && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
+                && LoadbalanceRules.ADAPTIVE.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
                 adaptiveMetrics.addConsumerSuccess(getServiceKey(invocation));
             }
             String attachment = appResponse.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
@@ -138,7 +137,7 @@ public class AdaptiveLoadBalanceFilter implements ClusterFilter, ClusterFilter.L
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         if (StringUtils.isNotEmpty(invoker.getUrl().getParameter(LOADBALANCE_KEY))
-            && AdaptiveLoadBalance.NAME.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
+            && LoadbalanceRules.ADAPTIVE.equals(invoker.getUrl().getParameter(LOADBALANCE_KEY))) {
             getExecutor().execute(() -> {
                 adaptiveMetrics.addErrorReq(getServiceKey(invocation));
             });

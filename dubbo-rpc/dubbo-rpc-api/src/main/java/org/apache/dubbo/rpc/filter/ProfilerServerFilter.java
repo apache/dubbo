@@ -66,7 +66,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         afterInvoke(invoker, invocation);
-        addAdaptiveResponse(appResponse,invoker, invocation);
+        addAdaptiveResponse(appResponse, invocation);
     }
 
     @Override
@@ -85,14 +85,12 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
             }
         }
     }
-    private void addAdaptiveResponse(Result appResponse,Invoker<?> invoker, Invocation invocation) {
-        String adaptiveLoadAttachment = (String) invocation.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
+    private void addAdaptiveResponse(Result appResponse, Invocation invocation) {
+        String adaptiveLoadAttachment = invocation.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
         if (StringUtils.isNotEmpty(adaptiveLoadAttachment)) {
-            //TODO
-//            String[] indexes = adaptiveLoadAttachment.split(",");
             OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
 
-            StringBuffer sb = new StringBuffer(64);
+            StringBuilder sb = new StringBuilder(64);
             sb.append("curTime:").append(System.currentTimeMillis());
             sb.append(COMMA_SEPARATOR).append("load:").append(operatingSystemMXBean.getSystemLoadAverage() * 100 / operatingSystemMXBean.getAvailableProcessors() );
 

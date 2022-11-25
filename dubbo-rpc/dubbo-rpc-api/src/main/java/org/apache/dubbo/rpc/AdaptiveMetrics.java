@@ -29,8 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class AdaptiveMetrics {
 
-    private ConcurrentMap<String, AdaptiveMetrics> metricsStatistics = new ConcurrentHashMap<String,
-        AdaptiveMetrics>();
+    private ConcurrentMap<String, AdaptiveMetrics> metricsStatistics = new ConcurrentHashMap<>();
 
     private long currentProviderTime = 0;
     private double providerCPULoad = 0;
@@ -46,9 +45,6 @@ public class AdaptiveMetrics {
     private final AtomicLong errorReq = new AtomicLong();
     private double ewma = 0;
 
-//    private final long factor = 50;
-//    private int weight = 100;
-
     public double getLoad(String idKey,int weight,int timeout){
         AdaptiveMetrics metrics = getStatus(idKey);
 
@@ -62,7 +58,7 @@ public class AdaptiveMetrics {
             if (multiple > 0) {
                 if (metrics.currentProviderTime == metrics.currentTime) {
                     //penalty value
-                    metrics.lastLatency = timeout * 2;
+                    metrics.lastLatency = timeout * 2L;
                 }else {
                     metrics.lastLatency = metrics.lastLatency >> multiple;
                 }
@@ -105,17 +101,17 @@ public class AdaptiveMetrics {
 
         AdaptiveMetrics metrics = getStatus(idKey);
 
-        long currentProviderTime = Long.valueOf(Optional.ofNullable(metricsMap.get("curTime")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));
+        long serviceTime = Long.parseLong(Optional.ofNullable(metricsMap.get("curTime")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));
         //If server time is less than the current time, discard
-        if (metrics.currentProviderTime > currentProviderTime){
+        if (metrics.currentProviderTime > serviceTime){
             return;
         }
 
-        metrics.currentProviderTime = currentProviderTime;
-        metrics.currentTime = currentProviderTime;
-        metrics.providerCPULoad = Double.valueOf(Optional.ofNullable(metricsMap.get("load")).filter(v -> StringUtils.isNumeric(v,true)).orElse("0"));
+        metrics.currentProviderTime = serviceTime;
+        metrics.currentTime = serviceTime;
+        metrics.providerCPULoad = Double.parseDouble(Optional.ofNullable(metricsMap.get("load")).filter(v -> StringUtils.isNumeric(v,true)).orElse("0"));
 //        metrics.providerQueue = Long.valueOf(Optional.ofNullable(metricsMap.get("queue")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));
-        metrics.lastLatency = Long.valueOf(Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));;
+        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));;
 
         //metrics.beta = Math.pow(Math.E, -metrics.lastLatency / metrics.factor);
         metrics.beta = 0.5;

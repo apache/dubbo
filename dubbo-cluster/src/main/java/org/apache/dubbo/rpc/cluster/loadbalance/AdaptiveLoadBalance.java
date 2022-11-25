@@ -42,8 +42,6 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     //default key
     private String attachmentKey = "mem,load";
 
-    private final int default_timeout = 30_000;
-
     private AdaptiveMetrics adaptiveMetrics;
 
     public AdaptiveLoadBalance(ApplicationModel scopeModel){
@@ -52,7 +50,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        Invoker invoker = selectByP2C(invokers,url,invocation);
+        Invoker<T> invoker = selectByP2C(invokers,invocation);
         invocation.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,attachmentKey);
         long startTime = System.currentTimeMillis();
         invocation.getAttributes().put(Constants.ADAPTIVE_LOADBALANCE_START_TIME,startTime);
@@ -62,7 +60,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
         return invoker;
     }
 
-    private <T> Invoker<T> selectByP2C(List<Invoker<T>> invokers, URL url, Invocation invocation){
+    private <T> Invoker<T> selectByP2C(List<Invoker<T>> invokers, Invocation invocation){
         int length = invokers.size();
         if(length == 1) {
             return invokers.get(0);

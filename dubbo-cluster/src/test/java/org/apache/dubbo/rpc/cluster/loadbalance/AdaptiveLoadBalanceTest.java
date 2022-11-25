@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AdaptiveMetrics;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
@@ -35,7 +34,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
+class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
 
     private ApplicationModel scopeModel;
 
@@ -43,7 +42,7 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
     @Order(0)
-    public void testSelectByWeight() {
+    void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker3 = 0;
@@ -89,7 +88,7 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
     @Order(1)
-    public void testSelectByAdaptive() throws NoSuchFieldException, IllegalAccessException {
+    void testSelectByAdaptive() throws NoSuchFieldException, IllegalAccessException {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker5 = 0;
@@ -131,11 +130,7 @@ public class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 sumInvoker5++;
             }
             getAdaptiveMetricsInstance().setProviderMetrics(idKey,metricsMap);
-            try {
-                Thread.sleep(3);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
         }
         Map<Invoker<LoadBalanceBaseTest>, Integer> weightMap = weightInvokersSR.stream()
             .collect(Collectors.toMap(Function.identity(), e -> Integer.valueOf(e.getUrl().getParameter("weight"))));
