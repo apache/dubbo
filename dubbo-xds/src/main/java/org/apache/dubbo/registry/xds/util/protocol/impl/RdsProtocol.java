@@ -75,7 +75,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     public RouteResult getCacheResource(Set<String> resourceNames) {
         Map<String, Set<String>> resultMap = new HashMap<>();
         for (String resourceName : resourceNames) {
-            if (resourceName.length() == 0) {
+            if ("".equals(resourceName)) {
                 continue;
             }
             resultMap.putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
