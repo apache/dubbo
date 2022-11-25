@@ -23,10 +23,10 @@ import java.io.IOException;
 /**
  * The Compiler test case
  */
-public class CompilerTest {
+class CompilerTest {
 
     @Test
-    public void testCompile() throws IOException {
+    void testCompile() throws IOException {
         Compiler compiler = new Compiler();
         compiler.compile(
                 TestServiceImpl.class,

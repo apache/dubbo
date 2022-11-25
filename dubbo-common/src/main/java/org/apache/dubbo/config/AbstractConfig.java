@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -60,6 +60,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_OVERRIDE_FIELD;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
 import static org.apache.dubbo.config.Constants.PARAMETERS;
@@ -71,7 +74,7 @@ import static org.apache.dubbo.config.Constants.PARAMETERS;
  */
 public abstract class AbstractConfig implements Serializable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
+    protected static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
 
     /**
@@ -494,7 +497,7 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                 } catch (Throwable e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(COMMON_FAILED_REFLECT, "", "", e.getMessage(), e);
                 }
             }
         }
@@ -648,7 +651,7 @@ public abstract class AbstractConfig implements Serializable {
                 }
 
             } catch (Throwable t) {
-                logger.error("Failed to override field value of config bean: " + this, t);
+                logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, t);
                 throw new IllegalStateException("Failed to override field value of config bean: " + this, t);
             }
         }
@@ -703,7 +706,7 @@ public abstract class AbstractConfig implements Serializable {
             processExtraRefresh(preferredPrefix, subPropsConfiguration);
 
         } catch (Exception e) {
-            logger.error("Failed to override field value of config bean: " + this, e);
+            logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, e);
             throw new IllegalStateException("Failed to override field value of config bean: " + this, e);
         }
 
@@ -811,7 +814,7 @@ public abstract class AbstractConfig implements Serializable {
     private boolean isPropertySet(Method[] methods, String propertyName) {
         try {
             String getterName = calculatePropertyToGetter(propertyName);
-            Method getterMethod = findGetMethod(methods,getterName);
+            Method getterMethod = findGetMethod(methods, getterName);
             if (getterMethod == null) {
                 return false;
             }
@@ -943,13 +946,13 @@ public abstract class AbstractConfig implements Serializable {
                         buf.append('\"');
                     }
                 } catch (Exception e) {
-                    logger.warn(e.getMessage(), e);
+                    logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
                 }
             }
             buf.append(" />");
             return buf.toString();
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            logger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             return super.toString();
         }
     }

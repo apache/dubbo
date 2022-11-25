@@ -41,7 +41,7 @@ import org.springframework.context.annotation.ImportResource;
 @Configuration
 @ComponentScan
 @ImportResource("classpath:/org/apache/dubbo/config/spring/boot/importxml/consumer/dubbo-consumer.xml")
-public class SpringBootImportDubboXmlTest {
+class SpringBootImportDubboXmlTest {
 
     @BeforeAll
     public static void beforeAll(){
@@ -57,7 +57,7 @@ public class SpringBootImportDubboXmlTest {
     private HelloService helloService;
 
     @Test
-    public void testConsumer() {
+    void testConsumer() {
         try {
             helloService.sayHello("dubbo");
             Assertions.fail("Should not be called successfully");

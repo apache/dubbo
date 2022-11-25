@@ -18,7 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -27,12 +27,14 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_API_WRONG_USE;
+
 /**
  * A impl of ReferenceCache for Application
  */
 public class CompositeReferenceCache implements ReferenceCache {
 
-    private static final Logger logger = LoggerFactory.getLogger(CompositeReferenceCache.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeReferenceCache.class);
 
     private final ApplicationModel applicationModel;
 
@@ -51,7 +53,7 @@ public class CompositeReferenceCache implements ReferenceCache {
         if (singleton) {
             proxy = get(key, (Class<T>) type);
         } else {
-            logger.warn("Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
+            logger.warn(CONFIG_API_WRONG_USE, "the api method is being used incorrectly", "", "Using non-singleton ReferenceConfig and ReferenceCache at the same time may cause memory leak. " +
                 "Call ReferenceConfig#get() directly for non-singleton ReferenceConfig instead of using ReferenceCache#get(ReferenceConfig)");
         }
         if (proxy == null) {

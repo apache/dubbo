@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.test.check.registrycenter.initializer;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
@@ -37,12 +37,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DOWNLOAD_FILE;
+
 /**
  * Download zookeeper binary archive.
  */
 public class DownloadZookeeperInitializer extends ZookeeperInitializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DownloadZookeeperInitializer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DownloadZookeeperInitializer.class);
 
     /**
      * The zookeeper binary file name format.
@@ -167,7 +169,7 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
 
             @Override
             public void onThrowable(Throwable t) {
-                logger.warn("Failed to download the file, download url: " + url);
+                logger.warn(REGISTRY_FAILED_DOWNLOAD_FILE, "", "", "Failed to download the file, download url: " + url);
                 super.onThrowable(t);
             }
         });

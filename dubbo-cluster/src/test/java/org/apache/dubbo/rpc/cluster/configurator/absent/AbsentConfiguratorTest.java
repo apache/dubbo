@@ -29,11 +29,11 @@ import java.util.Map;
 /**
  * OverrideConfiguratorTest
  */
-public class AbsentConfiguratorTest {
+class AbsentConfiguratorTest {
 
 
     @Test
-    public void testOverrideApplication() {
+    void testOverrideApplication() {
         AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://foo@0.0.0.0/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
@@ -50,7 +50,7 @@ public class AbsentConfiguratorTest {
     }
 
     @Test
-    public void testOverrideHost() {
+    void testOverrideHost() {
         AbsentConfigurator configurator = new AbsentConfigurator(URL.valueOf("override://" + NetUtils.getLocalHost() + "/com.foo.BarService?timeout=200"));
 
         URL url = configurator.configure(URL.valueOf(UrlConstant.URL_CONSUMER));
@@ -70,7 +70,7 @@ public class AbsentConfiguratorTest {
 
     // Test the version after 2.7
     @Test
-    public void testAbsentForVersion27() {
+    void testAbsentForVersion27() {
         {
             String consumerUrlV27 = "dubbo://172.24.160.179/com.foo.BarService?application=foo&side=consumer&timeout=100";
 

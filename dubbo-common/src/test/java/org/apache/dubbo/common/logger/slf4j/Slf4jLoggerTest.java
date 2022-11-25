@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.logger.slf4j;
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Marker;
 import org.slf4j.spi.LocationAwareLogger;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -28,9 +27,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-public class Slf4jLoggerTest {
+class Slf4jLoggerTest {
     @Test
-    public void testLocationAwareLogger() {
+    void testLocationAwareLogger() {
         LocationAwareLogger locationAwareLogger = mock(LocationAwareLogger.class);
         Slf4jLogger logger = new Slf4jLogger(locationAwareLogger);
 
@@ -41,8 +40,8 @@ public class Slf4jLoggerTest {
         logger.debug("debug");
         logger.trace("info");
 
-        verify(locationAwareLogger, times(5)).log(isNull(Marker.class), anyString(),
-                anyInt(), anyString(), isNull(Object[].class), isNull(Throwable.class));
+        verify(locationAwareLogger, times(5)).log(isNull(), anyString(),
+                anyInt(), anyString(), isNull(), isNull());
 
         logger.error(new Exception("error"));
         logger.warn(new Exception("warn"));
@@ -56,7 +55,7 @@ public class Slf4jLoggerTest {
         logger.debug("debug", new Exception("debug"));
         logger.trace("trace", new Exception("trace"));
 
-        verify(locationAwareLogger, times(10)).log(isNull(Marker.class), anyString(),
-                anyInt(), anyString(), isNull(Object[].class), any(Throwable.class));
+        verify(locationAwareLogger, times(10)).log(isNull(), anyString(),
+                anyInt(), anyString(), isNull(), any(Throwable.class));
     }
 }

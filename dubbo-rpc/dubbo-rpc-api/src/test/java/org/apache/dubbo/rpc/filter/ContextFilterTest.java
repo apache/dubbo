@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
  * ContextFilterTest.java
  * TODO need to enhance assertion
  */
-public class ContextFilterTest {
+class ContextFilterTest {
 
     Filter contextFilter = new ContextFilter();
     Invoker<DemoService> invoker;
@@ -45,7 +45,7 @@ public class ContextFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testSetContext() {
+    void testSetContext() {
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("$enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
@@ -66,7 +66,7 @@ public class ContextFilterTest {
     }
 
     @Test
-    public void testWithAttachments() {
+    void testWithAttachments() {
         URL url = URL.valueOf("test://test:11/test?group=dubbo&version=1.1");
         Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
         Invocation invocation = new MockInvocation();

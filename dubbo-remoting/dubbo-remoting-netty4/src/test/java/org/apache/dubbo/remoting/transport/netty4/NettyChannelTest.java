@@ -29,13 +29,13 @@ import org.mockito.Mockito;
 
 import java.net.InetSocketAddress;
 
-public class NettyChannelTest {
+class NettyChannelTest {
     private Channel channel = Mockito.mock(Channel.class);
     private URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 8080);
     private ChannelHandler channelHandler = Mockito.mock(ChannelHandler.class);
 
     @Test
-    public void test() throws Exception {
+    void test() throws Exception {
         Channel channel = Mockito.mock(Channel.class);
         Mockito.when(channel.isActive()).thenReturn(true);
         URL url = URL.valueOf("test://127.0.0.1/test");
@@ -63,7 +63,7 @@ public class NettyChannelTest {
     }
 
     @Test
-    public void testAddress() {
+    void testAddress() {
         NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, channelHandler);
         InetSocketAddress localAddress = InetSocketAddress.createUnresolved("127.0.0.1", 8888);
         InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved("127.0.0.1", 9999);
@@ -74,7 +74,7 @@ public class NettyChannelTest {
     }
 
     @Test
-    public void testSend() throws Exception {
+    void testSend() throws Exception {
         NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, channelHandler);
         ChannelFuture future = Mockito.mock(ChannelFuture.class);
         Mockito.when(future.await(1000)).thenReturn(true);
@@ -98,7 +98,7 @@ public class NettyChannelTest {
     }
 
     @Test
-    public void testAttribute() {
+    void testAttribute() {
         NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, channelHandler);
         nettyChannel.setAttribute("k1", "v1");
         Assertions.assertTrue(nettyChannel.hasAttribute("k1"));
@@ -108,7 +108,7 @@ public class NettyChannelTest {
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         Channel channel2 = Mockito.mock(Channel.class);
         NettyChannel nettyChannel = NettyChannel.getOrAddChannel(channel, url, channelHandler);
         NettyChannel nettyChannel2 = NettyChannel.getOrAddChannel(channel2, url, channelHandler);

@@ -31,13 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class EchoFilterTest {
+class EchoFilterTest {
 
     Filter echoFilter = new EchoFilter();
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testEcho() {
+    void testEcho() {
         Invocation invocation = mock(RpcInvocation.class);
         given(invocation.getMethodName()).willReturn("$echo");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
@@ -59,7 +59,7 @@ public class EchoFilterTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testNonEcho() {
+    void testNonEcho() {
         Invocation invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("echo");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});

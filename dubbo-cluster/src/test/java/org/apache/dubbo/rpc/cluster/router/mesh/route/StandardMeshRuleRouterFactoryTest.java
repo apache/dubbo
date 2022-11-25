@@ -23,10 +23,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 
-public class StandardMeshRuleRouterFactoryTest {
+class StandardMeshRuleRouterFactoryTest {
 
     @Test
-    public void getRouter() {
+    void getRouter() {
         StandardMeshRuleRouterFactory ruleRouterFactory = new StandardMeshRuleRouterFactory();
         Assertions.assertTrue(ruleRouterFactory.getRouter(Object.class, URL.valueOf("")) instanceof StandardMeshRuleRouter);
     }

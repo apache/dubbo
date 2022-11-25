@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.grpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -50,6 +50,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_CLOSE_STREAM;
 import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
 import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.CLIENT_INTERCEPTORS;
@@ -65,7 +66,7 @@ import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.TRANSPORT_FILTERS
  */
 public class GrpcOptionsUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(GrpcOptionsUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(GrpcOptionsUtils.class);
 
     static ServerBuilder buildServerBuilder(URL url, NettyServerBuilder builder) {
 
@@ -95,14 +96,14 @@ public class GrpcOptionsUtils {
 
         // server interceptors
         List<ServerInterceptor> serverInterceptors = url.getOrDefaultFrameworkModel().getExtensionLoader(ServerInterceptor.class)
-                .getActivateExtension(url, SERVER_INTERCEPTORS, PROVIDER_SIDE);
+            .getActivateExtension(url, SERVER_INTERCEPTORS, PROVIDER_SIDE);
         for (ServerInterceptor serverInterceptor : serverInterceptors) {
             builder.intercept(serverInterceptor);
         }
 
         // server filters
         List<ServerTransportFilter> transportFilters = url.getOrDefaultFrameworkModel().getExtensionLoader(ServerTransportFilter.class)
-                .getActivateExtension(url, TRANSPORT_FILTERS, PROVIDER_SIDE);
+            .getActivateExtension(url, TRANSPORT_FILTERS, PROVIDER_SIDE);
         for (ServerTransportFilter transportFilter : transportFilters) {
             builder.addTransportFilter(transportFilter.grpcTransportFilter());
         }
@@ -116,8 +117,8 @@ public class GrpcOptionsUtils {
 
         // Give users the chance to customize ServerBuilder
         return getConfigurator()
-                .map(configurator -> configurator.configureServerBuilder(builder, url))
-                .orElse(builder);
+            .map(configurator -> configurator.configureServerBuilder(builder, url))
+            .orElse(builder);
     }
 
     static ManagedChannel buildManagedChannel(URL url) {
@@ -135,15 +136,15 @@ public class GrpcOptionsUtils {
         // client interceptors
         List<io.grpc.ClientInterceptor> interceptors = new ArrayList<>(
             url.getOrDefaultFrameworkModel().getExtensionLoader(ClientInterceptor.class)
-                        .getActivateExtension(url, CLIENT_INTERCEPTORS, CONSUMER_SIDE)
+                .getActivateExtension(url, CLIENT_INTERCEPTORS, CONSUMER_SIDE)
         );
 
         builder.intercept(interceptors);
 
         return getConfigurator()
-                .map(configurator -> configurator.configureChannelBuilder(builder, url))
-                .orElse(builder)
-                .build();
+            .map(configurator -> configurator.configureChannelBuilder(builder, url))
+            .orElse(builder)
+            .build();
     }
 
     static CallOptions buildCallOptions(URL url) {
@@ -152,8 +153,8 @@ public class GrpcOptionsUtils {
 //                .withDeadline(Deadline.after(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), TimeUnit.MILLISECONDS));
         CallOptions callOptions = CallOptions.DEFAULT;
         return getConfigurator()
-                .map(configurator -> configurator.configureCallOptions(callOptions, url))
-                .orElse(callOptions);
+            .map(configurator -> configurator.configureCallOptions(callOptions, url))
+            .orElse(callOptions);
     }
 
     private static SslContext buildServerSslContext(URL url) {
@@ -236,7 +237,7 @@ public class GrpcOptionsUtils {
     private static Optional<GrpcConfigurator> getConfigurator() {
         // Give users the chance to customize ServerBuilder
         Set<GrpcConfigurator> configurators = ExtensionLoader.getExtensionLoader(GrpcConfigurator.class)
-                .getSupportedExtensionInstances();
+            .getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(configurators)) {
             return Optional.of(configurators.iterator().next());
         }
@@ -250,7 +251,7 @@ public class GrpcOptionsUtils {
         try {
             stream.close();
         } catch (IOException e) {
-            logger.warn("Failed to close a stream.", e);
+            logger.warn(PROTOCOL_FAILED_CLOSE_STREAM, "", "", "Failed to close a stream.", e);
         }
     }
 }

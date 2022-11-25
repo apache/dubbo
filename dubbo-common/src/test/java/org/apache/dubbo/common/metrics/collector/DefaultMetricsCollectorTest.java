@@ -25,6 +25,8 @@ import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,12 +37,12 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 
-public class DefaultMetricsCollectorTest {
+class DefaultMetricsCollectorTest {
 
     private ApplicationModel applicationModel;
     private String interfaceName;
@@ -50,10 +52,10 @@ public class DefaultMetricsCollectorTest {
 
     @BeforeEach
     public void setup() {
+        applicationModel = FrameworkModel.defaultModel().newApplication();
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
 
-        applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
         interfaceName = "org.apache.dubbo.MockInterface";
@@ -68,7 +70,7 @@ public class DefaultMetricsCollectorTest {
     }
 
     @Test
-    public void testRequestsMetrics() {
+    void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         collector.increaseTotalRequests(interfaceName, methodName, group, version);
@@ -101,7 +103,7 @@ public class DefaultMetricsCollectorTest {
     }
 
     @Test
-    public void testRTMetrics() {
+    void testRTMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
         collector.addRT(interfaceName, methodName, group, version, 10L);
@@ -130,7 +132,7 @@ public class DefaultMetricsCollectorTest {
     }
 
     @Test
-    public void testListener() {
+    void testListener() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
 

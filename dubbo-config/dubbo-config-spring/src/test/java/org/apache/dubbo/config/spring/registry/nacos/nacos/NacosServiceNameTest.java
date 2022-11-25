@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.3
  */
-public class NacosServiceNameTest {
+class NacosServiceNameTest {
 
     private static final String category = DEFAULT_CATEGORY;
 
@@ -53,7 +53,7 @@ public class NacosServiceNameTest {
     }
 
     @Test
-    public void testGetter() {
+    void testGetter() {
         assertEquals(category, name.getCategory());
         assertEquals(serviceInterface, name.getServiceInterface());
         assertEquals(version, name.getVersion());
@@ -62,12 +62,12 @@ public class NacosServiceNameTest {
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         assertEquals("providers:org.apache.dubbo.registry.nacos.NacosServiceName:1.0.0:default", name.toString());
     }
 
     @Test
-    public void testIsConcrete() {
+    void testIsConcrete() {
 
         assertTrue(name.isConcrete());
 
@@ -86,7 +86,7 @@ public class NacosServiceNameTest {
     }
 
     @Test
-    public void testIsCompatible() {
+    void testIsCompatible() {
 
         NacosServiceName concrete = new NacosServiceName();
 

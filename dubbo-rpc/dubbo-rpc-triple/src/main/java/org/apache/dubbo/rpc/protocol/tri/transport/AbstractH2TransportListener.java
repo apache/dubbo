@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -29,9 +29,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
+
 public abstract class AbstractH2TransportListener implements H2TransportListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractH2TransportListener.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(AbstractH2TransportListener.class);
 
     /**
      * Parse metadata to a KV pairs map.
@@ -54,7 +56,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                     byte[] value = StreamUtils.decodeASCIIByte(header.getValue());
                     attachments.put(realKey, value);
                 } catch (Exception e) {
-                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+                    LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Failed to parse response attachment key=" + key, e);
                 }
             } else {
                 attachments.put(key, header.getValue().toString());

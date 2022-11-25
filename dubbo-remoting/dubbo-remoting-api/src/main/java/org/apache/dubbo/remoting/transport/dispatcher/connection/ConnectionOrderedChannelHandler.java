@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREAD_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CONNECTION_LIMIT_EXCEED;
 import static org.apache.dubbo.remoting.Constants.CONNECT_QUEUE_CAPACITY;
 import static org.apache.dubbo.remoting.Constants.CONNECT_QUEUE_WARNING_SIZE;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_QUEUE_WARNING_SIZE;
@@ -49,10 +50,10 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
         super(handler, url);
         String threadName = url.getParameter(THREAD_NAME_KEY, DEFAULT_THREAD_NAME);
         connectionExecutor = new ThreadPoolExecutor(1, 1,
-                0L, TimeUnit.MILLISECONDS,
+            0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(url.getPositiveParameter(CONNECT_QUEUE_CAPACITY, Integer.MAX_VALUE)),
-                new NamedThreadFactory(threadName, true),
-                new AbortPolicyWithReport(threadName, url)
+            new NamedThreadFactory(threadName, true),
+            new AbortPolicyWithReport(threadName, url)
         );  // FIXME There's no place to release connectionExecutor!
         queueWarningLimit = url.getParameter(CONNECT_QUEUE_WARNING_SIZE, DEFAULT_CONNECT_QUEUE_WARNING_SIZE);
     }
@@ -103,7 +104,7 @@ public class ConnectionOrderedChannelHandler extends WrappedChannelHandler {
 
     private void checkQueueLength() {
         if (connectionExecutor.getQueue().size() > queueWarningLimit) {
-            logger.warn(new IllegalThreadStateException("connectionordered channel handler queue size: " + connectionExecutor.getQueue().size() + " exceed the warning limit number :" + queueWarningLimit));
+            logger.warn(TRANSPORT_CONNECTION_LIMIT_EXCEED, "", "", "connectionordered channel handler queue size: " + connectionExecutor.getQueue().size() + " exceed the warning limit number :" + queueWarningLimit);
         }
     }
 }

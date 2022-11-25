@@ -37,7 +37,7 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
  *
  * @since 2.5.8
  */
-public class DubboComponentScanRegistrarTest {
+class DubboComponentScanRegistrarTest {
 
     @BeforeEach
     public void setUp() {
@@ -49,7 +49,7 @@ public class DubboComponentScanRegistrarTest {
     }
 
     @Test
-    public void test() {
+    void test() {
 
         AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
 

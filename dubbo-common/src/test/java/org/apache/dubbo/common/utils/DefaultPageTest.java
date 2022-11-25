@@ -28,10 +28,10 @@ import static java.util.Arrays.asList;
  *
  * @since 2.7.5
  */
-public class DefaultPageTest {
+class DefaultPageTest {
 
     @Test
-    public void test() {
+    void test() {
         List<Integer> data = asList(1, 2, 3, 4, 5);
         DefaultPage<Integer> page = new DefaultPage<>(0, 1, data.subList(0, 1), data.size());
         Assertions.assertEquals(page.getOffset(), 0);

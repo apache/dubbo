@@ -55,6 +55,7 @@ import java.util.concurrent.Executor;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
@@ -92,7 +93,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             configService = new NacosConfigServiceWrapper(NacosFactory.createConfigService(nacosProperties));
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getErrMsg(), e);
+                logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getErrMsg(), e);
             }
             throw new IllegalStateException(e);
         }
@@ -108,9 +109,9 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
-                new StringBuilder(url.getHost()) // Host
-                        .append(':')
-                        .append(url.getPort()); // Port
+            new StringBuilder(url.getHost()) // Host
+                .append(':')
+                .append(url.getPort()); // Port
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
         if (backup != null) {
@@ -227,7 +228,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             }
             return configService.publishConfigCas(key, group, content, (String) ticket);
         } catch (NacosException e) {
-            logger.warn("nacos publishConfigCas failed.", e);
+            logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "nacos publishConfigCas failed.", e);
             return false;
         }
     }
@@ -273,7 +274,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         try {
             return configService.getConfig(dataId, group);
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getMessage());
         }
         return null;
     }
@@ -298,12 +299,12 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
         NacosConfigListener nacosConfigListener =
-                watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
+            watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getMessage());
         }
     }
 
@@ -319,7 +320,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
                 }
             }
         } catch (NacosException e) {
-            logger.error(e.getMessage());
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getMessage());
         }
     }
 
@@ -341,7 +342,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
                 throw new RuntimeException("publish nacos metadata failed");
             }
         } catch (Throwable t) {
-            logger.error("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
             throw new RuntimeException("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
         }
     }
@@ -353,7 +354,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
                 throw new RuntimeException("remove nacos metadata failed");
             }
         } catch (Throwable t) {
-            logger.error("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RuntimeException("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }
@@ -362,7 +363,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         try {
             return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 3000L);
         } catch (Throwable t) {
-            logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RuntimeException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }

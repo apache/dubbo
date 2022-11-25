@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-public class DefaultProviderURLMergeProcessorTest {
+class DefaultProviderURLMergeProcessorTest {
 
     private ProviderURLMergeProcessor providerURLMergeProcessor;
 
@@ -57,7 +57,7 @@ public class DefaultProviderURLMergeProcessorTest {
     }
 
     @Test
-    public void testMergeUrl() throws Exception {
+    void testMergeUrl() throws Exception {
         URL providerURL = URL.valueOf("dubbo://localhost:55555");
         providerURL = providerURL.setPath("path")
             .setUsername("username")
@@ -124,7 +124,7 @@ public class DefaultProviderURLMergeProcessorTest {
     }
 
     @Test
-    public void testUseProviderParams() {
+    void testUseProviderParams() {
         // present in both local and remote, but uses remote value.
         URL localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
             "&methods=local&tag=local&timestamp=local");

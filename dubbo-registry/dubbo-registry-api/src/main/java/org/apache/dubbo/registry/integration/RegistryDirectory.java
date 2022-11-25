@@ -62,13 +62,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_CONVERT_URL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_CONVERT_URL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REFER_INVOKER;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
@@ -231,14 +231,14 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
             // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
             Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
-            if (invokerUrls.isEmpty() && localCachedInvokerUrls != null) {
+            if (invokerUrls.isEmpty()) {
+                if(CollectionUtils.isNotEmpty(localCachedInvokerUrls)){
+                    // 1-4 Empty address.
+                    logger.warn(REGISTRY_EMPTY_ADDRESS, "configuration ", "",
+                        "Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
 
-                // 1-4 Empty address.
-                logger.warn(REGISTRY_EMPTY_ADDRESS, "configuration ", "",
-                    "Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
-
-                invokerUrls.addAll(localCachedInvokerUrls);
-
+                    invokerUrls.addAll(localCachedInvokerUrls);
+                }
             } else {
                 localCachedInvokerUrls = new HashSet<>();
                 localCachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
@@ -290,7 +290,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             try {
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
-                logger.warn("destroyUnusedInvokers error. ", e);
+                logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "destroyUnusedInvokers error. ", e);
             }
 
             // notify invokers refreshed
@@ -346,7 +346,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                     routers.add(router);
                 }
             } catch (Throwable t) {
-                logger.error("convert router url to router error, url: " + url, t);
+                logger.error(PROXY_FAILED_CONVERT_URL, "", "", "convert router url to router error, url:" + url, t);
             }
         }
 
@@ -441,9 +441,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
             logger.error(PROTOCOL_UNSUPPORTED, "protocol extension does not installed", "", "Unsupported protocol.",
                 new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
-                " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
-                " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
+                    " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
+                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
 
             return false;
         }
@@ -544,7 +544,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (!CollectionUtils.isEmptyMap(localUrlInvokerMap)) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroyAll();
+                    invoker.destroy();
                 } catch (Throwable t) {
                     // 1-15 - Failed to destroy service
                     logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "",
@@ -573,12 +573,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = entry.getValue();
             if (invoker != null) {
                 try {
-                    invoker.destroyAll();
+                    invoker.destroy();
                     if (logger.isDebugEnabled()) {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
                 } catch (Exception e) {
-                    logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
+                    logger.warn(REGISTRY_FAILED_DESTROY_SERVICE, "", "", "destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
                 }
             }
         }
@@ -605,7 +605,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         // 1-16 - Unsupported category in NotifyListener
         logger.warn(REGISTRY_UNSUPPORTED_CATEGORY, "", "",
             "Unsupported category " + category + " in notified url: " + url + " from registry " +
-            getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
+                getUrl().getAddress() + " to consumer " + NetUtils.getLocalHost());
 
         return false;
     }

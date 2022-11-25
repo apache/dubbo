@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -26,12 +26,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+
 /**
  * ChannelListenerDispatcher
  */
 public class ChannelHandlerDispatcher implements ChannelHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChannelHandlerDispatcher.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ChannelHandlerDispatcher.class);
 
     private final Collection<ChannelHandler> channelHandlers = new CopyOnWriteArraySet<>();
 
@@ -68,7 +70,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             try {
                 listener.connected(channel);
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
         }
     }
@@ -79,7 +81,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             try {
                 listener.disconnected(channel);
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
         }
     }
@@ -90,7 +92,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             try {
                 listener.sent(channel, message);
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
         }
     }
@@ -101,7 +103,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             try {
                 listener.received(channel, message);
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
         }
     }
@@ -112,7 +114,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
             try {
                 listener.caught(channel, exception);
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
         }
     }

@@ -41,12 +41,12 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-public class GenericImplFilterTest {
+class GenericImplFilterTest {
 
     private GenericImplFilter genericImplFilter = new GenericImplFilter();
 
     @Test
-    public void testInvoke() throws Exception {
+    void testInvoke() throws Exception {
 
         RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
                 "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
@@ -74,7 +74,7 @@ public class GenericImplFilterTest {
     }
 
     @Test
-    public void testInvokeWithException() throws Exception {
+    void testInvokeWithException() throws Exception {
 
         RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
                 "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
@@ -96,7 +96,7 @@ public class GenericImplFilterTest {
     }
 
     @Test
-    public void testInvokeWith$Invoke() throws Exception {
+    void testInvokeWith$Invoke() throws Exception {
 
         Method genericInvoke = GenericService.class.getMethods()[0];
 

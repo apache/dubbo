@@ -36,7 +36,7 @@ import java.util.Arrays;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 @Disabled
-public class InvokerSideConfigUrlTest extends UrlTestBase {
+class InvokerSideConfigUrlTest extends UrlTestBase {
     private static final Logger log = LoggerFactory.getLogger(InvokerSideConfigUrlTest.class);
 
     // ======================================================
@@ -147,18 +147,18 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
 
 
     @Test
-    public void consumerConfUrlTest() {
+    void consumerConfUrlTest() {
         verifyInvokerUrlGeneration(consumerConf, consumerConfTable);
     }
 
     @Test
-    public void refConfUrlTest() {
+    void refConfUrlTest() {
         verifyInvokerUrlGeneration(refConf, refConfTable);
     }
 
     @Disabled("parameter on register center will not be merged any longer with query parameter request from the consumer")
     @Test
-    public void regConfForConsumerUrlTest() {
+    void regConfForConsumerUrlTest() {
         verifyInvokerUrlGeneration(regConfForConsumer, regConfForConsumerTable);
     }
 

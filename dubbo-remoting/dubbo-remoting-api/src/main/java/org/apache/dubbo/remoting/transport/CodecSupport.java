@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -41,9 +41,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_SERIALIZATION;
 
 public class CodecSupport {
-    private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CodecSupport.class);
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
@@ -59,10 +60,10 @@ public class CodecSupport {
             Serialization serialization = extensionLoader.getExtension(name);
             byte idByte = serialization.getContentTypeId();
             if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
-                logger.error("Serialization extension " + serialization.getClass().getName()
-                        + " has duplicate id to Serialization extension "
-                        + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
-                        + ", ignore this Serialization extension");
+                logger.error(TRANSPORT_FAILED_SERIALIZATION, "", "", "Serialization extension " + serialization.getClass().getName()
+                    + " has duplicate id to Serialization extension "
+                    + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
+                    + ", ignore this Serialization extension");
                 continue;
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
@@ -84,7 +85,7 @@ public class CodecSupport {
 
     public static Serialization getSerialization(URL url) {
         return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+            url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
     }
 
     public static Serialization getSerialization(URL url, Byte id) throws IOException {
@@ -119,7 +120,7 @@ public class CodecSupport {
                 nullBytes = baos.toByteArray();
                 baos.close();
             } catch (Exception e) {
-                logger.warn("Serialization extension " + s.getClass().getName() + " not support serializing null object, return an empty bytes instead.");
+                logger.warn(TRANSPORT_FAILED_SERIALIZATION, "", "", "Serialization extension " + s.getClass().getName() + " not support serializing null object, return an empty bytes instead.");
             }
             return nullBytes;
         });
@@ -175,7 +176,7 @@ public class CodecSupport {
                     match = true;
                 }
             }
-            if(!match) {
+            if (!match) {
                 throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
             }
         }

@@ -35,7 +35,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-public class ResultMergerTest {
+class ResultMergerTest {
     private MergerFactory mergerFactory;
     
     @BeforeEach
@@ -48,7 +48,7 @@ public class ResultMergerTest {
      * MergerFactory test
      */
     @Test
-    public void testMergerFactoryIllegalArgumentException() {
+    void testMergerFactoryIllegalArgumentException() {
         try {
             mergerFactory.getMerger(null);
             Assertions.fail("expected IllegalArgumentException for null argument");
@@ -61,7 +61,7 @@ public class ResultMergerTest {
      * ArrayMerger test
      */
     @Test
-    public void testArrayMergerIllegalArgumentException() {
+    void testArrayMergerIllegalArgumentException() {
         String[] stringArray = {"1", "2", "3"};
         Integer[] integerArray = {3, 4, 5};
         try {
@@ -76,7 +76,7 @@ public class ResultMergerTest {
      * ArrayMerger test
      */
     @Test
-    public void testArrayMerger() {
+    void testArrayMerger() {
         String[] stringArray1 = {"1", "2", "3"};
         String[] stringArray2 = {"4", "5", "6"};
         String[] stringArray3 = {};
@@ -115,7 +115,7 @@ public class ResultMergerTest {
      * BooleanArrayMerger test
      */
     @Test
-    public void testBooleanArrayMerger() {
+    void testBooleanArrayMerger() {
         boolean[] arrayOne = {true, false};
         boolean[] arrayTwo = {false};
         boolean[] result = mergerFactory.getMerger(boolean[].class).merge(arrayOne, arrayTwo, null);
@@ -136,7 +136,7 @@ public class ResultMergerTest {
      * ByteArrayMerger test
      */
     @Test
-    public void testByteArrayMerger() {
+    void testByteArrayMerger() {
         byte[] arrayOne = {1, 2};
         byte[] arrayTwo = {1, 32};
         byte[] result = mergerFactory.getMerger(byte[].class).merge(arrayOne, arrayTwo, null);
@@ -157,7 +157,7 @@ public class ResultMergerTest {
      * CharArrayMerger test
      */
     @Test
-    public void testCharArrayMerger() {
+    void testCharArrayMerger() {
         char[] arrayOne = "hello".toCharArray();
         char[] arrayTwo = "world".toCharArray();
         char[] result = mergerFactory.getMerger(char[].class).merge(arrayOne, arrayTwo, null);
@@ -178,7 +178,7 @@ public class ResultMergerTest {
      * DoubleArrayMerger test
      */
     @Test
-    public void testDoubleArrayMerger() {
+    void testDoubleArrayMerger() {
         double[] arrayOne = {1.2d, 3.5d};
         double[] arrayTwo = {2d, 34d};
         double[] result = mergerFactory.getMerger(double[].class).merge(arrayOne, arrayTwo, null);
@@ -199,7 +199,7 @@ public class ResultMergerTest {
      * FloatArrayMerger test
      */
     @Test
-    public void testFloatArrayMerger() {
+    void testFloatArrayMerger() {
         float[] arrayOne = {1.2f, 3.5f};
         float[] arrayTwo = {2f, 34f};
         float[] result = mergerFactory.getMerger(float[].class).merge(arrayOne, arrayTwo, null);
@@ -220,7 +220,7 @@ public class ResultMergerTest {
      * IntArrayMerger test
      */
     @Test
-    public void testIntArrayMerger() {
+    void testIntArrayMerger() {
         int[] arrayOne = {1, 2};
         int[] arrayTwo = {2, 34};
         int[] result = mergerFactory.getMerger(int[].class).merge(arrayOne, arrayTwo, null);
@@ -241,7 +241,7 @@ public class ResultMergerTest {
      * ListMerger test
      */
     @Test
-    public void testListMerger() {
+    void testListMerger() {
         List<Object> list1 = new ArrayList<Object>() {{
             add(null);
             add("1");
@@ -274,7 +274,7 @@ public class ResultMergerTest {
      * LongArrayMerger test
      */
     @Test
-    public void testMapArrayMerger() {
+    void testMapArrayMerger() {
         Map<Object, Object> mapOne = new HashMap<Object, Object>() {{
             put("11", 222);
             put("223", 11);
@@ -304,7 +304,7 @@ public class ResultMergerTest {
      * LongArrayMerger test
      */
     @Test
-    public void testLongArrayMerger() {
+    void testLongArrayMerger() {
         long[] arrayOne = {1L, 2L};
         long[] arrayTwo = {2L, 34L};
         long[] result = mergerFactory.getMerger(long[].class).merge(arrayOne, arrayTwo, null);
@@ -325,7 +325,7 @@ public class ResultMergerTest {
      * SetMerger test
      */
     @Test
-    public void testSetMerger() {
+    void testSetMerger() {
         Set<Object> set1 = new HashSet<Object>() {{
             add(null);
             add("1");
@@ -360,7 +360,7 @@ public class ResultMergerTest {
      * ShortArrayMerger test
      */
     @Test
-    public void testShortArrayMerger() {
+    void testShortArrayMerger() {
         short[] arrayOne = {1, 2};
         short[] arrayTwo = {2, 34};
         short[] result = mergerFactory.getMerger(short[].class).merge(arrayOne, arrayTwo, null);
@@ -381,7 +381,7 @@ public class ResultMergerTest {
      * IntSumMerger test
      */
     @Test
-    public void testIntSumMerger() {
+    void testIntSumMerger() {
         Integer[] intArr = IntStream.rangeClosed(1, 100).boxed().toArray(Integer[]::new);
         Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intsum");
         Assertions.assertEquals(5050, merger.merge(intArr));
@@ -394,7 +394,7 @@ public class ResultMergerTest {
      * DoubleSumMerger test
      */
     @Test
-    public void testDoubleSumMerger() {
+    void testDoubleSumMerger() {
         Double[] doubleArr = DoubleStream.iterate(1, v -> ++v).limit(100).boxed().toArray(Double[]::new);
         Merger<Double> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "doublesum");
         Assertions.assertEquals(5050, merger.merge(doubleArr));
@@ -407,7 +407,7 @@ public class ResultMergerTest {
      * FloatSumMerger test
      */
     @Test
-    public void testFloatSumMerger() {
+    void testFloatSumMerger() {
         Float[] floatArr = Stream.iterate(1.0F, v -> ++v).limit(100).toArray(Float[]::new);
         Merger<Float> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "floatsum");
         Assertions.assertEquals(5050, merger.merge(floatArr));
@@ -420,7 +420,7 @@ public class ResultMergerTest {
      * LongSumMerger test
      */
     @Test
-    public void testLongSumMerger() {
+    void testLongSumMerger() {
         Long[] longArr = LongStream.rangeClosed(1, 100).boxed().toArray(Long[]::new);
         Merger<Long> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "longsum");
         Assertions.assertEquals(5050, merger.merge(longArr));
@@ -433,7 +433,7 @@ public class ResultMergerTest {
      * IntFindAnyMerger test
      */
     @Test
-    public void testIntFindAnyMerger() {
+    void testIntFindAnyMerger() {
         Integer[] intArr = {1, 2, 3, 4};
         Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intany");
         Assertions.assertNotNull(merger.merge(intArr));
@@ -446,7 +446,7 @@ public class ResultMergerTest {
      * IntFindFirstMerger test
      */
     @Test
-    public void testIntFindFirstMerger() {
+    void testIntFindFirstMerger() {
         Integer[] intArr = {1, 2, 3, 4};
         Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intfirst");
         Assertions.assertEquals(1, merger.merge(intArr));

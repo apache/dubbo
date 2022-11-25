@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToStringConverterTest {
+class StringToStringConverterTest {
 
     private StringToStringConverter converter;
 
@@ -39,12 +39,12 @@ public class StringToStringConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(converter.accept(String.class, String.class));
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
         assertEquals("1", converter.convert("1"));
         assertNull(converter.convert(null));
     }

@@ -46,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -87,20 +88,20 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
         this.zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
-                logger.warn("Trying to fetch the latest urls, in case there are provider changes during connection loss.\n" +
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Trying to fetch the latest urls, in case there are provider changes during connection loss.\n" +
                     " Since ephemeral ZNode will not get deleted for a connection lose, " +
                     "there's no need to re-register url of this instance.");
                 ZookeeperRegistry.this.fetchLatestAddresses();
             } else if (state == StateListener.NEW_SESSION_CREATED) {
-                logger.warn("Trying to re-register urls and re-subscribe listeners of this instance to registry...");
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Trying to re-register urls and re-subscribe listeners of this instance to registry...");
 
                 try {
                     ZookeeperRegistry.this.recover();
                 } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", e.getMessage(), e);
                 }
             } else if (state == StateListener.SESSION_LOST) {
-                logger.warn("Url of this instance will be deleted from registry soon. " +
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Url of this instance will be deleted from registry soon. " +
                     "Dubbo client will try to re-register once a new session is created.");
             } else if (state == StateListener.SUSPENDED) {
 
@@ -360,7 +361,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     /**
      * Triggered when children get changed. It will be invoked by implementation of CuratorWatcher.
-     *
+     * <p>
      * 'org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperClient.CuratorWatcherImpl' (Curator 5)
      */
     private class RegistryChildListenerImpl implements ChildListener {
@@ -382,7 +383,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                logger.warn("Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
             }
 
             notifier.notify(path, children);

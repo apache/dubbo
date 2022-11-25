@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * {@link ModuleServiceRepository}
  */
-public class ModuleServiceRepositoryTest {
+class ModuleServiceRepositoryTest {
 
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
@@ -49,7 +49,7 @@ public class ModuleServiceRepositoryTest {
     }
 
     @Test
-    public void test() {
+    void test() {
         ModuleServiceRepository moduleServiceRepository = new ModuleServiceRepository(moduleModel);
         Assertions.assertEquals(moduleServiceRepository.getModuleModel(), moduleModel);
         ModuleServiceRepository repository = moduleModel.getServiceRepository();
