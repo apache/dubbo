@@ -45,7 +45,7 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
-    private static HashMap<String, Object> resourcesMap = new HashMap<>();
+    private HashMap<String, Object> resourcesMap = new HashMap<>();
 
 
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
@@ -93,7 +93,7 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
         return new EndpointResult();
     }
 
-    private static Set<Endpoint> decodeResourceToEndpoint(ClusterLoadAssignment resource) {
+    private Set<Endpoint> decodeResourceToEndpoint(ClusterLoadAssignment resource) {
         Set<Endpoint> endpoints =  resource.getEndpointsList().stream()
             .flatMap((e) -> e.getLbEndpointsList().stream())
             .map(EdsProtocol::decodeLbEndpointToEndpoint)

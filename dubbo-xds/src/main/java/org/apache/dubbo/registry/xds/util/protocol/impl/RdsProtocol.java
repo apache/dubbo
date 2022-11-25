@@ -43,7 +43,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
-    private static HashMap<String, Object> resourcesMap = new HashMap<>();
+    private HashMap<String, Object> resourcesMap = new HashMap<>();
 
     public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         super(xdsChannel, node, pollingTimeout);
@@ -89,7 +89,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
             Map<String, Set<String>> map = response.getResourcesList().stream()
                 .map(RdsProtocol::unpackRouteConfiguration)
                 .filter(Objects::nonNull)
-                .map(RdsProtocol::decodeResourceToListener)
+                .map(this::decodeResourceToListener)
                 .reduce((a, b) -> {
                     a.putAll(b);
                     return a;
@@ -99,7 +99,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
         return new RouteResult();
     }
 
-    private static Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {
+    private Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {
         Map<String, Set<String>> map = new HashMap<>();
         resource.getVirtualHostsList()
             .forEach(virtualHost -> {
