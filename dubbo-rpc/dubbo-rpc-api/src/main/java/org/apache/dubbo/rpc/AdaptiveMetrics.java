@@ -110,10 +110,8 @@ public class AdaptiveMetrics {
         metrics.currentProviderTime = serviceTime;
         metrics.currentTime = serviceTime;
         metrics.providerCPULoad = Double.parseDouble(Optional.ofNullable(metricsMap.get("load")).filter(v -> StringUtils.isNumeric(v,true)).orElse("0"));
-//        metrics.providerQueue = Long.valueOf(Optional.ofNullable(metricsMap.get("queue")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));
-        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0"));;
+        metrics.lastLatency = Long.parseLong((Optional.ofNullable(metricsMap.get("rt")).filter(v -> StringUtils.isNumeric(v,false)).orElse("0")));
 
-        //metrics.beta = Math.pow(Math.E, -metrics.lastLatency / metrics.factor);
         metrics.beta = 0.5;
         //Vt =  β * Vt-1 + (1 -  β ) * θt
         metrics.ewma = metrics.beta * metrics.ewma + (1 - metrics.beta) * metrics.lastLatency;
