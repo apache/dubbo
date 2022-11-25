@@ -291,6 +291,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
             timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
+
+            invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
         }
         return timeout;
     }

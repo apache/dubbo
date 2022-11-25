@@ -318,6 +318,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
                 timeout);// pass timeout to remote server
+
+            invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
         }
         return timeout;
     }
