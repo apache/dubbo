@@ -67,7 +67,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         deletePath(path);
     }
 
-    protected void create(String path, boolean ephemeral) {
+    public void create(String path, boolean ephemeral) {
         if (!ephemeral) {
             if (persistentExistNodePath.contains(path)) {
                 return;
@@ -164,10 +164,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void createOrUpdate(String path, String content, boolean ephemeral, boolean faultTolerant) {
-        if (checkExists(path)) {
-            delete(path);
-        }
+    public void createOrUpdate(String path, String content, boolean ephemeral) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
             create(path.substring(0, i), false);
@@ -175,12 +172,12 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         if (ephemeral) {
             createOrUpdateEphemeral(path, content);
         } else {
-            createOrUpdatePersistent(path, content, faultTolerant);
+            createOrUpdatePersistent(path, content);
         }
     }
 
     @Override
-    public void createOrUpdate(String path, String content, boolean ephemeral, int version, boolean faultTolerant) {
+    public void createOrUpdate(String path, String content, boolean ephemeral, int version) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
             create(path.substring(0, i), false);
@@ -188,7 +185,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         if (ephemeral) {
             createOrUpdateEphemeral(path, content, version);
         } else {
-            createOrUpdatePersistent(path, content, version, faultTolerant);
+            createOrUpdatePersistent(path, content, version);
         }
     }
 
@@ -216,17 +213,17 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     protected abstract void createPersistent(String path, String data, boolean faultTolerant);
 
-    protected abstract void createEphemeral(String path, String data);
+    protected abstract void createEphemeral(String path, String data, boolean faultTolerant);
 
     protected abstract void update(String path, String data, int version);
 
     protected abstract void update(String path, String data);
 
-    protected abstract void createOrUpdatePersistent(String path, String data, boolean faultTolerant);
+    protected abstract void createOrUpdatePersistent(String path, String data);
 
     protected abstract void createOrUpdateEphemeral(String path, String data);
 
-    protected abstract void createOrUpdatePersistent(String path, String data, int version, boolean faultTolerant);
+    protected abstract void createOrUpdatePersistent(String path, String data, int version);
 
     protected abstract void createOrUpdateEphemeral(String path, String data, int version);
 

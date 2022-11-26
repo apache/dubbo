@@ -97,7 +97,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
-        zkClient.createOrUpdate(getNodePath(metadataIdentifier), URL.encode(url.toFullString()), false, true);
+        zkClient.createOrUpdate(getNodePath(metadataIdentifier), URL.encode(url.toFullString()), false);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     protected void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, String urls) {
-        zkClient.createOrUpdate(getNodePath(subscriberMetadataIdentifier), urls, false, true);
+        zkClient.createOrUpdate(getNodePath(subscriberMetadataIdentifier), urls, false);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     private void storeMetadata(MetadataIdentifier metadataIdentifier, String v) {
-        zkClient.createOrUpdate(getNodePath(metadataIdentifier), v, false, true);
+        zkClient.createOrUpdate(getNodePath(metadataIdentifier), v, false);
     }
 
     String getNodePath(BaseMetadataIdentifier metadataIdentifier) {
@@ -141,7 +141,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
         String path = getNodePath(identifier);
         if (StringUtils.isBlank(zkClient.getContent(path)) && StringUtils.isNotEmpty(metadataInfo.getContent())) {
-            zkClient.createOrUpdate(path, metadataInfo.getContent(), false, true);
+            zkClient.createOrUpdate(path, metadataInfo.getContent(), false);
         }
     }
 
@@ -198,7 +198,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
                 throw new IllegalArgumentException("zookeeper publishConfigCas requires stat type ticket");
             }
             String pathKey = buildPathKey(group, key);
-            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion(), false);
+            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
             return true;
         } catch (Exception e) {
             logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "zookeeper publishConfigCas failed.", e);

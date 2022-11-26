@@ -17,12 +17,14 @@
 package org.apache.dubbo.remoting.zookeeper.curator;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.data.Stat;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,9 +35,11 @@ import org.junit.jupiter.api.condition.DisabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -146,7 +150,7 @@ class CuratorZookeeperClientTest {
         assertThat(curatorClient.checkExists(path), is(false));
         assertNull(curatorClient.getContent(path));
 
-        curatorClient.create(path, content, false);
+        curatorClient.createOrUpdate(path, content, false);
         assertThat(curatorClient.checkExists(path), is(true));
         assertEquals(curatorClient.getContent(path), content);
     }
@@ -159,7 +163,7 @@ class CuratorZookeeperClientTest {
         assertThat(curatorClient.checkExists(path), is(false));
         assertNull(curatorClient.getContent(path));
 
-        curatorClient.create(path, content, true);
+        curatorClient.createOrUpdate(path, content, true);
         assertThat(curatorClient.checkExists(path), is(true));
         assertEquals(curatorClient.getContent(path), content);
     }
@@ -175,7 +179,7 @@ class CuratorZookeeperClientTest {
         String path = listenerPath + "/dat/data";
         String value = "vav";
 
-        curatorClient.create(path + "/d.json", value, true);
+        curatorClient.createOrUpdate(path + "/d.json", value, true);
         String valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertEquals(value, valueFromCache);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
@@ -200,4 +204,226 @@ class CuratorZookeeperClientTest {
         Thread.sleep(2000L);
         Assertions.assertTrue(3L <= atomicInteger.get());
     }
+
+
+    @Test
+    void testPersistentCas() throws Exception {
+        String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
+        AtomicReference<Runnable> runnable = new AtomicReference<>();
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService")) {
+            @Override
+            protected void createPersistent(String path, String data, boolean faultTolerant) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.createPersistent(path, data, faultTolerant);
+            }
+
+            @Override
+            protected void update(String path, String data, int version) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.update(path, data, version);
+            }
+        };
+        curatorClient.delete(path);
+
+        runnable.set(() -> {
+            try {
+                client.create().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        Assertions.assertThrows(IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", false, 0));
+        Assertions.assertEquals("version x", curatorClient.getContent(path));
+
+        client.setData().forPath(path, "version 1".getBytes(StandardCharsets.UTF_8));
+
+        ConfigItem configItem = curatorClient.getConfigItem(path);
+        runnable.set(() -> {
+            try {
+                client.setData().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        int version1 = ((Stat) configItem.getTicket()).getVersion();
+        Assertions.assertThrows(IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 2", false, version1));
+        Assertions.assertEquals("version x", curatorClient.getContent(path));
+
+        runnable.set(null);
+        configItem = curatorClient.getConfigItem(path);
+        int version2 = ((Stat) configItem.getTicket()).getVersion();
+        curatorClient.createOrUpdate(path, "version 2", false, version2);
+        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+
+        curatorClient.close();
+    }
+
+    @Test
+    void testPersistentNonVersion() {
+        String path = "/dubbo/metadata/org.apache.dubbo.demo.DemoService";
+        AtomicReference<Runnable> runnable = new AtomicReference<>();
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService")) {
+            @Override
+            protected void createPersistent(String path, String data, boolean faultTolerant) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.createPersistent(path, data, faultTolerant);
+            }
+
+            @Override
+            protected void update(String path, String data, int version) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.update(path, data, version);
+            }
+        };
+        curatorClient.delete(path);
+
+        curatorClient.createOrUpdate(path, "version 0", false);
+        Assertions.assertEquals("version 0", curatorClient.getContent(path));
+        curatorClient.delete(path);
+
+        runnable.set(() -> {
+            try {
+                client.create().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        curatorClient.createOrUpdate(path, "version 1", false);
+        Assertions.assertEquals("version 1", curatorClient.getContent(path));
+
+        runnable.set(() -> {
+            try {
+                client.setData().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        curatorClient.createOrUpdate(path, "version 2", false);
+        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+
+        runnable.set(null);
+        curatorClient.createOrUpdate(path, "version 3", false);
+        Assertions.assertEquals("version 3", curatorClient.getContent(path));
+
+        curatorClient.close();
+    }
+
+    @Test
+    void testEphemeralCas() throws Exception {
+        String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
+        AtomicReference<Runnable> runnable = new AtomicReference<>();
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService")) {
+            @Override
+            protected void createEphemeral(String path, String data, boolean faultTolerant) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.createPersistent(path, data, faultTolerant);
+            }
+
+            @Override
+            protected void update(String path, String data, int version) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.update(path, data, version);
+            }
+        };
+        curatorClient.delete(path);
+
+        runnable.set(() -> {
+            try {
+                client.create().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        Assertions.assertThrows(IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", true, 0));
+        Assertions.assertEquals("version x", curatorClient.getContent(path));
+
+        client.setData().forPath(path, "version 1".getBytes(StandardCharsets.UTF_8));
+
+        ConfigItem configItem = curatorClient.getConfigItem(path);
+        runnable.set(() -> {
+            try {
+                client.setData().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        int version1 = ((Stat) configItem.getTicket()).getVersion();
+        Assertions.assertThrows(IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 2", true, version1));
+        Assertions.assertEquals("version x", curatorClient.getContent(path));
+
+        runnable.set(null);
+        configItem = curatorClient.getConfigItem(path);
+        int version2 = ((Stat) configItem.getTicket()).getVersion();
+        curatorClient.createOrUpdate(path, "version 2", true, version2);
+        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+
+        curatorClient.close();
+    }
+
+    @Test
+    void testEphemeralNonVersion() {
+        String path = "/dubbo/metadata/org.apache.dubbo.demo.DemoService";
+        AtomicReference<Runnable> runnable = new AtomicReference<>();
+        CuratorZookeeperClient curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService")) {
+            @Override
+            protected void createPersistent(String path, String data, boolean faultTolerant) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.createPersistent(path, data, faultTolerant);
+            }
+
+            @Override
+            protected void update(String path, String data, int version) {
+                if (runnable.get() != null) {
+                    runnable.get().run();
+                }
+                super.update(path, data, version);
+            }
+        };
+        curatorClient.delete(path);
+
+        curatorClient.createOrUpdate(path, "version 0", true);
+        Assertions.assertEquals("version 0", curatorClient.getContent(path));
+        curatorClient.delete(path);
+
+        runnable.set(() -> {
+            try {
+                client.create().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        curatorClient.createOrUpdate(path, "version 1", true);
+        Assertions.assertEquals("version 1", curatorClient.getContent(path));
+
+        runnable.set(() -> {
+            try {
+                client.setData().forPath(path, "version x".getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        curatorClient.createOrUpdate(path, "version 2", true);
+        Assertions.assertEquals("version 2", curatorClient.getContent(path));
+
+        runnable.set(null);
+        curatorClient.createOrUpdate(path, "version 3", true);
+        Assertions.assertEquals("version 3", curatorClient.getContent(path));
+
+        curatorClient.close();
+    }
+
 }

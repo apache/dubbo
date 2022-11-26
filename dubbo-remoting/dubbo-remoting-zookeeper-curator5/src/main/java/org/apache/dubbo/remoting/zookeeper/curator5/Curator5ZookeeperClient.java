@@ -160,17 +160,21 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createEphemeral(String path, String data) {
+    protected void createEphemeral(String path, String data, boolean faultTolerant) {
         byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
-                ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
-                " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                "we can just try to delete and create again.", e);
-            deletePath(path);
-            createEphemeral(path, data);
+            if (faultTolerant) {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
+                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
+                    "we can just try to delete and create again.", e);
+                deletePath(path);
+                createEphemeral(path, data, faultTolerant);
+            } else {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -197,12 +201,12 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, boolean faultTolerant) {
+    protected void createOrUpdatePersistent(String path, String data) {
         try {
             if (checkExists(path)) {
                 update(path, data);
             } else {
-                createPersistent(path, data, faultTolerant);
+                createPersistent(path, data, true);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -216,7 +220,7 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             if (checkExists(path)) {
                 update(path, data);
             } else {
-                createEphemeral(path, data);
+                createEphemeral(path, data, true);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -225,12 +229,12 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, int version, boolean faultTolerant) {
+    protected void createOrUpdatePersistent(String path, String data, int version) {
         try {
             if (checkExists(path)) {
                 update(path, data, version);
             } else {
-                createPersistent(path, data, faultTolerant);
+                createPersistent(path, data, false);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -243,7 +247,7 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             if (checkExists(path)) {
                 update(path, data, version);
             } else {
-                createEphemeral(path, data);
+                createEphemeral(path, data, false);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
