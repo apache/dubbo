@@ -140,15 +140,19 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createPersistent(String path, String data) {
+    protected void createPersistent(String path, String data, boolean faultTolerant) {
         byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            try {
-                client.setData().forPath(path, dataBytes);
-            } catch (Exception e1) {
-                throw new IllegalStateException(e.getMessage(), e1);
+            if (faultTolerant) {
+                try {
+                    client.setData().forPath(path, dataBytes);
+                } catch (Exception e1) {
+                    throw new IllegalStateException(e.getMessage(), e1);
+                }
+            } else {
+                throw new IllegalStateException(e.getMessage(), e);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -183,12 +187,50 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, int version) {
+    protected void update(String path, String data) {
+        byte[] dataBytes = data.getBytes(CHARSET);
+        try {
+            client.setData().forPath(path, dataBytes);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data, boolean faultTolerant) {
+        try {
+            if (checkExists(path)) {
+                update(path, data);
+            } else {
+                createPersistent(path, data, faultTolerant);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    protected void createOrUpdateEphemeral(String path, String data) {
+        try {
+            if (checkExists(path)) {
+                update(path, data);
+            } else {
+                createEphemeral(path, data);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data, int version, boolean faultTolerant) {
         try {
             if (checkExists(path)) {
                 update(path, data, version);
             } else {
-                createPersistent(path, data);
+                createPersistent(path, data, faultTolerant);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

@@ -103,7 +103,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected boolean doPublishConfig(String pathKey, String content) throws Exception {
-        zkClient.create(pathKey, content, false);
+        zkClient.createOrUpdate(pathKey, content, false, false);
         return true;
     }
 
@@ -114,7 +114,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
                 throw new IllegalArgumentException("zookeeper publishConfigCas requires stat type ticket");
             }
             String pathKey = buildPathKey(group, key);
-            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
+            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion(), false);
             return true;
         } catch (Exception e) {
             logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "zookeeper publishConfigCas failed.", e);
