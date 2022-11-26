@@ -315,6 +315,7 @@
                                     <skip>${checkstyle.skip}</skip>
                                     <excludes>
                                         **/JSONWriter.java,
+                                        **/org.apache.dubbo.common.threadpool.serial/SerializingExecutor.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
                                         **/org/apache/dubbo/common/timer/TimerTask.java,
