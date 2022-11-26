@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.File;
 
 public class JclLoggerAdapter implements LoggerAdapter {
-
+    public static final String NAME = "jcl";
     private Level level;
     private File file;
 
