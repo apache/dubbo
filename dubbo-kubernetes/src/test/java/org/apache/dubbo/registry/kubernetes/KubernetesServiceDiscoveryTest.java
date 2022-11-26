@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.NAMESPACE;
+import static org.awaitility.Awaitility.await;
 
 @ExtendWith({MockitoExtension.class})
 class KubernetesServiceDiscoveryTest {
@@ -144,7 +145,11 @@ class KubernetesServiceDiscoveryTest {
                                 .endAddress().endSubset()
                                 .build());
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 2;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(2)).onEvent(eventArgumentCaptor.capture());
@@ -172,7 +177,11 @@ class KubernetesServiceDiscoveryTest {
         serviceInstance = new DefaultServiceInstance(SERVICE_NAME, "Test12345", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceDiscovery.doUpdate(serviceInstance);
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 1;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());
@@ -205,7 +214,11 @@ class KubernetesServiceDiscoveryTest {
                         .endSpec()
                         .build());
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 1;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());

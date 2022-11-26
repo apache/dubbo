@@ -93,7 +93,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             configService = new NacosConfigServiceWrapper(NacosFactory.createConfigService(nacosProperties));
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
-                logger.error(e.getErrMsg(), e);
+                logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getErrMsg(), e);
             }
             throw new IllegalStateException(e);
         }
