@@ -41,6 +41,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -232,14 +233,14 @@ class CuratorZookeeperClientTest {
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNotNull(valueFromCache);
 
-        Thread.sleep(100);
         curatorClient.getClient().setData().forPath(path + "/d.json", "foo".getBytes());
-        Thread.sleep(100);
+        await().until(() -> atomicInteger.get() == 1);
         curatorClient.getClient().setData().forPath(path + "/d.json", "bar".getBytes());
+        await().until(() -> atomicInteger.get() == 2);
         curatorClient.delete(path + "/d.json");
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
-        Thread.sleep(2000L);
+        await().until(() -> atomicInteger.get() == 3);
         Assertions.assertTrue(3L <= atomicInteger.get());
     }
 
