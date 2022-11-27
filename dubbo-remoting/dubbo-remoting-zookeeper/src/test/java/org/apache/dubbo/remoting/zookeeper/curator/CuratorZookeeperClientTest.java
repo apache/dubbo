@@ -233,15 +233,17 @@ class CuratorZookeeperClientTest {
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNotNull(valueFromCache);
 
+        int currentCount1 = atomicInteger.get();
         curatorClient.getClient().setData().forPath(path + "/d.json", "foo".getBytes());
-        await().until(() -> atomicInteger.get() == 1);
+        await().until(() -> atomicInteger.get() > currentCount1);
+        int currentCount2 = atomicInteger.get();
         curatorClient.getClient().setData().forPath(path + "/d.json", "bar".getBytes());
-        await().until(() -> atomicInteger.get() == 2);
+        await().until(() -> atomicInteger.get() > currentCount2);
+        int currentCount3 = atomicInteger.get();
         curatorClient.delete(path + "/d.json");
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
-        await().until(() -> atomicInteger.get() == 3);
-        Assertions.assertTrue(3L <= atomicInteger.get());
+        await().until(() -> atomicInteger.get() > currentCount3);
     }
 
 
