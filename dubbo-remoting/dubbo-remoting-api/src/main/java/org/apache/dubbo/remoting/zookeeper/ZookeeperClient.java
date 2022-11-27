@@ -26,6 +26,15 @@ import java.util.concurrent.Executor;
  * Common abstraction of Zookeeper client.
  */
 public interface ZookeeperClient {
+
+    /**
+     * Create ZNode in Zookeeper.
+     *
+     * @param path path to ZNode
+     * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
+     */
+    void create(String path, boolean ephemeral, boolean faultTolarance);
+
     /**
      * Delete ZNode.
      *

@@ -119,27 +119,35 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    public void createPersistent(String path) {
+    public void createPersistent(String path, boolean faultTolerant) {
         try {
             client.create().forPath(path);
         } catch (NodeExistsException e) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+            if (!faultTolerant) {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     @Override
-    public void createEphemeral(String path) {
+    public void createEphemeral(String path, boolean faultTolerant) {
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (NodeExistsException e) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
-                ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
-                " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                "we can just try to delete and create again.", e);
-            deletePath(path);
-            createEphemeral(path);
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
+                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
+                    "we can just try to delete and create again.");
+                deletePath(path);
+                createEphemeral(path, true);
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -152,12 +160,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             client.create().forPath(path, dataBytes);
         } catch (NodeExistsException e) {
             if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists. Will be override with new data.");
                 try {
                     client.setData().forPath(path, dataBytes);
                 } catch (Exception e1) {
                     throw new IllegalStateException(e.getMessage(), e1);
                 }
             } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
                 throw new IllegalStateException(e.getMessage(), e);
             }
         } catch (Exception e) {
@@ -172,13 +182,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
             if (faultTolerant) {
-                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                logger.info("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
                     ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
                     " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                    "we can just try to delete and create again.", e);
+                    "we can just try to delete and create again.");
                 deletePath(path);
-                createEphemeral(path, data, faultTolerant);
+                createEphemeral(path, data, true);
             } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
                 throw new IllegalStateException(e.getMessage(), e);
             }
         } catch (Exception e) {

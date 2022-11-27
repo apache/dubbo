@@ -62,7 +62,7 @@ class Curator5ZookeeperClientTest {
     @Test
     void testCheckExists() {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
-        curatorClient.create(path, false);
+        curatorClient.create(path, false, true);
         assertThat(curatorClient.checkExists(path), is(true));
         assertThat(curatorClient.checkExists(path + "/noneexits"), is(false));
     }
@@ -70,9 +70,9 @@ class Curator5ZookeeperClientTest {
     @Test
     void testChildrenPath() {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
-        curatorClient.create(path, false);
-        curatorClient.create(path + "/provider1", false);
-        curatorClient.create(path + "/provider2", false);
+        curatorClient.create(path, false, true);
+        curatorClient.create(path + "/provider1", false, true);
+        curatorClient.create(path + "/provider2", false, true);
 
         List<String> children = curatorClient.getChildren(path);
         assertThat(children.size(), is(2));
@@ -82,7 +82,7 @@ class Curator5ZookeeperClientTest {
     @Timeout(value = 2)
     public void testChildrenListener() throws InterruptedException {
         String path = "/dubbo/org.apache.dubbo.demo.DemoListenerService/providers";
-        curatorClient.create(path, false);
+        curatorClient.create(path, false, true);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         curatorClient.addTargetChildListener(path, new Curator5ZookeeperClient.CuratorWatcherImpl() {
 
@@ -91,7 +91,7 @@ class Curator5ZookeeperClientTest {
                 countDownLatch.countDown();
             }
         });
-        curatorClient.createPersistent(path + "/provider1");
+        curatorClient.createPersistent(path + "/provider1", true);
         countDownLatch.await();
     }
 
@@ -100,7 +100,7 @@ class Curator5ZookeeperClientTest {
     void testWithInvalidServer() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000"));
-            curatorClient.create("/testPath", true);
+            curatorClient.create("/testPath", true, true);
         });
     }
 
@@ -113,13 +113,13 @@ class Curator5ZookeeperClientTest {
 
     @Test
     void testCreateExistingPath() {
-        curatorClient.create("/pathOne", false);
-        curatorClient.create("/pathOne", false);
+        curatorClient.create("/pathOne", false, true);
+        curatorClient.create("/pathOne", false, true);
     }
 
     @Test
     void testConnectedStatus() {
-        curatorClient.createEphemeral("/testPath");
+        curatorClient.createEphemeral("/testPath", true);
         boolean connected = curatorClient.isConnected();
         assertThat(connected, is(true));
     }
@@ -148,6 +148,44 @@ class Curator5ZookeeperClientTest {
         curatorClient.createOrUpdate(path, content, true);
         assertThat(curatorClient.checkExists(path), is(true));
         assertEquals(curatorClient.getContent(path), content);
+    }
+
+    @Test
+    void testCreatePersistentFailed() {
+        String path = "/dubbo/test/path";
+        curatorClient.delete(path);
+        curatorClient.create(path, false, true);
+        Assertions.assertTrue(curatorClient.checkExists(path));
+
+        curatorClient.createPersistent(path, true);
+        Assertions.assertTrue(curatorClient.checkExists(path));
+
+        curatorClient.createPersistent(path, true);
+        Assertions.assertTrue(curatorClient.checkExists(path));
+
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient.createPersistent(path, false);
+        });
+        Assertions.assertTrue(curatorClient.checkExists(path));
+    }
+
+    @Test
+    void testCreateEphemeralFailed() {
+        String path = "/dubbo/test/path";
+        curatorClient.delete(path);
+        curatorClient.create(path, true, true);
+        Assertions.assertTrue(curatorClient.checkExists(path));
+
+        curatorClient.createEphemeral(path, true);
+        Assertions.assertTrue(curatorClient.checkExists(path));
+
+        curatorClient.createEphemeral(path, true);
+        Assertions.assertTrue(curatorClient.checkExists(path));
+
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient.createEphemeral(path, false);
+        });
+        Assertions.assertTrue(curatorClient.checkExists(path));
     }
 
     @Test
