@@ -159,8 +159,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         closed = true;
         try {
             doClose();
-        } catch (Throwable t) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", t.getMessage(), t);
+        } catch (Exception e) {
+            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", e.getMessage(), e);
         }
     }
 
