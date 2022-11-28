@@ -34,7 +34,6 @@ import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
-import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,7 +193,7 @@ public class NacosRegistry extends FailbackRegistry {
     private void doSubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
         execute(namingService -> {
             if (isServiceNamesWithCompatibleMode(url)) {
-                List<Instance> allCorrespondingInstanceList = Lists.newArrayList();
+                List<Instance> allCorrespondingInstanceList = new ArrayList<>();
 
                 /**
                  * Get all instances with serviceNames to avoid instance overwrite and but with empty instance mentioned
