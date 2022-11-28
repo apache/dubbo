@@ -524,8 +524,8 @@ public class NacosRegistry extends FailbackRegistry {
 
                         // Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
                         // in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
-                        NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
-                        instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                        NacosInstanceManageUtil.initOrRefreshServiceInstanceList(e.getServiceName(), instances);
+                        instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(e.getServiceName());
                     }
 
                     notifySubscriber(url, listener, instances);
