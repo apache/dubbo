@@ -53,8 +53,12 @@ class WriteQueueTest {
     @BeforeEach
     public void init() {
         channel = Mockito.mock(Channel.class);
+        Channel parent = Mockito.mock(Channel.class);
         ChannelPromise promise = Mockito.mock(ChannelPromise.class);
         EventLoop eventLoop = new DefaultEventLoop();
+        Mockito.when(parent.eventLoop()).thenReturn(eventLoop);
+
+        Mockito.when(channel.parent()).thenReturn(parent);
         Mockito.when(channel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.newPromise()).thenReturn(promise);
@@ -70,14 +74,14 @@ class WriteQueueTest {
     @Test
     void test() throws Exception {
 
-        WriteQueue writeQueue = new WriteQueue(channel);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0));
+        WriteQueue writeQueue = new WriteQueue();
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0], false, 0).channel(channel));
         TriRpcStatus status = TriRpcStatus.UNKNOWN
                 .withCause(new RpcException())
                 .withDescription("Encode Response data error");
-        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL));
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
+        writeQueue.enqueue(CancelQueueCommand.createCommand(Http2Error.CANCEL).channel(channel));
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true).channel(channel));
 
         while (writeMethodCalledTimes.get() != 4) {
             Thread.sleep(50);
@@ -96,13 +100,13 @@ class WriteQueueTest {
 
     @Test
     void testChunk() throws Exception {
-        WriteQueue writeQueue = new WriteQueue(channel);
+        WriteQueue writeQueue = new WriteQueue();
         // test deque chunk size
         writeMethodCalledTimes.set(0);
         for (int i = 0; i < DEQUE_CHUNK_SIZE; i++) {
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
         }
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()).channel(channel));
         while (writeMethodCalledTimes.get() != (DEQUE_CHUNK_SIZE + 1)) {
             Thread.sleep(50);
         }

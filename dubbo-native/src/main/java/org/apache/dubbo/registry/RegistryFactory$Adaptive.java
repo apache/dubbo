@@ -21,7 +21,7 @@ public class RegistryFactory$Adaptive implements org.apache.dubbo.registry.Regis
 public org.apache.dubbo.registry.Registry getRegistry(org.apache.dubbo.common.URL arg0)  {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
-String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+String extName = ( url.getProtocol() == null ? "adaptive" : url.getProtocol() );
 if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.registry.RegistryFactory) name from url (" + url.toString() + ") use keys([protocol])");
 ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.registry.RegistryFactory.class);
 org.apache.dubbo.registry.RegistryFactory extension = (org.apache.dubbo.registry.RegistryFactory)scopeModel.getExtensionLoader(org.apache.dubbo.registry.RegistryFactory.class).getExtension(extName);

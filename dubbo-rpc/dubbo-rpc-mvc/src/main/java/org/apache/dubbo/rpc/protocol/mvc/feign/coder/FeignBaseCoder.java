@@ -2,14 +2,7 @@ package org.apache.dubbo.rpc.protocol.mvc.feign.coder;
 
 import org.apache.dubbo.rpc.protocol.mvc.servlet.MvcConfigurationSupport;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.ResourceHttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
-import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
-import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 
 import java.util.*;
 

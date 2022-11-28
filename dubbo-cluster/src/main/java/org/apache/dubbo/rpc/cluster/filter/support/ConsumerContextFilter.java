@@ -75,7 +75,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
             if (CollectionUtils.isNotEmpty(supportedSelectors)) {
                 for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
-                    Map<String, Object> selected = supportedSelector.select();
+                    Map<String, Object> selected = supportedSelector.select(invocation, RpcContext.getClientAttachment(), RpcContext.getServerAttachment());
                     if (CollectionUtils.isNotEmptyMap(selected)) {
                         ((RpcInvocation) invocation).addObjectAttachments(selected);
                     }
@@ -83,7 +83,6 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             } else {
                 ((RpcInvocation) invocation).addObjectAttachments(RpcContext.getServerAttachment().getObjectAttachments());
             }
-
             Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
             if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
                 /**
@@ -105,8 +104,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                             + invocation.getMethodName() + ", terminate directly."), invocation);
                 }
             }
-
-            RpcContext.removeServerContext();
+            RpcContext.removeClientResponseContext();
             return invoker.invoke(invocation);
         } finally {
             RpcContext.restoreServiceContext(originServiceContext);
@@ -116,8 +114,8 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
-
+        Map<String, Object> map = appResponse.getObjectAttachments();
+        RpcContext.getClientResponseContext().setObjectAttachments(map);
         removeContext(invocation);
     }
 

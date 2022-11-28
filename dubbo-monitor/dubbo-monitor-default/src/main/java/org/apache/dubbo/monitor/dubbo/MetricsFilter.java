@@ -19,7 +19,7 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.JsonUtils;
@@ -61,6 +61,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
 import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
@@ -75,7 +76,7 @@ import static org.apache.dubbo.monitor.Constants.SERVICE;
 @Deprecated
 public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModelAware {
 
-    private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MetricsFilter.class);
     protected static volatile AtomicBoolean exported = new AtomicBoolean(false);
     private Integer port;
     private String protocolName;
@@ -106,7 +107,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             try {
                 protocol.export(metricsInvoker);
             } catch (RuntimeException e) {
-                logger.error("Metrics Service need to be configured" +
+                logger.error(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Metrics Service need to be configured" +
                     " when multiple processes are running on a host" + e.getMessage());
             }
         }

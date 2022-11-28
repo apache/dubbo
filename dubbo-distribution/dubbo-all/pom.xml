@@ -394,14 +394,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Hessian Lite -->
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>hessian-lite</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Transitive dependencies -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -420,16 +412,12 @@
             <artifactId>netty-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
+            <artifactId>hessian-lite</artifactId>
         </dependency>
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
@@ -474,7 +462,6 @@
                             <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
-                                    <include>com.alibaba:hessian-lite</include>
                                     <include>org.apache.dubbo:dubbo-auth</include>
                                     <include>org.apache.dubbo:dubbo-cluster</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
@@ -930,7 +917,13 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.ConnectionManager
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.pu.PortUnificationTransporter
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.connection.ConnectionManager
                                     </resource>
                                 </transformer>
                                 <transformer
@@ -1215,6 +1208,12 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver
                                     </resource>
                                 </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.executor.IsolationExecutorSupportFactory
+                                    </resource>
+                                </transformer>
                             </transformers>
                             <filters>
                                 <filter>
@@ -1258,7 +1257,6 @@
                             <includeDependencySources>true</includeDependencySources>
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.dubbo:dubbo-*</dependencySourceInclude>
-                                <dependencySourceExclude>com.alibaba:hessian-*</dependencySourceExclude>
                             </dependencySourceIncludes>
                             <show>public</show>
                             <charset>UTF-8</charset>

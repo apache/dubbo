@@ -2,8 +2,8 @@ package org.apache.dubbo.rpc.protocol.mvc.feign;
 
 import feign.Feign;
 import feign.Target;
-import org.apache.dubbo.rpc.protocol.mvc.feign.coder.FeignBaseDecoder;
-import org.apache.dubbo.rpc.protocol.mvc.feign.coder.FeignBaseEncoder;
+import org.apache.dubbo.rpc.protocol.mvc.feign.coder.FeignDecoder;
+import org.apache.dubbo.rpc.protocol.mvc.feign.coder.FeignEncoder;
 import org.apache.dubbo.rpc.protocol.mvc.feign.support.ResponseEntityDecoder;
 import org.apache.dubbo.rpc.protocol.mvc.feign.support.SpringMvcContract;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +19,8 @@ public class FeignClientBuilder<T> {
         String baseUrl = getBaseUrl(service);
         Target.HardCodedTarget<T> feignClient = new Target.HardCodedTarget(service, url + baseUrl);
 
-        Feign build = Feign.builder().contract(new SpringMvcContract()).encoder(new FeignBaseEncoder())
-            .decoder(new ResponseEntityDecoder(new FeignBaseDecoder()))
+        Feign build = Feign.builder().contract(new SpringMvcContract()).encoder(new FeignEncoder())
+            .decoder(new ResponseEntityDecoder(new FeignDecoder()))
             .build();
         T restClientService = build.newInstance(feignClient);
         return restClientService;

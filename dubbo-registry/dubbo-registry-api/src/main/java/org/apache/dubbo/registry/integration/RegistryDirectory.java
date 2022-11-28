@@ -220,8 +220,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 1
             && invokerUrls.get(0) != null
             && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
-            this.forbidden = true; // Forbid to access
-            routerChain.setInvokers(BitList.emptyList());
+            routerChain.setInvokers(BitList.emptyList(), () -> {
+                this.forbidden = true; // Forbid to access
+            });
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -282,9 +283,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
+            BitList<Invoker<T>> finalInvokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
             // pre-route and build cache
-            routerChain.setInvokers(this.getInvokers());
+            routerChain.setInvokers(finalInvokers.clone(), () -> this.setInvokers(finalInvokers));
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
@@ -296,6 +297,14 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             // notify invokers refreshed
             this.invokersChanged();
         }
+
+        logger.info("Received invokers changed event from registry. " +
+            "Registry type: interface. " +
+            "Service Key: " + getConsumerUrl().getServiceKey() + ". " +
+            "Urls Size : " + invokerUrls.size() + ". " +
+            "Invokers Size : " + getInvokers().size() + ". " +
+            "Available Size: " + getValidInvokers().size() + ". " +
+            "Available Invokers : " + joinValidInvokerAddresses());
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {

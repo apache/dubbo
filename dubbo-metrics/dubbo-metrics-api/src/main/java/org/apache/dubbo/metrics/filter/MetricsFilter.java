@@ -66,6 +66,9 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
     }
 
     private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
+        if (collector == null || !collector.isCollectEnabled()) {
+            return;
+        }
         MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
         execute.accept(collectorExecutor);
     }
