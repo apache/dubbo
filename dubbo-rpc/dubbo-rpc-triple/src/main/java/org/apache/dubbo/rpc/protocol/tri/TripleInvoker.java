@@ -106,7 +106,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!connection.isAvailable()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE.withDescription(
-                String.format("upstream %s is unavailable", getUrl().getAddress()))
+                    String.format("upstream %s is unavailable", getUrl().getAddress()))
                 .asException();
             future.completeExceptionally(exception);
             return new AsyncRpcResult(future, invocation);
@@ -301,14 +301,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     private int calculateTimeout(Invocation invocation, String methodName) {
-        if (invocation.getObjectAttachment(TIMEOUT_KEY) != null) {
-            return (int) RpcUtils.getTimeoutFromInvocation(invocation, 3000);
-        }
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;
         if (countdown == null) {
             timeout = (int) RpcUtils.getTimeout(getUrl(), methodName,
-                RpcContext.getClientAttachment(), 3000);
+                RpcContext.getClientAttachment(), invocation, 3000);
             if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
                     timeout); // pass timeout to remote server
