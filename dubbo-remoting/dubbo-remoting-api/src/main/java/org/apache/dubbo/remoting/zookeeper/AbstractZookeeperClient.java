@@ -68,7 +68,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void create(String path, boolean ephemeral, boolean faultTolarance) {
+    public void create(String path, boolean ephemeral, boolean faultTolerant) {
         if (!ephemeral) {
             if (persistentExistNodePath.contains(path)) {
                 return;
@@ -83,9 +83,9 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
             create(path.substring(0, i), false, true);
         }
         if (ephemeral) {
-            createEphemeral(path, faultTolarance);
+            createEphemeral(path, faultTolerant);
         } else {
-            createPersistent(path, faultTolarance);
+            createPersistent(path, faultTolerant);
             persistentExistNodePath.add(path);
         }
     }

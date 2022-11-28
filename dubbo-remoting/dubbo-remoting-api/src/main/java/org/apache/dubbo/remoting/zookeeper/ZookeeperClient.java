@@ -32,8 +32,10 @@ public interface ZookeeperClient {
      *
      * @param path path to ZNode
      * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
+     * @param faultTolerant specify fault tolerance of ZNode creation.
+     *                       true - ignore exception and recreate if is ephemeral, false - throw exception.
      */
-    void create(String path, boolean ephemeral, boolean faultTolarance);
+    void create(String path, boolean ephemeral, boolean faultTolerant);
 
     /**
      * Delete ZNode.
