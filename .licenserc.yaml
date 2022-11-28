@@ -76,6 +76,7 @@ header:
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java'
     - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java'
     - 'dubbo-config/dubbo-config-spring/src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java'
 
   comment: on-failure
 
