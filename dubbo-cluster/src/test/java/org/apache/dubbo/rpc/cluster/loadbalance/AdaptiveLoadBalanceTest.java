@@ -88,7 +88,7 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
     @Order(1)
-    void testSelectByAdaptive() throws NoSuchFieldException, IllegalAccessException {
+    void testSelectByAdaptive() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int sumInvoker5 = 0;
@@ -139,7 +139,7 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
         int expectWeightValue = loop / totalWeight;
         int maxDeviation = expectWeightValue * 2;
         double beta = 0.5;
-        //这个估算值并不准确
+        //this EMA is an approximate value
         double ewma1 = beta * 50 + (1 - beta) * 10;
         double ewma2 = beta * 50 + (1 - beta) * 100;
         double ewma5 = beta * 50 + (1 - beta) * 5000;
@@ -158,10 +158,6 @@ class AdaptiveLoadBalanceTest extends LoadBalanceBaseTest {
                 weight5.set(v);
             }
         });
-
-        System.out.println(sumInvoker1);
-        System.out.println(sumInvoker2);
-        System.out.println(sumInvoker5);
 
         Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker5, loop, "select failed!");
         Assertions.assertTrue(Math.abs(sumInvoker1 / (weightMap.get(weightInvoker1) * ewma1) - expectWeightValue) < maxDeviation, "select failed!");
