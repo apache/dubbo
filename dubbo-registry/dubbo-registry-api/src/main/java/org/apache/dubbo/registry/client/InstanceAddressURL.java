@@ -622,6 +622,219 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public double getParameter(String key, double defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Double.parseDouble(value);
+    }
+
+    @Override
+    public float getParameter(String key, float defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Float.parseFloat(value);
+    }
+
+    @Override
+    public long getParameter(String key, long defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Long.parseLong(value);
+    }
+
+    @Override
+    public int getParameter(String key, int defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Integer.parseInt(value);
+    }
+
+    @Override
+    public short getParameter(String key, short defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Short.parseShort(value);
+    }
+
+    @Override
+    public byte getParameter(String key, byte defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Byte.parseByte(value);
+    }
+
+    @Override
+    public double getServiceParameter(String service, String key, double defaultValue) {
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Double.parseDouble(value);
+    }
+
+    @Override
+    public float getServiceParameter(String service, String key, float defaultValue) {
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Float.parseFloat(value);
+    }
+
+    @Override
+    public long getServiceParameter(String service, String key, long defaultValue) {
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Long.parseLong(value);
+    }
+
+    @Override
+    public short getServiceParameter(String service, String key, short defaultValue) {
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Short.parseShort(value);
+    }
+
+    @Override
+    public byte getServiceParameter(String service, String key, byte defaultValue) {
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Byte.parseByte(value);
+    }
+
+    @Override
+    public int getServiceParameter(String service, String key, int defaultValue) {
+        String value = getServiceParameter(service, key);
+        return StringUtils.isEmpty(value) ? defaultValue : Integer.parseInt(value);
+    }
+
+    @Override
+    public double getMethodParameter(String method, String key, double defaultValue) {
+        String value = getMethodParameter(method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Double.parseDouble(value);
+    }
+
+    @Override
+    public float getMethodParameter(String method, String key, float defaultValue) {
+        String value = getMethodParameter(method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Float.parseFloat(value);
+    }
+
+    @Override
+    public long getMethodParameter(String method, String key, long defaultValue) {
+        String value = getMethodParameter(method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Long.parseLong(value);
+    }
+
+    @Override
+    public int getMethodParameter(String method, String key, int defaultValue) {
+        String value = getMethodParameter(method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Integer.parseInt(value);
+    }
+
+    @Override
+    public short getMethodParameter(String method, String key, short defaultValue) {
+        String value = getMethodParameter(method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Short.parseShort(value);
+    }
+
+    @Override
+    public byte getMethodParameter(String method, String key, byte defaultValue) {
+        String value = getMethodParameter(method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Byte.parseByte(value);
+    }
+
+    @Override
+    public double getServiceMethodParameter(String service, String method, String key, double defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Double.parseDouble(value);
+    }
+
+    @Override
+    public float getServiceMethodParameter(String service, String method, String key, float defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Float.parseFloat(value);
+    }
+
+    @Override
+    public long getServiceMethodParameter(String service, String method, String key, long defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Long.parseLong(value);
+    }
+
+    @Override
+    public int getServiceMethodParameter(String service, String method, String key, int defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Integer.parseInt(value);
+    }
+
+    @Override
+    public short getServiceMethodParameter(String service, String method, String key, short defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Short.parseShort(value);
+    }
+
+    @Override
+    public byte getServiceMethodParameter(String service, String method, String key, byte defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return Byte.parseByte(value);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         // instance metadata equals
         if (obj == null) {

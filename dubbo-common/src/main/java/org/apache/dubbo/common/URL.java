@@ -1942,7 +1942,7 @@ class URL implements Serializable {
         return i;
     }
 
-    public short getMethodParameter(String service, String method, String key, short defaultValue) {
+    public short getServiceMethodParameter(String service, String method, String key, short defaultValue) {
         Number n = getCachedNumber(method, key);
         if (n != null) {
             return n.shortValue();
