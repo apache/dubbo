@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.configcenter.support.apollo;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
 
 import com.ctrip.framework.apollo.build.ApolloInjector;
@@ -33,8 +35,6 @@ import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -43,8 +43,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
+
 public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback {
-    private static final Logger logger = LoggerFactory.getLogger(EmbeddedApolloJunit5.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EmbeddedApolloJunit5.class);
 
     private static Method CONFIG_SERVICE_LOCATOR_CLEAR;
     private static ConfigServiceLocator CONFIG_SERVICE_LOCATOR;
@@ -154,7 +156,7 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
             clear();
             server.close();
         } catch (Exception e) {
-            logger.error("stop apollo server error", e);
+            logger.error(CONFIG_FAILED_CLOSE_CONNECT_APOLLO, "", "", "stop apollo server error", e);
         }
     }
 
