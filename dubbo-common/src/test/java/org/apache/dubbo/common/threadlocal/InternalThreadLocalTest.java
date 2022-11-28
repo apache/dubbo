@@ -242,6 +242,7 @@ class InternalThreadLocalTest {
         AtomicInteger nextIndex = (AtomicInteger) nextIndexField.get(AtomicInteger.class);
         int arrayListCapacityMaxSize = InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE;
         int nextIndex_before = nextIndex.get();
+        nextIndex.set(0);
         final AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
         try {
             InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE =  NEW_ARRAY_LIST_CAPACITY_MAX_SIZE;
