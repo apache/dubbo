@@ -203,6 +203,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         canceled = true;
+        if (stream == null) {
+            return;
+        }
         if(t instanceof Http2Exception.StreamException && ((Http2Exception.StreamException) t).error().equals(FLOW_CONTROL_ERROR)){
             TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t)
                 .withDescription("Due flowcontrol over pendingbytes, Cancelled by client");
@@ -212,9 +215,6 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t)
                 .withDescription("Cancelled by client");
             stream.cancelByLocal(status);
-        }
-        if (stream == null) {
-            return;
         }
         TriRpcStatus status = TriRpcStatus.CANCELLED.withCause(t)
             .withDescription("Cancelled by client");
