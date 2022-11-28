@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.filter;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_FILTER_START_TIME;
+import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 import java.util.function.Supplier;
 
@@ -25,6 +26,7 @@ import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 public class MetricsCollectExecutor {
 
@@ -88,6 +90,12 @@ public class MetricsCollectExecutor {
     private void init(Invocation invocation) {
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
+        if (invocation instanceof RpcInvocation
+            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
+            && invocation.getArguments() != null
+            && invocation.getArguments().length == 3) {
+            methodName = ((String) invocation.getArguments()[0]).trim();
+        }
         String group = null;
         String interfaceAndVersion;
         String[] arr = serviceUniqueName.split("/");
