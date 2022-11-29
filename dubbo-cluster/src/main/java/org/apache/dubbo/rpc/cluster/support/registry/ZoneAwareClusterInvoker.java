@@ -46,7 +46,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
  * 1. registry marked as 'preferred=true' has the highest priority.
  * 2. check the zone the current request belongs, pick the registry that has the same zone first.
  * 3. Evenly balance traffic between all registries based on each registry's weight.
- * 4. Pick anyone that's available.
  */
 public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
@@ -65,10 +64,6 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        if (null == invokers || invokers.isEmpty()) {
-            throw new RpcException("No available invoker.");
-        }
-
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
             ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
@@ -116,8 +111,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
 
-        //if none available,just pick one
-        return invokers.get(0).invoke(invocation);
+        throw new RpcException("No provider available in " + invokers);
     }
 
 }

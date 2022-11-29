@@ -177,9 +177,8 @@ class ZoneAwareClusterInvokerTest {
 
         zoneAwareClusterInvoker = new ZoneAwareClusterInvoker<>(directory);
 
-        RpcException exception = Assertions.assertThrows(RpcException.class,
+        Assertions.assertThrows(RpcException.class,
             () -> zoneAwareClusterInvoker.invoke(invocation));
-        Assertions.assertEquals("No available invoker.", exception.getMessage());
     }
 
     private ClusterInvoker newUnexpectedInvoker() {
