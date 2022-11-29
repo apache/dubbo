@@ -14,16 +14,19 @@ import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
 
 import java.io.InputStream;
 
+/**
+ *  body param parse
+ */
 public class BodyProviderParamParser extends ProviderParamParser {
     private static final Logger logger = LoggerFactory.getLogger(BodyProviderParamParser.class);
 
     @Override
     protected void doParse(ParseContext parseContext, ArgInfo argInfo) {
 
-        ServletRequestFacade request = parseContext.getRequest();
+        ServletRequestFacade request = parseContext.getRequestFacade();
 
         try {
-            String serialization = parseContext.getRequest().getHeader(Constants.SERIALIZATION_KEY);
+            String serialization = parseContext.getRequestFacade().getHeader(Constants.SERIALIZATION_KEY);
 
             // TODO  url builder
             URL url = null;
@@ -39,6 +42,6 @@ public class BodyProviderParamParser extends ProviderParamParser {
 
     @Override
     protected ParamType getParamType() {
-        return ParamType.BODY;
+        return ParamType.REQ_OR_RES;
     }
 }

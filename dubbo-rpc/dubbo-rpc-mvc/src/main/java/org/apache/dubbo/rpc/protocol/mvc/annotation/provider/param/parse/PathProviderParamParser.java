@@ -5,6 +5,9 @@ import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamType;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 
+/**
+ *  path param parse
+ */
 public class PathProviderParamParser extends ProviderParamParser {
     @Override
     protected void doParse(ParseContext parseContext, ArgInfo argInfo) {

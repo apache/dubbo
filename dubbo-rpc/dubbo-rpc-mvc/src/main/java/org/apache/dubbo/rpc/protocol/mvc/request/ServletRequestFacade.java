@@ -16,6 +16,10 @@ public abstract class ServletRequestFacade<T> {
         this.request = request;
     }
 
+    public T getRequest() {
+        return request;
+    }
+
     public abstract Object getParts() throws Exception;
 
     public abstract Object getPart(String var1) throws Exception;

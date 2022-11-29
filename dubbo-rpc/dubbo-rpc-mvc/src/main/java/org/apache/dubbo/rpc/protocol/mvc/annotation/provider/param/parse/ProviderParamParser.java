@@ -26,5 +26,9 @@ public abstract class ProviderParamParser {
 
     protected abstract ParamType getParamType();
 
+    protected  <T> T castReqOrRes(Class<T> reqOrResClass, Object reqOrRes) {
+        return reqOrResClass.cast(reqOrRes);
+    }
+
 
 }
