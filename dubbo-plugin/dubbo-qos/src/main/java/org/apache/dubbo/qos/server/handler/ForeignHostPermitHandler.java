@@ -48,7 +48,7 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
             whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
                 .map(String::trim)
                 .filter(StringUtils::isNotEmpty)
-                .map(foreignIpPattern -> (Predicate<String>) (foreignIp) -> {
+                .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
                     try {
                         // hard code port to -1
                         return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
