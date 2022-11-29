@@ -111,7 +111,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         long timeout = RpcUtils.getTimeout(invocation, -1);
         if (timeout != -1) {
             // pass to next hop
-            RpcContext.getClientAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
+            RpcContext.getServerAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
         }
 
         // merged from dubbox
