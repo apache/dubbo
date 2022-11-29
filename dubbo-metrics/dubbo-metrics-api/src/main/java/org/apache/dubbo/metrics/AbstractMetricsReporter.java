@@ -89,6 +89,12 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected void addMeterRegistry(MeterRegistry registry) {
         compositeRegistry.add(registry);
     }
+    private void addDubboMeterRegistry(){
+        MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
+        if(globalRegistry != null){
+            compositeRegistry.add(globalRegistry);
+        }
+    }
 
     protected ApplicationModel getApplicationModel() {
         return applicationModel;
