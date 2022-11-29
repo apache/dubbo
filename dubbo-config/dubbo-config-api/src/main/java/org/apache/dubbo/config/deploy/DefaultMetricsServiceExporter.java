@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.deploy;
 
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
-
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.metrics.service.MetricsService;
@@ -27,6 +25,10 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.builders.InternalServiceConfigBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+
+import java.util.Optional;
+
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
  * Export metrics service
@@ -104,7 +106,12 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
     }
 
     private MetricsConfig getMetricsConfig() {
-        return applicationModel.getApplicationConfigManager().getMetrics().get();
+        Optional<MetricsConfig> metricsConfig = applicationModel.getApplicationConfigManager().getMetrics();
+        if (metricsConfig.isPresent()) {
+            return metricsConfig.get();
+        } else {
+            throw new IllegalStateException("There's no MetricsConfig specified.");
+        }
     }
 
     private boolean isExported() {

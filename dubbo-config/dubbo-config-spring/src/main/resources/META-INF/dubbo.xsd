@@ -354,6 +354,11 @@
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="prefer-serialization" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="export-async" type="xsd:boolean">
                     <xsd:annotation>
                         <xsd:documentation>

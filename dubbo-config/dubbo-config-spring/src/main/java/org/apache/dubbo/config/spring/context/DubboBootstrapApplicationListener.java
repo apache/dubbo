@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.event.DubboConfigInitEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -34,6 +34,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_INITIALIZER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_BEAN_NOT_FOUND;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 /**
@@ -52,7 +54,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
      */
     public static final String BEAN_NAME = "dubboBootstrapApplicationListener";
 
-    private final Log logger = LogFactory.getLog(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private ApplicationContext applicationContext;
     private DubboBootstrap bootstrap;
@@ -92,7 +94,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
         if (applicationContext.containsBean(DubboConfigBeanInitializer.BEAN_NAME)) {
             applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
         } else {
-            logger.warn("Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
+            logger.warn(CONFIG_DUBBO_BEAN_NOT_FOUND, "", "", "Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
         }
 
         // All infrastructure config beans are loaded, initialize dubbo here
@@ -127,6 +129,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
 
     /**
      * Is original {@link ApplicationContext} as the event source
+     *
      * @param event {@link ApplicationEvent}
      * @return if original, return <code>true</code>, or <code>false</code>
      */
@@ -166,8 +169,8 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
             // init config beans here, compatible with spring 3.x/4.1.x
             initDubboConfigBeans();
         } else {
-            logger.warn("DubboBootstrapApplicationListener initialization is unexpected, " +
-                    "it should be created in AbstractApplicationContext.registerListeners() method", exception);
+            logger.warn(CONFIG_DUBBO_BEAN_INITIALIZER, "", "", "DubboBootstrapApplicationListener initialization is unexpected, " +
+                "it should be created in AbstractApplicationContext.registerListeners() method", exception);
         }
     }
 

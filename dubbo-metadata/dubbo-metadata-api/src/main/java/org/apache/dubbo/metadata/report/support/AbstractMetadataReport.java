@@ -488,6 +488,14 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         void destroy() {
             cancelRetryTask();
         }
+
+        /**
+         * @deprecated only for test
+         */
+        @Deprecated
+        ScheduledExecutorService getRetryExecutor() {
+            return retryExecutor;
+        }
     }
 
     private void doSaveSubscriberData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, List<String> urls) {
@@ -515,4 +523,19 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected abstract String doGetSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
+    /**
+     * @deprecated only for unit test
+     */
+    @Deprecated
+    protected ExecutorService getReportCacheExecutor() {
+        return reportCacheExecutor;
+    }
+
+    /**
+     * @deprecated only for unit test
+     */
+    @Deprecated
+    protected MetadataReportRetry getMetadataReportRetry() {
+        return metadataReportRetry;
+    }
 }

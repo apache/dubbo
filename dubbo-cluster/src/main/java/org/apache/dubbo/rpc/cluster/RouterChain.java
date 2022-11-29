@@ -129,7 +129,8 @@ public class RouterChain<T> {
         try {
             Thread.sleep(1);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            logger.error(INTERNAL_INTERRUPTED, "", "", "Interrupted when waiting router chain.", e);
+            Thread.currentThread().interrupt();
         }
 
         // 7. switch chain
@@ -156,8 +157,9 @@ public class RouterChain<T> {
                 // long time wait
                 Thread.sleep(1);
             }
-        } catch (Throwable t) {
+        } catch (InterruptedException t) {
             logger.error(INTERNAL_INTERRUPTED, "Wait router to interrupted", "", "Wait router to interrupted.");
+            Thread.currentThread().interrupt();
         }
     }
 

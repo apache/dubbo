@@ -244,6 +244,9 @@ public class ApplicationConfig extends AbstractConfig {
         if (executorManagementMode == null) {
             executorManagementMode = EXECUTOR_MANAGEMENT_MODE_DEFAULT;
         }
+        if (enableFileCache == null) {
+            enableFileCache = Boolean.TRUE;
+        }
     }
 
     @Parameter(key = APPLICATION_KEY, required = true)
