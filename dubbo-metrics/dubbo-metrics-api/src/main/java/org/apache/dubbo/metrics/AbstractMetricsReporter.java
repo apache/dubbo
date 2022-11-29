@@ -45,7 +45,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METRICS_KEY;
@@ -90,6 +89,12 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected void addMeterRegistry(MeterRegistry registry) {
         compositeRegistry.add(registry);
     }
+    private void addDubboMeterRegistry(){
+        MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
+        if(globalRegistry != null){
+            compositeRegistry.add(globalRegistry);
+        }
+    }
 
     protected ApplicationModel getApplicationModel() {
         return applicationModel;
@@ -133,10 +138,8 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                                     tags.add(Tag.of(k, v));
                                 });
 
-                                Gauge.Builder<Supplier<Number>> supplierBuilder = Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
-                                    .description(gaugeSample.getDescription()).tags(tags);
-                                DubboMetrics.gaugeBuilder.add(supplierBuilder);
-                                supplierBuilder.register(compositeRegistry);
+                                Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
+                                    .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
                                 break;
                             case COUNTER:
                             case TIMER:
