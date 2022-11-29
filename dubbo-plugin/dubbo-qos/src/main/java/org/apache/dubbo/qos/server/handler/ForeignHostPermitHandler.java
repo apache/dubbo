@@ -48,13 +48,10 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
             whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
                 .map(String::trim)
                 .filter(StringUtils::isNotEmpty)
-                .map(item -> (Predicate<String>) (foreignIp) -> {
+                .map(foreignIpPattern -> (Predicate<String>) (foreignIp) -> {
                     try {
-                        if (!item.contains("/")) {
-                            return StringUtils.isEquals(item, foreignIp);
-                        }
-                        // hard code port to -1, support ip range from CIDR specification only
-                        return NetUtils.matchIpExpression(item, foreignIp, -1);
+                        // hard code port to -1
+                        return NetUtils.matchIpExpression(foreignIpPattern, foreignIp, -1);
                     } catch (UnknownHostException ignore) {
                         // ignore illegal CIDR specification
                     }
