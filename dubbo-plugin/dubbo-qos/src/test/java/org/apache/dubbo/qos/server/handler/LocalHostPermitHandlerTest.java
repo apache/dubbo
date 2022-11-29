@@ -57,7 +57,7 @@ class LocalHostPermitHandlerTest {
     }
 
     @Test
-    void shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndInvalidWhiteList() throws Exception {
+    void shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndNotMatchWhiteList() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
@@ -68,7 +68,7 @@ class LocalHostPermitHandlerTest {
         when(channel.remoteAddress()).thenReturn(address);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1 ;  ~252.\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}");
+        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1 ,  192.168.1.192/26");
         handler.handlerAdded(context);
         ArgumentCaptor<ByteBuf> captor = ArgumentCaptor.forClass(ByteBuf.class);
         verify(context).writeAndFlush(captor.capture());
@@ -77,7 +77,7 @@ class LocalHostPermitHandlerTest {
     }
 
     @Test
-    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndValidWhiteList() throws Exception {
+    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteList() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
@@ -87,23 +87,23 @@ class LocalHostPermitHandlerTest {
         InetSocketAddress address = new InetSocketAddress(addr, 12345);
         when(channel.remoteAddress()).thenReturn(address);
 
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1;~171.\\d{1,3}\\.\\d{1,2}\\.\\d{1,3}  ");
+        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26  ");
         handler.handlerAdded(context);
         verify(context, never()).writeAndFlush(any());
     }
 
     @Test
-    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndValidWhiteListRegex() throws Exception {
+    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndMatchWhiteListRange() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
         InetAddress addr = mock(InetAddress.class);
         when(addr.isLoopbackAddress()).thenReturn(false);
-        when(addr.getHostAddress()).thenReturn("171.33.21.6");
+        when(addr.getHostAddress()).thenReturn("192.168.1.199");
         InetSocketAddress address = new InetSocketAddress(addr, 12345);
         when(channel.remoteAddress()).thenReturn(address);
 
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1; ~171.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26");
         handler.handlerAdded(context);
         verify(context, never()).writeAndFlush(any());
     }

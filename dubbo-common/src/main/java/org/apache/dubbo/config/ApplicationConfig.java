@@ -459,11 +459,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, excluded = true, attribute = false)
     public String getQosAcceptForeignIpWhitelistCompatible() {
-        return qosAcceptForeignIpWhitelist;
+        return this.getQosAcceptForeignIpWhitelist();
     }
 
     public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhitelist) {
-        this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
+        this.setQosAcceptForeignIpWhitelist(qosAcceptForeignIpWhitelist);
     }
 
     public Map<String, String> getParameters() {

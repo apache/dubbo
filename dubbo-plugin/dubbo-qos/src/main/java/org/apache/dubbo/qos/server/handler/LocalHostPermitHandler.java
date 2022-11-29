@@ -21,22 +21,23 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.dubbo.common.utils.CIDRUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.common.QosConstants;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 public class LocalHostPermitHandler extends ChannelHandlerAdapter {
 
     // true means to accept foreign IP
     private  boolean acceptForeignIp;
 
-    // the whitelist of foreign IP when acceptForeignIp = false, separated by semicolon(;)
-    // if the whitelist item start with `~`, treat it as escaped regex string
+    // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
+    // support specific ip and an ip range from CIDR specification
     private String acceptForeignIpWhitelist;
     private Predicate<String> whitelistPredicate = foreignIp -> false;
 
@@ -44,15 +45,19 @@ public class LocalHostPermitHandler extends ChannelHandlerAdapter {
         this.acceptForeignIp = acceptForeignIp;
         this.acceptForeignIpWhitelist = foreignIpWhitelist;
         if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
-            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(";"))
+            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
                 .map(String::trim)
                 .filter(StringUtils::isNotEmpty)
                 .map(item -> (Predicate<String>) (foreignIp) -> {
-                    if (!item.startsWith("~")) {
-                        return StringUtils.isEquals(item, foreignIp);
+                    try {
+                        if (!item.contains("/")) {
+                            return StringUtils.isEquals(item, foreignIp);
+                        }
+                        return new CIDRUtils(item).isInRange(foreignIp);
+                    } catch (UnknownHostException ignore) {
+                        // ignore illegal CIDR specification
                     }
-                    // if the whitelist item start with `~`, treat it as regex
-                    return Pattern.compile(item.substring(1)).matcher(foreignIp).matches();
+                    return false;
                 })
                 .reduce(Predicate::or).orElse(s -> false);
         }
