@@ -3,46 +3,46 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>dubbo-rpc</artifactId>
         <groupId>org.apache.dubbo</groupId>
-        <version>3.2.0-beta.3-SNAPSHOT</version>
+        <artifactId>dubbo-rpc</artifactId>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-rpc-mvc</artifactId>
+    <packaging>jar</packaging>
+    <name>${project.artifactId}</name>
+    <description>The mvc integration module</description>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>compile</scope>
-        </dependency>
-
-
-
-        <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
-            <version>3.2.0-beta.3-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
-            <version>5.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-api</artifactId>
-            <version>3.2.0-beta.3-SNAPSHOT</version>
-            <scope>compile</scope>
+            <version>${project.parent.version}</version>
         </dependency>
+
     </dependencies>
 
 </project>
