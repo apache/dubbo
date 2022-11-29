@@ -223,7 +223,8 @@ class Curator5ZookeeperClientTest {
     }
 
     @Test
-    void testPersistentCas() throws Exception {
+    void testPersistentCas1() throws Exception {
+        // test create failed when others create success
         String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
         AtomicReference<Runnable> runnable = new AtomicReference<>();
         Curator5ZookeeperClient curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService")) {
@@ -274,6 +275,20 @@ class Curator5ZookeeperClientTest {
         int version2 = ((Stat) configItem.getTicket()).getVersion();
         curatorClient.createOrUpdate(path, "version 2", false, version2);
         Assertions.assertEquals("version 2", curatorClient.getContent(path));
+
+        curatorClient.close();
+    }
+
+    @Test
+    void testPersistentCas2() throws Exception {
+        // test update failed when others create success
+        String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
+        Curator5ZookeeperClient curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
+        curatorClient.delete(path);
+
+        curatorClient.createOrUpdate(path, "version x", false);
+        Assertions.assertThrows(IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", false, null));
+        Assertions.assertEquals("version x", curatorClient.getContent(path));
 
         curatorClient.close();
     }
@@ -333,7 +348,8 @@ class Curator5ZookeeperClientTest {
     }
 
     @Test
-    void testEphemeralCas() throws Exception {
+    void testEphemeralCas1() throws Exception {
+        // test create failed when others create success
         String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
         AtomicReference<Runnable> runnable = new AtomicReference<>();
         Curator5ZookeeperClient curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService")) {
@@ -384,6 +400,20 @@ class Curator5ZookeeperClientTest {
         int version2 = ((Stat) configItem.getTicket()).getVersion();
         curatorClient.createOrUpdate(path, "version 2", true, version2);
         Assertions.assertEquals("version 2", curatorClient.getContent(path));
+
+        curatorClient.close();
+    }
+
+    @Test
+    void testEphemeralCas2() throws Exception {
+        // test update failed when others create success
+        String path = "/dubbo/mapping/org.apache.dubbo.demo.DemoService";
+        Curator5ZookeeperClient curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
+        curatorClient.delete(path);
+
+        curatorClient.createOrUpdate(path, "version x", true);
+        Assertions.assertThrows(IllegalStateException.class, () -> curatorClient.createOrUpdate(path, "version 1", true, null));
+        Assertions.assertEquals("version x", curatorClient.getContent(path));
 
         curatorClient.close();
     }

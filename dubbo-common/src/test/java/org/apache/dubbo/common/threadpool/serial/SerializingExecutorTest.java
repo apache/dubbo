@@ -18,7 +18,7 @@
 package org.apache.dubbo.common.threadpool.serial;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -26,44 +26,95 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.awaitility.Awaitility.await;
 
 class SerializingExecutorTest {
 
-    protected static SerializingExecutor serializingExecutor;
+    private ExecutorService service;
+    private SerializingExecutor serializingExecutor;
 
-    @BeforeAll
-    public static void before() {
-        ExecutorService service = Executors.newFixedThreadPool(4);
+    @BeforeEach
+    public void before() {
+        service = Executors.newFixedThreadPool(4);
         serializingExecutor = new SerializingExecutor(service);
     }
 
     @Test
-    void test1() throws InterruptedException {
-        int n = 2;
-        int eachCount = 1000;
-        int total = n * eachCount;
-        int sleepMillis = 10;
+    void testSerial() throws InterruptedException {
+        int total = 10000;
+
         Map<String, Integer> map = new HashMap<>();
         map.put("val", 0);
-        CountDownLatch downLatch = new CountDownLatch(total);
+
+        Semaphore semaphore = new Semaphore(1);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        AtomicBoolean failed = new AtomicBoolean(false);
+
         for (int i = 0; i < total; i++) {
             final int index = i;
-            Thread.sleep(ThreadLocalRandom.current().nextInt(sleepMillis));
             serializingExecutor.execute(() -> {
+                if (!semaphore.tryAcquire()) {
+                    System.out.println("Concurrency");
+                    failed.set(true);
+                }
                 try {
-                    Thread.sleep(ThreadLocalRandom.current().nextInt(sleepMillis));
+                    startLatch.await();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
                 int num = map.get("val");
                 map.put("val", num + 1);
-                downLatch.countDown();
-                Assertions.assertEquals(num, index);
+                if (num != index) {
+                    System.out.println("Index error. Excepted :" + index + " but actual: " + num);
+                    failed.set(true);
+                }
+                semaphore.release();
             });
         }
-        downLatch.await(3, TimeUnit.SECONDS);
-        Assertions.assertEquals(total, map.get("val"));
+
+        startLatch.countDown();
+        await().until(() -> map.get("val") == total);
+        Assertions.assertFalse(failed.get());
+    }
+
+    @Test
+    void testNonSerial() {
+        int total = 10;
+
+        Map<String, Integer> map = new HashMap<>();
+        map.put("val", 0);
+
+        Semaphore semaphore = new Semaphore(1);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        AtomicBoolean failed = new AtomicBoolean(false);
+
+        for (int i = 0; i < total; i++) {
+            final int index = i;
+            service.execute(() -> {
+                if (!semaphore.tryAcquire()) {
+                    failed.set(true);
+                }
+                try {
+                    startLatch.await();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                int num = map.get("val");
+                map.put("val", num + 1);
+                if (num != index) {
+                    failed.set(true);
+                }
+                semaphore.release();
+            });
+        }
+
+        await().until(() -> ((ThreadPoolExecutor) service).getActiveCount() == 4);
+        startLatch.countDown();
+        await().until(() -> ((ThreadPoolExecutor) service).getCompletedTaskCount() == total);
+        Assertions.assertTrue(failed.get());
     }
 }

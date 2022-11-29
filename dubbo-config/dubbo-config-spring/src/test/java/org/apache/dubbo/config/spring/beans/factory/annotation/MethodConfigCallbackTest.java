@@ -39,13 +39,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import static org.awaitility.Awaitility.await;
+
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
-        classes = {
-                ProviderConfiguration.class,
-                MethodConfigCallbackTest.class,
-                MethodConfigCallbackTest.MethodCallbackConfiguration.class
-        })
+    classes = {
+        ProviderConfiguration.class,
+        MethodConfigCallbackTest.class,
+        MethodConfigCallbackTest.MethodCallbackConfiguration.class
+    })
 @TestPropertySource(properties = {
     "dubbo.protocol.port=-1",
     "dubbo.registry.address=${zookeeper.connection.address}"
@@ -70,14 +72,14 @@ class MethodConfigCallbackTest {
     @DubboReference(check = false, async = true,
         injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not supported ClusterFilter
         methods = {@Method(name = "sayHello",
-        oninvoke = "methodCallback.oninvoke1",
-        onreturn = "methodCallback.onreturn1",
-        onthrow = "methodCallback.onthrow1")})
+            oninvoke = "methodCallback.oninvoke1",
+            onreturn = "methodCallback.onreturn1",
+            onthrow = "methodCallback.onthrow1")})
     private HelloService helloServiceMethodCallBack;
 
     @DubboReference(check = false, async = true,
-            injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not supported ClusterFilter
-            methods = {@Method(name = "sayHello",
+        injvm = false, // Currently, local call is not supported method callback cause by Injvm protocol is not supported ClusterFilter
+        methods = {@Method(name = "sayHello",
             oninvoke = "methodCallback.oninvoke2",
             onreturn = "methodCallback.onreturn2",
             onthrow = "methodCallback.onthrow2")})
@@ -95,21 +97,13 @@ class MethodConfigCallbackTest {
                 }
             }).start();
         }
-        int i = 0;
-        while (MethodCallbackImpl.cnt.get() < ( 2 * threadCnt * callCnt)){
-            // wait for async callback finished
-            try {
-                i++;
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-            }
-        }
+        await().until(() -> MethodCallbackImpl.cnt.get() >= (2 * threadCnt * callCnt));
         MethodCallback notify = (MethodCallback) context.getBean("methodCallback");
         StringBuilder invoke1Builder = new StringBuilder();
         StringBuilder invoke2Builder = new StringBuilder();
         StringBuilder return1Builder = new StringBuilder();
         StringBuilder return2Builder = new StringBuilder();
-        for (i = 0; i < threadCnt * callCnt; i++) {
+        for (int i = 0; i < threadCnt * callCnt; i++) {
             invoke1Builder.append("dubbo invoke success!");
             invoke2Builder.append("dubbo invoke success(2)!");
             return1Builder.append("dubbo return success!");
