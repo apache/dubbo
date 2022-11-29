@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -33,8 +35,6 @@ import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
@@ -59,7 +59,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     public static String BEAN_NAME = "dubboConfigBeanInitializer";
 
-    private final Log logger = LogFactory.getLog(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;

@@ -89,7 +89,7 @@ class TagStateRouterTest {
 
         RpcInvocation invocation = new RpcInvocation();
         invocation.setAttachment(TAG_KEY, "tag2");
-        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), invocation, false, new Holder<>());
+        List<Invoker<String>> filteredInvokers = router.route(invokers.clone(), invokers.get(0).getUrl(), invocation, false, new Holder<>());
         Assertions.assertEquals(1, filteredInvokers.size());
         Assertions.assertEquals(invoker1, filteredInvokers.get(0));
     }

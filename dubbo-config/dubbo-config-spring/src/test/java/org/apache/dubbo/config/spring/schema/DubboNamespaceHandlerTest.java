@@ -54,6 +54,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DubboNamespaceHandlerTest {
 
@@ -254,6 +255,8 @@ class DubboNamespaceHandlerTest {
 
         MetricsConfig metricsBean = ctx.getBean(MetricsConfig.class);
         MetricsConfig metrics = configManager.getMetrics().get();
+
+        assertTrue(metrics.getEnableJvmMetrics());
 
         assertEquals(metrics.getAggregation().getEnabled(), true);
         assertEquals(metrics.getAggregation().getBucketNum(), 5);

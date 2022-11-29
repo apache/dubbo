@@ -100,6 +100,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PARAMETER_FORMAT_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
@@ -498,7 +499,7 @@ public class ConfigValidationUtils {
             try {
                 ClassUtils.forName("org.apache.dubbo.qos.protocol.QosProtocolWrapper");
             } catch (ClassNotFoundException e) {
-                logger.warn("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly.", e);
+                logger.warn(COMMON_CLASS_NOT_FOUND, "", "", "No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly.", e);
             }
         }
     }
@@ -641,7 +642,7 @@ public class ConfigValidationUtils {
      * @param value    The Extension name
      */
     public static void checkMultiExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
-        checkMultiExtension(scopeModel,Collections.singletonList(type), property, value);
+        checkMultiExtension(scopeModel, Collections.singletonList(type), property, value);
     }
 
     public static void checkMultiExtension(ScopeModel scopeModel, List<Class<?>> types, String property, String value) {

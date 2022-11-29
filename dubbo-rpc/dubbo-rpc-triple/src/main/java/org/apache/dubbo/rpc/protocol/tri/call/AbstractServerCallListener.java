@@ -52,11 +52,11 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         RpcContext.restoreCancellationContext(cancellationContext);
         InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
             .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
-        RpcContext.getServerContext().setRemoteAddress(remoteAddress);
+        RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes()
             .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
-            RpcContext.getServerContext().setRemoteApplicationName(remoteApp);
+            RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
         }
         final long stInMillis = System.currentTimeMillis();
         try {
@@ -68,7 +68,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     return;
                 }
                 if (response.hasException()) {
-                    responseObserver.onError(response.getException());
+                    onReturn(response.getException());
                     return;
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;

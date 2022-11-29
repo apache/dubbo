@@ -68,6 +68,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -160,7 +161,7 @@ public class NacosRegistry extends FailbackRegistry {
                 urls.addAll(buildURLs(url, instances));
             }
             return urls;
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new RpcException("Failed to lookup " + url + " from nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -182,7 +183,7 @@ public class NacosRegistry extends FailbackRegistry {
             } else {
                 logger.info("Please set 'dubbo.registry.parameters.register-consumer-url=true' to turn on consumer url registration.");
             }
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new RpcException("Failed to register " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -196,7 +197,7 @@ public class NacosRegistry extends FailbackRegistry {
                 getUrl().getGroup(Constants.DEFAULT_GROUP),
                 instance.getIp()
                 , instance.getPort());
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new RpcException("Failed to unregister " + url + " to nacos " + getUrl() + ", cause: " + cause.getMessage(), cause);
         }
     }
@@ -533,7 +534,7 @@ public class NacosRegistry extends FailbackRegistry {
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
         List<URL> urls = buildURLs(consumerURL, instances);
         // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
-        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION)) {
             logger.warn(REGISTRY_NACOS_EXCEPTION, "", "", "Received empty url address list and empty protection is disabled, will clear current available addresses");
             URL empty = URLBuilder.from(consumerURL)
                 .setProtocol(EMPTY_PROTOCOL)

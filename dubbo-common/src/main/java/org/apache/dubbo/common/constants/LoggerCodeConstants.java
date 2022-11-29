@@ -154,7 +154,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
-    // cluster module
+    String REGISTRY_ROUTER_WAIT_LONG = "1-40";
+
+    // cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
     String CLUSTER_NO_VALID_PROVIDER = "2-2";
@@ -195,7 +197,7 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    // proxy module
+    // proxy module 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
@@ -324,6 +326,14 @@ public interface LoggerCodeConstants {
 
     String CONFIG_FILTER_VALIDATION_EXCEPTION = "5-36";
 
+    String CONFIG_ERROR_PROCESS_LISTENER = "5-37";
+
+    String CONFIG_UNDEFINED_ARGUMENT = "5-38";
+
+    String CONFIG_DUBBO_BEAN_INITIALIZER = "5-39";
+
+    String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
+
     // transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 
@@ -355,7 +365,7 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_SKIP_UNUSED_STREAM = "6-15";
 
-    String TRANSPORT_FAILED_RECONNECT = "6-3";
+    String TRANSPORT_FAILED_RECONNECT = "6-16";
 
     // qos plugin
     String QOS_PROFILER_DISABLED = "7-1";
@@ -371,7 +381,6 @@ public interface LoggerCodeConstants {
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
     // Internal unknown error.
-
     String INTERNAL_ERROR = "99-0";
 
     String INTERNAL_INTERRUPTED = "99-1";
