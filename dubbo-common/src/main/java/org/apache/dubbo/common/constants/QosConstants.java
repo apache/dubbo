@@ -30,6 +30,8 @@ public interface QosConstants {
 
     String ACCEPT_FOREIGN_IP = "qos.accept.foreign.ip";
 
+    String ACCEPT_FOREIGN_IP_WHITELIST = "qos.accept.foreign.ip.whitelist";
+
     String QOS_ENABLE_COMPATIBLE = "qos-enable";
 
     String QOS_HOST_COMPATIBLE = "qos-host";
@@ -37,4 +39,6 @@ public interface QosConstants {
     String QOS_PORT_COMPATIBLE = "qos-port";
 
     String ACCEPT_FOREIGN_IP_COMPATIBLE = "qos-accept-foreign-ip";
+
+    String ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE = "qos-accept-foreign-ip-whitelist";
 }
