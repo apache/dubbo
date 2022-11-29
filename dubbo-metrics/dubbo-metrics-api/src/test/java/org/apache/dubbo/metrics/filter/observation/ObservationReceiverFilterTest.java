@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.assertj.core.api.BDDAssertions;
 
@@ -68,7 +69,7 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
     }
 
     @Override
-    Filter createFilter(ApplicationModel applicationModel) {
+    ClusterFilter createFilter(ApplicationModel applicationModel) {
         ObservationReceiverFilter observationReceiverFilter = new ObservationReceiverFilter();
         observationReceiverFilter.setApplicationModel(applicationModel);
         return observationReceiverFilter;

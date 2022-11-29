@@ -21,8 +21,6 @@ import io.micrometer.observation.ObservationConvention;
 
 /**
  * {@link ObservationConvention} for a {@link DubboServerContext}.
- *
- * @author Marcin Grzejszczak
  */
 public interface DubboConsumerObservationConvention extends ObservationConvention<DubboServerContext> {
     @Override

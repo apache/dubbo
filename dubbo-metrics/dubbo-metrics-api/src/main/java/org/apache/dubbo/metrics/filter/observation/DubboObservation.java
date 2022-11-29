@@ -23,8 +23,6 @@ import io.micrometer.observation.docs.ObservationDocumentation;
 
 /**
  * Documentation of Dubbo observations.
- *
- * @author Marcin Grzejszczak
  */
 enum DubboObservation implements ObservationDocumentation {
 

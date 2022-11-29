@@ -23,6 +23,7 @@ import io.micrometer.tracing.test.simple.SpansAssert;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.assertj.core.api.BDDAssertions;
 
@@ -56,7 +57,7 @@ class ObservationSenderFilterTest extends AbstractObservationFilterTest {
     }
 
     @Override
-    Filter createFilter(ApplicationModel applicationModel) {
+    ClusterFilter createFilter(ApplicationModel applicationModel) {
         ObservationSenderFilter observationSenderFilter = new ObservationSenderFilter();
         observationSenderFilter.setApplicationModel(applicationModel);
         return observationSenderFilter;

@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -34,11 +35,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 /**
  * A {@link Filter} that creates an {@link Observation} around the incoming message.
- *
- * @author Marcin Grzejszczak
  */
 @Activate(group = PROVIDER, order = -1)
-public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
+public class ObservationReceiverFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
 
     private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
@@ -56,7 +55,7 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
             return invoker.invoke(invocation);
         }
         RpcContextAttachment context = RpcContext.getServerAttachment();
-        DubboServerContext receiverContext = new DubboServerContext(context, invoker, invocation);
+        DubboServerContext receiverContext = new DubboServerContext(invocation.getAttachments(), context, invoker, invocation);
         Observation observation = DubboObservation.SERVER.observation(this.consumerObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
         return observation.observe(() -> invoker.invoke(invocation));
     }

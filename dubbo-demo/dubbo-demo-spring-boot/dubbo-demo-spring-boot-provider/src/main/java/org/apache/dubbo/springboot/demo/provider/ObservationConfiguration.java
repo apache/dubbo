@@ -33,6 +33,7 @@ import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
 import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandler;
 import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
 import io.micrometer.tracing.handler.TracingAwareMeterObservationHandler;
+import io.micrometer.tracing.otel.bridge.ArrayListSpanProcessor;
 import io.micrometer.tracing.otel.bridge.OtelBaggageManager;
 import io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext;
 import io.micrometer.tracing.otel.bridge.OtelPropagator;
@@ -42,7 +43,6 @@ import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
 import io.micrometer.tracing.propagation.Propagator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporterBuilder;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -51,7 +51,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import zipkin2.reporter.urlconnection.URLConnectionSender;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -86,8 +85,7 @@ public class ObservationConfiguration {
 
     @Bean
     SpanExporter spanExporter() {
-        return new ZipkinSpanExporterBuilder()
-            .setSender(URLConnectionSender.create("http://localhost:9411/api/v2/spans")).build();
+        return new ArrayListSpanProcessor();
     }
 
     @Bean

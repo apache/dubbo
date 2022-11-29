@@ -20,8 +20,6 @@ import io.micrometer.common.KeyValues;
 
 /**
  * Default implementation of the {@link DubboConsumerObservationConvention}.
- *
- * @author Marcin Grzejszczak
  */
 public class DefaultDubboServerObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboConsumerObservationConvention {
 

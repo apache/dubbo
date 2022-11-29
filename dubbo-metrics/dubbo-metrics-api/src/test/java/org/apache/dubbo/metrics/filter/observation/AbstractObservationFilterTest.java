@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.junit.jupiter.api.AfterEach;
@@ -41,7 +42,7 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
     ApplicationModel applicationModel;
     RpcInvocation invocation;
 
-    Filter filter;
+    ClusterFilter filter;
 
     Invoker<?> invoker = mock(Invoker.class);
 
@@ -57,7 +58,7 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         }
     }
 
-    abstract Filter createFilter(ApplicationModel applicationModel);
+    abstract ClusterFilter createFilter(ApplicationModel applicationModel);
 
     void setupConfig() {
         ApplicationConfig config = new ApplicationConfig();
