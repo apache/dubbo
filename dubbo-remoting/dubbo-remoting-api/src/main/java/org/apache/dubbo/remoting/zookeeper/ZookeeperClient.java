@@ -110,7 +110,7 @@ public interface ZookeeperClient {
      * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
      * @param ticket origin content version, if current version is not the specified version, throw exception
      */
-    void createOrUpdate(String path, String content, boolean ephemeral, int ticket);
+    void createOrUpdate(String path, String content, boolean ephemeral, Integer ticket);
 
     /**
      * Obtain the content of a ZNode.
