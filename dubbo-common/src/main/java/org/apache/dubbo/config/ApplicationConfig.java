@@ -462,8 +462,8 @@ public class ApplicationConfig extends AbstractConfig {
         return qosAcceptForeignIpWhitelist;
     }
 
-    public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhiteList) {
-        this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhiteList;
+    public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhitelist) {
+        this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
     }
 
     public Map<String, String> getParameters() {

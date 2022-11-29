@@ -40,11 +40,11 @@ public class LocalHostPermitHandler extends ChannelHandlerAdapter {
     private String acceptForeignIpWhitelist;
     private Predicate<String> whitelistPredicate = foreignIp -> false;
 
-    public LocalHostPermitHandler(boolean acceptForeignIp, String foreignIpWhiteList) {
+    public LocalHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
         this.acceptForeignIp = acceptForeignIp;
-        this.acceptForeignIpWhitelist = foreignIpWhiteList;
-        if (StringUtils.isNotEmpty(foreignIpWhiteList)) {
-            whitelistPredicate = Arrays.stream(foreignIpWhiteList.split(";"))
+        this.acceptForeignIpWhitelist = foreignIpWhitelist;
+        if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
+            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(";"))
                 .map(String::trim)
                 .filter(StringUtils::isNotEmpty)
                 .map(item -> (Predicate<String>) (foreignIp) -> {

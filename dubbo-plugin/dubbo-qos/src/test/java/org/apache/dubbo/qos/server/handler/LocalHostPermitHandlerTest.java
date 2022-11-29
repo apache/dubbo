@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 
 class LocalHostPermitHandlerTest {
     @Test
-    void shouldShowIpNotPermitted_GivenAcceptForeignIpFalseAndEmptyWhiteList() throws Exception {
+    void shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
@@ -57,7 +57,7 @@ class LocalHostPermitHandlerTest {
     }
 
     @Test
-    void shouldShowIpNotPermitted_GivenAcceptForeignIpFalseAndInvalidWhiteList() throws Exception {
+    void shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndInvalidWhiteList() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
@@ -77,7 +77,7 @@ class LocalHostPermitHandlerTest {
     }
 
     @Test
-    void shouldNotShowIpNotPermitted_GivenAcceptForeignIpFalseAndValidWhiteList() throws Exception {
+    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndValidWhiteList() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
@@ -93,7 +93,7 @@ class LocalHostPermitHandlerTest {
     }
 
     @Test
-    void shouldNotShowIpNotPermitted_GivenAcceptForeignIpFalseAndValidWhiteListRegex() throws Exception {
+    void shouldNotShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndValidWhiteListRegex() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
