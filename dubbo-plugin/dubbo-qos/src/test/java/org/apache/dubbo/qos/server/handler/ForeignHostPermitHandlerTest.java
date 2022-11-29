@@ -36,7 +36,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class LocalHostPermitHandlerTest {
+class ForeignHostPermitHandlerTest {
     @Test
     void shouldShowIpNotPermittedMsg_GivenAcceptForeignIpFalseAndEmptyWhiteList() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
@@ -48,7 +48,7 @@ class LocalHostPermitHandlerTest {
         when(channel.remoteAddress()).thenReturn(address);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, StringUtils.EMPTY_STRING);
+        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, StringUtils.EMPTY_STRING);
         handler.handlerAdded(context);
         ArgumentCaptor<ByteBuf> captor = ArgumentCaptor.forClass(ByteBuf.class);
         verify(context).writeAndFlush(captor.capture());
@@ -68,7 +68,7 @@ class LocalHostPermitHandlerTest {
         when(channel.remoteAddress()).thenReturn(address);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1 ,  192.168.1.192/26");
+        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, "175.23.44.1 ,  192.168.1.192/26");
         handler.handlerAdded(context);
         ArgumentCaptor<ByteBuf> captor = ArgumentCaptor.forClass(ByteBuf.class);
         verify(context).writeAndFlush(captor.capture());
@@ -87,7 +87,7 @@ class LocalHostPermitHandlerTest {
         InetSocketAddress address = new InetSocketAddress(addr, 12345);
         when(channel.remoteAddress()).thenReturn(address);
 
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26  ");
+        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26  ");
         handler.handlerAdded(context);
         verify(context, never()).writeAndFlush(any());
     }
@@ -103,7 +103,7 @@ class LocalHostPermitHandlerTest {
         InetSocketAddress address = new InetSocketAddress(addr, 12345);
         when(channel.remoteAddress()).thenReturn(address);
 
-        LocalHostPermitHandler handler = new LocalHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26");
+        ForeignHostPermitHandler handler = new ForeignHostPermitHandler(false, "175.23.44.1, 192.168.1.192/26");
         handler.handlerAdded(context);
         verify(context, never()).writeAndFlush(any());
     }

@@ -21,7 +21,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerAdapter;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.dubbo.common.utils.CIDRUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.common.QosConstants;
 
@@ -31,7 +31,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-public class LocalHostPermitHandler extends ChannelHandlerAdapter {
+public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
 
     // true means to accept foreign IP
     private  boolean acceptForeignIp;
@@ -41,7 +41,7 @@ public class LocalHostPermitHandler extends ChannelHandlerAdapter {
     private String acceptForeignIpWhitelist;
     private Predicate<String> whitelistPredicate = foreignIp -> false;
 
-    public LocalHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
+    public ForeignHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
         this.acceptForeignIp = acceptForeignIp;
         this.acceptForeignIpWhitelist = foreignIpWhitelist;
         if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
@@ -53,7 +53,8 @@ public class LocalHostPermitHandler extends ChannelHandlerAdapter {
                         if (!item.contains("/")) {
                             return StringUtils.isEquals(item, foreignIp);
                         }
-                        return new CIDRUtils(item).isInRange(foreignIp);
+                        // hard code port to -1, support ip range from CIDR specification only
+                        return NetUtils.matchIpExpression(item, foreignIp, -1);
                     } catch (UnknownHostException ignore) {
                         // ignore illegal CIDR specification
                     }

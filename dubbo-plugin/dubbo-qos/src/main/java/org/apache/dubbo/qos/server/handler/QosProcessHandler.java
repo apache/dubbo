@@ -77,7 +77,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
         final int magic = in.getByte(in.readerIndex());
 
         ChannelPipeline p = ctx.pipeline();
-        p.addLast(new LocalHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));
+        p.addLast(new ForeignHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));
         if (isHttp(magic)) {
             // no welcome output for http protocol
             if (welcomeFuture != null && welcomeFuture.isCancellable()) {
