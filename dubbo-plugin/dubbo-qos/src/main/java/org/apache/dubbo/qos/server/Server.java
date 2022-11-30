@@ -52,6 +52,7 @@ public class Server {
     private int port;
 
     private boolean acceptForeignIp = true;
+    private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
 
     private EventLoopGroup boss;
 
@@ -97,7 +98,7 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp));
+                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp, acceptForeignIpWhitelist));
             }
         });
         try {
@@ -145,6 +146,10 @@ public class Server {
 
     public void setAcceptForeignIp(boolean acceptForeignIp) {
         this.acceptForeignIp = acceptForeignIp;
+    }
+
+    public void setAcceptForeignIpWhitelist(String acceptForeignIpWhitelist) {
+        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
     }
 
     public String getWelcome() {
