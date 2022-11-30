@@ -19,9 +19,6 @@ package org.apache.dubbo.spring.boot.actuate.mertics;
 
 import org.apache.dubbo.metrics.DubboMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.ApplicationListener;
 
 
 public class DubboMetricsBinder {
@@ -32,6 +29,5 @@ public class DubboMetricsBinder {
         this.meterRegistry = meterRegistry;
         dubboMetrics = new DubboMetrics();
         dubboMetrics.bindTo(meterRegistry);
-
     }
 }

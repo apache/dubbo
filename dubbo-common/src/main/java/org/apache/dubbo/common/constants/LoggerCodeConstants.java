@@ -71,9 +71,9 @@ public interface LoggerCodeConstants {
 
     String COMMON_FAILED_OVERRIDE_FIELD = "0-24";
 
-    String COMMON_FAILED_LOAD_MAPPING_CACHE = "0-24";
+    String COMMON_FAILED_LOAD_MAPPING_CACHE = "0-25";
 
-    String COMMON_METADATA_PROCESSOR = "0-25";
+    String COMMON_METADATA_PROCESSOR = "0-26";
 
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";

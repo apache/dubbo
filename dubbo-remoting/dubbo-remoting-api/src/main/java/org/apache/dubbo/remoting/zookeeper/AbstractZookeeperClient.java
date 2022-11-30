@@ -178,7 +178,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void createOrUpdate(String path, String content, boolean ephemeral, int version) {
+    public void createOrUpdate(String path, String content, boolean ephemeral, Integer version) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
             create(path.substring(0, i), false, true);
@@ -224,9 +224,9 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     protected abstract void createOrUpdateEphemeral(String path, String data);
 
-    protected abstract void createOrUpdatePersistent(String path, String data, int version);
+    protected abstract void createOrUpdatePersistent(String path, String data, Integer version);
 
-    protected abstract void createOrUpdateEphemeral(String path, String data, int version);
+    protected abstract void createOrUpdateEphemeral(String path, String data, Integer version);
 
     @Override
     public abstract boolean checkExists(String path);

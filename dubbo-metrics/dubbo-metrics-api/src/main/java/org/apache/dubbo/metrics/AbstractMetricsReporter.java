@@ -69,8 +69,6 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
     private static final int DEFAULT_SCHEDULE_PERIOD = 30;
 
-
-
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
         this.applicationModel = applicationModel;
@@ -80,7 +78,6 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     public void init() {
         if (initialized.compareAndSet(false, true)) {
             addJvmMetrics();
-
             initCollectors();
             scheduleMetricsCollectorSyncJob();
 

@@ -18,8 +18,6 @@
 package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.tomcat.TomcatMetrics;
-import org.apache.catalina.Manager;
 import org.apache.dubbo.metrics.DubboMetrics;
 import org.apache.dubbo.spring.boot.actuate.mertics.DubboMetricsBinder;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
