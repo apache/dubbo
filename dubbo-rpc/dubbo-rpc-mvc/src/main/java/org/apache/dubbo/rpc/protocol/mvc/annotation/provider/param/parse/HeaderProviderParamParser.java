@@ -24,10 +24,10 @@ public class HeaderProviderParamParser extends ProviderParamParser {
         if (Map.class.isAssignableFrom(argInfo.getParamType())) {
 
             Map<String, String> headerMap = new LinkedHashMap<>();
-            Enumeration<String> parameterNames = request.getParameterNames();
+            Enumeration<String> headerNames = request.getHeaderNames();
 
-            while (parameterNames.hasMoreElements()) {
-                String name = parameterNames.nextElement();
+            while (headerNames.hasMoreElements()) {
+                String name = headerNames.nextElement();
                 headerMap.put(name, request.getHeader(name));
             }
             parseContext.setValueByIndex(argInfo.getIndex(), headerMap);
