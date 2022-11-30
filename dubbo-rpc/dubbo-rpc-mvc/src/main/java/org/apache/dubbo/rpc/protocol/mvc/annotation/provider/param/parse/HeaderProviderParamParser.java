@@ -7,6 +7,8 @@ import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
 
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -19,6 +21,19 @@ public class HeaderProviderParamParser extends ProviderParamParser {
 
         //TODO MAP<String,String> convert
         ServletRequestFacade request = parseContext.getRequestFacade();
+        if (Map.class.isAssignableFrom(argInfo.getParamType())) {
+
+            Map<String, String> headerMap = new LinkedHashMap<>();
+            Enumeration<String> parameterNames = request.getParameterNames();
+
+            while (parameterNames.hasMoreElements()) {
+                String name = parameterNames.nextElement();
+                headerMap.put(name, request.getHeader(name));
+            }
+            parseContext.setValueByIndex(argInfo.getIndex(), headerMap);
+            return;
+
+        }
 
 
         String header = request.getHeader(argInfo.getAnnoNameAttribute());

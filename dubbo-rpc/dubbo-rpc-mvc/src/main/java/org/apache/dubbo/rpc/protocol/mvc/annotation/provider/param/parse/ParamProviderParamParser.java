@@ -8,8 +8,12 @@ import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
 
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
- *  Http Parameter param parse
+ * Http Parameter param parse
  */
 @Activate(value = RestConstant.PROVIDER_PARAM_PARSE)
 public class ParamProviderParamParser extends ProviderParamParser {
@@ -18,6 +22,20 @@ public class ParamProviderParamParser extends ProviderParamParser {
 
         //TODO MAP<String,String> convert
         ServletRequestFacade request = parseContext.getRequestFacade();
+
+        if (Map.class.isAssignableFrom(argInfo.getParamType())) {
+
+            Map<String, String> paramMap = new LinkedHashMap<>();
+            Enumeration<String> parameterNames = request.getParameterNames();
+
+            while (parameterNames.hasMoreElements()) {
+                String name = parameterNames.nextElement();
+                paramMap.put(name, request.getParameter(name));
+            }
+            parseContext.setValueByIndex(argInfo.getIndex(), paramMap);
+            return;
+
+        }
 
         String param = request.getParameter(argInfo.getAnnoNameAttribute());
 
