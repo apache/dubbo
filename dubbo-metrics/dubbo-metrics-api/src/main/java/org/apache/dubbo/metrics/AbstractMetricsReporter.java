@@ -57,6 +57,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetricsReporter.class);
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean addGlobalRegistry = new AtomicBoolean(false);
 
     protected final URL url;
     protected final List<MetricsCollector> collectors = new ArrayList<>();
@@ -68,6 +69,8 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
     private static final int DEFAULT_SCHEDULE_PERIOD = 30;
 
+
+
     protected AbstractMetricsReporter(URL url, ApplicationModel applicationModel) {
         this.url = url;
         this.applicationModel = applicationModel;
@@ -77,6 +80,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     public void init() {
         if (initialized.compareAndSet(false, true)) {
             addJvmMetrics();
+
             initCollectors();
             scheduleMetricsCollectorSyncJob();
 
@@ -91,8 +95,9 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
     private void addDubboMeterRegistry(){
         MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
-        if(globalRegistry != null){
+        if(globalRegistry != null && !addGlobalRegistry.get()){
             compositeRegistry.add(globalRegistry);
+            addGlobalRegistry.set(true);
         }
     }
 
@@ -122,6 +127,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
         collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
         collectorSyncJobExecutor.scheduleWithFixedDelay(() -> {
+            addDubboMeterRegistry();
             collectors.forEach(collector -> {
                 List<MetricSample> samples = collector.collect();
                 for (MetricSample sample : samples) {

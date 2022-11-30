@@ -24,23 +24,14 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 
 
-public class DubboMetricsBinder implements ApplicationListener<ApplicationStartedEvent>, DisposableBean {
+public class DubboMetricsBinder {
     private final MeterRegistry meterRegistry;
     private volatile DubboMetrics dubboMetrics;
 
     public DubboMetricsBinder(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-    }
+        dubboMetrics = new DubboMetrics();
+        dubboMetrics.bindTo(meterRegistry);
 
-
-    @Override
-    public void onApplicationEvent(ApplicationStartedEvent applicationStartedEvent) {
-         dubboMetrics = new DubboMetrics();
-         dubboMetrics.bindTo(meterRegistry);
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        dubboMetrics.destroy();
     }
 }
