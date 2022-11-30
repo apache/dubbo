@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -37,7 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
  * A {@link Filter} that creates an {@link Observation} around the incoming message.
  */
 @Activate(group = PROVIDER, order = -1)
-public class ObservationReceiverFilter implements ClusterFilter, BaseFilter.Listener, ScopeModelAware {
+public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 

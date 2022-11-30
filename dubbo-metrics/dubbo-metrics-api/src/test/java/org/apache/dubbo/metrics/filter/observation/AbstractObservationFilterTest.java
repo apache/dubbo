@@ -24,6 +24,7 @@ import io.micrometer.tracing.test.simple.SpansAssert;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -42,7 +43,7 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
     ApplicationModel applicationModel;
     RpcInvocation invocation;
 
-    ClusterFilter filter;
+    BaseFilter filter;
 
     Invoker<?> invoker = mock(Invoker.class);
 
@@ -58,7 +59,7 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         }
     }
 
-    abstract ClusterFilter createFilter(ApplicationModel applicationModel);
+    abstract BaseFilter createFilter(ApplicationModel applicationModel);
 
     void setupConfig() {
         ApplicationConfig config = new ApplicationConfig();

@@ -69,7 +69,7 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
     }
 
     @Override
-    ClusterFilter createFilter(ApplicationModel applicationModel) {
+    Filter createFilter(ApplicationModel applicationModel) {
         ObservationReceiverFilter observationReceiverFilter = new ObservationReceiverFilter();
         observationReceiverFilter.setApplicationModel(applicationModel);
         return observationReceiverFilter;
