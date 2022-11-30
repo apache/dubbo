@@ -76,47 +76,24 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     public abstract boolean isExistResource(Set<String> resourceNames);
 
     public abstract T getCacheResource(Set<String> resourceNames);
+
+    public abstract T triggerDeltaDiscoveryRequest(Set<String> resourceNames, XdsChannel xdsChannel, Consumer<T> consumer, boolean isObserver);
+
     @Override
     public T getResource(Set<String> resourceNames) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
             return getCacheResource(resourceNames);
-        }
-        // use future to get async result
-        CompletableFuture<T> future = new CompletableFuture<>();
-        // create observer
-        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future, null));
-        streamObserverList.add(requestObserver);
-        // send request to control panel
-        requestObserver.onNext(buildDiscoveryRequest(resourceNames));
-        try {
-            // get result
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error occur when request control panel.");
-            return null;
+        } else {
+            return triggerDeltaDiscoveryRequest(resourceNames, xdsChannel, null, false);
         }
     }
-
     @Override
     public void observeResource(Set<String> resourceNames, Consumer<T> consumer) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         consumer.accept(getResource(resourceNames));
-        // use future to get async result, future complete on StreamObserver onNext
-        CompletableFuture<T> future = new CompletableFuture<>();
-        StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future, consumer));
-        streamObserverList.add(requestObserver);
-        try {
-            if (!isExistResource(resourceNames)) {
-                // send request to control panel
-                Set<String> cacheResourceNames = getAllResouceNames();
-                resourceNames.addAll(cacheResourceNames);
-            }
-            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
-        } catch (Throwable t) {
-            logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
-        }
+        triggerDeltaDiscoveryRequest(resourceNames, xdsChannel, consumer, true);
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -139,7 +116,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected abstract T decodeDiscoveryResponse(DiscoveryResponse response);
 
-    private class ResponseObserver implements StreamObserver<DiscoveryResponse> {
+    protected class ResponseObserver implements StreamObserver<DiscoveryResponse> {
         @Override
         public boolean equals(Object o) {
             if (this == o) {

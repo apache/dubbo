@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -37,9 +39,12 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.HashSet;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.function.Consumer;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
@@ -77,6 +82,28 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
             resourceSet.add((String) resourcesMap.get(resourceName));
         }
         return new ListenerResult(resourceSet);
+    }
+
+    @Override
+    public ListenerResult triggerDeltaDiscoveryRequest(Set<String> resourceNames, XdsChannel xdsChannel, Consumer<ListenerResult> consumer, boolean isObserver) {
+        try {
+            CompletableFuture<ListenerResult> future = new CompletableFuture<>();
+            StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future, consumer));
+            if (isObserver && !isExistResource(resourceNames)) {
+                // send request to control panel
+                Set<String> cacheResourceNames = getAllResouceNames();
+                resourceNames.addAll(cacheResourceNames);
+            }
+            // send request to control panel
+            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error occur when request control panel.");
+            return null;
+        } catch (Throwable t) {
+            logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
+            return null;
+        }
     }
 
     public ListenerResult getListeners() {
