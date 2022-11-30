@@ -17,9 +17,14 @@ public abstract class ArgInfo {
     private Class paramAnno;
 
     /**
-     *  param Type
+     * param Type
      */
     private Class paramType;
+
+    /**
+     * url split("/") String[n]  index
+     */
+    private int urlSplitIndex;
 
     public ArgInfo(int index, String name, Class paramType) {
         this.index = index;
@@ -60,5 +65,14 @@ public abstract class ArgInfo {
 
     public void setParamType(Class paramType) {
         this.paramType = paramType;
+    }
+
+
+    public int getUrlSplitIndex() {
+        return urlSplitIndex;
+    }
+
+    public void setUrlSplitIndex(int urlSplitIndex) {
+        this.urlSplitIndex = urlSplitIndex;
     }
 }

@@ -90,5 +90,13 @@ public class ParseContext {
         this.request = request;
     }
 
+    public String getPathVariable(int urlSplitIndex) {
+
+        String[] split = getRequestFacade().getRequestURI().split("/");
+
+        return split[urlSplitIndex];
+
+    }
+
 
 }

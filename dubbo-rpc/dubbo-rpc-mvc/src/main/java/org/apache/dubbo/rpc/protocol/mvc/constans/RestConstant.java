@@ -1,6 +1,7 @@
 package org.apache.dubbo.rpc.protocol.mvc.constans;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.remoting.Constants;
 
 public interface RestConstant {
     String INTERFACE = CommonConstants.INTERFACE_KEY;
@@ -14,5 +15,11 @@ public interface RestConstant {
     String REMOTE_ADDR = "REMOTE_ADDR";
     String LOCAL_PORT = "LOCAL_PORT";
     String REMOTE_PORT = "REMOTE_PORT";
+    String SERIALIZATION_KEY = Constants.SERIALIZATION_KEY;
+    String PROVIDER_BODY_PARSE = "body";
+    String PROVIDER_PARAM_PARSE = "param";
+    String PROVIDER_HEADER_PARSE = "header";
+    String PROVIDER_PATH_PARSE = "path";
+    String PROVIDER_REQUEST_PARSE = "reuqest";
 
 }

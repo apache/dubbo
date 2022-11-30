@@ -1,13 +1,16 @@
 package org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse;
 
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamType;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
+import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 
 /**
- *   request or response param parse
+ * request or response param parse
  */
+@Activate(value = RestConstant.PROVIDER_REQUEST_PARSE)
 public class ReqAndResProviderParamParser extends ProviderParamParser {
     @Override
     protected void doParse(ParseContext parseContext, ArgInfo argInfo) {

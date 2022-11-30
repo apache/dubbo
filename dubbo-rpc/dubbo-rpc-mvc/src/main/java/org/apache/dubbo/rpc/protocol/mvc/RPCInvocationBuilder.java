@@ -1,4 +1,4 @@
-package org.apache.dubbo.rpc.protocol.mvc.annotation.provider;
+package org.apache.dubbo.rpc.protocol.mvc;
 
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
@@ -63,10 +63,6 @@ public class RPCInvocationBuilder {
         String PARAMETER_TYPES_DESC = request.getHeader(RestConstant.PARAMETER_TYPES_DESC);
         String PATH = request.getHeader(RestConstant.PATH);
         String VERSION = request.getHeader(RestConstant.VERSION);
-
-
-        // TODO add  args parse  (  ACCORDING  REST ANNOTATION )
-        rpcInvocation.setArguments(new Object[]{});
 
         rpcInvocation.setMethodName(METHOD);
         rpcInvocation.setAttachment(RestConstant.GROUP, GROUP);
