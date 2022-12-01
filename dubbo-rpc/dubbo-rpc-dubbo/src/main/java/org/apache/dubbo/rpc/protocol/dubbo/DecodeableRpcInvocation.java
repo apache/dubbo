@@ -111,7 +111,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     if (in instanceof Cleanable) {
                         ((Cleanable) in).cleanup();
                     }
-                    setObjectAttachment(TMP_OBJECT_INPUT, null);
+                    getObjectAttachments().remove(TMP_OBJECT_INPUT);
                 }
             }
         }
