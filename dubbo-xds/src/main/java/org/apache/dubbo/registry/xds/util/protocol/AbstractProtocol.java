@@ -51,13 +51,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected final Node node;
 
-    /**
-     * Store ADS Request Observer ( StreamObserver in Streaming Request )
-     * K - requestId, V - StreamObserver
-     */
-    private final List<StreamObserver<DiscoveryRequest>> streamObserverList = new ArrayList<>();
-
     private final int pollingTimeout;
+
+    private Consumer<T> consumer;
 
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
@@ -72,28 +68,22 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     public abstract String getTypeUrl();
 
-    public abstract Set<String> getAllResouceNames();
     public abstract boolean isExistResource(Set<String> resourceNames);
 
     public abstract T getCacheResource(Set<String> resourceNames);
 
-    public abstract T triggerDeltaDiscoveryRequest(Set<String> resourceNames, XdsChannel xdsChannel, Consumer<T> consumer, boolean isObserver);
-
+    public abstract StreamObserver<DiscoveryRequest> getStreamObserver();
     @Override
     public T getResource(Set<String> resourceNames) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
-        if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
-            return getCacheResource(resourceNames);
-        } else {
-            return triggerDeltaDiscoveryRequest(resourceNames, xdsChannel, null, false);
-        }
+        return getCacheResource(resourceNames);
     }
     @Override
     public void observeResource(Set<String> resourceNames, Consumer<T> consumer) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         consumer.accept(getResource(resourceNames));
-        triggerDeltaDiscoveryRequest(resourceNames, xdsChannel, consumer, true);
+        this.consumer = consumer;
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -117,50 +107,19 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     protected abstract T decodeDiscoveryResponse(DiscoveryResponse response);
 
     protected class ResponseObserver implements StreamObserver<DiscoveryResponse> {
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            ResponseObserver that = (ResponseObserver) o;
-            return Objects.equals(consumer, that.consumer);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(consumer);
-        }
-
-        private Consumer<T> consumer;
 
         private CompletableFuture<T> future;
-        public ResponseObserver(CompletableFuture<T> future, Consumer<T> consumer) {
-//            this.requestId = requestId;
+        public ResponseObserver(CompletableFuture<T> future) {
             this.future = future;
-            this.consumer = consumer;
         }
 
         @Override
         public void onNext(DiscoveryResponse value) {
             logger.info("receive notification from xds server, type: " + getTypeUrl());
             T result = decodeDiscoveryResponse(value);
-            StreamObserver<DiscoveryRequest> observer = null;
-            if (!streamObserverList.isEmpty()) {
-                observer = streamObserverList.remove(0);
-            }
-            if (observer == null) {
-                return;
-            }
-            if (consumer != null) {
-                observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
-                // get result
-                consumer.accept(result);
-            } else {
-                returnResult(result);
-            }
+            StreamObserver<DiscoveryRequest> observer = getStreamObserver();
+            observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
+            returnResult(result);
         }
 
         @Override
@@ -168,11 +127,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
             if (consumer != null) {
                 consumer.accept(null);
-//                streamResult.remove(this.requestId);
             } else {
                 returnResult(null);
             }
-            triggerReConnectTask(this.consumer);
+            triggerReConnectTask(consumer);
         }
 
         private void returnResult(T result) {

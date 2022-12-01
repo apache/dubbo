@@ -50,6 +50,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
+    private StreamObserver<DiscoveryRequest> requestObserver;
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         super(xdsChannel, node, pollingTimeout);
     }
@@ -60,10 +61,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     private HashMap<String, Object> resourcesMap = new HashMap<>();
-    @Override
-    public Set<String> getAllResouceNames() {
-        return resourcesMap.keySet();
-    }
 
     @Override
     public boolean isExistResource(Set<String> resourceNames) {
@@ -78,32 +75,29 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     @Override
     public ListenerResult getCacheResource(Set<String> resourceNames) {
         Set<String> resourceSet = new HashSet<>();
-        for (String resourceName : resourceNames) {
-            resourceSet.add((String) resourcesMap.get(resourceName));
+        if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
+            for (String resourceName : resourceNames) {
+                resourceSet.add((String) resourcesMap.get(resourceName));
+            }
+        } else {
+            CompletableFuture<ListenerResult> future = new CompletableFuture<>();
+            if (requestObserver == null) {
+                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
+            }
+            resourceNames.addAll(resourcesMap.keySet());
+            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
+            try {
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("Error occur when request control panel.");
+            }
         }
         return new ListenerResult(resourceSet);
     }
 
     @Override
-    public ListenerResult triggerDeltaDiscoveryRequest(Set<String> resourceNames, XdsChannel xdsChannel, Consumer<ListenerResult> consumer, boolean isObserver) {
-        try {
-            CompletableFuture<ListenerResult> future = new CompletableFuture<>();
-            StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future, consumer));
-            if (isObserver && !isExistResource(resourceNames)) {
-                // send request to control panel
-                Set<String> cacheResourceNames = getAllResouceNames();
-                resourceNames.addAll(cacheResourceNames);
-            }
-            // send request to control panel
-            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "Error occur when request control panel.");
-            return null;
-        } catch (Throwable t) {
-            logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
-            return null;
-        }
+    public StreamObserver<DiscoveryRequest> getStreamObserver() {
+        return requestObserver;
     }
 
     public ListenerResult getListeners() {

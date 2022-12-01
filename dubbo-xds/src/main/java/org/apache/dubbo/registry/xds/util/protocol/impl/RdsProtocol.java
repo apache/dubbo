@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
+import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 
 import com.google.protobuf.Any;
@@ -35,6 +38,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
@@ -42,6 +47,8 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
+
+    private StreamObserver<DiscoveryRequest> requestObserver;
 
     private HashMap<String, Object> resourcesMap = new HashMap<>();
 
@@ -52,10 +59,6 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     @Override
     public String getTypeUrl() {
         return "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
-    }
-    @Override
-    public Set<String> getAllResouceNames() {
-        return resourcesMap.keySet();
     }
 
     @Override
@@ -74,13 +77,32 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     @Override
     public RouteResult getCacheResource(Set<String> resourceNames) {
         Map<String, Set<String>> resultMap = new HashMap<>();
-        for (String resourceName : resourceNames) {
-            if ("".equals(resourceName)) {
-                continue;
+        if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
+            for (String resourceName : resourceNames) {
+                if ("".equals(resourceName)) {
+                    continue;
+                }
+                resultMap.putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
             }
-            resultMap.putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
+        } else {
+            CompletableFuture<RouteResult> future = new CompletableFuture<>();
+            if (requestObserver == null) {
+                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
+            }
+            resourceNames.addAll(resourcesMap.keySet());
+            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
+            try {
+                return future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                logger.error("Error occur when request control panel.");
+            }
         }
         return new RouteResult(resultMap);
+    }
+
+    @Override
+    public StreamObserver<DiscoveryRequest> getStreamObserver() {
+        return requestObserver;
     }
 
     @Override
