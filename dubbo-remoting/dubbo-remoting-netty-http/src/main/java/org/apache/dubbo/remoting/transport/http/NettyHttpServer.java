@@ -1,77 +1,60 @@
 package org.apache.dubbo.remoting.transport.http;
 
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.ServerSocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.util.concurrent.DefaultThreadFactory;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
+import io.netty.handler.timeout.IdleStateHandler;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory;
+import org.apache.dubbo.remoting.transport.netty4.NettyServer;
+import org.apache.dubbo.remoting.transport.netty4.NettyServerHandler;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslServerTlsHandler;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-
-
-public class NettyHttpServer {
-
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NettyHttpServer.class);
-
-    private EventLoopGroup boss;
-
-    private EventLoopGroup worker;
-
-    private final AtomicBoolean started = new AtomicBoolean();
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 
 
-  public void start() throws Exception {
-    if (!started.compareAndSet(false, true)) {
-      return;
+public class NettyHttpServer extends NettyServer {
+
+
+    public NettyHttpServer(URL url, ChannelHandler handler) throws RemotingException {
+        super(url, handler);
     }
-    boss = new NioEventLoopGroup(1, new DefaultThreadFactory("Dubbo-netty-http-server-boss", true));
-    worker = new NioEventLoopGroup(1, new DefaultThreadFactory("Dubbo-netty-http-server-worker", true));
-    ServerBootstrap serverBootstrap = new ServerBootstrap();
-    serverBootstrap.group(boss, worker);
-    serverBootstrap.channel(NioServerSocketChannel.class);
-    serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-    serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
-    serverBootstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-    serverBootstrap.handler(new ChannelInitializer<ServerSocketChannel>() {
-      @Override
-      protected void initChannel(ServerSocketChannel ch) throws Exception {
-        ChannelPipeline channelPipeline = ch.pipeline();
 
-        channelPipeline.addLast("exceptionOnInitChannelEventHandler", new ChannelInboundHandlerAdapter() {
-          @Override
-          public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            logger.warn("exception when accept new channel", cause);
-            super.exceptionCaught(ctx, cause);
-          }
-        });
-      }
-    });
-    serverBootstrap.childHandler(new ChannelInitializer<Channel>() {
+    @Override
+    protected void initServerBootstrap(NettyServerHandler nettyServerHandler) {
 
-      @Override
-      protected void initChannel(Channel ch) throws Exception {
-        ChannelPipeline pipeline = ch.pipeline();
-        pipeline.addLast(new HttpServerCodec());
-        pipeline.addLast(new HttpObjectAggregator(1048576));
-        pipeline.addLast(new HttpProcessHandler());
-      }
-    });
+        getServerBootstrap().group(getBossGroup(), getWorkerGroup())
+            .channel(NettyEventLoopFactory.serverSocketChannelClass())
+            .option(ChannelOption.SO_REUSEADDR, Boolean.TRUE)
+            .childOption(ChannelOption.TCP_NODELAY, Boolean.TRUE)
+            .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE)
+            .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            .childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                protected void initChannel(SocketChannel ch) throws Exception {
 
-    try {
-        int port = 2025;
-      serverBootstrap.bind(port).sync(); // TODO  dynamic port
-      logger.info("Dubbo-netty-http-server bind port : " + port);
-    } catch (Exception exception) {
-      logger.error("qos-server can not bind local port: " + 2025, exception);
+                    ChannelPipeline pipeline = ch.pipeline();
+                    int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
+
+                    if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+                        pipeline.addLast("negotiation", new SslServerTlsHandler(getUrl()));
+                    }
+                    pipeline.addLast("decoder",new HttpServerCodec()); // TODO
+                    pipeline.addLast("encoder",new HttpServerCodec()); // TODO
+                    pipeline.addLast("aggregator",new HttpObjectAggregator(1048576)); // TODO
+                    pipeline.addLast("netty-http-server-idle-handler",
+                        new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
+
+                    pipeline.addLast(new HttpProcessHandler()); // TODO
+                }
+            });
     }
-  }
-
-
 }
