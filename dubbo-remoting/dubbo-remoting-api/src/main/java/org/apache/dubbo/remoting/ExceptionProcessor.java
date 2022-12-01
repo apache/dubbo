@@ -47,7 +47,7 @@ public interface ExceptionProcessor {
      * <p>If exceptions are allowed and want to reprocess the request,
      * you can add custom content and throw a retry exception{@link RetryHandleException} so that decode will continue processing.
      * <p>Decode will not re-read the read content, so you need to save the decoded content, refer to default impl {snf}.
-     * <p>The number of times that decode will not handle exceptions will not exceed 2.
+     * <p>The number of times decode handle exceptions will not exceed 2.
      * <p>If decode still cannot process the request, the error message of retry exception will be returned eventually,
      * and the real reason that cannot be processed needs to be set instead of the literal exception information of retry.
      * @return custom return information,

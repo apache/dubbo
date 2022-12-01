@@ -95,14 +95,13 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         boolean finishDecode = false;
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
-                decode(channel, inputStream);
+                retryableDecode(channel, inputStream);
                 finishDecode = true;
             } catch (Throwable e) {
                 if (log.isWarnEnabled() && !(e instanceof ServiceNotFoundException)) {
                     log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
                 }
                 request.setBroken(true);
-                request.setData(e);
                 request.setError(e);
             } finally {
                 hasDecoded = true;
@@ -241,7 +240,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 pts = drawPts(path, version, desc, pts);
 
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
-                    if (!RpcUtils.isGenericOmnCall(desc, getMethodName()) && !RpcUtils.isGenericOmnCall(getMethodName(), getServiceName()) && !RpcUtils.isEcho(desc, getMethodName())) {
+                    if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isGenericOmnCall(getMethodName(), path) && !RpcUtils.isEcho(desc, getMethodName())) {
                         throw new ServiceNotFoundException("Service not found:" + path + ", " + getMethodName());
                     }
                     pts = ReflectUtils.desc2classArray(desc);

@@ -30,5 +30,4 @@ public class ServiceNotFoundException extends RuntimeException {
         super(message);
     }
 
-
 }
