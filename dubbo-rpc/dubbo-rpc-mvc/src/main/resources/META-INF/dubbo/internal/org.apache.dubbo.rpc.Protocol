@@ -1,1 +1,1 @@
-springmvc=org.apache.dubbo.rpc.protocol.grpc.GrpcProtocol
+springmvc=org.apache.dubbo.rpc.protocol.mvc.SpringMvcProtocol
