@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -32,8 +33,11 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
+import org.apache.dubbo.remoting.ExceptionProcessor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.net.InetSocketAddress;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
@@ -81,20 +85,34 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         Response res = new Response(req.getId(), req.getVersion());
         if (req.isBroken()) {
             Object data = req.getData();
-
+            Throwable error = req.getError();
             String msg;
+            boolean returnError = true;
+
             if (data == null) {
                 msg = null;
-            } else if (data instanceof Throwable) {
-                msg = StringUtils.toString((Throwable) data);
             } else {
                 msg = data.toString();
             }
-            res.setErrorMessage("Fail to decode request due to: " + msg);
-            res.setStatus(Response.BAD_REQUEST);
+            if (error != null) {
+                // Give ExceptionProcessors a chance to retry request handle or custom exception information.
+                String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get("exception.processor");
+                ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+                ExceptionProcessor expProcessor = exPs == null ? extensionLoader.getDefaultExtension() : extensionLoader.getOrDefaultExtension(exPs);
+                msg = StringUtils.toString(error);
+                returnError = expProcessor.shouldReturnError(error);
+                // If returnError is true, custom error message, return directly
+                // Or interrupt the error message, customize the process, process req, and continue to return normal information
+                msg = Optional.ofNullable(expProcessor.wrapAndHandleException(channel, req)).orElse(msg);
+            }
 
-            channel.send(res);
-            return;
+            if (returnError) {
+                res.setErrorMessage("Fail to decode request due to: " + msg);
+                res.setStatus(Response.BAD_REQUEST);
+
+                channel.send(res);
+                return;
+            }
         }
         // find handler by message class.
         Object msg = req.getData();

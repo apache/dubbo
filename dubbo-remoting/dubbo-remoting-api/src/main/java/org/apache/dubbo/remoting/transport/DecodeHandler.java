@@ -19,10 +19,7 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Decodeable;
-import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.*;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 
@@ -38,6 +35,23 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
+        doRecveived(message);
+
+        try {
+            handler.received(channel, message);
+        } catch (RetryHandleException e) {
+            // Retry only once
+            doRecveived(message);
+            if (message instanceof Request) {
+                ((Request) message).setBroken(false);
+            } else {
+                throw new RemotingException(channel, "Unknown error encountered when retry handle: " + e.getMessage());
+            }
+            handler.received(channel, message);
+        }
+    }
+
+    private void doRecveived(Object message) {
         if (message instanceof Decodeable) {
             decode(message);
         }
@@ -49,8 +63,6 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
         if (message instanceof Response) {
             decode(((Response) message).getResult());
         }
-
-        handler.received(channel, message);
     }
 
     private void decode(Object message) {
