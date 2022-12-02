@@ -30,7 +30,7 @@ public class FastJson2Impl extends AbstractJSONImpl {
         try {
             Class<?> aClass = ClassUtils.forName("com.alibaba.fastjson2.JSON");
             return aClass != null;
-        } catch (Throwable t) {
+        } catch (Exception t) {
             return false;
         }
     }

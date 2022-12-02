@@ -18,19 +18,20 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-public class DubboConfigAliasPostProcessorTest {
+class DubboConfigAliasPostProcessorTest {
 
     private static final String APP_NAME = "APP_NAME";
     private static final String APP_ID = "APP_ID";
 
     @Test
-    public void test() {
+    void test() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfigurationX.class);
         try {
             context.start();

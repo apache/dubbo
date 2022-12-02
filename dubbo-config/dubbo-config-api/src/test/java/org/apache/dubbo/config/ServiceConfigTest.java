@@ -37,7 +37,6 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -72,9 +71,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.withSettings;
 
-public class ServiceConfigTest {
+class ServiceConfigTest {
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
@@ -156,7 +156,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testExport() throws Exception {
+    void testExport() throws Exception {
         service.export();
 
         assertThat(service.getExportedUrls(), hasSize(1));
@@ -174,11 +174,12 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+        // export MetadataService and DemoService in "mockprotocol2" protocol.
+        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
     }
 
     @Test
-    public void testVersionAndGroupConfigFromProvider() {
+    void testVersionAndGroupConfigFromProvider() {
         //Service no configuration version , the Provider configured.
         service.getProvider().setVersion("1.0.0");
         service.getProvider().setGroup("groupA");
@@ -195,7 +196,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testProxy() throws Exception {
+    void testProxy() throws Exception {
         service2.export();
 
         assertThat(service2.getExportedUrls(), hasSize(1));
@@ -205,7 +206,7 @@ public class ServiceConfigTest {
 
 
     @Test
-    public void testDelayExport() throws Exception {
+    void testDelayExport() throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         delayService.addServiceListener(new ServiceListener() {
             @Override
@@ -226,12 +227,12 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testUnexport() throws Exception {
+    void testUnexport() throws Exception {
         System.setProperty(SHUTDOWN_WAIT_KEY, "0");
         try {
             service.export();
             service.unexport();
-            Thread.sleep(1000);
+//            Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
             System.clearProperty(SHUTDOWN_TIMEOUT_KEY);
@@ -239,7 +240,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testInterfaceClass() throws Exception {
+    void testInterfaceClass() throws Exception {
         ServiceConfig<Greeting> service = new ServiceConfig<>();
         service.setInterface(Greeting.class.getName());
         service.setRef(Mockito.mock(Greeting.class));
@@ -250,7 +251,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testInterface1() throws Exception {
+    void testInterface1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ServiceConfig<DemoService> service = new ServiceConfig<>();
             service.setInterface(DemoServiceImpl.class);
@@ -258,14 +259,14 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testInterface2() throws Exception {
+    void testInterface2() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         assertThat(service.getInterface(), equalTo(DemoService.class.getName()));
     }
 
     @Test
-    public void testProvider() throws Exception {
+    void testProvider() throws Exception {
         ServiceConfig service = new ServiceConfig();
         ProviderConfig provider = new ProviderConfig();
         service.setProvider(provider);
@@ -273,7 +274,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testGeneric1() throws Exception {
+    void testGeneric1() throws Exception {
         ServiceConfig service = new ServiceConfig();
         service.setGeneric(GENERIC_SERIALIZATION_DEFAULT);
         assertThat(service.getGeneric(), equalTo(GENERIC_SERIALIZATION_DEFAULT));
@@ -284,7 +285,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testGeneric2() throws Exception {
+    void testGeneric2() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig service = new ServiceConfig();
             service.setGeneric("illegal");
@@ -292,14 +293,14 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testApplicationInUrl() {
+    void testApplicationInUrl() {
         service.export();
         assertNotNull(service.toUrl().getApplication());
         Assertions.assertEquals("app", service.toUrl().getApplication());
     }
 
     @Test
-    public void testMetaData() {
+    void testMetaData() {
         // test new instance
         ServiceConfig config = new ServiceConfig();
         Map<String, String> metaData = config.getMetaData();
@@ -320,7 +321,7 @@ public class ServiceConfigTest {
 
 
     @Test
-    public void testExportWithoutRegistryConfig() {
+    void testExportWithoutRegistryConfig() {
         serviceWithoutRegistryConfig.export();
 
         assertThat(serviceWithoutRegistryConfig.getExportedUrls(), hasSize(1));
@@ -338,11 +339,12 @@ public class ServiceConfigTest {
         assertThat(url.getParameters(), hasKey(METHODS_KEY));
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
-        Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+        // export MetadataService and DemoService in "mockprotocol2" protocol.
+        Mockito.verify(protocolDelegate, times(2)).export(Mockito.any(Invoker.class));
     }
 
     @Test
-    public void testServiceListener() {
+    void testServiceListener() {
         ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
         MockServiceListener mockServiceListener = (MockServiceListener) extensionLoader.getExtension("mock");
         assertNotNull(mockServiceListener);
@@ -358,7 +360,7 @@ public class ServiceConfigTest {
 
 
     @Test
-    public void testMethodConfigWithInvalidArgumentConfig() {
+    void testMethodConfigWithInvalidArgumentConfig() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -381,7 +383,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithConfiguredArgumentTypeAndIndex() {
+    void testMethodConfigWithConfiguredArgumentTypeAndIndex() {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
         service.setInterface(DemoService.class);
@@ -407,7 +409,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithConfiguredArgumentIndex() {
+    void testMethodConfigWithConfiguredArgumentIndex() {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
         service.setInterface(DemoService.class);
@@ -432,7 +434,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithConfiguredArgumentType() {
+    void testMethodConfigWithConfiguredArgumentType() {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
         service.setInterface(DemoService.class);
@@ -457,7 +459,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithUnknownArgumentType() {
+    void testMethodConfigWithUnknownArgumentType() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -481,7 +483,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithUnmatchedArgument() {
+    void testMethodConfigWithUnmatchedArgument() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 
@@ -505,7 +507,7 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testMethodConfigWithInvalidArgumentIndex() {
+    void testMethodConfigWithInvalidArgumentIndex() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
 

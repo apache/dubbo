@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class StringToTransferQueueConverterTest {
+class StringToTransferQueueConverterTest {
 
     private MultiValueConverter converter;
 
@@ -60,7 +60,7 @@ public class StringToTransferQueueConverterTest {
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
 
         assertFalse(converter.accept(String.class, Collection.class));
 
@@ -88,7 +88,7 @@ public class StringToTransferQueueConverterTest {
     }
 
     @Test
-    public void testConvert() {
+    void testConvert() {
 
         TransferQueue values = new LinkedTransferQueue(asList(1, 2, 3));
 
@@ -109,12 +109,12 @@ public class StringToTransferQueueConverterTest {
     }
 
     @Test
-    public void testGetSourceType() {
+    void testGetSourceType() {
         assertEquals(String.class, converter.getSourceType());
     }
 
     @Test
-    public void testGetPriority() {
+    void testGetPriority() {
         assertEquals(Integer.MAX_VALUE - 4, converter.getPriority());
     }
 }

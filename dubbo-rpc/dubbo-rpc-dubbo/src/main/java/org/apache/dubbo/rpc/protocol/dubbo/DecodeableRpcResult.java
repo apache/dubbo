@@ -32,7 +32,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
@@ -151,15 +150,10 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleValue(ObjectInput in) throws IOException {
         try {
-            Type[] returnTypes;
-            if (invocation instanceof RpcInvocation) {
-                returnTypes = ((RpcInvocation) invocation).getReturnTypes();
-            } else {
-                returnTypes = RpcUtils.getReturnTypes(invocation);
-            }
+            Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
             Object value;
             if (ArrayUtils.isEmpty(returnTypes)) {
-                // This almost never happens?
+                // happens when generic invoke or void return
                 value = in.readObject();
             } else if (returnTypes.length == 1) {
                 value = in.readObject((Class<?>) returnTypes[0]);

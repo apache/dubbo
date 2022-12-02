@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TriplePathResolverTest {
+class TriplePathResolverTest {
 
     private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(
             PathResolver.class)
@@ -75,19 +75,19 @@ public class TriplePathResolverTest {
     }
 
     @Test
-    public void testResolve() {
+    void testResolve() {
         Assertions.assertEquals(INVOKER, getInvokerByPath("/abc"));
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         Assertions.assertEquals(INVOKER, getInvokerByPath("/abc"));
         PATH_RESOLVER.remove("/abc");
         Assertions.assertNull(getInvokerByPath("/abc"));
     }
 
     @Test
-    public void testNative() {
+    void testNative() {
         String path = "path";
         Assertions.assertFalse(PATH_RESOLVER.hasNativeStub(path));
         PATH_RESOLVER.addNativeStub(path);
@@ -95,7 +95,7 @@ public class TriplePathResolverTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         Assertions.assertEquals(INVOKER, getInvokerByPath("/abc"));
         {
             PATH_RESOLVER.add("/bcd", INVOKER);

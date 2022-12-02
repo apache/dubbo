@@ -36,7 +36,7 @@ import java.io.IOException;
  *
  * @since 2.5.8
  */
-public class DubboConfigConfigurationTest {
+class DubboConfigConfigurationTest {
 
     private AnnotationConfigApplicationContext context;
 
@@ -56,7 +56,7 @@ public class DubboConfigConfigurationTest {
     }
 
     @Test
-    public void testSingle() throws IOException {
+    void testSingle() throws IOException {
 
         context.register(DubboConfigConfiguration.Single.class);
         context.refresh();
@@ -80,7 +80,7 @@ public class DubboConfigConfigurationTest {
     }
 
     @Test
-    public void testMultiple() {
+    void testMultiple() {
         context.register(DubboConfigConfiguration.Multiple.class);
         context.refresh();
 

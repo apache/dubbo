@@ -146,20 +146,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
-        destroyInternal(false);
-    }
-
-    @Override
-    public void destroyAll() {
-        destroyInternal(true);
-    }
-
-    /**
-     * when destroy unused invoker, closeAll should be true
-     *
-     * @param closeAll
-     */
-    private void destroyInternal(boolean closeAll) {
         // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
         // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be
         // closed.
@@ -176,11 +162,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 }
                 for (ExchangeClient client : clients) {
                     try {
-                        if (closeAll) {
-                            client.closeAll(serverShutdownTimeout);
-                        } else {
-                            client.close(serverShutdownTimeout);
-                        }
+                        client.close(serverShutdownTimeout);
                     } catch (Throwable t) {
                         logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
                     }
@@ -196,7 +178,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;
         if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
+            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), invocation, DEFAULT_TIMEOUT);
             if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
             }

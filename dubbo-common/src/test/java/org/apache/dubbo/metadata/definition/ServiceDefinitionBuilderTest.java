@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterAll;
@@ -34,7 +35,7 @@ import java.util.List;
 /**
  * 2018/11/6
  */
-public class ServiceDefinitionBuilderTest {
+class ServiceDefinitionBuilderTest {
 
 
     private static FrameworkModel frameworkModel;
@@ -51,7 +52,8 @@ public class ServiceDefinitionBuilderTest {
     }
 
     @Test
-    public void testBuilderComplexObject() {
+    void testBuilderComplexObject() {
+        TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         checkComplexObjectAsParam(fullServiceDefinition);
     }

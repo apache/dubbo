@@ -29,7 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Created by LinShunkang on 2020/03/12
  */
-public class URLStrParserTest {
+class URLStrParserTest {
     private static Set<String> testCases = new HashSet<>(16);
     private static Set<String> errorDecodedCases = new HashSet<>(8);
     private static Set<String> errorEncodedCases = new HashSet<>(8);
@@ -57,7 +57,7 @@ public class URLStrParserTest {
     }
 
     @Test
-    public void testEncoded() {
+    void testEncoded() {
         testCases.forEach(testCase -> {
             assertThat(URLStrParser.parseEncodedStr(URL.encode(testCase)), equalTo(URL.valueOf(testCase)));
         });
@@ -69,7 +69,7 @@ public class URLStrParserTest {
     }
 
     @Test
-    public void testDecoded() {
+    void testDecoded() {
         testCases.forEach(testCase -> {
             assertThat(URLStrParser.parseDecodedStr(testCase), equalTo(URL.valueOf(testCase)));
         });

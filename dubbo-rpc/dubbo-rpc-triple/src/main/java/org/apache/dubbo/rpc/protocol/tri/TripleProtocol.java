@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.remoting.api.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
@@ -58,7 +58,6 @@ public class TripleProtocol extends AbstractProtocol {
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
-    private final ConnectionManager connectionManager;
     private final String acceptEncodings;
 
     /**
@@ -79,8 +78,6 @@ public class TripleProtocol extends AbstractProtocol {
         Set<String> supported = frameworkModel.getExtensionLoader(DeCompressor.class)
             .getSupportedExtensions();
         this.acceptEncodings = String.join(",", supported);
-        this.connectionManager = frameworkModel.getExtensionLoader(ConnectionManager.class)
-            .getExtension("multiple");
     }
 
     @Override
@@ -132,8 +129,9 @@ public class TripleProtocol extends AbstractProtocol {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
             url.getOrDefaultApplicationModel(), url);
+        AbstractConnectionClient connectionClient = PortUnificationExchanger.connect(url, new DefaultPuHandler());
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
-            connectionManager, invokers, streamExecutor);
+            connectionClient, invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
     }

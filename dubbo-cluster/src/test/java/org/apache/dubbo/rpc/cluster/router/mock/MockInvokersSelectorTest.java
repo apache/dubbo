@@ -31,9 +31,9 @@ import java.util.List;
 
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
-public class MockInvokersSelectorTest {
+class MockInvokersSelectorTest {
     @Test
-    public void test() {
+    void test() {
 
         MockInvokersSelector selector = new MockInvokersSelector(URL.valueOf(""));
 

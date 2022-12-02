@@ -212,7 +212,7 @@ public class AccessLogFilter implements Filter {
             String now = fileNameFormatter.format(new Date());
             String last = fileNameFormatter.format(new Date(file.lastModified()));
             if (!now.equals(last)) {
-                File archive = new File(file.getAbsolutePath() + "." + last);
+                File archive = new File(file.getAbsolutePath() + "." + now);
                 file.renameTo(archive);
             }
         }

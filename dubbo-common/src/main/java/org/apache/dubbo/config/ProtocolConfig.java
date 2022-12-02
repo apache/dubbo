@@ -28,6 +28,7 @@ import java.util.Optional;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 
 /**
  * ProtocolConfig
@@ -603,7 +604,7 @@ public class ProtocolConfig extends AbstractConfig {
                 });
             }
         } catch (Exception e) {
-            logger.error("merge protocol config fail, error: ", e);
+            logger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "merge protocol config fail, error: ", e);
         }
     }
 

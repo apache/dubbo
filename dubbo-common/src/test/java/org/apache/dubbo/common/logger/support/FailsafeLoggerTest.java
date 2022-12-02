@@ -21,17 +21,18 @@ import org.apache.dubbo.common.logger.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class FailsafeLoggerTest {
+class FailsafeLoggerTest {
     @Test
-    public void testFailSafeForLoggingMethod() {
+    void testFailSafeForLoggingMethod() {
         Logger failLogger = mock(Logger.class);
-        FailsafeLogger failsafeLogger = new FailsafeLogger(failLogger);
+        FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
 
         doThrow(new RuntimeException()).when(failLogger).error(anyString());
         doThrow(new RuntimeException()).when(failLogger).warn(anyString());
@@ -39,8 +40,8 @@ public class FailsafeLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(anyString());
         doThrow(new RuntimeException()).when(failLogger).trace(anyString());
 
-        failsafeLogger.error("error");
-        failsafeLogger.warn("warn");
+        failsafeLogger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "error");
+        failsafeLogger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "warn");
         failsafeLogger.info("info");
         failsafeLogger.debug("debug");
         failsafeLogger.trace("info");
@@ -51,25 +52,25 @@ public class FailsafeLoggerTest {
         doThrow(new RuntimeException()).when(failLogger).debug(any(Throwable.class));
         doThrow(new RuntimeException()).when(failLogger).trace(any(Throwable.class));
 
-        failsafeLogger.error(new Exception("error"));
-        failsafeLogger.warn(new Exception("warn"));
+        failsafeLogger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "error", new Exception("error"));
+        failsafeLogger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "warn", new Exception("warn"));
         failsafeLogger.info(new Exception("info"));
         failsafeLogger.debug(new Exception("debug"));
         failsafeLogger.trace(new Exception("trace"));
 
-        failsafeLogger.error("error", new Exception("error"));
-        failsafeLogger.warn("warn", new Exception("warn"));
+        failsafeLogger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "error", new Exception("error"));
+        failsafeLogger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "warn", new Exception("warn"));
         failsafeLogger.info("info", new Exception("info"));
         failsafeLogger.debug("debug", new Exception("debug"));
         failsafeLogger.trace("trace", new Exception("trace"));
     }
 
     @Test
-    public void testSuccessLogger() {
+    void testSuccessLogger() {
         Logger successLogger = mock(Logger.class);
-        FailsafeLogger failsafeLogger = new FailsafeLogger(successLogger);
-        failsafeLogger.error("error");
-        failsafeLogger.warn("warn");
+        FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(successLogger);
+        failsafeLogger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "error");
+        failsafeLogger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "warn");
         failsafeLogger.info("info");
         failsafeLogger.debug("debug");
         failsafeLogger.trace("info");
@@ -80,24 +81,24 @@ public class FailsafeLoggerTest {
         verify(successLogger).debug(anyString());
         verify(successLogger).trace(anyString());
 
-        failsafeLogger.error(new Exception("error"));
-        failsafeLogger.warn(new Exception("warn"));
+        failsafeLogger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "error", new Exception("error"));
+        failsafeLogger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "warn", new Exception("warn"));
         failsafeLogger.info(new Exception("info"));
         failsafeLogger.debug(new Exception("debug"));
         failsafeLogger.trace(new Exception("trace"));
 
-        failsafeLogger.error("error", new Exception("error"));
-        failsafeLogger.warn("warn", new Exception("warn"));
+        failsafeLogger.error(COMMON_UNEXPECTED_EXCEPTION, "", "", "error", new Exception("error"));
+        failsafeLogger.warn(COMMON_UNEXPECTED_EXCEPTION, "", "", "warn", new Exception("warn"));
         failsafeLogger.info("info", new Exception("info"));
         failsafeLogger.debug("debug", new Exception("debug"));
         failsafeLogger.trace("trace", new Exception("trace"));
     }
 
     @Test
-    public void testGetLogger() {
+    void testGetLogger() {
         Assertions.assertThrows(RuntimeException.class, () -> {
             Logger failLogger = mock(Logger.class);
-            FailsafeLogger failsafeLogger = new FailsafeLogger(failLogger);
+            FailsafeErrorTypeAwareLogger failsafeLogger = new FailsafeErrorTypeAwareLogger(failLogger);
 
             doThrow(new RuntimeException()).when(failLogger).error(anyString());
             failsafeLogger.getLogger().error("should get error");

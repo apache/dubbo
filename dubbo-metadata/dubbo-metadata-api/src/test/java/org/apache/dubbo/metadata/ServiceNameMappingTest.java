@@ -42,12 +42,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 */
 /**
- * {@link ServiceNameMapping} Test
+ * {@link org.apache.dubbo.metadata.ServiceNameMapping} Test
  *
  * @since 2.7.8
  *//*
 
-public class ServiceNameMappingTest {
+class ServiceNameMappingTest {
 
     private static final URL BASE_URL = URL.valueOf("dubbo://127.0.0.1:20880");
 
@@ -83,7 +83,7 @@ public class ServiceNameMappingTest {
     }
 
     @Test
-    public void testDeprecatedMethods() {
+    void testDeprecatedMethods() {
         assertThrows(UnsupportedOperationException.class, () -> {
             serviceNameMapping.map(null, null, null, null);
         });
@@ -94,7 +94,7 @@ public class ServiceNameMappingTest {
     }
 
     @Test
-    public void testMap() {
+    void testMap() {
         String serviceInterface = ServiceNameMapping.class.getName();
         String key = applicationName;
         String group = buildGroup(serviceInterface, null, null, null);
@@ -104,7 +104,7 @@ public class ServiceNameMappingTest {
     }
 
     @Test
-    public void testGet() {
+    void testGet() {
         String serviceInterface = ServiceNameMapping.class.getName();
         URL url = BASE_URL.setServiceInterface(serviceInterface);
         serviceNameMapping.map(url);

@@ -40,7 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 
-public class MeshAppRuleListenerTest {
+class MeshAppRuleListenerTest {
 
     private final static String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
         "kind: DestinationRule\n" +
@@ -117,7 +117,7 @@ public class MeshAppRuleListenerTest {
         "  hosts: [demo]\n";
 
     @Test
-    public void testStandard() {
+    void testStandard() {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         StandardMeshRuleRouter standardMeshRuleRouter = Mockito.spy(new StandardMeshRuleRouter(URL.valueOf("")));
@@ -143,7 +143,7 @@ public class MeshAppRuleListenerTest {
     }
 
     @Test
-    public void register() {
+    void register() {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         StandardMeshRuleRouter standardMeshRuleRouter1 = Mockito.spy(new StandardMeshRuleRouter(URL.valueOf("")));
@@ -180,7 +180,7 @@ public class MeshAppRuleListenerTest {
     }
 
     @Test
-    public void unregister() {
+    void unregister() {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         StandardMeshRuleRouter standardMeshRuleRouter1 = Mockito.spy(new StandardMeshRuleRouter(URL.valueOf("")));
@@ -201,7 +201,7 @@ public class MeshAppRuleListenerTest {
     }
 
     @Test
-    public void process() {
+    void process() {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         StandardMeshRuleRouter standardMeshRuleRouter = Mockito.spy(new StandardMeshRuleRouter(URL.valueOf("")));
@@ -243,7 +243,7 @@ public class MeshAppRuleListenerTest {
     }
 
     @Test
-    public void testUnknownRule() {
+    void testUnknownRule() {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         StandardMeshRuleRouter standardMeshRuleRouter = Mockito.spy(new StandardMeshRuleRouter(URL.valueOf("")));
@@ -274,7 +274,7 @@ public class MeshAppRuleListenerTest {
     }
 
     @Test
-    public void testMultipleRule() {
+    void testMultipleRule() {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         AtomicInteger count = new AtomicInteger(0);

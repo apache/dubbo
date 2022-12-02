@@ -18,12 +18,13 @@
 package org.apache.dubbo.rpc.service;
 
 import org.apache.dubbo.common.utils.JsonUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class GenericExceptionTest {
+class GenericExceptionTest {
 
     @Test
     void jsonSupport() throws IOException {

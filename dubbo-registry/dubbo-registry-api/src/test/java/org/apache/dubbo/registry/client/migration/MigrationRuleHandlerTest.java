@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class MigrationRuleHandlerTest {
+class MigrationRuleHandlerTest {
     @Test
-    public void test() {
+    void test() {
         MigrationClusterInvoker invoker = Mockito.mock(MigrationClusterInvoker.class);
         URL url = Mockito.mock(URL.class);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("test");

@@ -40,7 +40,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-public class TraceTelnetHandlerTest {
+class TraceTelnetHandlerTest {
 
     private TelnetHandler handler;
     private Channel mockChannel;
@@ -63,7 +63,7 @@ public class TraceTelnetHandlerTest {
     }
 
     @Test
-    public void testTraceTelnetAddTracer() throws Exception {
+    void testTraceTelnetAddTracer() throws Exception {
         String method = "sayHello";
         String message = "org.apache.dubbo.qos.legacy.service.DemoService sayHello 1";
         Class<?> type = DemoService.class;

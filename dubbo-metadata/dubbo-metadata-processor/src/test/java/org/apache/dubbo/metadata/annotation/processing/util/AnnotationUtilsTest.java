@@ -56,7 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
+class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
 
     private TypeElement testType;
 
@@ -70,7 +70,7 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetAnnotation() {
+    void testGetAnnotation() {
         AnnotationMirror serviceAnnotation = getAnnotation(testType, Service.class);
         assertEquals("3.0.0", getAttribute(serviceAnnotation, "version"));
         assertEquals("test", getAttribute(serviceAnnotation, "group"));
@@ -90,7 +90,7 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetAnnotations() {
+    void testGetAnnotations() {
         List<AnnotationMirror> annotations = getAnnotations(testType);
         Iterator<AnnotationMirror> iterator = annotations.iterator();
 
@@ -129,7 +129,7 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetAllAnnotations() {
+    void testGetAllAnnotations() {
 
         List<AnnotationMirror> annotations = getAllAnnotations(testType);
         assertEquals(5, annotations.size());
@@ -172,7 +172,7 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
 
 
     @Test
-    public void testFindAnnotation() {
+    void testFindAnnotation() {
 
         assertEquals("org.apache.dubbo.config.annotation.Service", findAnnotation(testType, Service.class).getAnnotationType().toString());
         assertEquals("com.alibaba.dubbo.config.annotation.Service", findAnnotation(testType, com.alibaba.dubbo.config.annotation.Service.class).getAnnotationType().toString());
@@ -193,14 +193,14 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testFindMetaAnnotation() {
+    void testFindMetaAnnotation() {
         getAllDeclaredMethods(getType(TestService.class)).forEach(method -> {
             assertEquals("javax.ws.rs.HttpMethod", findMetaAnnotation(method, "javax.ws.rs.HttpMethod").getAnnotationType().toString());
         });
     }
 
     @Test
-    public void testGetAttribute() {
+    void testGetAttribute() {
         assertEquals("org.apache.dubbo.metadata.tools.TestService", getAttribute(findAnnotation(testType, Service.class), "interfaceName"));
         assertEquals("org.apache.dubbo.metadata.tools.TestService", getAttribute(findAnnotation(testType, Service.class).getElementValues(), "interfaceName"));
         assertEquals("/echo", getAttribute(findAnnotation(testType, Path.class), "value"));
@@ -217,13 +217,13 @@ public class AnnotationUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetValue() {
+    void testGetValue() {
         AnnotationMirror pathAnnotation = getAnnotation(getType(TestService.class), Path.class);
         assertEquals("/echo", getValue(pathAnnotation));
     }
 
     @Test
-    public void testIsAnnotationPresent() {
+    void testIsAnnotationPresent() {
         assertTrue(isAnnotationPresent(testType, "org.apache.dubbo.config.annotation.Service"));
         assertTrue(isAnnotationPresent(testType, "com.alibaba.dubbo.config.annotation.Service"));
         assertTrue(isAnnotationPresent(testType, "javax.ws.rs.Path"));

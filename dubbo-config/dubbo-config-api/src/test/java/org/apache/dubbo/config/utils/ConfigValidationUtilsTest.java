@@ -23,6 +23,7 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -32,6 +33,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CLASS_NOT_FOUND;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -39,11 +41,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 
-public class ConfigValidationUtilsTest {
+class ConfigValidationUtilsTest {
 
 
     @Test
-    public void checkMock1() {
+    void checkMock1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock("return {a, b}");
@@ -53,7 +55,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void checkMock2() {
+    void checkMock2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock1.class.getName());
@@ -62,7 +64,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void checkMock3() {
+    void checkMock3() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setMock(GreetingMock2.class.getName());
@@ -71,7 +73,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void testValidateMetadataConfig() {
+    void testValidateMetadataConfig() {
         MetadataReportConfig config = new MetadataReportConfig();
         config.setAddress("protocol://ip:host");
         try {
@@ -96,11 +98,11 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void testValidateApplicationConfig() throws Exception {
+    void testValidateApplicationConfig() throws Exception {
         try (MockedStatic<ConfigValidationUtils> mockedStatic = Mockito.mockStatic(ConfigValidationUtils.class);) {
             mockedStatic.when(() -> ConfigValidationUtils.validateApplicationConfig(any())).thenCallRealMethod();
             ApplicationConfig config = new ApplicationConfig();
-            Assertions.assertThrows(IllegalStateException.class,() -> {
+            Assertions.assertThrows(IllegalStateException.class, () -> {
                 ConfigValidationUtils.validateApplicationConfig(config);
             });
 
@@ -127,7 +129,7 @@ public class ConfigValidationUtilsTest {
     }
 
     @Test
-    public void testCheckQosInApplicationConfig() throws Exception {
+    void testCheckQosInApplicationConfig() throws Exception {
         ConfigValidationUtils mock = Mockito.mock(ConfigValidationUtils.class);
         ErrorTypeAwareLogger loggerMock = Mockito.mock(ErrorTypeAwareLogger.class);
         injectField(mock.getClass().getDeclaredField("logger"), loggerMock);
@@ -139,7 +141,7 @@ public class ConfigValidationUtilsTest {
 
         config.setQosEnable(true);
         mock.validateApplicationConfig(config);
-        verify(loggerMock).warn(eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), any());
+        verify(loggerMock).warn(eq(COMMON_CLASS_NOT_FOUND), eq(""), eq(""), eq("No QosProtocolWrapper class was found. Please check the dependency of dubbo-qos whether was imported correctly."), any());
     }
 
     private void injectField(Field field, Object newValue) throws Exception {

@@ -78,10 +78,22 @@ public class RpcUtils {
                 && invocation.getInvoker().getUrl() != null
                 && invocation.getInvoker().getInterface() != GenericService.class
                 && !invocation.getMethodName().startsWith("$")) {
+                Type[] returnTypes = null;
+                if (invocation instanceof RpcInvocation) {
+                    returnTypes = ((RpcInvocation) invocation).getReturnTypes();
+                    if (returnTypes != null) {
+                        return returnTypes;
+                    }
+                }
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
-                    return ReflectUtils.getReturnTypes(method);
+                    if (method != null) {
+                        returnTypes = ReflectUtils.getReturnTypes(method);
+                    }
+                }
+                if (returnTypes != null) {
+                    return returnTypes;
                 }
             }
         } catch (Throwable t) {
@@ -150,7 +162,7 @@ public class RpcUtils {
             }
             Class<?>[] parameterTypes = new Class<?>[types.length];
             for (int i = 0; i < types.length; i++) {
-                parameterTypes[i] = ReflectUtils.forName(types[0]);
+                parameterTypes[i] = ReflectUtils.forName(types[i]);
             }
             return parameterTypes;
         }
@@ -249,22 +261,17 @@ public class RpcUtils {
         return timeout;
     }
 
-    public static long getTimeout(URL url, String methodName, RpcContext context, long defaultTimeout) {
+    public static long getTimeout(URL url, String methodName, RpcContext context, Invocation invocation, long defaultTimeout) {
         long timeout = defaultTimeout;
-        Object genericTimeout = context.getObjectAttachment(TIMEOUT_KEY);
-        if (genericTimeout != null) {
-            timeout = convertToNumber(genericTimeout, defaultTimeout);
+        Object timeoutFromContext = context.getObjectAttachment(TIMEOUT_KEY);
+        Object timeoutFromInvocation = invocation.getObjectAttachment(TIMEOUT_KEY);
+
+        if (timeoutFromContext != null) {
+            timeout = convertToNumber(timeoutFromContext, defaultTimeout);
+        } else if (timeoutFromInvocation != null) {
+            timeout = convertToNumber(timeoutFromInvocation, defaultTimeout);
         } else if (url != null) {
             timeout = url.getMethodPositiveParameter(methodName, TIMEOUT_KEY, defaultTimeout);
-        }
-        return timeout;
-    }
-
-    public static long getTimeoutFromInvocation(Invocation invocation, long defaultTimeout) {
-        long timeout = defaultTimeout;
-        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_KEY);
-        if (genericTimeout != null) {
-            timeout = convertToNumber(genericTimeout, defaultTimeout);
         }
         return timeout;
     }

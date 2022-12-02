@@ -44,9 +44,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MethodConfigTest {
+class MethodConfigTest {
     @Test
-    public void testName() throws Exception {
+    void testName() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setName("hello");
         assertThat(method.getName(), equalTo("hello"));
@@ -56,42 +56,42 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testStat() throws Exception {
+    void testStat() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setStat(10);
         assertThat(method.getStat(), equalTo(10));
     }
 
     @Test
-    public void testRetry() throws Exception {
+    void testRetry() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setRetry(true);
         assertThat(method.isRetry(), is(true));
     }
 
     @Test
-    public void testReliable() throws Exception {
+    void testReliable() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setReliable(true);
         assertThat(method.isReliable(), is(true));
     }
 
     @Test
-    public void testExecutes() throws Exception {
+    void testExecutes() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setExecutes(10);
         assertThat(method.getExecutes(), equalTo(10));
     }
 
     @Test
-    public void testDeprecated() throws Exception {
+    void testDeprecated() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setDeprecated(true);
         assertThat(method.getDeprecated(), is(true));
     }
 
     @Test
-    public void testArguments() throws Exception {
+    void testArguments() throws Exception {
         MethodConfig method = new MethodConfig();
         ArgumentConfig argument = new ArgumentConfig();
         method.setArguments(Collections.singletonList(argument));
@@ -100,14 +100,14 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testSticky() throws Exception {
+    void testSticky() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setSticky(true);
         assertThat(method.getSticky(), is(true));
     }
 
     @Test
-    public void testConvertMethodConfig2AsyncInfo() throws Exception{
+    void testConvertMethodConfig2AsyncInfo() throws Exception{
         org.apache.dubbo.config.MethodConfig methodConfig = new org.apache.dubbo.config.MethodConfig();
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
@@ -131,7 +131,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOnreturnMethod() throws Exception {
+    void testOnreturnMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOnreturnMethod("on-return-method");
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
@@ -157,7 +157,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOnthrowMethod() throws Exception {
+    void testOnthrowMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOnthrowMethod("on-throw-method");
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
@@ -183,7 +183,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOninvokeMethod() throws Exception {
+    void testOninvokeMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
@@ -196,7 +196,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testReturn() throws Exception {
+    void testReturn() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));

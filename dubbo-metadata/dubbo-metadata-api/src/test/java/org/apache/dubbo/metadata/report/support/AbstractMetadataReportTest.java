@@ -40,15 +40,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AbstractMetadataReportTest {
+class AbstractMetadataReportTest {
 
     private NewMetadataReport abstractMetadataReport;
 
@@ -67,29 +71,32 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testGetProtocol() {
+    void testGetProtocol() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
         String protocol = abstractMetadataReport.getProtocol(url);
-        assertEquals(protocol, "provider");
+        assertEquals("provider", protocol);
 
         URL url2 = URL.valueOf("consumer://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         String protocol2 = abstractMetadataReport.getProtocol(url2);
-        assertEquals(protocol2, "consumer");
+        assertEquals("consumer", protocol2);
     }
 
     @Test
-    public void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderUsual() throws ClassNotFoundException, InterruptedException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) abstractMetadataReport.getReportCacheExecutor();
+
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
         MetadataIdentifier providerMetadataIdentifier = storeProvider(abstractMetadataReport, interfaceName, version, group, application);
-        Thread.sleep(1500);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
         Assertions.assertNotNull(abstractMetadataReport.store.get(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
-    public void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
+    void testStoreProviderSync() throws ClassNotFoundException, InterruptedException {
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
@@ -100,7 +107,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
+    void testFileExistAfterPut() throws InterruptedException, ClassNotFoundException {
         //just for one method
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
@@ -111,15 +118,18 @@ public class AbstractMetadataReportTest {
         String version = "1.0.0";
         String group = null;
         String application = "vic";
-        MetadataIdentifier providerMetadataIdentifier = storeProvider(singleMetadataReport, interfaceName, version, group, application);
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) singleMetadataReport.getReportCacheExecutor();
 
-        Thread.sleep(2000);
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
+        MetadataIdentifier providerMetadataIdentifier = storeProvider(singleMetadataReport, interfaceName, version, group, application);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
+
         assertTrue(singleMetadataReport.file.exists());
         assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
-    public void testRetry() throws InterruptedException, ClassNotFoundException {
+    void testRetry() throws InterruptedException, ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retry";
         String group = null;
@@ -134,21 +144,27 @@ public class AbstractMetadataReportTest {
         assertTrue(retryReport.failedReports.isEmpty());
 
 
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) retryReport.getReportCacheExecutor();
+        ScheduledThreadPoolExecutor retryExecutor = (ScheduledThreadPoolExecutor) retryReport.getMetadataReportRetry().getRetryExecutor();
+
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
+        long completedTaskCount2 = retryExecutor.getCompletedTaskCount();
         storeProvider(retryReport, interfaceName, version, group, application);
-        Thread.sleep(150);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
 
         assertTrue(retryReport.store.isEmpty());
         assertFalse(retryReport.failedReports.isEmpty());
         assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Thread.sleep(2000L);
-        assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
+
+        await().until(() -> retryExecutor.getCompletedTaskCount() > completedTaskCount2 + 2);
+        assertNotEquals(0, retryReport.metadataReportRetry.retryCounter.get());
         assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
         assertFalse(retryReport.store.isEmpty());
         assertTrue(retryReport.failedReports.isEmpty());
     }
 
     @Test
-    public void testRetryCancel() throws InterruptedException, ClassNotFoundException {
+    void testRetryCancel() throws InterruptedException, ClassNotFoundException {
         String interfaceName = "org.apache.dubbo.metadata.store.RetryTestService";
         String version = "1.0.0.retrycancel";
         String group = null;
@@ -158,14 +174,15 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 150L;
         retryReport.metadataReportRetry.retryTimesIfNonFail = 2;
 
+        ScheduledThreadPoolExecutor retryExecutor = (ScheduledThreadPoolExecutor) retryReport.getMetadataReportRetry().getRetryExecutor();
+        long completedTaskCount = retryExecutor.getCompletedTaskCount();
         storeProvider(retryReport, interfaceName, version, group, application);
 
         // Wait for the assignment of retryScheduledFuture to complete
-        while (retryReport.metadataReportRetry.retryScheduledFuture == null) {
-        }
+        await().until(() -> retryReport.metadataReportRetry.retryScheduledFuture != null);
         assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
-        Thread.sleep(1000L);
+        await().until(() -> retryExecutor.getCompletedTaskCount() > completedTaskCount + 2);
         assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
 
@@ -197,7 +214,8 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testPublishAll() throws ClassNotFoundException, InterruptedException {
+    void testPublishAll() throws ClassNotFoundException, InterruptedException {
+        ThreadPoolExecutor reportCacheExecutor = (ThreadPoolExecutor) abstractMetadataReport.getReportCacheExecutor();
 
         assertTrue(abstractMetadataReport.store.isEmpty());
         assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
@@ -205,34 +223,38 @@ public class AbstractMetadataReportTest {
         String version = "1.0.0";
         String group = null;
         String application = "vic";
+        long completedTaskCount1 = reportCacheExecutor.getCompletedTaskCount();
         MetadataIdentifier providerMetadataIdentifier1 = storeProvider(abstractMetadataReport, interfaceName, version, group, application);
-        Thread.sleep(1000);
-        assertEquals(abstractMetadataReport.allMetadataReports.size(), 1);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount1);
+        assertEquals(1, abstractMetadataReport.allMetadataReports.size());
         assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
 
+        long completedTaskCount2 = reportCacheExecutor.getCompletedTaskCount();
         MetadataIdentifier providerMetadataIdentifier2 = storeProvider(abstractMetadataReport, interfaceName, version + "_2", group + "_2", application);
-        Thread.sleep(1000);
-        assertEquals(abstractMetadataReport.allMetadataReports.size(), 2);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount2);
+        assertEquals(2, abstractMetadataReport.allMetadataReports.size());
         assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
         assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
 
         Map<String, String> tmpMap = new HashMap<>();
         tmpMap.put("testKey", "value");
+        long completedTaskCount3 = reportCacheExecutor.getCompletedTaskCount();
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractMetadataReport, interfaceName, version + "_3", group + "_3", application, tmpMap);
-        Thread.sleep(1000);
-        assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount3);
+        assertEquals(3, abstractMetadataReport.allMetadataReports.size());
 
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
-        assertEquals(tmpMapResult.get("testPKey"), "9090");
-        assertEquals(tmpMapResult.get("testKey"), "value");
+        assertEquals("9090", tmpMapResult.get("testPKey"));
+        assertEquals("value", tmpMapResult.get("testKey"));
         assertEquals(3, abstractMetadataReport.store.size());
 
         abstractMetadataReport.store.clear();
 
         assertEquals(0, abstractMetadataReport.store.size());
 
+        long completedTaskCount4 = reportCacheExecutor.getCompletedTaskCount();
         abstractMetadataReport.publishAll();
-        Thread.sleep(200);
+        await().until(() -> reportCacheExecutor.getCompletedTaskCount() > completedTaskCount4);
 
         assertEquals(3, abstractMetadataReport.store.size());
 
@@ -250,7 +272,7 @@ public class AbstractMetadataReportTest {
     }
 
     @Test
-    public void testCalculateStartTime() {
+    void testCalculateStartTime() {
         for (int i = 0; i < 300; i++) {
             long t = abstractMetadataReport.calculateStartTime() + System.currentTimeMillis();
             Calendar c = Calendar.getInstance();

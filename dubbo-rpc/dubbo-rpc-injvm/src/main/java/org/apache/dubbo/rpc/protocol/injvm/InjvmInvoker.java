@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -62,7 +63,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final String key;
 
-    private final Exporter<?> exporter;
+    private final Map<String, Exporter<?>> exporterMap;
 
     private final ExecutorRepository executorRepository;
 
@@ -70,10 +71,10 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final boolean shouldIgnoreSameModule;
 
-    InjvmInvoker(Class<T> type, URL url, String key, Exporter<?> exporter) {
+    InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
         this.key = key;
-        this.exporter = exporter;
+        this.exporterMap = exporterMap;
         this.executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
         this.paramDeepCopyUtil = url.getOrDefaultFrameworkModel().getExtensionLoader(ParamDeepCopyUtil.class)
             .getExtension(url.getParameter(CommonConstants.INJVM_COPY_UTIL_KEY, DefaultParamDeepCopyUtil.NAME));
@@ -82,6 +83,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public boolean isAvailable() {
+        InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
         if (exporter == null) {
             return false;
         } else {
@@ -91,6 +93,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
+        Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
@@ -280,7 +283,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;
         if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
+            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), invocation, DEFAULT_TIMEOUT);
             if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
             }

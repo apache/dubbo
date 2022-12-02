@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class MergeableClusterInvokerTest {
+class MergeableClusterInvokerTest {
 
     private Directory directory = mock(Directory.class);
     private Invoker firstInvoker = mock(Invoker.class);
@@ -102,7 +102,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testGetMenuSuccessfully() {
+    void testGetMenuSuccessfully() {
 
         // setup
         url = url.addParameter(MERGER_KEY, ".merge");
@@ -173,7 +173,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testAddMenu() {
+    void testAddMenu() {
 
         String menu = "first";
         List<String> menuItems = new ArrayList<String>() {
@@ -219,7 +219,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testAddMenu1() {
+    void testAddMenu1() {
 
         // setup
         url = url.addParameter(MERGER_KEY, ".merge");
@@ -284,7 +284,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testInvokerToNoInvokerAvailableException() {
+    void testInvokerToNoInvokerAvailableException() {
         String menu = "first";
         List<String> menuItems = new ArrayList<String>() {
             {
@@ -339,7 +339,7 @@ public class MergeableClusterInvokerTest {
      * test when network exception
      */
     @Test
-    public void testInvokerToException() {
+    void testInvokerToException() {
         String menu = "first";
         List<String> menuItems = new ArrayList<String>() {
             {
@@ -391,7 +391,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testGetMenuResultHasException() {
+    void testGetMenuResultHasException() {
 
         // setup
         url = url.addParameter(MERGER_KEY, ".merge");
@@ -437,7 +437,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testGetMenuWithMergerDefault() {
+    void testGetMenuWithMergerDefault() {
 
         // setup
         url = url.addParameter(MERGER_KEY, "default");
@@ -501,7 +501,7 @@ public class MergeableClusterInvokerTest {
     }
 
     @Test
-    public void testDestroy() {
+    void testDestroy() {
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});

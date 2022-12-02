@@ -58,7 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <code>ProxiesTest</code>
  */
 
-public class DubboProtocolTest {
+class DubboProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
@@ -74,7 +74,7 @@ public class DubboProtocolTest {
     }
 
     @Test
-    public void testDemoProtocol() throws Exception {
+    void testDemoProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
@@ -84,7 +84,7 @@ public class DubboProtocolTest {
     }
 
     @Test
-    public void testDubboProtocol() throws Exception {
+    void testDubboProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
@@ -158,7 +158,7 @@ public class DubboProtocolTest {
 //    }
 
     @Test
-    public void testDubboProtocolMultiService() throws Exception {
+    void testDubboProtocolMultiService() throws Exception {
 //        DemoService service = new DemoServiceImpl();
 //        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + DemoService.class.getName())));
 //        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:9010/" + DemoService.class.getName()).addParameter("timeout",
@@ -187,7 +187,7 @@ public class DubboProtocolTest {
     }
 
     @Test
-    public void testPerm() throws Exception {
+    void testPerm() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
@@ -232,7 +232,7 @@ public class DubboProtocolTest {
     }
 
     @Test
-    public void testRemoteApplicationName() throws Exception {
+    void testRemoteApplicationName() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
@@ -256,7 +256,7 @@ public class DubboProtocolTest {
     }
 
     @Test
-    public void testPayloadOverException() throws Exception {
+    void testPayloadOverException() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(service, DemoService.class,

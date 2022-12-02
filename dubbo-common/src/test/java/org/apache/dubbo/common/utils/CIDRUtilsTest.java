@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Test;
 
 import java.net.UnknownHostException;
 
-public class CIDRUtilsTest {
+class CIDRUtilsTest {
 
     @Test
-    public void testIpv4() throws UnknownHostException {
+    void testIpv4() throws UnknownHostException {
         CIDRUtils cidrUtils = new CIDRUtils("192.168.1.0/26");
         Assertions.assertTrue(cidrUtils.isInRange("192.168.1.63"));
         Assertions.assertFalse(cidrUtils.isInRange("192.168.1.65"));
@@ -35,7 +35,7 @@ public class CIDRUtilsTest {
     }
 
     @Test
-    public void testIpv6() throws UnknownHostException {
+    void testIpv6() throws UnknownHostException {
         CIDRUtils cidrUtils = new CIDRUtils("234e:0:4567::3d/64");
         Assertions.assertTrue(cidrUtils.isInRange("234e:0:4567::3e"));
         Assertions.assertTrue(cidrUtils.isInRange("234e:0:4567::ffff:3e"));

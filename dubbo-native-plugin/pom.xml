@@ -56,7 +56,7 @@
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo</artifactId>
+            <artifactId>dubbo-common</artifactId>
             <version>${project.version}</version>
         </dependency>
 
