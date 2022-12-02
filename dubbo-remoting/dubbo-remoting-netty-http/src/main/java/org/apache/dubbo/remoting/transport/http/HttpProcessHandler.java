@@ -13,7 +13,7 @@ public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest>
 
 
   @Override
-  public void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) throws Exception {
+  public void channelRead0(ChannelHandlerContext ctx, HttpRequest msg) {
 
 
   }
