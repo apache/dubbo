@@ -29,11 +29,9 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.FORKS_KEY;
@@ -83,26 +81,29 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
             RpcContext.getServiceContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
-            final BlockingQueue<Object> ref = new LinkedBlockingQueue<>(1);
-            for (final Invoker<T> invoker : selected) {
+            final CountDownLatch countDownLatch = new CountDownLatch(1);
+            AtomicReference<Object> result = new AtomicReference<>();
+            selected.forEach(invoker -> {
                 URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-                executor.execute(() -> {
-                    try {
-                        if (ref.size() > 0) {
-                            return;
-                        }
-                        Result result = invokeWithContextAsync(invoker, invocation, consumerUrl);
-                        ref.offer(result);
-                    } catch (Throwable e) {
+                CompletableFuture.<Object>supplyAsync(() -> {
+                    if (result.get() != null) {
+                        return null;
+                    }
+                    return invokeWithContextAsync(invoker, invocation, consumerUrl);
+                }, executor).whenComplete((v, t) -> {
+                    if (v != null && result.compareAndSet(null, v)) {
+                        countDownLatch.countDown();
+                    } else if (t != null) {
                         int value = count.incrementAndGet();
-                        if (value >= selected.size()) {
-                            ref.offer(e);
+                        if (value >= selected.size() && result.compareAndSet(null, t)) {
+                            countDownLatch.countDown();
                         }
                     }
                 });
-            }
+            });
             try {
-                Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
+                countDownLatch.await(timeout, TimeUnit.MILLISECONDS);
+                Object ret = result.get();
                 if (ret instanceof Throwable) {
                     Throwable e = (Throwable) ret;
                     throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : RpcException.UNKNOWN_EXCEPTION,
