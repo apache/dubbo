@@ -26,5 +26,5 @@ public interface RestConstant {
 
     String ADD_MUST_ATTTACHMENT = "must-intercept";
     String RPCCONTEXT_INTERCEPT = "rpc-context";
-    String SERIALIZE_INTERCEPT = "rpc-context";
+    String SERIALIZE_INTERCEPT = "serialize";
 }

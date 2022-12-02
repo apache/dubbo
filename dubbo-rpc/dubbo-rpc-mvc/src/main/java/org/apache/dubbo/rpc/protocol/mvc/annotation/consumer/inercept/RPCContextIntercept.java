@@ -11,7 +11,7 @@ import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 @Activate(RestConstant.RPCCONTEXT_INTERCEPT)
-public class RPCContextHttpConnectionIntercept implements HttpConnectionPreBuildIntercept {
+public class RPCContextIntercept implements HttpConnectionPreBuildIntercept {
 
 
     @Override
