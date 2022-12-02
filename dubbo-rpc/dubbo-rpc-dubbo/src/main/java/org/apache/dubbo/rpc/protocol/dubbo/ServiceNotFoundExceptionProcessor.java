@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
@@ -71,6 +72,8 @@ public class ServiceNotFoundExceptionProcessor implements ExceptionProcessor {
 
         invocation.setAttachment(ORIGIN_VERSION_KEY, invocation.getAttachment(VERSION_KEY));
         invocation.setAttachment(VERSION_KEY, DEFAULT_VERSION);
+
+        invocation.getObjectAttachments().remove(GROUP_KEY);
 
         invocation.setAttachment(ORIGIN_METHOD_KEY, invocation.getMethodName());
         if (RpcUtils.isReturnTypeFuture(invocation)) {

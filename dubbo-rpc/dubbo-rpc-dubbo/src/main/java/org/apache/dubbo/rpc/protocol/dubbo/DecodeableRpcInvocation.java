@@ -56,7 +56,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.common.constants.CommonConstants.TMP_OBJECT_INPUT;
-import static org.apache.dubbo.rpc.Constants.INTERFACE;
+import static org.apache.dubbo.common.constants.CommonConstants.ORIGIN_GROUP_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
@@ -253,16 +253,24 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             setAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, pts);
 
-            Map<String, Object> map = in.readAttachments();
-            if (CollectionUtils.isNotEmptyMap(map)) {
-                map.remove(PATH_KEY);
-                map.remove(VERSION_KEY);
-                map.remove(INTERFACE);
-                addObjectAttachments(map);
-            }
-
             //decode argument ,may be callback
             decodeArgument(channel, pts, args);
+
+            Map<String, Object> map = in.readAttachments();
+            if (CollectionUtils.isNotEmptyMap(map)) {
+                if (RpcUtils.isGenericOmnCall(getMethodName(), path)) {
+                    // Omn needs to use the default path, version and group,
+                    // and the original value starts with origin to save the variable
+                    map.remove(PATH_KEY);
+                    map.remove(VERSION_KEY);
+                    if (map.containsKey(GROUP_KEY)) {
+                        map.put(ORIGIN_GROUP_KEY, map.get(GROUP_KEY));
+                        map.remove(GROUP_KEY);
+                    }
+                }
+
+                addObjectAttachments(map);
+            }
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {

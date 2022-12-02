@@ -207,6 +207,9 @@ public interface CommonConstants {
 
     String GROUP_KEY = "group";
 
+    //save orgin group when service is omn
+    String ORIGIN_GROUP_KEY = "originGroup";
+
     String PATH_KEY = "path";
 
     String INTERFACE_KEY = "interface";
