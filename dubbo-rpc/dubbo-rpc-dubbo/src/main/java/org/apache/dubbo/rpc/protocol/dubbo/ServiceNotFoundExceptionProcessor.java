@@ -73,8 +73,6 @@ public class ServiceNotFoundExceptionProcessor implements ExceptionProcessor {
         invocation.setAttachment(ORIGIN_VERSION_KEY, invocation.getAttachment(VERSION_KEY));
         invocation.setAttachment(VERSION_KEY, DEFAULT_VERSION);
 
-        invocation.getObjectAttachments().remove(GROUP_KEY);
-
         invocation.setAttachment(ORIGIN_METHOD_KEY, invocation.getMethodName());
         if (RpcUtils.isReturnTypeFuture(invocation)) {
             invocation.setAttachment(METHOD_KEY, $INVOKE_ASYNC);
