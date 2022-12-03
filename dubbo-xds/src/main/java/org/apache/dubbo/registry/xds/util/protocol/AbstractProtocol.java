@@ -126,7 +126,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             } else {
                 returnResult(null);
             }
-            triggerReConnectTask(tConsumer);
+//            triggerReConnectTask(tConsumer);
         }
 
         private void returnResult(T result) {
