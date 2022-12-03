@@ -50,6 +50,8 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
     private StreamObserver<DiscoveryRequest> requestObserver;
+
+    private CompletableFuture<ListenerResult> future;
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         super(xdsChannel, node, pollingTimeout);
     }
@@ -79,8 +81,8 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
                 resourceSet.add((String) resourcesMap.get(resourceName));
             }
         } else {
-            CompletableFuture<ListenerResult> future = new CompletableFuture<>();
             if (requestObserver == null) {
+                future = new CompletableFuture<>();
                 requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
             }
             resourceNames.addAll(resourcesMap.keySet());

@@ -49,7 +49,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int pollingTimeout;
 
-    private Consumer<T> consumer;
+    private Consumer<T> tConsumer;
 
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
@@ -79,7 +79,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         consumer.accept(getResource(resourceNames));
-        this.consumer = consumer;
+        this.tConsumer = consumer;
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -121,12 +121,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
-            if (consumer != null) {
-                consumer.accept(null);
+            if (tConsumer != null) {
+                tConsumer.accept(null);
             } else {
                 returnResult(null);
             }
-            triggerReConnectTask(consumer);
+            triggerReConnectTask(tConsumer);
         }
 
         private void returnResult(T result) {
