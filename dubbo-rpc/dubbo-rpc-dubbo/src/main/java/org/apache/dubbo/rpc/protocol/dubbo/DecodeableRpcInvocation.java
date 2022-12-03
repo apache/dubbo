@@ -253,9 +253,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             setAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, pts);
 
-            //decode argument ,may be callback
-            decodeArgument(channel, pts, args);
-
             Map<String, Object> map = in.readAttachments();
             if (CollectionUtils.isNotEmptyMap(map)) {
                 if (RpcUtils.isGenericOmnCall(getMethodName(), path)) {
@@ -271,6 +268,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
                 addObjectAttachments(map);
             }
+
+            //decode argument ,may be callback
+            decodeArgument(channel, pts, args);
+
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
