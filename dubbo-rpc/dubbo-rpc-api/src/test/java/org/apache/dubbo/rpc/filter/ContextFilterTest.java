@@ -40,7 +40,7 @@ import static org.mockito.Mockito.mock;
  */
 class ContextFilterTest {
 
-    Filter contextFilter = new ContextFilter(ApplicationModel.defaultModel());
+    Filter contextFilter = new ContextFilter();
     Invoker<DemoService> invoker;
     Invocation invocation;
 
