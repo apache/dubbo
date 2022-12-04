@@ -109,7 +109,6 @@ public class TripleProtocol extends AbstractProtocol {
         invokers.add(invoker);
 
         pathResolver.add(url.getServiceKey(), invoker);
-        pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
 
         // set service status
         triBuiltinService.getHealthStatusManager()
