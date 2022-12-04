@@ -1,12 +1,12 @@
 package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamParserManager;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
-import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.mvc.request.RequestFacadeFactory;
-import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ArgInfo;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ParseContext;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
+import org.apache.dubbo.rpc.protocol.rest.request.ServletRequestFacade;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -8,10 +8,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.remoting.transport.CodecSupport;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.HttpConnectionCreateContext;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.HttpConnectionPreBuildIntercept;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.RequestTemplate;
-import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.io.IOException;
 

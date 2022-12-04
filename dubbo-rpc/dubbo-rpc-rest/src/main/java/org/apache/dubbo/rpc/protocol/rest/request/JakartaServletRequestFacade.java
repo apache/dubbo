@@ -1,5 +1,10 @@
 package org.apache.dubbo.rpc.protocol.rest.request;
 
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -259,7 +264,7 @@ public class JakartaServletRequestFacade extends ServletRequestFacade<HttpServle
 
 
     public RequestDispatcher getRequestDispatcher(String path) {
-        return getRequestDispatcher(path);
+        return request.getRequestDispatcher(path);
     }
 
 

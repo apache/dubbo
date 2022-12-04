@@ -1,6 +1,6 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
 
-import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.io.Serializable;
 import java.util.*;

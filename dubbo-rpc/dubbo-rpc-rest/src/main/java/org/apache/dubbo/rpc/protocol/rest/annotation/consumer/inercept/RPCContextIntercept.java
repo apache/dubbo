@@ -3,10 +3,10 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.HttpConnectionCreateContext;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.HttpConnectionPreBuildIntercept;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.RequestTemplate;
-import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;

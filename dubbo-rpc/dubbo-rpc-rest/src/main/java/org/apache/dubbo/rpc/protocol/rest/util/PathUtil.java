@@ -1,7 +1,7 @@
 package org.apache.dubbo.rpc.protocol.rest.util;
 
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamType;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ArgInfo;
+import org.apache.dubbo.rpc.protocol.rest.annotation.ParamType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
