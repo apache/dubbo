@@ -1,0 +1,5 @@
+body=org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse.BodyProviderParamParser
+header=org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse.HeaderProviderParamParser
+path=org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse.PathProviderParamParser
+param=org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse.ParamProviderParamParser
+request=org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse.ReqAndResProviderParamParser

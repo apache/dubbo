@@ -1,0 +1,3 @@
+must-intercept=org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.inercept.AddMustAttachmentIntercept
+rpc-context=org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.inercept.RPCContextIntercept
+serialize=org.apache.dubbo.rpc.protocol.mvc.annotation.consumer.inercept.SerializeBodyIntercept
