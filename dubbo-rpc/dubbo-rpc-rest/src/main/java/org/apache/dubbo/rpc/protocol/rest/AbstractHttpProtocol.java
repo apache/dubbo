@@ -96,7 +96,7 @@ public abstract class AbstractHttpProtocol extends AbstractProxyProtocol {
         return referenceCountedClient;
     }
 
-
+    // TODO should support netty ?
     protected CloseableHttpClient createPoolClient(URL url) {
 
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
