@@ -23,21 +23,15 @@ import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 import org.jboss.resteasy.util.GetRestful;
 
 import javax.servlet.ServletContext;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocol extends AbstractHttpProtocol {
 
@@ -105,13 +99,13 @@ public class RestProtocol extends AbstractHttpProtocol {
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 
         // create http invoker.
-        HttpInvoker<T> invoker = new HttpInvoker<>(type, url, getInvoker(type,url));
+        HttpInvoker<T> invoker = new HttpInvoker<>(type, url, getTarget(type,url));
         invokers.add(invoker);
 
         return invoker;
     }
 
-    private <T> Invoker<T> getInvoker(final Class<T> type, final URL url) {
+    private <T> Invoker<T> getTarget(final Class<T> type, final URL url) {
 
         ReferenceCountedClient referenceCountedClient = getOrCreatePoolClient(url);
 
