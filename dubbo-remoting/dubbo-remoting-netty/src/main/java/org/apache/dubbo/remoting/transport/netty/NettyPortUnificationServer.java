@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -30,12 +29,14 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,10 +44,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 
@@ -65,7 +67,7 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
 
 
     public NettyPortUnificationServer(URL url, ChannelHandler handler) throws RemotingException {
-        super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
+        super(url, ChannelHandlers.wrap(handler, url));
     }
 
     @Override

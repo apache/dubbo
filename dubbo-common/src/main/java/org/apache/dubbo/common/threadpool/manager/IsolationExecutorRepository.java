@@ -17,9 +17,9 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.executor.IsolationExecutorSupportFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ExecutorService;
 
@@ -45,13 +45,17 @@ public class IsolationExecutorRepository extends DefaultExecutorRepository {
 
     @Override
     protected String getProviderKey(URL url) {
-        return url.getServiceKey();
+        if (url.getAttributes().containsKey(SERVICE_EXECUTOR)) {
+            return url.getServiceKey();
+        } else {
+            return super.getProviderKey(url);
+        }
     }
 
     @Override
     protected ExecutorService createExecutor(URL url) {
         Object executor = url.getAttributes().get(SERVICE_EXECUTOR);
-        if (executor != null && executor instanceof ExecutorService) {
+        if (executor instanceof ExecutorService) {
             return (ExecutorService) executor;
         }
         return super.createExecutor(url);
