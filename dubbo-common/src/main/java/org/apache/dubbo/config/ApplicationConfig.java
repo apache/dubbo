@@ -21,6 +21,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROT
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_ENABLE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
@@ -130,6 +131,11 @@ public class ApplicationConfig extends AbstractConfig {
      * Directory for saving thread dump
      */
     private String dumpDirectory;
+
+    /**
+     * Whether to enable saving thread dump or not
+     */
+    private Boolean dumpEnable;
 
     /**
      * Whether to enable qos or not
@@ -375,6 +381,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setDumpDirectory(String dumpDirectory) {
         this.dumpDirectory = dumpDirectory;
+    }
+
+    @Parameter(key = DUMP_ENABLE)
+    public Boolean getDumpEnable() {
+        return dumpEnable;
+    }
+
+    public void setDumpEnable(Boolean dumpEnable) {
+        this.dumpEnable = dumpEnable;
     }
 
     @Parameter(key = QOS_ENABLE)
