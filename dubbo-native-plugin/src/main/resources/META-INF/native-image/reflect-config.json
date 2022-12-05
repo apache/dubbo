@@ -1107,7 +1107,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -1332,7 +1332,13 @@
   },
   {
     "name": "org.apache.dubbo.config.deploy.DefaultApplicationDeployer",
-    "allPublicConstructors": true
+    "allPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.config.deploy.DefaultModuleDeployer",
@@ -1481,7 +1487,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -2062,7 +2068,13 @@
   {
     "name": "org.apache.dubbo.rpc.cluster.filter.support.ConsumerContextFilter",
     "allPublicMethods": true,
-    "allPublicConstructors": true
+    "allPublicConstructors": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.cluster.filter.support.ZoneAwareFilter"
@@ -2346,9 +2358,6 @@
   },
   {
     "name": "org.apache.dubbo.rpc.filter.CompatibleFilter"
-  },
-  {
-    "name": "org.apache.dubbo.rpc.filter.ContextFilter"
   },
   {
     "name": "org.apache.dubbo.rpc.filter.DeprecatedFilter"
@@ -2671,5 +2680,97 @@
         "parameterTypes": []
       }
     ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.convert.ConverterUtil",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ModuleModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.context.ModuleConfigManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ModuleModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.store.support.SimpleDataStore",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.config.deploy.DefaultMetricsServiceExporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "com.alibaba.fastjson.JSON",
+    "allPublicMethods": true
+  },
+  {
+    "name": "java.util.Collections$UnmodifiableMap",
+    "allPublicMethods": true
+  },
+  {
+    "name": "java.util.Collections$UnmodifiableCollection",
+    "allPublicMethods": true
   }
 ]
