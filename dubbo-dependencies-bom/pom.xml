@@ -138,7 +138,7 @@
         <reactor.version>3.4.19</reactor.version>
 
         <rs_api_version>2.0</rs_api_version>
-        <resteasy_version>3.0.19.Final</resteasy_version>
+        <resteasy_version>3.0.20.Final</resteasy_version>
         <tomcat_embed_version>8.5.78</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
         <nacos_version>2.1.2</nacos_version>
