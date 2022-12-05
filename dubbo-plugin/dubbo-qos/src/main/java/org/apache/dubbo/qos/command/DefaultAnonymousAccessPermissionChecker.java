@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command.impl;
+package org.apache.dubbo.qos.command;
 
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.common.QosConstants;
 
-@Cmd(name = "quit", summary = "quit telnet console", requiredPermissionLevel = Cmd.PermissionLevel.PUBLIC)
-public class Quit implements BaseCommand {
+public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
+    public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
+
     @Override
-    public String execute(CommandContext commandContext, String[] args) {
-        return QosConstants.CLOSE;
+    public boolean access(CommandContext commandContext, Cmd.PermissionLevel defaultCmdRequiredPermissionLevel) {
+        return commandContext.hasPermission(defaultCmdRequiredPermissionLevel);
     }
 }

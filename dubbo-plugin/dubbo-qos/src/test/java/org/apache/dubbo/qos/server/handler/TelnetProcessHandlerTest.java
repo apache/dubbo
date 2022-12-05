@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.qos.server.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelFuture;
@@ -36,7 +37,7 @@ class TelnetProcessHandlerTest {
     @Test
     void testPrompt() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
+        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
         handler.channelRead0(context, "");
         verify(context).writeAndFlush(QosProcessHandler.PROMPT);
     }
@@ -44,7 +45,7 @@ class TelnetProcessHandlerTest {
     @Test
     void testBye() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
+        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush("BYE!\n")).thenReturn(future);
         handler.channelRead0(context, "quit");
@@ -54,7 +55,7 @@ class TelnetProcessHandlerTest {
     @Test
     void testUnknownCommand() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
+        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
         handler.channelRead0(context, "unknown");
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(context, Mockito.atLeastOnce()).writeAndFlush(captor.capture());
@@ -64,7 +65,7 @@ class TelnetProcessHandlerTest {
     @Test
     void testGreeting() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel());
+        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
         handler.channelRead0(context, "greeting");
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(context).writeAndFlush(captor.capture());

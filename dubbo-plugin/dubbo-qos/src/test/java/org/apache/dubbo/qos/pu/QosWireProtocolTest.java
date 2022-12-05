@@ -14,17 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.common.QosConstants;
+package org.apache.dubbo.qos.pu;
 
-@Cmd(name = "quit", summary = "quit telnet console", requiredPermissionLevel = Cmd.PermissionLevel.PUBLIC)
-public class Quit implements BaseCommand {
-    @Override
-    public String execute(CommandContext commandContext, String[] args) {
-        return QosConstants.CLOSE;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.pu.ChannelOperator;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import org.junit.jupiter.api.Test;
+
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+class QosWireProtocolTest {
+
+    @Test
+    void ShouldNotThrowExOnConfigServerProtocolHandler_GivenHappyPassConfig() {
+        final QosWireProtocol target = new QosWireProtocol(FrameworkModel.defaultModel());
+        final URL url = mock(URL.class);
+        final ChannelOperator channelOperator = mock(ChannelOperator.class);
+        target.configServerProtocolHandler(url, channelOperator);
+        verify(channelOperator).configChannelHandler(anyList());
+
     }
 }

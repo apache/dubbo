@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.common.QosConstants;
+import org.apache.dubbo.qos.server.QosConfiguration;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -34,18 +35,21 @@ import java.util.function.Predicate;
 public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
 
     // true means to accept foreign IP
-    private  boolean acceptForeignIp;
+    private final boolean acceptForeignIp;
 
     // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
     // support specific ip and an ip range from CIDR specification
-    private String acceptForeignIpWhitelist;
+    private final String acceptForeignIpWhitelist;
     private Predicate<String> whitelistPredicate = foreignIp -> false;
 
-    public ForeignHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
-        this.acceptForeignIp = acceptForeignIp;
-        this.acceptForeignIpWhitelist = foreignIpWhitelist;
-        if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
-            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
+    private final QosConfiguration qosConfiguration;
+
+    public ForeignHostPermitHandler(QosConfiguration qosConfiguration) {
+        this.qosConfiguration = qosConfiguration;
+        this.acceptForeignIp = qosConfiguration.isAcceptForeignIp();
+        this.acceptForeignIpWhitelist = qosConfiguration.getAcceptForeignIpWhitelist();
+        if (StringUtils.isNotEmpty(acceptForeignIpWhitelist)) {
+            whitelistPredicate = Arrays.stream(acceptForeignIpWhitelist.split(","))
                 .map(String::trim)
                 .filter(StringUtils::isNotEmpty)
                 .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
@@ -75,6 +79,11 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
 
         // the ip is in the whitelist, return
         if (checkForeignIpInWhiteList(inetAddress)) {
+            return;
+        }
+
+        // if allow anonymous access, return
+        if (qosConfiguration.isAllowAnonymousAccess()) {
             return;
         }
 

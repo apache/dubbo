@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "live", summary = "Judge if service is alive? ")
+@Cmd(name = "live", summary = "Judge if service is alive? ", requiredPermissionLevel = Cmd.PermissionLevel.PUBLIC)
 public class Live implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Live(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

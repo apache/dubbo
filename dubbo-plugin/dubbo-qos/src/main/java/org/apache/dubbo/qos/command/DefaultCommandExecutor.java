@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class DefaultCommandExecutor implements CommandExecutor {
@@ -26,7 +27,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
     }
 
     @Override
-    public String execute(CommandContext commandContext) throws NoSuchCommandException {
+    public String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException {
         BaseCommand command = null;
         try {
             command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
@@ -36,6 +37,19 @@ public class DefaultCommandExecutor implements CommandExecutor {
         if (command == null) {
             throw new NoSuchCommandException(commandContext.getCommandName());
         }
+
+        // check permission when configs allow anonymous access
+        if (commandContext.isAllowAnonymousAccess()) {
+
+            final Cmd cmd = command.getClass().getAnnotation(Cmd.class);
+            final Cmd.PermissionLevel cmdRequiredPermissionLevel = cmd.requiredPermissionLevel();
+            final PermissionChecker permissionChecker = DefaultAnonymousAccessPermissionChecker.INSTANCE;
+
+            if (!permissionChecker.access(commandContext, cmdRequiredPermissionLevel)) {
+                throw new PermissionDenyException(commandContext.getCommandName());
+            }
+        }
+
         return command.execute(commandContext, commandContext.getArgs());
     }
 }

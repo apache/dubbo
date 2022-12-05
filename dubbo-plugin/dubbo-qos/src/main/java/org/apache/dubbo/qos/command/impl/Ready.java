@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "ready", summary = "Judge if service is ready to work? ")
+@Cmd(name = "ready", summary = "Judge if service is ready to work? ", requiredPermissionLevel = Cmd.PermissionLevel.PUBLIC)
 public class Ready implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Ready(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

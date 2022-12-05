@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "startup", summary = "Judge if service has started? ")
+@Cmd(name = "startup", summary = "Judge if service has started? ", requiredPermissionLevel = Cmd.PermissionLevel.PUBLIC)
 public class Startup implements BaseCommand {
 
     private FrameworkModel frameworkModel;

@@ -24,5 +24,5 @@ public interface CommandExecutor {
      * @return command execution result
      * @throws NoSuchCommandException
      */
-    String execute(CommandContext commandContext) throws NoSuchCommandException;
+    String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException;
 }

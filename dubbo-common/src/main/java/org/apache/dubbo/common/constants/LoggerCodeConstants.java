@@ -378,6 +378,8 @@ public interface LoggerCodeConstants {
 
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
+    String QOS_PERMISSION_DENY_EXCEPTION = "7-7";
+
     // Internal unknown error.
     String INTERNAL_ERROR = "99-0";
 

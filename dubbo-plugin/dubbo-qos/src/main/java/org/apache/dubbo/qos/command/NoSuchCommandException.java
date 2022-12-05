@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.command;
 
-public class NoSuchCommandException extends Exception {
+public class NoSuchCommandException extends CommandException {
     public NoSuchCommandException(String msg) {
         super("NoSuchCommandException:" + msg);
     }
