@@ -287,14 +287,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(
                 TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
-        Invoker<?> invoker = pathResolver.resolve(key);
-        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
-            invoker = pathResolver.resolve(URL.buildKey(serviceName, group, "1.0.0"));
-        }
-        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
-            invoker = pathResolver.resolve(serviceName);
-        }
-        return invoker;
+        return pathResolver.resolve(key);
     }
 
     private ChannelFuture preCheck() {
