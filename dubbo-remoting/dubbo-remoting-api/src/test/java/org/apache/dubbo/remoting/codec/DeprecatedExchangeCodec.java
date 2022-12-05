@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.codec;
+package org.apache.dubbo.remoting.codec;
 
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -39,6 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_SKIP_UNUSED_STREAM;
+
 final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Codec {
 
     // header length.
@@ -52,7 +55,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
     protected static final byte FLAG_TWOWAY = (byte) 0x40;
     protected static final byte FLAG_EVENT = (byte) 0x20;
     protected static final int SERIALIZATION_MASK = 0x1f;
-    private static final Logger logger = LoggerFactory.getLogger(DeprecatedExchangeCodec.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DeprecatedExchangeCodec.class);
 
     public Short getMagicCode() {
         return MAGIC;
@@ -78,7 +81,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
     protected Object decode(Channel channel, InputStream is, int readable, byte[] header) throws IOException {
         // check magic number.
         if (readable > 0 && header[0] != MAGIC_HIGH
-                || readable > 1 && header[1] != MAGIC_LOW) {
+            || readable > 1 && header[1] != MAGIC_LOW) {
             int length = header.length;
             if (header.length < readable) {
                 header = Bytes.copyOf(header, readable);
@@ -118,11 +121,11 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             if (is.available() > 0) {
                 try {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("Skip input stream " + is.available());
+                        logger.warn(TRANSPORT_SKIP_UNUSED_STREAM, "", "", "Skip input stream " + is.available());
                     }
                     StreamUtils.skipUnusedStream(is);
                 } catch (IOException e) {
-                    logger.warn(e.getMessage(), e);
+                    logger.warn(TRANSPORT_SKIP_UNUSED_STREAM, "", "", e.getMessage(), e);
                 }
             }
         }
@@ -276,7 +279,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
             if (!res.isEvent() && res.getStatus() != Response.BAD_RESPONSE) {
                 try {
                     // FIXME log error info in Codec and put all error handle logic in IoHanndler?
-                    logger.warn("Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
+                    logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Fail to encode response: " + res + ", send bad_response info instead, cause: " + t.getMessage(), t);
 
                     Response r = new Response(res.getId(), res.getVersion());
                     r.setStatus(Response.BAD_RESPONSE);
@@ -285,7 +288,7 @@ final class DeprecatedExchangeCodec extends DeprecatedTelnetCodec implements Cod
 
                     return;
                 } catch (RemotingException e) {
-                    logger.warn("Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
+                    logger.warn(TRANSPORT_FAILED_RESPONSE, "", "", "Failed to send bad_response info back: " + res + ", cause: " + e.getMessage(), e);
                 }
             }
 

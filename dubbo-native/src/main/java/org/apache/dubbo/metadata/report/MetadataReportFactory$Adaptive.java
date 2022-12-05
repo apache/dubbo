@@ -28,6 +28,6 @@ org.apache.dubbo.metadata.report.MetadataReportFactory extension = (org.apache.d
 return extension.getMetadataReport(arg0);
 }
 public void destroy()  {
-throw new UnsupportedOperationException("The method public abstract void org.apache.dubbo.metadata.report.MetadataReportFactory.destroy() of interface org.apache.dubbo.metadata.report.MetadataReportFactory is not adaptive method!");
+throw new UnsupportedOperationException("The method public default void org.apache.dubbo.metadata.report.MetadataReportFactory.destroy() of interface org.apache.dubbo.metadata.report.MetadataReportFactory is not adaptive method!");
 }
 }

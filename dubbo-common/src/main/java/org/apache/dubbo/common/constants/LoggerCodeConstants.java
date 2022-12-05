@@ -71,9 +71,9 @@ public interface LoggerCodeConstants {
 
     String COMMON_FAILED_OVERRIDE_FIELD = "0-24";
 
-    String COMMON_FAILED_LOAD_MAPPING_CACHE = "0-24";
+    String COMMON_FAILED_LOAD_MAPPING_CACHE = "0-25";
 
-    String COMMON_METADATA_PROCESSOR = "0-25";
+    String COMMON_METADATA_PROCESSOR = "0-26";
 
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
@@ -324,6 +324,14 @@ public interface LoggerCodeConstants {
 
     String CONFIG_FILTER_VALIDATION_EXCEPTION = "5-36";
 
+    String CONFIG_ERROR_PROCESS_LISTENER = "5-37";
+
+    String CONFIG_UNDEFINED_ARGUMENT = "5-38";
+
+    String CONFIG_DUBBO_BEAN_INITIALIZER = "5-39";
+
+    String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
+
     // transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 
@@ -355,7 +363,7 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_SKIP_UNUSED_STREAM = "6-15";
 
-    String TRANSPORT_FAILED_RECONNECT = "6-3";
+    String TRANSPORT_FAILED_RECONNECT = "6-16";
 
     // qos plugin
     String QOS_PROFILER_DISABLED = "7-1";
@@ -371,7 +379,6 @@ public interface LoggerCodeConstants {
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
     // Internal unknown error.
-
     String INTERNAL_ERROR = "99-0";
 
     String INTERNAL_INTERRUPTED = "99-1";

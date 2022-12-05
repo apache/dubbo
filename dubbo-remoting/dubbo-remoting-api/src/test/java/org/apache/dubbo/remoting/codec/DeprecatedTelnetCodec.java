@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.codec;
+package org.apache.dubbo.remoting.codec;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -39,11 +39,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_EXCEED_PAYLOAD_LIMIT;
 import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
 
 public class DeprecatedTelnetCodec implements Codec {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeprecatedTelnetCodec.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DeprecatedTelnetCodec.class);
 
     private static final String HISTORY_LIST_KEY = "telnet.history.list";
 
@@ -64,7 +65,7 @@ public class DeprecatedTelnetCodec implements Codec {
         }
         if (size > payload) {
             IOException e = new IOException("Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
-            logger.error(e);
+            logger.error(TRANSPORT_EXCEED_PAYLOAD_LIMIT, "", "", e.getMessage(), e);
             throw e;
         }
     }
@@ -124,7 +125,7 @@ public class DeprecatedTelnetCodec implements Codec {
                     i = i + 2;
                 }
             } else if (b == -1 && i < message.length - 2
-                    && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
+                && (message[i + 1] == -3 || message[i + 1] == -5)) { // handshake
                 i = i + 2;
             } else {
                 copy[index++] = message[i];
@@ -163,11 +164,11 @@ public class DeprecatedTelnetCodec implements Codec {
             InetSocketAddress address = channel.getRemoteAddress();
             URL url = channel.getUrl();
             boolean client = url.getPort() == address.getPort()
-                    && NetUtils.filterLocalHost(url.getIp()).equals(
-                    NetUtils.filterLocalHost(address.getAddress()
-                            .getHostAddress()));
+                && NetUtils.filterLocalHost(url.getIp()).equals(
+                NetUtils.filterLocalHost(address.getAddress()
+                    .getHostAddress()));
             channel.setAttribute(SIDE_KEY, client ? "client"
-                    : "server");
+                : "server");
             return client;
         }
     }

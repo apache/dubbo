@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -66,7 +67,7 @@ class InternalThreadLocalTest {
             t.start();
         }
 
-        Thread.sleep(2000);
+        await().until(index::get, is(THREADS));
     }
 
     @Test
@@ -232,18 +233,23 @@ class InternalThreadLocalTest {
 
     @Test
     void testConstructionWithIndex() throws Exception {
-        int ARRAY_LIST_CAPACITY_MAX_SIZE = Integer.MAX_VALUE - 8;
+        // reset ARRAY_LIST_CAPACITY_MAX_SIZE to speed up
+        int NEW_ARRAY_LIST_CAPACITY_MAX_SIZE = 8;
         Field nextIndexField =
             InternalThreadLocalMap.class.getDeclaredField("NEXT_INDEX");
+
         nextIndexField.setAccessible(true);
         AtomicInteger nextIndex = (AtomicInteger) nextIndexField.get(AtomicInteger.class);
+        int arrayListCapacityMaxSize = InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE;
         int nextIndex_before = nextIndex.get();
+        nextIndex.set(0);
         final AtomicReference<Throwable> throwable = new AtomicReference<Throwable>();
         try {
-            while (nextIndex.get() < ARRAY_LIST_CAPACITY_MAX_SIZE) {
+            InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE =  NEW_ARRAY_LIST_CAPACITY_MAX_SIZE;
+            while (nextIndex.get() < NEW_ARRAY_LIST_CAPACITY_MAX_SIZE) {
                 new InternalThreadLocal<Boolean>();
             }
-            assertEquals(ARRAY_LIST_CAPACITY_MAX_SIZE - 1, InternalThreadLocalMap.lastVariableIndex());
+            assertEquals(NEW_ARRAY_LIST_CAPACITY_MAX_SIZE - 1, InternalThreadLocalMap.lastVariableIndex());
             try {
                 new InternalThreadLocal<Boolean>();
             } catch (Throwable t) {
@@ -252,10 +258,11 @@ class InternalThreadLocalTest {
             // Assert the max index cannot greater than (ARRAY_LIST_CAPACITY_MAX_SIZE - 1)
             assertThat(throwable.get(), is(instanceOf(IllegalStateException.class)));
             // Assert the index was reset to ARRAY_LIST_CAPACITY_MAX_SIZE after it reaches ARRAY_LIST_CAPACITY_MAX_SIZE
-            assertEquals(ARRAY_LIST_CAPACITY_MAX_SIZE - 1, InternalThreadLocalMap.lastVariableIndex());
+            assertEquals(NEW_ARRAY_LIST_CAPACITY_MAX_SIZE - 1, InternalThreadLocalMap.lastVariableIndex());
         } finally {
             // Restore the index
             nextIndex.set(nextIndex_before);
+            InternalThreadLocalMap.ARRAY_LIST_CAPACITY_MAX_SIZE = arrayListCapacityMaxSize;
         }
     }
 

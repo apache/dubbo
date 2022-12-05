@@ -19,26 +19,26 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.monitor.MonitorService;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * MockMonitorService
  */
 public class MockMonitorService implements MonitorService {
 
-    private URL statistics;
+    private List<URL> statistics = new CopyOnWriteArrayList<>();
 
     public void collect(URL statistics) {
-        this.statistics = statistics;
+        this.statistics.add(statistics);
     }
 
-    public URL getStatistics() {
+    public List<URL> getStatistics() {
         return statistics;
     }
 
     public List<URL> lookup(URL query) {
-        return Arrays.asList(statistics);
+        return statistics;
     }
 
 }

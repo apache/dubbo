@@ -232,7 +232,7 @@ class ServiceConfigTest {
         try {
             service.export();
             service.unexport();
-            Thread.sleep(1000);
+//            Thread.sleep(1000);
             Mockito.verify(exporter, Mockito.atLeastOnce()).unexport();
         } finally {
             System.clearProperty(SHUTDOWN_TIMEOUT_KEY);

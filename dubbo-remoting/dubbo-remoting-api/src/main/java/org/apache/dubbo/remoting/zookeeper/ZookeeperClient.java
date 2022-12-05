@@ -32,8 +32,10 @@ public interface ZookeeperClient {
      *
      * @param path path to ZNode
      * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
+     * @param faultTolerant specify fault tolerance of ZNode creation.
+     *                       true - ignore exception and recreate if is ephemeral, false - throw exception.
      */
-    void create(String path, boolean ephemeral);
+    void create(String path, boolean ephemeral, boolean faultTolerant);
 
     /**
      * Delete ZNode.
@@ -92,15 +94,23 @@ public interface ZookeeperClient {
     URL getUrl();
 
     /**
-     * Create ZNode in Zookeeper with content specified.
+     * Create or update ZNode in Zookeeper with content specified.
      *
      * @param path path to ZNode
      * @param content the content of ZNode
      * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
      */
-    void create(String path, String content, boolean ephemeral);
+    void createOrUpdate(String path, String content, boolean ephemeral);
 
-    void createOrUpdate(String path, String content, boolean ephemeral, int ticket);
+    /**
+     * CAS version to Create or update ZNode in Zookeeper with content specified.
+     *
+     * @param path path to ZNode
+     * @param content the content of ZNode
+     * @param ephemeral specify create mode of ZNode creation. true - EPHEMERAL, false - PERSISTENT.
+     * @param ticket origin content version, if current version is not the specified version, throw exception
+     */
+    void createOrUpdate(String path, String content, boolean ephemeral, Integer ticket);
 
     /**
      * Obtain the content of a ZNode.

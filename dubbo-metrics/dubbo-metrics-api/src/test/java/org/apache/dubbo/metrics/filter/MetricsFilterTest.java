@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
@@ -232,6 +233,31 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
         Assertions.assertNull(tags.get(TAG_GROUP_KEY));
         Assertions.assertNull(tags.get(TAG_VERSION_KEY));
+    }
+
+    @Test
+    void testGenericCall() {
+        collector.setCollectEnabled(true);
+        given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
+        invocation.setTargetServiceUniqueName(INTERFACE_NAME);
+        invocation.setMethodName(METHOD_NAME);
+        invocation.setParameterTypes(new Class[]{String.class});
+
+        Result result = filter.invoke(invoker, invocation);
+
+        invocation.setMethodName($INVOKE);
+        invocation.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
+        invocation.setArguments(new Object[]{METHOD_NAME, new String[]{"java.lang.String"}, new Object[]{"mock"}});
+
+        filter.onResponse(result, invoker, invocation);
+
+        Map<String, MetricSample> metricsMap = getMetricsMap();
+
+        MetricSample sample = metricsMap.get("requests.processing");
+        Map<String, String> tags = sample.getTags();
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
+        Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
     }
 
     private void initParam() {

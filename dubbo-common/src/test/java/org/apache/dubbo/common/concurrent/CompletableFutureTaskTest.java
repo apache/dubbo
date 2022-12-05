@@ -18,6 +18,7 @@ package org.apache.dubbo.common.concurrent;
 
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
@@ -28,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -54,33 +56,33 @@ class CompletableFutureTaskTest {
 
     @Test
     void testRunnableResponse() throws ExecutionException, InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
         CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
             try {
-                Thread.sleep(500);
+                latch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
             return true;
         }, executor);
-
+        Assertions.assertNull(completableFuture.getNow(null));
+        latch.countDown();
         Boolean result = completableFuture.get();
         assertThat(result, is(true));
     }
 
     @Test
     void testListener() throws InterruptedException {
+        AtomicBoolean run = new AtomicBoolean(false);
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            run.set(true);
             return "hello";
 
         }, executor);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         completableFuture.thenRunAsync(countDownLatch::countDown);
         countDownLatch.await();
+        Assertions.assertTrue(run.get());
     }
 
 

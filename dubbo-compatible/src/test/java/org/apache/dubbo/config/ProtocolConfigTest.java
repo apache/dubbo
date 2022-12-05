@@ -29,10 +29,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
-public class ProtocolConfigTest {
+class ProtocolConfigTest {
 
     @Test
-    public void testName() throws Exception {
+    void testName() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("name");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -43,7 +43,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testHost() throws Exception {
+    void testHost() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setHost("host");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -53,7 +53,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testPort() throws Exception {
+    void testPort() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setPort(8080);
         Map<String, String> parameters = new HashMap<String, String>();
@@ -63,7 +63,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testPath() throws Exception {
+    void testPath() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setContextpath("context-path");
         Map<String, String> parameters = new HashMap<String, String>();
@@ -77,77 +77,77 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testThreads() throws Exception {
+    void testThreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setThreads(10);
         assertThat(protocol.getThreads(), is(10));
     }
 
     @Test
-    public void testIothreads() throws Exception {
+    void testIothreads() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setIothreads(10);
         assertThat(protocol.getIothreads(), is(10));
     }
 
     @Test
-    public void testQueues() throws Exception {
+    void testQueues() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setQueues(10);
         assertThat(protocol.getQueues(), is(10));
     }
 
     @Test
-    public void testAccepts() throws Exception {
+    void testAccepts() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setAccepts(10);
         assertThat(protocol.getAccepts(), is(10));
     }
 
     @Test
-    public void testAccesslog() throws Exception {
+    void testAccesslog() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setAccesslog("access.log");
         assertThat(protocol.getAccesslog(), equalTo("access.log"));
     }
 
     @Test
-    public void testRegister() throws Exception {
+    void testRegister() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setRegister(true);
         assertThat(protocol.isRegister(), is(true));
     }
 
     @Test
-    public void testParameters() throws Exception {
+    void testParameters() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setParameters(Collections.singletonMap("k1", "v1"));
         assertThat(protocol.getParameters(), hasEntry("k1", "v1"));
     }
 
     @Test
-    public void testDefault() throws Exception {
+    void testDefault() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setDefault(true);
         assertThat(protocol.isDefault(), is(true));
     }
 
     @Test
-    public void testKeepAlive() throws Exception {
+    void testKeepAlive() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setKeepAlive(true);
         assertThat(protocol.getKeepAlive(), is(true));
     }
 
     @Test
-    public void testOptimizer() throws Exception {
+    void testOptimizer() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setOptimizer("optimizer");
         assertThat(protocol.getOptimizer(), equalTo("optimizer"));
     }
 
     @Test
-    public void testExtension() throws Exception {
+    void testExtension() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setExtension("extension");
         assertThat(protocol.getExtension(), equalTo("extension"));
