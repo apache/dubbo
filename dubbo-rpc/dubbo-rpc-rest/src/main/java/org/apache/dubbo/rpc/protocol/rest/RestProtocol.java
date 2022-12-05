@@ -27,8 +27,6 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.util.GetRestful;
 
 import javax.servlet.ServletContext;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
@@ -40,7 +38,6 @@ public class RestProtocol extends AbstractHttpProtocol {
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
-    private final Map<String, ReferenceCountedClient> clients = new ConcurrentHashMap<>();
 
     public void setHttpBinder(HttpBinder httpBinder) {
         serverFactory.setHttpBinder(httpBinder);
