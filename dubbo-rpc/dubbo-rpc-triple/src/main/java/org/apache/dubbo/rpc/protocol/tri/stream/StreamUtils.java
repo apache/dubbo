@@ -25,15 +25,14 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
@@ -63,9 +62,6 @@ public class StreamUtils {
         }
         Map<String, Object> res = new HashMap<>(origin.size());
         origin.forEach((k, v) -> {
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(k)) {
-                return;
-            }
             if (TripleHeaderEnum.containsExcludeAttachments(k)) {
                 return;
             }
@@ -88,27 +84,26 @@ public class StreamUtils {
         if (attachments == null) {
             return;
         }
-
+        Map<String, String> needConvertKey = new HashMap<>();
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
-            final String key = entry.getKey().toLowerCase(Locale.ROOT);
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                continue;
+            String key = lruHeaderMap.get(entry.getKey());
+            if (key == null) {
+                final String lowerCaseKey = entry.getKey().toLowerCase(Locale.ROOT);
+                lruHeaderMap.put(entry.getKey(), lowerCaseKey);
+                key = lowerCaseKey;
             }
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
+            if (needConvertHeaderKey && !key.equals(entry.getKey())) {
+                needConvertKey.put(key, entry.getKey());
+            }
             final Object v = entry.getValue();
             convertSingleAttachment(headers, key, v);
         }
-        if (needConvertHeaderKey) {
-            Map<String, String> needConvertKey = attachments.entrySet()
-                .stream()
-                .filter(it -> !headers.contains(it.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, it -> it.getKey().toLowerCase(Locale.ROOT)));
-            if (!needConvertKey.isEmpty()) {
-                String needConvertJson = JsonUtils.getJson().toJson(needConvertKey);
-                headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
-            }
+        if (!needConvertKey.isEmpty()) {
+            String needConvertJson = JsonUtils.getJson().toJson(needConvertKey);
+            headers.add(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), TriRpcStatus.encodeMessage(needConvertJson));
         }
     }
 
@@ -141,6 +136,14 @@ public class StreamUtils {
                 t);
         }
     }
+
+
+    private static final Map<String, String> lruHeaderMap = new LinkedHashMap<String, String>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > 1000;
+        }
+    };
 
 
 }
