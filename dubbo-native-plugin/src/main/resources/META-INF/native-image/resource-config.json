@@ -153,6 +153,12 @@
       },
       {
         "pattern": "\\Qorg/apache/dubbo/remoting/exchange/Exchangers.class\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.store.DataStore\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsServiceExporter\\E"
       }
     ]
   },
