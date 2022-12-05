@@ -43,6 +43,23 @@ public class StreamUtils {
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
+
+    private static final int MAX_LRU_HEADER_MAP_SIZE = 1024;
+
+    private static final Map<String, String> lruHeaderMap = new LinkedHashMap<String, String>(MAX_LRU_HEADER_MAP_SIZE, 1f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > MAX_LRU_HEADER_MAP_SIZE;
+        }
+    };
+
+    static {
+        // avoid concurrent resize
+        for (int i = 0; i < MAX_LRU_HEADER_MAP_SIZE; i++) {
+            lruHeaderMap.put("i" + "", "i" + "");
+        }
+    }
+
     public static String encodeBase64ASCII(byte[] in) {
         byte[] bytes = encodeBase64(in);
         return new String(bytes, StandardCharsets.US_ASCII);
@@ -136,14 +153,6 @@ public class StreamUtils {
                 t);
         }
     }
-
-
-    private static final Map<String, String> lruHeaderMap = new LinkedHashMap<String, String>(16, 0.75f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry eldest) {
-            return size() > 1000;
-        }
-    };
 
 
 }
