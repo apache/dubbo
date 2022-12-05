@@ -76,6 +76,11 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        return iterateConfigOperation(configuration -> configuration.getInternalProperty(key, defaultValue));
+    }
+
+    @Override
     public boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
         boolean publishedAll = true;
         for (DynamicConfiguration configuration : configurations) {

@@ -34,6 +34,19 @@ public class EnvironmentConfiguration implements Configuration {
         return value;
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        String value = System.getenv(key);
+        if (StringUtils.isEmpty(value)) {
+            value = System.getenv(StringUtils.toOSStyleKey(key));
+        }
+
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        return value;
+    }
+
     public Map<String, String> getProperties() {
         return System.getenv();
     }

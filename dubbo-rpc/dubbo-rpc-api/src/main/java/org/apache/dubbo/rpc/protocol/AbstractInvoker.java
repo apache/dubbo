@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -86,11 +87,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * {@link Node} destroy
      */
     private boolean destroyed = false;
-
-    /**
-     * Whether set future to Thread Local when invocation mode is sync
-     */
-    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     // -- Constructor
 
@@ -242,7 +238,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
 
-        if (setFutureWhenSync || invocation.getInvokeMode() != InvokeMode.SYNC) {
+        // Whether set future to Thread Local when invocation mode is sync
+        String setFutureWhenSync = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration()
+            .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
+
+        if (Boolean.parseBoolean(setFutureWhenSync) || invocation.getInvokeMode() != InvokeMode.SYNC) {
             // set server context
             RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
         }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerMethodModel;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
@@ -65,11 +66,6 @@ public class AsyncRpcResult implements Result {
     private final boolean async;
 
     private CompletableFuture<AppResponse> responseFuture;
-
-    /**
-     * Whether set future to Thread Local when invocation mode is sync
-     */
-    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
@@ -216,7 +212,11 @@ public class AsyncRpcResult implements Result {
             fn.accept(v, t);
         });
 
-        if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+        // Whether set future to Thread Local when invocation mode is sync
+        String setFutureWhenSync = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration()
+            .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
+
+        if (Boolean.parseBoolean(setFutureWhenSync) || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
             // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461
             RpcContext.getServiceContext().setFuture(new FutureAdapter<>(this.responseFuture));
         }
