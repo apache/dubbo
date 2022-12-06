@@ -436,9 +436,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         @Override
         public void close() {
-            if (listener != null) {
-                listener.onComplete();
-            }
+            listener.onComplete();
         }
     }
 
