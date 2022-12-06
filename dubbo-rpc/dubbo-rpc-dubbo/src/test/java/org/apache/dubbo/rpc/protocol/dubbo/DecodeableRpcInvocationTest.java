@@ -44,6 +44,7 @@ import java.io.IOException;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.rpc.protocol.dubbo.DubboCodec.DUBBO_VERSION;
 
 /**
@@ -87,6 +88,7 @@ public class DecodeableRpcInvocationTest {
         Assertions.assertEquals(decodeableRpcInvocation.getParameterTypesDesc(), inv.getParameterTypesDesc());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getParameterTypes(), inv.getParameterTypes());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getArguments(), inv.getArguments());
+        decodeableRpcInvocation.getObjectAttachments().remove(ORIGIN_GENERIC_PARAMETER_TYPES);
         Assertions.assertTrue(CollectionUtils.mapEquals(decodeableRpcInvocation.getObjectAttachments(), inv.getObjectAttachments()));
         Assertions.assertEquals(decodeableRpcInvocation.getTargetServiceUniqueName(), inv.getTargetServiceUniqueName());
 
