@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -239,7 +238,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
 
         // Whether set future to Thread Local when invocation mode is sync
-        String setFutureWhenSync = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration()
+        String setFutureWhenSync = invocation.getModuleModel().getModelEnvironment().getSystemConfiguration()
             .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
 
         if (Boolean.parseBoolean(setFutureWhenSync) || invocation.getInvokeMode() != InvokeMode.SYNC) {
