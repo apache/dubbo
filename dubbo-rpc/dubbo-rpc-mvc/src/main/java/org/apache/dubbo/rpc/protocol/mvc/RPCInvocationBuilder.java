@@ -1,12 +1,11 @@
 package org.apache.dubbo.rpc.protocol.mvc;
 
+import org.apache.dubbo.metadata.rest.PathMather;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.provider.dispatcher.PathMather;
 import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.mvc.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.mvc.request.RequestFacadeFactory;
@@ -72,7 +71,6 @@ public class RPCInvocationBuilder {
         String VERSION = request.getHeader(RestConstant.VERSION);
 
 
-
         RestMethodMetadata serviceRestMetadata = getRestMethodMetadata(request.getRequestURI(), VERSION, GROUP, localPort);
 
         String METHOD = serviceRestMetadata.getMethod().getName();
@@ -97,10 +95,10 @@ public class RPCInvocationBuilder {
 
     private static RestMethodMetadata getRestMethodMetadata(String path, String version, String group, int port) {
 
-        PathMather pathMather = new PathMather(path, version, group, String.valueOf(port));
+        PathMather pathMather = new PathMather(path, version, group, port);
 
-        if (pathToServiceMap.containsKey(pathMather)) {
-            throw new PathNoFoundException("rest service Path no found, current path info:"+pathMather);
+        if (!pathToServiceMap.containsKey(pathMather)) {
+            throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
         }
 
 

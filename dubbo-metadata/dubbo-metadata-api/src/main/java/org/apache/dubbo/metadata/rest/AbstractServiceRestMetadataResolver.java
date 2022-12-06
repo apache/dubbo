@@ -128,10 +128,10 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
             // try the overrider method first
             Method serviceMethod = entry.getKey();
             // If failed, it indicates the overrider method does not contain metadata , then try the declared method
-            if (!processRestMethodMetadata(serviceMethod, serviceType, serviceInterfaceClass, serviceRestMetadata.getMeta()::add)) {
+            if (!processRestMethodMetadata(serviceMethod, serviceType, serviceInterfaceClass, serviceRestMetadata::addRestMethodMetadata)) {
                 Method declaredServiceMethod = entry.getValue();
                 processRestMethodMetadata(declaredServiceMethod, serviceType, serviceInterfaceClass,
-                        serviceRestMetadata.getMeta()::add);
+                        serviceRestMetadata::addRestMethodMetadata);
             }
         }
     }
