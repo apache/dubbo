@@ -18,68 +18,50 @@ package org.apache.dubbo.rpc.executor;
 
 import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public abstract class AbstractIsolationExecutorSupport implements ExecutorSupport {
     private final URL url;
     private final ExecutorRepository executorRepository;
-    private final Map<String, Executor> executorMap;
+    private final FrameworkServiceRepository frameworkServiceRepository;
 
     public AbstractIsolationExecutorSupport(URL url) {
         this.url = url;
         this.executorRepository = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel());
-        this.executorMap = new HashMap<>();
-        GlobalResourcesRepository.getInstance().registerDisposable(this::destroy);
+        this.frameworkServiceRepository = url.getOrDefaultFrameworkModel().getServiceRepository();
     }
 
     public Executor getExecutor(Object data) {
 
-        ServiceKey serviceKey = getServiceKey(data);
-        if (!isValid(serviceKey)) {
-            return null;
-        }
-        String interfaceName = serviceKey.getInterfaceName();
-        String version = serviceKey.getVersion();
-        String group = serviceKey.getGroup();
-        String cachedKey = URL.buildKey(interfaceName, group, version);
-        if (executorMap.containsKey(cachedKey)) {
-            return executorMap.get(cachedKey);
+        ProviderModel providerModel = getProviderModel(data);
+        if (providerModel == null) {
+            return executorRepository.getExecutor(url);
         }
 
-        synchronized (this) {
-            if (executorMap.containsKey(cachedKey)) {
-                return executorMap.get(cachedKey);
+        List<URL> serviceUrls = providerModel.getServiceUrls();
+        if (serviceUrls == null || serviceUrls.isEmpty()) {
+            return executorRepository.getExecutor(url);
+        }
+
+        for (URL serviceUrl : serviceUrls) {
+            if (serviceUrl.getProtocol().equals(url.getProtocol()) && serviceUrl.getPort() == url.getPort()) {
+                return executorRepository.getExecutor(serviceUrl);
             }
-            Map<String, String> parameters = url.getParameters();
-            parameters.put(GROUP_KEY, group);
-            parameters.put(INTERFACE_KEY, interfaceName);
-            parameters.put(VERSION_KEY, version);
-            ServiceConfigURL tmpURL = new ServiceConfigURL(url.getProtocol(), url.getHost(), url.getPort(), interfaceName, parameters);
-            ExecutorService executor = executorRepository.getExecutor(tmpURL);
-            executorMap.put(cachedKey, executor);
-            return executor;
         }
-    }
-
-    public synchronized void destroy() {
-        executorMap.clear();
-    }
-
-    private boolean isValid(ServiceKey serviceKey) {
-        return serviceKey != null && StringUtils.isNotEmpty(serviceKey.getInterfaceName());
+        return executorRepository.getExecutor(serviceUrls.get(0));
     }
 
     protected abstract ServiceKey getServiceKey(Object data);
-}
+
+    private ProviderModel getProviderModel(Object data) {
+        ServiceKey serviceKey = getServiceKey(data);
+        if (serviceKey == null) {
+            return null;
+        }
+        return frameworkServiceRepository.lookupExportedService(serviceKey.toString());
+    }}
