@@ -1,25 +1,23 @@
-package org.apache.dubbo.rpc.protocol.mvc.annotation.provider.dispatcher;
+package org.apache.dubbo.metadata.rest;
 
-import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 public class PathMather {
-    private static final String SEPARATOR = RestConstant.PATH_SEPARATOR;
+    private static final String SEPARATOR = "/";
     private String path;
     private String version;
     private String group;
-    private String port;
+    private int port;
     private String[] pathSplits;
     private boolean hasPathVariable;
 
 
     public PathMather(String path) {
-        this(path, null, null, null);
+        this(path, null, null, 0);
     }
 
-    public PathMather(String path, String version, String group, String port) {
+    public PathMather(String path, String version, String group, int port) {
         this.path = path;
         this.pathSplits = path.split(SEPARATOR);
 
@@ -47,13 +45,10 @@ public class PathMather {
         this.group = group;
     }
 
-    public void setPort(String port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
-    public void setPort(int port) {
-        this.port = String.valueOf(port);
-    }
 
     @Override
     public boolean equals(Object o) {
