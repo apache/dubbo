@@ -24,7 +24,7 @@ public class PathProviderParamParser extends ProviderParamParser {
     }
 
     @Override
-    protected ParamType getParamType() {
+    protected ParamType getParamAnnotationType() {
         return ParamType.PATH;
     }
 }

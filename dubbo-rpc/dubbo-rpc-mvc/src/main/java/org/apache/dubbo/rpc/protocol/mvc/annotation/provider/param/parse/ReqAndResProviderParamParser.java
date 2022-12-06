@@ -24,6 +24,11 @@ public class ReqAndResProviderParamParser extends ProviderParamParser {
     }
 
     @Override
+    protected ParamType getParamAnnotationType() {
+        return ParamType.EMPTY;
+    }
+
+    @Override
     protected ParamType getParamType() {
         return ParamType.REQ_OR_RES;
     }

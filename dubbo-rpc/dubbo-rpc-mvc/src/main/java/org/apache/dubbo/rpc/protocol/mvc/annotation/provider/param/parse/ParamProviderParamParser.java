@@ -44,7 +44,7 @@ public class ParamProviderParamParser extends ProviderParamParser {
     }
 
     @Override
-    protected ParamType getParamType() {
+    protected ParamType getParamAnnotationType() {
         return ParamType.PARAM;
     }
 }

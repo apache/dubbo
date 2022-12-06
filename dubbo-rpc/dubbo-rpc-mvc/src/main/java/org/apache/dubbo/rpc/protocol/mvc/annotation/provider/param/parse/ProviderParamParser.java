@@ -11,7 +11,7 @@ public abstract class ProviderParamParser implements ParamParser {
 
     public void parse(ParseContext parseContext, ArgInfo argInfo) {
 
-        if (!matchParseType(argInfo.getParamAnno())) {
+        if (!matchParseType(argInfo)) {
             return;
         }
 
@@ -20,13 +20,19 @@ public abstract class ProviderParamParser implements ParamParser {
 
     protected abstract void doParse(ParseContext parseContext, ArgInfo argInfo);
 
-    public boolean matchParseType(Class paramAnno) {
+    public boolean matchParseType(ArgInfo argInfo) {
 
-        ParamType paramAnnotType = getParamType();
-        return paramAnnotType.supportAnno(paramAnno);
+        ParamType paramAnnotType = getParamAnnotationType();
+        boolean annotationMatch = paramAnnotType.supportAnno(argInfo.getParamAnno());
+
+        return annotationMatch || getParamType().isReqOrRes(argInfo.getParamType());
     }
 
-    protected abstract ParamType getParamType();
+    protected abstract ParamType getParamAnnotationType();
+
+    protected ParamType getParamType() {
+        return ParamType.EMPTY;
+    }
 
     protected <T> T castReqOrRes(Class<T> reqOrResClass, Object reqOrRes) {
         return reqOrResClass.cast(reqOrRes);
