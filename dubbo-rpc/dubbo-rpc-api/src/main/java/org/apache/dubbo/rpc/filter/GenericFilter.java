@@ -42,7 +42,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.service.OmnipotentService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.io.IOException;
@@ -55,8 +54,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FILTER_VALIDATION_EXCEPTION;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
@@ -79,8 +76,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
             && inv.getArguments() != null
             && inv.getArguments().length == 3
-            && !GenericService.class.isAssignableFrom(invoker.getInterface())
-            && !isOmnipotent(invoker.getInterface())) {
+            && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
             String name = ((String) inv.getArguments()[0]).trim();
             String[] types = (String[]) inv.getArguments()[1];
             Object[] args = (Object[]) inv.getArguments()[2];
@@ -193,33 +189,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 throw new RpcException(e.getMessage(), e);
             }
         }
-
-        if (isOmnipotent(invoker.getInterface())) {
-            setOmnArgs(inv);
-        }
-
         return invoker.invoke(inv);
-    }
-
-    private boolean isOmnipotent(Class<?> interfaceClass) {
-        return OmnipotentService.class.isAssignableFrom(interfaceClass);
-    }
-
-    // Restore method information before actual call
-    private void setOmnArgs(Invocation inv) {
-        Class<?>[] parameterTypes = (Class<?>[]) inv.getObjectAttachment(ORIGIN_GENERIC_PARAMETER_TYPES,GENERIC_PARAMETER_TYPES);
-        Object[] arguments = inv.getArguments();
-
-        String[] types = new String[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            types[i] = ReflectUtils.getName(parameterTypes[i]);
-        }
-
-        Object[] args = new Object[arguments.length];
-        for (int i = 0; i < arguments.length; i++) {
-            args[i] = JavaBeanSerializeUtil.serialize(arguments[i], JavaBeanAccessor.METHOD);
-        }
-        ((RpcInvocation) inv).setArguments(new Object[]{inv.getMethodName(), types, args});
     }
 
     private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {

@@ -40,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHME
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.$INVOKE_OMN;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
@@ -208,7 +209,7 @@ public class RpcUtils {
     }
 
     public static boolean isGenericOmnCall(String method,String serviceName) {
-        return ($INVOKE.equals(method) || $INVOKE_ASYNC.equals(method)) && serviceName.equals(OmnipotentService.class.getName())  ;
+        return $INVOKE_OMN.equals(method) && serviceName.equals(OmnipotentService.class.getName());
     }
 
     // check parameterTypesDesc to fix CVE-2020-1948

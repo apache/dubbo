@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.common.constants;
 
-public interface OmnipotentCommonConstants extends CommonConstants{
+public interface OmnipotentCommonConstants extends CommonConstants {
 
     //save orgin group when service is omn
     String ORIGIN_GROUP_KEY = "originGroup";
@@ -26,5 +26,13 @@ public interface OmnipotentCommonConstants extends CommonConstants{
     String ORIGIN_GENERIC_PARAMETER_TYPES = "originGenericParameterTypes";
 
     String TMP_OBJECT_INPUT = "objectInput";
+
+    String $INVOKE_OMN = "$invokeOmn";
+
+    String ORIGIN_PATH_KEY = "originPath";
+
+    String ORIGIN_METHOD_KEY = "originMethod";
+
+    String ORIGIN_VERSION_KEY = "originVersion";
 
 }

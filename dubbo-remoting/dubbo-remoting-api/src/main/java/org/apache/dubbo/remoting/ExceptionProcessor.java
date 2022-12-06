@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.exchange.Request;
  *
  * <p>Allow three kinds of customized operations, customize abnormal results and return,
  * customize normal results and return, interrupt and retry the process.
+ * @since 3.2.0
  */
 @SPI("snf")
 public interface ExceptionProcessor {

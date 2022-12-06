@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.service;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
  * A more general server-side generalization service than {@link GenericService}
  * Any type of interface can be accepted
@@ -37,14 +35,7 @@ public interface OmnipotentService {
      * @return invocation return value
      * @throws GenericException potential exception thrown from the invocation
      */
-    Object $invoke(String method, String[] parameterTypes, Object[] args) throws GenericException;
+    Object $invokeOmn(String method, String[] parameterTypes, Object[] args) throws GenericException;
 
-    default CompletableFuture<Object> $invokeAsync(String method, String[] parameterTypes, Object[] args) throws GenericException {
-        Object object = $invoke(method, parameterTypes, args);
-        if (object instanceof CompletableFuture) {
-            return (CompletableFuture<Object>) object;
-        }
-        return CompletableFuture.completedFuture(object);
-    }
 
 }
