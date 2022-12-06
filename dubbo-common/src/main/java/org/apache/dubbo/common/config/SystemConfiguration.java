@@ -17,8 +17,18 @@
 package org.apache.dubbo.common.config;
 
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.rpc.model.ScopeModel;
+
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 /**
  * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
@@ -28,7 +38,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SystemConfiguration implements Configuration {
 
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SystemConfiguration.class);
+
     private final Map<String, Object> cache = new ConcurrentHashMap<>();
+
+    private final ScheduledExecutorService sharedScheduledExecutor;
+
+    public SystemConfiguration(ScopeModel scopeModel) {
+        sharedScheduledExecutor = ScopeModelUtil.getFrameworkModel(scopeModel).getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+        sharedScheduledExecutor.scheduleWithFixedDelay(() -> {
+            Properties properties = System.getProperties();
+            try {
+                cache.putAll((Map) properties);
+            } catch (Exception e) {
+                logger.warn("System property cache flush failed", e);
+            }
+
+        }, 0, 60000, TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public Object getInternalProperty(String key) {
@@ -72,8 +100,13 @@ public class SystemConfiguration implements Configuration {
     }
 
 
-
     public Map<String, String> getProperties() {
-        return (Map) System.getProperties();
+        Map<String, String> res = new ConcurrentHashMap<>(cache.size());
+        cache.forEach((key, value) -> {
+            if (value instanceof String) {
+                res.put(key, (String) value);
+            }
+        });
+        return res;
     }
 }

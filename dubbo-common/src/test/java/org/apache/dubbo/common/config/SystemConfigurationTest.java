@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +45,7 @@ class SystemConfigurationTest {
     @BeforeEach
     public void init() {
 
-        sysConfig = new SystemConfiguration();
+        sysConfig = new SystemConfiguration(ApplicationModel.defaultModel().getDefaultModule());
     }
 
     /**
