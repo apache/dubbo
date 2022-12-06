@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -108,7 +109,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 countDownLatch.await(timeout, TimeUnit.MILLISECONDS);
                 Object ret = result.get();
                 if (ret instanceof Throwable) {
-                    Throwable e = (Throwable) ret;
+                    Throwable e = ret instanceof CompletionException ? ((CompletionException) ret).getCause() : (Throwable) ret;
                     throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : RpcException.UNKNOWN_EXCEPTION,
                         "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. " +
                             "Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
