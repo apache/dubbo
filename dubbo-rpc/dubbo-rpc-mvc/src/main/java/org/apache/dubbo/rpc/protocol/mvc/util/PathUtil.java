@@ -2,24 +2,25 @@ package org.apache.dubbo.rpc.protocol.mvc.util;
 
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamType;
+import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- *  is used to parse url pathVariable
- *
- *   String[] splits= url.split("/")
- *   List<String> strings = Arrays.asList(split);
- *   strings.set(UrlSplitIndex, (String) args.get(argIndex));
- *
+ * is used to parse url pathVariable
+ * <p>
+ * String[] splits= url.split("/")
+ * List<String> strings = Arrays.asList(split);
+ * strings.set(UrlSplitIndex, (String) args.get(argIndex));
  */
 public class PathUtil {
-    private static final String SEPARATOR = "/";
+    private static final String SEPARATOR = RestConstant.PATH_SEPARATOR;
 
     /**
-     *  generate real path from  rawPath according to argInfo and method args
+     * generate real path from  rawPath according to argInfo and method args
+     *
      * @param rawPath
      * @param argInfos
      * @param args
@@ -66,7 +67,8 @@ public class PathUtil {
 
 
     /**
-     *  parse pathVariable index from url by annotation info
+     * parse pathVariable index from url by annotation info
+     *
      * @param rawPath
      * @param argInfos
      */
