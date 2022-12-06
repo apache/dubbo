@@ -239,7 +239,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
 
         // Whether set future to Thread Local when invocation mode is sync
-        String setFutureWhenSync = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration()
+        String setFutureWhenSync = invocation.getModuleModel().getModelEnvironment().getSystemConfiguration()
             .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
 
         if (Boolean.parseBoolean(setFutureWhenSync) || invocation.getInvokeMode() != InvokeMode.SYNC) {
