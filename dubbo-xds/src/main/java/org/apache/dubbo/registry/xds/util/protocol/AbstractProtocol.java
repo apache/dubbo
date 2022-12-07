@@ -49,8 +49,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int pollingTimeout;
 
-    private Consumer<T> tConsumer;
+    private Consumer<T> consumer;
 
+    private Set<String> resourcesName;
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
@@ -79,7 +80,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         consumer.accept(getResource(resourceNames));
-        this.tConsumer = consumer;
+        this.resourcesName = resourceNames;
+        this.consumer = consumer;
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -121,12 +123,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
-            if (tConsumer != null) {
-                tConsumer.accept(null);
-            } else {
-                returnResult(null);
+            if (consumer != null) {
+                triggerReConnectTask();
             }
-//            triggerReConnectTask(tConsumer);
         }
 
         private void returnResult(T result) {
@@ -142,14 +141,14 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         }
     }
 
-    private void triggerReConnectTask(Consumer<T> consumer) {
+    private void triggerReConnectTask() {
         AtomicBoolean isConnectFail = new AtomicBoolean(false);
         ScheduledExecutorService scheduledFuture = ApplicationModel.defaultModel().getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
         scheduledFuture.schedule(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
             if (xdsChannel.getChannel() != null) {
-                observeResource(null, consumer);
+                observeResource(resourcesName, consumer);
                 if (isConnectFail.get()) {
                     scheduledFuture.shutdown();
                 }
