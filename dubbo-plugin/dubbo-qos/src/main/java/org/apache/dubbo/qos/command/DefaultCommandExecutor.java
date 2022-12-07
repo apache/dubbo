@@ -50,7 +50,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
             try {
                 permissionChecker = frameworkModel.getExtensionLoader(PermissionChecker.class).getExtension(QosConstants.QOS_PERMISSION_CHECKER);
             } catch (Throwable throwable) {
-                //can't find custom permissionChecker
+                //can't find valid custom permissionChecker
             }
 
             final Cmd cmd = command.getClass().getAnnotation(Cmd.class);
