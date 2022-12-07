@@ -17,8 +17,6 @@
 package org.apache.dubbo.rpc.cluster.router.xds;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
@@ -27,8 +25,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.DestinationSubset;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 
 import com.google.protobuf.UInt32Value;
 import io.envoyproxy.envoy.config.route.v3.HeaderMatcher;
@@ -37,7 +33,6 @@ import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteMatch;
 import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import io.envoyproxy.envoy.config.route.v3.WeightedCluster;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -45,7 +40,6 @@ import org.mockito.Mockito;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -55,9 +49,6 @@ import static org.mockito.Mockito.when;
 
 public class XdsRouteTest {
 
-    private ModuleModel originModel;
-    private ModuleModel moduleModel;
-
     private EdsEndpointManager edsEndpointManager;
 
     private RdsRouteRuleManager rdsRouteRuleManager;
@@ -66,31 +57,11 @@ public class XdsRouteTest {
 
     @BeforeEach
     public void setup() {
-        originModel = ApplicationModel.defaultModel().getDefaultModule();
-        moduleModel = Mockito.spy(originModel);
-
-        ScopeBeanFactory originBeanFactory = originModel.getBeanFactory();
-        ScopeBeanFactory beanFactory = Mockito.spy(originBeanFactory);
-        when(moduleModel.getBeanFactory()).thenReturn(beanFactory);
-
-
         edsEndpointManager = Mockito.spy(EdsEndpointManager.class);
-        when(beanFactory.getBean(EdsEndpointManager.class)).thenReturn(edsEndpointManager);
-
         rdsRouteRuleManager = Mockito.spy(RdsRouteRuleManager.class);
-        when(beanFactory.getBean(RdsRouteRuleManager.class)).thenReturn(rdsRouteRuleManager);
-
-        ExtensionLoader<TracingContextProvider> extensionLoader = Mockito.mock(ExtensionLoader.class);
         tracingContextProviders = new HashSet<>();
-        when(extensionLoader.getSupportedExtensionInstances()).thenReturn(tracingContextProviders);
-        when(moduleModel.getExtensionLoader(TracingContextProvider.class)).thenReturn(extensionLoader);
 
-        url = URL.valueOf("test://localhost/DemoInterface").setScopeModel(moduleModel);
-    }
-
-    @AfterEach
-    public void teardown() {
-        originModel.destroy();
+        url = URL.valueOf("test://localhost/DemoInterface");
     }
 
     private Invoker<Object> createInvoker(String app) {
@@ -109,7 +80,7 @@ public class XdsRouteTest {
 
     @Test
     public void testNotifyInvoker() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         xdsRouter.notify(null);
         assertEquals(0, xdsRouter.getSubscribeApplications().size());
 
@@ -135,7 +106,7 @@ public class XdsRouteTest {
 
     @Test
     public void testRuleChange() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName = "app1";
         String cluster1 = "cluster-test1";
         String cluster2 = "cluster-test2";
@@ -170,7 +141,7 @@ public class XdsRouteTest {
 
     @Test
     public void testEndpointChange() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName = "app1";
         String cluster1 = "cluster-test1";
         BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(appName, "1.1.1.1:20880")
@@ -206,7 +177,7 @@ public class XdsRouteTest {
 
     @Test
     public void testRouteNotMatch() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName = "app1";
         BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(appName, "1.1.1.1:20880")
             , createInvoker(appName, "2.2.2.2:20880")));
@@ -218,7 +189,7 @@ public class XdsRouteTest {
 
     @Test
     public void testRoutePathMatch() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName = "app1";
         String cluster1 = "cluster-test1";
         Invoker<Object> invoker1 = createInvoker(appName, "1.1.1.1:20880");
@@ -258,7 +229,7 @@ public class XdsRouteTest {
 
     @Test
     public void testRouteHeadMatch() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName = "app1";
         String cluster1 = "cluster-test1";
         Invoker<Object> invoker1 = createInvoker(appName, "1.1.1.1:20880");
@@ -296,7 +267,7 @@ public class XdsRouteTest {
 
     @Test
     public void testRouteWeightCluster() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName = "app1";
         String cluster1 = "cluster-test1";
         String cluster2 = "cluster-test2";
@@ -350,7 +321,7 @@ public class XdsRouteTest {
 
     @Test
     public void testRouteMultiApp() {
-        XdsRouter<Object> xdsRouter = new XdsRouter<>(url);
+        XdsRouter<Object> xdsRouter = new XdsRouter<>(url, rdsRouteRuleManager, edsEndpointManager);
         String appName1 = "app1";
         String appName2 = "app2";
         String cluster1 = "cluster-test1";

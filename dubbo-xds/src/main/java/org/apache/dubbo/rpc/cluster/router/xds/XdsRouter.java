@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,8 +63,21 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
 
     public XdsRouter(URL url) {
         super(url);
-        rdsRouteRuleManager = url.getOrDefaultModuleModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
-        edsEndpointManager = url.getOrDefaultModuleModel().getBeanFactory().getBean(EdsEndpointManager.class);
+        rdsRouteRuleManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
+        edsEndpointManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(EdsEndpointManager.class);
+        subscribeApplications = new ConcurrentHashSet<>();
+        destinationSubsetMap = new ConcurrentHashMap<>();
+        xdsRouteRuleMap = new ConcurrentHashMap<>();
+        currentInvokeList = new BitList<>(new ArrayList<>());
+    }
+
+    /**
+     * @deprecated only for uts
+     */
+    protected XdsRouter(URL url, RdsRouteRuleManager rdsRouteRuleManager, EdsEndpointManager edsEndpointManager) {
+        super(url);
+        this.rdsRouteRuleManager = rdsRouteRuleManager;
+        this.edsEndpointManager = edsEndpointManager;
         subscribeApplications = new ConcurrentHashSet<>();
         destinationSubsetMap = new ConcurrentHashMap<>();
         xdsRouteRuleMap = new ConcurrentHashMap<>();

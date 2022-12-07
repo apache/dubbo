@@ -31,13 +31,12 @@ public class XdsScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
-
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.registerBean(RdsRouteRuleManager.class);
+        beanFactory.registerBean(EdsEndpointManager.class);
     }
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {
-        ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
-        beanFactory.registerBean(RdsRouteRuleManager.class);
-        beanFactory.registerBean(EdsEndpointManager.class);
     }
 }
