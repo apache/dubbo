@@ -17,9 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 import java.io.Serializable;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The metadata class for {@link RequestMetadata HTTP(REST) request} and
@@ -38,6 +36,10 @@ public class ServiceRestMetadata implements Serializable {
     private String group;
 
     private Set<RestMethodMetadata> meta;
+
+    private int port;
+
+    private Map<PathMather, RestMethodMetadata> pathToServiceMap;
 
     public String getServiceInterface() {
         return serviceInterface;
@@ -74,6 +76,40 @@ public class ServiceRestMetadata implements Serializable {
         this.meta = meta;
     }
 
+    public void addRestMethodMetadata(RestMethodMetadata restMethodMetadata) {
+        restMethodMetadata.setServiceRestMetadata(this);
+        PathMather pathMather = new PathMather(restMethodMetadata.getRequest().getPath(),
+            this.getVersion(), this.getGroup(), this.getPort());
+        addPathToServiceMap(pathMather, restMethodMetadata);
+        getMeta().add(restMethodMetadata);
+    }
+
+    public Map<PathMather, RestMethodMetadata> getPathToServiceMap() {
+        return pathToServiceMap;
+    }
+
+    public void addPathToServiceMap(PathMather pathMather, RestMethodMetadata restMethodMetadata) {
+        if (this.pathToServiceMap == null) {
+            this.pathToServiceMap = new HashMap<>();
+        }
+
+        this.pathToServiceMap.put(pathMather, restMethodMetadata);
+
+
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+        Map<PathMather, RestMethodMetadata> pathToServiceMap = getPathToServiceMap();
+        for (PathMather pathMather : pathToServiceMap.keySet()) {
+            pathMather.setPort(port);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -84,14 +120,15 @@ public class ServiceRestMetadata implements Serializable {
         }
         ServiceRestMetadata that = (ServiceRestMetadata) o;
         return Objects.equals(getServiceInterface(), that.getServiceInterface()) &&
-                Objects.equals(getVersion(), that.getVersion()) &&
-                Objects.equals(getGroup(), that.getGroup()) &&
-                Objects.equals(getMeta(), that.getMeta());
+            Objects.equals(getVersion(), that.getVersion()) &&
+            Objects.equals(getGroup(), that.getGroup()) &&
+            Objects.equals(getMeta(), that.getMeta()) &&
+            Objects.equals(getPort(), that.getPort());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getServiceInterface(), getVersion(), getGroup(), getMeta());
+        return Objects.hash(getServiceInterface(), getVersion(), getGroup(), getMeta(), getPort());
     }
 
     @Override
@@ -101,6 +138,7 @@ public class ServiceRestMetadata implements Serializable {
         sb.append(", version='").append(version).append('\'');
         sb.append(", group='").append(group).append('\'');
         sb.append(", meta=").append(meta);
+        sb.append(", port=").append(port);
         sb.append('}');
         return sb.toString();
     }

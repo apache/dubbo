@@ -38,4 +38,5 @@ public interface RestConstant {
     Class JAKARTA_SERVLET_REQ_CLASS = resolveClass(JAKARTA_SERVLET_REQ_CLASS_NAME, getClassLoader());
     String JAKARTA_SERVLET_RES_CLASS_NAME = "jakarta.servlet.ServletResponse";
     Class JAKARTA_SERVLET_RES_CLASS = resolveClass(JAKARTA_SERVLET_RES_CLASS_NAME, getClassLoader());
+    String PATH_SEPARATOR = "/";
 }

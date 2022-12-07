@@ -56,6 +56,8 @@ public class RestMethodMetadata implements Serializable {
 
     private Map<Integer, Boolean> indexToEncoded;
 
+    private ServiceRestMetadata serviceRestMetadata;
+
     public MethodDefinition getMethod() {
         if (method == null) {
             method = new MethodDefinition();
@@ -157,6 +159,15 @@ public class RestMethodMetadata implements Serializable {
         this.indexToEncoded = indexToEncoded;
     }
 
+
+    public ServiceRestMetadata getServiceRestMetadata() {
+        return serviceRestMetadata;
+    }
+
+    public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
+        this.serviceRestMetadata = serviceRestMetadata;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -167,13 +178,13 @@ public class RestMethodMetadata implements Serializable {
         }
         RestMethodMetadata that = (RestMethodMetadata) o;
         return Objects.equals(getMethod(), that.getMethod()) &&
-                Objects.equals(getRequest(), that.getRequest()) &&
-                Objects.equals(getUrlIndex(), that.getUrlIndex()) &&
-                Objects.equals(getBodyIndex(), that.getBodyIndex()) &&
-                Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex()) &&
-                Objects.equals(getBodyType(), that.getBodyType()) &&
-                Objects.equals(getFormParams(), that.getFormParams()) &&
-                Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
+            Objects.equals(getRequest(), that.getRequest()) &&
+            Objects.equals(getUrlIndex(), that.getUrlIndex()) &&
+            Objects.equals(getBodyIndex(), that.getBodyIndex()) &&
+            Objects.equals(getHeaderMapIndex(), that.getHeaderMapIndex()) &&
+            Objects.equals(getBodyType(), that.getBodyType()) &&
+            Objects.equals(getFormParams(), that.getFormParams()) &&
+            Objects.equals(getIndexToEncoded(), that.getIndexToEncoded());
     }
 
     @Override

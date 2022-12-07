@@ -1,18 +1,25 @@
 package org.apache.dubbo.rpc.protocol.mvc;
 
+import org.apache.dubbo.metadata.rest.PathMather;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.mvc.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.mvc.request.RequestFacadeFactory;
 import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class RPCInvocationBuilder {
+
+    private static final Map<PathMather, RestMethodMetadata> pathToServiceMap = new ConcurrentHashMap<>();
 
 
     private static final ParamParserManager paramParser = new ParamParserManager();
@@ -59,10 +66,16 @@ public class RPCInvocationBuilder {
 
         String HOST = request.getHeader(RestConstant.HOST);
         String GROUP = request.getHeader(RestConstant.GROUP);
-        String METHOD = request.getHeader(RestConstant.METHOD);
-        String PARAMETER_TYPES_DESC = request.getHeader(RestConstant.PARAMETER_TYPES_DESC);
+
         String PATH = request.getHeader(RestConstant.PATH);
         String VERSION = request.getHeader(RestConstant.VERSION);
+
+
+        RestMethodMetadata serviceRestMetadata = getRestMethodMetadata(request.getRequestURI(), VERSION, GROUP, localPort);
+
+        String METHOD = serviceRestMetadata.getMethod().getName();
+        String[] PARAMETER_TYPES_DESC = serviceRestMetadata.getMethod().getParameterTypes();
+
 
         rpcInvocation.setMethodName(METHOD);
         rpcInvocation.setAttachment(RestConstant.GROUP, GROUP);
@@ -77,6 +90,19 @@ public class RPCInvocationBuilder {
         rpcInvocation.setAttachment(RestConstant.LOCAL_PORT, localPort);
         // TODO set path,version,group and so on
         return rpcInvocation;
+    }
+
+
+    private static RestMethodMetadata getRestMethodMetadata(String path, String version, String group, int port) {
+
+        PathMather pathMather = new PathMather(path, version, group, port);
+
+        if (!pathToServiceMap.containsKey(pathMather)) {
+            throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
+        }
+
+
+        return pathToServiceMap.get(pathMather);
     }
 
 
