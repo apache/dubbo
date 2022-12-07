@@ -382,8 +382,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     frameworkModel, acceptEncoding, serviceName, originalMethodName, filters,
                     executor);
             }
-            listener.onHeader(requestMetadata);
+            // must before onHeader
             deframer = new TriDecoder(deCompressor, new ServerDecoderListener(listener));
+            listener.onHeader(requestMetadata);
         }
 
 
@@ -424,8 +425,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
 
         private final ServerStream.Listener listener;
 
-
-        ServerDecoderListener(ServerStream.Listener listener) {
+        public ServerDecoderListener(ServerStream.Listener listener) {
             this.listener = listener;
         }
 
