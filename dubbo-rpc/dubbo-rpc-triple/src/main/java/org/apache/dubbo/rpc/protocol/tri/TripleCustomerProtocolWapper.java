@@ -241,6 +241,8 @@ public class TripleCustomerProtocolWapper {
         public static TripleRequestWrapper parseFrom(byte[] data) {
             TripleRequestWrapper tripleRequestWrapper = new TripleRequestWrapper();
             ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+            tripleRequestWrapper.args = new ArrayList<>();
+            tripleRequestWrapper.argTypes = new ArrayList<>();
             while (byteBuffer.position() < byteBuffer.limit()) {
                 int tag = readRawVarint32(byteBuffer);
                 int fieldNum = extractFieldNumFromTag(tag);
@@ -254,17 +256,11 @@ public class TripleCustomerProtocolWapper {
                     byteBuffer.get(serializeTypeBytes, 0, serializeTypeLength);
                     tripleRequestWrapper.serializeType = new String(serializeTypeBytes);
                 } else if (fieldNum == 2) {
-                    if (tripleRequestWrapper.args == null) {
-                        tripleRequestWrapper.args = new ArrayList<>();
-                    }
                     int argLength = readRawVarint32(byteBuffer);
                     byte[] argBytes = new byte[argLength];
                     byteBuffer.get(argBytes, 0, argLength);
                     tripleRequestWrapper.args.add(argBytes);
                 } else if (fieldNum == 3) {
-                    if (tripleRequestWrapper.argTypes == null) {
-                        tripleRequestWrapper.argTypes = new ArrayList<>();
-                    }
                     int argTypeLength = readRawVarint32(byteBuffer);
                     byte[] argTypeBytes = new byte[argTypeLength];
                     byteBuffer.get(argTypeBytes, 0, argTypeLength);
