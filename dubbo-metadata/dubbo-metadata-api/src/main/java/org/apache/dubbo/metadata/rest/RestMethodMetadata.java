@@ -58,6 +58,8 @@ public class RestMethodMetadata implements Serializable {
 
     private ServiceRestMetadata serviceRestMetadata;
 
+    private List<ArgInfo> argInfo;
+
     public MethodDefinition getMethod() {
         if (method == null) {
             method = new MethodDefinition();

@@ -33,9 +33,14 @@ public interface JAX_RSClassConstants extends RestMetadataConstants.JAX_RS {
     Class QUERY_PARAM_ANNOTATION_CLASS = resolveClass(QUERY_PARAM_ANNOTATION_CLASS_NAME, getClassLoader());
 
     /**
-     * The annotation class  of @Body
+     * The annotation class of @Body
      */
     Class REST_EASY_BODY_ANNOTATION_CLASS = resolveClass(REST_EASY_BODY_ANNOTATION_CLASS_NAME, getClassLoader());
+
+    /**
+     * The annotation class of @PathParam
+     */
+    Class PATH_PARAM_ANNOTATION_CLASS = resolveClass(PATH_PARAM_ANNOTATION_CLASS_NAME, getClassLoader());
 
 
 }

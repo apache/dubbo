@@ -92,6 +92,11 @@ public interface RestMetadataConstants {
          * The annotation class name of @Body
          */
         String REST_EASY_BODY_ANNOTATION_CLASS_NAME = "org.jboss.resteasy.annotations.Body";
+
+        /**
+         * The annotation class name of @PathParam
+         */
+        String PATH_PARAM_ANNOTATION_CLASS_NAME = "javax.ws.rs.PathParam";
     }
 
     /**
