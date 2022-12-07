@@ -174,7 +174,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
         Assertions.assertTrue(obj instanceof Request);
         Request request = (Request) obj;
         Assertions.assertTrue(request.isBroken());
-        Assertions.assertTrue(request.getData() instanceof IOException);
+        Assertions.assertTrue(request.getError() instanceof IOException);
         header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte)0x1F, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         obj = decode(header);
@@ -324,7 +324,7 @@ class ExchangeCodecTest extends TelnetCodecTest {
 
         Request obj = (Request) decode(request);
         Assertions.assertTrue(obj.isBroken());
-        Assertions.assertTrue(obj.getData() instanceof Throwable);
+        Assertions.assertNotNull(obj.getError());
     }
 
     @Test

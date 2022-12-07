@@ -41,6 +41,8 @@ public class Request {
 
     private Object mData;
 
+    private Throwable mError;
+
     public Request() {
         mId = newId();
     }
@@ -113,6 +115,14 @@ public class Request {
 
     public void setData(Object msg) {
         mData = msg;
+    }
+
+    public Throwable getError() {
+        return mError;
+    }
+
+    public void setError(Throwable error) {
+        this.mError = error;
     }
 
     public boolean isHeartbeat() {
