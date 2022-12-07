@@ -39,7 +39,7 @@ public class ServiceRestMetadata implements Serializable {
 
     private int port;
 
-    private Map<PathMather, RestMethodMetadata> pathToServiceMap;
+    private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
 
     public String getServiceInterface() {
         return serviceInterface;
@@ -78,17 +78,17 @@ public class ServiceRestMetadata implements Serializable {
 
     public void addRestMethodMetadata(RestMethodMetadata restMethodMetadata) {
         restMethodMetadata.setServiceRestMetadata(this);
-        PathMather pathMather = new PathMather(restMethodMetadata.getRequest().getPath(),
+        PathMatcher pathMather = new PathMatcher(restMethodMetadata.getRequest().getPath(),
             this.getVersion(), this.getGroup(), this.getPort());
         addPathToServiceMap(pathMather, restMethodMetadata);
         getMeta().add(restMethodMetadata);
     }
 
-    public Map<PathMather, RestMethodMetadata> getPathToServiceMap() {
+    public Map<PathMatcher, RestMethodMetadata> getPathToServiceMap() {
         return pathToServiceMap;
     }
 
-    public void addPathToServiceMap(PathMather pathMather, RestMethodMetadata restMethodMetadata) {
+    public void addPathToServiceMap(PathMatcher pathMather, RestMethodMetadata restMethodMetadata) {
         if (this.pathToServiceMap == null) {
             this.pathToServiceMap = new HashMap<>();
         }
@@ -104,8 +104,8 @@ public class ServiceRestMetadata implements Serializable {
 
     public void setPort(int port) {
         this.port = port;
-        Map<PathMather, RestMethodMetadata> pathToServiceMap = getPathToServiceMap();
-        for (PathMather pathMather : pathToServiceMap.keySet()) {
+        Map<PathMatcher, RestMethodMetadata> pathToServiceMap = getPathToServiceMap();
+        for (PathMatcher pathMather : pathToServiceMap.keySet()) {
             pathMather.setPort(port);
         }
     }

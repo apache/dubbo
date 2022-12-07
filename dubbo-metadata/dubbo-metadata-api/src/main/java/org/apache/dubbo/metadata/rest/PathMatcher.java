@@ -3,7 +3,7 @@ package org.apache.dubbo.metadata.rest;
 
 import java.util.Objects;
 
-public class PathMather {
+public class PathMatcher {
     private static final String SEPARATOR = "/";
     private String path;
     private String version;
@@ -13,11 +13,11 @@ public class PathMather {
     private boolean hasPathVariable;
 
 
-    public PathMather(String path) {
+    public PathMatcher(String path) {
         this(path, null, null, 0);
     }
 
-    public PathMather(String path, String version, String group, int port) {
+    public PathMatcher(String path, String version, String group, int port) {
         this.path = path;
         this.pathSplits = path.split(SEPARATOR);
 
@@ -54,7 +54,7 @@ public class PathMather {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PathMather that = (PathMather) o;
+        PathMatcher that = (PathMatcher) o;
         return pathEqual(that.path) && Objects.equals(version, that.version)
             && Objects.equals(group, that.group) && Objects.equals(port, that.port);
     }

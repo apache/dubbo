@@ -1,6 +1,6 @@
 package org.apache.dubbo.rpc.protocol.mvc;
 
-import org.apache.dubbo.metadata.rest.PathMather;
+import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RPCInvocationBuilder {
 
-    private static final Map<PathMather, RestMethodMetadata> pathToServiceMap = new ConcurrentHashMap<>();
+    private static final Map<PathMatcher, RestMethodMetadata> pathToServiceMap = new ConcurrentHashMap<>();
 
 
     private static final ParamParserManager paramParser = new ParamParserManager();
@@ -95,7 +95,7 @@ public class RPCInvocationBuilder {
 
     private static RestMethodMetadata getRestMethodMetadata(String path, String version, String group, int port) {
 
-        PathMather pathMather = new PathMather(path, version, group, port);
+        PathMatcher pathMather = new PathMatcher(path, version, group, port);
 
         if (!pathToServiceMap.containsKey(pathMather)) {
             throw new PathNoFoundException("rest service Path no found, current path info:" + pathMather);
