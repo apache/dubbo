@@ -17,8 +17,8 @@
 package org.apache.dubbo.qos.command;
 
 import io.netty.channel.Channel;
-import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.server.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.common.QosConfiguration;
 
 public class CommandContext {
 
@@ -93,7 +93,7 @@ public class CommandContext {
         this.qosConfiguration = qosConfiguration;
     }
 
-    public boolean hasPermission(Cmd.PermissionLevel cmdRequiredPermissionLevel) {
+    public boolean hasPermission(PermissionLevel cmdRequiredPermissionLevel) {
         return cmdRequiredPermissionLevel.getLevel() <= qosConfiguration.getAnonymousAccessPermissionLevel().getLevel();
     }
 

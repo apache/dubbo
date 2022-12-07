@@ -19,7 +19,8 @@ package org.apache.dubbo.qos.server;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -55,7 +56,7 @@ public class Server {
     private boolean acceptForeignIp = true;
     private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
 
-    private String anonymousAccessPermissionLevel = Cmd.PermissionLevel.NONE.name();
+    private String anonymousAccessPermissionLevel = PermissionLevel.NONE.name();
 
     private EventLoopGroup boss;
 

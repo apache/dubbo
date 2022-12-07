@@ -21,7 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.pu.QosWireProtocol;
 import org.apache.dubbo.qos.server.Server;
@@ -118,7 +118,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
-            String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, Cmd.PermissionLevel.NONE.name());
+            String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.NONE.name());
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
 
             if (server.isStarted()) {

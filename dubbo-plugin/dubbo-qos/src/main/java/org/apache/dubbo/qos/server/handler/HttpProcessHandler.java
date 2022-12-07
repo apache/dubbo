@@ -21,10 +21,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.CommandExecutor;
 import org.apache.dubbo.qos.command.DefaultCommandExecutor;
-import org.apache.dubbo.qos.command.NoSuchCommandException;
-import org.apache.dubbo.qos.command.PermissionDenyException;
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.command.decoder.HttpCommandDecoder;
-import org.apache.dubbo.qos.server.QosConfiguration;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.Unpooled;
@@ -57,7 +57,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_PERMISSI
 public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(HttpProcessHandler.class);
-    private CommandExecutor commandExecutor;
+    private final CommandExecutor commandExecutor;
 
     private final QosConfiguration qosConfiguration;
 

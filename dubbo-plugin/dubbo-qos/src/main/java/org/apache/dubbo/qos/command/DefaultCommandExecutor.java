@@ -17,10 +17,15 @@
 package org.apache.dubbo.qos.command;
 
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+import org.apache.dubbo.qos.permission.DefaultAnonymousAccessPermissionChecker;
+import org.apache.dubbo.qos.permission.PermissionChecker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class DefaultCommandExecutor implements CommandExecutor {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public DefaultCommandExecutor(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -42,7 +47,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
         if (commandContext.isAllowAnonymousAccess()) {
 
             final Cmd cmd = command.getClass().getAnnotation(Cmd.class);
-            final Cmd.PermissionLevel cmdRequiredPermissionLevel = cmd.requiredPermissionLevel();
+            final PermissionLevel cmdRequiredPermissionLevel = cmd.requiredPermissionLevel();
             final PermissionChecker permissionChecker = DefaultAnonymousAccessPermissionChecker.INSTANCE;
 
             if (!permissionChecker.access(commandContext, cmdRequiredPermissionLevel)) {

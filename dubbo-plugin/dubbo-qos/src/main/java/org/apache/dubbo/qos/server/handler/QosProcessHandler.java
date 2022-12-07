@@ -17,7 +17,7 @@
 package org.apache.dubbo.qos.server.handler;
 
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.qos.server.QosConfiguration;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.ByteBuf;

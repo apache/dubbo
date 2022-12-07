@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.qos.permission;
 
-public class NoSuchCommandException extends CommandException {
-    public NoSuchCommandException(String msg) {
-        super("NoSuchCommandException:" + msg);
-    }
+import org.apache.dubbo.qos.command.CommandContext;
+
+// suppose to expose the custom permission checker extension in further
+public interface PermissionChecker {
+    boolean access(CommandContext commandContext, PermissionLevel defaultCmdPermissionLevel);
 }

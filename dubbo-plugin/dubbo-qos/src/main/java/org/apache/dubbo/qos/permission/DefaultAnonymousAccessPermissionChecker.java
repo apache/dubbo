@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.qos.permission;
 
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.command.CommandContext;
 
-// suppose to expose the custom permission checker extension in further
-public interface PermissionChecker {
-    boolean access(CommandContext commandContext, Cmd.PermissionLevel defaultCmdPermissionLevel);
+public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
+    public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
+
+    @Override
+    public boolean access(CommandContext commandContext, PermissionLevel defaultCmdRequiredPermissionLevel) {
+        return commandContext.hasPermission(defaultCmdRequiredPermissionLevel);
+    }
 }

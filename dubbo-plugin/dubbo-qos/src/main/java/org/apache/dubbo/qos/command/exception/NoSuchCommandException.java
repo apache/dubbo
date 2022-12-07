@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.qos.command.exception;
 
-public class CommandException extends Exception {
-    public CommandException(String msg) {
-        super(msg);
+public class NoSuchCommandException extends CommandException {
+    public NoSuchCommandException(String msg) {
+        super("NoSuchCommandException:" + msg);
     }
 }

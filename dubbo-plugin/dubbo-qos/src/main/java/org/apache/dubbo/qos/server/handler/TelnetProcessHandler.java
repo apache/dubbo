@@ -22,11 +22,11 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.CommandExecutor;
 import org.apache.dubbo.qos.command.DefaultCommandExecutor;
-import org.apache.dubbo.qos.command.NoSuchCommandException;
-import org.apache.dubbo.qos.command.PermissionDenyException;
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.command.decoder.TelnetCommandDecoder;
 import org.apache.dubbo.qos.common.QosConstants;
-import org.apache.dubbo.qos.server.QosConfiguration;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelFutureListener;

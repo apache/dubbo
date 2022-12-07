@@ -14,15 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.qos.command.exception;
 
-import org.apache.dubbo.qos.command.annotation.Cmd;
-
-public class DefaultAnonymousAccessPermissionChecker implements PermissionChecker {
-    public static final DefaultAnonymousAccessPermissionChecker INSTANCE = new DefaultAnonymousAccessPermissionChecker();
-
-    @Override
-    public boolean access(CommandContext commandContext, Cmd.PermissionLevel defaultCmdRequiredPermissionLevel) {
-        return commandContext.hasPermission(defaultCmdRequiredPermissionLevel);
+public class CommandException extends Exception {
+    public CommandException(String msg) {
+        super(msg);
     }
 }

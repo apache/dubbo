@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "ready", summary = "Judge if service is ready to work? ", requiredPermissionLevel = Cmd.PermissionLevel.PUBLIC)
+@Cmd(name = "ready", summary = "Judge if service is ready to work? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class Ready implements BaseCommand {
     private final FrameworkModel frameworkModel;
 

@@ -22,8 +22,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.server.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -147,7 +147,7 @@ class ForeignHostPermitHandlerTest {
             QosConfiguration.builder()
                 .acceptForeignIp(false)
                 .acceptForeignIpWhitelist("175.23.44.1 ,  192.168.1.192/26")
-                .anonymousAccessPermissionLevel(Cmd.PermissionLevel.PROTECTED.name())
+                .anonymousAccessPermissionLevel(PermissionLevel.PROTECTED.name())
                 .build()
         );
 

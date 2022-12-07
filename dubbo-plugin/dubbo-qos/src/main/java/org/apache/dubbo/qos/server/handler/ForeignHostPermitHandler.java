@@ -24,7 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.common.QosConstants;
-import org.apache.dubbo.qos.server.QosConfiguration;
+import org.apache.dubbo.qos.common.QosConfiguration;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

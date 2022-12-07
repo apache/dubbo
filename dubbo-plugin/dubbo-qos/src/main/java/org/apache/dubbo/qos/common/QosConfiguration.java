@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.server;
+package org.apache.dubbo.qos.common;
 
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 
 public class QosConfiguration {
     private String welcome;
@@ -29,7 +29,7 @@ public class QosConfiguration {
     // this permission level for anonymous access, it will ignore the acceptForeignIp and acceptForeignIpWhitelist configurations
     // Access permission depends on the config anonymousAccessPermissionLevel and the cmd required permission level
     // the default value is Cmd.PermissionLevel.NONE, can not access any cmd
-    private Cmd.PermissionLevel anonymousAccessPermissionLevel = Cmd.PermissionLevel.NONE;
+    private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.NONE;
 
     private QosConfiguration() {
     }
@@ -42,14 +42,14 @@ public class QosConfiguration {
     }
 
     public boolean isAllowAnonymousAccess() {
-        return Cmd.PermissionLevel.NONE != anonymousAccessPermissionLevel;
+        return PermissionLevel.NONE != anonymousAccessPermissionLevel;
     }
 
     public String getWelcome() {
         return welcome;
     }
 
-    public Cmd.PermissionLevel getAnonymousAccessPermissionLevel() {
+    public PermissionLevel getAnonymousAccessPermissionLevel() {
         return anonymousAccessPermissionLevel;
     }
 
@@ -70,7 +70,7 @@ public class QosConfiguration {
         private String welcome;
         private boolean acceptForeignIp;
         private String acceptForeignIpWhitelist;
-        private Cmd.PermissionLevel anonymousAccessPermissionLevel = Cmd.PermissionLevel.NONE;
+        private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.NONE;
 
         private Builder() {
         }
@@ -91,7 +91,7 @@ public class QosConfiguration {
         }
 
         public Builder anonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
-            this.anonymousAccessPermissionLevel = Cmd.PermissionLevel.from(anonymousAccessPermissionLevel);
+            this.anonymousAccessPermissionLevel = PermissionLevel.from(anonymousAccessPermissionLevel);
             return this;
         }
 
@@ -111,7 +111,7 @@ public class QosConfiguration {
             return acceptForeignIpWhitelist;
         }
 
-        public Cmd.PermissionLevel getAnonymousAccessPermissionLevel() {
+        public PermissionLevel getAnonymousAccessPermissionLevel() {
             return anonymousAccessPermissionLevel;
         }
     }
