@@ -21,14 +21,14 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 /**
  * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
@@ -48,14 +48,11 @@ public class SystemConfiguration implements Configuration {
         sharedScheduledExecutor = ScopeModelUtil.getFrameworkModel(scopeModel).getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
         sharedScheduledExecutor.scheduleWithFixedDelay(() -> {
-            Properties properties = System.getProperties();
-            try {
-                cache.putAll((Map) properties);
-            } catch (Exception e) {
-                logger.warn("System property cache flush failed", e);
+            if (!cache.isEmpty()) {
+                Set<String> keys = cache.keySet();
+                keys.forEach((key) -> overwriteCache(key, System.getProperty(key)));
             }
-
-        }, 0, 60000, TimeUnit.MILLISECONDS);
+        }, 60000, 60000, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -101,12 +98,13 @@ public class SystemConfiguration implements Configuration {
 
 
     public Map<String, String> getProperties() {
-        Map<String, String> res = new ConcurrentHashMap<>(cache.size());
-        cache.forEach((key, value) -> {
-            if (value instanceof String) {
-                res.put(key, (String) value);
-            }
-        });
+        Properties properties = System.getProperties();
+        Map<String, String> res = new ConcurrentHashMap<>(properties.size());
+        try {
+            res.putAll((Map) properties);
+        } catch (Exception e) {
+            logger.warn("System property get failed", e);
+        }
         return res;
     }
 }
