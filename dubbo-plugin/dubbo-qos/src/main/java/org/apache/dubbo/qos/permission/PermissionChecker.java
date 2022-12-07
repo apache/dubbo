@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.qos.permission;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.qos.command.CommandContext;
 
-// suppose to expose the custom permission checker extension in further
+// qosPermissionChecker=xxx.xxx.xxxPermissionChecker
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface PermissionChecker {
     boolean access(CommandContext commandContext, PermissionLevel defaultCmdPermissionLevel);
 }
