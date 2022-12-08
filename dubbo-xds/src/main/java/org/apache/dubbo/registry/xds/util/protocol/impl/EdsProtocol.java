@@ -89,8 +89,11 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
             requestObserver.onNext(buildDiscoveryRequest(resourceNames));
             try {
                 return future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                logger.error("Error occur when request control panel.");
+            } catch (InterruptedException e) {
+                logger.error("InterruptedException occur when request control panel. error={}", e);
+                Thread.currentThread().interrupt();
+            }  catch (Exception e) {
+                logger.error("Error occur when request control panel. error={}",e);
             }
         }
         return new EndpointResult(resourceSet);
