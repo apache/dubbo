@@ -81,7 +81,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
     public void initialize() throws IllegalStateException {
         if (initialized.compareAndSet(false, true)) {
             this.propertiesConfiguration = new PropertiesConfiguration(scopeModel);
-            this.systemConfiguration = new SystemConfiguration();
+            this.systemConfiguration = new SystemConfiguration(scopeModel);
             this.environmentConfiguration = new EnvironmentConfiguration();
             this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");
             this.appExternalConfiguration = new InmemoryConfiguration("AppExternalConfig");
