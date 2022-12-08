@@ -81,7 +81,7 @@ public class AccessLogFilter implements Filter {
 
     private AtomicBoolean scheduled = new AtomicBoolean();
 
-    private static final String LINE_SEPARATOR = "line.separator";
+    private final String LINE_SEPARATOR =  System.getProperty("line.separator");
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
@@ -173,7 +173,7 @@ public class AccessLogFilter implements Filter {
         try {
             while (!logQueue.isEmpty()) {
                 writer.write(logQueue.poll().getLogMessage());
-                writer.write(System.getProperty(LINE_SEPARATOR));
+                writer.write(LINE_SEPARATOR);
             }
         } finally {
             writer.flush();

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.ByteBuf;
@@ -42,7 +43,7 @@ class QosProcessHandlerTest {
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(context.pipeline()).thenReturn(pipeline);
-        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false);
+        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false, StringUtils.EMPTY_STRING);
         handler.decode(context, buf, Collections.emptyList());
         verify(pipeline).addLast(any(HttpServerCodec.class));
         verify(pipeline).addLast(any(HttpObjectAggregator.class));
@@ -56,7 +57,7 @@ class QosProcessHandlerTest {
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(context.pipeline()).thenReturn(pipeline);
-        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false);
+        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false, StringUtils.EMPTY_STRING);
         handler.decode(context, buf, Collections.emptyList());
         verify(pipeline).addLast(any(LineBasedFrameDecoder.class));
         verify(pipeline).addLast(any(StringDecoder.class));

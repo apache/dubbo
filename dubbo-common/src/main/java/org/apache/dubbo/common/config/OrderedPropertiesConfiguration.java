@@ -68,6 +68,16 @@ public class OrderedPropertiesConfiguration implements Configuration {
         return properties.getProperty(key);
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        Object v = properties.getProperty(key);
+        if (v != null){
+            return v;
+        }else {
+            return defaultValue;
+        }
+    }
+
     public void setProperty(String key, String value) {
         properties.setProperty(key, value);
     }
