@@ -76,7 +76,9 @@ public class MetadataReportInstance implements Disposable {
 
         MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
-            init(metadataReportConfig, metadataReportFactory);
+            if (metadataReportConfig.getCycleReport() != null && metadataReportConfig.getCycleReport()) {
+                init(metadataReportConfig, metadataReportFactory);
+            }
         }
     }
 
