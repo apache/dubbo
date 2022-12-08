@@ -38,6 +38,8 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
     private final GovernanceRuleRepository ruleRepository;
 
+    protected volatile BitList<Invoker<T>> invokers = BitList.emptyList();
+
     /**
      * Should continue route if current router's result is empty
      */
@@ -83,7 +85,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
-        // default empty implement
+        this.invokers = invokers;
     }
 
     @Override
@@ -175,6 +177,10 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
      */
     protected boolean supportContinueRoute() {
         return false;
+    }
+
+    public BitList<Invoker<T>> getInvokers() {
+        return invokers;
     }
 
     /**

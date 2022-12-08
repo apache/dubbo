@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.cluster.Configurator;
+import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConditionMatch;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -41,6 +42,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CON
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
  * AbstractConfigurator
@@ -69,17 +71,15 @@ public abstract class AbstractConfigurator implements Configurator {
         if (!configuratorUrl.getParameter(ENABLED_KEY, true) || configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
             return url;
         }
-        /*
-         * This if branch is created since 2.7.0.
-         */
+
         String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
-        if (StringUtils.isNotEmpty(apiVersion)) {
+        if (StringUtils.isNotEmpty(apiVersion)) { // v2.7
             String currentSide = url.getSide();
             String configuratorSide = configuratorUrl.getSide();
             if (currentSide.equals(configuratorSide) && CONSUMER.equals(configuratorSide) && 0 == configuratorUrl.getPort()) {
                 url = configureIfMatch(NetUtils.getLocalHost(), url);
             } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) &&
-                    url.getPort() == configuratorUrl.getPort()) {
+                url.getPort() == configuratorUrl.getPort()) {
                 url = configureIfMatch(url.getHost(), url);
             }
         }
@@ -118,44 +118,86 @@ public abstract class AbstractConfigurator implements Configurator {
 
     private URL configureIfMatch(String host, URL url) {
         if (ANYHOST_VALUE.equals(configuratorUrl.getHost()) || host.equals(configuratorUrl.getHost())) {
-            // TODO, to support wildcards
-            String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
-            if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(ANYHOST_VALUE)) {
-                String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
-                String currentApplication = url.getApplication(url.getUsername());
-                if (configApplication == null || ANY_VALUE.equals(configApplication)
-                        || configApplication.equals(currentApplication)) {
-                    Set<String> conditionKeys = new HashSet<String>();
-                    conditionKeys.add(CATEGORY_KEY);
-                    conditionKeys.add(Constants.CHECK_KEY);
-                    conditionKeys.add(DYNAMIC_KEY);
-                    conditionKeys.add(ENABLED_KEY);
-                    conditionKeys.add(GROUP_KEY);
-                    conditionKeys.add(VERSION_KEY);
-                    conditionKeys.add(APPLICATION_KEY);
-                    conditionKeys.add(SIDE_KEY);
-                    conditionKeys.add(CONFIG_VERSION_KEY);
-                    conditionKeys.add(COMPATIBLE_CONFIG_KEY);
-                    conditionKeys.add(INTERFACES);
-                    for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        boolean startWithTilde = startWithTilde(key);
-                        if (startWithTilde || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
-                            if (startWithTilde) {
-                                conditionKeys.add(key);
-                            }
-                            if (value != null && !ANY_VALUE.equals(value)
-                                    && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
-                                return url;
-                            }
+            if (isV27ConditionMatchOrUnset(url)) {
+                Set<String> conditionKeys = genConditionKeys();
+                String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
+                if ("v3.0".equals(apiVersion)) {
+                    ConditionMatch matcher = (ConditionMatch) configuratorUrl.getAttribute(MATCH_CONDITION);
+                    if (matcher != null) {
+                        if (matcher.isMatch(url)) {
+                            return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                         }
+                    } else {
+                        return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                     }
+                } else if (isDeprecatedConditionMatch(conditionKeys, url)) {
                     return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                 }
             }
         }
         return url;
+    }
+
+    private boolean isV27ConditionMatchOrUnset(URL url) {
+        String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
+        if (StringUtils.isNotEmpty(providers)
+            && !providers.contains(url.getAddress())
+            && !providers.contains(ANYHOST_VALUE)) {
+            return false;
+        }
+
+        String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
+        String currentApplication = url.getApplication(url.getUsername());
+        if (configApplication != null
+            && !ANY_VALUE.equals(configApplication)
+            && !configApplication.equals(currentApplication)) {
+            return false;
+        }
+
+        String configServiceKey = configuratorUrl.getServiceKey();
+        String currentServiceKey = url.getServiceKey();
+        if (!ANY_VALUE.equals(configServiceKey)
+            && !configServiceKey.equals(currentServiceKey)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isDeprecatedConditionMatch(Set<String> conditionKeys, URL url) {
+        boolean result = true;
+        for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            boolean startWithTilde = startWithTilde(key);
+            if (startWithTilde || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
+                if (startWithTilde) {
+                    conditionKeys.add(key);
+                }
+                if (value != null && !ANY_VALUE.equals(value)
+                    && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private Set<String> genConditionKeys() {
+        Set<String> conditionKeys = new HashSet<String>();
+        conditionKeys.add(CATEGORY_KEY);
+        conditionKeys.add(Constants.CHECK_KEY);
+        conditionKeys.add(DYNAMIC_KEY);
+        conditionKeys.add(ENABLED_KEY);
+        conditionKeys.add(GROUP_KEY);
+        conditionKeys.add(VERSION_KEY);
+        conditionKeys.add(APPLICATION_KEY);
+        conditionKeys.add(SIDE_KEY);
+        conditionKeys.add(CONFIG_VERSION_KEY);
+        conditionKeys.add(COMPATIBLE_CONFIG_KEY);
+        conditionKeys.add(INTERFACES);
+        return conditionKeys;
     }
 
     private boolean startWithTilde(String key) {

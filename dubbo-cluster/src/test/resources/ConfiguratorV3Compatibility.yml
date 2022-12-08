@@ -19,14 +19,20 @@
 
 # Application scope, apply to all services.
 ---
-configVersion: v2.7
+configVersion: v3.0
 scope: application
-key: demo-consumer
+key: demo-provider
 configs:
-- addresses: [127.0.0.1, 0.0.0.0]
-  services: ['*']
-  parameters:
-    loadbalance: random
-    cluster: failfast
-    timeout: 6666
+  - addresses:
+      - "10.0.0.1:20880" # compatibility test
+    services:
+      - "DemoService" # compatibility test
+    match:
+      param:
+        - key: match_key1
+          value:
+            exact: value1
+    side: provider
+    parameters:
+      weight: 200
 ...

@@ -16,27 +16,32 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag.model;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+public class ParamMatch {
+    private String key;
+    private StringMatch value;
 
-import java.util.Map;
+    public String getKey() {
+        return key;
+    }
 
-/**
- * Parse raw rule into structured tag rule
- */
-public class TagRuleParser {
+    public void setKey(String key) {
+        this.key = key;
+    }
 
-    public static TagRouterRule parse(String rawRule) {
-        Yaml yaml = new Yaml(new SafeConstructor());
-        Map<String, Object> map = yaml.load(rawRule);
-        TagRouterRule rule = TagRouterRule.parseFromMap(map);
-        rule.setRawRule(rawRule);
-        if (CollectionUtils.isEmpty(rule.getTags())) {
-            rule.setValid(false);
+    public StringMatch getValue() {
+        return value;
+    }
+
+    public void setValue(StringMatch value) {
+        this.value = value;
+    }
+
+    public boolean isMatch(String input) {
+        if (getValue() != null && input != null) {
+            return getValue().isMatch(input);
         }
-
-        return rule;
+        return false;
     }
 }

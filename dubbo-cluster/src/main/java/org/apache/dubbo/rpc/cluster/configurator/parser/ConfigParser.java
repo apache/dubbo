@@ -34,6 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
  * Config parser
@@ -59,6 +60,7 @@ public class ConfigParser {
             // service scope by default.
             items.forEach(item -> urls.addAll(serviceItemToUrls(item, configuratorConfig)));
         }
+
         return urls;
     }
 
@@ -100,10 +102,10 @@ public class ConfigParser {
             if (CollectionUtils.isNotEmpty(apps)) {
                 apps.forEach(app -> {
                     StringBuilder tmpUrlBuilder = new StringBuilder(urlBuilder);
-                    urls.add(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()));
+                    urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()), item));
                 });
             } else {
-                urls.add(URL.valueOf(urlBuilder.toString()));
+                urls.add(appendMatchCondition(URL.valueOf(urlBuilder.toString()), item));
             }
         });
 
@@ -135,7 +137,7 @@ public class ConfigParser {
                 tmpUrlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
                 tmpUrlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
-                urls.add(URL.valueOf(tmpUrlBuilder.toString()));
+                urls.add(appendMatchCondition(URL.valueOf(tmpUrlBuilder.toString()), item));
             }
         }
         return urls;
@@ -217,5 +219,12 @@ public class ConfigParser {
             addresses.add(ANYHOST_VALUE);
         }
         return addresses;
+    }
+
+    private static URL appendMatchCondition(URL url, ConfigItem item) {
+        if (item.getMatch() != null) {
+            url = url.putAttribute(MATCH_CONDITION, item.getMatch());
+        }
+        return url;
     }
 }
