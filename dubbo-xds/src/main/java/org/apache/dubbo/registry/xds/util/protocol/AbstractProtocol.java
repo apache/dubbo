@@ -145,7 +145,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         AtomicBoolean isConnectFail = new AtomicBoolean(false);
         ScheduledExecutorService scheduledFuture = ApplicationModel.defaultModel().getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
-        scheduledFuture.schedule(() -> {
+        scheduledFuture.scheduleAtFixedRate(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
             if (xdsChannel.getChannel() != null) {
                 observeResource(observeResourcesName, observeConsumer);
@@ -155,7 +155,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             } else {
                 isConnectFail.set(true);
             }
-        }, pollingTimeout, TimeUnit.SECONDS);
+        }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
     }
-
 }
