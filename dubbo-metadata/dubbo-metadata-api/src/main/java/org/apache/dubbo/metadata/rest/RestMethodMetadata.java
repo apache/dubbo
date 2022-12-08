@@ -58,7 +58,7 @@ public class RestMethodMetadata implements Serializable {
 
     private ServiceRestMetadata serviceRestMetadata;
 
-    private List<ArgInfo> argInfo;
+    private List<ArgInfo> argInfos;
 
     public MethodDefinition getMethod() {
         if (method == null) {
@@ -168,6 +168,17 @@ public class RestMethodMetadata implements Serializable {
 
     public void setServiceRestMetadata(ServiceRestMetadata serviceRestMetadata) {
         this.serviceRestMetadata = serviceRestMetadata;
+    }
+
+    public List<ArgInfo> getArgInfos() {
+        if (argInfos == null) {
+            argInfos = new ArrayList<>();
+        }
+        return argInfos;
+    }
+
+    public void addArgInfo(ArgInfo argInfo) {
+        getArgInfos().add(argInfo);
     }
 
     @Override

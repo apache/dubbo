@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.protocol.mvc.annotation;
 
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
 
 import java.util.Arrays;

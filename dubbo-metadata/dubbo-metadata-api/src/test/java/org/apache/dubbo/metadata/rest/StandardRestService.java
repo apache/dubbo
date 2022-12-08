@@ -104,4 +104,19 @@ public class StandardRestService implements RestService {
         map.put("age", user.getAge());
         return map;
     }
+
+    @Override
+    public void noAnnotationJsonBody(User user) {
+
+    }
+
+    @Override
+    public void noAnnotationFormBody(User user) {
+
+    }
+
+    @Override
+    public void noAnnotationParam(String text) {
+
+    }
 }

@@ -1,8 +1,8 @@
 package org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamType;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.mvc.request.ServletRequestFacade;
@@ -36,7 +36,7 @@ public class HeaderProviderParamParser extends ProviderParamParser {
         }
 
 
-        String header = request.getHeader(argInfo.getAnnoNameAttribute());
+        String header = request.getHeader(argInfo.getAnnotationNameAttribute());
         Object headerValue = paramTypeConvert(argInfo.getParamType(), header);
 
 

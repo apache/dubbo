@@ -16,8 +16,16 @@
  */
 package org.apache.dubbo.metadata.rest.jaxrs;
 
+import org.apache.dubbo.metadata.rest.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+
+import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.REST_EASY_BODY_ANNOTATION_CLASS_NAME;
 
 /**
@@ -25,10 +33,21 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.REST_E
  *
  * @since 2.7.6
  */
-public class BodyParameterProcessor extends ParamAnnotationParameterProcessor {
+public class BodyParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     @Override
-    public String getAnnotationType() {
+    public String getAnnotationName() {
         return REST_EASY_BODY_ANNOTATION_CLASS_NAME;
     }
+
+    @Override
+    public void process(Annotation annotation, Parameter parameter, int parameterIndex, Method method, Class<?> serviceType, Class<?> serviceInterfaceClass, RestMethodMetadata restMethodMetadata) {
+        ArgInfo argInfo = ArgInfo.
+            build(parameterIndex, parameter).
+            setParamAnnotationType(getAnnotationClass());
+        restMethodMetadata.addArgInfo(argInfo);
+
+    }
+
+
 }

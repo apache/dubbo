@@ -30,13 +30,5 @@ public interface RestConstant {
     String ADD_MUST_ATTTACHMENT = "must-intercept";
     String RPCCONTEXT_INTERCEPT = "rpc-context";
     String SERIALIZE_INTERCEPT = "serialize";
-    String JAVAX_SERVLET_REQ_CLASS_NAME = "javax.servlet.ServletRequest";
-    Class JAVAX_SERVLET_REQ_CLASS = resolveClass(JAVAX_SERVLET_REQ_CLASS_NAME, getClassLoader());
-    String JAVAX_SERVLET_RES_CLASS_NAME = "javax.servlet.ServletResponse";
-    Class JAVAX_SERVLET_RES_CLASS = resolveClass(JAVAX_SERVLET_RES_CLASS_NAME, getClassLoader());
-    String JAKARTA_SERVLET_REQ_CLASS_NAME = "jakarta.servlet.ServletRequest";
-    Class JAKARTA_SERVLET_REQ_CLASS = resolveClass(JAKARTA_SERVLET_REQ_CLASS_NAME, getClassLoader());
-    String JAKARTA_SERVLET_RES_CLASS_NAME = "jakarta.servlet.ServletResponse";
-    Class JAKARTA_SERVLET_RES_CLASS = resolveClass(JAKARTA_SERVLET_RES_CLASS_NAME, getClassLoader());
-    String PATH_SEPARATOR = "/";
+
 }

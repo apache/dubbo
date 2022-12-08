@@ -16,19 +16,29 @@
  */
 package org.apache.dubbo.metadata.rest.jaxrs;
 
+import org.apache.dubbo.metadata.rest.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+
+import static org.apache.dubbo.common.utils.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.PATH_PARAM_ANNOTATION_CLASS_NAME;
 
 /**
- * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @FormParam
+ * The {@link AnnotatedMethodParameterProcessor} implementation for JAX-RS's @PathParam
  *
  * @since 2.7.6
  */
-public class PathParamParameterProcessor extends ParamAnnotationParameterProcessor {
+public class PathParamParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     @Override
-    public String getAnnotationType() {
+    public String getAnnotationName() {
         return PATH_PARAM_ANNOTATION_CLASS_NAME;
     }
+
+
 }

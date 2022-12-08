@@ -1,9 +1,9 @@
 package org.apache.dubbo.rpc.protocol.mvc;
 
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.mvc.constans.RestConstant;

@@ -33,16 +33,24 @@ import java.lang.reflect.Parameter;
 public interface AnnotatedMethodParameterProcessor extends Prioritized {
 
     /**
+     * The string presenting the annotation name
+     *
+     * @return non-null
+     */
+    String getAnnotationName();
+
+
+    /**
      * The string presenting the annotation type
      *
      * @return non-null
      */
-    String getAnnotationType();
+    Class getAnnotationClass();
 
     /**
      * Process the specified method {@link VariableElement parameter}
      *
-     * @param annotation            {@link Annotation the target annotation} whose type is {@link #getAnnotationType()}
+     * @param annotation            {@link Annotation the target annotation} whose type is {@link #getAnnotationName()}
      * @param parameter             the method parameter
      * @param parameterIndex        the index of method parameter
      * @param method                {@link Method method that parameter belongs to}

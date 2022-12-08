@@ -1,8 +1,8 @@
 package org.apache.dubbo.rpc.protocol.mvc.annotation.provider.param.parse;
 
 
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ArgInfo;
-import org.apache.dubbo.rpc.protocol.mvc.annotation.ParamType;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.mvc.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.mvc.util.NumberUtils;
 
@@ -23,7 +23,7 @@ public abstract class ProviderParamParser implements ParamParser {
     public boolean matchParseType(ArgInfo argInfo) {
 
         ParamType paramAnnotType = getParamAnnotationType();
-        boolean annotationMatch = paramAnnotType.supportAnno(argInfo.getParamAnno());
+        boolean annotationMatch = paramAnnotType.supportAnno(argInfo.getParamAnnotationType());
 
         return annotationMatch || getParamType().isReqOrRes(argInfo.getParamType());
     }

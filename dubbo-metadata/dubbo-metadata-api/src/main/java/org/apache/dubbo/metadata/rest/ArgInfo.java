@@ -1,7 +1,9 @@
 package org.apache.dubbo.metadata.rest;
 
 
-public abstract class ArgInfo {
+import java.lang.reflect.Parameter;
+
+public class ArgInfo {
     /**
      * method arg index 0,1,2,3
      */
@@ -9,12 +11,12 @@ public abstract class ArgInfo {
     /**
      * method annotation name or name
      */
-    private String annoNameAttribute;
+    private String annotationNameAttribute;
 
     /**
      * param annotation type
      */
-    private Class paramAnno;
+    private Class paramAnnotationType;
 
     /**
      * param Type
@@ -22,14 +24,27 @@ public abstract class ArgInfo {
     private Class paramType;
 
     /**
+     * param name
+     */
+    private String paramName;
+
+    /**
      * url split("/") String[n]  index
      */
     private int urlSplitIndex;
 
+    private Object defaultValue;
+
+    private boolean formContentType;
+
     public ArgInfo(int index, String name, Class paramType) {
         this.index = index;
-        this.annoNameAttribute = name;
-        this.paramAnno = paramType;
+        this.paramName = name;
+        this.paramType = paramType;
+    }
+
+    public ArgInfo(int index, Parameter parameter) {
+        this(index, parameter.getName(), parameter.getType());
     }
 
     public ArgInfo() {
@@ -39,24 +54,31 @@ public abstract class ArgInfo {
         return index;
     }
 
-    public void setIndex(int index) {
+    public ArgInfo setIndex(int index) {
         this.index = index;
+        return this;
     }
 
-    public String getAnnoNameAttribute() {
-        return annoNameAttribute;
+    public String getAnnotationNameAttribute() {
+        if (annotationNameAttribute == null) {
+            // such as String param no annotation
+            return paramName;
+        }
+        return annotationNameAttribute;
     }
 
-    public void setAnnoNameAttribute(String annoNameAttribute) {
-        this.annoNameAttribute = annoNameAttribute;
+    public ArgInfo setAnnotationNameAttribute(String annotationNameAttribute) {
+        this.annotationNameAttribute = annotationNameAttribute;
+        return this;
     }
 
-    public Class getParamAnno() {
-        return paramAnno;
+    public Class getParamAnnotationType() {
+        return paramAnnotationType;
     }
 
-    public void setParamAnno(Class paramAnno) {
-        this.paramAnno = paramAnno;
+    public ArgInfo setParamAnnotationType(Class paramAnnotationType) {
+        this.paramAnnotationType = paramAnnotationType;
+        return this;
     }
 
     public Class getParamType() {
@@ -74,5 +96,40 @@ public abstract class ArgInfo {
 
     public void setUrlSplitIndex(int urlSplitIndex) {
         this.urlSplitIndex = urlSplitIndex;
+    }
+
+    public static ArgInfo build() {
+        return new ArgInfo();
+    }
+
+    public static ArgInfo build(int index, Parameter parameter) {
+        return new ArgInfo(index, parameter);
+    }
+
+    public String getParamName() {
+        return paramName;
+    }
+
+    public ArgInfo setParamName(String paramName) {
+        this.paramName = paramName;
+        return this;
+    }
+
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    public ArgInfo setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
+        return this;
+    }
+
+    public boolean isFormContentType() {
+        return formContentType;
+    }
+
+    public ArgInfo setFormContentType(boolean isFormContentType) {
+        this.formContentType = isFormContentType;
+        return this;
     }
 }
