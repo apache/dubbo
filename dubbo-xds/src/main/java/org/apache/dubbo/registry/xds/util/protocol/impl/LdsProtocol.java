@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
-import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -34,24 +32,20 @@ import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
-import java.util.HashMap;
 import java.util.Set;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
+public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener, Map<String, Set<String>>> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
-    private StreamObserver<DiscoveryRequest> requestObserver;
-
-    private CompletableFuture<ListenerResult> future;
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         super(xdsChannel, node, pollingTimeout);
     }
@@ -61,7 +55,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
         return "type.googleapis.com/envoy.config.listener.v3.Listener";
     }
 
-    private HashMap<String, Object> resourcesMap = new HashMap<>();
 
     @Override
     public boolean isExistResource(Set<String> resourceNames) {
@@ -74,35 +67,27 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     @Override
-    public ListenerResult getCacheResource(Set<String> resourceNames) {
-        Set<String> resourceSet = new HashSet<>();
-        if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
-            for (String resourceName : resourceNames) {
-                resourceSet.add((String) resourcesMap.get(resourceName));
-            }
-        } else {
-            if (requestObserver == null) {
-                future = new CompletableFuture<>();
-                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
-            }
-            resourceNames.addAll(resourcesMap.keySet());
-            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
-            try {
-                return future.get();
-            } catch (InterruptedException e) {
-                logger.error("InterruptedException occur when request control panel. error={}", e);
-                Thread.currentThread().interrupt();
-            }  catch (Exception e) {
-                logger.error("Error occur when request control panel. error=. ",e);
-            }
+    public void updateResourceCollection(Map<String, Set<String>> resourceCollection, Set<String> resourceNames) {
+        for (String resourceName : resourceNames) {
+            resourceCollection.put(resourceName, resourceNames);
         }
-        return new ListenerResult(resourceSet);
     }
 
     @Override
-    public StreamObserver<DiscoveryRequest> getStreamObserver() {
-        return requestObserver;
+    public Map<String, Set<String>> getResourceCollection() {
+        return new ConcurrentHashMap<>();
     }
+
+    @Override
+    public ListenerResult getDsResult(Map<String, Set<String>> resourceCollection) {
+        return new ListenerResult(resourceCollection.values().
+            stream().reduce((a, b) -> {
+                a.addAll(b);
+                return a;
+            }).orElse(new HashSet<>())
+        );
+    }
+
 
     public ListenerResult getListeners() {
         return getResource(null);

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
-import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
@@ -35,24 +33,16 @@ import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Objects;
-import java.util.HashSet;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
+public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint, Set<Endpoint>> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
-
-    private StreamObserver<DiscoveryRequest> requestObserver;
-
-    private HashMap<String, Object> resourcesMap = new HashMap<>();
-
 
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         super(xdsChannel, node, pollingTimeout);
@@ -74,35 +64,22 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     }
 
     @Override
-    public EndpointResult getCacheResource(Set<String> resourceNames) {
-        Set<Endpoint> resourceSet = new HashSet<>();
-        if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
-            for (String resourceName : resourceNames) {
-                resourceSet.addAll((Set<Endpoint>) resourcesMap.get(resourceName));
-            }
-        } else {
-            CompletableFuture<EndpointResult> future = new CompletableFuture<>();
-            if (requestObserver == null) {
-                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
-            }
-            resourceNames.addAll(resourcesMap.keySet());
-            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
-            try {
-                return future.get();
-            } catch (InterruptedException e) {
-                logger.error("InterruptedException occur when request control panel. error={}", e);
-                Thread.currentThread().interrupt();
-            }  catch (Exception e) {
-                logger.error("Error occur when request control panel. error={}",e);
-            }
+    public void updateResourceCollection(Set<Endpoint> resourceCollection, Set<String> resourceNames) {
+        for (String resourceName : resourceNames) {
+            resourceCollection.addAll(resourcesMap.get(resourceName));
         }
-        return new EndpointResult(resourceSet);
     }
 
     @Override
-    public StreamObserver<DiscoveryRequest> getStreamObserver() {
-        return requestObserver;
+    public Set<Endpoint> getResourceCollection() {
+        return new HashSet<>();
     }
+
+    @Override
+    public EndpointResult getDsResult(Set<Endpoint> resourceCollection) {
+        return new EndpointResult(resourceCollection);
+    }
+
 
     @Override
     protected EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {

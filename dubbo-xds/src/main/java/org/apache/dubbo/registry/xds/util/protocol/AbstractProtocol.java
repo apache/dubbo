@@ -31,6 +31,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +43,7 @@ import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
 
-public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T> {
+public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> implements XdsProtocol<T> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProtocol.class);
 
@@ -49,14 +53,23 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int pollingTimeout;
 
-    private Consumer<T> observeConsumer;
+    private final Object consumerObserveMapUpdate = new Object();
 
     private Set<String> observeResourcesName;
+
+    private final Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
+
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
         this.pollingTimeout = pollingTimeout;
     }
+
+    protected Map<String, R> resourcesMap = new ConcurrentHashMap<>();
+
+    private CompletableFuture<T> future;
+
+    private StreamObserver<DiscoveryRequest> requestObserver;
 
     /**
      * Abstract method to obtain Type-URL from sub-class
@@ -67,22 +80,62 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     public abstract boolean isExistResource(Set<String> resourceNames);
 
-    public abstract T getCacheResource(Set<String> resourceNames);
+    public abstract void updateResourceCollection(R resourceCollection, Set<String> resourceNames);
 
-    public abstract StreamObserver<DiscoveryRequest> getStreamObserver();
+    public abstract R getResourceCollection();
+
+    public abstract T getDsResult(R resourceCollection);
+
+    public T getCacheResource(Set<String> resourceNames) {
+        R resourceCollection = getResourceCollection();
+        if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
+            updateResourceCollection(resourceCollection, resourceNames);
+        } else {
+            if (requestObserver == null) {
+                future = new CompletableFuture<>();
+                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
+            }
+            resourceNames.addAll(resourcesMap.keySet());
+            requestObserver.onNext(buildDiscoveryRequest(resourceNames));
+            try {
+                return future.get();
+            } catch (InterruptedException e) {
+                logger.error("InterruptedException occur when request control panel. error={}", e);
+                Thread.currentThread().interrupt();
+            }  catch (Exception e) {
+                logger.error("Error occur when request control panel. error=. ",e);
+            }
+        }
+        return getDsResult(resourceCollection);
+    }
+
+
     @Override
     public T getResource(Set<String> resourceNames) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         return getCacheResource(resourceNames);
     }
+
     @Override
     public void observeResource(Set<String> resourceNames, Consumer<T> consumer) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
-        consumer.accept(getResource(resourceNames));
+        synchronized (consumerObserveMapUpdate) {
+            consumerObserveMap.compute(resourceNames, (k, v) -> {
+                if (v == null) {
+                    v = new ArrayList<>();
+                }
+                // support multi-consumer
+                v.add(consumer);
+                return v;
+            });
+            for (Consumer<T> cacheConsumer : consumerObserveMap.get(resourceNames)) {
+                cacheConsumer.accept(getResource(resourceNames));
+            }
+        }
         this.observeResourcesName = resourceNames;
-        this.observeConsumer = consumer;
     }
+
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
         return DiscoveryRequest.newBuilder()
@@ -115,15 +168,21 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         public void onNext(DiscoveryResponse value) {
             logger.info("receive notification from xds server, type: " + getTypeUrl());
             T result = decodeDiscoveryResponse(value);
-            StreamObserver<DiscoveryRequest> observer = getStreamObserver();
-            observer.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
+            discoveryResponseListener(result);
+            requestObserver.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
             returnResult(result);
         }
 
+        private void discoveryResponseListener(T result) {
+            // call once for full data
+            synchronized (consumerObserveMapUpdate) {
+                consumerObserveMap.get(observeResourcesName).forEach(o -> o.accept(result));
+            }
+        }
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
-            if (observeConsumer != null) {
+            if (consumerObserveMap.size() != 0) {
                 triggerReConnectTask();
             }
         }
@@ -148,7 +207,13 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         scheduledFuture.scheduleAtFixedRate(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
             if (xdsChannel.getChannel() != null) {
-                observeResource(observeResourcesName, observeConsumer);
+                for (Map.Entry<Set<String>, List<Consumer<T>>> entry : consumerObserveMap.entrySet()) {
+                    if (entry.getKey().equals(observeResourcesName)) {
+                        for (Consumer<T> consumer : entry.getValue()) {
+                            observeResource(observeResourcesName, consumer);
+                        }
+                    }
+                }
                 if (isConnectFail.get()) {
                     scheduledFuture.shutdown();
                 }

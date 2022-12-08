@@ -73,7 +73,7 @@ public class PilotExchanger {
             if (!newListener.equals(listenerResult)) {
                 this.listenerResult = newListener;
                 // update RDS observation
-                synchronized (isRdsObserve) {
+                if (isRdsObserve.get()) {
                     createRouteObserve();
                 }
             }
@@ -82,20 +82,20 @@ public class PilotExchanger {
 
     private void createRouteObserve() {
          rdsProtocol.observeResource(listenerResult.getRouteConfigNames(), (newResult) -> {
-            // check if observed domain update ( will update endpoint observation )
-            domainObserveConsumer.forEach((domain, consumer) -> {
-                Set<String> newRoute = newResult.searchDomain(domain);
-                if (!routeResult.searchDomain(domain).equals(newRoute)) {
-                    // routers in observed domain has been updated
+             // check if observed domain update ( will update endpoint observation )
+             domainObserveConsumer.forEach((domain, consumer) -> {
+                 Set<String> newRoute = newResult.searchDomain(domain);
+                 if (!routeResult.searchDomain(domain).equals(newRoute)) {
+                     // routers in observed domain has been updated
 //                    Long domainRequest = domainObserveRequest.get(domain);
-                        // router list is empty when observeEndpoints() called and domainRequest has not been created yet
-                        // create new observation
-                        doObserveEndpoints(domain);
-                }
-            });
-            // update local cache
-            routeResult = newResult;
-        });
+                     // router list is empty when observeEndpoints() called and domainRequest has not been created yet
+                     // create new observation
+                     doObserveEndpoints(domain);
+                 }
+             });
+             // update local cache
+             routeResult = newResult;
+         });
     }
 
     public static PilotExchanger initialize(URL url) {
