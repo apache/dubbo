@@ -109,7 +109,9 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        if (sslCtx != null) {
+            p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        }
         p.addLast("unificationA",
             new PortUnificationServerHandler(url, sslCtx, false, protocols, channels));
         p.remove(this);
