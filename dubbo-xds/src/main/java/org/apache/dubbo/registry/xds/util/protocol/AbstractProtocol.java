@@ -49,9 +49,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int pollingTimeout;
 
-    private Consumer<T> consumer;
+    private Consumer<T> observeConsumer;
 
-    private Set<String> resourcesName;
+    private Set<String> observeResourcesName;
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
@@ -80,8 +80,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         consumer.accept(getResource(resourceNames));
-        this.resourcesName = resourceNames;
-        this.consumer = consumer;
+        this.observeResourcesName = resourceNames;
+        this.observeConsumer = consumer;
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -123,7 +123,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
-            if (consumer != null) {
+            if (observeConsumer != null) {
                 triggerReConnectTask();
             }
         }
@@ -148,7 +148,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         scheduledFuture.schedule(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
             if (xdsChannel.getChannel() != null) {
-                observeResource(resourcesName, consumer);
+                observeResource(observeResourcesName, observeConsumer);
                 if (isConnectFail.get()) {
                     scheduledFuture.shutdown();
                 }
