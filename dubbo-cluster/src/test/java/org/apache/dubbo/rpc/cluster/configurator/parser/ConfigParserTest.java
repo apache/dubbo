@@ -217,7 +217,7 @@ class ConfigParserTest {
 
     @Test
     void parseProviderConfigurationV3Conflict() throws IOException {
-        try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConfiguratorV3Conflict.yml")) {
+        try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConfiguratorV3Duplicate.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
             Assertions.assertEquals(1, urls.size());
