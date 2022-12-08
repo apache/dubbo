@@ -16,28 +16,28 @@
  */
 package org.apache.dubbo.metadata.rest.springmvc;
 
+import org.apache.dubbo.metadata.rest.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.PATH_VARIABLE_ANNOTATION_CLASS_NAME;
 
 /**
- * The {@link AnnotatedMethodParameterProcessor} implementation for Spring Web MVC's @RequestParam
+ * The {@link AnnotatedMethodParameterProcessor} implementation for Spring Web MVC's @PathVariable
  */
-public class PathVariableParameterProcessor extends AbstractRequestAnnotationParameterProcessor {
+public class PathVariableParameterProcessor extends AbstractAnnotatedMethodParameterProcessor {
 
     @Override
-    public String getAnnotationType() {
+    public String getAnnotationName() {
         return PATH_VARIABLE_ANNOTATION_CLASS_NAME;
     }
 
-    @Override
-    protected void process(String name, String defaultValue, Annotation annotation, Object parameter, int parameterIndex,
-                           Method method, RestMethodMetadata restMethodMetadata) {
-        restMethodMetadata.getRequest().addParam(name, defaultValue);
 
+    @Override
+    protected String getDefaultValue(Annotation annotation, Parameter parameter, int parameterIndex) {
+        return null;
     }
 }
+
