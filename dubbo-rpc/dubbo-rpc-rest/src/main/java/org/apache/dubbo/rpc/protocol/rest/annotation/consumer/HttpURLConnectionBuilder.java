@@ -32,6 +32,7 @@ public class HttpURLConnectionBuilder {
             httpConnectionPreBuildIntercept.intercept(httpConnectionCreateContext);
         }
 
+        // TODO substract  Client  param is requestTemplate,connectionConfig
         HttpURLConnection connection = createBaseConnection(requestTemplate, connectionConfig);
 
 
