@@ -48,8 +48,16 @@ public class SpringContainer implements Container {
             configPath = DEFAULT_SPRING_CONFIG;
         }
         context = new ClassPathXmlApplicationContext(configPath.split("[,\\s]+"), false);
-        context.refresh();
-        context.start();
+        try {
+            context.refresh();
+        } catch (Throwable e) {
+            logger.error("refresh spring container failed!", e);
+        }
+        try {
+            context.start();
+        } catch (Throwable e) {
+            logger.error("start spring container failed!", e);
+        }
     }
 
     @Override
