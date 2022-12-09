@@ -75,6 +75,7 @@ public class ServiceNotFoundExceptionProcessor implements ExceptionProcessor {
         invocation.setMethodName($INVOKE_OMN);
         invocation.setParameterTypes(GENERIC_PARAMETER_TYPES);
 
+        // Reset the decoded flag to continue the decoding process again
         invocation.resetHasDecoded();
 
         throw new RetryHandleException(channel, "Service not found:" + invocation.getAttachment(ORIGIN_PATH_KEY) + ", " + invocation.getAttachment(ORIGIN_METHOD_KEY));

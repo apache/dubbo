@@ -108,7 +108,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 request.setError(e);
             } finally {
                 hasDecoded = true;
-                if (finishDecode) {
+                if (!request.tryIncreaseRetryNum() || finishDecode) {
                     ObjectInput in = (ObjectInput) getObjectAttachment(TMP_OBJECT_INPUT);
                     if (in instanceof Cleanable) {
                         ((Cleanable) in).cleanup();
@@ -195,7 +195,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     }
 
 
-    public Object retryableDecode(Channel channel, InputStream input) throws IOException {
+    public void retryableDecode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = (ObjectInput) getObjectAttachment(TMP_OBJECT_INPUT);
         if (in == null) {
             in = CodecSupport.getSerialization(serializationType)
@@ -280,7 +280,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         } finally {
             Thread.currentThread().setContextClassLoader(originClassLoader);
         }
-        return this;
     }
 
     private void decodeArgument(Channel channel, Class<?>[] pts, Object[] args) throws IOException {
