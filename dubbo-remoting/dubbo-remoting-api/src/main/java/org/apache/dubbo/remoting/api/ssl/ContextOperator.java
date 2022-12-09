@@ -14,32 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
+package org.apache.dubbo.remoting.api.ssl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-
-import io.netty.handler.ssl.SslContext;
-import org.apache.dubbo.remoting.api.ssl.ContextOperator;
-
-public class EmptyProtocol implements WireProtocol {
-    @Override
-    public ProtocolDetector detector() {
-        return null;
-    }
-
-    @Override
-    public void configServerProtocolHandler(URL url, ChannelOperator operator) {
-
-    }
-
-    @Override
-    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
-
-    }
-
-    @Override
-    public void close() {
-
-    }
+public interface ContextOperator {
+    Object buildContext();
 }

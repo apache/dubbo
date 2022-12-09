@@ -18,8 +18,7 @@ package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-
-import io.netty.handler.ssl.SslContext;
+import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 
 public abstract class AbstractWireProtocol implements WireProtocol {
 
@@ -35,7 +34,7 @@ public abstract class AbstractWireProtocol implements WireProtocol {
     }
 
     @Override
-    public void configClientPipeline(URL url, ChannelOperator operator, SslContext sslContext) {
+    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
 
     }
 

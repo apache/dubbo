@@ -112,7 +112,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             protected void initChannel(SocketChannel ch) {
                 NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
                 final ChannelPipeline pipeline = ch.pipeline();
-                SslContext sslContext = null;
+                NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                     pipeline.addLast("negotiation", new SslClientTlsHandler(getUrl()));
                 }
@@ -123,7 +123,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 pipeline.addLast("connectionHandler", connectionHandler);
 
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
-                protocol.configClientPipeline(getUrl(), operator, sslContext);
+                protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
                 // TODO support Socks5
             }
         });
