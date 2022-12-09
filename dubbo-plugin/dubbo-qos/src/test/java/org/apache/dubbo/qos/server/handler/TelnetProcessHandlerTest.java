@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.server.handler;
 
 import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelFuture;
@@ -37,7 +38,10 @@ class TelnetProcessHandlerTest {
     @Test
     void testPrompt() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(),
+            QosConfiguration.builder()
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .build());
         handler.channelRead0(context, "");
         verify(context).writeAndFlush(QosProcessHandler.PROMPT);
     }
@@ -65,7 +69,10 @@ class TelnetProcessHandlerTest {
     @Test
     void testGreeting() throws Exception {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+        TelnetProcessHandler handler = new TelnetProcessHandler(FrameworkModel.defaultModel(),
+            QosConfiguration.builder()
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .build());
         handler.channelRead0(context, "greeting");
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         verify(context).writeAndFlush(captor.capture());

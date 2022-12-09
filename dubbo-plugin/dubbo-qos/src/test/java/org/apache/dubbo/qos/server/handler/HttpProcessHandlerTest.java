@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.server.handler;
 
 import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.ChannelFuture;
@@ -61,7 +62,10 @@ class HttpProcessHandlerTest {
         HttpRequest message = Mockito.mock(HttpRequest.class);
         when(message.uri()).thenReturn("localhost:80/greeting");
         when(message.method()).thenReturn(HttpMethod.GET);
-        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(),
+            QosConfiguration.builder()
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .build());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
@@ -78,7 +82,10 @@ class HttpProcessHandlerTest {
         HttpRequest message = Mockito.mock(HttpRequest.class);
         when(message.uri()).thenReturn("localhost:80/test");
         when(message.method()).thenReturn(HttpMethod.GET);
-        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(), QosConfiguration.builder().build());
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel(),
+            QosConfiguration.builder()
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .build());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
