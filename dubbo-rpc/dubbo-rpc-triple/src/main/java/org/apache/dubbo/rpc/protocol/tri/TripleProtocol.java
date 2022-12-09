@@ -60,8 +60,6 @@ public class TripleProtocol extends AbstractProtocol {
      */
     public static boolean CONVERT_NO_LOWER_HEADER = false;
 
-    private boolean versionChecked = false;
-
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -92,10 +90,12 @@ public class TripleProtocol extends AbstractProtocol {
                 pathResolver.remove(url.getServiceKey());
                 pathResolver.remove(url.getServiceModel().getServiceModel().getInterfaceName());
                 // set service status
-                triBuiltinService.getHealthStatusManager()
-                    .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);
-                triBuiltinService.getHealthStatusManager()
-                    .setStatus(url.getServiceInterface(), ServingStatus.NOT_SERVING);
+                if (triBuiltinService.enable()) {
+                    triBuiltinService.getHealthStatusManager()
+                        .setStatus(url.getServiceKey(), ServingStatus.NOT_SERVING);
+                    triBuiltinService.getHealthStatusManager()
+                        .setStatus(url.getServiceInterface(), ServingStatus.NOT_SERVING);
+                }
                 exporterMap.remove(key);
             }
         };
@@ -108,10 +108,12 @@ public class TripleProtocol extends AbstractProtocol {
         pathResolver.add(url.getServiceModel().getServiceModel().getInterfaceName(), invoker);
 
         // set service status
-        triBuiltinService.getHealthStatusManager()
-            .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
-        triBuiltinService.getHealthStatusManager()
-            .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
+        if (triBuiltinService.enable()) {
+            triBuiltinService.getHealthStatusManager()
+                .setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
+            triBuiltinService.getHealthStatusManager()
+                .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
+        }
         // init
         url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension()

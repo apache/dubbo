@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invoker;
@@ -33,30 +35,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.rpc.Constants.PROXY_KEY;
+import static org.apache.dubbo.rpc.Constants.TRI_BUILTIN_SERVICE_INIT;
 
 /**
  * tri internal service like grpc internal service
  **/
 public class TriBuiltinService {
 
-    private final ProxyFactory proxyFactory;
+    private ProxyFactory proxyFactory;
 
-    private final PathResolver pathResolver;
+    private PathResolver pathResolver;
 
-    private final Health healthService;
+    private Health healthService;
 
-    private final ReflectionV1AlphaService reflectionServiceV1Alpha;
-    private final HealthStatusManager healthStatusManager;
+    private ReflectionV1AlphaService reflectionServiceV1Alpha;
+    private HealthStatusManager healthStatusManager;
+    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
+        ApplicationModel.defaultModel());
 
     private final AtomicBoolean init = new AtomicBoolean();
 
     public TriBuiltinService(FrameworkModel frameworkModel) {
-        healthStatusManager = new HealthStatusManager(new TriHealthImpl());
-        healthService = healthStatusManager.getHealthService();
-        reflectionServiceV1Alpha = new ReflectionV1AlphaService();
-        proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        init();
+        if (enable()) {
+            healthStatusManager = new HealthStatusManager(new TriHealthImpl());
+            healthService = healthStatusManager.getHealthService();
+            reflectionServiceV1Alpha = new ReflectionV1AlphaService();
+            proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+            init();
+        }
     }
 
     public void init() {
@@ -66,6 +73,11 @@ public class TriBuiltinService {
                 ReflectionV1AlphaService.class);
         }
     }
+
+    public boolean enable(){
+        return config.getBoolean(TRI_BUILTIN_SERVICE_INIT, false);
+    }
+
 
     private <T> void addSingleBuiltinService(String serviceName, T impl, Class<T> interfaceClass) {
         ModuleModel internalModule = ApplicationModel.defaultModel().getInternalModule();
