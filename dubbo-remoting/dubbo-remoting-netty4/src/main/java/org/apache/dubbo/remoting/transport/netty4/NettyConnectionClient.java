@@ -112,6 +112,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
                 final ChannelPipeline pipeline = ch.pipeline();
                 NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
+
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                     pipeline.addLast("negotiation", new SslClientTlsHandler(getUrl()));
                 }
