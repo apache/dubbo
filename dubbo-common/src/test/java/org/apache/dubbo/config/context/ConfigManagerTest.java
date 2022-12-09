@@ -393,22 +393,33 @@ class ConfigManagerTest {
     @Test
     void testLoadConfigsOfTypeFromProps() {
         try {
+            System.setProperty("dubbo.protocols.dubbo1.port", "20880");
+            System.setProperty("dubbo.protocols.dubbo2.port", "20881");
+            System.setProperty("dubbo.protocols.rest1.port", "8080");
+            System.setProperty("dubbo.protocols.rest2.port", "8081");
+
+            ApplicationModel.defaultModel().destroy();
+            ApplicationModel applicationModel = ApplicationModel.defaultModel();
+            configManager = applicationModel.getApplicationConfigManager();
+            moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
+
             // dubbo.application.enable-file-cache = false
             configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
             Optional<ApplicationConfig> application = configManager.getApplication();
             Assertions.assertTrue(application.isPresent());
             configManager.removeConfig(application.get());
 
-            System.setProperty("dubbo.protocols.dubbo1.port", "20880");
-            System.setProperty("dubbo.protocols.dubbo2.port", "20881");
-            System.setProperty("dubbo.protocols.rest1.port", "8080");
-            System.setProperty("dubbo.protocols.rest2.port", "8081");
             configManager.loadConfigsOfTypeFromProps(ProtocolConfig.class);
             Collection<ProtocolConfig> protocols = configManager.getProtocols();
             Assertions.assertEquals(protocols.size(), 4);
 
             System.setProperty("dubbo.applications.app1.name", "app-demo1");
             System.setProperty("dubbo.applications.app2.name", "app-demo2");
+
+            ApplicationModel.defaultModel().destroy();
+            applicationModel = ApplicationModel.defaultModel();
+            configManager = applicationModel.getApplicationConfigManager();
+            moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
             try {
                 configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
                 Assertions.fail();

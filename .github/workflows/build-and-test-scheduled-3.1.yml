@@ -315,6 +315,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          ref: "3.1"
           path: "./dubbo"
 
       - uses: actions/checkout@v3

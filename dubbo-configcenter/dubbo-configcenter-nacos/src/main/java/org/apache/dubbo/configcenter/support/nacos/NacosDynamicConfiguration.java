@@ -221,6 +221,17 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        Object v = defaultValue;
+        try {
+            v = configService.getConfig(key, DEFAULT_GROUP, getDefaultTimeout());
+        } catch (NacosException e) {
+            logger.error(e.getMessage());
+        }
+        return v;
+    }
+
+    @Override
     public boolean publishConfig(String key, String group, String content) {
         boolean published = false;
         try {

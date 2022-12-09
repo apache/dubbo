@@ -27,7 +27,9 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 @SPI(value = "default", scope = ExtensionScope.FRAMEWORK)
 public interface Hessian2FactoryInitializer {
     String ALLOW = System.getProperty("dubbo.application.hessian2.allow");
+
     String DENY = System.getProperty("dubbo.application.hessian2.deny");
+
     String WHITELIST = System.getProperty("dubbo.application.hessian2.whitelist");
 
     String ALLOW_NON_SERIALIZABLE = System.getProperty("dubbo.hessian.allowNonSerializable", "false");

@@ -42,4 +42,17 @@ public class PrefixedConfiguration implements Configuration {
         return null;
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        if (StringUtils.isBlank(prefix)) {
+            return origin.getInternalProperty(key, defaultValue);
+        }
+
+        Object value = origin.getInternalProperty(prefix + "." + key, defaultValue);
+        if (!ConfigurationUtils.isEmptyValue(value)) {
+            return value;
+        }
+        return null;
+    }
+
 }
