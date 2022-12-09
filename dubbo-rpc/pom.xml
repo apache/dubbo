@@ -36,7 +36,6 @@
         <module>dubbo-rpc-rest</module>
         <module>dubbo-rpc-grpc</module>
         <module>dubbo-rpc-triple</module>
-        <module>dubbo-rpc-mvc</module>
     </modules>
 
     <dependencies>
