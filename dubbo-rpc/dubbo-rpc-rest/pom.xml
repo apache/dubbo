@@ -27,7 +27,7 @@
         <relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>dubbo-rpc-rest</artifactId>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<description>The JAX-RS rpc module of dubbo project</description>
 	<properties>
