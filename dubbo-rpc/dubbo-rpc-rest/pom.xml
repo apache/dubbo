@@ -16,14 +16,18 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
+    <modules>
+        <module>dubbo-rest-annotation-api</module>
+        <module>dubbo-springmvc-annotation-api</module>
+    </modules>
+    <parent>
 		<groupId>org.apache.dubbo</groupId>
 		<artifactId>dubbo-rpc</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>dubbo-rpc-rest</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 	<name>${project.artifactId}</name>
 	<description>The JAX-RS rpc module of dubbo project</description>
 	<properties>
