@@ -89,4 +89,20 @@ public class CompositeConfiguration implements Configuration {
         return null;
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        for (Configuration config : configList) {
+            try {
+                Object value = config.getProperty(key, defaultValue);
+                if (!ConfigurationUtils.isEmptyValue(value)) {
+                    return value;
+                }
+            } catch (Exception e) {
+                logger.error("Error when trying to get value for key " + key + " from " + config + ", " +
+                    "will continue to try the next one.");
+            }
+        }
+        return defaultValue;
+    }
+
 }

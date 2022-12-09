@@ -86,6 +86,16 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        Object v = zkClient.getContent(buildPathKey("", key));
+        if (v != null) {
+            return v;
+        } else {
+            return defaultValue;
+        }
+    }
+
+    @Override
     protected void doClose() throws Exception {
         // remove data listener
         Map<String, ZookeeperDataListener> pathKeyListeners = cacheListener.getPathKeyListeners();

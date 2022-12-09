@@ -138,7 +138,9 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        if (sslCtx != null) {
+            p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        }
         p.addLast("unificationA",
             new NettyPortUnificationServerHandler(url, sslCtx, false, protocols,
                 handler, dubboChannels, urlMapper, handlerMapper));

@@ -37,6 +37,7 @@ import java.util.concurrent.ExecutorService;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
@@ -44,8 +45,6 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
  * AbstractServer
  */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
-
-    protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServer.class);
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();
     private InetSocketAddress localAddress;
@@ -75,7 +74,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
                 + " on " + bindAddress + ", cause: " + t.getMessage(), t);
         }
-        executors.add(executorRepository.createExecutorIfAbsent(url));
+        executors.add(executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
     }
 
     protected abstract void doOpen() throws Throwable;
@@ -99,7 +98,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
         }
 
-        ExecutorService executor = executorRepository.createExecutorIfAbsent(url);
+        ExecutorService executor = executorRepository.createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
         executors.add(executor);
         executorRepository.updateThreadpool(url, executor);
         super.setUrl(getUrl().addParameters(url.getParameters()));

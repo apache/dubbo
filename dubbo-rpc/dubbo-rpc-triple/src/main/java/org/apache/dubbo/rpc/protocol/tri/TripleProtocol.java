@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -51,6 +52,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.rpc.Constants.H2_IGNORE_1_0_0_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY;
+import static org.apache.dubbo.config.Constants.SERVER_THREAD_POOL_NAME;
 import static org.apache.dubbo.rpc.Constants.H2_SUPPORT_NO_LOWER_HEADER_KEY;
 
 public class TripleProtocol extends AbstractProtocol {
@@ -129,7 +131,7 @@ public class TripleProtocol extends AbstractProtocol {
         triBuiltinService.getHealthStatusManager()
             .setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
         // init
-        ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).createExecutorIfAbsent(url);
+        ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
 
         PortUnificationExchanger.bind(url, new DefaultPuHandler());
         optimizeSerialization(url);
@@ -149,7 +151,7 @@ public class TripleProtocol extends AbstractProtocol {
     }
 
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
-        ExecutorService executor = ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(url);
+        ExecutorService executor = ExecutorRepository.getInstance(applicationModel).createExecutorIfAbsent(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME));
         Objects.requireNonNull(executor,
             String.format("No available executor found in %s", url));
         return executor;
