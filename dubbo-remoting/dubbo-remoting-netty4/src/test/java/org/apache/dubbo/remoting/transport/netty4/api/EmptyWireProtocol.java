@@ -21,8 +21,6 @@ import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.ssl.SslContext;
 import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 
 public class EmptyWireProtocol implements WireProtocol {

@@ -49,7 +49,6 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.logging.LogLevel;
-import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
