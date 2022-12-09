@@ -140,5 +140,10 @@
             <artifactId>netty-codec-http</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
