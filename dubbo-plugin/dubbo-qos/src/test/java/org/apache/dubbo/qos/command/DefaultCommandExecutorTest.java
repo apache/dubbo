@@ -20,6 +20,7 @@ package org.apache.dubbo.qos.command;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
 import org.apache.dubbo.qos.command.exception.PermissionDenyException;
 import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
@@ -41,7 +42,9 @@ class DefaultCommandExecutorTest {
     void testExecute2() throws Exception {
         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
         final CommandContext commandContext = CommandContextFactory.newInstance("greeting", new String[]{"dubbo"}, false);
-        commandContext.setQosConfiguration(QosConfiguration.builder().build());
+        commandContext.setQosConfiguration(QosConfiguration.builder()
+            .anonymousAccessPermissionLevel(PermissionLevel.PROTECTED.name())
+            .build());
         String result = executor.execute(commandContext);
         assertThat(result, equalTo("greeting dubbo"));
     }
