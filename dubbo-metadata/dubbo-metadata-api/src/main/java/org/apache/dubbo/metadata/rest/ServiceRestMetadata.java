@@ -19,7 +19,6 @@ package org.apache.dubbo.metadata.rest;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The metadata class for {@link RequestMetadata HTTP(REST) request} and
