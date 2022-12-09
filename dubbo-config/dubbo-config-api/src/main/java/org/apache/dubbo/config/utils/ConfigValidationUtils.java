@@ -517,6 +517,10 @@ public class ConfigValidationUtils {
             return;
         }
 
+        if (metadataReportConfig.getCycleReport() != null && !metadataReportConfig.getCycleReport()) {
+            return;
+        }
+
         String address = metadataReportConfig.getAddress();
         String protocol = metadataReportConfig.getProtocol();
 
