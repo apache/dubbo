@@ -214,6 +214,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
         RestMethodMetadata metadata = new RestMethodMetadata();
 
+        // to consumer service map
+        metadata.setReflectMethod(serviceMethod);
+
         MethodDefinition methodDefinition = resolveMethodDefinition(serviceMethod, serviceType, serviceInterfaceClass);
         // Set MethodDefinition
         metadata.setMethod(methodDefinition);

@@ -17,7 +17,9 @@
 package org.apache.dubbo.metadata.rest;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The metadata class for {@link RequestMetadata HTTP(REST) request} and
@@ -40,6 +42,7 @@ public class ServiceRestMetadata implements Serializable {
     private int port;
 
     private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
+    private Map<Method, RestMethodMetadata> methodToServiceMap;
 
     public String getServiceInterface() {
         return serviceInterface;
@@ -81,6 +84,7 @@ public class ServiceRestMetadata implements Serializable {
         PathMatcher pathMather = new PathMatcher(restMethodMetadata.getRequest().getPath(),
             this.getVersion(), this.getGroup(), this.getPort());
         addPathToServiceMap(pathMather, restMethodMetadata);
+        addMethodToServiceMap(restMethodMetadata);
         getMeta().add(restMethodMetadata);
     }
 
@@ -108,6 +112,19 @@ public class ServiceRestMetadata implements Serializable {
         for (PathMatcher pathMather : pathToServiceMap.keySet()) {
             pathMather.setPort(port);
         }
+    }
+
+    public Map<Method, RestMethodMetadata> getMethodToServiceMap() {
+        return methodToServiceMap;
+    }
+
+    public void addMethodToServiceMap(RestMethodMetadata restMethodMetadata) {
+
+        if (this.methodToServiceMap == null) {
+            this.methodToServiceMap = new HashMap<>();
+        }
+
+        this.methodToServiceMap.put(restMethodMetadata.getReflectMethod(), restMethodMetadata);
     }
 
     @Override
