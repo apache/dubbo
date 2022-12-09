@@ -248,7 +248,21 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
         this.interfaceClass = interfaceClass;
-        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        if (getInterfaceClassLoader() == null) {
+            setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        } else {
+            if (interfaceClass != null) {
+                try {
+                    if (!interfaceClass.equals(Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
+                        // interfaceClass is not visible from origin classloader, override the classloader from interfaceClass into referenceConfig
+                        setInterfaceClassLoader(interfaceClass.getClassLoader());
+                    }
+                } catch (ClassNotFoundException e) {
+                    // class not found from origin classloader, override the classloader from interfaceClass into referenceConfig
+                    setInterfaceClassLoader(interfaceClass.getClassLoader());
+                }
+            }
+        }
     }
 
     @Parameter(excluded = true)
