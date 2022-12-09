@@ -105,4 +105,8 @@ public interface Constants {
     String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
 
     String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
+
+    String H2_IGNORE_1_0_0_KEY = "dubbo.rpc.tri.ignore-1.0.0-version";
+
+    String H2_RESOLVE_FALLBACK_TO_DEFAULT_KEY = "dubbo.rpc.tri.resolve-fallback-to-default";
 }
