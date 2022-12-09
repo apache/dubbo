@@ -71,6 +71,12 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
             return;
         }
 
+        // the anonymous access is enabled by default, permission level is PUBLIC
+        // if allow anonymous access, return
+        if (qosConfiguration.isAllowAnonymousAccess()) {
+            return;
+        }
+
         final InetAddress inetAddress = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
         // loopback address, return
         if (inetAddress.isLoopbackAddress()) {
@@ -82,10 +88,6 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
             return;
         }
 
-        // if allow anonymous access, return
-        if (qosConfiguration.isAllowAnonymousAccess()) {
-            return;
-        }
 
         ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted, Consider Config It In Whitelist."
             + QosConstants.BR_STR).getBytes());

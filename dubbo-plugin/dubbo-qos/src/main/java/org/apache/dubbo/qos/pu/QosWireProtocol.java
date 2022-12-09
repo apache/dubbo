@@ -55,7 +55,7 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
                 .welcome(DubboLogo.DUBBO)
                 .acceptForeignIp(false)
                 .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
-                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
+                .anonymousAccessPermissionLevel(PermissionLevel.PUBLIC.name())
                 .build()
         );
         List<ChannelHandler> handlers = new ArrayList<>();

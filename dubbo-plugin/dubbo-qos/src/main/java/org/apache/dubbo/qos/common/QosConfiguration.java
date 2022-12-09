@@ -28,8 +28,8 @@ public class QosConfiguration {
 
     // this permission level for anonymous access, it will ignore the acceptForeignIp and acceptForeignIpWhitelist configurations
     // Access permission depends on the config anonymousAccessPermissionLevel and the cmd required permission level
-    // the default value is Cmd.PermissionLevel.NONE, can not access any cmd
-    private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.NONE;
+    // the default value is Cmd.PermissionLevel.PUBLIC, can only access PUBLIC level cmd
+    private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
 
     private QosConfiguration() {
     }
@@ -70,7 +70,7 @@ public class QosConfiguration {
         private String welcome;
         private boolean acceptForeignIp;
         private String acceptForeignIpWhitelist;
-        private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.NONE;
+        private PermissionLevel anonymousAccessPermissionLevel = PermissionLevel.PUBLIC;
 
         private Builder() {
         }

@@ -47,11 +47,11 @@ class DefaultCommandExecutorTest {
     }
 
     @Test
-    void shouldThrowPermissionDenyException_GivenPermissionConfigAndNotMatchCmdPermissionLevel() throws Exception {
+    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndMatchDefaultPUBLICCmdPermissionLevel() throws Exception {
         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
-        final CommandContext commandContext = CommandContextFactory.newInstance("offlineApp", new String[]{"dubbo"}, false);
-        commandContext.setQosConfiguration(QosConfiguration.builder().anonymousAccessPermissionLevel("PUBLIC").build());
-        Assertions.assertThrows(PermissionDenyException.class, () -> executor.execute(commandContext));
+        final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
+        commandContext.setQosConfiguration(QosConfiguration.builder().build());
+        Assertions.assertDoesNotThrow(() -> executor.execute(commandContext));
     }
 
     @Test

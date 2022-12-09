@@ -54,6 +54,7 @@ class ForeignHostPermitHandlerTest {
             QosConfiguration.builder()
                 .acceptForeignIp(false)
                 .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
                 .build()
         );
         handler.handlerAdded(context);
@@ -79,6 +80,7 @@ class ForeignHostPermitHandlerTest {
             QosConfiguration.builder()
                 .acceptForeignIp(false)
                 .acceptForeignIpWhitelist("175.23.44.1 ,  192.168.1.192/26")
+                .anonymousAccessPermissionLevel(PermissionLevel.NONE.name())
                 .build()
         );
 
@@ -136,11 +138,6 @@ class ForeignHostPermitHandlerTest {
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         Channel channel = mock(Channel.class);
         when(context.channel()).thenReturn(channel);
-        InetAddress addr = mock(InetAddress.class);
-        when(addr.isLoopbackAddress()).thenReturn(false);
-        when(addr.getHostAddress()).thenReturn("179.23.44.1");
-        InetSocketAddress address = new InetSocketAddress(addr, 12345);
-        when(channel.remoteAddress()).thenReturn(address);
         ChannelFuture future = mock(ChannelFuture.class);
         when(context.writeAndFlush(any(ByteBuf.class))).thenReturn(future);
         ForeignHostPermitHandler handler = new ForeignHostPermitHandler(

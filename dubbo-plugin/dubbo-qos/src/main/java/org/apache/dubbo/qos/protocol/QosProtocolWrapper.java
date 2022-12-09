@@ -118,7 +118,7 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
-            String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.NONE.name());
+            String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.PUBLIC.name());
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
 
             if (server.isStarted()) {
