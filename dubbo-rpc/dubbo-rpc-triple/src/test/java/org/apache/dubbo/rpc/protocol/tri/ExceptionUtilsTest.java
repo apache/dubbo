@@ -17,6 +17,17 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.*;
+import org.apache.dubbo.rpc.protocol.tri.support.IGreeter2;
+import org.apache.dubbo.rpc.protocol.tri.support.IGreeter2Impl;
+import org.apache.dubbo.rpc.protocol.tri.support.IGreeterException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,5 +80,59 @@ class ExceptionUtilsTest {
     void testGetStackFrameList() {
         List<String> stackFrameList = ExceptionUtils.getStackFrameList(exception);
         Assertions.assertNotEquals(10,stackFrameList.size());
+    }
+
+    @Test
+    void testSelfDefineException() throws Exception{
+        IGreeter2 serviceImpl = new IGreeter2Impl();
+
+        int availablePort = NetUtils.getAvailablePort();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+
+        URL providerUrl = URL.valueOf(
+            "tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName());
+
+        ModuleServiceRepository serviceRepository = applicationModel.getDefaultModule()
+            .getServiceRepository();
+        ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter2.class);
+
+        ProviderModel providerModel = new ProviderModel(
+            providerUrl.getServiceKey(),
+            serviceImpl,
+            serviceDescriptor,
+            new ServiceMetadata(), ClassUtils.getClassLoader(IGreeter2.class));
+        serviceRepository.registerProvider(providerModel);
+        providerUrl = providerUrl.setServiceModel(providerModel);
+
+        Protocol protocol = new TripleProtocol(providerUrl.getOrDefaultFrameworkModel());
+        ProxyFactory proxy = applicationModel.getExtensionLoader(ProxyFactory.class)
+            .getAdaptiveExtension();
+        Invoker<IGreeter2> invoker = proxy.getInvoker(serviceImpl, IGreeter2.class, providerUrl);
+        Exporter<IGreeter2> export = protocol.export(invoker);
+
+        URL consumerUrl = URL.valueOf(
+            "tri://127.0.0.1:" + availablePort + "/" + IGreeter2.class.getName());
+
+        ConsumerModel consumerModel = new ConsumerModel(consumerUrl.getServiceKey(), null,
+            serviceDescriptor, null,
+            null, null);
+        consumerUrl = consumerUrl.setServiceModel(consumerModel);
+        IGreeter2 greeterProxy = proxy.getProxy(protocol.refer(IGreeter2.class, consumerUrl));
+        Thread.sleep(1000);
+
+        // 1. test unaryStream
+        String REQUEST_MSG = "hello world";
+        String EXPECT_RESPONSE_MSG = "I am self define exception";
+        try {
+            greeterProxy.echo(REQUEST_MSG);
+        } catch (IGreeterException e) {
+            Assertions.assertEquals(EXPECT_RESPONSE_MSG, e.getMessage());
+        }
+        export.unexport();
+        protocol.destroy();
+        // resource recycle.
+        serviceRepository.destroy();
+        System.out.println("serviceRepository destroyed");
+
     }
 }

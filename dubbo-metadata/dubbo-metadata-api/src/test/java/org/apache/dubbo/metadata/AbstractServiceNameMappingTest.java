@@ -54,8 +54,7 @@ class AbstractServiceNameMappingTest {
     @Test
     void testGetServices() {
         url = url.addParameter(PROVIDED_BY, "app1,app2");
-        mapping.initInterfaceAppMapping(url);
-        Set<String> services = mapping.getCachedMapping(url);
+        Set<String> services = mapping.getMapping(url);
         Assertions.assertTrue(services.contains("app1"));
         Assertions.assertTrue(services.contains("app2"));
 
@@ -66,8 +65,8 @@ class AbstractServiceNameMappingTest {
 //        Assertions.assertTrue(services.contains("remote-app2"));
 
 
-        Assertions.assertNotNull(mapping.getCachedMapping(url));
-        Assertions.assertIterableEquals(mapping.getCachedMapping(url), services);
+//        Assertions.assertNotNull(mapping.getCachedMapping(url));
+//        Assertions.assertIterableEquals(mapping.getCachedMapping(url), services);
     }
 
     @Test

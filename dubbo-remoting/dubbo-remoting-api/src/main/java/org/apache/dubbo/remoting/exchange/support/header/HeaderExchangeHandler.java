@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.net.InetSocketAddress;
@@ -151,6 +152,14 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
         if (message instanceof Request) {
             Request request = (Request) message;
             DefaultFuture.sent(channel, request);
+        }
+        if (message instanceof MultiMessage) {
+            MultiMessage multiMessage = (MultiMessage) message;
+            for (Object single : multiMessage) {
+                if (single instanceof Request) {
+                    DefaultFuture.sent(channel, ((Request) single));
+                }
+            }
         }
         if (exception != null) {
             if (exception instanceof RuntimeException) {

@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_REFRESH_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -73,7 +74,6 @@ public class ServiceInstancesChangedListener {
 
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
-    protected URL url;
     protected Map<String, Set<NotifyListenerWithKey>> listeners;
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -268,14 +268,6 @@ public class ServiceInstancesChangedListener {
         return serviceNames;
     }
 
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
     public Map<String, List<ServiceInstance>> getAllInstances() {
         return allInstances;
     }
@@ -420,7 +412,7 @@ public class ServiceInstancesChangedListener {
     }
 
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {
-        boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+        boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, DEFAULT_ENABLE_EMPTY_PROTECTION);
         if (!emptyProtectionEnabled && urls == null) {
             urls = new ArrayList<>();
         } else if (emptyProtectionEnabled && urls == null) {
@@ -429,7 +421,7 @@ public class ServiceInstancesChangedListener {
 
         if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
             // notice that the service of this.url may not be the same as notify listener.
-            URL empty = URLBuilder.from(this.url).setProtocol(EMPTY_PROTOCOL).build();
+            URL empty = URLBuilder.from(serviceDiscovery.getUrl()).setProtocol(EMPTY_PROTOCOL).build();
             urls.add(empty);
         }
         return urls;

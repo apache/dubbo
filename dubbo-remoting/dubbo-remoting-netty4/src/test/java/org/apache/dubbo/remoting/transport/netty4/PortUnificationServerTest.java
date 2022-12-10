@@ -35,5 +35,6 @@ class PortUnificationServerTest {
         final NettyPortUnificationServer server = new NettyPortUnificationServer(url, new DefaultPuHandler());
         server.bind();
         Assertions.assertTrue(server.isBound());
+        server.close();
     }
 }

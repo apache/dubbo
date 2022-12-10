@@ -1,0 +1,2 @@
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboEndpointAnnotationAutoConfiguration
+org.apache.dubbo.spring.boot.actuate.autoconfigure.DubboMetricsAutoConfiguration

@@ -29,7 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_DEFAULT;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -330,6 +332,22 @@ class ApplicationConfigTest {
         Assertions.assertEquals("127.0.0.1", applicationConfig.getQosHost());
         Assertions.assertEquals(2345, applicationConfig.getQosPort());
         Assertions.assertEquals("demo-app", applicationConfig.getName());
+
+        DubboBootstrap.getInstance().destroy();
+    }
+
+    @Test
+    void testDefaultValue() {
+        SysProps.setProperty("dubbo.application.NAME", "demo-app");
+
+        DubboBootstrap.getInstance()
+            .initialize();
+
+        ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
+
+        Assertions.assertEquals(DUBBO, applicationConfig.getProtocol());
+        Assertions.assertEquals(EXECUTOR_MANAGEMENT_MODE_DEFAULT, applicationConfig.getExecutorManagementMode());
+        Assertions.assertEquals(Boolean.TRUE, applicationConfig.getEnableFileCache());
 
         DubboBootstrap.getInstance().destroy();
     }
