@@ -512,9 +512,14 @@ public class ConfigValidationUtils {
         }
     }
 
-    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+    public static MetadataReportConfig validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
         if (metadataReportConfig == null) {
-            return;
+            return null;
+        }
+
+        if (Boolean.FALSE.equals(metadataReportConfig.getReportMetadata()) &&
+            Boolean.FALSE.equals(metadataReportConfig.getReportDefinition())) {
+            return null;
         }
 
         String address = metadataReportConfig.getAddress();
@@ -523,6 +528,7 @@ public class ConfigValidationUtils {
         if ((isEmpty(address) || !address.contains("://")) && isEmpty(protocol)) {
             throw new IllegalArgumentException("Please specify valid protocol or address for metadata report " + address);
         }
+        return metadataReportConfig;
     }
 
     public static void validateMetricsConfig(MetricsConfig metricsConfig) {
