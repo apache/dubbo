@@ -16,30 +16,33 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.internal.UnstableApi;
-import io.netty.util.internal.logging.InternalLogger;
-import io.netty.util.internal.logging.InternalLoggerFactory;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import io.netty.handler.codec.http2.Http2Error;
-import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
-import static io.netty.handler.codec.http2.Http2Error.INTERNAL_ERROR;
-import static io.netty.handler.codec.http2.Http2Error.STREAM_CLOSED;
-import static io.netty.handler.codec.http2.Http2CodecUtil.DEFAULT_WINDOW_SIZE;
-import static io.netty.handler.codec.http2.Http2CodecUtil.MIN_WEIGHT;
-import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_WEIGHT;
-import io.netty.handler.codec.http2.WeightedFairQueueByteDistributor;
-import io.netty.handler.codec.http2.StreamByteDistributor;
-import io.netty.handler.codec.http2.Http2StreamVisitor;
-import io.netty.handler.codec.http2.Http2Exception;
-import io.netty.handler.codec.http2.Http2ConnectionAdapter;
-import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2RemoteFlowController;
-import io.netty.handler.codec.http2.Http2Stream;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2ConnectionAdapter;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Exception;
+import io.netty.handler.codec.http2.Http2RemoteFlowController;
+import io.netty.handler.codec.http2.Http2Stream;
+import io.netty.handler.codec.http2.Http2StreamVisitor;
+import io.netty.handler.codec.http2.StreamByteDistributor;
+import io.netty.handler.codec.http2.WeightedFairQueueByteDistributor;
+import io.netty.util.internal.UnstableApi;
+import io.netty.util.internal.logging.InternalLogger;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+import static io.netty.handler.codec.http2.Http2CodecUtil.DEFAULT_WINDOW_SIZE;
+import static io.netty.handler.codec.http2.Http2CodecUtil.MAX_WEIGHT;
+import static io.netty.handler.codec.http2.Http2CodecUtil.MIN_WEIGHT;
+import static io.netty.handler.codec.http2.Http2Error.FLOW_CONTROL_ERROR;
+import static io.netty.handler.codec.http2.Http2Error.INTERNAL_ERROR;
+import static io.netty.handler.codec.http2.Http2Error.STREAM_CLOSED;
 import static io.netty.handler.codec.http2.Http2Exception.streamError;
 import static io.netty.handler.codec.http2.Http2Stream.State.HALF_CLOSED_LOCAL;
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
@@ -60,30 +63,33 @@ public class TriHttp2RemoteFlowController implements Http2RemoteFlowController {
     private final Http2Connection.PropertyKey stateKey;
     private final StreamByteDistributor streamByteDistributor;
     private final FlowState connectionState;
-    private Configuration config = ConfigurationUtils.getGlobalConfiguration(
-        ApplicationModel.defaultModel());
-    private int initialWindowSize = config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
+    private final Configuration config;
+    private int initialWindowSize;
     private WritabilityMonitor monitor;
     private ChannelHandlerContext ctx;
 
-    public TriHttp2RemoteFlowController(Http2Connection connection) {
-        this(connection, (Listener) null);
-    }
-
-    public TriHttp2RemoteFlowController(Http2Connection connection,
-                                        StreamByteDistributor streamByteDistributor) {
-        this(connection, streamByteDistributor, null);
-    }
-
-    public TriHttp2RemoteFlowController(Http2Connection connection, final Listener listener) {
-        this(connection, new WeightedFairQueueByteDistributor(connection), listener);
+    public TriHttp2RemoteFlowController(Http2Connection connection, ApplicationModel applicationModel) {
+        this(connection, (Listener) null, applicationModel);
     }
 
     public TriHttp2RemoteFlowController(Http2Connection connection,
                                         StreamByteDistributor streamByteDistributor,
-                                        final Listener listener) {
+                                        ApplicationModel applicationModel) {
+        this(connection, streamByteDistributor, null, applicationModel);
+    }
+
+    public TriHttp2RemoteFlowController(Http2Connection connection, final Listener listener, ApplicationModel applicationModel) {
+        this(connection, new WeightedFairQueueByteDistributor(connection), listener, applicationModel);
+    }
+
+    public TriHttp2RemoteFlowController(Http2Connection connection,
+                                        StreamByteDistributor streamByteDistributor,
+                                        final Listener listener,
+                                        ApplicationModel applicationModel) {
         this.connection = checkNotNull(connection, "connection");
         this.streamByteDistributor = checkNotNull(streamByteDistributor, "streamWriteDistributor");
+        this.config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
+        this.initialWindowSize = config.getInt(H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY, DEFAULT_WINDOW_SIZE);
 
         // Add a flow state for the connection.
         stateKey = connection.newKey();
