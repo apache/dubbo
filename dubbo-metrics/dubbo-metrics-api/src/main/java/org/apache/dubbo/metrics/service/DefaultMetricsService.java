@@ -17,6 +17,11 @@
 
 package org.apache.dubbo.metrics.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
 import org.apache.dubbo.common.metrics.model.MetricsCategory;
@@ -26,11 +31,6 @@ import org.apache.dubbo.common.metrics.service.MetricsEntity;
 import org.apache.dubbo.common.metrics.service.MetricsService;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Default implementation of {@link MetricsService}

@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 import java.net.InetSocketAddress;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_TIMEOUT_SERVER;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 
 public abstract class AbstractServerCallListener implements AbstractServerCall.Listener {
 
@@ -52,11 +53,12 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
         RpcContext.restoreCancellationContext(cancellationContext);
         InetSocketAddress remoteAddress = (InetSocketAddress) invocation.getAttributes()
             .remove(AbstractServerCall.REMOTE_ADDRESS_KEY);
-        RpcContext.getServerContext().setRemoteAddress(remoteAddress);
+        RpcContext.getServiceContext().setRemoteAddress(remoteAddress);
         String remoteApp = (String) invocation.getAttributes()
             .remove(TripleHeaderEnum.CONSUMER_APP_NAME_KEY);
         if (null != remoteApp) {
-            RpcContext.getServerContext().setRemoteApplicationName(remoteApp);
+            RpcContext.getServiceContext().setRemoteApplicationName(remoteApp);
+            invocation.setAttachmentIfAbsent(REMOTE_APPLICATION_KEY, remoteApp);
         }
         final long stInMillis = System.currentTimeMillis();
         try {
@@ -68,7 +70,7 @@ public abstract class AbstractServerCallListener implements AbstractServerCall.L
                     return;
                 }
                 if (response.hasException()) {
-                    responseObserver.onError(response.getException());
+                    onReturn(response.getException());
                     return;
                 }
                 final long cost = System.currentTimeMillis() - stInMillis;

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.listener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -100,11 +101,12 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
                     try {
                         consumer.accept(listener);
                     } catch (RuntimeException t) {
-                        logger.error(t.getMessage(), t);
+                        logger.error(LoggerCodeConstants.INTERNAL_ERROR, "wrapped listener internal error", "", t.getMessage(), t);
                         exception = t;
                     }
                 }
             }
+
             if (exception != null) {
                 throw exception;
             }

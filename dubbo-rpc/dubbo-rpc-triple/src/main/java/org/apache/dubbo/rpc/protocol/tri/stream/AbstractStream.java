@@ -27,11 +27,15 @@ import java.util.concurrent.Executor;
  */
 public abstract class AbstractStream implements Stream {
 
-    protected final Executor executor;
+    protected Executor executor;
     protected final FrameworkModel frameworkModel;
 
     public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = new SerializingExecutor(executor);
     }
 }

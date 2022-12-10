@@ -743,7 +743,12 @@ public abstract class AbstractConfig implements Serializable {
                         && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
                         && !isIgnoredAttribute(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
-                        method.invoke(obj, ClassUtils.convertPrimitive(ScopeModelUtil.getFrameworkModel(getScopeModel()), method.getParameterTypes()[0], value));
+                        if (StringUtils.hasText(value)) {
+                            Object arg = ClassUtils.convertPrimitive(ScopeModelUtil.getFrameworkModel(getScopeModel()), method.getParameterTypes()[0], value);
+                            if (arg != null) {
+                                method.invoke(obj, arg);
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     logger.info("Failed to override the property " + method.getName() + " in " +
