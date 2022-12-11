@@ -1023,7 +1023,7 @@ class URLTest {
         URL url2 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
             "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
             "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
-        assertEquals(url1.hashCode(), url2.hashCode());
+        assertTrue(url1.equals(url2) && url2.equals(url1));
 
         URL url3 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
             "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&interface=" +
