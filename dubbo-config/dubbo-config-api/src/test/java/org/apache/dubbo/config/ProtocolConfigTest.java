@@ -32,10 +32,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ProtocolConfigTest {
 
@@ -384,5 +386,39 @@ class ProtocolConfigTest {
             DubboBootstrap.getInstance().stop();
         }
     }
+
+
+    @Test
+    void testPreferSerializationDefault1() throws Exception {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.checkDefault();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+
+        protocolConfig = new ProtocolConfig();
+        protocolConfig.setSerialization("x-serialization");
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.checkDefault();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("x-serialization"));
+    }
+
+    @Test
+    void testPreferSerializationDefault2() throws Exception {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.refresh();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+
+        protocolConfig = new ProtocolConfig();
+        protocolConfig.setSerialization("x-serialization");
+        assertNull(protocolConfig.getPreferSerialization());
+
+        protocolConfig.refresh();
+        assertThat(protocolConfig.getPreferSerialization(), equalTo("x-serialization"));
+    }
+
 
 }

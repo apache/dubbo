@@ -27,7 +27,6 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -192,7 +191,7 @@ class AbstractServiceConfigTest {
         assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig.checkDefault();
-        assertThat(serviceConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+        assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig = new ServiceConfig();
         serviceConfig.setSerialization("x-serialization");
@@ -208,7 +207,7 @@ class AbstractServiceConfigTest {
         assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig.refresh();
-        assertThat(serviceConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+        assertNull(serviceConfig.getPreferSerialization());
 
         serviceConfig = new ServiceConfig();
         serviceConfig.setSerialization("x-serialization");
