@@ -168,7 +168,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         }
 
         if (StringUtils.isBlank(preferSerialization)) {
-            preferSerialization = DEFAULT_PREFER_SERIALIZATION;
+            preferSerialization = serialization != null ? serialization : DEFAULT_PREFER_SERIALIZATION;
         }
     }
 

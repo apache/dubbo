@@ -27,6 +27,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -34,6 +35,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AbstractServiceConfigTest {
     @Test
@@ -178,10 +180,42 @@ class AbstractServiceConfigTest {
     }
 
     @Test
-    public void testPreferSerialization() throws Exception {
+    void testPreferSerialization() throws Exception {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setPreferSerialization("preferSerialization");
         assertThat(serviceConfig.getPreferSerialization(), equalTo("preferSerialization"));
+    }
+
+    @Test
+    void testPreferSerializationDefault1() throws Exception {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.checkDefault();
+        assertThat(serviceConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+
+        serviceConfig = new ServiceConfig();
+        serviceConfig.setSerialization("x-serialization");
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.checkDefault();
+        assertThat(serviceConfig.getPreferSerialization(), equalTo("x-serialization"));
+    }
+
+    @Test
+    void testPreferSerializationDefault2() throws Exception {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.refresh();
+        assertThat(serviceConfig.getPreferSerialization(), equalTo(DEFAULT_PREFER_SERIALIZATION));
+
+        serviceConfig = new ServiceConfig();
+        serviceConfig.setSerialization("x-serialization");
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.refresh();
+        assertThat(serviceConfig.getPreferSerialization(), equalTo("x-serialization"));
     }
 
 
