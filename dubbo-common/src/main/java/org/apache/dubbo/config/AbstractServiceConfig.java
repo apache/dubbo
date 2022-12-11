@@ -30,7 +30,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENE
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 
 /**
  * AbstractServiceConfig
@@ -131,7 +130,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * <p>
      * When this parameter is null or the serialization type specified by this parameter does not exist in the Dubbo SDK, the serialization type specified by serialization is used.
      * If the Dubbo SDK if still does not exist, the default type of the Dubbo SDK is used.
-     * For Dubbo SDK >= 3.1, <code>preferSerialization</code> takes precedence over <code>serialization</code>
+     * For Dubbo SDK >= 3.2, <code>preferSerialization</code> takes precedence over <code>serialization</code>
      * <p>
      * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
      */
@@ -168,7 +167,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         }
 
         if (StringUtils.isBlank(preferSerialization)) {
-            preferSerialization = serialization != null ? serialization : DEFAULT_PREFER_SERIALIZATION;
+            preferSerialization = serialization;
         }
     }
 
