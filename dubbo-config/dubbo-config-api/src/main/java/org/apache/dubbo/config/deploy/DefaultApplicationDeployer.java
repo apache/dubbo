@@ -291,7 +291,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
-            if (ConfigValidationUtils.validateMetadataConfig(metadataReportConfig) != null) {
+            if (ConfigValidationUtils.isValidMetadataConfig(metadataReportConfig)) {
+                ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
                 validMetadataReportConfigs.add(metadataReportConfig);
             }
         }
