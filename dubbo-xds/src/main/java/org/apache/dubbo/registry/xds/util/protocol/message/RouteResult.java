@@ -22,17 +22,21 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RouteResult {
     private final Map<String, Set<String>> domainMap;
+    private Map<String, VirtualHost> virtualHostMap;
 
     public RouteResult() {
         this.domainMap = new ConcurrentHashMap<>();
+        this.virtualHostMap = new ConcurrentHashMap<>();
     }
 
-    public RouteResult(Map<String, Set<String>> domainMap) {
+    public RouteResult(Map<String, Set<String>> domainMap,Map<String, VirtualHost> virtualHostMap) {
         this.domainMap = domainMap;
+        this.virtualHostMap = virtualHostMap;
     }
 
     public boolean isNotEmpty() {
@@ -47,6 +51,15 @@ public class RouteResult {
         return Collections.unmodifiableSet(domainMap.keySet());
     }
 
+    public VirtualHost searchVirtualHost(String domain) {
+        return virtualHostMap.get(domain);
+    }
+
+
+    public void removeVirtualHost(String domain) {
+        virtualHostMap.remove(domain);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -56,18 +69,19 @@ public class RouteResult {
             return false;
         }
         RouteResult that = (RouteResult) o;
-        return Objects.equals(domainMap, that.domainMap);
+        return Objects.equals(domainMap, that.domainMap) && Objects.equals(virtualHostMap, that.virtualHostMap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(domainMap);
+        return Objects.hash(domainMap,virtualHostMap);
     }
 
     @Override
     public String toString() {
         return "RouteResult{" +
             "domainMap=" + domainMap +
+            "virtualHostMap=" + virtualHostMap +
             '}';
     }
 }

@@ -192,6 +192,14 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         requestParam.put(request, resourceNames);
     }
 
+
+    @Override
+    public void removeObserve(long request) {
+        streamResult.remove(request);
+        requestParam.remove(request);
+        requestObserverMap.remove(request);
+    }
+
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
         return DiscoveryRequest.newBuilder()
             .setNode(node)
