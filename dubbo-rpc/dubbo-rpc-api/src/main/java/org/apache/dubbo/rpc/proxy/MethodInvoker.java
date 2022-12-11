@@ -24,9 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * MethodHandle wrapper
- */
 public interface MethodInvoker {
 
     Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;
