@@ -87,11 +87,11 @@ public interface MethodInvoker {
         }
     }
 
-    class CompositeMethodHandleInvoker implements MethodInvoker {
+    class CompositeMethodInvoker implements MethodInvoker {
 
         private final Map<String, MethodInvoker> invokers;
 
-        public CompositeMethodHandleInvoker(Map<String, MethodInvoker> invokers) {
+        public CompositeMethodInvoker(Map<String, MethodInvoker> invokers) {
             this.invokers = invokers;
         }
 
@@ -122,6 +122,6 @@ public interface MethodInvoker {
             }
             invokers.put(methodName, new OverloadMethodInvoker(ms));
         }
-        return new CompositeMethodHandleInvoker(invokers);
+        return new CompositeMethodInvoker(invokers);
     }
 }
