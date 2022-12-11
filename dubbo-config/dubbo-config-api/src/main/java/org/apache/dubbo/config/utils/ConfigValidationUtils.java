@@ -526,6 +526,10 @@ public class ConfigValidationUtils {
     }
 
     public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+        if (!isValidMetadataConfig(metadataReportConfig)) {
+            return;
+        }
+
         String address = metadataReportConfig.getAddress();
         String protocol = metadataReportConfig.getProtocol();
 
