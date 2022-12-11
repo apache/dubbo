@@ -29,6 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_POOL_EXHAUSTED_LISTENERS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.ProviderConstants.DEFAULT_PREFER_SERIALIZATION;
 
 /**
  * ProtocolConfig
@@ -114,6 +115,18 @@ public class ProtocolConfig extends AbstractConfig {
      * Serialization
      */
     private String serialization;
+
+    /**
+     * If the parameter has a value, the consumer will read the parameter first.
+     * If the Dubbo Sdk you are using contains the serialization type, the serialization method specified by the argument is used.
+     * <p>
+     * When this parameter is null or the serialization type specified by this parameter does not exist in the Dubbo SDK, the serialization type specified by serialization is used.
+     * If the Dubbo SDK if still does not exist, the default type of the Dubbo SDK is used.
+     * For Dubbo SDK >= 3.2, <code>preferSerialization</code> takes precedence over <code>serialization</code>
+     * <p>
+     * The configuration supports multiple, which are separated by commas.Such as:<code>fastjson2,fastjson,hessian2</code>
+     */
+    private String preferSerialization; // default:fastjson2,hessian2
 
     /**
      * Charset
@@ -248,6 +261,10 @@ public class ProtocolConfig extends AbstractConfig {
         super.checkDefault();
         if (name == null) {
             name = DUBBO_PROTOCOL;
+        }
+
+        if (StringUtils.isBlank(preferSerialization)) {
+            preferSerialization = serialization != null ? serialization : DEFAULT_PREFER_SERIALIZATION;
         }
     }
 
@@ -385,6 +402,14 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
+    }
+
+    public String getPreferSerialization() {
+        return preferSerialization;
+    }
+
+    public void setPreferSerialization(String preferSerialization) {
+        this.preferSerialization = preferSerialization;
     }
 
     public String getCharset() {
