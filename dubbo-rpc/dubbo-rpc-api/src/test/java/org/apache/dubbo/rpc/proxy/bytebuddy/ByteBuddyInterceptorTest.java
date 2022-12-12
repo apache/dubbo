@@ -14,23 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.proxy;
+package org.apache.dubbo.rpc.proxy.bytebuddy;
 
-import org.apache.dubbo.rpc.RpcContext;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.rmi.RemoteException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
-public class RemoteServiceImpl implements RemoteService {
-    public String getThreadName() throws RemoteException {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
-        return Thread.currentThread().getName();
-    }
+class ByteBuddyInterceptorTest {
 
-    public String sayHello(String name) throws RemoteException {
-        return "hello " + name + "@" + RemoteServiceImpl.class.getName();
-    }
-
-    public String sayHello(String name, String arg2) {
-        return "hello " + name + "@" + RemoteServiceImpl.class.getName() + ", arg2 " + arg2;
+    @Test
+    void testIntercept() throws Throwable {
+        InvocationHandler handler = Mockito.mock(InvocationHandler.class);
+        ByteBuddyInterceptor interceptor = new ByteBuddyInterceptor(handler);
+        Method method = Mockito.mock(Method.class);
+        Proxy proxy = Mockito.mock(Proxy.class);
+        Object[] args = new Object[0];
+        interceptor.intercept(proxy, args, method);
+        //'intercept' method will call 'invoke' method directly
+        Mockito.verify(handler, Mockito.times(1)).invoke(proxy, method, args);
     }
 }

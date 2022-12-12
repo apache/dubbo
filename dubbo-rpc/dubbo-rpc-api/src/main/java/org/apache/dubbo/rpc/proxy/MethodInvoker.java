@@ -95,6 +95,15 @@ public interface MethodInvoker {
             this.invokers = invokers;
         }
 
+        /**
+         * for test
+         *
+         * @return all MethodInvoker
+         */
+        Map<String, MethodInvoker> getInvokers() {
+            return invokers;
+        }
+
         @Override
         public Object invoke(Object instance, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable {
             MethodInvoker invoker = invokers.get(methodName);
