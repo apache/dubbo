@@ -19,7 +19,9 @@ package org.apache.dubbo.qos.pu;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.server.DubboLogo;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
@@ -46,7 +48,13 @@ public class QosWireProtocol extends AbstractWireProtocol implements ScopeModelA
     public void configServerProtocolHandler(URL url, ChannelOperator operator) {
         // add qosProcess handler
         QosProcessHandler handler = new QosProcessHandler(url.getOrDefaultFrameworkModel(),
-            DubboLogo.DUBBO, false, StringUtils.EMPTY_STRING);
+            QosConfiguration.builder()
+                .welcome(DubboLogo.DUBBO)
+                .acceptForeignIp(false)
+                .acceptForeignIpWhitelist(StringUtils.EMPTY_STRING)
+                .anonymousAccessPermissionLevel(PermissionLevel.PUBLIC.name())
+                .build()
+        );
         List<ChannelHandler> handlers = new ArrayList<>();
         handlers.add(new ChannelHandlerPretender(handler));
         operator.configChannelHandler(handlers);

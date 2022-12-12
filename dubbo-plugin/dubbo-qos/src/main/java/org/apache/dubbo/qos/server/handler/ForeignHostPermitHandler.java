@@ -24,6 +24,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.common.QosConstants;
+import org.apache.dubbo.qos.common.QosConfiguration;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -34,18 +35,21 @@ import java.util.function.Predicate;
 public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
 
     // true means to accept foreign IP
-    private  boolean acceptForeignIp;
+    private final boolean acceptForeignIp;
 
     // the whitelist of foreign IP when acceptForeignIp = false, the delimiter is colon(,)
     // support specific ip and an ip range from CIDR specification
-    private String acceptForeignIpWhitelist;
+    private final String acceptForeignIpWhitelist;
     private Predicate<String> whitelistPredicate = foreignIp -> false;
 
-    public ForeignHostPermitHandler(boolean acceptForeignIp, String foreignIpWhitelist) {
-        this.acceptForeignIp = acceptForeignIp;
-        this.acceptForeignIpWhitelist = foreignIpWhitelist;
-        if (StringUtils.isNotEmpty(foreignIpWhitelist)) {
-            whitelistPredicate = Arrays.stream(foreignIpWhitelist.split(","))
+    private final QosConfiguration qosConfiguration;
+
+    public ForeignHostPermitHandler(QosConfiguration qosConfiguration) {
+        this.qosConfiguration = qosConfiguration;
+        this.acceptForeignIp = qosConfiguration.isAcceptForeignIp();
+        this.acceptForeignIpWhitelist = qosConfiguration.getAcceptForeignIpWhitelist();
+        if (StringUtils.isNotEmpty(acceptForeignIpWhitelist)) {
+            whitelistPredicate = Arrays.stream(acceptForeignIpWhitelist.split(","))
                 .map(String::trim)
                 .filter(StringUtils::isNotEmpty)
                 .map(foreignIpPattern -> (Predicate<String>) foreignIp -> {
@@ -67,6 +71,12 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
             return;
         }
 
+        // the anonymous access is enabled by default, permission level is PUBLIC
+        // if allow anonymous access, return
+        if (qosConfiguration.isAllowAnonymousAccess()) {
+            return;
+        }
+
         final InetAddress inetAddress = ((InetSocketAddress) ctx.channel().remoteAddress()).getAddress();
         // loopback address, return
         if (inetAddress.isLoopbackAddress()) {
@@ -77,6 +87,7 @@ public class ForeignHostPermitHandler extends ChannelHandlerAdapter {
         if (checkForeignIpInWhiteList(inetAddress)) {
             return;
         }
+
 
         ByteBuf cb = Unpooled.wrappedBuffer((QosConstants.BR_STR + "Foreign Ip Not Permitted, Consider Config It In Whitelist."
             + QosConstants.BR_STR).getBytes());

@@ -14,18 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.qos.command.exception;
 
-import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
-import org.apache.dubbo.qos.command.exception.PermissionDenyException;
-
-public interface CommandExecutor {
-    /**
-     * Execute one command and return the execution result
-     *
-     * @param commandContext command context
-     * @return command execution result
-     * @throws NoSuchCommandException
-     */
-    String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException;
+public class NoSuchCommandException extends CommandException {
+    public NoSuchCommandException(String msg) {
+        super("NoSuchCommandException:" + msg);
+    }
 }

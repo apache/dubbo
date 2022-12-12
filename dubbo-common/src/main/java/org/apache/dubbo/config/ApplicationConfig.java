@@ -38,6 +38,8 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
+import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -163,6 +165,11 @@ public class ApplicationConfig extends AbstractConfig {
      * When we disable accept foreign ip, support specify foreign ip in the whitelist
      */
     private String qosAcceptForeignIpWhitelist;
+
+    /**
+     * the anonymous(any foreign ip) access permission level, default is NONE, can not access any cmd
+     */
+    private String qosAnonymousAccessPermissionLevel;
 
     /**
      * Customized parameters
@@ -444,6 +451,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
     }
 
+    @Parameter(key = ANONYMOUS_ACCESS_PERMISSION_LEVEL)
+    public String getQosAnonymousAccessPermissionLevel() {
+        return qosAnonymousAccessPermissionLevel;
+    }
+
+    public void setQosAnonymousAccessPermissionLevel(String qosAnonymousAccessPermissionLevel) {
+        this.qosAnonymousAccessPermissionLevel = qosAnonymousAccessPermissionLevel;
+    }
+
     /**
      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
      *
@@ -492,6 +508,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhitelist) {
         this.setQosAcceptForeignIpWhitelist(qosAcceptForeignIpWhitelist);
+    }
+
+    @Parameter(key = ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE, excluded = true, attribute = false)
+    public String getQosAnonymousAccessPermissionLevelCompatible() {
+        return this.getQosAnonymousAccessPermissionLevel();
+    }
+
+    public void setQosAnonymousAccessPermissionLevelCompatible(String qosAnonymousAccessPermissionLevel) {
+        this.setQosAnonymousAccessPermissionLevel(qosAnonymousAccessPermissionLevel);
     }
 
     public Map<String, String> getParameters() {
