@@ -112,7 +112,7 @@ public class RpcInvocation implements Invocation, Serializable {
      * Deep clone of an invocation & put some service params into attachment from invoker (will not change the invoker in invocation)
      *
      * @param invocation original invocation
-     * @param invoker target invoker
+     * @param invoker    target invoker
      */
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getTargetServiceUniqueName(), invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(),
@@ -384,6 +384,9 @@ public class RpcInvocation implements Invocation, Serializable {
     public Map<String, Object> getObjectAttachments() {
         try {
             attachmentLock.lock();
+            if (attachments == null) {
+                attachments = new HashMap<>();
+            }
             return attachments;
         } finally {
             attachmentLock.unlock();
