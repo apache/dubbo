@@ -375,7 +375,7 @@ class MultiInstanceTest {
             // stop provider app 2 and check threads
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
-            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
+            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", new String[]{"Dubbo-framework-shared-scheduler"});
 
         } finally {
             if (providerBootstrap1 != null) {
