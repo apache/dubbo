@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -57,6 +56,7 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.concurrent.Future;
 
 import java.io.IOException;
@@ -288,10 +288,10 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
-        if (invoker == null) {
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
             invoker = pathResolver.resolve(URL.buildKey(serviceName, group, "1.0.0"));
         }
-        if (invoker == null) {
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
             invoker = pathResolver.resolve(serviceName);
         }
         return invoker;
