@@ -45,6 +45,16 @@ public class InmemoryConfiguration implements Configuration {
         return store.get(key);
     }
 
+    @Override
+    public Object getInternalProperty(String key, Object defaultValue) {
+        Object v = store.get(key);
+        if (v != null) {
+            return v;
+        } else {
+            return defaultValue;
+        }
+    }
+
     /**
      * Add one property into the store, the previous value will be replaced if the key exists
      */

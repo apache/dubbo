@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.SystemConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 
 import javassist.compiler.Javac;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,14 +59,16 @@ class SerializeClassCheckerTest {
             serializeClassChecker.validateClass(int.class.getName().toUpperCase(Locale.ROOT));
         }
 
-        Assertions.assertThrows(IllegalArgumentException.class, ()-> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             serializeClassChecker.validateClass(Socket.class.getName());
         });
     }
 
     @Test
     void testAddAllow() {
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, Socket.class.getName() + "," + Javac.class.getName());
+        SystemConfiguration systemConfiguration = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
+
+        systemConfiguration.overwriteCache(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, Socket.class.getName() + "," + Javac.class.getName());
 
         SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
@@ -72,40 +76,44 @@ class SerializeClassCheckerTest {
             serializeClassChecker.validateClass(Javac.class.getName());
         }
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST);
+        systemConfiguration.clearCache();
+
     }
 
     @Test
     void testAddBlock() {
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST, LinkedList.class.getName() + "," + Integer.class.getName());
+        SystemConfiguration systemConfiguration = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
+        systemConfiguration.overwriteCache(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST, LinkedList.class.getName() + "," + Integer.class.getName());
 
         SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
-            Assertions.assertThrows(IllegalArgumentException.class, ()-> {
+            Assertions.assertThrows(IllegalArgumentException.class, () -> {
                 serializeClassChecker.validateClass(LinkedList.class.getName());
             });
-            Assertions.assertThrows(IllegalArgumentException.class, ()-> {
+            Assertions.assertThrows(IllegalArgumentException.class, () -> {
                 serializeClassChecker.validateClass(Integer.class.getName());
             });
         }
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST);
+        systemConfiguration.clearCache();
+
     }
 
     @Test
     void testBlockAll() {
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "true");
-        System.setProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, LinkedList.class.getName());
+        SystemConfiguration systemConfiguration = ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
+
+        systemConfiguration.overwriteCache(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "true");
+        systemConfiguration.overwriteCache(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, LinkedList.class.getName());
 
         SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
         for (int i = 0; i < 10; i++) {
             serializeClassChecker.validateClass(LinkedList.class.getName());
-            Assertions.assertThrows(IllegalArgumentException.class, ()-> {
+            Assertions.assertThrows(IllegalArgumentException.class, () -> {
                 serializeClassChecker.validateClass(Integer.class.getName());
             });
         }
 
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL);
-        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST);
+        systemConfiguration.clearCache();
     }
 }

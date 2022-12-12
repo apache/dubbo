@@ -304,7 +304,7 @@ public class InternalServiceConfigBuilder<T> {
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return applicationModel.getApplicationConfigManager().getApplication().get();
+        return applicationModel.getApplicationConfigManager().getApplicationOrElseThrow();
     }
 
 }

@@ -20,31 +20,42 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
 import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileOutputStream;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AbortPolicyWithReportTest {
     @Test
     void jStackDumpTest() throws InterruptedException {
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
-        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
+        AtomicReference<FileOutputStream> fileOutputStream = new AtomicReference<>();
 
-        try {
-            abortPolicyWithReport.rejectedExecution(() -> System.out.println("hello"), (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
-        } catch (RejectedExecutionException rj) {
-            // ignore
-        }
+        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url) {
+            @Override
+            protected void jstack(FileOutputStream jStackStream) throws Exception {
+                fileOutputStream.set(jStackStream);
+            }
+        };
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        AbortPolicyWithReport.lastPrintTime = 0;
+        Assertions.assertThrows(RejectedExecutionException.class, () -> {
+            abortPolicyWithReport.rejectedExecution(() -> System.out.println("hello"), (ThreadPoolExecutor) executorService);
+        });
 
-        Thread.sleep(1000);
-
+        await().until(() -> AbortPolicyWithReport.guard.availablePermits() == 1);
+        Assertions.assertNotNull(fileOutputStream.get());
     }
 
     @Test
@@ -52,22 +63,11 @@ class AbortPolicyWithReportTest {
         final String dumpDirectory = dumpDirectoryCannotBeCreated();
 
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="
-                + dumpDirectory
-                + "&version=1.0.0&application=morgan&noValue=true");
+            + dumpDirectory
+            + "&version=1.0.0&application=morgan&noValue=true");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
-        try {
-            abortPolicyWithReport.rejectedExecution(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("hello");
-                }
-            }, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
-        } catch (RejectedExecutionException rj) {
-            // ignore
-        }
-
-        Thread.sleep(1000);
+        Assertions.assertEquals(System.getProperty("user.home"), abortPolicyWithReport.getDumpPath());
     }
 
     private String dumpDirectoryCannotBeCreated() {
@@ -85,22 +85,11 @@ class AbortPolicyWithReportTest {
         final String dumpDirectory = UUID.randomUUID().toString();
 
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="
-                + dumpDirectory
-                + "&version=1.0.0&application=morgan&noValue=true");
+            + dumpDirectory
+            + "&version=1.0.0&application=morgan&noValue=true");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
-        try {
-            abortPolicyWithReport.rejectedExecution(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("hello");
-                }
-            }, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
-        } catch (RejectedExecutionException rj) {
-            // ignore
-        }
-
-        Thread.sleep(1000);
+        Assertions.assertNotEquals(System.getProperty("user.home"), abortPolicyWithReport.getDumpPath());
     }
 
     @Test

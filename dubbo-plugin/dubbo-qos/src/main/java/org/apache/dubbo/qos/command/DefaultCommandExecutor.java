@@ -16,17 +16,24 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.common.QosConstants;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+import org.apache.dubbo.qos.permission.DefaultAnonymousAccessPermissionChecker;
+import org.apache.dubbo.qos.permission.PermissionChecker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class DefaultCommandExecutor implements CommandExecutor {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public DefaultCommandExecutor(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
     @Override
-    public String execute(CommandContext commandContext) throws NoSuchCommandException {
+    public String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException {
         BaseCommand command = null;
         try {
             command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
@@ -36,6 +43,24 @@ public class DefaultCommandExecutor implements CommandExecutor {
         if (command == null) {
             throw new NoSuchCommandException(commandContext.getCommandName());
         }
+
+        // check permission when configs allow anonymous access
+        if (commandContext.isAllowAnonymousAccess()) {
+            PermissionChecker permissionChecker = DefaultAnonymousAccessPermissionChecker.INSTANCE;
+            try {
+                permissionChecker = frameworkModel.getExtensionLoader(PermissionChecker.class).getExtension(QosConstants.QOS_PERMISSION_CHECKER);
+            } catch (Throwable throwable) {
+                //can't find valid custom permissionChecker
+            }
+
+            final Cmd cmd = command.getClass().getAnnotation(Cmd.class);
+            final PermissionLevel cmdRequiredPermissionLevel = cmd.requiredPermissionLevel();
+
+            if (!permissionChecker.access(commandContext, cmdRequiredPermissionLevel)) {
+                throw new PermissionDenyException(commandContext.getCommandName());
+            }
+        }
+
         return command.execute(commandContext, commandContext.getArgs());
     }
 }

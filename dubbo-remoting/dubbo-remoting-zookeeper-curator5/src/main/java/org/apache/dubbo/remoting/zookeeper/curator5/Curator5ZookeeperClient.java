@@ -113,42 +113,13 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    public void createPersistent(String path) {
+    public void createPersistent(String path, boolean faultTolerant) {
         try {
             client.create().forPath(path);
         } catch (NodeExistsException e) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void createEphemeral(String path) {
-        try {
-            client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
-        } catch (NodeExistsException e) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
-                ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
-                " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                "we can just try to delete and create again.", e);
-            deletePath(path);
-            createEphemeral(path);
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    protected void createPersistent(String path, String data) {
-        byte[] dataBytes = data.getBytes(CHARSET);
-        try {
-            client.create().forPath(path, dataBytes);
-        } catch (NodeExistsException e) {
-            try {
-                client.setData().forPath(path, dataBytes);
-            } catch (Exception e1) {
-                throw new IllegalStateException(e.getMessage(), e1);
+            if (!faultTolerant) {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -156,17 +127,65 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createEphemeral(String path, String data) {
+    public void createEphemeral(String path, boolean faultTolerant) {
+        try {
+            client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
+        } catch (NodeExistsException e) {
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
+                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
+                    "we can just try to delete and create again.");
+                deletePath(path);
+                createEphemeral(path, true);
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createPersistent(String path, String data, boolean faultTolerant) {
+        byte[] dataBytes = data.getBytes(CHARSET);
+        try {
+            client.create().forPath(path, dataBytes);
+        } catch (NodeExistsException e) {
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists. Will be override with new data.");
+                try {
+                    client.setData().forPath(path, dataBytes);
+                } catch (Exception e1) {
+                    throw new IllegalStateException(e.getMessage(), e1);
+                }
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createEphemeral(String path, String data, boolean faultTolerant) {
         byte[] dataBytes = data.getBytes(CHARSET);
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
-                ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
-                " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                "we can just try to delete and create again.", e);
-            deletePath(path);
-            createEphemeral(path, data);
+            if (faultTolerant) {
+                logger.info("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+                    ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
+                    " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
+                    "we can just try to delete and create again.");
+                deletePath(path);
+                createEphemeral(path, data, true);
+            } else {
+                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "ZNode " + path + " already exists.", e);
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -183,12 +202,50 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, int version) {
+    protected void update(String path, String data) {
+        byte[] dataBytes = data.getBytes(CHARSET);
+        try {
+            client.setData().forPath(path, dataBytes);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data) {
         try {
             if (checkExists(path)) {
+                update(path, data);
+            } else {
+                createPersistent(path, data, true);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    protected void createOrUpdateEphemeral(String path, String data) {
+        try {
+            if (checkExists(path)) {
+                update(path, data);
+            } else {
+                createEphemeral(path, data, true);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data, Integer version) {
+        try {
+            if (checkExists(path) && version != null) {
                 update(path, data, version);
             } else {
-                createPersistent(path, data);
+                createPersistent(path, data, false);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -196,12 +253,12 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdateEphemeral(String path, String data, int version) {
+    protected void createOrUpdateEphemeral(String path, String data, Integer version) {
         try {
-            if (checkExists(path)) {
+            if (checkExists(path) && version != null) {
                 update(path, data, version);
             } else {
-                createEphemeral(path, data);
+                createEphemeral(path, data, false);
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
