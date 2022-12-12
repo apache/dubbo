@@ -240,9 +240,9 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, int version) {
+    protected void createOrUpdatePersistent(String path, String data, Integer version) {
         try {
-            if (checkExists(path)) {
+            if (checkExists(path) && version != null) {
                 update(path, data, version);
             } else {
                 createPersistent(path, data, false);
@@ -253,9 +253,9 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     }
 
     @Override
-    protected void createOrUpdateEphemeral(String path, String data, int version) {
+    protected void createOrUpdateEphemeral(String path, String data, Integer version) {
         try {
-            if (checkExists(path)) {
+            if (checkExists(path) && version != null) {
                 update(path, data, version);
             } else {
                 createEphemeral(path, data, false);

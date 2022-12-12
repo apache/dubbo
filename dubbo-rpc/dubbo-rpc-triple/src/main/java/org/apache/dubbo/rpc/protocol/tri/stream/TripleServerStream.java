@@ -371,14 +371,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 }
             }
 
-            try {
-                final TriDecoder.Listener listener = new ServerDecoderListener();
-                deframer = new TriDecoder(deCompressor, listener);
-            } catch (Throwable t) {
-                responseErr(TriRpcStatus.INTERNAL.withCause(t));
-                return;
-            }
-
             Map<String, Object> requestMetadata = headersToMap(headers);
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
@@ -390,10 +382,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     frameworkModel, acceptEncoding, serviceName, originalMethodName, filters,
                     executor);
             }
+            // must before onHeader
+            deframer = new TriDecoder(deCompressor, new ServerDecoderListener(listener));
             listener.onHeader(requestMetadata);
-            if (listener == null) {
-                deframer.close();
-            }
         }
 
 
@@ -427,21 +418,27 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     .withDescription("Canceled by client ,errorCode=" + errorCode));
             });
         }
+    }
 
-        private class ServerDecoderListener implements TriDecoder.Listener {
 
-            @Override
-            public void onRawMessage(byte[] data) {
-                listener.onMessage(data);
-            }
+    private static class ServerDecoderListener implements TriDecoder.Listener {
 
-            @Override
-            public void close() {
-                if (listener != null) {
-                    listener.onComplete();
-                }
-            }
+        private final ServerStream.Listener listener;
+
+        public ServerDecoderListener(ServerStream.Listener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void onRawMessage(byte[] data) {
+            listener.onMessage(data);
+        }
+
+        @Override
+        public void close() {
+            listener.onComplete();
         }
     }
+
 
 }

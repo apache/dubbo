@@ -50,6 +50,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -148,6 +150,11 @@ public class ApplicationConfig extends AbstractConfig {
      * Should we accept foreign ip or not?
      */
     private Boolean qosAcceptForeignIp;
+
+    /**
+     * When we disable accept foreign ip, support specify foreign ip in the whitelist
+     */
+    private String qosAcceptForeignIpWhitelist;
 
     /**
      * Customized parameters
@@ -400,6 +407,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.qosAcceptForeignIp = qosAcceptForeignIp;
     }
 
+    @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST)
+    public String getQosAcceptForeignIpWhitelist() {
+        return qosAcceptForeignIpWhitelist;
+    }
+
+    public void setQosAcceptForeignIpWhitelist(String qosAcceptForeignIpWhitelist) {
+        this.qosAcceptForeignIpWhitelist = qosAcceptForeignIpWhitelist;
+    }
+
     /**
      * The format is the same as the springboot, including: getQosEnableCompatible(), getQosPortCompatible(), getQosAcceptForeignIpCompatible().
      *
@@ -439,6 +455,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setQosAcceptForeignIpCompatible(Boolean qosAcceptForeignIp) {
         this.setQosAcceptForeignIp(qosAcceptForeignIp);
+    }
+
+    @Parameter(key = ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE, excluded = true, attribute = false)
+    public String getQosAcceptForeignIpWhitelistCompatible() {
+        return this.getQosAcceptForeignIpWhitelist();
+    }
+
+    public void setQosAcceptForeignIpWhitelistCompatible(String qosAcceptForeignIpWhitelist) {
+        this.setQosAcceptForeignIpWhitelist(qosAcceptForeignIpWhitelist);
     }
 
     public Map<String, String> getParameters() {

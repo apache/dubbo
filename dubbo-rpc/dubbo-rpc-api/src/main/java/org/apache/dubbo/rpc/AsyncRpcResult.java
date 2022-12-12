@@ -66,11 +66,6 @@ public class AsyncRpcResult implements Result {
 
     private CompletableFuture<AppResponse> responseFuture;
 
-    /**
-     * Whether set future to Thread Local when invocation mode is sync
-     */
-    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
-
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
         this.invocation = invocation;
@@ -216,7 +211,11 @@ public class AsyncRpcResult implements Result {
             fn.accept(v, t);
         });
 
-        if (setFutureWhenSync || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
+        // Whether set future to Thread Local when invocation mode is sync
+        String setFutureWhenSync = invocation.getModuleModel().getModelEnvironment().getSystemConfiguration()
+            .getString(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true");
+
+        if (Boolean.parseBoolean(setFutureWhenSync) || ((RpcInvocation) invocation).getInvokeMode() != InvokeMode.SYNC) {
             // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461
             RpcContext.getServiceContext().setFuture(new FutureAdapter<>(this.responseFuture));
         }
