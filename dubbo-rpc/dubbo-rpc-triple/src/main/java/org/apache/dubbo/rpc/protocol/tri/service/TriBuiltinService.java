@@ -48,6 +48,8 @@ public class TriBuiltinService {
 
     private Health healthService;
 
+    private FrameworkModel frameworkModel;
+
     private ReflectionV1AlphaService reflectionServiceV1Alpha;
     private HealthStatusManager healthStatusManager;
     private Configuration config = ConfigurationUtils.getGlobalConfiguration(
@@ -56,18 +58,19 @@ public class TriBuiltinService {
     private final AtomicBoolean init = new AtomicBoolean();
 
     public TriBuiltinService(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         if (enable()) {
-            healthStatusManager = new HealthStatusManager(new TriHealthImpl());
-            healthService = healthStatusManager.getHealthService();
-            reflectionServiceV1Alpha = new ReflectionV1AlphaService();
-            proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-            pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
             init();
         }
     }
 
     public void init() {
         if (init.compareAndSet(false, true)) {
+            healthStatusManager = new HealthStatusManager(new TriHealthImpl());
+            healthService = healthStatusManager.getHealthService();
+            reflectionServiceV1Alpha = new ReflectionV1AlphaService();
+            proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
             addSingleBuiltinService(DubboHealthTriple.SERVICE_NAME, healthService, Health.class);
             addSingleBuiltinService(ReflectionV1AlphaService.SERVICE_NAME, reflectionServiceV1Alpha,
                 ReflectionV1AlphaService.class);
