@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -134,6 +135,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 .getDefaultConsumer()
                 .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
+        // try set properties from `dubbo.reference` if not set in current config
+        refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
     }
 
     @Override
