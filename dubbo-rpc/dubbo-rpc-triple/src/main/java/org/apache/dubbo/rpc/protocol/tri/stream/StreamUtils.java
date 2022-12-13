@@ -56,7 +56,7 @@ public class StreamUtils {
     static {
         // avoid concurrent resize
         for (int i = 0; i < MAX_LRU_HEADER_MAP_SIZE; i++) {
-            lruHeaderMap.put("i" + "", "i" + "");
+            lruHeaderMap.put(i + "", "");
         }
     }
 
