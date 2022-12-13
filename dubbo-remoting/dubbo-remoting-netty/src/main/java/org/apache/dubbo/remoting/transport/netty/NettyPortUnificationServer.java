@@ -176,6 +176,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
     }
 
     @Override
+    protected int getChannelsSize() {
+        return dubboChannels.size();
+    }
+
+    @Override
     public Collection<Channel> getChannels() {
         Collection<Channel> chs = new ArrayList<>(this.dubboChannels.size());
         chs.addAll(this.dubboChannels.values());

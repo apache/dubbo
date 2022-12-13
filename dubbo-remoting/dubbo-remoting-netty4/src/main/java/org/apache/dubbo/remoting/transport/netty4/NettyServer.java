@@ -199,6 +199,11 @@ public class NettyServer extends AbstractServer {
     }
 
     @Override
+    protected int getChannelsSize() {
+        return channels.size();
+    }
+
+    @Override
     public Collection<Channel> getChannels() {
         Collection<Channel> chs = new ArrayList<>(this.channels.size());
         // pick channels from NettyServerHandler ( needless to check connectivity )

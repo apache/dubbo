@@ -81,6 +81,8 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     protected abstract void doClose() throws Throwable;
 
+    protected abstract int getChannelsSize();
+
     @Override
     public void reset(URL url) {
         if (url == null) {
@@ -177,8 +179,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     @Override
     public void disconnected(Channel ch) throws RemotingException {
-        Collection<Channel> channels = getChannels();
-        if (channels.isEmpty()) {
+        if (getChannelsSize()==0) {
             logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);

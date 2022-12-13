@@ -38,6 +38,7 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -143,15 +144,15 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     }
 
     @Override
+    protected int getChannelsSize() {
+        return channels.size();
+    }
+
+    @Override
     public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new HashSet<Channel>();
-        for (Channel channel : this.channels.values()) {
-            if (channel.isConnected()) {
-                chs.add(channel);
-            } else {
-                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
-            }
-        }
+        Collection<Channel> chs = new ArrayList<>(this.channels.size());
+        // pick channels from NettyServerHandler ( needless to check connectivity )
+        chs.addAll(this.channels.values());
         return chs;
     }
 
