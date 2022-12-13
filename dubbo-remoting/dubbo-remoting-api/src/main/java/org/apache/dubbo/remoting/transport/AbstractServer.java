@@ -169,7 +169,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             return;
         }
 
-        if (accepts > 0 && getChannels().size() > accepts) {
+        if (accepts > 0 && getChannelsSize()> accepts) {
             logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
             ch.close();
             return;
