@@ -18,22 +18,22 @@ package org.apache.dubbo.remoting.api.pu;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 public class PortUnificationTransporter$Adaptive implements org.apache.dubbo.remoting.api.pu.PortUnificationTransporter {
-    public org.apache.dubbo.remoting.api.connection.AbstractConnectionClient connect(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
-        if (arg0 == null) throw new IllegalArgumentException("url == null");
-        org.apache.dubbo.common.URL url = arg0;
-        String extName = url.getParameter("client", url.getParameter("transporter", "netty4"));
-        if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter) name from url (" + url.toString() + ") use keys([client, transporter])");
-        ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class);
-        org.apache.dubbo.remoting.api.pu.PortUnificationTransporter extension = (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter)scopeModel.getExtensionLoader(org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class).getExtension(extName);
-        return extension.connect(arg0, arg1);
-    }
-    public org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer bind(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
-        if (arg0 == null) throw new IllegalArgumentException("url == null");
-        org.apache.dubbo.common.URL url = arg0;
-        String extName = url.getParameter("server", url.getParameter("transporter", "netty4"));
-        if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter) name from url (" + url.toString() + ") use keys([server, transporter])");
-        ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class);
-        org.apache.dubbo.remoting.api.pu.PortUnificationTransporter extension = (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter)scopeModel.getExtensionLoader(org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class).getExtension(extName);
-        return extension.bind(arg0, arg1);
-    }
+public org.apache.dubbo.remoting.api.connection.AbstractConnectionClient connect(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+org.apache.dubbo.common.URL url = arg0;
+String extName = url.getParameter("client", url.getParameter("transporter", "netty4"));
+if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter) name from url (" + url.toString() + ") use keys([client, transporter])");
+ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class);
+org.apache.dubbo.remoting.api.pu.PortUnificationTransporter extension = (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter)scopeModel.getExtensionLoader(org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class).getExtension(extName);
+return extension.connect(arg0, arg1);
+}
+public org.apache.dubbo.remoting.api.pu.AbstractPortUnificationServer bind(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+org.apache.dubbo.common.URL url = arg0;
+String extName = url.getParameter("server", url.getParameter("transporter", "netty4"));
+if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter) name from url (" + url.toString() + ") use keys([server, transporter])");
+ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class);
+org.apache.dubbo.remoting.api.pu.PortUnificationTransporter extension = (org.apache.dubbo.remoting.api.pu.PortUnificationTransporter)scopeModel.getExtensionLoader(org.apache.dubbo.remoting.api.pu.PortUnificationTransporter.class).getExtension(extName);
+return extension.bind(arg0, arg1);
+}
 }
