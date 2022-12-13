@@ -104,7 +104,7 @@ public class AdaptiveLoadBalance extends AbstractLoadBalance {
     private int getTimeout(Invoker<?> invoker, Invocation invocation) {
         URL url = invoker.getUrl();
         String methodName = RpcUtils.getMethodName(invocation);
-        return (int) RpcUtils.getTimeout(url,methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
+        return (int) RpcUtils.getTimeout(url,methodName, RpcContext.getClientAttachment(),invocation, DEFAULT_TIMEOUT);
     }
 
     private <T> Invoker<T> chooseLowLoadInvoker(Invoker<T> invoker1,Invoker<T> invoker2,Invocation invocation){
