@@ -38,7 +38,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;

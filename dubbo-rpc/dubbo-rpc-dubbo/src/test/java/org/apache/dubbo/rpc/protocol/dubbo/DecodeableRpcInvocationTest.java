@@ -41,7 +41,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.TMP_OBJECT_INPUT;
 import static org.apache.dubbo.rpc.protocol.dubbo.DubboCodec.DUBBO_VERSION;

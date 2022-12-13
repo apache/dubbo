@@ -108,6 +108,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 request.setError(e);
             } finally {
                 hasDecoded = true;
+                // Whether the process ends normally or abnormally (retry at most once), resources must be released
                 if (!request.tryIncreaseRetryNum() || finishDecode) {
                     ObjectInput in = (ObjectInput) getObjectAttachment(TMP_OBJECT_INPUT);
                     if (in instanceof Cleanable) {
