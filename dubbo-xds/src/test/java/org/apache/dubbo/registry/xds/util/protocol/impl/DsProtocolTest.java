@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
 import io.envoyproxy.envoy.config.core.v3.Node;
@@ -10,6 +27,7 @@ import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,9 +74,10 @@ public class DsProtocolTest {
         Assertions.assertNotNull(xdsChannel.getChannel());
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         Node node = mock(Node.class);
-        LdsProtocol ldsProtocolMock = spy(new LdsProtocol(xdsChannel, node, 10));
-        this.rdsProtocolMock = spy(new RdsProtocol(xdsChannel, node, 10));
-        this.edsProtocolMock = spy(new EdsProtocol(xdsChannel, node, 10));
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        LdsProtocol ldsProtocolMock = spy(new LdsProtocol(xdsChannel, node, 10, applicationModel));
+        this.rdsProtocolMock = spy(new RdsProtocol(xdsChannel, node, 10, applicationModel));
+        this.edsProtocolMock = spy(new EdsProtocol(xdsChannel, node, 10, applicationModel));
 
         Set<String> routeConfigNames = new HashSet<>();
         routeConfigNames.add("kubernetes-dashboard.kubernetes-dashboard.svc.cluster.local:443");
@@ -150,8 +169,3 @@ public class DsProtocolTest {
         }
     }
 }
-
-//        when(IstioEnvMock.getInstance()).thenReturn(new IstioEnvMock());
-//        when(IstioEnvMock.getInstance().getPodName()).thenReturn("dubbo-samples-xds-consumer-64c6c6f444-kk2vr");
-//        when(IstioEnvMock.getInstance().getWorkloadNameSpace()).thenReturn("dubbo-demo");
-//        when(IstioEnvMock.getInstance().getIstioMetaClusterId()).thenReturn("Kubernetes");

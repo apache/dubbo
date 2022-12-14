@@ -31,23 +31,21 @@ import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener, Map<String, Set<String>>> {
+public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
-    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
-        super(xdsChannel, node, pollingTimeout);
+    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
+        super(xdsChannel, node, pollingTimeout, applicationModel);
     }
 
     @Override
@@ -55,39 +53,17 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener,
         return "type.googleapis.com/envoy.config.listener.v3.Listener";
     }
 
-
     @Override
-    public boolean isExistResource(Set<String> resourceNames) {
+    public void updateResourceCollection(ListenerResult listenerResult, Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
-            if (!resourcesMap.containsKey(resourceName)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void updateResourceCollection(Map<String, Set<String>> resourceCollection, Set<String> resourceNames) {
-        for (String resourceName : resourceNames) {
-            resourceCollection.put(resourceName, resourceNames);
+            listenerResult.getRouteConfigNames().addAll((Set<String>) resourcesMap.get(resourceName));
         }
     }
 
     @Override
-    public Map<String, Set<String>> getResourceCollection() {
-        return new ConcurrentHashMap<>();
+    public ListenerResult getDsResult() {
+        return new ListenerResult();
     }
-
-    @Override
-    public ListenerResult getDsResult(Map<String, Set<String>> resourceCollection) {
-        return new ListenerResult(resourceCollection.values().
-            stream().reduce((a, b) -> {
-                a.addAll(b);
-                return a;
-            }).orElse(new HashSet<>())
-        );
-    }
-
 
     public ListenerResult getListeners() {
         return getResource(null);

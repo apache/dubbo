@@ -39,11 +39,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
 
-public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> implements XdsProtocol<T> {
+public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProtocol.class);
 
@@ -51,23 +53,26 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
 
     protected final Node node;
 
-    private final int pollingTimeout;
+    private final int checkInterval;
 
-    private final Object consumerObserveMapUpdate = new Object();
+    private T dsResult;
+    private final Lock lock = new ReentrantLock();
 
     private Set<String> observeResourcesName;
 
+    private CompletableFuture<T> future;
     private final Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
 
-    public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
+    private ApplicationModel applicationModel;
+
+    public AbstractProtocol(XdsChannel xdsChannel, Node node, int checkInterval, ApplicationModel applicationModel) {
         this.xdsChannel = xdsChannel;
         this.node = node;
-        this.pollingTimeout = pollingTimeout;
+        this.checkInterval = checkInterval;
+        this.applicationModel = applicationModel;
     }
 
-    protected Map<String, R> resourcesMap = new ConcurrentHashMap<>();
-
-    private CompletableFuture<T> future;
+    protected Map<String, Object> resourcesMap = new ConcurrentHashMap<>();
 
     private StreamObserver<DiscoveryRequest> requestObserver;
 
@@ -78,18 +83,26 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
      */
     public abstract String getTypeUrl();
 
-    public abstract boolean isExistResource(Set<String> resourceNames);
+    public abstract void updateResourceCollection(T resourceCollection, Set<String> resourceNames);
 
-    public abstract void updateResourceCollection(R resourceCollection, Set<String> resourceNames);
+    public abstract T getDsResult();
 
-    public abstract R getResourceCollection();
-
-    public abstract T getDsResult(R resourceCollection);
+    public boolean isExistResource(Set<String> resourceNames) {
+        for (String resourceName : resourceNames) {
+            if ("".equals(resourceName)) {
+                continue;
+            }
+            if (!resourcesMap.containsKey(resourceName)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public T getCacheResource(Set<String> resourceNames) {
-        R resourceCollection = getResourceCollection();
+        this.dsResult = getDsResult();
         if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
-            updateResourceCollection(resourceCollection, resourceNames);
+            updateResourceCollection(dsResult, resourceNames);
         } else {
             if (requestObserver == null) {
                 future = new CompletableFuture<>();
@@ -102,11 +115,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
             } catch (InterruptedException e) {
                 logger.error("InterruptedException occur when request control panel. error={}", e);
                 Thread.currentThread().interrupt();
-            }  catch (Exception e) {
-                logger.error("Error occur when request control panel. error=. ",e);
+            } catch (Exception e) {
+                logger.error("Error occur when request control panel. error=. ", e);
             }
         }
-        return getDsResult(resourceCollection);
+        return dsResult;
     }
 
 
@@ -120,7 +133,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
     public void observeResource(Set<String> resourceNames, Consumer<T> consumer) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
-        synchronized (consumerObserveMapUpdate) {
+        try {
+            lock.lock();
             consumerObserveMap.compute(resourceNames, (k, v) -> {
                 if (v == null) {
                     v = new ArrayList<>();
@@ -132,6 +146,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
             for (Consumer<T> cacheConsumer : consumerObserveMap.get(resourceNames)) {
                 cacheConsumer.accept(getResource(resourceNames));
             }
+        } finally {
+            lock.unlock();
         }
         this.observeResourcesName = resourceNames;
     }
@@ -175,10 +191,16 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
 
         private void discoveryResponseListener(T result) {
             // call once for full data
-            synchronized (consumerObserveMapUpdate) {
-                consumerObserveMap.get(observeResourcesName).forEach(o -> o.accept(result));
+            if (observeResourcesName != null) {
+                try {
+                    lock.lock();
+                    consumerObserveMap.get(observeResourcesName).forEach(o -> o.accept(result));
+                } finally {
+                    lock.unlock();
+                }
             }
         }
+
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
@@ -202,7 +224,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
 
     private void triggerReConnectTask() {
         AtomicBoolean isConnectFail = new AtomicBoolean(false);
-        ScheduledExecutorService scheduledFuture = ApplicationModel.defaultModel().getFrameworkModel().getBeanFactory()
+        ScheduledExecutorService scheduledFuture = applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
         scheduledFuture.scheduleAtFixedRate(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
@@ -220,6 +242,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>, R> impleme
             } else {
                 isConnectFail.set(true);
             }
-        }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
+        }, checkInterval, checkInterval, TimeUnit.SECONDS);
     }
 }

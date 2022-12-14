@@ -30,22 +30,22 @@ import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Set;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute, Map<String, Set<String>>> {
+public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
-    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
-        super(xdsChannel, node, pollingTimeout);
+    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
+        super(xdsChannel, node, pollingTimeout, applicationModel);
     }
 
     @Override
@@ -54,36 +54,18 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute, Map<S
     }
 
     @Override
-    public boolean isExistResource(Set<String> resourceNames) {
+    public void updateResourceCollection(RouteResult routeResult, Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
             if ("".equals(resourceName)) {
                 continue;
             }
-            if (!resourcesMap.containsKey(resourceName)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void updateResourceCollection(Map<String, Set<String>> resourceCollection, Set<String> resourceNames) {
-        for (String resourceName : resourceNames) {
-            if ("".equals(resourceName)) {
-                continue;
-            }
-            resourceCollection.putAll(resourcesMap.get(resourceName));
+            routeResult.getDomainMap().putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
         }
     }
 
     @Override
-    public Map<String, Set<String>> getResourceCollection() {
-        return new ConcurrentHashMap<>();
-    }
-
-    @Override
-    public RouteResult getDsResult(Map<String, Set<String>> resourceCollection) {
-        return new RouteResult(resourceCollection);
+    public RouteResult getDsResult() {
+        return new RouteResult();
     }
 
 

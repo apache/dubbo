@@ -32,20 +32,20 @@ import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
-public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint, Set<Endpoint>> {
+public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
-    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout) {
-        super(xdsChannel, node, pollingTimeout);
+    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
+        super(xdsChannel, node, pollingTimeout, applicationModel);
     }
 
     @Override
@@ -54,30 +54,15 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint,
     }
 
     @Override
-    public boolean isExistResource(Set<String> resourceNames) {
+    public void updateResourceCollection(EndpointResult endpointResult, Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
-            if (!resourcesMap.containsKey(resourceName)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public void updateResourceCollection(Set<Endpoint> resourceCollection, Set<String> resourceNames) {
-        for (String resourceName : resourceNames) {
-            resourceCollection.addAll(resourcesMap.get(resourceName));
+            endpointResult.getEndpoints().addAll((Set<Endpoint>)resourcesMap.get(resourceName));
         }
     }
 
     @Override
-    public Set<Endpoint> getResourceCollection() {
-        return new HashSet<>();
-    }
-
-    @Override
-    public EndpointResult getDsResult(Set<Endpoint> resourceCollection) {
-        return new EndpointResult(resourceCollection);
+    public EndpointResult getDsResult() {
+        return new EndpointResult();
     }
 
 

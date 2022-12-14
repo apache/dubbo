@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,9 +55,10 @@ public class PilotExchanger {
     private PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
-        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout);
-        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout);
-        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
+        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
+        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
 
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.getRouteConfigNames());
