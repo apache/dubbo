@@ -50,7 +50,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
         String host = null;
         int port = -1;
-        Set<URL> urls = metadataInfo.getExportedURLSet();
+        Set<URL> urls = metadataInfo.collectExportedURLSet();
 
         if (CollectionUtils.isNotEmpty(urls)) {
             String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();

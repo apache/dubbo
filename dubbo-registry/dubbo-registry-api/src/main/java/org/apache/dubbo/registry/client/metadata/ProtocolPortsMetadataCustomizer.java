@@ -48,7 +48,7 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
         }
 
         Map<String, Integer> protocols = new HashMap<>();
-        Set<URL> urls = metadataInfo.getExportedURLSet();
+        Set<URL> urls = metadataInfo.collectExportedURLSet();
         urls.forEach(url -> {
             // TODO, same protocol listen on different ports will override with each other.
             String protocol = url.getProtocol();
