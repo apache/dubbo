@@ -1,4 +1,4 @@
-package org.apache.dubbo.rpc.protocol.rest.annotation.provider.param.parse;
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;

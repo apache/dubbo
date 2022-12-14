@@ -19,6 +19,7 @@ package org.apache.dubbo.common.json.impl;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonParser;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -63,6 +64,16 @@ public class JacksonImpl extends AbstractJSONImpl {
         try {
             return getJackson().writeValueAsString(obj);
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    @Override
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
+        try {
+            JsonParser parser = getJackson().createParser(bytes);
+            return parser.readValueAs(clazz);
+        } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
     }

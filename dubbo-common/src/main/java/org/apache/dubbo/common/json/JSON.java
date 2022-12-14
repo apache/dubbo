@@ -49,4 +49,7 @@ public interface JSON {
 
     List<String> checkStringList(List<?> rawList);
 
+    <T> T parseObject(byte[] bytes, Class<T> clazz);
+
+
 }

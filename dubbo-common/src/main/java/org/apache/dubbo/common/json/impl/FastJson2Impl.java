@@ -49,5 +49,10 @@ public class FastJson2Impl extends AbstractJSONImpl {
     public String toJson(Object obj) {
         return com.alibaba.fastjson2.JSON.toJSONString(obj, JSONWriter.Feature.WriteEnumsUsingName);
     }
+
+    @Override
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
+        return com.alibaba.fastjson2.JSON.parseObject(bytes,clazz);
+    }
 }
 

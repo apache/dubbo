@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.*;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -51,6 +52,11 @@ public class GsonImpl extends AbstractJSONImpl {
     @Override
     public String toJson(Object obj) {
         return getGson().toJson(obj);
+    }
+
+    @Override
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
+        return getGson().fromJson(new InputStreamReader(new ByteArrayInputStream(bytes)), clazz);
     }
 
     private Gson getGson() {

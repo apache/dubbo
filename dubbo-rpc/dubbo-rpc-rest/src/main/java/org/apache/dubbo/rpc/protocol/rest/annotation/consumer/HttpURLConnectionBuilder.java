@@ -1,7 +1,6 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
 
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -23,14 +22,6 @@ public class HttpURLConnectionBuilder {
                                           RestMethodMetadata restMethodMetadata
     ) throws Exception {
 
-        HttpConnectionCreateContext httpConnectionCreateContext = createBuildContext(requestTemplate,
-            connectionConfig,
-            restMethodMetadata);
-
-        for (HttpConnectionPreBuildIntercept httpConnectionPreBuildIntercept : httpConnectionPreBuildIntercepts) {
-            // TODO add   attachment
-            httpConnectionPreBuildIntercept.intercept(httpConnectionCreateContext);
-        }
 
         // TODO substract  Client  param is requestTemplate,connectionConfig
         HttpURLConnection connection = createBaseConnection(requestTemplate, connectionConfig);
@@ -43,19 +34,11 @@ public class HttpURLConnectionBuilder {
 
     }
 
-    private static HttpConnectionCreateContext createBuildContext(RequestTemplate requestTemplate,
-                                                                  HttpConnectionConfig connectionConfig,
-                                                                  RestMethodMetadata restMethodMetadata) {
-        HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
-        httpConnectionCreateContext.setConnectionConfig(connectionConfig);
-        httpConnectionCreateContext.setRequestTemplate(requestTemplate);
-        httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
-        return httpConnectionCreateContext;
-    }
+
 
     private static HttpURLConnection createBaseConnection(RequestTemplate requestTemplate,
                                                           HttpConnectionConfig connectionConfig) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getRequestLine()).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getUri()).openConnection();
         connection.setConnectTimeout(connectionConfig.getConnectTimeout());
         connection.setReadTimeout(connectionConfig.getReadTimeout());
         connection.setAllowUserInteraction(false);

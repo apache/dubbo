@@ -1,12 +1,15 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
 
+import org.apache.dubbo.metadata.rest.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 public class RequestTemplate implements Serializable {
+    private static final AtomicLong REQUEST_ID = new AtomicLong();
     private static final long serialVersionUID = 1L;
     public static final String ACCEPT = "Accept";
     public static final String DEFAULT_ACCEPT = "*/*";
@@ -23,18 +26,14 @@ public class RequestTemplate implements Serializable {
     private String address;
     private Object body;
     private byte[] byteBody;
-    private String protocol = "http";
+    private String protocol = "HTTP/1.1";
 
-    public RequestTemplate() {
-        addHeader(ACCEPT, DEFAULT_ACCEPT);
+    public RequestTemplate(RequestMetadata requestMetadata) {
+        httpMethod(requestMetadata.getMethod());
     }
 
-    public RequestTemplate(String path) {
-        this.path = path;
-    }
-
-    public String getRequestLine() {
-        StringBuilder stringBuilder = new StringBuilder(address + path);
+    public String getUri() {
+        StringBuilder stringBuilder = new StringBuilder(path);
         return stringBuilder.append(getQueryString()).toString();
     }
 
@@ -89,6 +88,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public void serializeBody(byte[] body) {
+        addHeader(CONTENT_LENGTH, body.length); // must header
         this.byteBody = body;
     }
 
@@ -151,6 +151,10 @@ public class RequestTemplate implements Serializable {
         addValueByKey(key, value, this.queries);
     }
 
+    public void addParam(String key, Object value) {
+        addParam(key, String.valueOf(value));
+    }
+
     public Map<String, Collection<String>> getQueries() {
         return queries;
     }
@@ -179,9 +183,10 @@ public class RequestTemplate implements Serializable {
         Collection<String> values = null;
         if (!maps.containsKey(key)) {
             values = new HashSet<>();
-        } else {
-            values = maps.get(key);
+            maps.put(key, values);
         }
+        values = maps.get(key);
+
 
         values.add(value);
 
@@ -204,8 +209,8 @@ public class RequestTemplate implements Serializable {
         return Byte.parseByte(getHeader(RestConstant.SERIALIZATION_KEY).toArray(new String[0])[0]);
     }
 
-    public static RequestTemplate build(String path) {
-        return new RequestTemplate(path);
+    public static RequestTemplate build(RequestMetadata requestMetadata) {
+        return new RequestTemplate(requestMetadata);
     }
 
     public String getAddress() {
@@ -213,7 +218,8 @@ public class RequestTemplate implements Serializable {
     }
 
     public void setAddress(String address) {
-        this.address = protocol + "://" + address;
+        addHeader("Host", address);// must header
+        this.address = address;
     }
 
     public String getProtocol() {

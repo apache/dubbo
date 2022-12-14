@@ -18,51 +18,39 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.HttpBinder;
+import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.factory.RestClientFactory;
+import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.message.BasicHeaderElementIterator;
-import org.apache.http.protocol.HTTP;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 import org.jboss.resteasy.util.GetRestful;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
-import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
-import static org.apache.dubbo.remoting.Constants.CONNECT_TIMEOUT_KEY;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.rpc.protocol.rest.Constants.EXTENSION_KEY;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = "jetty";
+    private static final String DEFAULT_SERVER = "okhttp";
 
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
@@ -72,17 +60,14 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
-    private final Map<String, ReferenceCountedClient> clients = new ConcurrentHashMap<>();
+    private final Map<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
 
-    private volatile ConnectionMonitor connectionMonitor;
+    private final RestClientFactory clientFactory = FrameworkModel.defaultModel().getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
 
     public RestProtocol() {
         super(WebApplicationException.class, ProcessingException.class);
     }
 
-    public void setHttpBinder(HttpBinder httpBinder) {
-        serverFactory.setHttpBinder(httpBinder);
-    }
 
     @Override
     public int getDefaultPort() {
@@ -134,78 +119,26 @@ public class RestProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    protected <T> T doRefer(Class<T> serviceType, URL url) throws RpcException {
-        ReferenceCountedClient referenceCountedClient = clients.computeIfAbsent(url.getAddress(), _key -> {
-            // TODO more configs to add
-            return createReferenceCountedClient(url);
-        });
+    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
 
-        if (referenceCountedClient.isDestroyed()) {
-            referenceCountedClient = createReferenceCountedClient(url);
-            clients.put(url.getAddress(), referenceCountedClient);
-        }
-        referenceCountedClient.retain();
+        ReferenceCountedClient<? extends RestClient> refClient =
+            clients.computeIfAbsent(url.getAddress(), _key -> createReferenceCountedClient(url));
 
-        ResteasyClient resteasyClient = referenceCountedClient.getClient();
-        for (String clazz : COMMA_SPLIT_PATTERN.split(url.getParameter(EXTENSION_KEY, ""))) {
-            if (!StringUtils.isEmpty(clazz)) {
-                try {
-                    resteasyClient.register(Thread.currentThread().getContextClassLoader().loadClass(clazz.trim()));
-                } catch (ClassNotFoundException e) {
-                    throw new RpcException("Error loading JAX-RS extension class: " + clazz.trim(), e);
-                }
-            }
-        }
+        refClient.retain();
 
-        // TODO protocol
-        ResteasyWebTarget target = resteasyClient.target("http://" + url.getAddress() + "/" + getContextPath(url));
-        return target.proxy(serviceType);
+        // resolve metadata
+        Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type,url);
+
+        // create proxy ref
+        return HttpInvokeClientBuilder.build(metadataMap, url, type, refClient);
     }
 
-    private ReferenceCountedClient createReferenceCountedClient(URL url) {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        // 20 is the default maxTotal of current PoolingClientConnectionManager
-        connectionManager.setMaxTotal(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL));
-        connectionManager.setDefaultMaxPerRoute(url.getParameter(CONNECTIONS_KEY, HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE));
-        if (connectionMonitor == null) {
-            connectionMonitor = new ConnectionMonitor();
-            connectionMonitor.start();
-        }
-        connectionMonitor.addConnectionManager(url.getAddress(), connectionManager);
+    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
 
-        RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectTimeout(url.getParameter(CONNECT_TIMEOUT_KEY, DEFAULT_CONNECT_TIMEOUT))
-            .setSocketTimeout(url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT))
-            .build();
+        // url -> RestClient
+        RestClient restClient = clientFactory.createRestClient(url);
 
-        SocketConfig socketConfig = SocketConfig.custom()
-            .setSoKeepAlive(true)
-            .setTcpNoDelay(true)
-            .build();
-
-        CloseableHttpClient httpClient = HttpClientBuilder.create()
-            .setConnectionManager(connectionManager)
-            .setKeepAliveStrategy((response, context) -> {
-                HeaderElementIterator it = new BasicHeaderElementIterator(response.headerIterator(HTTP.CONN_KEEP_ALIVE));
-                while (it.hasNext()) {
-                    HeaderElement he = it.nextElement();
-                    String param = he.getName();
-                    String value = he.getValue();
-                    if (value != null && param.equalsIgnoreCase(TIMEOUT_KEY)) {
-                        return Long.parseLong(value) * 1000;
-                    }
-                }
-                return HTTPCLIENT_KEEPALIVEDURATION;
-            })
-            .setDefaultRequestConfig(requestConfig)
-            .setDefaultSocketConfig(socketConfig)
-            .build();
-
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine(httpClient/*, localContext*/);
-
-        ResteasyClient resteasyClient = new ResteasyClientBuilder().httpEngine(engine).build();
-        resteasyClient.register(RpcContextFilter.class);
-        return new ReferenceCountedClient(resteasyClient);
+        return new ReferenceCountedClient<>(restClient);
     }
 
     @Override
@@ -221,8 +154,8 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
         super.destroy();
 
-        if (connectionMonitor != null) {
-            connectionMonitor.shutdown();
+        if (clientFactory != null) {
+            clientFactory.shutdown();
         }
 
         for (Map.Entry<String, ProtocolServer> entry : serverMap.entrySet()) {
@@ -279,7 +212,7 @@ public class RestProtocol extends AbstractProxyProtocol {
             ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
             if (referenceCountedClient != null && referenceCountedClient.release()) {
                 clients.remove(url.getAddress());
-                connectionMonitor.destroyManager(url);
+                clientFactory.destroy(url);
             }
         } catch (Exception e) {
             logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);

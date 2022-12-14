@@ -1,0 +1,3 @@
+netty=org.apache.dubbo.rpc.protocol.rest.factory.impl.NettyHttpClientFactory
+okhttp=org.apache.dubbo.rpc.protocol.rest.factory.impl.OkHttpClientFactory
+apacheHttpclient=org.apache.dubbo.rpc.protocol.rest.factory.impl.ApacheHttpClientFactory

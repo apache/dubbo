@@ -2,7 +2,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation;
 
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.rest.annotation.provider.param.parse.ParamParser;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ParamParser;
 
 import java.util.List;
 import java.util.Set;
@@ -10,8 +10,7 @@ import java.util.Set;
 public class ParamParserManager {
 
 
-
-    Set<ParamParser> paramParsers = ApplicationModel.defaultModel().getExtensionLoader(ParamParser.class).getSupportedExtensionInstances();
+    private static final Set<ParamParser> paramParsers = ApplicationModel.defaultModel().getExtensionLoader(ParamParser.class).getSupportedExtensionInstances();
 
     /**
      * provider  Design Description:

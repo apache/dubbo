@@ -49,4 +49,8 @@ public class FastJsonImpl extends AbstractJSONImpl {
     public String toJson(Object obj) {
         return com.alibaba.fastjson.JSON.toJSONString(obj, SerializerFeature.DisableCircularReferenceDetect);
     }
+
+    @Override
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
+        return com.alibaba.fastjson.JSON.parseObject(bytes,clazz);    }
 }
