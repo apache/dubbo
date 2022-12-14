@@ -127,7 +127,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         if (isDone() || isCancelled() || isCompletedExceptionally()) {
             return;
         }
-        // There's still discussion to be had here, but for now, we'll just
+        // Still needs to be discussed here, but for now, that's it
         if (appResponse == null) {
             this.completeExceptionally(status.asException());
         } else {
