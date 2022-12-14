@@ -22,7 +22,8 @@ import org.apache.dubbo.remoting.RetryHandleException;
 import org.apache.dubbo.remoting.ServiceNotFoundException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.rpc.service.OmnipotentService;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.OmnipotentService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -30,7 +31,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.$INVOKE_OMN;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_METHOD_KEY;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_PATH_KEY;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_VERSION_KEY;
@@ -73,7 +73,7 @@ public class ServiceNotFoundExceptionProcessor implements ExceptionProcessor {
         invocation.setAttachment(ORIGIN_METHOD_KEY, invocation.getMethodName());
         invocation.setAttachment(METHOD_KEY, $INVOKE_OMN);
         invocation.setMethodName($INVOKE_OMN);
-        invocation.setParameterTypes(GENERIC_PARAMETER_TYPES);
+        invocation.setParameterTypes(new Class<?>[]{Invocation.class});
 
         // Reset the decoded flag to continue the decoding process again
         invocation.resetHasDecoded();

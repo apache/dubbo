@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.service;
+package org.apache.dubbo.rpc;
+
+import org.apache.dubbo.rpc.service.GenericException;
+import org.apache.dubbo.rpc.service.GenericService;
 
 /**
  * A more general server-side generalization service than {@link GenericService}
@@ -28,14 +31,11 @@ public interface OmnipotentService {
     /**
      * Generic invocation
      *
-     * @param method         Method name, e.g. findPerson. If there are overridden methods, parameter info is
-     *                       required, e.g. findPerson(java.lang.String)
-     * @param parameterTypes Parameter types
-     * @param args           Arguments
-     * @return invocation return value
+     * @param invocation  New construction point invocation, including original service, method and other information
+     * @return Custom object
      * @throws GenericException potential exception thrown from the invocation
      */
-    Object $invokeOmn(String method, String[] parameterTypes, Object[] args) throws GenericException;
+    Object $invokeOmn(Invocation invocation) throws GenericException;
 
 
 }

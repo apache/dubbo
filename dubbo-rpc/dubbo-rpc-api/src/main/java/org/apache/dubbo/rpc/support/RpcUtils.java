@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.service.OmnipotentService;
+import org.apache.dubbo.rpc.OmnipotentService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;

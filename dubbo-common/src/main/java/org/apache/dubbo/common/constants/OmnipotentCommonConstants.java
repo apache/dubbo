@@ -22,7 +22,6 @@ public interface OmnipotentCommonConstants extends CommonConstants {
     //save orgin group when service is omn
     String ORIGIN_GROUP_KEY = "originGroup";
 
-    Class<?>[] GENERIC_PARAMETER_TYPES = new Class<?>[]{String.class, String[].class, Object[].class};
     String ORIGIN_GENERIC_PARAMETER_TYPES = "originGenericParameterTypes";
 
     String TMP_OBJECT_INPUT = "objectInput";

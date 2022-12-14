@@ -20,18 +20,16 @@ import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.service.OmnipotentService;
+import org.apache.dubbo.rpc.OmnipotentService;
 
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.GENERIC_PARAMETER_TYPES;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.*;
 
 /**
  * Set the method name, formal parameters, and actual parameters for
@@ -56,19 +54,25 @@ public class OmnipotentFilter implements Filter {
 
     // Restore method information before actual call
     private void setOmnArgs(Invocation inv) {
-        Class<?>[] parameterTypes = (Class<?>[]) inv.getObjectAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, GENERIC_PARAMETER_TYPES);
+        Class<?>[] parameterTypes = (Class<?>[]) inv.getObjectAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, new Class<?>[]{Invocation.class});
         Object[] arguments = inv.getArguments();
-
-        String[] types = new String[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            types[i] = ReflectUtils.getName(parameterTypes[i]);
-        }
 
         Object[] args = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             args[i] = JavaBeanSerializeUtil.serialize(arguments[i], JavaBeanAccessor.METHOD);
         }
-        ((RpcInvocation) inv).setArguments(new Object[]{inv.getAttachment(ORIGIN_PATH_KEY), types, args});
+
+        RpcInvocation rpcInvocation = new RpcInvocation(inv);
+
+        // method
+        rpcInvocation.setMethodName(inv.getAttachment(ORIGIN_METHOD_KEY));
+        rpcInvocation.setParameterTypes(parameterTypes);
+        rpcInvocation.setArguments(args);
+
+        // attachment
+        rpcInvocation.setAttachment(PATH_KEY, inv.getAttachment(ORIGIN_PATH_KEY));
+        rpcInvocation.setAttachment(VERSION_KEY, inv.getAttachment(ORIGIN_VERSION_KEY));
+        ((RpcInvocation) inv).setArguments(new Object[]{rpcInvocation});
     }
 
 }
