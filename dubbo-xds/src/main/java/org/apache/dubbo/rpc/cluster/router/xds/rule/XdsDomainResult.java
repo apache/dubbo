@@ -21,10 +21,7 @@ import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * @author : MentosL
- * @date : 2022/12/11 21:29
- */
+
 public class XdsDomainResult {
 
     private Map<String, Set<String>> map;
