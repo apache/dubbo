@@ -318,7 +318,7 @@ public class MetadataInfo implements Serializable {
     public ConcurrentNavigableMap<String, SortedSet<URL>> getExportedServiceURLs() {
         return exportedServiceURLs;
     }
-
+    @Transient
     public Set<URL> getExportedURLSet() {
         return exportedServiceURLs.values().stream()
             .filter(CollectionUtils::isNotEmpty)
