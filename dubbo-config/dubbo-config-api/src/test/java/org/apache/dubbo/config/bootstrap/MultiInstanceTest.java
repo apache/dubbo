@@ -116,12 +116,13 @@ class MultiInstanceTest {
 
     @BeforeEach
     public void setup() {
-
+        FrameworkModel.destroyAll();
     }
 
     @AfterEach
     public void afterEach() {
         SysProps.clear();
+        FrameworkModel.destroyAll();
     }
 
     @Test
