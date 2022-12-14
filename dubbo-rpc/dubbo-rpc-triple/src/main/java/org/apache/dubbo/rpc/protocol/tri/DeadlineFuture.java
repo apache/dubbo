@@ -127,11 +127,17 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         if (isDone() || isCancelled() || isCompletedExceptionally()) {
             return;
         }
-        // Remove the judgment of status is ok,
-        // because the completelyExceptionally method will lead to the onError method in the filter,
-        // but there are also exceptions in the onResponse in the filter,which is a bit confusing.
-        // We recommend only handling onResponse in which onError is called for handling
-        this.complete(appResponse);
+        // There's still discussion to be had here, but for now, we'll just
+        if (appResponse == null) {
+            this.completeExceptionally(status.asException());
+        } else {
+            // Remove the judgment of status is ok,
+            // because the completelyExceptionally method will lead to the onError method in the filter,
+            // but there are also exceptions in the onResponse in the filter,which is a bit confusing.
+            // We recommend only handling onResponse in which onError is called for handling
+            this.complete(appResponse);
+        }
+
 
         // the result is returning, but the caller thread may still waiting
         // to avoid endless waiting for whatever reason, notify caller thread to return.
