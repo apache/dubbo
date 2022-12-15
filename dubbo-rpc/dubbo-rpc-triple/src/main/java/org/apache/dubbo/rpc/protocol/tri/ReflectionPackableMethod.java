@@ -26,7 +26,6 @@ import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 
 import java.io.ByteArrayInputStream;
