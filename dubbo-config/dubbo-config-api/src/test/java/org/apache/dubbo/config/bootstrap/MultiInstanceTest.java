@@ -74,7 +74,7 @@ class MultiInstanceTest {
         registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
 
         // pre-check threads
-        //precheckUnclosedThreads();
+        precheckUnclosedThreads();
     }
 
     @AfterEach
@@ -82,14 +82,18 @@ class MultiInstanceTest {
         FrameworkModel.destroyAll();
 
         // check threads
-        //checkUnclosedThreads();
+        checkUnclosedThreads();
     }
 
-    private static Map<Thread, StackTraceElement[]> precheckUnclosedThreads() throws IOException {
+    private static Map<Thread, StackTraceElement[]> precheckUnclosedThreads() {
         // create a special DubboTestChecker
         if (testChecker == null) {
             testChecker = new DubboTestChecker();
-            testChecker.init(null);
+            try {
+                testChecker.init(null);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             testClassName = MultiInstanceTest.class.getName();
         }
         return testChecker.checkUnclosedThreads(testClassName, 0);
