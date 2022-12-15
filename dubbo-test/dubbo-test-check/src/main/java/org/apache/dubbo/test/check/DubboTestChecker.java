@@ -254,6 +254,7 @@ public class DubboTestChecker implements TestExecutionListener {
             .filter(thread -> !StringUtils.startsWithAny(thread.getName(),
                 "Reference Handler", "Finalizer", "Signal Dispatcher", "Attach Listener", "process reaper", "main" // jvm
                 , "surefire-forkedjvm-" // surefire plugin
+                , "globalEventExecutor"
             ))
             .filter(thread -> !unclosedThreadMap.containsKey(thread))
             .collect(Collectors.toList());
