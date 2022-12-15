@@ -60,7 +60,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private Set<String> observeResourcesName;
 
-    private CompletableFuture<T> future;
+//    private CompletableFuture<T> future;
     private final Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
 
     private ApplicationModel applicationModel;
@@ -101,13 +101,25 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     public T getCacheResource(Set<String> resourceNames) {
         this.dsResult = getDsResult();
+
         if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
             updateResourceCollection(dsResult, resourceNames);
         } else {
+            CompletableFuture<T> future = new CompletableFuture<>();
             if (requestObserver == null) {
-                future = new CompletableFuture<>();
-                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(future));
+//                future = new CompletableFuture<>();
+                requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver());
             }
+            consumerObserveMap.computeIfAbsent(resourceNames, (key) ->
+                new ArrayList<>()
+            ).add(new Consumer<T>() {
+                @Override
+                public void accept(T t) {
+                    future.complete(t);
+                }
+            });
+
+
             resourceNames.addAll(resourcesMap.keySet());
             requestObserver.onNext(buildDiscoveryRequest(resourceNames));
             try {
@@ -175,9 +187,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected class ResponseObserver implements StreamObserver<DiscoveryResponse> {
 
-        private CompletableFuture<T> future;
-        public ResponseObserver(CompletableFuture<T> future) {
-            this.future = future;
+//        private CompletableFuture<T> future;
+        public ResponseObserver() {
+//            this.future = future;
         }
 
         @Override
@@ -186,7 +198,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             T result = decodeDiscoveryResponse(value);
             discoveryResponseListener(result);
             requestObserver.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
-            returnResult(result);
+//            returnResult(result);
         }
 
         private void discoveryResponseListener(T result) {
@@ -209,12 +221,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             }
         }
 
-        private void returnResult(T result) {
-            if (future == null) {
-                return;
-            }
-            future.complete(result);
-        }
+//        private void returnResult(T result) {
+//            if (future == null) {
+//                return;
+//            }
+//            future.complete(result);
+//        }
 
         @Override
         public void onCompleted() {
