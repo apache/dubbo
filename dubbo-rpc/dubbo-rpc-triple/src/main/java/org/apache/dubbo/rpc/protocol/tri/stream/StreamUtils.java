@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.LRU2Cache;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -30,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -44,21 +44,9 @@ public class StreamUtils {
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
 
-    private static final int MAX_LRU_HEADER_MAP_SIZE = 1024;
+    private static final int MAX_LRU_HEADER_MAP_SIZE = 10000;
 
-    private static final Map<String, String> lruHeaderMap = new LinkedHashMap<String, String>(MAX_LRU_HEADER_MAP_SIZE, 1f, true) {
-        @Override
-        protected boolean removeEldestEntry(Map.Entry eldest) {
-            return size() > MAX_LRU_HEADER_MAP_SIZE;
-        }
-    };
-
-    static {
-        // avoid concurrent resize
-        for (int i = 0; i < MAX_LRU_HEADER_MAP_SIZE; i++) {
-            lruHeaderMap.put(i + "", "");
-        }
-    }
+    private static final Map<String, String> lruHeaderMap = new LRU2Cache<>(MAX_LRU_HEADER_MAP_SIZE);
 
     public static String encodeBase64ASCII(byte[] in) {
         byte[] bytes = encodeBase64(in);
