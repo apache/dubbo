@@ -63,7 +63,7 @@ class MultiInstanceTest {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MultiInstanceTest.class);
 
-    private static RegistryConfig registryConfig;
+    private RegistryConfig registryConfig;
 
     private static DubboTestChecker testChecker;
     private static String testClassName;
