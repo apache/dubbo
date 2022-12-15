@@ -26,10 +26,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER;
 
@@ -53,13 +50,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
         String host = null;
         int port = -1;
-        Set<URL> urls = new HashSet<>();
-        Map<String, SortedSet<URL>> exportedURLS = metadataInfo.getExportedServiceURLs();
-        for (Map.Entry<String, SortedSet<URL>> entry : exportedURLS.entrySet()) {
-            if (entry.getValue() != null) {
-                urls.addAll(entry.getValue());
-            }
-        }
+        Set<URL> urls = metadataInfo.collectExportedURLSet();
 
         if (CollectionUtils.isNotEmpty(urls)) {
             String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
