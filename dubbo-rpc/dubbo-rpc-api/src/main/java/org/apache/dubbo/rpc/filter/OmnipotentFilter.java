@@ -23,13 +23,17 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.OmnipotentService;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.OmnipotentService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.*;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_METHOD_KEY;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_PATH_KEY;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_VERSION_KEY;
+import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.VERSION_KEY;
 
 /**
  * Set the method name, formal parameters, and actual parameters for
