@@ -306,7 +306,7 @@ class MultiInstanceTest {
 
     @Test
     void testMultiProviderApplicationsStopOneByOne() {
-        FrameworkModel.destroyAll();
+        DubboBootstrap.reset();
 
         String version1 = "1.0";
         String version2 = "2.0";
