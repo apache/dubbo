@@ -90,7 +90,7 @@ public class GlobalResourcesRepository {
             synchronized (this) {
                 if (executorService == null || executorService.isShutdown()) {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Creating global shared handler ...");
+                        logger.error("Creating global shared handler ...", new RuntimeException());
                     }
                     executorService = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-global-shared-handler", true));
                 }
