@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.proxy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
@@ -32,6 +33,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -95,6 +97,11 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                     invocation.put(Profiler.PROFILER_KEY, profiler);
                     originEntry = Profiler.setToBizProfiler(profiler);
                 }
+            }
+
+            Map<String, String> invocationAttachments = invocation.getAttachments();
+            if (CollectionUtils.isNotEmptyMap(invocationAttachments)) {
+                RpcContext.getClientAttachment().getObjectAttachments().putAll(invocationAttachments);
             }
 
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());

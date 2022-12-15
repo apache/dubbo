@@ -44,7 +44,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
  * AbstractProxyProtocol
@@ -108,10 +113,12 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         final Invoker<T> target = proxyFactory.getInvoker(doRefer(type, url), type, url);
-        Invoker<T> invoker = new AbstractInvoker<T>(type, url) {
+        Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
-            protected Result doInvoke(Invocation invocation) throws Throwable {
+            protected Result doInvoke(Invocation invocation) {
                 try {
+                    invocation.setAttachment(PATH_KEY, getUrl().getPath());
+                    invocation.setAttachment(VERSION_KEY, version);
                     Result result = target.invoke(invocation);
                     // FIXME result is an AsyncRpcResult instance.
                     Throwable e = result.getException();

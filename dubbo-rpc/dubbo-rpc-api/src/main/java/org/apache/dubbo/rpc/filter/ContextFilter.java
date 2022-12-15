@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -116,7 +117,7 @@ public class ContextFilter implements Filter, Filter.Listener {
 
         // merged from dubbox
         // we may already add some attachments into RpcContext before this filter (e.g. in rest protocol)
-        if (attachments != null) {
+        if (CollectionUtils.isNotEmptyMap(attachments)) {
             if (context.getObjectAttachments().size() > 0) {
                 context.getObjectAttachments().putAll(attachments);
             } else {
@@ -125,7 +126,11 @@ public class ContextFilter implements Filter, Filter.Listener {
         }
 
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation) invocation).setInvoker(invoker);
+            RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+            rpcInvocation.setInvoker(invoker);
+            //write all attachments back;
+            rpcInvocation.getObjectAttachments().putAll(context.getObjectAttachments());
+
         }
 
         try {
