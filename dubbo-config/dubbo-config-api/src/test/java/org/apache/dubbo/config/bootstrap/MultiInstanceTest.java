@@ -368,13 +368,13 @@ class MultiInstanceTest {
             // TODO Remove ignore thread prefix of NettyServerBoss if supporting close protocol server only used by one application
             // see org.apache.dubbo.config.deploy.DefaultApplicationDeployer.postDestroy
             // NettyServer will close when all applications are shutdown, but not close if any application of the framework is alive, just ignore it currently
-            checkUnclosedThreadsOfApp(stackTraces1, "Found unclosed threads of app 1: ", new String[]{EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler", "Dubbo-framework"});
+            checkUnclosedThreadsOfApp(stackTraces1, "Found unclosed threads of app 1: ", new String[]{EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler", "Dubbo-framework", "Dubbo-framework-shared-scheduler"});
 
 
             // stop provider app 2 and check threads
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
-            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", new String[]{"Dubbo-framework-shared-scheduler"});
+            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", new String[]{EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler", "Dubbo-framework", "Dubbo-framework-shared-scheduler"});
 
         } finally {
             if (providerBootstrap1 != null) {
