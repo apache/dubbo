@@ -306,7 +306,7 @@ class MultiInstanceTest {
 
     @Test
     void testMultiProviderApplicationsStopOneByOne() {
-        DubboBootstrap.reset();
+        FrameworkModel.destroyAll();
 
         String version1 = "1.0";
         String version2 = "2.0";
@@ -330,7 +330,7 @@ class MultiInstanceTest {
 
             providerBootstrap1 = DubboBootstrap.newInstance(frameworkModel);
             providerBootstrap1.application("provider1")
-                .registry(registryConfig)
+                .registry(new RegistryConfig(registryConfig.getAddress()))
                 .service(serviceConfig1)
                 .protocol(protocolConfig1)
                 .start();
