@@ -44,10 +44,8 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -70,8 +68,8 @@ class MultiInstanceTest {
     private static DubboTestChecker testChecker;
     private static String testClassName;
 
-    @BeforeAll
-    public static void beforeAll() {
+    @BeforeEach
+    public void beforeAll() {
         FrameworkModel.destroyAll();
         registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
 
@@ -79,8 +77,8 @@ class MultiInstanceTest {
         //precheckUnclosedThreads();
     }
 
-    @AfterAll
-    public static void afterAll() throws Exception {
+    @AfterEach
+    public void afterAll() throws Exception {
         FrameworkModel.destroyAll();
 
         // check threads
