@@ -121,11 +121,6 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
     }
 
     @Override
-    public Object getInternalProperty(String key, Object defaultValue) {
-        return null;
-    }
-
-    @Override
     public final void close() throws Exception {
         try {
             doClose();

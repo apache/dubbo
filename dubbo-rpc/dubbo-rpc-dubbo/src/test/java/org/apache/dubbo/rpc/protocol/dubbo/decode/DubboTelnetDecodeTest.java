@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.embedded.EmbeddedChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -41,6 +38,10 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboCodec;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
+
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -77,13 +78,13 @@ class DubboTelnetDecodeTest {
 
         // disable org.apache.dubbo.remoting.transport.CodecSupport.checkSerialization to avoid error:
         // java.io.IOException: Service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService with version 0.0.0 not found, invocation rejected.
-        ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration().overwriteCache(SERIALIZATION_SECURITY_CHECK_KEY, "false");
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
     }
 
     @AfterAll
     public static void teardown() {
         FrameworkModel.defaultModel().destroy();
-        ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration().clearCache();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
 
     }
 
@@ -100,26 +101,25 @@ class DubboTelnetDecodeTest {
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
             URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
-            url = url.setScopeModel(ApplicationModel.defaultModel().newModule());
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler(null,
-                new MultiMessageHandler(
-                    new DecodeHandler(
-                        new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
-                            @Override
-                            public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                if (checkDubboDecoded(msg)) {
-                                    dubbo.incrementAndGet();
-                                }
-                                return getDefaultFuture();
-                            }
-                        }))));
+                    new MultiMessageHandler(
+                            new DecodeHandler(
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                        @Override
+                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                            if (checkDubboDecoded(msg)) {
+                                                dubbo.incrementAndGet();
+                                            }
+                                            return getDefaultFuture();
+                                        }
+                                    }))));
 
             ch = new LocalEmbeddedChannel();
             ch.pipeline()
-                .addLast("decoder", adapter.getDecoder())
-                .addLast("handler", mockHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("handler", mockHandler);
 
             ch.writeInbound(dubboByteBuf);
         } catch (Exception e) {
@@ -148,7 +148,6 @@ class DubboTelnetDecodeTest {
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
             URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
-            url = url.setScopeModel(ApplicationModel.defaultModel().newModule());
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -156,19 +155,19 @@ class DubboTelnetDecodeTest {
                     telnet.incrementAndGet();
                 }
             },
-                new MultiMessageHandler(
-                    new DecodeHandler(
-                        new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
-                            @Override
-                            public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                return getDefaultFuture();
-                            }
-                        }))));
+                    new MultiMessageHandler(
+                            new DecodeHandler(
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                        @Override
+                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                            return getDefaultFuture();
+                                        }
+                                    }))));
 
             ch = new LocalEmbeddedChannel();
             ch.pipeline()
-                .addLast("decoder", adapter.getDecoder())
-                .addLast("handler", mockHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("handler", mockHandler);
 
             ch.writeInbound(telnetByteBuf);
         } catch (Exception e) {
@@ -193,13 +192,13 @@ class DubboTelnetDecodeTest {
      * |               telnet(incomplete)                 |
      * +--------------------------------------------------+
      * <p>
-     * <p>
+     *
      * Second ByteBuf:
      * +--------------------------++----------------------+
      * |  telnet(the remaining)   ||   dubbo(complete)    |
      * +--------------------------++----------------------+
-     * ||
-     * Magic Code
+     *                            ||
+     *                        Magic Code
      *
      * @throws InterruptedException
      */
@@ -212,7 +211,6 @@ class DubboTelnetDecodeTest {
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
             URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
-            url = url.setScopeModel(ApplicationModel.defaultModel().newModule());
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -220,23 +218,23 @@ class DubboTelnetDecodeTest {
                     telnetDubbo.incrementAndGet();
                 }
             },
-                new MultiMessageHandler(
-                    new DecodeHandler(
-                        new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
-                            @Override
-                            public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                if (checkDubboDecoded(msg)) {
-                                    telnetDubbo.incrementAndGet();
-                                }
+                    new MultiMessageHandler(
+                            new DecodeHandler(
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                        @Override
+                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                            if (checkDubboDecoded(msg)) {
+                                                telnetDubbo.incrementAndGet();
+                                            }
 
-                                return getDefaultFuture();
-                            }
-                        }))));
+                                            return getDefaultFuture();
+                                        }
+                                    }))));
 
             ch = new LocalEmbeddedChannel();
             ch.pipeline()
-                .addLast("decoder", adapter.getDecoder())
-                .addLast("handler", mockHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("handler", mockHandler);
 
             ch.writeInbound(telnetByteBuf);
             ch.writeInbound(Unpooled.wrappedBuffer(Unpooled.wrappedBuffer("\n".getBytes()), dubboByteBuf));
@@ -267,7 +265,7 @@ class DubboTelnetDecodeTest {
      * |               telnet(incomplete)                 |
      * +--------------------------------------------------+
      * <p>
-     * <p>
+     *
      * Second ByteBuf (secondByteBuf):
      * +--------------------------------------------------+
      * |  telnet(the remaining)   |   telnet(complete)    |
@@ -285,7 +283,6 @@ class DubboTelnetDecodeTest {
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
             URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
-            url = url.setScopeModel(ApplicationModel.defaultModel().newModule());
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -293,19 +290,19 @@ class DubboTelnetDecodeTest {
                     telnetTelnet.incrementAndGet();
                 }
             },
-                new MultiMessageHandler(
-                    new DecodeHandler(
-                        new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
-                            @Override
-                            public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                return getDefaultFuture();
-                            }
-                        }))));
+                    new MultiMessageHandler(
+                            new DecodeHandler(
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                        @Override
+                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                            return getDefaultFuture();
+                                        }
+                                    }))));
 
             ch = new LocalEmbeddedChannel();
             ch.pipeline()
-                .addLast("decoder", adapter.getDecoder())
-                .addLast("handler", mockHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("handler", mockHandler);
 
             ch.writeInbound(firstByteBuf);
             ch.writeInbound(secondByteBuf);
@@ -339,8 +336,8 @@ class DubboTelnetDecodeTest {
      * +-------------------------++-----------------------+
      * |  dubbo(the remaining)   ||    dubbo(complete)    |
      * +-------------------------++-----------------------+
-     * ||
-     * Magic Code
+     *                           ||
+     *                       Magic Code
      *
      * @throws InterruptedException
      */
@@ -357,26 +354,25 @@ class DubboTelnetDecodeTest {
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
             URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
-            url = url.setScopeModel(ApplicationModel.defaultModel().newModule());
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler(null,
-                new MultiMessageHandler(
-                    new DecodeHandler(
-                        new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
-                            @Override
-                            public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                if (checkDubboDecoded(msg)) {
-                                    dubboDubbo.incrementAndGet();
-                                }
-                                return getDefaultFuture();
-                            }
-                        }))));
+                    new MultiMessageHandler(
+                            new DecodeHandler(
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                        @Override
+                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                            if (checkDubboDecoded(msg)) {
+                                                dubboDubbo.incrementAndGet();
+                                            }
+                                            return getDefaultFuture();
+                                        }
+                                    }))));
 
             ch = new LocalEmbeddedChannel();
             ch.pipeline()
-                .addLast("decoder", adapter.getDecoder())
-                .addLast("handler", mockHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("handler", mockHandler);
 
             ch.writeInbound(firstDubboByteBuf);
             ch.writeInbound(secondDubboByteBuf);
@@ -425,7 +421,6 @@ class DubboTelnetDecodeTest {
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
             URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
-            url = url.setScopeModel(ApplicationModel.defaultModel().newModule());
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -433,22 +428,22 @@ class DubboTelnetDecodeTest {
                     dubboTelnet.incrementAndGet();
                 }
             },
-                new MultiMessageHandler(
-                    new DecodeHandler(
-                        new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
-                            @Override
-                            public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
-                                if (checkDubboDecoded(msg)) {
-                                    dubboTelnet.incrementAndGet();
-                                }
-                                return getDefaultFuture();
-                            }
-                        }))));
+                    new MultiMessageHandler(
+                            new DecodeHandler(
+                                    new HeaderExchangeHandler(new ExchangeHandlerAdapter() {
+                                        @Override
+                                        public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) {
+                                            if (checkDubboDecoded(msg)) {
+                                                dubboTelnet.incrementAndGet();
+                                            }
+                                            return getDefaultFuture();
+                                        }
+                                    }))));
 
             ch = new LocalEmbeddedChannel();
             ch.pipeline()
-                .addLast("decoder", adapter.getDecoder())
-                .addLast("handler", mockHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("handler", mockHandler);
 
             ch.writeInbound(firstDubboByteBuf);
             ch.writeInbound(secondByteBuf);
@@ -501,13 +496,13 @@ class DubboTelnetDecodeTest {
         if (msg instanceof DecodeableRpcInvocation) {
             DecodeableRpcInvocation invocation = (DecodeableRpcInvocation) msg;
             if ("sayHello".equals(invocation.getMethodName())
-                && invocation.getParameterTypes().length == 1
-                && String.class.equals(invocation.getParameterTypes()[0])
-                && invocation.getArguments().length == 1
-                && "dubbo".equals(invocation.getArguments()[0])
-                && DemoService.class.getName().equals(invocation.getAttachment("path"))
-                && DemoService.class.getName().equals(invocation.getAttachment("interface"))
-                && "0.0.0".equals(invocation.getAttachment("version"))) {
+                    && invocation.getParameterTypes().length == 1
+                    && String.class.equals(invocation.getParameterTypes()[0])
+                    && invocation.getArguments().length == 1
+                    && "dubbo".equals(invocation.getArguments()[0])
+                    && DemoService.class.getName().equals(invocation.getAttachment("path"))
+                    && DemoService.class.getName().equals(invocation.getAttachment("interface"))
+                    && "0.0.0".equals(invocation.getAttachment("version"))) {
                 return true;
             }
         }
