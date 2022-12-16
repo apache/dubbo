@@ -127,18 +127,17 @@ public interface Configuration {
      * Gets a property from the configuration. The default value will return if the configuration doesn't contain
      * the mapping for the specified key.
      *
-     * @param key          property to retrieve
+     * @param key property to retrieve
      * @param defaultValue default value
      * @return the value to which this configuration maps the specified key, or default value if the configuration
      * contains no mapping for this key.
      */
     default Object getProperty(String key, Object defaultValue) {
-        return getInternalProperty(key, defaultValue);
+        Object value = getInternalProperty(key);
+        return value != null ? value : defaultValue;
     }
 
     Object getInternalProperty(String key);
-
-    Object getInternalProperty(String key, Object defaultValue);
 
     /**
      * Check if the configuration contains the specified key.
@@ -154,12 +153,9 @@ public interface Configuration {
 
     default <T> T convert(Class<T> cls, String key, T defaultValue) {
         // we only process String properties for now
-        Object value = getProperty(key, defaultValue);
+        String value = (String) getProperty(key);
 
-        if (!String.class.isInstance(value)) {
-            if (cls.isInstance(value)) {
-                return cls.cast(value);
-            }
+        if (value == null) {
             return defaultValue;
         }
 
@@ -168,26 +164,24 @@ public interface Configuration {
             return cls.cast(value);
         }
 
-        String str = (String) value;
-
         if (Boolean.class.equals(cls) || Boolean.TYPE.equals(cls)) {
-            obj = Boolean.valueOf(str);
+            obj = Boolean.valueOf(value);
         } else if (Number.class.isAssignableFrom(cls) || cls.isPrimitive()) {
             if (Integer.class.equals(cls) || Integer.TYPE.equals(cls)) {
-                obj = Integer.valueOf(str);
+                obj = Integer.valueOf(value);
             } else if (Long.class.equals(cls) || Long.TYPE.equals(cls)) {
-                obj = Long.valueOf(str);
+                obj = Long.valueOf(value);
             } else if (Byte.class.equals(cls) || Byte.TYPE.equals(cls)) {
-                obj = Byte.valueOf(str);
+                obj = Byte.valueOf(value);
             } else if (Short.class.equals(cls) || Short.TYPE.equals(cls)) {
-                obj = Short.valueOf(str);
+                obj = Short.valueOf(value);
             } else if (Float.class.equals(cls) || Float.TYPE.equals(cls)) {
-                obj = Float.valueOf(str);
+                obj = Float.valueOf(value);
             } else if (Double.class.equals(cls) || Double.TYPE.equals(cls)) {
-                obj = Double.valueOf(str);
+                obj = Double.valueOf(value);
             }
         } else if (cls.isEnum()) {
-            obj = Enum.valueOf(cls.asSubclass(Enum.class), str);
+            obj = Enum.valueOf(cls.asSubclass(Enum.class), value);
         }
 
         return cls.cast(obj);
