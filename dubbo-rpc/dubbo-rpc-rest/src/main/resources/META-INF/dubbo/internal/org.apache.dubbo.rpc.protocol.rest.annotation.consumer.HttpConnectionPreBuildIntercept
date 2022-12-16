@@ -1,0 +1,6 @@
+must-intercept=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.AddMustAttachmentIntercept
+rpc-context=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.RPCContextIntercept
+serialize=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.SerializeBodyIntercept
+path=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.PathVariableIntercept
+param=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.RequestParamIntercept
+header=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.RequestHeaderIntercept
