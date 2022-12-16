@@ -34,6 +34,8 @@
         <module>dubbo-metadata-report-zookeeper</module>
         <module>dubbo-metadata-report-redis</module>
         <module>dubbo-metadata-report-nacos</module>
+        <module>dubbo-metadata-annotation-rest</module>
+        <module>dubbo-metadata-annotation-springmvc</module>
     </modules>
 
     <dependencies>
