@@ -29,15 +29,8 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -55,12 +48,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int checkInterval;
 
-    private T dsResult;
-    private final Lock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
 
     private Set<String> observeResourcesName;
 
-//    private CompletableFuture<T> future;
     private final Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
 
     private ApplicationModel applicationModel;
@@ -83,9 +74,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     public abstract String getTypeUrl();
 
-    public abstract void updateResourceCollection(T resourceCollection, Set<String> resourceNames);
+    public abstract T getDsResult(Set<String> resourceNames);
 
-    public abstract T getDsResult();
+//    public abstract T getDsResult();
 
     public boolean isExistResource(Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
@@ -100,30 +91,30 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     public T getCacheResource(Set<String> resourceNames) {
-        this.dsResult = getDsResult();
-
         if (!resourceNames.isEmpty() && isExistResource(resourceNames)) {
-            updateResourceCollection(dsResult, resourceNames);
+            return getDsResult(resourceNames);
         } else {
             CompletableFuture<T> future = new CompletableFuture<>();
             if (requestObserver == null) {
-//                future = new CompletableFuture<>();
                 requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver());
             }
+            observeResourcesName = resourceNames;
+            Consumer<T> futureConsumer = future::complete;
             consumerObserveMap.computeIfAbsent(resourceNames, (key) ->
                 new ArrayList<>()
-            ).add(new Consumer<T>() {
-                @Override
-                public void accept(T t) {
-                    future.complete(t);
-                }
-            });
-
+            ).add(futureConsumer);
 
             resourceNames.addAll(resourcesMap.keySet());
             requestObserver.onNext(buildDiscoveryRequest(resourceNames));
             try {
-                return future.get();
+                T result = future.get();
+                try {
+                    lock.lock();
+                    consumerObserveMap.get(resourceNames).removeIf(o -> o.equals(futureConsumer));
+                } finally {
+                    lock.unlock();
+                }
+                return result;
             } catch (InterruptedException e) {
                 logger.error("InterruptedException occur when request control panel. error={}", e);
                 Thread.currentThread().interrupt();
@@ -131,7 +122,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 logger.error("Error occur when request control panel. error=. ", e);
             }
         }
-        return dsResult;
+        return null;
     }
 
 
@@ -187,9 +178,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected class ResponseObserver implements StreamObserver<DiscoveryResponse> {
 
-//        private CompletableFuture<T> future;
         public ResponseObserver() {
-//            this.future = future;
         }
 
         @Override
@@ -198,21 +187,29 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             T result = decodeDiscoveryResponse(value);
             discoveryResponseListener(result);
             requestObserver.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
-//            returnResult(result);
         }
 
         private void discoveryResponseListener(T result) {
             // call once for full data
             if (observeResourcesName != null) {
-                try {
-                    lock.lock();
-                    consumerObserveMap.get(observeResourcesName).forEach(o -> o.accept(result));
-                } finally {
-                    lock.unlock();
+                if (!lock.isHeldByCurrentThread()) {
+                    try {
+                        lock.lock();
+                        accpetConsumer(result);
+                    } finally {
+                        lock.unlock();
+                    }
+                } else {
+                    accpetConsumer(result);
                 }
             }
         }
 
+        private void accpetConsumer(T result) {
+            for (Consumer<T> consumer : consumerObserveMap.get(observeResourcesName)) {
+                consumer.accept(result);
+            }
+        }
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
@@ -220,13 +217,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 triggerReConnectTask();
             }
         }
-
-//        private void returnResult(T result) {
-//            if (future == null) {
-//                return;
-//            }
-//            future.complete(result);
-//        }
 
         @Override
         public void onCompleted() {

@@ -54,16 +54,21 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     @Override
-    public void updateResourceCollection(ListenerResult listenerResult, Set<String> resourceNames) {
+    public ListenerResult getDsResult(Set<String> resourceNames) {
+        ListenerResult listenerResult = new ListenerResult();
         for (String resourceName : resourceNames) {
             listenerResult.getRouteConfigNames().addAll((Set<String>) resourcesMap.get(resourceName));
         }
+        return listenerResult;
     }
 
-    @Override
-    public ListenerResult getDsResult() {
-        return new ListenerResult();
-    }
+//    @Override
+//    public void (ListenerResult listenerResult, Set<String> resourceNames) {
+//        for (String resourceName : resourceNames) {
+//            listenerResult.getRouteConfigNames().addAll((Set<String>) resourcesMap.get(resourceName));
+//        }
+//    }
+
 
     public ListenerResult getListeners() {
         return getResource(null);

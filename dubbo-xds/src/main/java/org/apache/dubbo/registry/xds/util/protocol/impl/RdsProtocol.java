@@ -54,20 +54,16 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     }
 
     @Override
-    public void updateResourceCollection(RouteResult routeResult, Set<String> resourceNames) {
+    public RouteResult getDsResult(Set<String> resourceNames) {
+        RouteResult routeResult = new RouteResult();
         for (String resourceName : resourceNames) {
             if ("".equals(resourceName)) {
                 continue;
             }
             routeResult.getDomainMap().putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
         }
+        return routeResult;
     }
-
-    @Override
-    public RouteResult getDsResult() {
-        return new RouteResult();
-    }
-
 
     @Override
     protected RouteResult decodeDiscoveryResponse(DiscoveryResponse response) {
