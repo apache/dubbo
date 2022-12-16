@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,7 +38,6 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -139,17 +137,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            ScopeModel scopeModel = channel.getUrl().getScopeModel();
-            if (scopeModel instanceof ModuleModel) {
-                scopeModel = scopeModel.getParent();
-            } else {
-                scopeModel = ApplicationModel.defaultModel();
-            }
-            String serializationSecurityCheck = ConfigurationUtils.getSystemConfiguration(
-                scopeModel).getString(SERIALIZATION_SECURITY_CHECK_KEY, "true");
-
-
-            if (Boolean.parseBoolean(serializationSecurityCheck)) {
+            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
