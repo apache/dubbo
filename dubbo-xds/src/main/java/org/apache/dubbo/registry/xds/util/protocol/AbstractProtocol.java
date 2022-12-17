@@ -179,6 +179,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     protected class ResponseObserver implements StreamObserver<DiscoveryResponse> {
 
         public ResponseObserver() {
+
         }
 
         @Override
@@ -192,20 +193,20 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         private void discoveryResponseListener(T result) {
             // call once for full data
             if (observeResourcesName != null) {
-                if (!lock.isHeldByCurrentThread()) {
+                if (!lock.isLocked() || lock.isHeldByCurrentThread()) {
                     try {
                         lock.lock();
-                        accpetConsumer(result);
+                        acceptConsumer(result);
                     } finally {
                         lock.unlock();
                     }
                 } else {
-                    accpetConsumer(result);
+                    acceptConsumer(result);
                 }
             }
         }
 
-        private void accpetConsumer(T result) {
+        private void acceptConsumer(T result) {
             for (Consumer<T> consumer : consumerObserveMap.get(observeResourcesName)) {
                 consumer.accept(result);
             }

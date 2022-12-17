@@ -38,25 +38,28 @@ import java.util.function.Consumer;
 
 public class PilotExchanger {
 
-    private final XdsChannel xdsChannel;
+    protected final XdsChannel xdsChannel;
 
-    private final RdsProtocol rdsProtocol;
+    protected final LdsProtocol ldsProtocol;
 
-    private final EdsProtocol edsProtocol;
+    protected final RdsProtocol rdsProtocol;
 
-    private ListenerResult listenerResult;
+    protected final EdsProtocol edsProtocol;
 
-    private RouteResult routeResult;
+    protected ListenerResult listenerResult;
+
+    protected RouteResult routeResult;
+
     private final AtomicBoolean isRdsObserve = new AtomicBoolean(false);
     private final HashSet<String> domainObserveRequest = new HashSet<>();
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
 
-    private PilotExchanger(URL url) {
+    protected PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
+        this.ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
         this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
         this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
 
