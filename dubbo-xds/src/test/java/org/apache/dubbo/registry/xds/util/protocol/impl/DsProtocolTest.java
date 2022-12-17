@@ -56,9 +56,9 @@ public class DsProtocolTest {
     private XdsChannel xdsChannel;
 
     private LdsProtocolMock ldsProtocolMock;
-    private RdsProtocol rdsProtocolMock;
+    private RdsProtocolMock rdsProtocolMock;
 
-    private EdsProtocol edsProtocolMock;
+    private EdsProtocolMock edsProtocolMock;
 
     private ListenerResult listenerResult;
 
@@ -77,23 +77,6 @@ public class DsProtocolTest {
     private URL url;
 
     private Node node;
-
-//    private StreamObserver<DiscoveryRequest> requestStreamObserver = new StreamObserver<DiscoveryRequest>() {
-//        @Override
-//        public void onNext(DiscoveryRequest discoveryRequest) {
-//
-//        }
-//
-//        @Override
-//        public void onError(Throwable throwable) {
-//
-//        }
-//
-//        @Override
-//        public void onCompleted() {
-//
-//        }
-//    };
 
     public DsProtocolTest() {
     }
@@ -168,12 +151,12 @@ public class DsProtocolTest {
         xdsChannel = mock(XdsChannel.class);
 
         this.ldsProtocolMock = spy(new LdsProtocolMock(xdsChannel, node, 10, applicationModel));
-        this.rdsProtocolMock = spy(new RdsProtocol(xdsChannel, node, 10, applicationModel));
-        this.edsProtocolMock = spy(new EdsProtocol(xdsChannel, node, 10, applicationModel));
+        this.rdsProtocolMock = spy(new RdsProtocolMock(xdsChannel, node, 10, applicationModel));
+        this.edsProtocolMock = spy(new EdsProtocolMock(xdsChannel, node, 10, applicationModel));
 
         // mock lister result
         this.routeConfigNames = new HashSet<>();
-        routeConfigNames.add("kubernetes-dashboard.kubernetes-dashboard.svc.cluster.local:443");
+        routeConfigNames.add("istiod.istio-system.svc");
         this.listenerResult = spy(new ListenerResult(routeConfigNames));
 
         // mock route result
@@ -219,40 +202,33 @@ public class DsProtocolTest {
 
         RouteResult rdsResult = rdsProtocolMock.getResource(routeConfigNames);
         verify(rdsProtocolMock, times(1)).isExistResource(routeConfigNames);
+        Assertions.assertEquals(rdsProtocolMock.isExistResource(routeConfigNames), false);
+
+        Map<String, Set<String>> domainMap = new HashMap<>();
+        Set<String> domainValue = new HashSet<>();
+        domainValue.add("outbound|15014||istiod.istio-system.svc.cluster.local");
+        domainMap.put("istiod.istio-system.svc", domainValue);
+
+        rdsProtocolMock.getResourcesMap().put("istiod.istio-system.svc", domainMap);
+
+        Assertions.assertEquals(rdsProtocolMock.isExistResource(routeConfigNames), true);
+        Assertions.assertEquals(rdsProtocolMock.getCacheResource(routeConfigNames), routeResult);
         rdsMocked.close();
 
         //mock eds getResource
-
         MockedConstruction<CompletableFuture> edsMocked = mockConstruction(CompletableFuture.class, (mock, context) -> {
             when(mock.get()).thenReturn(endpointResult);
         });
 
         EndpointResult edsResult = edsProtocolMock.getResource(routeConfigNames);
         verify(edsProtocolMock, times(1)).isExistResource(routeConfigNames);
+        Assertions.assertEquals(rdsProtocolMock.isExistResource(routeConfigNames), false);
         edsMocked.close();
-
     }
 
-//    @Test
-//    public void test4() {
-//        mockConstruction(LdsProtocol.class, (mock, context) -> {
-//            when(mock.getListeners()).thenReturn(ldsProtocolMock.getListeners());
-//
-//        });
-//
-//        mockConstruction(RdsProtocol.class, (mock, context) -> {
-//            when(mock.getResource(listenerResult.getRouteConfigNames())).thenReturn(routeResult);
-//
-////            when(mock.observeResource(listenerResult.getRouteConfigNames(), (Consumer<RouteResult>) any())).thenReturn()
-//        });
-//
-//        PilotExchangerMock pilotExchangerMock = spy(PilotExchangerMock.initialize(url));
-//
-//    }
-
-
     @Test
-    void observeDsConnect() {
+    void testCache() {
+
         System.out.println("hello");
     }
 
@@ -266,24 +242,23 @@ public class DsProtocolTest {
 
     }
 
-
     @Test
     void resourceNotInCache() {
 
     }
 
-    private void doObserveEndpoints(String domain) {
-        Set<String> router = routeResult.searchDomain(domain);
-        // if router is empty, do nothing
-        // observation will be created when RDS updates
-        if (CollectionUtils.isNotEmpty(router)) {
-            edsProtocolMock.observeResource(
-                router,
-                endpointResult ->
-                    // notify consumers
-                    domainObserveConsumer.get(domain).forEach(
-                        consumer1 -> consumer1.accept(endpointResult.getEndpoints())));
-            domainObserveRequest.add(domain);
-        }
-    }
+//    private void doObserveEndpoints(String domain) {
+//        Set<String> router = routeResult.searchDomain(domain);
+//        // if router is empty, do nothing
+//        // observation will be created when RDS updates
+//        if (CollectionUtils.isNotEmpty(router)) {
+//            edsProtocolMock.observeResource(
+//                router,
+//                endpointResult ->
+//                    // notify consumers
+//                    domainObserveConsumer.get(domain).forEach(
+//                        consumer1 -> consumer1.accept(endpointResult.getEndpoints())));
+//            domainObserveRequest.add(domain);
+//        }
+//    }
 }

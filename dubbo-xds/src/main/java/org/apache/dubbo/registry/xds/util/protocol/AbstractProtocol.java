@@ -34,6 +34,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
@@ -48,7 +49,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final int checkInterval;
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+    private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+
+    private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     private Set<String> observeResourcesName;
 
@@ -109,10 +114,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             try {
                 T result = future.get();
                 try {
-                    lock.lock();
+                    writeLock.lock();
                     consumerObserveMap.get(resourceNames).removeIf(o -> o.equals(futureConsumer));
                 } finally {
-                    lock.unlock();
+                    writeLock.unlock();
                 }
                 return result;
             } catch (InterruptedException e) {
@@ -137,7 +142,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         try {
-            lock.lock();
+            writeLock.lock();
             consumerObserveMap.compute(resourceNames, (k, v) -> {
                 if (v == null) {
                     v = new ArrayList<>();
@@ -146,11 +151,16 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 v.add(consumer);
                 return v;
             });
+        } finally {
+            writeLock.unlock();
+        }
+        try {
+            readLock.lock();
             for (Consumer<T> cacheConsumer : consumerObserveMap.get(resourceNames)) {
                 cacheConsumer.accept(getResource(resourceNames));
             }
         } finally {
-            lock.unlock();
+            readLock.unlock();
         }
         this.observeResourcesName = resourceNames;
     }
@@ -193,24 +203,17 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         private void discoveryResponseListener(T result) {
             // call once for full data
             if (observeResourcesName != null) {
-                if (!lock.isLocked() || lock.isHeldByCurrentThread()) {
-                    try {
-                        lock.lock();
-                        acceptConsumer(result);
-                    } finally {
-                        lock.unlock();
+                try {
+                    readLock.lock();
+                    for (Consumer<T> consumer : consumerObserveMap.get(observeResourcesName)) {
+                        consumer.accept(result);
                     }
-                } else {
-                    acceptConsumer(result);
+                } finally {
+                    readLock.unlock();
                 }
             }
         }
 
-        private void acceptConsumer(T result) {
-            for (Consumer<T> consumer : consumerObserveMap.get(observeResourcesName)) {
-                consumer.accept(result);
-            }
-        }
         @Override
         public void onError(Throwable t) {
             logger.error(REGISTRY_ERROR_REQUEST_XDS, "", "", "xDS Client received error message! detail:", t);
