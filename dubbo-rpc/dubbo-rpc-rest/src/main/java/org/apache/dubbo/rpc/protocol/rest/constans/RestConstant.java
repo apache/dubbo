@@ -27,6 +27,7 @@ public interface RestConstant {
     String ADD_MUST_ATTTACHMENT = "must-intercept";
     String RPCCONTEXT_INTERCEPT = "rpc-context";
     String SERIALIZE_INTERCEPT = "serialize";
+    String PATH_SEPARATOR = "/";
     String REQUEST_PARAM_INTERCEPT = "param";
     String REQUEST_HEADER_INTERCEPT = "header";
     String PATH_INTERCEPT = "path";

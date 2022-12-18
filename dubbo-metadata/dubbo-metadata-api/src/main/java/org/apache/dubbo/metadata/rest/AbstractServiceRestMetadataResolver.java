@@ -65,6 +65,16 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final boolean supports(Class<?> serviceType) {
+        return supports(serviceType, false);
+    }
+
+    @Override
+    public final boolean supports(Class<?> serviceType, boolean consumer) {
+
+        if (consumer) {
+            return serviceType.isInterface() && supports0(serviceType);
+        }
+
         return isImplementedInterface(serviceType) && isServiceAnnotationPresent(serviceType) && supports0(serviceType);
     }
 
@@ -87,11 +97,17 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final ServiceRestMetadata resolve(Class<?> serviceType) {
-
         ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata();
 
         // Process ServiceRestMetadata
         processServiceRestMetadata(serviceRestMetadata, serviceType);
+
+        return resolve(serviceType, serviceRestMetadata);
+    }
+
+
+    @Override
+    public final ServiceRestMetadata resolve(Class<?> serviceType, ServiceRestMetadata serviceRestMetadata) {
 
         // Process RestMethodMetadata
         processAllRestMethodMetadata(serviceRestMetadata, serviceType);
@@ -125,7 +141,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      */
     protected void processAllRestMethodMetadata(ServiceRestMetadata serviceRestMetadata, Class<?> serviceType) {
         Class<?> serviceInterfaceClass = resolveServiceInterfaceClass(serviceRestMetadata, serviceType);
-        Map<Method, Method> serviceMethodsMap = resolveServiceMethodsMap(serviceType, serviceInterfaceClass);
+        Map<Method, Method> serviceMethodsMap = resolveServiceMethodsMap(serviceType, serviceInterfaceClass, serviceRestMetadata.isConsumer());
         for (Map.Entry<Method, Method> entry : serviceMethodsMap.entrySet()) {
             // try the overrider method first
             Method serviceMethod = entry.getKey();
@@ -146,7 +162,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
      * @param serviceInterfaceClass the service interface class
      * @return non-null read-only {@link Map}
      */
-    protected Map<Method, Method> resolveServiceMethodsMap(Class<?> serviceType, Class<?> serviceInterfaceClass) {
+    protected Map<Method, Method> resolveServiceMethodsMap(Class<?> serviceType, Class<?> serviceInterfaceClass, boolean consumer) {
         Map<Method, Method> serviceMethodsMap = new LinkedHashMap<>();
         // exclude the public methods declared in java.lang.Object.class
         List<Method> declaredServiceMethods = new ArrayList<>(getAllMethods(serviceInterfaceClass, excludedDeclaredClass(Object.class)));
@@ -158,7 +174,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
         for (Method declaredServiceMethod : declaredServiceMethods) {
             for (Method serviceMethod : serviceMethods) {
-                if (overrides(serviceMethod, declaredServiceMethod)) {
+                if (consumer || overrides(serviceMethod, declaredServiceMethod)) {
                     serviceMethodsMap.put(serviceMethod, declaredServiceMethod);
                     continue;
                 }
@@ -213,6 +229,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
 
         RestMethodMetadata metadata = new RestMethodMetadata();
+
+        // to consumer service map
+        metadata.setReflectMethod(serviceMethod);
 
         MethodDefinition methodDefinition = resolveMethodDefinition(serviceMethod, serviceType, serviceInterfaceClass);
         // Set MethodDefinition

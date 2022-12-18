@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.rest;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +60,8 @@ public class RestMethodMetadata implements Serializable {
     private ServiceRestMetadata serviceRestMetadata;
 
     private List<ArgInfo> argInfos;
+
+    private Method reflectMethod;
 
     public MethodDefinition getMethod() {
         if (method == null) {
@@ -179,6 +182,15 @@ public class RestMethodMetadata implements Serializable {
 
     public void addArgInfo(ArgInfo argInfo) {
         getArgInfos().add(argInfo);
+    }
+
+
+    public Method getReflectMethod() {
+        return reflectMethod;
+    }
+
+    public void setReflectMethod(Method reflectMethod) {
+        this.reflectMethod = reflectMethod;
     }
 
     @Override

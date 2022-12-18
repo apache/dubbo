@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata.rest;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -39,7 +40,24 @@ public class ServiceRestMetadata implements Serializable {
 
     private int port;
 
+    private boolean consumer;
+
     private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
+    private Map<Method, RestMethodMetadata> methodToServiceMap;
+
+    public ServiceRestMetadata(String serviceInterface, String version, String group, boolean consumer) {
+        this.serviceInterface = serviceInterface;
+        this.version = version;
+        this.group = group;
+        this.consumer = consumer;
+    }
+
+    public ServiceRestMetadata() {
+    }
+
+    public ServiceRestMetadata(String serviceInterface, String version, String group) {
+        this(serviceInterface, version, group, false);
+    }
 
     public String getServiceInterface() {
         return serviceInterface;
@@ -81,6 +99,7 @@ public class ServiceRestMetadata implements Serializable {
         PathMatcher pathMather = new PathMatcher(restMethodMetadata.getRequest().getPath(),
             this.getVersion(), this.getGroup(), this.getPort());
         addPathToServiceMap(pathMather, restMethodMetadata);
+        addMethodToServiceMap(restMethodMetadata);
         getMeta().add(restMethodMetadata);
     }
 
@@ -108,6 +127,27 @@ public class ServiceRestMetadata implements Serializable {
         for (PathMatcher pathMather : pathToServiceMap.keySet()) {
             pathMather.setPort(port);
         }
+    }
+
+    public boolean isConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(boolean consumer) {
+        this.consumer = consumer;
+    }
+
+    public Map<Method, RestMethodMetadata> getMethodToServiceMap() {
+        return methodToServiceMap;
+    }
+
+    public void addMethodToServiceMap(RestMethodMetadata restMethodMetadata) {
+
+        if (this.methodToServiceMap == null) {
+            this.methodToServiceMap = new HashMap<>();
+        }
+
+        this.methodToServiceMap.put(restMethodMetadata.getReflectMethod(), restMethodMetadata);
     }
 
     @Override
