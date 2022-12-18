@@ -62,18 +62,6 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
         return endpointResult;
     }
 
-//    @Override
-//    public void updateResourceCollection(EndpointResult endpointResult, Set<String> resourceNames) {
-//        for (String resourceName : resourceNames) {
-//            endpointResult.getEndpoints().addAll((Set<Endpoint>)resourcesMap.get(resourceName));
-//        }
-//    }
-//
-//    @Override
-//    public EndpointResult getDsResult() {
-//        return new EndpointResult();
-//    }
-
 
     @Override
     protected EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {

@@ -29,11 +29,17 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.*;
-import java.util.concurrent.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
@@ -58,6 +64,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     private Set<String> observeResourcesName;
 
     private final Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
+
+    private final Map<Set<String>, CompletableFuture<T>> consumerFutureMap = new ConcurrentHashMap<>();
 
     private ApplicationModel applicationModel;
 
@@ -104,10 +112,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver());
             }
             observeResourcesName = resourceNames;
-            Consumer<T> futureConsumer = future::complete;
-            consumerObserveMap.computeIfAbsent(resourceNames, (key) ->
-                new ArrayList<>()
-            ).add(futureConsumer);
+//            Consumer<T> futureConsumer = future::complete;
+//            consumerObserveMap.computeIfAbsent(resourceNames, (key) ->
+//                new ArrayList<>()
+//            ).add(futureConsumer);
+
+            consumerFutureMap.put(resourceNames, future);
 
             resourceNames.addAll(resourcesMap.keySet());
             requestObserver.onNext(buildDiscoveryRequest(resourceNames));
@@ -115,7 +125,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 T result = future.get();
                 try {
                     writeLock.lock();
-                    consumerObserveMap.get(resourceNames).removeIf(o -> o.equals(futureConsumer));
+                    consumerFutureMap.remove(resourceNames);
                 } finally {
                     writeLock.unlock();
                 }
@@ -154,13 +164,8 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         } finally {
             writeLock.unlock();
         }
-        try {
-            readLock.lock();
-            for (Consumer<T> cacheConsumer : consumerObserveMap.get(resourceNames)) {
-                cacheConsumer.accept(getResource(resourceNames));
-            }
-        } finally {
-            readLock.unlock();
+        for (Consumer<T> cacheConsumer : consumerObserveMap.get(resourceNames)) {
+            cacheConsumer.accept(getResource(resourceNames));
         }
         this.observeResourcesName = resourceNames;
     }
@@ -205,8 +210,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             if (observeResourcesName != null) {
                 try {
                     readLock.lock();
-                    for (Consumer<T> consumer : consumerObserveMap.get(observeResourcesName)) {
-                        consumer.accept(result);
+                    if (consumerObserveMap.get(observeResourcesName) != null) {
+                        consumerObserveMap.get(observeResourcesName).forEach(o -> o.accept(result));
+                    }
+                    if (consumerFutureMap.get(observeResourcesName) != null) {
+                        consumerFutureMap.get(observeResourcesName).complete(result);
                     }
                 } finally {
                     readLock.unlock();
