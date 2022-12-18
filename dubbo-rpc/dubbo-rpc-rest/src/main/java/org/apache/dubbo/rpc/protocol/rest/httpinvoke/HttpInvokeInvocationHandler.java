@@ -4,6 +4,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.ReferenceCountedClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.*;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class HttpInvokeInvocationHandler implements InvocationHandler {
+    private static final RequestConvert requestConvert = FrameworkModel.defaultModel().getExtensionLoader(RequestConvert.class).getAdaptiveExtension();
 
     private static Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
         ApplicationModel.defaultModel().getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
@@ -53,8 +55,7 @@ public class HttpInvokeInvocationHandler implements InvocationHandler {
         }
 
 
-        RequestConvert nettyRequestConvert = null;
-//        new NettyRequestConvert(refClient, restMethodMetadata, url);
+        RequestConvert nettyRequestConvert = requestConvert.createRequestConvert(url);
 
         return nettyRequestConvert.request(requestTemplate);
 
