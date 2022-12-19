@@ -2072,7 +2072,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -2146,7 +2146,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },

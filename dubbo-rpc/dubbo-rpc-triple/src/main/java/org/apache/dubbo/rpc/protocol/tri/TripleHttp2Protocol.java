@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
+import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -48,7 +49,6 @@ import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.logging.LogLevel;
-import io.netty.handler.ssl.SslContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -151,7 +151,7 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
     }
 
     @Override
-    public void configClientPipeline(URL url, ChannelOperator operator, SslContext sslContext) {
+    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(

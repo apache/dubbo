@@ -47,8 +47,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CLOSE_CONNECT_APOLLO;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NOT_EFFECT_EMPTY_RULE_APOLLO;
 
 /**
@@ -213,16 +213,6 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getInternalProperty(String key) {
         return dubboConfig.getProperty(key, null);
-    }
-
-    @Override
-    public Object getInternalProperty(String key, Object defaultValue) {
-        Object v = dubboConfig.getProperty(key, null);
-        if (v != null) {
-            return v;
-        } else {
-            return defaultValue;
-        }
     }
 
     /**

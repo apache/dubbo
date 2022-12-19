@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+
 public interface CommandExecutor {
     /**
      * Execute one command and return the execution result
@@ -24,5 +27,5 @@ public interface CommandExecutor {
      * @return command execution result
      * @throws NoSuchCommandException
      */
-    String execute(CommandContext commandContext) throws NoSuchCommandException;
+    String execute(CommandContext commandContext) throws NoSuchCommandException, PermissionDenyException;
 }

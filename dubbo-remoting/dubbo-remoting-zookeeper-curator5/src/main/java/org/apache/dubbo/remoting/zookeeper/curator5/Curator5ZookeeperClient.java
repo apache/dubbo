@@ -98,7 +98,7 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
 
             if (!connected) {
-                IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected");
+                IllegalStateException illegalStateException = new IllegalStateException("zookeeper not connected, the address is: " + url);
 
                 // 5-1 Failed to connect to configuration center.
                 logger.error(CONFIG_FAILED_CONNECT_REGISTRY, "Zookeeper server offline", "",

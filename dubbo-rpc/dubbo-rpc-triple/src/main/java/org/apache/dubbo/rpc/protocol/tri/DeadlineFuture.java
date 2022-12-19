@@ -115,7 +115,7 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         timeoutTask.cancel();
-        doReceived(TriRpcStatus.CANCELLED, null);
+        doReceived(TriRpcStatus.CANCELLED, new AppResponse(TriRpcStatus.CANCELLED.asException()));
         return true;
     }
 
@@ -127,12 +127,13 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         if (isDone() || isCancelled() || isCompletedExceptionally()) {
             return;
         }
-        if (status.isOk()) {
-            this.complete(appResponse);
-        } else {
-            this.completeExceptionally(
-                status.appendDescription("RemoteAddress:" + address).asException());
-        }
+        // Still needs to be discussed here, but for now, that's it
+        // Remove the judgment of status is ok,
+        // because the completelyExceptionally method will lead to the onError method in the filter,
+        // but there are also exceptions in the onResponse in the filter,which is a bit confusing.
+        // We recommend only handling onResponse in which onError is called for handling
+        this.complete(appResponse);
+
 
         // the result is returning, but the caller thread may still waiting
         // to avoid endless waiting for whatever reason, notify caller thread to return.
@@ -178,7 +179,9 @@ public class DeadlineFuture extends CompletableFuture<AppResponse> {
         private void notifyTimeout() {
             final TriRpcStatus status = TriRpcStatus.DEADLINE_EXCEEDED.withDescription(
                 getTimeoutMessage());
-            DeadlineFuture.this.doReceived(status, null);
+            AppResponse timeoutResponse = new AppResponse();
+            timeoutResponse.setException(status.asException());
+            DeadlineFuture.this.doReceived(status, timeoutResponse);
         }
     }
 

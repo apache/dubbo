@@ -42,16 +42,6 @@ public class ConfigConfigurationAdapter implements Configuration {
         return metaData.get(key);
     }
 
-    @Override
-    public Object getInternalProperty(String key, Object defaultValue) {
-        Object v = metaData.get(key);
-        if (v != null) {
-            return v;
-        } else {
-            return defaultValue;
-        }
-    }
-
     public Map<String, String> getProperties() {
         return metaData;
     }

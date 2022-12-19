@@ -664,47 +664,7 @@ public abstract class AbstractConfig implements Serializable {
         try {
             // check and init before do refresh
             preProcessRefresh();
-
-            Environment environment = getScopeModel().getModelEnvironment();
-            List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
-
-            // Search props starts with PREFIX in order
-            String preferredPrefix = null;
-            List<String> prefixes = getPrefixes();
-            for (String prefix : prefixes) {
-                if (ConfigurationUtils.hasSubProperties(configurationMaps, prefix)) {
-                    preferredPrefix = prefix;
-                    break;
-                }
-            }
-            if (preferredPrefix == null) {
-                preferredPrefix = prefixes.get(0);
-            }
-            // Extract sub props (which key was starts with preferredPrefix)
-            Collection<Map<String, String>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
-            Map<String, String> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
-            InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
-
-            if (logger.isDebugEnabled()) {
-                String idOrName = "";
-                if (StringUtils.hasText(this.getId())) {
-                    idOrName = "[id=" + this.getId() + "]";
-                } else {
-                    String name = ReflectUtils.getProperty(this, "getName");
-                    if (StringUtils.hasText(name)) {
-                        idOrName = "[name=" + name + "]";
-                    }
-                }
-                logger.debug("Refreshing " + this.getClass().getSimpleName() + idOrName +
-                    " with prefix [" + preferredPrefix +
-                    "], extracted props: " + subProperties);
-            }
-
-            assignProperties(this, environment, subProperties, subPropsConfiguration);
-
-            // process extra refresh of subclass, e.g. refresh method configs
-            processExtraRefresh(preferredPrefix, subPropsConfiguration);
-
+            refreshWithPrefixes(getPrefixes(), getConfigMode());
         } catch (Exception e) {
             logger.error(COMMON_FAILED_OVERRIDE_FIELD, "", "", "Failed to override field value of config bean: " + this, e);
             throw new IllegalStateException("Failed to override field value of config bean: " + this, e);
@@ -714,12 +674,53 @@ public abstract class AbstractConfig implements Serializable {
         refreshed.set(true);
     }
 
-    private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
+    protected void refreshWithPrefixes(List<String> prefixes, ConfigMode configMode) {
+        Environment environment = getScopeModel().getModelEnvironment();
+        List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
+
+        // Search props starts with PREFIX in order
+        String preferredPrefix = null;
+        for (String prefix : prefixes) {
+            if (ConfigurationUtils.hasSubProperties(configurationMaps, prefix)) {
+                preferredPrefix = prefix;
+                break;
+            }
+        }
+        if (preferredPrefix == null) {
+            preferredPrefix = prefixes.get(0);
+        }
+        // Extract sub props (which key was starts with preferredPrefix)
+        Collection<Map<String, String>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
+        Map<String, String> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
+        InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
+
+        if (logger.isDebugEnabled()) {
+            String idOrName = "";
+            if (StringUtils.hasText(this.getId())) {
+                idOrName = "[id=" + this.getId() + "]";
+            } else {
+                String name = ReflectUtils.getProperty(this, "getName");
+                if (StringUtils.hasText(name)) {
+                    idOrName = "[name=" + name + "]";
+                }
+            }
+            logger.debug("Refreshing " + this.getClass().getSimpleName() + idOrName +
+                " with prefix [" + preferredPrefix +
+                "], extracted props: " + subProperties);
+        }
+
+        assignProperties(this, environment, subProperties, subPropsConfiguration, configMode);
+
+        // process extra refresh of subclass, e.g. refresh method configs
+        processExtraRefresh(preferredPrefix, subPropsConfiguration);
+    }
+
+    private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration, ConfigMode configMode) {
         // if old one (this) contains non-null value, do not override
-        boolean overrideIfAbsent = getConfigMode() == ConfigMode.OVERRIDE_IF_ABSENT;
+        boolean overrideIfAbsent = configMode == ConfigMode.OVERRIDE_IF_ABSENT;
 
         // even if old one (this) contains non-null value, do override
-        boolean overrideAll = getConfigMode() == ConfigMode.OVERRIDE_ALL;
+        boolean overrideAll = configMode == ConfigMode.OVERRIDE_ALL;
 
         // loop methods, get override value and set the new value back to method
         List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
@@ -807,7 +808,7 @@ public abstract class AbstractConfig implements Serializable {
                     String fieldName = MethodUtils.extractFieldName(method);
                     Map<String, String> subProperties = ConfigurationUtils.getSubProperties(properties, fieldName);
                     InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
-                    assignProperties(inner, environment, subProperties, subPropsConfiguration);
+                    assignProperties(inner, environment, subProperties, subPropsConfiguration, configMode);
                     method.invoke(obj, inner);
                 } catch (ReflectiveOperationException e) {
                     throw new IllegalStateException("Cannot assign nested class when refreshing config: " + obj.getClass().getName(), e);

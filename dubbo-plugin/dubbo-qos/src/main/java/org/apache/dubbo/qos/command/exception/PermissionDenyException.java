@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.qos.command.exception;
 
-public class NoSuchCommandException extends Exception {
-    public NoSuchCommandException(String msg) {
-        super("NoSuchCommandException:" + msg);
+public class PermissionDenyException extends CommandException {
+    public PermissionDenyException(String msg) {
+        super("Permission Deny On Operation: " + msg);
     }
 }

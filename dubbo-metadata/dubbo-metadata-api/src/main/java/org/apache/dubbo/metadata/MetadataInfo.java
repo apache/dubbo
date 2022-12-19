@@ -30,6 +30,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -316,6 +317,16 @@ public class MetadataInfo implements Serializable {
 
     public ConcurrentNavigableMap<String, SortedSet<URL>> getExportedServiceURLs() {
         return exportedServiceURLs;
+    }
+
+    public Set<URL> collectExportedURLSet() {
+        if (exportedServiceURLs == null) {
+            return Collections.emptySet();
+        }
+        return exportedServiceURLs.values().stream()
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
     }
 
     private boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
