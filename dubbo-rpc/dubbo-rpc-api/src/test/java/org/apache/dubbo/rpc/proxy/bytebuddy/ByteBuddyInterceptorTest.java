@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.proxy.bytebuddy;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -24,6 +25,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 class ByteBuddyInterceptorTest {
+
+    @AfterEach
+    public void after(){
+        Mockito.clearAllCaches();
+    }
 
     @Test
     void testIntercept() throws Throwable {

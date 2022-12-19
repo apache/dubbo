@@ -32,8 +32,6 @@ class ByteBuddyProxyInvokerTest {
         invoker.doInvoke(proxy, "sayHello", new Class[]{String.class}, new Object[]{"test"});
         Mockito.verify(proxy, Mockito.times(1)).sayHello("test");
 
-        invoker.doInvoke(proxy, "equals", new Class[]{String.class}, new Object[]{proxy});
-        Mockito.verify(proxy, Mockito.times(1)).equals(proxy);
         Assertions.assertThrows(IllegalArgumentException.class,
             () -> invoker.doInvoke(proxy, "equals", new Class[]{String.class}, new Object[]{"test", "test2"}));
     }
