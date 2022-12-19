@@ -128,9 +128,6 @@ public class ContextFilter implements Filter, Filter.Listener {
         if (invocation instanceof RpcInvocation) {
             RpcInvocation rpcInvocation = (RpcInvocation) invocation;
             rpcInvocation.setInvoker(invoker);
-            //write all attachments back;
-            rpcInvocation.getObjectAttachments().putAll(context.getObjectAttachments());
-
         }
 
         try {
