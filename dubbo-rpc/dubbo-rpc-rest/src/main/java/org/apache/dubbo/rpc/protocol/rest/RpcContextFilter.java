@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcContext;
 
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
@@ -30,6 +32,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 @Priority(Integer.MIN_VALUE + 1)
@@ -70,7 +73,13 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, Object> entry : RpcContext.getClientAttachment().getObjectAttachments().entrySet()) {
+        Map<String, Object> objectAttachments = new HashMap<>(RpcContext.getClientAttachment().getObjectAttachments());
+        Invocation invocation = RpcContext.getServiceContext().getInvocation();
+        //should merge attachments from invocation and RpcContext.getClientAttachment()
+        if(invocation != null && CollectionUtils.isNotEmptyMap(invocation.getObjectAttachments()) ){
+            objectAttachments.putAll(invocation.getObjectAttachments());
+        }
+        for (Map.Entry<String, Object> entry : objectAttachments.entrySet()) {
             String key = entry.getKey();
             String value = (String) entry.getValue();
             if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {

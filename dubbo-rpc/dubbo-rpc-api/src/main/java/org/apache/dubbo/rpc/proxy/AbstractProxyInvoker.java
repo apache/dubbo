@@ -99,11 +99,6 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 }
             }
 
-            Map<String, String> invocationAttachments = invocation.getAttachments();
-            if (CollectionUtils.isNotEmptyMap(invocationAttachments)) {
-                RpcContext.getClientAttachment().getObjectAttachments().putAll(invocationAttachments);
-            }
-
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
 
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
