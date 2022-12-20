@@ -212,6 +212,8 @@ public interface LoggerCodeConstants {
 
     String PROXY_TIMEOUT_RESPONSE = "3-7";
 
+    String PROXY_FAILED = "3-8";
+
     // protocol module
     String PROTOCOL_UNSUPPORTED = "4-1";
 

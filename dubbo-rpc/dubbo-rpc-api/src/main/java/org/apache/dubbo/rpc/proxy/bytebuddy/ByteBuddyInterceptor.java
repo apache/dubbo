@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.proxy;
+package org.apache.dubbo.rpc.proxy.bytebuddy;
 
-import org.apache.dubbo.rpc.RpcContext;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
+import net.bytebuddy.implementation.bind.annotation.This;
 
-import java.rmi.RemoteException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
 
-public class RemoteServiceImpl implements RemoteService {
-    public String getThreadName() throws RemoteException {
-        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
-        return Thread.currentThread().getName();
+public class ByteBuddyInterceptor {
+
+    private final InvocationHandler handler;
+
+    ByteBuddyInterceptor(InvocationHandler handler) {
+        this.handler = handler;
     }
 
-    public String sayHello(String name) throws RemoteException {
-        return "hello " + name + "@" + RemoteServiceImpl.class.getName();
-    }
-
-    public String sayHello(String name, String arg2) {
-        return "hello " + name + "@" + RemoteServiceImpl.class.getName() + ", arg2 " + arg2;
+    @RuntimeType
+    public Object intercept(@This Object obj, @AllArguments Object[] allArguments,
+                            @Origin Method method) throws Throwable {
+        return handler.invoke(obj, method, allArguments);
     }
 }
