@@ -37,7 +37,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TelnetCodecTest {
+class TelnetCodecTest {
     protected Codec2 codec;
     byte[] UP = new byte[]{27, 91, 65};
     byte[] DOWN = new byte[]{27, 91, 66};
@@ -189,37 +189,37 @@ public class TelnetCodecTest {
     }
 
     @Test
-    public void testDecode_String_ClientSide() throws IOException {
+    void testDecode_String_ClientSide() throws IOException {
         testDecode_assertEquals("aaa".getBytes(), "aaa", false);
     }
 
     @Test
-    public void testDecode_BlankMessage() throws IOException {
+    void testDecode_BlankMessage() throws IOException {
         testDecode_assertEquals(new byte[]{}, Codec2.DecodeResult.NEED_MORE_INPUT);
     }
 
     @Test
-    public void testDecode_String_NoEnter() throws IOException {
+    void testDecode_String_NoEnter() throws IOException {
         testDecode_assertEquals("aaa", Codec2.DecodeResult.NEED_MORE_INPUT);
     }
 
     @Test
-    public void testDecode_String_WithEnter() throws IOException {
+    void testDecode_String_WithEnter() throws IOException {
         testDecode_assertEquals("aaa\n", "aaa");
     }
 
     @Test
-    public void testDecode_String_MiddleWithEnter() throws IOException {
+    void testDecode_String_MiddleWithEnter() throws IOException {
         testDecode_assertEquals("aaa\r\naaa", Codec2.DecodeResult.NEED_MORE_INPUT);
     }
 
     @Test
-    public void testDecode_Person_ObjectOnly() throws IOException {
+    void testDecode_Person_ObjectOnly() throws IOException {
         testDecode_assertEquals(new Person(), Codec2.DecodeResult.NEED_MORE_INPUT);
     }
 
     @Test
-    public void testDecode_Person_WithEnter() throws IOException {
+    void testDecode_Person_WithEnter() throws IOException {
         testDecode_PersonWithEnterByte(new byte[]{'\r', '\n'}, false);//windows end
         testDecode_PersonWithEnterByte(new byte[]{'\n', '\r'}, true);
         testDecode_PersonWithEnterByte(new byte[]{'\n'}, false); //linux end
@@ -228,7 +228,7 @@ public class TelnetCodecTest {
     }
 
     @Test
-    public void testDecode_WithExitByte() throws IOException {
+    void testDecode_WithExitByte() throws IOException {
         HashMap<byte[], Boolean> exitBytes = new HashMap<byte[], Boolean>();
         exitBytes.put(new byte[]{3}, true); /* Windows Ctrl+C */
         exitBytes.put(new byte[]{1, 3}, false); //must equal the bytes
@@ -242,7 +242,7 @@ public class TelnetCodecTest {
     }
 
     @Test
-    public void testDecode_Backspace() throws IOException {
+    void testDecode_Backspace() throws IOException {
         //32 8 first add space and then add backspace.
         testDecode_assertEquals(new byte[]{'\b'}, Codec2.DecodeResult.NEED_MORE_INPUT, new String(new byte[]{32, 8}));
 
@@ -255,7 +255,7 @@ public class TelnetCodecTest {
     }
 
     @Test
-    public void testDecode_Backspace_WithError() throws IOException {
+    void testDecode_Backspace_WithError() throws IOException {
         Assertions.assertThrows(IOException.class, () -> {
             url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
             testDecode_Backspace();
@@ -264,7 +264,7 @@ public class TelnetCodecTest {
     }
 
     @Test
-    public void testDecode_History_UP() throws IOException {
+    void testDecode_History_UP() throws IOException {
         //init channel
         AbstractMockChannel channel = getServerSideChannel(url);
 
@@ -279,7 +279,7 @@ public class TelnetCodecTest {
     }
 
     @Test
-    public void testDecode_UPorDOWN_WithError() throws IOException {
+    void testDecode_UPorDOWN_WithError() throws IOException {
         Assertions.assertThrows(IOException.class, () -> {
             url = url.addParameter(AbstractMockChannel.ERROR_WHEN_SEND, Boolean.TRUE.toString());
 
@@ -301,7 +301,7 @@ public class TelnetCodecTest {
 
     //=============================================================================================================================
     @Test
-    public void testEncode_String_ClientSide() throws IOException {
+    void testEncode_String_ClientSide() throws IOException {
         testEecode_assertEquals("aaa", "aaa\r\n".getBytes(), false);
     }
     

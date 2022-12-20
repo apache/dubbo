@@ -47,7 +47,7 @@ import java.util.Map;
 )
 @Configuration
 //@ComponentScan
-public class XmlReferenceBeanConditionalTest {
+class XmlReferenceBeanConditionalTest {
 
     @BeforeAll
     public static void beforeAll(){
@@ -66,7 +66,7 @@ public class XmlReferenceBeanConditionalTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void testConsumer() {
+    void testConsumer() {
 
         Map<String, HelloService> helloServiceMap = applicationContext.getBeansOfType(HelloService.class);
         Assertions.assertEquals(1, helloServiceMap.size());

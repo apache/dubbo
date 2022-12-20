@@ -272,7 +272,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             ApplicationConfig.class,
             ProtocolConfig.class,
             RegistryConfig.class,
-            MetadataReportConfig.class,
             MonitorConfig.class,
             MetricsConfig.class,
             SslConfig.class);

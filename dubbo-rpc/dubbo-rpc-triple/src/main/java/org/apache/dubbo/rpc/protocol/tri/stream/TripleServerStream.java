@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -57,6 +56,7 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.concurrent.Future;
 
 import java.io.IOException;
@@ -288,10 +288,10 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
-        if (invoker == null) {
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
             invoker = pathResolver.resolve(URL.buildKey(serviceName, group, "1.0.0"));
         }
-        if (invoker == null) {
+        if (invoker == null && TripleProtocol.RESOLVE_FALLBACK_TO_DEFAULT) {
             invoker = pathResolver.resolve(serviceName);
         }
         return invoker;
@@ -402,14 +402,6 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                 }
             }
 
-            try {
-                final TriDecoder.Listener listener = new ServerDecoderListener();
-                deframer = new TriDecoder(deCompressor, listener);
-            } catch (Throwable t) {
-                responseErr(TriRpcStatus.INTERNAL.withCause(t));
-                return;
-            }
-
             Map<String, Object> requestMetadata = headersToMap(headers);
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
@@ -421,10 +413,9 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     frameworkModel, acceptEncoding, serviceName, originalMethodName, filters,
                     executor);
             }
+            // must before onHeader
+            deframer = new TriDecoder(deCompressor, new ServerDecoderListener(listener));
             listener.onHeader(requestMetadata);
-            if (listener == null) {
-                deframer.close();
-            }
         }
 
 
@@ -458,21 +449,27 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
                     .withDescription("Canceled by client ,errorCode=" + errorCode));
             });
         }
+    }
 
-        private class ServerDecoderListener implements TriDecoder.Listener {
 
-            @Override
-            public void onRawMessage(byte[] data) {
-                listener.onMessage(data);
-            }
+    private static class ServerDecoderListener implements TriDecoder.Listener {
 
-            @Override
-            public void close() {
-                if (listener != null) {
-                    listener.onComplete();
-                }
-            }
+        private final ServerStream.Listener listener;
+
+        public ServerDecoderListener(ServerStream.Listener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void onRawMessage(byte[] data) {
+            listener.onMessage(data);
+        }
+
+        @Override
+        public void close() {
+            listener.onComplete();
         }
     }
+
 
 }

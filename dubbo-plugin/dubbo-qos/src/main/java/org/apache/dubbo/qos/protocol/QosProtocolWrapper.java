@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.pu.QosWireProtocol;
 import org.apache.dubbo.qos.server.Server;
@@ -37,6 +39,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.QOS_FAILED_START_SERVER;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_WHITELIST;
+import static org.apache.dubbo.common.constants.QosConstants.ANONYMOUS_ACCESS_PERMISSION_LEVEL;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
@@ -113,6 +117,8 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
+            String acceptForeignIpWhitelist = url.getParameter(ACCEPT_FOREIGN_IP_WHITELIST, StringUtils.EMPTY_STRING);
+            String anonymousAccessPermissionLevel = url.getParameter(ANONYMOUS_ACCESS_PERMISSION_LEVEL, PermissionLevel.PUBLIC.name());
             Server server = frameworkModel.getBeanFactory().getBean(Server.class);
 
             if (server.isStarted()) {
@@ -122,6 +128,8 @@ public class QosProtocolWrapper implements Protocol, ScopeModelAware {
             server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
+            server.setAcceptForeignIpWhitelist(acceptForeignIpWhitelist);
+            server.setAnonymousAccessPermissionLevel(anonymousAccessPermissionLevel);
             server.start();
 
         } catch (Throwable throwable) {

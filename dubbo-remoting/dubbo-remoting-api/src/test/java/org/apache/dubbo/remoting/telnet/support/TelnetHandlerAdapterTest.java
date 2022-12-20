@@ -32,7 +32,7 @@ import java.util.Map;
 class TelnetHandlerAdapterTest {
 
     @Test
-    public void testTelnet() throws RemotingException {
+    void testTelnet() throws RemotingException {
 
         Channel channel = Mockito.mock(Channel.class);
         Map<String, String> param = new HashMap<>();

@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.AbstractWireProtocol;
 import org.apache.dubbo.remoting.api.pu.ChannelHandlerPretender;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
+import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.executor.ExecutorSupport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -37,24 +38,21 @@ import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2FrameServerHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleServerConnectionHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2FrameLogger;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.logging.LogLevel;
-import io.netty.handler.ssl.SslContext;
-
-import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
@@ -129,6 +127,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
             .frameLogger(SERVER_LOGGER)
             .build();
         ExecutorSupport executorSupport = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel()).getExecutorSupport(url);
+        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection(), url.getOrDefaultApplicationModel()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         TripleWriteQueue writeQueue = new TripleWriteQueue();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new ChannelInitializer<Http2StreamChannel>() {
@@ -150,15 +150,8 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
 
     }
 
-
-    private Executor lookupExecutor(URL url) {
-        return url.getOrDefaultApplicationModel()
-            .getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().getExecutor(url);
-    }
-
     @Override
-    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+    public void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)
             .initialSettings(new Http2Settings().headerTableSize(
@@ -173,8 +166,14 @@ public class TripleHttp2Protocol extends AbstractWireProtocol implements ScopeMo
                     DEFAULT_MAX_HEADER_LIST_SIZE)))
             .frameLogger(CLIENT_LOGGER)
             .build();
+        codec.connection().remote().flowController(new TriHttp2RemoteFlowController(codec.connection(), url.getOrDefaultApplicationModel()));
+        codec.connection().local().flowController().frameWriter(codec.encoder().frameWriter());
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(
             new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler, new TripleTailHandler());
+        List<ChannelHandler> handlers = new ArrayList<>();
+        handlers.add(new ChannelHandlerPretender(codec));
+        handlers.add(new ChannelHandlerPretender(handler));
+        handlers.add(new ChannelHandlerPretender(new TripleTailHandler()));
+        operator.configChannelHandler(handlers);
     }
 }

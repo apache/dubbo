@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class ThreadLocalCacheFactoryTest extends AbstractCacheFactoryTest {
+class ThreadLocalCacheFactoryTest extends AbstractCacheFactoryTest {
     @Test
-    public void testThreadLocalCacheFactory() throws Exception {
+    void testThreadLocalCacheFactory() throws Exception {
         Cache cache = super.constructCache();
         assertThat(cache instanceof ThreadLocalCache, is(true));
     }

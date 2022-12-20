@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.transport.netty;
 
 
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
+
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NettyBackedChannelBufferTest {
+class NettyBackedChannelBufferTest {
 
     private static final int CAPACITY = 4096;
 
@@ -42,7 +43,7 @@ public class NettyBackedChannelBufferTest {
     }
 
     @Test
-    public void testBufferTransfer() {
+    void testBufferTransfer() {
         byte[] tmp1 = {1, 2};
         byte[] tmp2 = {3, 4};
         ChannelBuffer source = new NettyBackedChannelBuffer(ChannelBuffers.dynamicBuffer(2));

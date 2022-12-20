@@ -354,6 +354,11 @@
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="prefer-serialization" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="export-async" type="xsd:boolean">
                     <xsd:annotation>
                         <xsd:documentation>
@@ -465,6 +470,16 @@
         <xsd:attribute name="executor-management-mode" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Thread pool management: default/isolation. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="dump-directory" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The file path directory of the saving thread dump. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="dump-enable" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Saving thread dump or not, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1366,6 +1381,11 @@
         <xsd:attribute name="serialization" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol serialization. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="prefer-serialization" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The prefer serialization protocol of service, multiple serialization protocol are separated by commas, default fastjson2,hessian2. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="keepalive" type="xsd:boolean">

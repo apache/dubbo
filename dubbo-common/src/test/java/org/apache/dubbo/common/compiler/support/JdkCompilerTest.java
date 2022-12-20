@@ -21,10 +21,10 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
-public class JdkCompilerTest extends JavaCodeTest {
+class JdkCompilerTest extends JavaCodeTest {
 
     @Test
-    public void test_compileJavaClass() throws Exception {
+    void test_compileJavaClass() throws Exception {
         JdkCompiler compiler = new JdkCompiler();
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JdkCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
@@ -33,7 +33,7 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_compileJavaClass0() throws Exception {
+    void test_compileJavaClass0() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
@@ -44,7 +44,7 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_compileJavaClass1() throws Exception {
+    void test_compileJavaClass1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler();
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
@@ -55,7 +55,7 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_compileJavaClass_java8() throws Exception {
+    void test_compileJavaClass_java8() throws Exception {
         JdkCompiler compiler = new JdkCompiler("1.8");
         Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JdkCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
@@ -64,7 +64,7 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_compileJavaClass0_java8() throws Exception {
+    void test_compileJavaClass0_java8() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
@@ -75,7 +75,7 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_compileJavaClass1_java8() throws Exception {
+    void test_compileJavaClass1_java8() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JdkCompiler compiler = new JdkCompiler("1.8");
             Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());

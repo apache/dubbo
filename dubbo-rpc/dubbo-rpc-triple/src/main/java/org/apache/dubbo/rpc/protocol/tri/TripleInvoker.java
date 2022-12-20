@@ -106,7 +106,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!connectionClient.isConnected()) {
             CompletableFuture<AppResponse> future = new CompletableFuture<>();
             RpcException exception = TriRpcStatus.UNAVAILABLE.withDescription(
-                String.format("upstream %s is unavailable", getUrl().getAddress()))
+                    String.format("upstream %s is unavailable", getUrl().getAddress()))
                 .asException();
             future.completeExceptionally(exception);
             return new AsyncRpcResult(future, invocation);
@@ -242,6 +242,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
+        meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config
@@ -301,15 +302,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     private int calculateTimeout(Invocation invocation, String methodName) {
-        if (invocation.getObjectAttachment(TIMEOUT_KEY) != null) {
-            return (int) RpcUtils.getTimeoutFromInvocation(invocation, 3000);
-        }
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;
         if (countdown == null) {
             timeout = (int) RpcUtils.getTimeout(getUrl(), methodName,
-                RpcContext.getClientAttachment(), 3000);
-            if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+                RpcContext.getClientAttachment(), invocation, 3000);
+            if (getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
                     timeout); // pass timeout to remote server
             }
@@ -319,6 +317,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
                 timeout);// pass timeout to remote server
         }
+
+        invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
         return timeout;
     }
 }

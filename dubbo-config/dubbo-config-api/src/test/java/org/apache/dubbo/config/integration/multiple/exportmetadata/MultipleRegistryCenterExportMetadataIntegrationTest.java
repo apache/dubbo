@@ -46,7 +46,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 /**
  * The testcases are only for checking the process of exporting metadata service.
  */
-public class MultipleRegistryCenterExportMetadataIntegrationTest implements IntegrationTest {
+class MultipleRegistryCenterExportMetadataIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterExportMetadataIntegrationTest.class);
 

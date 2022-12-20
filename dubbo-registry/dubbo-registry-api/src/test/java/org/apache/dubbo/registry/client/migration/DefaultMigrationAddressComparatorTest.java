@@ -33,10 +33,10 @@ import java.util.List;
 import static org.apache.dubbo.registry.client.migration.DefaultMigrationAddressComparator.NEW_ADDRESS_SIZE;
 import static org.apache.dubbo.registry.client.migration.DefaultMigrationAddressComparator.OLD_ADDRESS_SIZE;
 
-public class DefaultMigrationAddressComparatorTest {
+class DefaultMigrationAddressComparatorTest {
 
     @Test
-    public void test() {
+    void test() {
         DefaultMigrationAddressComparator comparator = new DefaultMigrationAddressComparator();
 
         ClusterInvoker newInvoker = Mockito.mock(ClusterInvoker.class);

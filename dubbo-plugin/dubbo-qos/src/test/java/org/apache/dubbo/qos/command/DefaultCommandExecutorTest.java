@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
+import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+import org.apache.dubbo.qos.common.QosConfiguration;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,9 +29,9 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class DefaultCommandExecutorTest {
+class DefaultCommandExecutorTest {
     @Test
-    public void testExecute1() throws Exception {
+    void testExecute1() throws Exception {
         Assertions.assertThrows(NoSuchCommandException.class, () -> {
             DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
             executor.execute(CommandContextFactory.newInstance("not-exit"));
@@ -35,9 +39,30 @@ public class DefaultCommandExecutorTest {
     }
 
     @Test
-    public void testExecute2() throws Exception {
+    void testExecute2() throws Exception {
         DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
-        String result = executor.execute(CommandContextFactory.newInstance("greeting", new String[]{"dubbo"}, false));
+        final CommandContext commandContext = CommandContextFactory.newInstance("greeting", new String[]{"dubbo"}, false);
+        commandContext.setQosConfiguration(QosConfiguration.builder()
+            .anonymousAccessPermissionLevel(PermissionLevel.PROTECTED.name())
+            .build());
+        String result = executor.execute(commandContext);
         assertThat(result, equalTo("greeting dubbo"));
+    }
+
+    @Test
+    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndMatchDefaultPUBLICCmdPermissionLevel() throws Exception {
+        DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
+        final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
+        commandContext.setQosConfiguration(QosConfiguration.builder().build());
+        Assertions.assertDoesNotThrow(() -> executor.execute(commandContext));
+    }
+
+    @Test
+    void shouldNotThrowPermissionDenyException_GivenPermissionConfigAndNotMatchCmdPermissionLevel() throws Exception {
+        DefaultCommandExecutor executor = new DefaultCommandExecutor(FrameworkModel.defaultModel());
+        final CommandContext commandContext = CommandContextFactory.newInstance("live", new String[]{"dubbo"}, false);
+        // 1 PROTECTED
+        commandContext.setQosConfiguration(QosConfiguration.builder().anonymousAccessPermissionLevel("1").build());
+        Assertions.assertDoesNotThrow(() -> executor.execute(commandContext));
     }
 }

@@ -39,7 +39,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ContextConfiguration(classes = GenericServiceWithoutInterfaceTest.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer-without-interface.xml")
-public class GenericServiceWithoutInterfaceTest {
+class GenericServiceWithoutInterfaceTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -56,7 +56,7 @@ public class GenericServiceWithoutInterfaceTest {
     private GenericService genericServiceWithoutInterfaceRef;
 
     @Test
-    public void testGenericWithoutInterface() {
+    void testGenericWithoutInterface() {
 
         // Test generic service without interface class locally
         Object result = genericServiceWithoutInterfaceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"generic"});

@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Test;
 /**
  * {@link CompositeConfiguration}
  */
-public class CompositeConfigurationTest {
+class CompositeConfigurationTest {
 
     @Test
-    public void test() {
+    void test() {
         InmemoryConfiguration inmemoryConfiguration1 = new InmemoryConfiguration();
         InmemoryConfiguration inmemoryConfiguration2 = new InmemoryConfiguration();
         InmemoryConfiguration inmemoryConfiguration3 = new InmemoryConfiguration();

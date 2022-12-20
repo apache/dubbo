@@ -38,7 +38,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.ssl.SslContext;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.GlobalEventExecutor;
@@ -110,8 +109,10 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         nettyBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) {
+                NettyChannel nettyChannel = NettyChannel.getOrAddChannel(ch, getUrl(), getChannelHandler());
                 final ChannelPipeline pipeline = ch.pipeline();
-                SslContext sslContext = null;
+                NettySslContextOperator nettySslContextOperator = new NettySslContextOperator();
+
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                     pipeline.addLast("negotiation", new SslClientTlsHandler(getUrl()));
                 }
@@ -120,7 +121,9 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast("connectionHandler", connectionHandler);
-                protocol.configClientPipeline(getUrl(), pipeline, sslContext);
+
+                NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
+                protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
                 // TODO support Socks5
             }
         });

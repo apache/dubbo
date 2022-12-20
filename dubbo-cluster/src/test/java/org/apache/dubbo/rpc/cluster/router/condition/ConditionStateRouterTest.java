@@ -37,7 +37,7 @@ import java.util.List;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
-public class ConditionStateRouterTest {
+class ConditionStateRouterTest {
     private static final String LOCAL_HOST = "127.0.0.1";
     private URL SCRIPT_URL = URL.valueOf("condition://0.0.0.0/com.foo.BarService");
 
@@ -54,7 +54,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_matchWhen() {
+    void testRoute_matchWhen() {
         Invocation invocation = new RpcInvocation();
 
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => host = 1.2.3.4"));
@@ -87,7 +87,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_matchFilter() {
+    void testRoute_matchFilter() {
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf(
                 "dubbo://10.20.3.3:20880/com.foo.BarService?serialization=fastjson"));
@@ -139,7 +139,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_methodRoute() {
+    void testRoute_methodRoute() {
         Invocation invocation = new RpcInvocation("getFoo", "com.foo.BarService", "", new Class<?>[0], new Object[0]);
         // More than one methods, mismatch
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("methods=getFoo => host = 1.2.3.4"));
@@ -191,7 +191,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_ReturnFalse() {
+    void testRoute_ReturnFalse() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => false"));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         originInvokers.add(new MockInvoker<String>());
@@ -204,7 +204,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_ReturnEmpty() {
+    void testRoute_ReturnEmpty() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => "));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         originInvokers.add(new MockInvoker<String>());
@@ -217,7 +217,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_ReturnAll() {
+    void testRoute_ReturnAll() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => " + " host = " + LOCAL_HOST));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         originInvokers.add(new MockInvoker<String>(URL.valueOf("dubbo://" + LOCAL_HOST + ":20880/com.foo.BarService")));
@@ -230,7 +230,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_HostFilter() {
+    void testRoute_HostFilter() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => " + " host = " + LOCAL_HOST));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -248,7 +248,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_Empty_HostFilter() {
+    void testRoute_Empty_HostFilter() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + LOCAL_HOST));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -266,7 +266,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_False_HostFilter() {
+    void testRoute_False_HostFilter() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("true => " + " host = " + LOCAL_HOST));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -284,7 +284,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_Placeholder() {
+    void testRoute_Placeholder() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => " + " host = $host"));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -302,7 +302,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_NoForce() {
+    void testRoute_NoForce() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => " + " host = 1.2.3.4"));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -318,7 +318,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_Force() {
+    void testRoute_Force() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("host = " + LOCAL_HOST + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));
@@ -334,7 +334,7 @@ public class ConditionStateRouterTest {
     }
 
     @Test
-    public void testRoute_Arguments() {
+    void testRoute_Arguments() {
         StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl("arguments[0] = a " + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
         List<Invoker<String>> originInvokers = new ArrayList<>();
         Invoker<String> invoker1 = new MockInvoker<>(URL.valueOf("dubbo://10.20.3.3:20880/com.foo.BarService"));

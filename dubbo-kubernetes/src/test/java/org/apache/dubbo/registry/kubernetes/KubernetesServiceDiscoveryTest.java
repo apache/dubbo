@@ -49,9 +49,10 @@ import java.util.HashSet;
 import java.util.Map;
 
 import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.NAMESPACE;
+import static org.awaitility.Awaitility.await;
 
 @ExtendWith({MockitoExtension.class})
-public class KubernetesServiceDiscoveryTest {
+class KubernetesServiceDiscoveryTest {
     private static final String SERVICE_NAME = "TestService";
 
     private static final String POD_NAME = "TestServer";
@@ -120,7 +121,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testEndpointsUpdate() throws Exception {
+    void testEndpointsUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -144,7 +145,11 @@ public class KubernetesServiceDiscoveryTest {
                                 .endAddress().endSubset()
                                 .build());
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 2;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(2)).onEvent(eventArgumentCaptor.capture());
@@ -154,7 +159,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testPodsUpdate() throws Exception {
+    void testPodsUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -172,7 +177,11 @@ public class KubernetesServiceDiscoveryTest {
         serviceInstance = new DefaultServiceInstance(SERVICE_NAME, "Test12345", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceDiscovery.doUpdate(serviceInstance);
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 1;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());
@@ -182,7 +191,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testServiceUpdate() throws Exception {
+    void testServiceUpdate() throws Exception {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 
@@ -205,7 +214,11 @@ public class KubernetesServiceDiscoveryTest {
                         .endSpec()
                         .build());
 
-        Thread.sleep(2000);
+        await().until(() -> {
+            ArgumentCaptor<ServiceInstancesChangedEvent> captor = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+            Mockito.verify(mockListener, Mockito.atLeast(0)).onEvent(captor.capture());
+            return captor.getValue().getServiceInstances().size() == 1;
+        });
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
         Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());
@@ -215,7 +228,7 @@ public class KubernetesServiceDiscoveryTest {
     }
 
     @Test
-    public void testGetInstance() {
+    void testGetInstance() {
         serviceDiscovery.setCurrentHostname(POD_NAME);
         serviceDiscovery.setKubernetesClient(mockClient);
 

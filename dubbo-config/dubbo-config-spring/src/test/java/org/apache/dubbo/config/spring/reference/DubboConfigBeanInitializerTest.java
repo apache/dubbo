@@ -58,7 +58,7 @@ import java.util.List;
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class DubboConfigBeanInitializerTest {
+class DubboConfigBeanInitializerTest {
 
     @BeforeAll
     public static void beforeAll() {
@@ -78,7 +78,7 @@ public class DubboConfigBeanInitializerTest {
     private ApplicationContext applicationContext;
 
     @Test
-    public void test() {
+    void test() {
         Assertions.assertNotNull(fooService, "fooService is null");
         Assertions.assertNotNull(fooService.helloService, "ooService.helloService is null");
 

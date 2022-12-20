@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.codec;
+package org.apache.dubbo.rpc.cluster.router.xds;
 
-import org.apache.dubbo.remoting.codec.ExchangeCodecTest;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
-import org.junit.jupiter.api.BeforeEach;
+@Activate(order = 100)
+public class XdsRouterFactory implements StateRouterFactory {
 
-public class CodecAdapterTest extends ExchangeCodecTest {
-
-    @BeforeEach
-    public void setUp() throws Exception {
-        codec = new CodecAdapter(new DeprecatedExchangeCodec());
+    @Override
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new XdsRouter<>(url);
     }
-
 }

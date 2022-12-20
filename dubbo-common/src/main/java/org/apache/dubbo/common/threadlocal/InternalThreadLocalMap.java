@@ -34,8 +34,12 @@ public final class InternalThreadLocalMap {
 
     static final Object UNSET = new Object();
 
+    /**
+     * should not be modified after initialization,
+     * do not set as final due to unit test
+     */
     // Reference: https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/tip/src/share/classes/java/util/ArrayList.java#l229
-    private static final int ARRAY_LIST_CAPACITY_MAX_SIZE = Integer.MAX_VALUE - 8;
+    static int ARRAY_LIST_CAPACITY_MAX_SIZE = Integer.MAX_VALUE - 8;
 
     private static final int ARRAY_LIST_CAPACITY_EXPAND_THRESHOLD = 1 << 30;
 

@@ -44,7 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCES
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 
-public class ClusterUtilsTest {
+class ClusterUtilsTest {
 
     private ClusterUtils clusterUtils;
 
@@ -55,7 +55,7 @@ public class ClusterUtilsTest {
     }
 
     @Test
-    public void testMergeUrl() throws Exception {
+    void testMergeUrl() throws Exception {
         URL providerURL = URL.valueOf("dubbo://localhost:55555");
         providerURL = providerURL.setPath("path")
             .setUsername("username")
@@ -136,7 +136,7 @@ public class ClusterUtilsTest {
     }
 
     @Test
-    public void testMergeLocalParams() {
+    void testMergeLocalParams() {
 
         // Verify default ProviderURLMergeProcessor
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)

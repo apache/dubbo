@@ -47,7 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
+class MethodUtilsTest extends AbstractAnnotationProcessingTest {
 
     private TypeElement testType;
 
@@ -61,7 +61,7 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testDeclaredMethods() {
+    void testDeclaredMethods() {
         TypeElement type = getType(Model.class);
         List<ExecutableElement> methods = getDeclaredMethods(type);
         assertEquals(12, methods.size());
@@ -79,13 +79,13 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetAllDeclaredMethods() {
+    void testGetAllDeclaredMethods() {
         List<? extends ExecutableElement> methods = doGetAllDeclaredMethods();
         assertEquals(14, methods.size());
     }
 
     @Test
-    public void testGetPublicNonStaticMethods() {
+    void testGetPublicNonStaticMethods() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
         assertEquals(14, methods.size());
 
@@ -94,19 +94,19 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testIsMethod() {
+    void testIsMethod() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
         assertEquals(14, methods.stream().map(MethodUtils::isMethod).count());
     }
 
     @Test
-    public void testIsPublicNonStaticMethod() {
+    void testIsPublicNonStaticMethod() {
         List<? extends ExecutableElement> methods = getPublicNonStaticMethods(testType, Object.class);
         assertEquals(14, methods.stream().map(MethodUtils::isPublicNonStaticMethod).count());
     }
 
     @Test
-    public void testFindMethod() {
+    void testFindMethod() {
         TypeElement type = getType(Model.class);
         // Test methods from java.lang.Object
         // Object#toString()
@@ -161,7 +161,7 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetOverrideMethod() {
+    void testGetOverrideMethod() {
         List<? extends ExecutableElement> methods = doGetAllDeclaredMethods();
 
         ExecutableElement overrideMethod = getOverrideMethod(processingEnv, testType, methods.get(0));
@@ -174,21 +174,21 @@ public class MethodUtilsTest extends AbstractAnnotationProcessingTest {
     }
 
     @Test
-    public void testGetMethodName() {
+    void testGetMethodName() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
         assertEquals("echo", getMethodName(method));
         assertNull(getMethodName(null));
     }
 
     @Test
-    public void testReturnType() {
+    void testReturnType() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
         assertEquals("java.lang.String", getReturnType(method));
         assertNull(getReturnType(null));
     }
 
     @Test
-    public void testMatchParameterTypes() {
+    void testMatchParameterTypes() {
         ExecutableElement method = findMethod(testType, "echo", "java.lang.String");
         assertArrayEquals(new String[]{"java.lang.String"}, getMethodParameterTypes(method));
         assertTrue(getMethodParameterTypes(null).length == 0);

@@ -28,10 +28,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class StreamUtilsTest {
+class StreamUtilsTest {
 
     @Test
-    public void testMarkSupportedInputStream() throws Exception {
+    void testMarkSupportedInputStream() throws Exception {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
         assertEquals(10, is.available());
 
@@ -85,7 +85,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testLimitedInputStream() throws Exception {
+    void testLimitedInputStream() throws Exception {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
         assertThat(10, is(is.available()));
 
@@ -119,7 +119,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testMarkInputSupport() {
+    void testMarkInputSupport() {
         Assertions.assertThrows(IOException.class, () -> {
             InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
             try {
@@ -140,7 +140,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testSkipForOriginMarkSupportInput() throws IOException {
+    void testSkipForOriginMarkSupportInput() throws IOException {
         InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
         InputStream newIs = StreamUtils.markSupportedInputStream(is, 1);
 
@@ -149,7 +149,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testReadEmptyByteArray() {
+    void testReadEmptyByteArray() {
         Assertions.assertThrows(NullPointerException.class, () -> {
             InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
             try {
@@ -164,7 +164,7 @@ public class StreamUtilsTest {
     }
 
     @Test
-    public void testReadWithWrongOffset() {
+    void testReadWithWrongOffset() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             InputStream is = StreamUtilsTest.class.getResourceAsStream("/StreamUtilsTest.txt");
             try {

@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ActivateComparatorTest {
+class ActivateComparatorTest {
 
     private ActivateComparator activateComparator;
 
@@ -36,7 +36,7 @@ public class ActivateComparatorTest {
     }
 
     @Test
-    public void testActivateComparator(){
+    void testActivateComparator(){
         Filter1 f1 = new Filter1();
         Filter2 f2 = new Filter2();
         Filter3 f3 = new Filter3();
@@ -59,7 +59,7 @@ public class ActivateComparatorTest {
     }
 
     @Test
-    public void testFilterOrder() {
+    void testFilterOrder() {
         Order0Filter1 order0Filter1 = new Order0Filter1();
         Order0Filter2 order0Filter2 = new Order0Filter2();
 

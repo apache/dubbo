@@ -30,7 +30,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ReferenceConfigTest {
+class ReferenceConfigTest {
     private ApplicationConfig application = new ApplicationConfig();
     private RegistryConfig registry = new RegistryConfig();
     private ProtocolConfig protocol = new ProtocolConfig();
@@ -46,7 +46,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testInjvm() throws Exception {
+    void testInjvm() throws Exception {
 
         application.setName("test-protocol-random-port");
         registry.setAddress("multicast://224.5.6.7:1234");

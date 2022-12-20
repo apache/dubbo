@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class PublishMetadataTest {
+class PublishMetadataTest {
     private FrameworkModel frameworkModel;
 
     @BeforeEach
@@ -46,7 +46,7 @@ public class PublishMetadataTest {
     }
 
     @Test
-    public void testExecute() {
+    void testExecute() {
         PublishMetadata publishMetadata = new PublishMetadata(frameworkModel);
 
         String result = publishMetadata.execute(Mockito.mock(CommandContext.class), new String[0]);

@@ -57,6 +57,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractMetricsReporter.class);
 
     private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicBoolean addGlobalRegistry = new AtomicBoolean(false);
 
     protected final URL url;
     protected final List<MetricsCollector> collectors = new ArrayList<>();
@@ -89,6 +90,13 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected void addMeterRegistry(MeterRegistry registry) {
         compositeRegistry.add(registry);
     }
+    private void addDubboMeterRegistry(){
+        MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
+        if(globalRegistry != null && !addGlobalRegistry.get()){
+            compositeRegistry.add(globalRegistry);
+            addGlobalRegistry.set(true);
+        }
+    }
 
     protected ApplicationModel getApplicationModel() {
         return applicationModel;
@@ -116,6 +124,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
         collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
         collectorSyncJobExecutor.scheduleWithFixedDelay(() -> {
+            addDubboMeterRegistry();
             collectors.forEach(collector -> {
                 List<MetricSample> samples = collector.collect();
                 for (MetricSample sample : samples) {

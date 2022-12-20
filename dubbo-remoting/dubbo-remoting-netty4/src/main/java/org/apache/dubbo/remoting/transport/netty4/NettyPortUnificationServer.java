@@ -201,6 +201,11 @@ public class NettyPortUnificationServer extends AbstractPortUnificationServer {
         }
     }
 
+    @Override
+    protected int getChannelsSize() {
+        return dubboChannels.size();
+    }
+
     public boolean isBound() {
         return channel.isActive();
     }

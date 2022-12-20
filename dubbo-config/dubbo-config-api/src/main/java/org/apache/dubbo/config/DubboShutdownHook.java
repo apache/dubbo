@@ -111,6 +111,7 @@ public class DubboShutdownHook extends Thread {
                         }
                     } catch (InterruptedException e) {
                         logger.warn(e.getMessage(), e);
+                        Thread.currentThread().interrupt();
                     }
                 }
             }

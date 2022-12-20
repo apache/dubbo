@@ -28,24 +28,19 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 class DeadlineFutureTest {
 
     @Test
-    public void test() throws InterruptedException, ExecutionException {
+    void test() throws InterruptedException, ExecutionException {
         String service = "service";
         String method = "method";
         String address = "localhost:12201";
         DeadlineFuture timeout = DeadlineFuture.newFuture(service, method, address, 10,
             ImmediateEventExecutor.INSTANCE);
         TimeUnit.MILLISECONDS.sleep(20);
-        try {
-            timeout.get();
-            fail();
-        } catch (ExecutionException e) {
-            Assertions.assertTrue(e.getCause() instanceof StatusRpcException);
-        }
+        AppResponse timeoutResponse = timeout.get();
+        Assertions.assertTrue(timeoutResponse.getException() instanceof StatusRpcException);
+
 
         DeadlineFuture success = DeadlineFuture.newFuture(service, method, address, 1000,
             ImmediateEventExecutor.INSTANCE);

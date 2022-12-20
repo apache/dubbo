@@ -21,6 +21,7 @@ import org.apache.dubbo.common.json.JSON;
 import org.apache.dubbo.common.json.impl.FastJson2Impl;
 import org.apache.dubbo.common.json.impl.FastJsonImpl;
 import org.apache.dubbo.common.json.impl.GsonImpl;
+import org.apache.dubbo.common.json.impl.JacksonImpl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,6 +47,9 @@ public class JsonUtils {
                                 case "gson":
                                     instance = new GsonImpl();
                                     break;
+                                case "jackson":
+                                    instance = new JacksonImpl();
+                                    break;
                             }
                             if (instance != null && instance.isSupport()) {
                                 json = instance;
@@ -58,7 +62,8 @@ public class JsonUtils {
                         List<Class<? extends JSON>> jsonClasses = Arrays.asList(
                             FastJson2Impl.class,
                             FastJsonImpl.class,
-                            GsonImpl.class);
+                            GsonImpl.class,
+                            JacksonImpl.class);
                         for (Class<? extends JSON> jsonClass : jsonClasses) {
                             try {
                                 JSON instance = jsonClass.getConstructor().newInstance();
@@ -72,7 +77,7 @@ public class JsonUtils {
                         }
                     }
                     if (json == null) {
-                        throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson) from jvm env. " +
+                        throw new IllegalStateException("Dubbo unable to find out any json framework (e.g. fastjson2, fastjson, gson, jackson) from jvm env. " +
                             "Please import at least one json framework.");
                     }
                 }

@@ -31,10 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 
-public class VirtualServiceRuleTest {
+class VirtualServiceRuleTest {
 
     @Test
-    public void parserTest() {
+    void parserTest() {
         Yaml yaml = new Yaml();
         VirtualServiceRule virtualServiceRule = yaml.loadAs(this.getClass().getClassLoader().getResourceAsStream("VirtualServiceTest.yaml"), VirtualServiceRule.class);
 

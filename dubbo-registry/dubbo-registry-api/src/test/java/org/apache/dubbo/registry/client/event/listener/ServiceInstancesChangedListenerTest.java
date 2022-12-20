@@ -73,7 +73,7 @@ import static org.mockito.Mockito.when;
  * @since 2.7.5
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class ServiceInstancesChangedListenerTest {
+class ServiceInstancesChangedListenerTest {
 
     static List<ServiceInstance> app1Instances;
     static List<ServiceInstance> app2Instances;

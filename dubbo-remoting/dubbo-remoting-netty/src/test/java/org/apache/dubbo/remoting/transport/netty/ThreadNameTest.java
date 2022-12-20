@@ -32,7 +32,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-public class ThreadNameTest {
+class ThreadNameTest {
 
     private NettyServer server;
     private NettyClient client;
@@ -79,7 +79,7 @@ public class ThreadNameTest {
     }
 
     @Test
-    public void testThreadName() throws Exception {
+    void testThreadName() throws Exception {
         client.send("hello");
         serverLatch.await(30, TimeUnit.SECONDS);
         clientLatch.await(30, TimeUnit.SECONDS);

@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Client reconnect test
  */
-public class ClientReconnectTest {
+class ClientReconnectTest {
     public static void main(String[] args) {
         System.out.println(3 % 1);
     }
@@ -45,7 +45,7 @@ public class ClientReconnectTest {
     }
 
     @Test
-    public void testReconnect() throws RemotingException, InterruptedException {
+    void testReconnect() throws RemotingException, InterruptedException {
         {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
