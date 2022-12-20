@@ -22,6 +22,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.model.ServiceModel;
+
+import java.util.Optional;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
@@ -31,10 +34,9 @@ public class ConsumerClassLoaderFilter implements ClusterFilter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            ClassLoader serviceClassLoader = invocation.getServiceModel().getClassLoader();
-            if (serviceClassLoader != null) {
-                Thread.currentThread().setContextClassLoader(serviceClassLoader);
-            }
+            Optional.ofNullable(invocation.getServiceModel())
+                .map(ServiceModel::getClassLoader)
+                .ifPresent(Thread.currentThread()::setContextClassLoader);
             return invoker.invoke(invocation);
         } finally {
             Thread.currentThread().setContextClassLoader(originClassLoader);
