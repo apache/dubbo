@@ -120,7 +120,7 @@ class MultiInstanceTest {
     @AfterEach
     public void afterEach() {
         SysProps.clear();
-        FrameworkModel.destroyAll();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -152,12 +152,12 @@ class MultiInstanceTest {
 
     @Test
     void testDefaultProviderApplication() {
-        DubboBootstrap.reset();
         DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
         try {
             configProviderApp(dubboBootstrap).start();
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
         }
     }
 
@@ -172,12 +172,13 @@ class MultiInstanceTest {
             Assertions.assertTrue(e.toString().contains("No provider available"), StringUtils.toString(e));
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
+            SysProps.clear();
         }
     }
 
     @Test
     void testDefaultMixedApplication() {
-        DubboBootstrap.reset();
         DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
         try {
             dubboBootstrap.application("mixed-app");
@@ -188,6 +189,7 @@ class MultiInstanceTest {
             testConsumer(dubboBootstrap);
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
         }
     }
 
@@ -217,8 +219,6 @@ class MultiInstanceTest {
     void testMultiModuleApplication() throws InterruptedException {
 
         //SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "100");
-
-        FrameworkModel frameworkModel = new FrameworkModel();
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -228,7 +228,7 @@ class MultiInstanceTest {
 
         try {
             // provider app
-            providerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+            providerBootstrap = DubboBootstrap.newInstance();
 
             ServiceConfig serviceConfig1 = new ServiceConfig();
             serviceConfig1.setInterface(DemoService.class);
@@ -272,7 +272,7 @@ class MultiInstanceTest {
             //Thread.sleep(200);
 
             // consumer app
-            consumerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+            consumerBootstrap = DubboBootstrap.newInstance();
             consumerBootstrap.application("consumer-app")
                 .registry(registryConfig)
                 .reference(builder -> builder
@@ -311,7 +311,6 @@ class MultiInstanceTest {
         String version1 = "1.0";
         String version2 = "2.0";
 
-        FrameworkModel frameworkModel = new FrameworkModel();
         DubboBootstrap providerBootstrap1 = null;
         DubboBootstrap providerBootstrap2 = null;
 
@@ -328,7 +327,7 @@ class MultiInstanceTest {
 
             ProtocolConfig protocolConfig1 = new ProtocolConfig("dubbo", NetUtils.getAvailablePort());
 
-            providerBootstrap1 = DubboBootstrap.newInstance(frameworkModel);
+            providerBootstrap1 = DubboBootstrap.getInstance();
             providerBootstrap1.application("provider1")
                 .registry(new RegistryConfig(registryConfig.getAddress()))
                 .service(serviceConfig1)
@@ -351,7 +350,7 @@ class MultiInstanceTest {
 
             ProtocolConfig protocolConfig2 = new ProtocolConfig("dubbo", NetUtils.getAvailablePort());
 
-            providerBootstrap2 = DubboBootstrap.newInstance(frameworkModel);
+            providerBootstrap2 = DubboBootstrap.newInstance();
             providerBootstrap2.application("provider2")
                 .registry(registryConfig2)
                 .service(serviceConfig2)
@@ -374,7 +373,7 @@ class MultiInstanceTest {
             // stop provider app 2 and check threads
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
-            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", new String[]{"Dubbo-framework-shared-scheduler"});
+            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
 
         } finally {
             if (providerBootstrap1 != null) {
@@ -430,7 +429,6 @@ class MultiInstanceTest {
         String version2 = "2.0";
         String version3 = "3.0";
 
-        FrameworkModel frameworkModel = new FrameworkModel();
         String serviceKey1 = DemoService.class.getName() + ":" + version1;
         String serviceKey2 = DemoService.class.getName() + ":" + version2;
         String serviceKey3 = DemoService.class.getName() + ":" + version3;
@@ -440,7 +438,7 @@ class MultiInstanceTest {
 
         try {
             // provider app
-            providerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+            providerBootstrap = DubboBootstrap.newInstance();
 
             ServiceConfig serviceConfig1 = new ServiceConfig();
             serviceConfig1.setInterface(DemoService.class);
@@ -478,7 +476,7 @@ class MultiInstanceTest {
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
 
             // consumer module 1
-            consumerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+            consumerBootstrap = DubboBootstrap.newInstance();
             consumerBootstrap.application("consumer-app")
                 .registry(registryConfig)
                 .reference(builder -> builder
@@ -573,7 +571,6 @@ class MultiInstanceTest {
         String version2 = "2.0";
         String version3 = "3.0";
 
-        FrameworkModel frameworkModel = new FrameworkModel();
         String serviceKey1 = DemoService.class.getName() + ":" + version1;
         String serviceKey2 = DemoService.class.getName() + ":" + version2;
         String serviceKey3 = DemoService.class.getName() + ":" + version3;
@@ -581,7 +578,7 @@ class MultiInstanceTest {
         // provider app
         DubboBootstrap providerBootstrap = null;
         try {
-            providerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+            providerBootstrap = DubboBootstrap.newInstance();
 
             ServiceConfig serviceConfig1 = new ServiceConfig();
             serviceConfig1.setInterface(DemoService.class);
@@ -654,7 +651,6 @@ class MultiInstanceTest {
         String version2 = "2.0";
         String version3 = "3.0";
 
-        FrameworkModel frameworkModel = new FrameworkModel();
         String serviceKey1 = DemoService.class.getName() + ":" + version1;
         String serviceKey2 = DemoService.class.getName() + ":" + version2;
         String serviceKey3 = DemoService.class.getName() + ":" + version3;
@@ -662,7 +658,7 @@ class MultiInstanceTest {
         // provider app
         DubboBootstrap providerBootstrap = null;
         try {
-            providerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+            providerBootstrap = DubboBootstrap.newInstance();
 
             ServiceConfig serviceConfig1 = new ServiceConfig();
             serviceConfig1.setInterface(DemoService.class);
@@ -709,7 +705,6 @@ class MultiInstanceTest {
     @Test
     void testOldApiDeploy() throws Exception {
 
-        DubboBootstrap.reset();
         try {
             // provider app
             ApplicationModel providerApplicationModel = ApplicationModel.defaultModel();
@@ -785,10 +780,8 @@ class MultiInstanceTest {
 
     @Test
     void testAsyncExportAndReferServices() throws ExecutionException, InterruptedException {
-        FrameworkModel frameworkModel = new FrameworkModel();
-
-        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance(frameworkModel);
-        DubboBootstrap consumerBootstrap = DubboBootstrap.newInstance(frameworkModel);
+        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
+        DubboBootstrap consumerBootstrap = DubboBootstrap.newInstance();
         try {
 
             ServiceConfig serviceConfig = new ServiceConfig();
