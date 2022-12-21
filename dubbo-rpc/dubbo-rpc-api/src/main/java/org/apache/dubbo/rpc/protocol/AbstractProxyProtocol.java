@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.net.InetSocketAddress;
@@ -92,7 +93,35 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 return exporter;
             }
         }
-        final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
+        final Runnable runnable = doExport(proxyFactory.getProxy(
+                new Invoker<T>() {
+                    @Override
+                    public Class<T> getInterface() {
+                        return invoker.getInterface();
+                    }
+
+                    @Override
+                    public Result invoke(Invocation invocation) throws RpcException {
+                        RpcContext.getServiceContext().getObjectAttachments().forEach(invocation::setObjectAttachment);
+                        return invoker.invoke(invocation);
+                    }
+
+                    @Override
+                    public URL getUrl() {
+                        return invoker.getUrl();
+                    }
+
+                    @Override
+                    public boolean isAvailable() {
+                        return invoker.isAvailable();
+                    }
+
+                    @Override
+                    public void destroy() {
+                        invoker.destroy();
+                    }
+                }, true), invoker.getInterface(),
+            invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
