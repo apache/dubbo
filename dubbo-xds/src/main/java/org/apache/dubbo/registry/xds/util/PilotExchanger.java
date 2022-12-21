@@ -100,7 +100,7 @@ public class PilotExchanger {
              });
              // update local cache
              routeResult = newResult;
-         });
+         }, false);
     }
 
     public static PilotExchanger initialize(URL url) {
@@ -150,7 +150,7 @@ public class PilotExchanger {
                 endpointResult ->
                     // notify consumers
                     domainObserveConsumer.get(domain).forEach(
-                        consumer1 -> consumer1.accept(endpointResult.getEndpoints())));
+                        consumer1 -> consumer1.accept(endpointResult.getEndpoints())), false);
             domainObserveRequest.add(domain);
         }
     }

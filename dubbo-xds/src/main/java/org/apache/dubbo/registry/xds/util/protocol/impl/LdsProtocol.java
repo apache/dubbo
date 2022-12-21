@@ -68,7 +68,7 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     public void observeListeners(Consumer<ListenerResult> consumer) {
-        observeResource(Collections.emptySet(), consumer);
+        observeResource(Collections.emptySet(), consumer, false);
     }
 
     @Override

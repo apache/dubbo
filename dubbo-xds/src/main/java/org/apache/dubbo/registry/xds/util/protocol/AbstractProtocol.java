@@ -61,9 +61,9 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
-    private Set<String> observeResourcesName;
+    protected Set<String> observeResourcesName;
 
-    private final Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
+    protected Map<Set<String>, List<Consumer<T>>> consumerObserveMap = new ConcurrentHashMap<>();
 
     private final Map<Set<String>, CompletableFuture<T>> consumerFutureMap = new ConcurrentHashMap<>();
 
@@ -78,7 +78,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected Map<String, Object> resourcesMap = new ConcurrentHashMap<>();
 
-    private StreamObserver<DiscoveryRequest> requestObserver;
+    protected StreamObserver<DiscoveryRequest> requestObserver;
 
     /**
      * Abstract method to obtain Type-URL from sub-class
@@ -148,21 +148,25 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     @Override
-    public void observeResource(Set<String> resourceNames, Consumer<T> consumer) {
+    public void observeResource(Set<String> resourceNames, Consumer<T> consumer, boolean isReConnect) {
         resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
-        try {
-            writeLock.lock();
-            consumerObserveMap.compute(resourceNames, (k, v) -> {
-                if (v == null) {
-                    v = new ArrayList<>();
-                }
-                // support multi-consumer
-                v.add(consumer);
-                return v;
-            });
-        } finally {
-            writeLock.unlock();
+        if (isReConnect) {
+            try {
+                writeLock.lock();
+                consumerObserveMap.compute(resourceNames, (k, v) -> {
+                    if (v == null) {
+                        v = new ArrayList<>();
+                    }
+                    if (!consumerObserveMap.get(k).contains(consumer)) {
+                        // support multi-consumer
+                        v.add(consumer);
+                    }
+                    return v;
+                });
+            } finally {
+                writeLock.unlock();
+            }
         }
         for (Consumer<T> cacheConsumer : consumerObserveMap.get(resourceNames)) {
             cacheConsumer.accept(getResource(resourceNames));
@@ -191,7 +195,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected abstract T decodeDiscoveryResponse(DiscoveryResponse response);
 
-    protected class ResponseObserver implements StreamObserver<DiscoveryResponse> {
+    public class ResponseObserver implements StreamObserver<DiscoveryResponse> {
 
         public ResponseObserver() {
 
@@ -205,7 +209,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             requestObserver.onNext(buildDiscoveryRequest(Collections.emptySet(), value));
         }
 
-        private void discoveryResponseListener(T result) {
+        public void discoveryResponseListener(T result) {
             // call once for full data
             if (observeResourcesName != null) {
                 try {
@@ -246,7 +250,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 for (Map.Entry<Set<String>, List<Consumer<T>>> entry : consumerObserveMap.entrySet()) {
                     if (entry.getKey().equals(observeResourcesName)) {
                         for (Consumer<T> consumer : entry.getValue()) {
-                            observeResource(observeResourcesName, consumer);
+                            observeResource(observeResourcesName, consumer, true);
                         }
                     }
                 }
