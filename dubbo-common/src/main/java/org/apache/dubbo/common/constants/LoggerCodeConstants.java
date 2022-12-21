@@ -25,7 +25,7 @@ public interface LoggerCodeConstants {
     // common module
     String COMMON_THREAD_POOL_EXHAUSTED = "0-1";
 
-    String COMMON_PROPERTY_MISSPELLING = "0-2";
+    String COMMON_PROPERTY_TYPE_MISMATCH = "0-2";
 
     String COMMON_CACHE_PATH_INACCESSIBLE = "0-3";
 
