@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -44,6 +45,11 @@ public class RouterChain<T> {
     // instance will never delete or recreate.
     private List<Router> builtinRouters = Collections.emptyList();
 
+    /**
+     * Should continue route if current router's result is empty
+     */
+    private final boolean shouldFailFast;
+
     public static <T> RouterChain<T> buildChain(URL url) {
         return new RouterChain<>(url);
     }
@@ -57,6 +63,8 @@ public class RouterChain<T> {
                 .collect(Collectors.toList());
 
         initWithRouters(routers);
+
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     /**
