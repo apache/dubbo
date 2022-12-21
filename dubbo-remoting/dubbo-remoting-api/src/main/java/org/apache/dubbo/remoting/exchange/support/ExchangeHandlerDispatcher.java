@@ -40,11 +40,11 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
     private final TelnetHandler telnetHandler;
 
     public ExchangeHandlerDispatcher() {
-        this(FrameworkModel.defaultModel(), null, null);
+        this(FrameworkModel.defaultModel(), null, (ChannelHandler) null);
     }
 
     public ExchangeHandlerDispatcher(Replier<?> replier) {
-        this(FrameworkModel.defaultModel(), replier, null);
+        this(FrameworkModel.defaultModel(), replier, (ChannelHandler) null);
     }
 
     public ExchangeHandlerDispatcher(ChannelHandler... handlers) {

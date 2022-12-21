@@ -85,6 +85,9 @@ public interface MultiValueConverter<S> extends Prioritized {
                 .orElse(null);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
     @Deprecated
     static <T> T convertIfPossible(Object source, Class<?> multiValueType, Class<?> elementType) {
         Class<?> sourceType = source.getClass();
