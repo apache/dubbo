@@ -306,6 +306,7 @@ class MultiInstanceTest {
 
     @Test
     void testMultiProviderApplicationsStopOneByOne() {
+        FrameworkModel.destroyAll();
 
         String version1 = "1.0";
         String version2 = "2.0";
