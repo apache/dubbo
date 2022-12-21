@@ -28,8 +28,8 @@ import java.io.OutputStream;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface MultipleSerialization {
 
-    void serialize(URL url, String serializeType, String clz, Object obj, OutputStream os) throws IOException;
+    void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException;
 
-    Object deserialize(URL url, String serializeType, String clz, InputStream os) throws IOException, ClassNotFoundException;
+    Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException;
 
 }

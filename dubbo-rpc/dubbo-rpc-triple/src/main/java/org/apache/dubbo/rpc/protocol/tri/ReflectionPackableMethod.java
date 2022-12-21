@@ -94,10 +94,9 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .toArray(String[]::new);
             this.requestPack = new WrapRequestPack(serialization, url, serializeName, paramSigns,
                 singleArgument);
-            this.responsePack = new WrapResponsePack(serialization, url,
-                actualResponseType.getName());
-            this.requestUnpack = new WrapRequestUnpack(serialization, url);
-            this.responseUnpack = new WrapResponseUnpack(serialization, url);
+            this.responsePack = new WrapResponsePack(serialization, url, actualResponseType.getName());
+            this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
+            this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
         }
     }
 
@@ -337,10 +336,13 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         private final MultipleSerialization serialization;
         private final URL url;
+        private final Class<?> returnClass;
 
-        private WrapResponseUnpack(MultipleSerialization serialization, URL url) {
+
+        private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> returnClass) {
             this.serialization = serialization;
             this.url = url;
+            this.returnClass = returnClass;
         }
 
         @Override
@@ -349,7 +351,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
+            return serialization.deserialize(url, serializeType, returnClass, bais);
         }
     }
 
@@ -432,9 +434,12 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final MultipleSerialization serialization;
         private final URL url;
 
-        private WrapRequestUnpack(MultipleSerialization serialization, URL url) {
+        private final Class<?>[] actualRequestTypes;
+
+        private WrapRequestUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
             this.url = url;
+            this.actualRequestTypes = actualRequestTypes;
         }
 
         @Override
@@ -447,7 +452,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                     wrapper.getArgs().get(i));
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
-                    wrapper.getArgTypes().get(i),
+                    actualRequestTypes[i],
                     bais);
             }
             return ret;
