@@ -343,7 +343,11 @@ public class ReferenceBean<T> implements FactoryBean<T>,
             throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
-        return referenceConfig.get();
+        //Subclasses should synchronize on the given Object if they perform any sort of extended singleton creation phase. 
+        // In particular, subclasses should not have their own mutexes involved in singleton creation, to avoid the potential for deadlocks in lazy-init situations.
+        synchronized (getBeanFactory().getSingletonMutex()) {
+            return referenceConfig.get();
+        }
     }
 
     private class DubboReferenceLazyInitTargetSource extends AbstractLazyCreationTargetSource {
