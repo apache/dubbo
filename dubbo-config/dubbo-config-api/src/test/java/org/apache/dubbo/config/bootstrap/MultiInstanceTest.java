@@ -47,6 +47,7 @@ import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenter
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -59,6 +60,7 @@ import java.util.concurrent.Future;
 
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
+@Disabled
 class MultiInstanceTest {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MultiInstanceTest.class);
