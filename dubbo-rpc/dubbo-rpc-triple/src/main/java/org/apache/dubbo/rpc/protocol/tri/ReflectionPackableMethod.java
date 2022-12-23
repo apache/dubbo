@@ -90,9 +90,8 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .getExtensionLoader(MultipleSerialization.class)
                 .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY,
                     CommonConstants.DEFAULT_KEY));
-            String[] paramSigns = Stream.of(actualRequestTypes).map(Class::getName)
-                .toArray(String[]::new);
-            this.requestPack = new WrapRequestPack(serialization, url, serializeName, paramSigns,
+
+            this.requestPack = new WrapRequestPack(serialization, url, serializeName, actualRequestTypes,
                 singleArgument);
             this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
@@ -323,7 +322,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         @Override
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serialize,actualResponseType , obj, bos);
+            multipleSerialization.serialize(url, serialize, actualResponseType, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
                 .setSerializeType(serialize)
                 .setType(actualResponseType.getName())
@@ -363,16 +362,18 @@ public class ReflectionPackableMethod implements PackableMethod {
         private final String[] argumentsType;
         private final URL url;
         private final boolean singleArgument;
+        private final Class<?>[] actualRequestTypes;
 
         private WrapRequestPack(MultipleSerialization multipleSerialization,
                                 URL url,
                                 String serialize,
-                                String[] argumentsType,
+                                Class<?>[] actualRequestTypes,
                                 boolean singleArgument) {
             this.url = url;
             this.serialize = convertHessianToWrapper(serialize);
             this.multipleSerialization = multipleSerialization;
-            this.argumentsType = argumentsType;
+            this.actualRequestTypes = actualRequestTypes;
+            this.argumentsType = Stream.of(actualRequestTypes).map(Class::getName).toArray(String[]::new);
             this.singleArgument = singleArgument;
         }
 
@@ -391,7 +392,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             }
             for (Object argument : arguments) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                multipleSerialization.serialize(url, serialize, null, argument, bos);
+                multipleSerialization.serialize(url, serialize, argument.getClass(), argument, bos);
                 builder.addArgs(bos.toByteArray());
             }
             return builder.build().toByteArray();
