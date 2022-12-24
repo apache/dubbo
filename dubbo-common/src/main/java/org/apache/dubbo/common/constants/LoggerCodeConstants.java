@@ -18,11 +18,11 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * constants for logger
+ * Constants of Error codes used in logger.
  */
 public interface LoggerCodeConstants {
 
-    // common module
+    // Common module
     String COMMON_THREAD_POOL_EXHAUSTED = "0-1";
 
     String COMMON_PROPERTY_TYPE_MISMATCH = "0-2";
@@ -78,6 +78,9 @@ public interface LoggerCodeConstants {
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
+    /**
+     * Absent. Merged with 0-2.
+     */
     String REGISTRY_ABSENCE = "1-2";
 
     String REGISTRY_FAILED_URL_EVICTING = "1-3";
@@ -146,6 +149,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_ZOOKEEPER_EXCEPTION = "1-35";
 
+    /**
+     * Absent. Merged with 99-0.
+     */
     String REGISTRY_UNEXPECTED_EXCEPTION = "1-36";
 
     String REGISTRY_NACOS_EXCEPTION = "1-37";
@@ -379,6 +385,10 @@ public interface LoggerCodeConstants {
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
     // Internal unknown error.
+
+    /**
+     * Unknown internal error. (99-0)
+     */
     String INTERNAL_ERROR = "99-0";
 
     String INTERNAL_INTERRUPTED = "99-1";
