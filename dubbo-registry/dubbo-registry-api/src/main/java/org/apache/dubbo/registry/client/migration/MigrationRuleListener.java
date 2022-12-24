@@ -52,7 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 /**
@@ -194,18 +194,18 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
                                 try {
                                     future.get();
                                 } catch (InterruptedException ie) {
-                                    logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Interrupted while waiting for migration async task to finish.");
+                                    logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Interrupted while waiting for migration async task to finish.");
                                 } catch (ExecutionException ee) {
                                     migrationException = ee.getCause();
                                 }
                             }
                             if (migrationException != null) {
-                                logger.error(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Migration async task failed.", migrationException);
+                                logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Migration async task failed.", migrationException);
                             }
                             executorService.shutdown();
                         }
                     } catch (Throwable t) {
-                        logger.error(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Error occurred when migration.", t);
+                        logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Error occurred when migration.", t);
                     }
                 }
             });
