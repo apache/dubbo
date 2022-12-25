@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.ClusterWeight;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 
 public class RdsVirtualHostListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RdsVirtualHostListener.class);
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(RdsVirtualHostListener.class);
 
     private final String domain;
 
@@ -70,7 +71,7 @@ public class RdsVirtualHostListener {
             // post rules
             routeRuleManager.notifyRuleChange(domain, xdsRouteRules);
         } catch (Exception e) {
-            LOGGER.error("parse domain: " + domain + " xds VirtualHost error", e);
+            LOGGER.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "parse domain: " + domain + " xds VirtualHost error", e);
         }
 
     }

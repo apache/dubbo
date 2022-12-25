@@ -25,9 +25,9 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 import org.apache.dubbo.remoting.api.WireProtocol;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.transport.netty4.ssl.SslClientTlsHandler;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -52,6 +52,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
 
 public class NettyConnectionClient extends AbstractConnectionClient {
@@ -267,7 +268,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             try {
                 doConnect();
             } catch (RemotingException e) {
-                LOGGER.error("Failed to connect to server: " + getConnectAddress());
+                LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",  "Failed to connect to server: " + getConnectAddress());
             }
         }
 
@@ -345,7 +346,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 try {
                     connectionClient.doConnect();
                 } catch (RemotingException e) {
-                    LOGGER.error("Failed to connect to server: " + getConnectAddress());
+                    LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",  "Failed to connect to server: " + getConnectAddress());
                 }
             }, 1L, TimeUnit.SECONDS);
         }
