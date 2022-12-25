@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import com.google.gson.JsonParseException;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.google.gson.Gson;
@@ -23,6 +24,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.List;
 
 public class GsonImpl extends AbstractJSONImpl {
@@ -57,6 +59,21 @@ public class GsonImpl extends AbstractJSONImpl {
     @Override
     public <T> T parseObject(byte[] bytes, Class<T> clazz) {
         return getGson().fromJson(new InputStreamReader(new ByteArrayInputStream(bytes)), clazz);
+    }
+
+    @Override
+    public <T> T parseObject(InputStream inputStream, Class<T> clazz) throws Exception {
+        TypeToken<T> token = TypeToken.get(clazz);
+        InputStreamReader json = new InputStreamReader(inputStream, Charset.defaultCharset());
+        return getGson().fromJson(json, token.getType());
+    }
+
+    @Override
+    public <T> void serializeObject(OutputStream outputStream, Object o) throws Exception {
+        OutputStreamWriter writer = new OutputStreamWriter(outputStream, Charset.defaultCharset());
+
+        getGson().toJson(o, o.getClass(), writer);
+        writer.close();
     }
 
     private Gson getGson() {
