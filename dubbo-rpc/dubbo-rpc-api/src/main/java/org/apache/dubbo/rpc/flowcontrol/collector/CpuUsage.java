@@ -18,58 +18,59 @@ package org.apache.dubbo.rpc.flowcontrol.collector;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
-public class CpuUsage implements ScopeModelAware {
+public class CpuUsage {
     private HardwareMetricsCollector hardwareMetricsCollector = new HardwareMetricsCollector();
     private static final Logger logger = LoggerFactory.getLogger(CpuUsage.class);
 
-    private ApplicationModel applicationModel;
-    private double aConstant = 0.05;
+    private double aConstant = 0.5;
     private volatile double value;
 
-    private final long defaultUpdateInterval = 500;
+    private final long defaultUpdateInterval = 1000;
     private ScheduledExecutorService scheduledExecutorService;
 
-    private ScheduledFuture<?> sendFuture;
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel){
-        this.applicationModel = applicationModel;
-        scheduledExecutorService = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
-    }
 
     public CpuUsage() {
         init();
     }
 
     public void startPeriodAutoUpdate(){
+        scheduledExecutorService.scheduleWithFixedDelay(this::update,0,defaultUpdateInterval,TimeUnit.MILLISECONDS);
+        GlobalResourcesRepository.registerGlobalDisposable(() -> scheduledExecutorService.shutdown());
+        /*
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 // collect data
-                update();
+                //update();
             } catch (Throwable t) {
                 t.printStackTrace();
                 destroyPeriodAutoUpdate();
             }
         }, defaultUpdateInterval, defaultUpdateInterval, TimeUnit.MILLISECONDS);
+
+         */
     }
 
+    /*
     public void destroyPeriodAutoUpdate(){
         try {
             ExecutorUtil.cancelScheduledFuture(sendFuture);
         } catch (Throwable t) {
             t.printStackTrace();
         }
-    }
+    }*/
 
     public void setAConstant(double aConstant){
         this.aConstant = aConstant;
@@ -79,14 +80,14 @@ public class CpuUsage implements ScopeModelAware {
         Double tmp = Double.NaN;
         while(tmp.equals(Double.NaN))
             tmp = hardwareMetricsCollector.systemCpuUsage();
-
         value = tmp;
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Cpu-Collector"));
     }
 
     synchronized public void update(){
         Double yt = Double.NaN;
         while(yt.equals(Double.NaN)){
-            yt = hardwareMetricsCollector.processCpuUsage();
+            yt = hardwareMetricsCollector.systemCpuUsage();
             //double yt = hardwareMetricsCollector.systemLoadAverage1m();
         }
         value = aConstant * yt + (1 - aConstant) * value;
@@ -97,6 +98,16 @@ public class CpuUsage implements ScopeModelAware {
     public double getCpuUsage(){
         //return hardwareMetricsCollector.systemLoadAverage1m();
         //update();
+        //return value;
+        /*
+        Double tmp = hardwareMetricsCollector.systemCpuUsage();
+        while(tmp.equals(Double.NaN))
+            tmp = hardwareMetricsCollector.systemCpuUsage();
+
+
+        return tmp.doubleValue();
+
+         */
         return value;
     }
 }

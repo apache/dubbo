@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.FlowControl;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.flowcontrol.collector.CpuUsage;
+import org.apache.dubbo.rpc.flowcontrol.collector.LinuxCpuUsage;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -42,6 +43,7 @@ public class AutoConcurrencyLimier implements FlowControl, ScopeModelAware {
     public static final long MaxSampleCount = 500;
 
     private CpuUsage cpuUsage;
+    //private LinuxCpuUsage cpuUsage;
 
     private double exploreRatio;
     private double emaFactor;
@@ -79,9 +81,15 @@ public class AutoConcurrencyLimier implements FlowControl, ScopeModelAware {
         halfSampleIntervalMS = 25000;
         resetLatencyUs = 0;
         remeasureStartUs = NextResetTime(System.nanoTime() / 1000);
-
+        /*
+        try{
+            cpuUsage = new LinuxCpuUsage();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        */
         cpuUsage = new CpuUsage();
-        cpuUsage.setApplicationModel(applicationModel);
+        //cpuUsage.setApplicationModel(applicationModel);
         cpuUsage.startPeriodAutoUpdate();
     }
 
@@ -128,7 +136,10 @@ public class AutoConcurrencyLimier implements FlowControl, ScopeModelAware {
     }
 
     public void Update(long latency,long samplingTimeUs){
-        onResetSlideWindow.compareAndSet(false,true);
+        if(onResetSlideWindow.compareAndSet(false,true) == false){
+            return;
+        }
+
         if(resetLatencyUs != 0){
             if(resetLatencyUs > samplingTimeUs){
                 onResetSlideWindow.set(false);

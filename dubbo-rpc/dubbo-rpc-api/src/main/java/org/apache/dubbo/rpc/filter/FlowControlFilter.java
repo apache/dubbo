@@ -19,12 +19,16 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.*;
+import org.apache.dubbo.rpc.flowcontrol.StaticFlowControl;
 import org.apache.dubbo.rpc.flowcontrol.collector.ServerMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
 
@@ -38,14 +42,26 @@ public class FlowControlFilter implements Filter, BaseFilter.Listener, ScopeMode
         this.applicationModel = applicationModel;
     }
 
-
+    AtomicBoolean inInit = new AtomicBoolean(false);
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
-        if(flowControl == null){
+
+        if(flowControl == null && inInit.compareAndSet(false,true)){
             flowControl = initFlowControl(invoker,invocation);
+            inInit.set(false);
         }
+        while(inInit.get() == true){}
+
+
+        /*
+        if(!RpcStatus.beginCount(invoker.getUrl(),invocation.getMethodName(),30)){
+            throw  new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,"Failed to invoke method " + methodName + "in provider " + url + ", cause: The service using threads greater than FlowControl limited.The max concurrency is " + flowControl.getMaxConcurrency());
+        }
+        */
+
+
         if (!flowControl.Begin()){
             throw  new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,"Failed to invoke method " + methodName + "in provider " + url + ", cause: The service using threads greater than FlowControl limited.The max concurrency is " + flowControl.getMaxConcurrency());
         }
@@ -67,6 +83,7 @@ public class FlowControlFilter implements Filter, BaseFilter.Listener, ScopeMode
         //RpcStatus.endCount(invoker.getUrl(),getRealMethodName(invoker,invocation),getElapsed(invocation),true);
         //ServerMetricsCollector.end(invoker.getUrl(),getRealMethodName(invoker,invocation),getElapsed(invocation), ServerMetricsCollector.defaultBucketNum,ServerMetricsCollector.defaultTimeWindowSeconds);
         flowControl.End(getElapsed(invocation));
+        //RpcStatus.endCount(invoker.getUrl(), getRealMethodName(invoker, invocation), getElapsed(invocation), true);
     }
 
     @Override
@@ -77,12 +94,16 @@ public class FlowControlFilter implements Filter, BaseFilter.Listener, ScopeMode
                 return;
             }
         }
-        RpcStatus.endCount(invoker.getUrl(), getRealMethodName(invoker, invocation), getElapsed(invocation), false);
+        flowControl.End(getElapsed(invocation));
+        //RpcStatus.endCount(invoker.getUrl(), getRealMethodName(invoker, invocation), getElapsed(invocation), false);
     }
 
     protected FlowControl initFlowControl(Invoker<?> invoker,Invocation invocation){
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel());
         FlowControl flowControl = applicationModel.getExtensionLoader(FlowControl.class).getExtension(invoker.getUrl().getMethodParameter(RpcUtils.getMethodName(invocation),FLOW_CONTROL_KEY,DEFAULT_FLOW_CONTROL));
+        if(invoker.getUrl().getMethodParameter(RpcUtils.getMethodName(invocation),FLOW_CONTROL_KEY,DEFAULT_FLOW_CONTROL).equals(STATIC_FLOW_CONTROL)){
+            ((StaticFlowControl) flowControl).setMaxConcurrency(invoker.getUrl().getMethodParameter(RpcUtils.getMethodName(invocation),STATIC_FLOW_CONTROL_KEY,20));
+        }
         //FlowControl flowControl = applicationModel.getExtensionLoader(FlowControl.class).getDefaultExtension();
         return flowControl;
     }

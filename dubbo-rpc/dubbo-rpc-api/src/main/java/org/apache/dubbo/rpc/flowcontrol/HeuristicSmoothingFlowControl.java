@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.flowcontrol;
 import org.apache.dubbo.rpc.FlowControl;
 
 import org.apache.dubbo.rpc.flowcontrol.collector.CpuUsage;
+import org.apache.dubbo.rpc.flowcontrol.collector.LinuxCpuUsage;
 import org.apache.dubbo.rpc.flowcontrol.collector.ServerMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
@@ -31,6 +32,8 @@ public class HeuristicSmoothingFlowControl implements FlowControl, ScopeModelAwa
     public static final String NAME = "heuristicSmoothingFlowControl";
     public static final double LowCpuLoad = 0.2;
     public static final double HighCpuLoad = 0.6;
+    //public static final long LowCpuLoad = 30;
+    //public static final long HighCpuLoad = 80;
     public static final double Alpha = 0.3;
     public static final int BucketNum = 10;
     public static final int TimeWindowSeconds = 1;
@@ -43,7 +46,9 @@ public class HeuristicSmoothingFlowControl implements FlowControl, ScopeModelAwa
     private double noLoadLatency;
     private final AtomicLong inflight = new AtomicLong();
 
-    CpuUsage cpuUsage;
+    private CpuUsage cpuUsage;
+    //private LinuxCpuUsage cpuUsage;
+
     ServerMetricsCollector serverMetricsCollector;
     ApplicationModel applicationModel;
 
@@ -52,9 +57,14 @@ public class HeuristicSmoothingFlowControl implements FlowControl, ScopeModelAwa
         this.applicationModel = applicationModel;
         noLoadLatency = 0;
         maxConcurrency = initialMaxConcurrency;
-
+        /*
+        try{
+            cpuUsage = new LinuxCpuUsage();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        */
         cpuUsage = new CpuUsage();
-        cpuUsage.setApplicationModel(applicationModel);
         cpuUsage.startPeriodAutoUpdate();
 
         serverMetricsCollector = new ServerMetricsCollector(BucketNum,TimeWindowSeconds);
@@ -62,6 +72,8 @@ public class HeuristicSmoothingFlowControl implements FlowControl, ScopeModelAwa
 
     public double updateNoLoadLatency(){
         double tmpCpuUsage = cpuUsage.getCpuUsage();
+        //long tmpCpuUsage = cpuUsage.getCpuUsage();
+
         if(noLoadLatency == 0 || tmpCpuUsage <= LowCpuLoad){
             noLoadLatency = serverMetricsCollector.getMinLatency();
         }else if(tmpCpuUsage > LowCpuLoad && tmpCpuUsage <= HighCpuLoad){
