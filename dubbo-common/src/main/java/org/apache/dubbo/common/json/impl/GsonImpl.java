@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import com.google.gson.JsonParseException;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.google.gson.Gson;

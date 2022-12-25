@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.json.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
