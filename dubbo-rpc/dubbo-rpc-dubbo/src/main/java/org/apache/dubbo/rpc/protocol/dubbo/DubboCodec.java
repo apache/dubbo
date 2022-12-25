@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_MANAGEMENT_MODE_ISOLATION;
@@ -66,6 +67,8 @@ public class DubboCodec extends ExchangeCodec {
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
+
+    private static final AtomicBoolean decodeInUserThreadLogged = new AtomicBoolean(false);
     private CallbackServiceCodec callbackServiceCodec;
     private FrameworkModel frameworkModel;
 
@@ -174,7 +177,7 @@ public class DubboCodec extends ExchangeCodec {
         boolean decodeDataInIoThread = channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD);
         String mode = ExecutorRepository.getMode(channel.getUrl().getOrDefaultApplicationModel());
         if (EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
-            if (!decodeDataInIoThread) {
+            if (!decodeDataInIoThread && decodeInUserThreadLogged.compareAndSet(false, true)) {
                 log.info("Because thread pool isolation is enabled on the dubbo protocol, the body can only be decoded " +
                     "on the io thread, and the parameter[" + DECODE_IN_IO_THREAD_KEY + "] will be ignored");
                 // Why? because obtaining the isolated thread pool requires the serviceKey of the service,

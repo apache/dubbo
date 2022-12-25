@@ -41,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
@@ -207,7 +208,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                     mappingByUrl = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
                     mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
                 } catch (Exception e) {
-                    logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
+                    logger.warn(INTERNAL_ERROR, "", "", "Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
                 }
 
                 if (CollectionUtils.isEmpty(mappingByUrl)) {

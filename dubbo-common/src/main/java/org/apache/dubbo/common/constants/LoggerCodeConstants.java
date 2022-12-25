@@ -75,6 +75,8 @@ public interface LoggerCodeConstants {
 
     String COMMON_METADATA_PROCESSOR = "0-26";
 
+    String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
+
     // registry module
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
@@ -155,6 +157,8 @@ public interface LoggerCodeConstants {
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
     String REGISTRY_ROUTER_WAIT_LONG = "1-40";
+
+    String REGISTRY_ISTIO_EXCEPTION = "1-41";
 
     // cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";

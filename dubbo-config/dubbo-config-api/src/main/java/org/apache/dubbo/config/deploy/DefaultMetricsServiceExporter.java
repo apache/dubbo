@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.config.deploy;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.metrics.service.MetricsService;
 import org.apache.dubbo.common.metrics.service.MetricsServiceExporter;
@@ -28,6 +29,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
@@ -35,7 +37,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
  */
 public class DefaultMetricsServiceExporter implements MetricsServiceExporter, ScopeModelAware {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
     private          ApplicationModel              applicationModel;
     private          MetricsService                metricsService;
@@ -53,7 +55,7 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
             if (PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol()) ) {
                 this.metricsService  = applicationModel.getExtensionLoader(MetricsService.class).getDefaultExtension();
             } else {
-                logger.warn("Protocol " + metricsConfig.getProtocol() + " not support for new metrics mechanism. " +
+                logger.warn(COMMON_METRICS_COLLECTOR_EXCEPTION, "", "", "Protocol " + metricsConfig.getProtocol() + " not support for new metrics mechanism. " +
                     "Using old metrics mechanism instead.");
             }
         }
@@ -85,12 +87,12 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
                 this.serviceConfig = serviceConfig;
             } else {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("The MetricsService has been exported : " + serviceConfig.getExportedUrls());
+                    logger.warn(LoggerCodeConstants.INTERNAL_ERROR, "", "", "The MetricsService has been exported : " + serviceConfig.getExportedUrls());
                 }
             }
         } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn("The MetricsConfig not exist, will not export metrics service.");
+            if (logger.isInfoEnabled()) {
+                logger.info("The MetricsConfig not exist, will not export metrics service.");
             }
         }
 

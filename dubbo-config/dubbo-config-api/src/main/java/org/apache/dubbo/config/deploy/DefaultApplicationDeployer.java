@@ -23,6 +23,7 @@ import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -722,7 +723,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         try {
             metricsServiceExporter.export();
         } catch (Exception e) {
-            logger.error("exportMetricsService an exception occurred when handle starting event", e);
+            logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+                "exportMetricsService an exception occurred when handle starting event", e);
         }
     }
 

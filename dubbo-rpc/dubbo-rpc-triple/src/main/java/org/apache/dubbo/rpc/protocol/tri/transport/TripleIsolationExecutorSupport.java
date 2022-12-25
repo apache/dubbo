@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.transport;
 
-import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.ServiceKey;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.executor.AbstractIsolationExecutorSupport;
+import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+
+import io.netty.handler.codec.http2.Http2Headers;
 
 public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSupport {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TripleIsolationExecutorSupport.class);
@@ -37,21 +38,15 @@ public class TripleIsolationExecutorSupport extends AbstractIsolationExecutorSup
             return null;
         }
 
-        try {
-            Http2Headers headers = (Http2Headers) data;
-            String path = headers.path().toString();
-            String[] parts = path.split("/"); // path like /{interfaceName}/{methodName}
-            String interfaceName = parts[1];
-            String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ?
-                headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
-            String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ?
-                headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
-            return new ServiceKey(interfaceName, version, group);
-        } catch (Throwable e) {
-            logger.error("failed to get service key, maybe the build rule for data is wrong, data = " + data, e);
-        }
-
-        return null;
+        Http2Headers headers = (Http2Headers) data;
+        String path = headers.path().toString();
+        String[] parts = path.split("/"); // path like /{interfaceName}/{methodName}
+        String interfaceName = parts[1];
+        String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ?
+            headers.get(TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+        String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ?
+            headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader()).toString() : null;
+        return new ServiceKey(interfaceName, version, group);
     }
 
 

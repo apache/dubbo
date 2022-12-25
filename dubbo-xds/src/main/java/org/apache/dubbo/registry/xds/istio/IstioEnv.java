@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.xds.istio;
 
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsEnv;
@@ -115,7 +116,7 @@ public class IstioEnv implements XdsEnv {
             try {
                 return FileUtils.readFileToString(saFile, StandardCharsets.UTF_8);
             } catch (IOException e) {
-                logger.error("Unable to read token file.", e);
+                logger.error(LoggerCodeConstants.REGISTRY_ISTIO_EXCEPTION, "File Read Failed", "", "Unable to read token file.", e);
             }
         }
 
@@ -171,7 +172,7 @@ public class IstioEnv implements XdsEnv {
             try {
                 return FileUtils.readFileToString(caFile, StandardCharsets.UTF_8);
             } catch (IOException e) {
-                logger.error("read ca file error", e);
+                logger.error(LoggerCodeConstants.REGISTRY_ISTIO_EXCEPTION, "File Read Failed", "", "read ca file error", e);
             }
         }
         return null;
