@@ -75,7 +75,8 @@ public interface LoggerCodeConstants {
 
     String COMMON_METADATA_PROCESSOR = "0-26";
 
-    // registry module
+    // Registry module
+    
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
     /**
@@ -201,7 +202,7 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    // proxy module
+    // Proxy module.
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
@@ -216,7 +217,7 @@ public interface LoggerCodeConstants {
 
     String PROXY_TIMEOUT_RESPONSE = "3-7";
 
-    // protocol module
+    // Protocol module.
     String PROTOCOL_UNSUPPORTED = "4-1";
 
     String PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER = "4-2";
