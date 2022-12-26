@@ -26,10 +26,19 @@ public class RequestTemplate implements Serializable {
     private String address;
     private Object body;
     private byte[] byteBody;
-    private String protocol = "HTTP/1.1";
+    private String protocol = "http://";
 
-    public RequestTemplate(RequestMetadata requestMetadata) {
-        httpMethod(requestMetadata.getMethod());
+
+    public RequestTemplate(String httpMethod, String address) {
+        this.httpMethod = httpMethod;
+        this.address = address;
+    }
+
+    public String getURL() {
+        StringBuilder stringBuilder = new StringBuilder(getProtocol() + address);
+
+        stringBuilder.append(getUri());
+        return stringBuilder.toString();
     }
 
     public String getUri() {
@@ -209,9 +218,7 @@ public class RequestTemplate implements Serializable {
         return Byte.parseByte(getHeader(RestConstant.SERIALIZATION_KEY).toArray(new String[0])[0]);
     }
 
-    public static RequestTemplate build(RequestMetadata requestMetadata) {
-        return new RequestTemplate(requestMetadata);
-    }
+
 
     public String getAddress() {
         return address;

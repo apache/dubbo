@@ -4,7 +4,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.ReferenceCountedClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.*;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
@@ -17,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class HttpInvokeInvocationHandler implements InvocationHandler {
-    private static final RequestConvert requestConvert = FrameworkModel.defaultModel().getExtensionLoader(RequestConvert.class).getAdaptiveExtension();
+    private static final RequestConvert requestConvertAdaptive = ApplicationModel.defaultModel().getExtensionLoader(RequestConvert.class).getAdaptiveExtension();
 
     private static Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
         ApplicationModel.defaultModel().getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
@@ -37,11 +36,7 @@ public class HttpInvokeInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         RestMethodMetadata restMethodMetadata = methodRestMethodMetadataMap.get(method);
 
-        RequestTemplate requestTemplate = new RequestTemplate(restMethodMetadata.getRequest());
-
-
-        requestTemplate.setAddress(address);
-
+        RequestTemplate requestTemplate = new RequestTemplate(restMethodMetadata.getRequest().getMethod(), address);
 
         HttpConnectionConfig connectionConfig = new HttpConnectionConfig();
 
@@ -50,16 +45,16 @@ public class HttpInvokeInvocationHandler implements InvocationHandler {
             restMethodMetadata, Arrays.asList(args));
 
         for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
-            // TODO add   attachment
+
             intercept.intercept(httpConnectionCreateContext);
         }
 
+        RequestConvert requestConvert = requestConvertAdaptive.createRequestConvert(url, null, restMethodMetadata);
 
-        RequestConvert nettyRequestConvert = requestConvert.createRequestConvert(url);
 
-        return nettyRequestConvert.request(requestTemplate);
+        return requestConvert.request(requestTemplate);
 
-        // TODO deal with response
+
 
     }
 

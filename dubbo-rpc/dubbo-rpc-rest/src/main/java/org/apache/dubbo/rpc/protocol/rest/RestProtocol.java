@@ -121,25 +121,25 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
 
-        ReferenceCountedClient<? extends RestClient> refClient =
-            clients.computeIfAbsent(url.getAddress(), _key -> createReferenceCountedClient(url));
-
-        refClient.retain();
+//        ReferenceCountedClient<? extends RestClient> refClient =
+//            clients.computeIfAbsent(url.getAddress(), _key -> createReferenceCountedClient(url));
+//
+//        refClient.retain();
 
         // resolve metadata
         Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type,url);
 
         // create proxy ref
-        return HttpInvokeClientBuilder.build(metadataMap, url, type, refClient);
+        return HttpInvokeClientBuilder.build(metadataMap, url, type, null);
     }
 
-    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
-
-        // url -> RestClient
-        RestClient restClient = clientFactory.createRestClient(url);
-
-        return new ReferenceCountedClient<>(restClient);
-    }
+//    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
+//
+//        // url -> RestClient
+//        RestClient restClient = clientFactory.createRestClient(url);
+//
+//        return new ReferenceCountedClient<>(restClient);
+//    }
 
     @Override
     protected int getErrorCode(Throwable e) {
