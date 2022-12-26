@@ -13,7 +13,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 
-public abstract class BaseConvert<REQ, RES,CLIENT> implements RequestConvert<REQ, RES,CLIENT> {
+public abstract class BaseConvert<REQ, RES, CLIENT> implements RequestConvert<REQ, RES, CLIENT> {
 
     protected CLIENT restClient;
     protected RestMethodMetadata restMethodMetadata;
@@ -42,7 +42,7 @@ public abstract class BaseConvert<REQ, RES,CLIENT> implements RequestConvert<REQ
         RES response = null;
         try {
             response = send(request);
-        } catch (RemotingException e) {
+        } catch (Exception e) {
             // TODO send exception
         }
 
@@ -58,18 +58,17 @@ public abstract class BaseConvert<REQ, RES,CLIENT> implements RequestConvert<REQ
 
     }
 
-
-
     protected Class<?> getReturnType() {
         Class<?> returnType = restMethodMetadata.getReflectMethod().getReturnType();
         return returnType;
     }
-
 
     protected int getTimeout() {
         int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         return timeout;
     }
 
-
+    public CLIENT getRestClient() {
+        return restClient;
+    }
 }

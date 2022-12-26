@@ -219,7 +219,6 @@ public class RequestTemplate implements Serializable {
     }
 
 
-
     public String getAddress() {
         return address;
     }
@@ -235,5 +234,9 @@ public class RequestTemplate implements Serializable {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public boolean emptyBody() {
+        return getUnSerializedBody() == null;
     }
 }

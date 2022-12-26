@@ -5,15 +5,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.request.BaseConvert;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Adaptive("okhttp")
 public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpRestClient> {
@@ -26,21 +23,8 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
     }
 
     @Override
-    public Response send(Request request) throws RemotingException {
-        OkHttpClient client = new OkHttpClient();
-        OkHttpClient clientWith60sTimeout = client.newBuilder().
-            readTimeout(60, TimeUnit.SECONDS).
-            build();
-
-        try {
-            return clientWith60sTimeout.newCall(request).execute();
-        } catch (IOException e) {
-
-        }
-
-        return null;
-
-
+    public Response send(Request request) throws Exception {
+        return getRestClient().send(request);
     }
 
 
@@ -65,6 +49,11 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
                 builder.addHeader(headerName, headerValue);
             }
         }
+
+        if (requestTemplate.emptyBody()) {
+            return builder.method(requestTemplate.getHttpMethod(), null).build();
+        }
+
         builder.method(requestTemplate.getHttpMethod(), RequestBody.create(null, requestTemplate.getSerializedBody()));
         return builder.build();
     }
