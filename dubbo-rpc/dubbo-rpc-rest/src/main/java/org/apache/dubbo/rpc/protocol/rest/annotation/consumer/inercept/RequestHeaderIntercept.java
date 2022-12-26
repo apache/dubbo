@@ -3,14 +3,12 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.ArgInfo;
-import org.apache.dubbo.metadata.rest.PathUtil;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 

@@ -1,7 +1,6 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.protocol.rest.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 import org.apache.dubbo.metadata.rest.ArgInfo;
@@ -16,7 +15,7 @@ import java.util.Map;
 @Activate(value = RestConstant.PROVIDER_HEADER_PARSE)
 public class HeaderProviderParamParser extends ProviderParamParser {
     @Override
-    protected void doParse(ParseContext parseContext, ArgInfo argInfo) {
+    protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
 
         //TODO MAP<String,String> convert
         RequestFacade request = parseContext.getRequestFacade();

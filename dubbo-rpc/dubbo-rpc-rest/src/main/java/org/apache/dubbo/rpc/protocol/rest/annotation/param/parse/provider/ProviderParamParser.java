@@ -3,12 +3,11 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
-import org.apache.dubbo.rpc.protocol.rest.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.rest.util.NumberUtils;
 
-public abstract class ProviderParamParser implements ParamParser {
+public abstract class ProviderParamParser implements BaseProviderParamParser {
 
-    public void parse(ParseContext parseContext, ArgInfo argInfo) {
+    public void parse(ProviderParseContext parseContext, ArgInfo argInfo) {
 
         if (!matchParseType(argInfo.getParamAnnotationType())) {
             return;
@@ -17,7 +16,7 @@ public abstract class ProviderParamParser implements ParamParser {
         doParse(parseContext, argInfo);
     }
 
-    protected abstract void doParse(ParseContext parseContext, ArgInfo argInfo);
+    protected abstract void doParse(ProviderParseContext parseContext, ArgInfo argInfo);
 
     public boolean matchParseType(Class paramAnno) {
 

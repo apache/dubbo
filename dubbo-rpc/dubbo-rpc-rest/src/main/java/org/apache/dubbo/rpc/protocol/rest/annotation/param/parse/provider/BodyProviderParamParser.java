@@ -9,7 +9,6 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.remoting.transport.CodecSupport;
-import org.apache.dubbo.rpc.protocol.rest.annotation.ParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
@@ -24,7 +23,7 @@ public class BodyProviderParamParser extends ProviderParamParser {
     private static final Logger logger = LoggerFactory.getLogger(BodyProviderParamParser.class);
 
     @Override
-    protected void doParse(ParseContext parseContext, ArgInfo argInfo) {
+    protected void doParse(ProviderParseContext parseContext, ArgInfo argInfo) {
 
         RequestFacade request = parseContext.getRequestFacade();
 

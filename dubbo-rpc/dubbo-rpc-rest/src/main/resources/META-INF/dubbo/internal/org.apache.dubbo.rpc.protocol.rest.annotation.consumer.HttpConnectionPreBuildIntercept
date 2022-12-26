@@ -4,3 +4,4 @@ serialize=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.Serial
 path=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.PathVariableIntercept
 param=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.RequestParamIntercept
 header=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.RequestHeaderIntercept
+paramparse=org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept.ParamParseIntercept

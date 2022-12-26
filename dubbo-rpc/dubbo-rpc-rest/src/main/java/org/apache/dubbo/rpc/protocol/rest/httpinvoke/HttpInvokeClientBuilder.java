@@ -2,7 +2,6 @@ package org.apache.dubbo.rpc.protocol.rest.httpinvoke;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.remoting.http.RestClient;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
