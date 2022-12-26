@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.remoting.http.HttpBinder;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
@@ -31,7 +30,6 @@ import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.factory.RestClientFactory;
 import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.jboss.resteasy.util.GetRestful;
 
 import javax.servlet.ServletContext;
@@ -40,7 +38,6 @@ import javax.ws.rs.WebApplicationException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
@@ -50,7 +47,7 @@ import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
-    private static final String DEFAULT_SERVER = "okhttp";
+    private static final String DEFAULT_SERVER = "jetty";
 
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
     private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
@@ -121,25 +118,25 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
 
-//        ReferenceCountedClient<? extends RestClient> refClient =
-//            clients.computeIfAbsent(url.getAddress(), _key -> createReferenceCountedClient(url));
-//
-//        refClient.retain();
+        ReferenceCountedClient<? extends RestClient> refClient =
+            clients.computeIfAbsent(url.getAddress(), _key -> createReferenceCountedClient(url));
+
+        refClient.retain();
 
         // resolve metadata
         Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type,url);
 
         // create proxy ref
-        return HttpInvokeClientBuilder.build(metadataMap, url, type, null);
+        return HttpInvokeClientBuilder.build(metadataMap, url, type, refClient.getClient());
     }
 
-//    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
-//
-//        // url -> RestClient
-//        RestClient restClient = clientFactory.createRestClient(url);
-//
-//        return new ReferenceCountedClient<>(restClient);
-//    }
+    private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
+
+        // url -> RestClient
+        RestClient restClient = clientFactory.createRestClient(url);
+
+        return new ReferenceCountedClient<>(restClient);
+    }
 
     @Override
     protected int getErrorCode(Throwable e) {
@@ -153,10 +150,6 @@ public class RestProtocol extends AbstractProxyProtocol {
             logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
         }
         super.destroy();
-
-        if (clientFactory != null) {
-            clientFactory.shutdown();
-        }
 
         for (Map.Entry<String, ProtocolServer> entry : serverMap.entrySet()) {
             try {
@@ -212,55 +205,11 @@ public class RestProtocol extends AbstractProxyProtocol {
             ReferenceCountedClient referenceCountedClient = clients.get(url.getAddress());
             if (referenceCountedClient != null && referenceCountedClient.release()) {
                 clients.remove(url.getAddress());
-                clientFactory.destroy(url);
             }
         } catch (Exception e) {
             logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
         }
     }
 
-    protected class ConnectionMonitor extends Thread {
-        private volatile boolean shutdown;
-        /**
-         * The lifecycle of {@code PoolingHttpClientConnectionManager} instance is bond with ReferenceCountedClient
-         */
-        private final Map<String, PoolingHttpClientConnectionManager> connectionManagers = new ConcurrentHashMap<>();
 
-        public void addConnectionManager(String address, PoolingHttpClientConnectionManager connectionManager) {
-            connectionManagers.putIfAbsent(address, connectionManager);
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (!shutdown) {
-                    synchronized (this) {
-                        wait(HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS);
-                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers.values()) {
-                            connectionManager.closeExpiredConnections();
-                            connectionManager.closeIdleConnections(HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S, TimeUnit.SECONDS);
-                        }
-                    }
-                }
-            } catch (InterruptedException ex) {
-                shutdown();
-            }
-        }
-
-        public void shutdown() {
-            shutdown = true;
-            connectionManagers.clear();
-            synchronized (this) {
-                notifyAll();
-            }
-        }
-
-        // destroy the connection manager of a specific address when ReferenceCountedClient is destroyed.
-        private void destroyManager(URL url) {
-            PoolingHttpClientConnectionManager connectionManager = connectionManagers.remove(url.getAddress());
-            if (connectionManager != null) {
-                connectionManager.close();
-            }
-        }
-    }
 }

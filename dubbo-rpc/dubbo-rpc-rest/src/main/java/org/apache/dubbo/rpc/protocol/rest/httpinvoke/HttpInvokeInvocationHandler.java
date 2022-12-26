@@ -2,9 +2,7 @@ package org.apache.dubbo.rpc.protocol.rest.httpinvoke;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.rest.ReferenceCountedClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.*;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
 
@@ -15,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class HttpInvokeInvocationHandler implements InvocationHandler {
+public class HttpInvokeInvocationHandler<CLIENT> implements InvocationHandler {
     private static final RequestConvert requestConvertAdaptive = ApplicationModel.defaultModel().getExtensionLoader(RequestConvert.class).getAdaptiveExtension();
 
     private static Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
@@ -23,14 +21,14 @@ public class HttpInvokeInvocationHandler implements InvocationHandler {
 
     private final Map<Method, RestMethodMetadata> methodRestMethodMetadataMap;
     private final String address;
-    private final ReferenceCountedClient<? extends RestClient> refClient;
+    private final CLIENT restClient;
     private URL url;
 
-    public HttpInvokeInvocationHandler(Map<Method, RestMethodMetadata> metadataMap, URL url, ReferenceCountedClient<? extends RestClient> restClient) {
+    public HttpInvokeInvocationHandler(Map<Method, RestMethodMetadata> metadataMap, URL url, CLIENT restClient) {
         this.methodRestMethodMetadataMap = metadataMap;
         this.url = url;
         this.address = url.getAddress();
-        this.refClient = restClient;
+        this.restClient = restClient;
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -49,11 +47,10 @@ public class HttpInvokeInvocationHandler implements InvocationHandler {
             intercept.intercept(httpConnectionCreateContext);
         }
 
-        RequestConvert requestConvert = requestConvertAdaptive.createRequestConvert(url, null, restMethodMetadata);
+        RequestConvert requestConvert = requestConvertAdaptive.createRequestConvert(url, restClient, restMethodMetadata);
 
 
         return requestConvert.request(requestTemplate);
-
 
 
     }

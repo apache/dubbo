@@ -19,11 +19,11 @@ package org.apache.dubbo.rpc.protocol.rest;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.reference.ReferenceCountedResource;
-import org.apache.dubbo.remoting.Endpoint;
+import org.apache.dubbo.remoting.http.RestClient;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
-public class ReferenceCountedClient<T extends Endpoint> extends ReferenceCountedResource {
+public class ReferenceCountedClient<T extends RestClient> extends ReferenceCountedResource {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedClient.class);
 
     private T client;

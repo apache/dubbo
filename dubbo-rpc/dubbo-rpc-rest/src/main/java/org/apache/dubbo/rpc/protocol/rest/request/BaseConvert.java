@@ -13,16 +13,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 
-public abstract class BaseConvert<REQ, RES> implements RequestConvert<REQ, RES> {
+public abstract class BaseConvert<REQ, RES,CLIENT> implements RequestConvert<REQ, RES,CLIENT> {
 
-    protected RestClient restClient;
+    protected CLIENT restClient;
     protected RestMethodMetadata restMethodMetadata;
     protected URL url;
 
     public BaseConvert() {
     }
 
-    public BaseConvert(RestClient restClient, RestMethodMetadata restMethodMetadata, URL url) {
+    public BaseConvert(CLIENT restClient, RestMethodMetadata restMethodMetadata, URL url) {
         this.restClient = restClient;
         this.restMethodMetadata = restMethodMetadata;
         this.url = url;

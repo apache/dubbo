@@ -35,7 +35,4 @@ public interface RestClientFactory {
     RestClient createRestClient(URL url) throws RpcException;
 
 
-    void shutdown();
-
-    void destroy(URL url) throws Exception;
 }

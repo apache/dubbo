@@ -6,7 +6,7 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.http.RestClient;
+import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.request.BaseConvert;
 
@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Adaptive("okhttp")
-public class OkHttpRequestConvert extends BaseConvert<Request, Response> {
+public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpRestClient> {
 
-    public OkHttpRequestConvert(RestClient restClient, RestMethodMetadata restMethodMetadata, URL url) {
+    public OkHttpRequestConvert(OKHttpRestClient restClient, RestMethodMetadata restMethodMetadata, URL url) {
         super(restClient, restMethodMetadata, url);
     }
 
@@ -45,7 +45,7 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response> {
 
 
     @Override
-    public RequestConvert createRequestConvert(URL url, RestClient restClient, RestMethodMetadata restMethodMetadata) {
+    public RequestConvert createRequestConvert(URL url, OKHttpRestClient restClient, RestMethodMetadata restMethodMetadata) {
         return new OkHttpRequestConvert(restClient, restMethodMetadata, url);
     }
 
@@ -74,6 +74,7 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response> {
         ResponseBody body = response.body();
         int code = response.code();
 
+        // TODO judge code
         return JsonUtils.getJson().parseObject(body.byteStream(), getReturnType());
     }
 }

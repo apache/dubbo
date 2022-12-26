@@ -20,14 +20,9 @@ package org.apache.dubbo.rpc.protocol.rest.factory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.http.RestClient;
+import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * AbstractHttpClientFactory
@@ -36,15 +31,9 @@ public abstract class AbstractHttpClientFactory implements RestClientFactory {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
 
-    protected static final int HTTP_CLIENT_CONNECTION_MANAGER_MAX_PER_ROUTE = 20;
-    protected static final int HTTP_CLIENT_CONNECTION_MANAGER_MAX_TOTAL = 20;
-    protected static final int HTTPCLIENT_KEEP_ALIVE_DURATION = 30 * 1000;
-    protected static final int HTTP_CLIENT_CONNECTION_MANAGER_CLOSE_WAIT_TIME_MS = 1000;
-    protected static final int HTTP_CLIENT_CONNECTION_MANAGER_CLOSE_IDLE_TIME_S = 30;
 
-    protected volatile ConnectionMonitor connectionMonitor;
-
-
+    // TODO   load config
+    protected HttpClientConfig httpClientConfig = new HttpClientConfig();
 
     //////////////////////////////////////// implements start ///////////////////////////////////////////////
     @Override
@@ -61,76 +50,23 @@ public abstract class AbstractHttpClientFactory implements RestClientFactory {
         return restClient;
     }
 
-    @Override
-    public void shutdown() {
-        connectionMonitor.shutdown();
-    }
-
-    @Override
-    public void destroy(URL url) throws Exception {
-        connectionMonitor.destroyManager(url);
-    }
-
     //////////////////////////////////////// implements end ///////////////////////////////////////////////
 
 
-
     ////////////////////////////////////////   inner methods  ///////////////////////////////////////////////
 
-    protected void beforeCreated(URL url){}
+    protected void beforeCreated(URL url) {
+    }
 
     protected abstract RestClient doCreateRestClient(URL url) throws RpcException;
 
-    protected void afterCreated(RestClient client){}
+    protected void afterCreated(RestClient client) {
+    }
 
     ////////////////////////////////////////   inner methods  ///////////////////////////////////////////////
 
 
 
-    public static class ConnectionMonitor extends Thread {
-        private volatile boolean shutdown;
-        /**
-         * The lifecycle of {@code PoolingHttpClientConnectionManager} instance is bond with ReferenceCountedClient
-         */
-        private final Map<String, PoolingHttpClientConnectionManager> connectionManagers = new ConcurrentHashMap<>();
-
-        public void addConnectionManager(String address, PoolingHttpClientConnectionManager connectionManager) {
-            connectionManagers.putIfAbsent(address, connectionManager);
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (!shutdown) {
-                    synchronized (this) {
-                        wait(HTTP_CLIENT_CONNECTION_MANAGER_CLOSE_WAIT_TIME_MS);
-                        for (PoolingHttpClientConnectionManager connectionManager : connectionManagers.values()) {
-                            connectionManager.closeExpiredConnections();
-                            connectionManager.closeIdleConnections(HTTP_CLIENT_CONNECTION_MANAGER_CLOSE_IDLE_TIME_S, TimeUnit.SECONDS);
-                        }
-                    }
-                }
-            } catch (InterruptedException ex) {
-                shutdown();
-            }
-        }
-
-        public void shutdown() {
-            shutdown = true;
-            connectionManagers.clear();
-            synchronized (this) {
-                notifyAll();
-            }
-        }
-
-        // destroy the connection manager of a specific address when ReferenceCountedClient is destroyed.
-        private void destroyManager(URL url) {
-            PoolingHttpClientConnectionManager connectionManager = connectionManagers.remove(url.getAddress());
-            if (connectionManager != null) {
-                connectionManager.close();
-            }
-        }
-    }
 
 
 }
