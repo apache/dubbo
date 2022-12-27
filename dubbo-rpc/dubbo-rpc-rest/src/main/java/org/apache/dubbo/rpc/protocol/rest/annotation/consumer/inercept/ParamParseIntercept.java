@@ -13,8 +13,8 @@ public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
 
         ConsumerParseContext consumerParseContext = new ConsumerParseContext();
-        consumerParseContext.setArgInfos(consumerParseContext.getArgInfos());
-        consumerParseContext.setArgs(consumerParseContext.getArgs());
+        consumerParseContext.setArgInfos(connectionCreateContext.getRestMethodMetadata().getArgInfos());
+        consumerParseContext.setArgs(connectionCreateContext.getMethodRealArgs());
         paramParser.consumerParamParse(consumerParseContext);
     }
 }
