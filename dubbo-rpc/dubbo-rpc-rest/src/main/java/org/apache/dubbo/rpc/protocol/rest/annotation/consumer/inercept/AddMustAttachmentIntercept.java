@@ -22,10 +22,8 @@ public class AddMustAttachmentIntercept implements HttpConnectionPreBuildInterce
         MethodDefinition method = connectionCreateContext.getRestMethodMetadata().getMethod();
 
 
-        //TODO  SERIALIZATION_KEY CONFIG
         requestTemplate.addHeader(RestConstant.GROUP, serviceRestMetadata.getGroup());
         requestTemplate.addHeader(RestConstant.VERSION, serviceRestMetadata.getVersion());
-        requestTemplate.addHeader(RestConstant.METHOD, method.getName());
         requestTemplate.addHeader(RestConstant.PATH, serviceRestMetadata.getServiceInterface());
         requestTemplate.addKeepAliveHeader(connectionConfig.getKeepAlive());
 
