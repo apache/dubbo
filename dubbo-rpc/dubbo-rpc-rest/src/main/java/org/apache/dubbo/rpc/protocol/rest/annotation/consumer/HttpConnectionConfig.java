@@ -5,11 +5,12 @@ import org.apache.dubbo.common.serialize.Constants;
 
 public class HttpConnectionConfig {
 
-    private static HttpConnectionConfig instance;
+
     private int connectTimeout;
     private int readTimeout;
     private int chunkLength = 8196;
     private byte serialization = Constants.FASTJSON2_SERIALIZATION_ID;
+    private int keepAlive = 60;
 
 
     public int getConnectTimeout() {
@@ -28,6 +29,7 @@ public class HttpConnectionConfig {
         return serialization;
     }
 
-
-
+    public int getKeepAlive() {
+        return keepAlive;
+    }
 }

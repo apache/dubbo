@@ -145,6 +145,11 @@ public class RequestTemplate implements Serializable {
         addValueByKey(key, String.valueOf(value), this.headers);
     }
 
+    public void addKeepAliveHeader(int time) {
+        addHeader(RestConstant.KEEP_ALIVE_HEADER, time);
+        addHeader(RestConstant.CONNECTION, RestConstant.KEEP_ALIVE);
+    }
+
     public void addHeaders(String key, Collection<String> values) {
         Collection<String> header = getHeader(key);
 

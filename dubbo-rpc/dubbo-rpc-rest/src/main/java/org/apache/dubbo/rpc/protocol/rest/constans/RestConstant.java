@@ -31,4 +31,7 @@ public interface RestConstant {
     String REQUEST_PARAM_INTERCEPT = "param";
     String REQUEST_HEADER_INTERCEPT = "header";
     String PATH_INTERCEPT = "path";
+    String KEEP_ALIVE_HEADER = "Keep-Alive";
+    String CONNECTION = "Connection";
+    String KEEP_ALIVE = "keep-alive";
 }
