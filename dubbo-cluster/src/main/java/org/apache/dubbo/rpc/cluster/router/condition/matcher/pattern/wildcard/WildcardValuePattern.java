@@ -14,45 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.wildcard;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.cluster.router.condition.matcher.pattern.ValuePattern;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return input != null && value.isMatch(input);
+/**
+ * Matches with patterns like 'key=hello', 'key=hello*', 'key=*hello', 'key=h*o' or 'key=*'
+ * <p>
+ * This pattern evaluator must be the last one being executed.
+ */
+@Activate(order = Integer.MAX_VALUE)
+public class WildcardValuePattern implements ValuePattern {
+    @Override
+    public boolean shouldMatch(String key) {
+        return true;
     }
 
     @Override
-    public String toString() {
-        return "ParamMatch{" +
-            "key='" + key + '\'' +
-            ", value='" + value + '\'' +
-            '}';
+    public boolean match(String pattern, String value, URL url, Invocation invocation, boolean isWhenCondition) {
+        return UrlUtils.isMatchGlobPattern(pattern, value, url);
     }
 }

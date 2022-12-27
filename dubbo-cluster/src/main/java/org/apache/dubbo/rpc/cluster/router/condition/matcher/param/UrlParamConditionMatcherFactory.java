@@ -14,27 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.override;
+package org.apache.dubbo.rpc.cluster.router.condition.matcher.param;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcher;
+import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcherFactory;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-/**
- * OverrideConfigurator
- */
-public class OverrideConfigurator extends AbstractConfigurator {
-    public static final Logger logger = LoggerFactory.getLogger(OverrideConfigurator.class);
-
-    public OverrideConfigurator(URL url) {
-        super(url);
+// Make sure this is the last matcher being executed.
+@Activate(order = Integer.MAX_VALUE)
+public class UrlParamConditionMatcherFactory implements ConditionMatcherFactory {
+    @Override
+    public boolean shouldMatch(String key) {
+        return true;
     }
 
     @Override
-    public URL doConfigure(URL currentUrl, URL configUrl) {
-        logger.info("Start overriding url " + currentUrl + " with override url " + configUrl);
-        return currentUrl.addParameters(configUrl.getParameters());
+    public ConditionMatcher createMatcher(String key, ModuleModel model) {
+        return new UrlParamConditionMatcher(key, model);
     }
-
 }

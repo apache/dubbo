@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
@@ -169,6 +170,11 @@ public class ConfigParser {
             sb.append(OVERRIDE_PROVIDERS_KEY);
             sb.append('=');
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
+        } else if (PROVIDER.equals(item.getSide())) {
+            sb.append('&');
+            sb.append(OVERRIDE_PROVIDERS_KEY);
+            sb.append('=');
+            sb.append(CollectionUtils.join(item.getAddresses(), ","));
         }
 
         return sb.toString();

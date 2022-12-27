@@ -14,27 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.override;
+package org.apache.dubbo.rpc.cluster.router.condition.matcher.attachment;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcher;
+import org.apache.dubbo.rpc.cluster.router.condition.matcher.ConditionMatcherFactory;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-/**
- * OverrideConfigurator
- */
-public class OverrideConfigurator extends AbstractConfigurator {
-    public static final Logger logger = LoggerFactory.getLogger(OverrideConfigurator.class);
+@Activate(order = 200)
+public class AttachmentConditionMatcherFactory implements ConditionMatcherFactory {
+    private static final String ATTACHMENTS = "attachments";
 
-    public OverrideConfigurator(URL url) {
-        super(url);
+    @Override
+    public boolean shouldMatch(String key) {
+        return key.startsWith(ATTACHMENTS);
     }
 
     @Override
-    public URL doConfigure(URL currentUrl, URL configUrl) {
-        logger.info("Start overriding url " + currentUrl + " with override url " + configUrl);
-        return currentUrl.addParameters(configUrl.getParameters());
+    public ConditionMatcher createMatcher(String key, ModuleModel model) {
+        return new AttachmentConditionMatcher(key, model);
     }
-
 }

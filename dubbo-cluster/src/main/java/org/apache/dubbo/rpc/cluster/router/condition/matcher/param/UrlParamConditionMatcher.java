@@ -14,45 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.parser.model;
+package org.apache.dubbo.rpc.cluster.router.condition.matcher.param;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.cluster.router.condition.matcher.AbstractConditionMatcher;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-public class ParamMatch {
-    private String key;
-    private StringMatch value;
+import java.util.Map;
 
-    public String getKey() {
-        return key;
-    }
+/**
+ * This instance will be loaded separately to ensure it always gets executed as the last matcher.
+ * So we don't put Active annotation here.
+ */
+public class UrlParamConditionMatcher extends AbstractConditionMatcher {
 
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public StringMatch getValue() {
-        return value;
-    }
-
-    public void setValue(StringMatch value) {
-        this.value = value;
-    }
-
-    public boolean isMatch(URL url) {
-        if (key == null) {
-            return false;
-        }
-
-        String input = url.getParameter(key);
-        return input != null && value.isMatch(input);
+    public UrlParamConditionMatcher(String key, ModuleModel model) {
+        super(key, model);
     }
 
     @Override
-    public String toString() {
-        return "ParamMatch{" +
-            "key='" + key + '\'' +
-            ", value='" + value + '\'' +
-            '}';
+    protected String getValue(Map<String, String> sample, URL url, Invocation invocation) {
+        return getSampleValueFromUrl(key, sample, url, invocation);
     }
+
 }

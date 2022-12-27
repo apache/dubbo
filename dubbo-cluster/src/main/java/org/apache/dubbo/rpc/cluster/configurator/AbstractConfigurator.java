@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.cluster.configurator;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -42,13 +45,15 @@ import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CON
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
 import static org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig.MATCH_CONDITION;
 
 /**
  * AbstractConfigurator
  */
 public abstract class AbstractConfigurator implements Configurator {
-
+    public static final ErrorTypeAwareLogger errorLogger = LoggerFactory.getErrorTypeAwareLogger(AbstractConfigurator.class);
+    public static final Logger logger = LoggerFactory.getLogger(AbstractConfigurator.class);
     private static final String TILDE = "~";
 
     private final URL configuratorUrl;
@@ -69,17 +74,17 @@ public abstract class AbstractConfigurator implements Configurator {
     public URL configure(URL url) {
         // If override url is not enabled or is invalid, just return.
         if (!configuratorUrl.getParameter(ENABLED_KEY, true) || configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
+            logger.info("Cannot apply configurator rule, the rule is disabled or is invalid: \n" + configuratorUrl);
             return url;
         }
 
         String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
-        if (StringUtils.isNotEmpty(apiVersion)) { // v2.7
+        if (StringUtils.isNotEmpty(apiVersion)) { // v2.7 or above
             String currentSide = url.getSide();
             String configuratorSide = configuratorUrl.getSide();
-            if (currentSide.equals(configuratorSide) && CONSUMER.equals(configuratorSide) && 0 == configuratorUrl.getPort()) {
+            if (currentSide.equals(configuratorSide) && CONSUMER.equals(configuratorSide)) {
                 url = configureIfMatch(NetUtils.getLocalHost(), url);
-            } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) &&
-                url.getPort() == configuratorUrl.getPort()) {
+            } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide)) {
                 url = configureIfMatch(url.getHost(), url);
             }
         }
@@ -121,11 +126,13 @@ public abstract class AbstractConfigurator implements Configurator {
             if (isV27ConditionMatchOrUnset(url)) {
                 Set<String> conditionKeys = genConditionKeys();
                 String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
-                if ("v3.0".equals(apiVersion)) {
+                if (apiVersion != null && apiVersion.startsWith(RULE_VERSION_V30)) {
                     ConditionMatch matcher = (ConditionMatch) configuratorUrl.getAttribute(MATCH_CONDITION);
                     if (matcher != null) {
                         if (matcher.isMatch(url)) {
                             return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
+                        } else {
+                            logger.debug("Cannot apply configurator rule, param mismatch, current params are " + url + ", params in rule is " + matcher);
                         }
                     } else {
                         return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
@@ -134,16 +141,29 @@ public abstract class AbstractConfigurator implements Configurator {
                     return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                 }
             }
+        } else {
+            logger.debug("Cannot apply configurator rule, host mismatch, current host is " + host + ", host in rule is " + configuratorUrl.getHost());
         }
         return url;
     }
 
     private boolean isV27ConditionMatchOrUnset(URL url) {
         String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
-        if (StringUtils.isNotEmpty(providers)
-            && !providers.contains(url.getAddress())
-            && !providers.contains(ANYHOST_VALUE)) {
-            return false;
+        if (StringUtils.isNotEmpty(providers)) {
+            boolean match = false;
+            String[] providerAddresses = providers.split(",");
+            for (String address : providerAddresses) {
+                if (address.equals(url.getAddress())
+                    || address.equals(ANYHOST_VALUE)
+                    || address.equals(ANYHOST_VALUE + ":" + ANY_VALUE)
+                    || address.equals(url.getHost())) {
+                    match = true;
+                }
+            }
+            if (!match) {
+                logger.debug("Cannot apply configurator rule, provider address mismatch, current address " + url.getAddress() + ", address in rule is " + providers);
+                return false;
+            }
         }
 
         String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
@@ -151,6 +171,7 @@ public abstract class AbstractConfigurator implements Configurator {
         if (configApplication != null
             && !ANY_VALUE.equals(configApplication)
             && !configApplication.equals(currentApplication)) {
+            logger.debug("Cannot apply configurator rule, application name mismatch, current application is " + currentApplication + ", application in rule is " + configApplication);
             return false;
         }
 
@@ -158,6 +179,7 @@ public abstract class AbstractConfigurator implements Configurator {
         String currentServiceKey = url.getServiceKey();
         if (!ANY_VALUE.equals(configServiceKey)
             && !configServiceKey.equals(currentServiceKey)) {
+            logger.debug("Cannot apply configurator rule, service mismatch, current service is " + currentServiceKey + ", service in rule is " + configServiceKey);
             return false;
         }
 

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RECEIVE_RULE;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
 
 public class Tag {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Tag.class);
@@ -38,7 +39,7 @@ public class Tag {
         Tag tag = new Tag();
         tag.setName((String) map.get("name"));
 
-        if ("v3.0".equals(version)) {
+        if (version != null && version.startsWith(RULE_VERSION_V30)) {
             if (map.get("match") != null) {
                 tag.setMatch(((List<Map<String, Object>>) map.get("match")).stream().map((objectMap) -> {
                     try {

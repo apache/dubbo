@@ -85,4 +85,14 @@ public class ConditionMatch {
 
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "ConditionMatch{" +
+            "address='" + address + '\'' +
+            ", service='" + service + '\'' +
+            ", app='" + app + '\'' +
+            ", param='" + param + '\'' +
+            '}';
+    }
 }

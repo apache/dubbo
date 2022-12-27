@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_VERSION_V30;
 import static org.apache.dubbo.rpc.cluster.Constants.TAGS_KEY;
 
 /**
@@ -82,7 +83,7 @@ public class TagRouterRule extends AbstractRouterRule {
             });
         });
 
-        if ("v3.0".equals(this.getVersion())) {
+        if (this.getVersion() != null && this.getVersion().startsWith(RULE_VERSION_V30)) {
             // for tags with 'match` field set and 'addresses' field not set
             if (CollectionUtils.isNotEmpty(invokers)) {
                 tags.stream().filter(tag -> CollectionUtils.isEmpty(tag.getAddresses())).forEach(tag -> {
@@ -100,7 +101,9 @@ public class TagRouterRule extends AbstractRouterRule {
                             addresses.add(invoker.getUrl().getAddress());
                         }
                     });
-                    tagnameToAddresses.put(tag.getName(), addresses);
+                    if (CollectionUtils.isNotEmpty(addresses)) {// null means tag not set
+                        tagnameToAddresses.put(tag.getName(), addresses);
+                    }
                 });
             }
         }

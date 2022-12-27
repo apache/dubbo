@@ -14,27 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.configurator.override;
+package org.apache.dubbo.rpc.cluster.router.script.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.cluster.configurator.AbstractConfigurator;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
-/**
- * OverrideConfigurator
- */
-public class OverrideConfigurator extends AbstractConfigurator {
-    public static final Logger logger = LoggerFactory.getLogger(OverrideConfigurator.class);
-
-    public OverrideConfigurator(URL url) {
-        super(url);
-    }
+@Activate(order = 200)
+public class AppScriptRouterFactory extends CacheableStateRouterFactory {
+    public static final String NAME = "script";
 
     @Override
-    public URL doConfigure(URL currentUrl, URL configUrl) {
-        logger.info("Start overriding url " + currentUrl + " with override url " + configUrl);
-        return currentUrl.addParameters(configUrl.getParameters());
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new AppScriptStateRouter<>(url);
     }
-
 }

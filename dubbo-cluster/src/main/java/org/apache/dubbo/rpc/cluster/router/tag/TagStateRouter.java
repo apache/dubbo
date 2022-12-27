@@ -107,7 +107,7 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
         if (StringUtils.isNotEmpty(tag)) {
             Set<String> addresses = tagRouterRuleCopy.getTagnameToAddresses().get(tag);
             // filter by dynamic tag group first
-            if (CollectionUtils.isNotEmpty(addresses)) {
+            if (addresses != null) { // null means tag not set
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
                 if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {

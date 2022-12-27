@@ -58,6 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.ADDRESS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -1235,6 +1236,9 @@ class URL implements Serializable {
         }
         if (getPath() != null) {
             map.put(PATH_KEY, getPath());
+        }
+        if (getAddress() != null) {
+            map.put(ADDRESS_KEY, getAddress());
         }
         return map;
     }
