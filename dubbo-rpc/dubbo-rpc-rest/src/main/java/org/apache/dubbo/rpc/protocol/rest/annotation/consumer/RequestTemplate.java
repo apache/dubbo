@@ -24,7 +24,7 @@ public class RequestTemplate implements Serializable {
     private String path;
     private String address;
     private Object body;
-    private byte[] byteBody;
+    private byte[] byteBody = new byte[0];
     private String protocol = "http://";
 
 

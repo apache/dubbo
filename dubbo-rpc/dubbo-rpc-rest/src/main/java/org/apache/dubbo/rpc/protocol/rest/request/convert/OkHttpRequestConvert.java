@@ -50,10 +50,6 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
             }
         }
 
-        if (requestTemplate.isBodyEmpty()) {
-            return builder.method(requestTemplate.getHttpMethod(), null).build();
-        }
-
         builder.method(requestTemplate.getHttpMethod(), RequestBody.create(null, requestTemplate.getSerializedBody()));
         return builder.build();
     }
