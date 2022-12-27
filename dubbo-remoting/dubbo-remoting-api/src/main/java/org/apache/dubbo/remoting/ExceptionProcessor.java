@@ -35,25 +35,24 @@ import org.apache.dubbo.remoting.exchange.Request;
 public interface ExceptionProcessor {
 
     /**
-     * Whether to return to the client immediately when an exception
+     * Whether to custom handle error when an exception
      * with the specified parameter is encountered
      *
      * @param throwable specified exception
      * @since 3.2.0
      */
-    boolean shouldReturnError(Throwable throwable);
+    boolean shouldHandleError(Throwable throwable);
 
     /**
-     * <p>When encountering an exception in the decode phase, allow developer customize the behavior before return.
+     * Determined to execute by {@link ExceptionProcessor#shouldHandleError(Throwable)}}
+     * <p>When encountering an exception in decode phase, allow developer customize the behavior before return.
      * <p>If exceptions are allowed and want to reprocess the request,
      * you can add custom content and throw a retry exception{@link RetryHandleException} so that decode will continue processing.
      * <p>Decode will not re-read the read content, so you need to save the decoded content, refer to default impl {snf}.
      * <p>The number of times decode handle exceptions will not exceed 2.
      * <p>If decode still cannot process the request, the error message of retry exception will be returned eventually,
      * and the real reason that cannot be processed needs to be set instead of the literal exception information of retry.
-     * @return custom return information,
-     * normal or abnormal return is determined by
-     * {@link ExceptionProcessor#shouldReturnError(Throwable)}}
+     * @return Msg information, If non-null, means that the exception is customized
      * @since 3.2.0
      */
     String wrapAndHandleException(ExchangeChannel channel, Request req) throws RetryHandleException;

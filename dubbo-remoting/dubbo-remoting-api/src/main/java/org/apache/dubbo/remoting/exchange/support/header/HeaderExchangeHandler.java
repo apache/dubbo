@@ -89,7 +89,6 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
             Throwable error = req.getError();
 
             String msg;
-            boolean returnError = true;
             if (data == null) {
                 msg = null;
             } else {
@@ -102,19 +101,19 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
                 ExceptionProcessor expProcessor = exPs == null ? extensionLoader.getDefaultExtension() : extensionLoader.getOrDefaultExtension(exPs);
                 msg = StringUtils.toString(error);
-                returnError = expProcessor.shouldReturnError(error);
-                // If returnError is true, custom error message, return directly
-                // Or interrupt the error message, customize the process, process req, and continue to return normal information
-                msg = Optional.ofNullable(expProcessor.wrapAndHandleException(channel, req)).orElse(msg);
+                boolean handleError = expProcessor.shouldHandleError(error);
+                if (handleError) {
+                    // Allow to custom error message, return directly
+                    // Or interrupt, reHandle the process, process req, and continue to return normal information
+                    msg = Optional.ofNullable(expProcessor.wrapAndHandleException(channel, req)).orElse(msg);
+                }
             }
 
-            if (returnError) {
-                res.setErrorMessage("Fail to decode request due to: " + msg);
-                res.setStatus(Response.BAD_REQUEST);
+            res.setErrorMessage("Fail to decode request due to: " + msg);
+            res.setStatus(Response.BAD_REQUEST);
 
-                channel.send(res);
-                return;
-            }
+            channel.send(res);
+            return;
         }
         // find handler by message class.
         Object msg = req.getData();

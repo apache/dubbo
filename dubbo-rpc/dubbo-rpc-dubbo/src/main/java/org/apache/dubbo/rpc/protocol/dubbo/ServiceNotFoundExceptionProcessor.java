@@ -48,7 +48,7 @@ public class ServiceNotFoundExceptionProcessor implements ExceptionProcessor {
     private static final String DEFAULT_OMNIPOTENT_SERVICE = OmnipotentService.class.getName();
 
     @Override
-    public boolean shouldReturnError(Throwable data) {
+    public boolean shouldHandleError(Throwable data) {
         return data instanceof ServiceNotFoundException;
     }
 
