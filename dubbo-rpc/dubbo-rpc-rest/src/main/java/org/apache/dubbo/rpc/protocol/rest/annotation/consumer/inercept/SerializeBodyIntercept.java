@@ -20,7 +20,7 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
 
-        if (requestTemplate.emptyBody()) {
+        if (requestTemplate.isBodyEmpty()) {
             return;
         }
         Object unSerializedBody = requestTemplate.getUnSerializedBody();

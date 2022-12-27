@@ -241,7 +241,4 @@ public class RequestTemplate implements Serializable {
         this.protocol = protocol;
     }
 
-    public boolean emptyBody() {
-        return getUnSerializedBody() == null;
-    }
 }
