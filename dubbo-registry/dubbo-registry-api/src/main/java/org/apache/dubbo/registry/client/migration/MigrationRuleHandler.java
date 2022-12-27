@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.migration.step";
@@ -89,7 +89,7 @@ public class MigrationRuleHandler<T> {
                 report(step, originStep, "true");
             } else {
                 // migrate failed, do not save new step and rule
-                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
                     + threshold + ". Please try re-publish configuration if you still after check.");
                 report(step, originStep, "false");
             }
