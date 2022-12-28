@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_START_ZOOKEEPER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_START_ZOOKEEPER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_STOP_ZOOKEEPER;
 
 /**
@@ -64,7 +64,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                logger.error(REGISTRY_FAILED_START_ZOOKEEPER,"","",line);
+                logger.error(TESTING_REGISTRY_FAILED_START_ZOOKEEPER,"","",line);
             }
         } catch (IOException e) {
             /* eat quietly */

@@ -37,7 +37,7 @@ public interface LoggerCodeConstants {
 
     String COMMON_CLASS_NOT_FOUND = "0-7";
 
-    String COMMON_FAILED_REFLECT = "0-8";
+    String COMMON_REFLECTIVE_OPERATION_FAILED = "0-8";
 
     String COMMON_FAILED_NOTIFY_EVENT = "0-9";
 
@@ -126,6 +126,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_DOWNLOAD_FILE = "1-23";
 
+    /**
+     * Absent. Original '1-24' is changed to '81-1'.
+     */
     String REGISTRY_FAILED_START_ZOOKEEPER = "1-24";
 
     String REGISTRY_FAILED_STOP_ZOOKEEPER = "1-25";
@@ -161,7 +164,7 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
-    // cluster module
+    // Cluster module
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
     String CLUSTER_NO_VALID_PROVIDER = "2-2";
@@ -384,6 +387,9 @@ public interface LoggerCodeConstants {
     String QOS_COMMAND_NOT_FOUND = "7-5";
 
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
+
+    // Test module (8[X], where [X] is number of the module to be tested.)
+    String TESTING_REGISTRY_FAILED_START_ZOOKEEPER = "81-1";
 
     // Internal unknown error.
 
