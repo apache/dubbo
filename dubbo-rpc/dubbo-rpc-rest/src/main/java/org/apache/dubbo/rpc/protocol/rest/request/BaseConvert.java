@@ -46,6 +46,9 @@ public abstract class BaseConvert<REQ, RES, CLIENT> implements RequestConvert<RE
             // TODO send exception
         }
 
+
+        // TODO add http response code judge
+
         Object result = null;
         try {
             result = convertResponse(response);

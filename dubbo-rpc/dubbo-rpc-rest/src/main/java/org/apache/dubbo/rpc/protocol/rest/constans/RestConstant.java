@@ -34,4 +34,8 @@ public interface RestConstant {
     String KEEP_ALIVE_HEADER = "Keep-Alive";
     String CONNECTION = "Connection";
     String KEEP_ALIVE = "keep-alive";
+    String CONTENT_TYPE = "Content-Type";
+    String APPLICATION_JSON_VALUE = "application/json";
+    String APPLICATION_FORM_URLENCODED_VALUE = "application/x-www-form-urlencoded";
+    String TEXT_PLAIN = "text/plain";
 }

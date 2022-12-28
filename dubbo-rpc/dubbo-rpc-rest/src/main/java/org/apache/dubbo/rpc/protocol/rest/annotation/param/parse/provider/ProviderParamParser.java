@@ -3,7 +3,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
-import org.apache.dubbo.rpc.protocol.rest.util.NumberUtils;
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 public abstract class ProviderParamParser implements BaseProviderParamParser {
 
@@ -33,19 +33,7 @@ public abstract class ProviderParamParser implements BaseProviderParamParser {
     protected Object paramTypeConvert(Class targetType, String value) {
 
 
-        if (targetType == Boolean.class) {
-            return Boolean.valueOf(value);
-        }
-
-        if (targetType == String.class) {
-            return value;
-        }
-
-        if (Number.class.isAssignableFrom(targetType)) {
-            return NumberUtils.parseNumber(value, targetType);
-        }
-
-        return value;
+        return DataParseUtils.StringTypeConvert(targetType, value);
 
     }
 

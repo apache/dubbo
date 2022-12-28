@@ -5,9 +5,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.request.BaseConvert;
+import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -57,9 +61,11 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
     @Override
     public Object convertResponse(Response response) throws Exception {
         ResponseBody body = response.body();
-        int code = response.code();
 
-        // TODO judge code
-        return JsonUtils.getJson().parseObject(body.byteStream(), getReturnType());
+        String content_type = response.header(RestConstant.CONTENT_TYPE);
+
+
+        return HttpMessageCodec.httpMessageDecode(body.byteStream(), getReturnType(), MediaType.valueOf(content_type));
+
     }
 }

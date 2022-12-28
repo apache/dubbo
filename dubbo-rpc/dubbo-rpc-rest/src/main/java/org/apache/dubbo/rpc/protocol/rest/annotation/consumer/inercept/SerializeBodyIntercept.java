@@ -25,6 +25,7 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
         }
         Object unSerializedBody = requestTemplate.getUnSerializedBody();
 
+
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             JsonUtils.getJson().serializeObject(outputStream, unSerializedBody);

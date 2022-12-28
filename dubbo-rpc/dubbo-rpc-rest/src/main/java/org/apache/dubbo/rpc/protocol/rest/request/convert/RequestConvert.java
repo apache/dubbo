@@ -9,7 +9,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.request.client.ClientFacade;
 
 @SPI
-public interface RequestConvert<REQ, RES,CLIENT> extends ClientFacade<REQ, RES> {
+public interface RequestConvert<REQ, RES, CLIENT> extends ClientFacade<REQ, RES> {
 
     @Adaptive
     RequestConvert createRequestConvert(URL url, CLIENT restClient, RestMethodMetadata restMethodMetadata);
@@ -18,6 +18,7 @@ public interface RequestConvert<REQ, RES,CLIENT> extends ClientFacade<REQ, RES> 
 
     Object convertResponse(RES response) throws Exception;
 
-    public Object request(RequestTemplate requestTemplate) throws RemotingException;
+    Object request(RequestTemplate requestTemplate) throws RemotingException;
+
 
 }
