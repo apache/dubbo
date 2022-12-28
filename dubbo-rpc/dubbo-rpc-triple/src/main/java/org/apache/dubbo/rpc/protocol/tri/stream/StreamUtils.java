@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNSUPPORTED;
 
 public class StreamUtils {
@@ -73,6 +74,36 @@ public class StreamUtils {
             res.put(k, v);
         });
         return res;
+    }
+
+    public static void convertNoLowerCaseHeader(Map<String, Object> requestMetadata, Map<String, Object> attachments) {
+        if (attachments == null || !requestMetadata.containsKey(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader())) {
+            return;
+        }
+
+        attachments.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(),
+            requestMetadata.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
+        convertNoLowerCaseHeader(attachments);
+    }
+
+    public static Map<String, Object> convertNoLowerCaseHeader(Map<String, Object> attachments) {
+        Object obj = attachments.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        if (obj == null) {
+            return attachments;
+        }
+        if (obj instanceof String) {
+            String json = TriRpcStatus.decodeMessage((String) obj);
+            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+            map.forEach((originalKey, lowerCaseKey) -> {
+                Object val = attachments.remove(lowerCaseKey);
+                if (val != null) {
+                    attachments.put(originalKey, val);
+                }
+            });
+        } else {
+            LOGGER.error(COMMON_FAILED_REFLECT, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+        }
+        return attachments;
     }
 
     /**
