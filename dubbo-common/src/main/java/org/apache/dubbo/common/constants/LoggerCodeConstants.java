@@ -131,6 +131,9 @@ public interface LoggerCodeConstants {
      */
     String REGISTRY_FAILED_START_ZOOKEEPER = "1-24";
 
+    /**
+     * Absent. Original '1-25' is changed to '81-2'.
+     */
     String REGISTRY_FAILED_STOP_ZOOKEEPER = "1-25";
 
     String REGISTRY_FAILED_GENERATE_CERT_ISTIO = "1-26";
@@ -389,7 +392,9 @@ public interface LoggerCodeConstants {
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
     // Test module (8[X], where [X] is number of the module to be tested.)
-    String TESTING_REGISTRY_FAILED_START_ZOOKEEPER = "81-1";
+    String TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER = "81-1";
+
+    String TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER = "81-2";
 
     // Internal unknown error.
 
