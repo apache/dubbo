@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.transport;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
@@ -29,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
@@ -61,6 +64,24 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
             } else {
                 attachments.put(key, header.getValue().toString());
             }
+        }
+
+        // try convert upper key
+        Object obj = attachments.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        if (obj == null) {
+            return attachments;
+        }
+        if (obj instanceof String) {
+            String json = TriRpcStatus.decodeMessage((String) obj);
+            Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                Object val = attachments.remove(entry.getKey());
+                if (val != null) {
+                    attachments.put(entry.getValue(), val);
+                }
+            }
+        } else {
+            LOGGER.error(COMMON_FAILED_REFLECT, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }
