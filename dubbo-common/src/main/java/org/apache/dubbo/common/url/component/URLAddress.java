@@ -86,7 +86,7 @@ public class URLAddress implements Serializable {
     }
 
     public URLAddress setHost(String host) {
-        return new URLAddress(host, port, rawAddress);
+        return new URLAddress(host, port, null);
     }
 
     public int getPort() {
@@ -94,7 +94,7 @@ public class URLAddress implements Serializable {
     }
 
     public URLAddress setPort(int port) {
-        return new URLAddress(host, port, rawAddress);
+        return new URLAddress(host, port, null);
     }
 
     public String getAddress() {

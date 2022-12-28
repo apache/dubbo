@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.common.deploy;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_MONITOR_EXCEPTION;
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
 import static org.apache.dubbo.common.deploy.DeployState.PENDING;
 import static org.apache.dubbo.common.deploy.DeployState.STARTED;
@@ -32,7 +33,7 @@ import static org.apache.dubbo.common.deploy.DeployState.STOPPING;
 
 public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer<E> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractDeployer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractDeployer.class);
 
     private volatile DeployState state = PENDING;
 
@@ -108,7 +109,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStarting(scopeModel);
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle starting event", e);
+                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle starting event", e);
             }
         }
     }
@@ -119,17 +120,18 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStarted(scopeModel);
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle started event", e);
+                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle started event", e);
             }
         }
     }
+
     protected void setStopping() {
         this.state = STOPPING;
         for (DeployListener<E> listener : listeners) {
             try {
                 listener.onStopping(scopeModel);
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle stopping event", e);
+                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle stopping event", e);
             }
         }
     }
@@ -140,7 +142,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onStopped(scopeModel);
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle stopped event", e);
+                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle stopped event", e);
             }
         }
     }
@@ -152,7 +154,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
             try {
                 listener.onFailure(scopeModel, error);
             } catch (Throwable e) {
-                logger.error(getIdentifier() + " an exception occurred when handle failed event", e);
+                logger.error(COMMON_MONITOR_EXCEPTION, "", "", getIdentifier() + " an exception occurred when handle failed event", e);
             }
         }
     }

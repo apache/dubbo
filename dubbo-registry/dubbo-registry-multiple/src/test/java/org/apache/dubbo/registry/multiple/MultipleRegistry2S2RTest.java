@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * 2019-04-30
  */
-public class MultipleRegistry2S2RTest {
+class MultipleRegistry2S2RTest {
 
     private static final String SERVICE_NAME = "org.apache.dubbo.registry.MultipleService2S2R";
     private static final String SERVICE2_NAME = "org.apache.dubbo.registry.MultipleService2S2R2";
@@ -68,7 +68,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testParamConfig() {
+    void testParamConfig() {
 
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
@@ -107,7 +107,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testRegistryAndUnRegistry() throws InterruptedException {
+    void testRegistryAndUnRegistry() throws InterruptedException {
         URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
 //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
@@ -138,7 +138,7 @@ public class MultipleRegistry2S2RTest {
     }
 
     @Test
-    public void testSubscription() throws InterruptedException {
+    void testSubscription() throws InterruptedException {
         URL serviceUrl = URL.valueOf("http2://multiple/" + SERVICE2_NAME + "?notify=false&methods=test1,test2&category=providers");
 //        URL serviceUrl2 = URL.valueOf("http2://multiple2/" + SERVICE_NAME + "?notify=false&methods=test1,test2&category=providers");
         multipleRegistry.register(serviceUrl);
@@ -173,6 +173,25 @@ public class MultipleRegistry2S2RTest {
         urls = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
         Assertions.assertEquals(1, list.size());
         Assertions.assertEquals("empty", list.get(0).getProtocol());
+    }
+
+    @Test
+    void testAggregation() {
+        List<URL> result = new ArrayList<URL>();
+        List<URL> listToAggregate = new ArrayList<URL>();
+        URL url1= URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        URL url2= URL.valueOf("dubbo://127.0.0.1:20880/service1");
+        listToAggregate.add(url1);
+        listToAggregate.add(url2);
+
+        URL registryURL = URL.valueOf("mock://127.0.0.1/RegistryService?attachments=zone=hangzhou,tag=middleware&enable-empty-protection=false");
+
+        MultipleRegistry.MultipleNotifyListenerWrapper.aggregateRegistryUrls(result, listToAggregate, registryURL);
+
+        Assertions.assertEquals(2, result.size());
+        Assertions.assertEquals(2, result.get(0).getParameters().size());
+        Assertions.assertEquals("hangzhou", result.get(0).getParameter("zone"));
+        Assertions.assertEquals("middleware", result.get(1).getParameter("tag"));
     }
 
 }

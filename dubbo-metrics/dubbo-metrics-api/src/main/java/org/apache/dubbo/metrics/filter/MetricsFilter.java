@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.metrics.filter;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+
+import java.util.function.Consumer;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -27,19 +31,17 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-
 @Activate(group = PROVIDER, order = -1)
-public class MetricsFilter implements Filter, ScopeModelAware {
+public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAware {
 
     private DefaultMetricsCollector collector = null;
 
     private ApplicationModel applicationModel;
 
+
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-
         collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
     }
 
@@ -48,38 +50,23 @@ public class MetricsFilter implements Filter, ScopeModelAware {
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
+        collect(invocation, MetricsCollectExecutor::beforeExecute);
 
-        String serviceUniqueName = invocation.getTargetServiceUniqueName();
-        String methodName = invocation.getMethodName();
-        String group = null;
-        String interfaceAndVersion;
-        String[] arr = serviceUniqueName.split("/");
-        if (arr.length == 2) {
-            group = arr[0];
-            interfaceAndVersion = arr[1];
-        } else {
-            interfaceAndVersion = arr[0];
-        }
+        return invoker.invoke(invocation);
+    }
 
-        String[] ivArr = interfaceAndVersion.split(":");
-        String interfaceName = ivArr[0];
-        String version = ivArr.length == 2 ? ivArr[1] : null;
-        collector.increaseTotalRequests(interfaceName, methodName, group, version);
-        collector.increaseProcessingRequests(interfaceName, methodName, group, version);
+    @Override
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
+        collect(invocation, collector->collector.postExecute(result));
+    }
 
-        Long startTime = System.currentTimeMillis();
-        try {
-            Result invoke = invoker.invoke(invocation);
-            collector.increaseSucceedRequests(interfaceName, methodName, group, version);
-            return invoke;
-        } catch (RpcException e) {
-            collector.increaseFailedRequests(interfaceName, methodName, group, version);
-            throw e;
-        } finally {
-            Long endTime = System.currentTimeMillis();
-            Long rt = endTime - startTime;
-            collector.addRT(interfaceName, methodName, group, version, rt);
-            collector.decreaseProcessingRequests(interfaceName, methodName, group, version);
-        }
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        collect(invocation,collector-> collector.throwExecute(t));
+    }
+
+    private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
+        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
+        execute.accept(collectorExecutor);
     }
 }

@@ -72,12 +72,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.IPV6_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -89,6 +91,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNSUPPORTED_CATEGORY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -136,7 +140,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
         APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
         GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-        WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY
+        WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY, SIDE_KEY, IPV6_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -486,7 +490,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         Map<String, Object> consumerAttribute = new HashMap<>(url.getAttributes());
         consumerAttribute.remove(REFER_KEY);
         String p = isEmpty(parameters.get(PROTOCOL_KEY)) ? CONSUMER : parameters.get(PROTOCOL_KEY);
-        URL consumerUrl = new ServiceConfigURL (
+        URL consumerUrl = new ServiceConfigURL(
             p,
             null,
             null,
@@ -569,7 +573,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
         if (!(invoker instanceof MigrationClusterInvoker)) {
-            logger.error("Only invoker type of MigrationClusterInvoker supports reRefer, current invoker is " + invoker.getClass());
+            logger.error(REGISTRY_UNSUPPORTED_CATEGORY, "", "", "Only invoker type of MigrationClusterInvoker supports reRefer, current invoker is " + invoker.getClass());
             return;
         }
 
@@ -742,7 +746,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             String key = getCacheKey(originInvoker);
             ExporterChangeableWrapper<?> exporter = bounds.get(key);
             if (exporter == null) {
-                logger.warn(new IllegalStateException("error state, exporter should not be null"));
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "error state, exporter should not be null", new IllegalStateException("error state, exporter should not be null"));
                 return;
             }
             //The current, may have been merged many times
@@ -889,7 +893,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             try {
                 registry.unregister(registerUrl);
             } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
             try {
                 if (subscribeUrl != null) {
@@ -912,16 +916,19 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     }
                 }
             } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
             }
 
             //TODO wait for shutdown timeout is a bit strange
-            int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
+            int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+            if (subscribeUrl != null) {
+                timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
+            }
             executor.schedule(() -> {
                 try {
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+                    logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
                 }
             }, timeout, TimeUnit.MILLISECONDS);
         }

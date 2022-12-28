@@ -49,7 +49,7 @@ import java.util.Map;
 @ComponentScan
 @DubboComponentScan
 @ImportResource("classpath:/org/apache/dubbo/config/spring/boot/importxml2/dubbo-provider.xml")
-public class SpringBootImportAndScanTest implements ApplicationContextAware {
+class SpringBootImportAndScanTest implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
@@ -67,7 +67,7 @@ public class SpringBootImportAndScanTest implements ApplicationContextAware {
     private HelloService helloService;
 
     @Test
-    public void testProvider() {
+    void testProvider() {
 
         String result = helloService.sayHello("dubbo");
         Assertions.assertEquals("Hello, dubbo", result);

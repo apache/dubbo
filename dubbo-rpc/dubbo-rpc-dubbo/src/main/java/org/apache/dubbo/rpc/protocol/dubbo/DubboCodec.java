@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KE
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
 
@@ -62,7 +63,7 @@ public class DubboCodec extends ExchangeCodec {
     public static final byte RESPONSE_NULL_VALUE_WITH_ATTACHMENTS = 5;
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
-    private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
+    private static final ErrorTypeAwareLogger log = LoggerFactory.getErrorTypeAwareLogger(DubboCodec.class);
     private CallbackServiceCodec callbackServiceCodec;
     private FrameworkModel frameworkModel;
 
@@ -101,12 +102,12 @@ public class DubboCodec extends ExchangeCodec {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
                             result = new DecodeableRpcResult(channel, res, is,
-                                    (Invocation) getRequestData(id), proto);
+                                (Invocation) getRequestData(id), proto);
                             result.decode();
                         } else {
                             result = new DecodeableRpcResult(channel, res,
-                                    new UnsafeByteArrayInputStream(readMessageData(is)),
-                                    (Invocation) getRequestData(id), proto);
+                                new UnsafeByteArrayInputStream(readMessageData(is)),
+                                (Invocation) getRequestData(id), proto);
                         }
                         data = result;
                     }
@@ -117,7 +118,7 @@ public class DubboCodec extends ExchangeCodec {
                 }
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Decode response failed: " + t.getMessage(), t);
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode response failed: " + t.getMessage(), t);
                 }
                 res.setStatus(Response.CLIENT_ERROR);
                 res.setErrorMessage(StringUtils.toString(t));
@@ -149,14 +150,14 @@ public class DubboCodec extends ExchangeCodec {
                         inv.decode();
                     } else {
                         inv = new DecodeableRpcInvocation(frameworkModel, channel, req,
-                                new UnsafeByteArrayInputStream(readMessageData(is)), proto);
+                            new UnsafeByteArrayInputStream(readMessageData(is)), proto);
                     }
                     data = inv;
                 }
                 req.setData(data);
             } catch (Throwable t) {
                 if (log.isWarnEnabled()) {
-                    log.warn("Decode request failed: " + t.getMessage(), t);
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode request failed: " + t.getMessage(), t);
                 }
                 // bad request
                 req.setBroken(true);

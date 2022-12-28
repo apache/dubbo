@@ -33,10 +33,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProtocolListenerWrapperTest {
+class ProtocolListenerWrapperTest {
 
     @Test
-    public void testLoadingListenerForLocalReference() {
+    void testLoadingListenerForLocalReference() {
         // verify that no listener is loaded by default
         URL urlWithoutListener = URL.valueOf("injvm://127.0.0.1/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
@@ -78,7 +78,7 @@ public class ProtocolListenerWrapperTest {
     }
 
     @Test
-    public void testLoadingListenerForRemoteReference() {
+    void testLoadingListenerForRemoteReference() {
         // verify that no listener is loaded by default
         URL urlWithoutListener = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());

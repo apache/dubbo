@@ -18,7 +18,7 @@ package org.apache.dubbo.common.compiler.support;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class JavaCodeTest {
+class JavaCodeTest {
 
     public final static AtomicInteger SUBFIX = new AtomicInteger(8);
 

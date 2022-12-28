@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *
  * @since 2.7.5
  */
-public class DynamicConfigurationFactoryTest {
+class DynamicConfigurationFactoryTest {
 
     @Test
-    public void testDefaultExtension() {
+    void testDefaultExtension() {
         DynamicConfigurationFactory factory = getExtensionLoader(DynamicConfigurationFactory.class).getDefaultExtension();
         assertEquals(NopDynamicConfigurationFactory.class, factory.getClass());
         assertEquals(NopDynamicConfigurationFactory.class, getExtensionLoader(DynamicConfigurationFactory.class).getExtension("nop").getClass());

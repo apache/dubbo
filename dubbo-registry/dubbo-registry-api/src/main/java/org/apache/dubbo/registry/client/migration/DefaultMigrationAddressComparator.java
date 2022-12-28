@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
+
 public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultMigrationAddressComparator.class);
     private static final String MIGRATION_THRESHOLD = "dubbo.application.migration.threshold";
@@ -73,7 +75,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         try {
             threshold = Float.parseFloat(rawThreshold);
         } catch (Exception e) {
-            logger.error("Invalid migration threshold " + rawThreshold);
+            logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Invalid migration threshold " + rawThreshold);
             threshold = DEFAULT_THREAD;
         }
 

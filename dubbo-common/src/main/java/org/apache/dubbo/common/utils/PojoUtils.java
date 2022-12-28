@@ -18,7 +18,7 @@ package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.lang.reflect.Array;
@@ -33,6 +33,9 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +58,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
 /**
@@ -68,12 +72,12 @@ import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
  * </ul>
  * <p/>
  * Other type will be covert to a map which contains the attributes and value pair of object.
- *
+ * <p>
  * TODO: exact PojoUtils to scope bean
  */
 public class PojoUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(PojoUtils.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PojoUtils.class);
     private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
 
@@ -140,6 +144,10 @@ public class PojoUtils {
 
         if (ReflectUtils.isPrimitives(pojo.getClass())) {
             return pojo;
+        }
+
+        if (pojo instanceof LocalDate || pojo instanceof LocalDateTime || pojo instanceof LocalTime) {
+            return pojo.toString();
         }
 
         if (pojo instanceof Class) {
@@ -518,7 +526,7 @@ public class PojoUtils {
                                 } catch (Exception e) {
                                     String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
                                         + " value " + value.getClass() + ", cause: " + e.getMessage();
-                                    logger.error(exceptionDescription, e);
+                                    logger.error(COMMON_FAILED_REFLECT, "", "", exceptionDescription, e);
                                     throw new RuntimeException(exceptionDescription, e);
                                 }
                             } else if (field != null) {

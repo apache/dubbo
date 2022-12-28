@@ -3,7 +3,7 @@
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License")); you may not use this file except in compliance with
+ * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
+class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     @Disabled
     @Test
-    public void testLeastActiveLoadBalance_select() {
+    void testLeastActiveLoadBalance_select() {
         int runs = 10000;
         Map<Invoker, AtomicLong> counter = getInvokeCounter(runs, LeastActiveLoadBalance.NAME);
         for (Map.Entry<Invoker, AtomicLong> entry : counter.entrySet()) {
@@ -40,7 +40,7 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
     }
 
     @Test
-    public void testSelectByWeight() {
+    void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int loop = 10000;

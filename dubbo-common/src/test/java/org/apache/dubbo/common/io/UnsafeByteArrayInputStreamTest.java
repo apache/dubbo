@@ -24,9 +24,9 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class UnsafeByteArrayInputStreamTest {
+class UnsafeByteArrayInputStreamTest {
     @Test
-    public void testMark() {
+    void testMark() {
         UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes(), 1);
         assertThat(stream.markSupported(), is(true));
 
@@ -38,7 +38,7 @@ public class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
-    public void testRead() throws IOException {
+    void testRead() throws IOException {
         UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
         assertThat(stream.read(), is((int) 'a'));
         assertThat(stream.available(), is(2));
@@ -60,7 +60,7 @@ public class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
-    public void testWrongLength() {
+    void testWrongLength() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
             stream.read(new byte[1], 0, 100);
@@ -68,7 +68,7 @@ public class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
-    public void testWrongOffset() {
+    void testWrongOffset() {
         Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
             UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
             stream.read(new byte[1], -1, 1);
@@ -76,7 +76,7 @@ public class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
-    public void testReadEmptyByteArray() {
+    void testReadEmptyByteArray() {
         Assertions.assertThrows(NullPointerException.class, () -> {
             UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
             stream.read(null, 0, 1);
@@ -84,7 +84,7 @@ public class UnsafeByteArrayInputStreamTest {
     }
 
     @Test
-    public void testSkipZero() {
+    void testSkipZero() {
         UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
         long skip = stream.skip(-1);
 

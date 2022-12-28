@@ -67,7 +67,6 @@ public class PilotExchanger {
         if (CollectionUtils.isNotEmpty(listenerResult.getRouteConfigNames())) {
             this.observeRouteRequest.set(createRouteObserve());
         }
-
         // Observe LDS updated
         ldsProtocol.observeListeners((newListener) -> {
             // update local cache

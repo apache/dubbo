@@ -44,15 +44,17 @@ public class QosProcessHandler extends ByteToMessageDecoder {
     private String welcome;
     // true means to accept foreign IP
     private boolean acceptForeignIp;
+    private String acceptForeignIpWhitelist;
 
     private FrameworkModel frameworkModel;
 
     public static final String PROMPT = "dubbo>";
 
-    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp) {
+    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp, String acceptForeignIpWhitelist) {
         this.frameworkModel = frameworkModel;
         this.welcome = welcome;
         this.acceptForeignIp = acceptForeignIp;
+        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
     }
 
     @Override
@@ -75,7 +77,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
         final int magic = in.getByte(in.readerIndex());
 
         ChannelPipeline p = ctx.pipeline();
-        p.addLast(new LocalHostPermitHandler(acceptForeignIp));
+        p.addLast(new ForeignHostPermitHandler(acceptForeignIp, acceptForeignIpWhitelist));
         if (isHttp(magic)) {
             // no welcome output for http protocol
             if (welcomeFuture != null && welcomeFuture.isCancellable()) {

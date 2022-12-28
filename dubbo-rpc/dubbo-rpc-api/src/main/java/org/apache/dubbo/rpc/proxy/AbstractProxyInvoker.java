@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
@@ -36,12 +36,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_ERROR_ASYNC_RESPONSE;
 
 /**
  * This Invoker works on provider side, delegates RPC to interface implementation.
  */
 public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
-    Logger logger = LoggerFactory.getLogger(AbstractProxyInvoker.class);
+    ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractProxyInvoker.class);
 
     private final T proxy;
 
@@ -127,7 +128,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
             if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
-                logger.error("Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
+                logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
             }
             return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException(), invocation);
         } catch (Throwable e) {

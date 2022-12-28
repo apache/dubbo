@@ -35,6 +35,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_CONNECT_REGISTRY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
+
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
@@ -65,7 +68,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
                 new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
 
             if (logger != null) {
-                logger.error("5-1", "configuration server offline", "",
+                logger.error(CONFIG_FAILED_CONNECT_REGISTRY, "configuration server offline", "",
                     "Failed to connect with zookeeper", illegalStateException);
             }
 
@@ -100,7 +103,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected boolean doPublishConfig(String pathKey, String content) throws Exception {
-        zkClient.create(pathKey, content, false);
+        zkClient.createOrUpdate(pathKey, content, false);
         return true;
     }
 
@@ -114,7 +117,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
             zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
             return true;
         } catch (Exception e) {
-            logger.warn("zookeeper publishConfigCas failed.", e);
+            logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "zookeeper publishConfigCas failed.", e);
             return false;
         }
     }

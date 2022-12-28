@@ -34,10 +34,10 @@ import java.util.List;
 /**
  * {@link ServerStatusChecker}
  */
-public class ServerStatusCheckerTest {
+class ServerStatusCheckerTest {
 
     @Test
-    public void test() {
+    void test() {
         ServerStatusChecker serverStatusChecker = new ServerStatusChecker();
         Status status = serverStatusChecker.check();
         Assertions.assertEquals(status.getLevel(), Status.Level.UNKNOWN);

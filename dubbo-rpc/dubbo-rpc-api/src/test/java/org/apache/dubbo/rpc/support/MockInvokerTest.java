@@ -31,10 +31,10 @@ import java.util.HashMap;
 
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 
-public class MockInvokerTest {
+class MockInvokerTest {
 
     @Test
-    public void testParseMockValue() throws Exception {
+    void testParseMockValue() throws Exception {
         Assertions.assertNull(MockInvoker.parseMockValue("null"));
         Assertions.assertNull(MockInvoker.parseMockValue("empty"));
 
@@ -55,7 +55,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testInvoke() {
+    void testInvoke() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "return ");
         MockInvoker mockInvoker = new MockInvoker(url, String.class);
@@ -67,7 +67,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testGetDefaultObject() {
+    void testGetDefaultObject() {
         // test methodA in DemoServiceAMock
         final Class<DemoServiceA> demoServiceAClass = DemoServiceA.class;
         URL url = URL.valueOf("remote://1.2.3.4/" + demoServiceAClass.getName());
@@ -92,7 +92,7 @@ public class MockInvokerTest {
 
 
     @Test
-    public void testInvokeThrowsRpcException1() {
+    void testInvokeThrowsRpcException1() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         MockInvoker mockInvoker = new MockInvoker(url, null);
 
@@ -101,7 +101,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testInvokeThrowsRpcException2() {
+    void testInvokeThrowsRpcException2() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "fail");
         MockInvoker mockInvoker = new MockInvoker(url, String.class);
@@ -113,7 +113,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testInvokeThrowsRpcException3() {
+    void testInvokeThrowsRpcException3() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         url = url.addParameter(MOCK_KEY, "throw");
         MockInvoker mockInvoker = new MockInvoker(url, String.class);
@@ -125,13 +125,13 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testGetThrowable() {
+    void testGetThrowable() {
         Assertions.assertThrows(RpcException.class,
                 () -> MockInvoker.getThrowable("Exception.class"));
     }
 
     @Test
-    public void testGetMockObject() {
+    void testGetMockObject() {
         Assertions.assertEquals("",
                 MockInvoker.getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", String.class));
 
@@ -146,7 +146,7 @@ public class MockInvokerTest {
     }
 
     @Test
-    public void testNormalizeMock() {
+    void testNormalizeMock() {
         Assertions.assertNull(MockInvoker.normalizeMock(null));
 
         Assertions.assertEquals("", MockInvoker.normalizeMock(""));

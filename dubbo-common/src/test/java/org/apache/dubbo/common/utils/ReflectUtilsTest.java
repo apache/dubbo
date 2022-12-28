@@ -44,16 +44,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ReflectUtilsTest {
+class ReflectUtilsTest {
     @Test
-    public void testIsPrimitives() throws Exception {
+    void testIsPrimitives() throws Exception {
         assertTrue(ReflectUtils.isPrimitives(boolean[].class));
         assertTrue(ReflectUtils.isPrimitives(byte.class));
         assertFalse(ReflectUtils.isPrimitive(Map[].class));
     }
 
     @Test
-    public void testIsPrimitive() throws Exception {
+    void testIsPrimitive() throws Exception {
         assertTrue(ReflectUtils.isPrimitive(boolean.class));
         assertTrue(ReflectUtils.isPrimitive(String.class));
         assertTrue(ReflectUtils.isPrimitive(Boolean.class));
@@ -64,7 +64,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetBoxedClass() throws Exception {
+    void testGetBoxedClass() throws Exception {
         assertThat(ReflectUtils.getBoxedClass(int.class), sameInstance(Integer.class));
         assertThat(ReflectUtils.getBoxedClass(boolean.class), sameInstance(Boolean.class));
         assertThat(ReflectUtils.getBoxedClass(long.class), sameInstance(Long.class));
@@ -77,7 +77,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testIsCompatible() throws Exception {
+    void testIsCompatible() throws Exception {
         assertTrue(ReflectUtils.isCompatible(short.class, (short) 1));
         assertTrue(ReflectUtils.isCompatible(int.class, 1));
         assertTrue(ReflectUtils.isCompatible(double.class, 1.2));
@@ -86,21 +86,21 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testIsCompatibleWithArray() throws Exception {
+    void testIsCompatibleWithArray() throws Exception {
         assertFalse(ReflectUtils.isCompatible(new Class[]{short.class, int.class}, new Object[]{(short) 1}));
         assertFalse(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{"hello"}));
         assertTrue(ReflectUtils.isCompatible(new Class[]{double.class}, new Object[]{1.2}));
     }
 
     @Test
-    public void testGetCodeBase() throws Exception {
+    void testGetCodeBase() throws Exception {
         assertNull(ReflectUtils.getCodeBase(null));
         assertNull(ReflectUtils.getCodeBase(String.class));
         assertNotNull(ReflectUtils.getCodeBase(ReflectUtils.class));
     }
 
     @Test
-    public void testGetName() throws Exception {
+    void testGetName() throws Exception {
         // getName
         assertEquals("boolean", ReflectUtils.getName(boolean.class));
         assertEquals("int[][][]", ReflectUtils.getName(int[][][].class));
@@ -131,12 +131,12 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetGenericClass() throws Exception {
+    void testGetGenericClass() throws Exception {
         assertThat(ReflectUtils.getGenericClass(Foo1.class), sameInstance(String.class));
     }
 
     @Test
-    public void testGetGenericClassWithIndex() throws Exception {
+    void testGetGenericClassWithIndex() throws Exception {
         assertThat(ReflectUtils.getGenericClass(Foo1.class, 0), sameInstance(String.class));
         assertThat(ReflectUtils.getGenericClass(Foo1.class, 1), sameInstance(Integer.class));
         assertThat(ReflectUtils.getGenericClass(Foo2.class, 0), sameInstance(List.class));
@@ -146,25 +146,25 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetMethodName() throws Exception {
+    void testGetMethodName() throws Exception {
         assertThat(ReflectUtils.getName(Foo2.class.getDeclaredMethod("hello", int[].class)),
                 equalTo("java.util.List hello(int[])"));
     }
 
     @Test
-    public void testGetSignature() throws Exception {
+    void testGetSignature() throws Exception {
         Method m = Foo2.class.getDeclaredMethod("hello", int[].class);
         assertThat(ReflectUtils.getSignature("greeting", m.getParameterTypes()), equalTo("greeting([I)"));
     }
 
     @Test
-    public void testGetConstructorName() throws Exception {
+    void testGetConstructorName() throws Exception {
         Constructor c = Foo2.class.getConstructors()[0];
         assertThat(ReflectUtils.getName(c), equalTo("(java.util.List,int[])"));
     }
 
     @Test
-    public void testName2Class() throws Exception {
+    void testName2Class() throws Exception {
         assertEquals(boolean.class, ReflectUtils.name2class("boolean"));
         assertEquals(boolean[].class, ReflectUtils.name2class("boolean[]"));
         assertEquals(int[][].class, ReflectUtils.name2class(ReflectUtils.getName(int[][].class)));
@@ -172,29 +172,29 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetDescMethod() throws Exception {
+    void testGetDescMethod() throws Exception {
         assertThat(ReflectUtils.getDesc(Foo2.class.getDeclaredMethod("hello", int[].class)),
                 equalTo("hello([I)Ljava/util/List;"));
     }
 
     @Test
-    public void testGetDescConstructor() throws Exception {
+    void testGetDescConstructor() throws Exception {
         assertThat(ReflectUtils.getDesc(Foo2.class.getConstructors()[0]), equalTo("(Ljava/util/List;[I)V"));
     }
 
     @Test
-    public void testGetDescWithoutMethodName() throws Exception {
+    void testGetDescWithoutMethodName() throws Exception {
         assertThat(ReflectUtils.getDescWithoutMethodName(Foo2.class.getDeclaredMethod("hello", int[].class)),
                 equalTo("([I)Ljava/util/List;"));
     }
 
     @Test
-    public void testFindMethodByMethodName1() throws Exception {
+    void testFindMethodByMethodName1() throws Exception {
         assertNotNull(ReflectUtils.findMethodByMethodName(Foo.class, "hello"));
     }
 
     @Test
-    public void testFindMethodByMethodName2() {
+    void testFindMethodByMethodName2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ReflectUtils.findMethodByMethodName(Foo2.class, "hello");
         });
@@ -202,18 +202,18 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testFindConstructor() throws Exception {
+    void testFindConstructor() throws Exception {
         Constructor constructor = ReflectUtils.findConstructor(Foo3.class, Foo2.class);
         assertNotNull(constructor);
     }
 
     @Test
-    public void testIsInstance() throws Exception {
+    void testIsInstance() throws Exception {
         assertTrue(ReflectUtils.isInstance(new Foo1(), Foo.class.getName()));
     }
 
     @Test
-    public void testIsBeanPropertyReadMethod() throws Exception {
+    void testIsBeanPropertyReadMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("getProperty");
         assertTrue(ReflectUtils.isBeanPropertyReadMethod(method));
         method = EmptyClass.class.getMethod("getProperties");
@@ -225,7 +225,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetPropertyNameFromBeanReadMethod() throws Exception {
+    void testGetPropertyNameFromBeanReadMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("getProperty");
         assertEquals(ReflectUtils.getPropertyNameFromBeanReadMethod(method), "property");
         method = EmptyClass.class.getMethod("isSet");
@@ -233,7 +233,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testIsBeanPropertyWriteMethod() throws Exception {
+    void testIsBeanPropertyWriteMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("setProperty", EmptyProperty.class);
         assertTrue(ReflectUtils.isBeanPropertyWriteMethod(method));
         method = EmptyClass.class.getMethod("setSet", boolean.class);
@@ -241,13 +241,13 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetPropertyNameFromBeanWriteMethod() throws Exception {
+    void testGetPropertyNameFromBeanWriteMethod() throws Exception {
         Method method = EmptyClass.class.getMethod("setProperty", EmptyProperty.class);
         assertEquals(ReflectUtils.getPropertyNameFromBeanWriteMethod(method), "property");
     }
 
     @Test
-    public void testIsPublicInstanceField() throws Exception {
+    void testIsPublicInstanceField() throws Exception {
         Field field = EmptyClass.class.getDeclaredField("set");
         assertTrue(ReflectUtils.isPublicInstanceField(field));
         field = EmptyClass.class.getDeclaredField("property");
@@ -255,7 +255,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetBeanPropertyFields() throws Exception {
+    void testGetBeanPropertyFields() throws Exception {
         Map<String, Field> map = ReflectUtils.getBeanPropertyFields(EmptyClass.class);
         assertThat(map.size(), is(2));
         assertThat(map, hasKey("set"));
@@ -268,7 +268,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetBeanPropertyReadMethods() throws Exception {
+    void testGetBeanPropertyReadMethods() throws Exception {
         Map<String, Method> map = ReflectUtils.getBeanPropertyReadMethods(EmptyClass.class);
         assertThat(map.size(), is(2));
         assertThat(map, hasKey("set"));
@@ -281,7 +281,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testDesc2Class() throws Exception {
+    void testDesc2Class() throws Exception {
         assertEquals(void.class, ReflectUtils.desc2class("V"));
         assertEquals(boolean.class, ReflectUtils.desc2class("Z"));
         assertEquals(boolean[].class, ReflectUtils.desc2class("[Z"));
@@ -319,7 +319,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testFindMethodByMethodSignature() throws Exception {
+    void testFindMethodByMethodSignature() throws Exception {
         Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class, "method1", null);
 
         assertEquals("method1", m.getName());
@@ -329,7 +329,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testFindMethodByMethodSignature_override() throws Exception {
+    void testFindMethodByMethodSignature_override() throws Exception {
         {
             Method m = ReflectUtils.findMethodByMethodSignature(TestedClass.class,
                     "overrideMethod", new String[]{"int"});
@@ -351,7 +351,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testFindMethodByMethodSignatureOverrideMoreThan1() throws Exception {
+    void testFindMethodByMethodSignatureOverrideMoreThan1() throws Exception {
         try {
             ReflectUtils.findMethodByMethodSignature(TestedClass.class, "overrideMethod", null);
             fail();
@@ -361,7 +361,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testFindMethodByMethodSignatureNotFound() throws Exception {
+    void testFindMethodByMethodSignatureNotFound() throws Exception {
         try {
             ReflectUtils.findMethodByMethodSignature(TestedClass.class, "notExsited", null);
             fail();
@@ -372,7 +372,7 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testGetEmptyObject() throws Exception {
+    void testGetEmptyObject() throws Exception {
         assertTrue(ReflectUtils.getEmptyObject(Collection.class) instanceof Collection);
         assertTrue(ReflectUtils.getEmptyObject(List.class) instanceof List);
         assertTrue(ReflectUtils.getEmptyObject(Set.class) instanceof Set);
@@ -393,19 +393,19 @@ public class ReflectUtilsTest {
     }
 
     @Test
-    public void testForName1() throws Exception {
+    void testForName1() throws Exception {
         assertThat(ReflectUtils.forName(ReflectUtils.class.getName()), sameInstance(ReflectUtils.class));
     }
 
     @Test
-    public void testForName2() {
+    void testForName2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             ReflectUtils.forName("a.c.d.e.F");
         });
     }
 
     @Test
-    public void testGetReturnTypes () throws Exception{
+    void testGetReturnTypes () throws Exception{
         Class clazz = TypeClass.class;
 
         Type[] types = ReflectUtils.getReturnTypes(clazz.getMethod("getFuture"));

@@ -30,6 +30,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -316,6 +317,16 @@ public class MetadataInfo implements Serializable {
 
     public ConcurrentNavigableMap<String, SortedSet<URL>> getExportedServiceURLs() {
         return exportedServiceURLs;
+    }
+
+    public Set<URL> collectExportedURLSet() {
+        if (exportedServiceURLs == null) {
+            return Collections.emptySet();
+        }
+        return exportedServiceURLs.values().stream()
+            .filter(CollectionUtils::isNotEmpty)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
     }
 
     private boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
@@ -735,7 +746,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String toDescString() {
-            return this.getMatchKey() + path + new TreeMap<>(getParams());
+            return this.getMatchKey() + port + path + new TreeMap<>(getParams());
         }
 
         public void addParameter(String key, String value) {

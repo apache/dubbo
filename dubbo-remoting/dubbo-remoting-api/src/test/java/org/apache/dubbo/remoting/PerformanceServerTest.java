@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.remoting;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEFINED_ARGUMENT;
 import static org.apache.dubbo.remoting.Constants.BUFFER_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
 
@@ -44,9 +45,9 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
  * <p>
  * mvn clean test -Dtest=*PerformanceServerTest -Dport=9911
  */
-public class PerformanceServerTest  {
+class PerformanceServerTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceServerTest.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PerformanceServerTest.class);
     private static ExchangeServer server = null;
 
     private static void restartServer(int times, int alive, int sleep) throws Exception {
@@ -79,9 +80,9 @@ public class PerformanceServerTest  {
 
         // Start server
         ExchangeServer server = Exchangers.bind("exchange://0.0.0.0:" + port + "?transporter="
-                + transporter + "&serialization="
-                + serialization + "&threadpool=" + threadpool
-                + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler=" + channelHandler, new ExchangeHandlerAdapter() {
+            + transporter + "&serialization="
+            + serialization + "&threadpool=" + threadpool
+            + "&threads=" + threads + "&iothreads=" + iothreads + "&buffer=" + buffer + "&channel.handler=" + channelHandler, new ExchangeHandlerAdapter() {
             public String telnet(Channel channel, String message) throws RemotingException {
                 return "echo: " + message + "\r\ntelnet> ";
             }
@@ -148,10 +149,10 @@ public class PerformanceServerTest  {
     }
 
     @Test
-    public void testServer() throws Exception {
+    void testServer() throws Exception {
         // Read port from property
         if (PerformanceUtils.getProperty("port", null) == null) {
-            logger.warn("Please set -Dport=9911");
+            logger.warn(CONFIG_UNDEFINED_ARGUMENT, "", "", "Please set -Dport=9911");
             return;
         }
         final int port = PerformanceUtils.getIntProperty("port", 9911);

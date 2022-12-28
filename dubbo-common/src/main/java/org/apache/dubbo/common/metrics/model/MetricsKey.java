@@ -22,10 +22,14 @@ public enum MetricsKey {
     METRIC_REQUESTS_TOTAL("requests.total", "Total Requests"),
     METRIC_REQUESTS_SUCCEED("requests.succeed", "Succeed Requests"),
     METRIC_REQUESTS_FAILED("requests.failed", "Failed Requests"),
+    METRIC_REQUEST_BUSINESS_FAILED("requests.business.failed","Failed Business Requests"),
     METRIC_REQUESTS_PROCESSING("requests.processing", "Processing Requests"),
+
     METRIC_REQUESTS_TOTAL_AGG("requests.total.aggregate", "Aggregated Total Requests"),
     METRIC_REQUESTS_SUCCEED_AGG("requests.succeed.aggregate", "Aggregated Succeed Requests"),
     METRIC_REQUESTS_FAILED_AGG("requests.failed.aggregate", "Aggregated Failed Requests"),
+    METRIC_REQUESTS_BUSINESS_FAILED_AGG("requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+
     METRIC_QPS("qps", "Query Per Seconds"),
     METRIC_RT_LAST("rt.last", "Last Response Time"),
     METRIC_RT_MIN("rt.min", "Min Response Time"),

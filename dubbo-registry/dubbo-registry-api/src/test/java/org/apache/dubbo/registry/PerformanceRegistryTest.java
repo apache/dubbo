@@ -18,25 +18,26 @@ package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_UNDEFINED_ARGUMENT;
+
 /**
  * RegistryPerformanceTest
- *
  */
-public class PerformanceRegistryTest  {
+class PerformanceRegistryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceRegistryTest.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(PerformanceRegistryTest.class);
 
     @Test
-    public void testRegistry() {
+    void testRegistry() {
         // read server info from property
         if (PerformanceUtils.getProperty("server", null) == null) {
-            logger.warn("Please set -Dserver=127.0.0.1:9090");
+            logger.warn(CONFIG_UNDEFINED_ARGUMENT, "", "", "Please set -Dserver=127.0.0.1:9090");
             return;
         }
         final int base = PerformanceUtils.getIntProperty("base", 0);

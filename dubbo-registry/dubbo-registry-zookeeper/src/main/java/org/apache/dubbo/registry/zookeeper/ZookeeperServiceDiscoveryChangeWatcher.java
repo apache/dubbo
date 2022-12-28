@@ -117,4 +117,8 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
     public void setLatch(CountDownLatch latch) {
         this.latch = latch;
     }
+
+    public String getServiceName() {
+        return serviceName;
+    }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,9 +27,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-public class BitListTest {
+class BitListTest {
     @Test
-    public void test() {
+    void test() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
         Assertions.assertEquals(bitList.getOriginList(), list);
@@ -57,12 +58,12 @@ public class BitListTest {
 
         Object[] newObjects = new Object[1];
         Object[] copiedList = bitList.toArray(newObjects);
-        Assertions.assertEquals(copiedList.length, 3);
+        Assertions.assertEquals(3, copiedList.length);
         Assertions.assertArrayEquals(copiedList, list.toArray());
 
         newObjects = new Object[10];
         copiedList = bitList.toArray(newObjects);
-        Assertions.assertEquals(copiedList.length, 10);
+        Assertions.assertEquals(10, copiedList.length);
         Assertions.assertEquals("A", copiedList[0]);
         Assertions.assertEquals("B", copiedList[1]);
         Assertions.assertEquals("C", copiedList[2]);
@@ -78,7 +79,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testIntersect() {
+    void testIntersect() {
         List<String> aList = Arrays.asList("A", "B", "C");
         List<String> bList = Arrays.asList("A", "B");
         List<String> totalList = Arrays.asList("A", "B", "C");
@@ -87,20 +88,20 @@ public class BitListTest {
         BitList<String> bBitList = new BitList<>(bList);
 
         BitList<String> intersectBitList = aBitList.and(bBitList);
-        Assertions.assertEquals(intersectBitList.size(), 2);
-        Assertions.assertEquals(intersectBitList.get(0), totalList.get(0));
-        Assertions.assertEquals(intersectBitList.get(1), totalList.get(1));
+        Assertions.assertEquals(2, intersectBitList.size());
+        Assertions.assertEquals(totalList.get(0), intersectBitList.get(0));
+        Assertions.assertEquals(totalList.get(1), intersectBitList.get(1));
 
         aBitList.add("D");
         intersectBitList = aBitList.and(bBitList);
-        Assertions.assertEquals(intersectBitList.size(), 3);
-        Assertions.assertEquals(intersectBitList.get(0), totalList.get(0));
-        Assertions.assertEquals(intersectBitList.get(1), totalList.get(1));
+        Assertions.assertEquals(3, intersectBitList.size());
+        Assertions.assertEquals(totalList.get(0), intersectBitList.get(0));
+        Assertions.assertEquals(totalList.get(1), intersectBitList.get(1));
         Assertions.assertEquals("D", intersectBitList.get(2));
     }
 
     @Test
-    public void testIsEmpty() {
+    void testIsEmpty() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
         bitList.add("D");
@@ -113,7 +114,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testAdd() {
+    void testAdd() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
 
@@ -138,7 +139,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testAddAll() {
+    void testAddAll() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList1 = new BitList<>(list);
         BitList<String> bitList2 = new BitList<>(list);
@@ -158,7 +159,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testGet() {
+    void testGet() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
 
@@ -178,7 +179,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testRemove() {
+    void testRemove() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
 
@@ -210,7 +211,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testRemoveIndex() {
+    void testRemoveIndex() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
 
@@ -240,7 +241,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testRetain() {
+    void testRetain() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
 
@@ -264,7 +265,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testIndex() {
+    void testIndex() {
         List<String> list = Arrays.asList("A", "B", "A");
         BitList<String> bitList = new BitList<>(list);
 
@@ -286,7 +287,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testSubList() {
+    void testSubList() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -333,7 +334,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator1() {
+    void testListIterator1() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
 
@@ -352,7 +353,8 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator2() {
+    @ValueSource(ints = {2, })
+    void testListIterator2() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -373,7 +375,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator3() {
+    void testListIterator3() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -394,7 +396,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator4() {
+    void testListIterator4() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -415,7 +417,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator5() {
+    void testListIterator5() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -445,7 +447,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator6() {
+    void testListIterator6() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -474,7 +476,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator7() {
+    void testListIterator7() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -503,7 +505,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testListIterator8() {
+    void testListIterator8() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G", "H", "I"));
@@ -532,7 +534,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testClone1() {
+    void testClone1() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
 
@@ -553,7 +555,7 @@ public class BitListTest {
     }
 
     @Test
-    public void testClone2() {
+    void testClone2() {
         List<String> list = Arrays.asList("A", "B", "C", "D", "E");
         BitList<String> bitList = new BitList<>(list);
         bitList.addAll(Arrays.asList("F", "G"));

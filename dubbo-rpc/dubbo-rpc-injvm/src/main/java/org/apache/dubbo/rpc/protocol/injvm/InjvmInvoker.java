@@ -105,7 +105,15 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-        invocation.setAttachment(TIMEOUT_KEY, calculateTimeout(invocation, invocation.getMethodName()));
+
+        int timeout = calculateTimeout(invocation, invocation.getMethodName());
+        if (timeout <= 0) {
+            return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                "No time left for making the following call: " + invocation.getServiceName() + "."
+                    + invocation.getMethodName() + ", terminate directly."), invocation);
+        }
+        invocation.setAttachment(TIMEOUT_KEY, timeout);
+
 
         String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
 
@@ -275,8 +283,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
         int timeout;
         if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
-            if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), invocation, DEFAULT_TIMEOUT);
+            if (getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
             }
         } else {
@@ -284,6 +292,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
         }
+
+        invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
         return timeout;
     }
 

@@ -38,7 +38,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("unchecked")
-public class StickyTest {
+class StickyTest {
 
     private List<Invoker<StickyTest>> invokers = new ArrayList<Invoker<StickyTest>>();
 
@@ -74,33 +74,33 @@ public class StickyTest {
     }
 
     @Test
-    public void testStickyNoCheck() {
+    void testStickyNoCheck() {
         int count = testSticky("t1", false);
         System.out.println(count);
         Assertions.assertTrue(count > 0 && count <= runs);
     }
 
     @Test
-    public void testStickyForceCheck() {
+    void testStickyForceCheck() {
         int count = testSticky("t2", true);
         Assertions.assertTrue(count == 0 || count == runs);
     }
 
     @Test
-    public void testMethodStickyNoCheck() {
+    void testMethodStickyNoCheck() {
         int count = testSticky("method1", false);
         System.out.println(count);
         Assertions.assertTrue(count > 0 && count <= runs);
     }
 
     @Test
-    public void testMethodStickyForceCheck() {
+    void testMethodStickyForceCheck() {
         int count = testSticky("method1", true);
         Assertions.assertTrue(count == 0 || count == runs);
     }
 
     @Test
-    public void testMethodsSticky() {
+    void testMethodsSticky() {
         for (int i = 0; i < 100; i++) {//Two different methods should always use the same invoker every time.
             int count1 = testSticky("method1", true);
             int count2 = testSticky("method2", true);

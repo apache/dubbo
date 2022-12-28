@@ -18,58 +18,70 @@ package org.apache.dubbo.remoting.transport.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.Bytes;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.ProtocolDetector;
 import org.apache.dubbo.remoting.api.WireProtocol;
-import org.apache.dubbo.remoting.api.pu.ChannelOperator;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 
+import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(
         NettyPortUnificationServerHandler.class);
-
-    private final ChannelGroup channels;
 
     private final SslContext sslCtx;
     private final URL url;
     private final ChannelHandler handler;
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
+    private final Map<String, Channel> dubboChannels;
+    private final Map<String, URL> urlMapper;
+    private final Map<String, ChannelHandler> handlerMapper;
+
 
     public NettyPortUnificationServerHandler(URL url, SslContext sslCtx, boolean detectSsl,
-                                             List<WireProtocol> protocols, ChannelGroup channels,
-                                             ChannelHandler handler) {
+                                             List<WireProtocol> protocols, ChannelHandler handler,
+                                             Map<String, Channel> dubboChannels, Map<String, URL> urlMapper, Map<String, ChannelHandler> handlerMapper) {
         this.url = url;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
         this.detectSsl = detectSsl;
-        this.channels = channels;
         this.handler = handler;
+        this.dubboChannels = dubboChannels;
+        this.urlMapper = urlMapper;
+        this.handlerMapper = handlerMapper;
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error("Unexpected exception from downstream before protocol detected.", cause);
+        LOGGER.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Unexpected exception from downstream before protocol detected.", cause);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        channels.add(ctx.channel());
+        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
+        if (channel != null) {
+            // this is needed by some test cases
+            dubboChannels.put(NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
+        }
     }
 
     @Override
@@ -94,7 +106,12 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
-                        ChannelOperator operator = new NettyConfigOperator(channel, handler);
+                        String protocolName = url.getOrDefaultFrameworkModel().getExtensionLoader(WireProtocol.class)
+                            .getExtensionName(protocol);
+                        ChannelHandler localHandler = this.handlerMapper.getOrDefault(protocolName, handler);
+                        URL localURL = this.urlMapper.getOrDefault(protocolName, url);
+                        channel.setUrl(localURL);
+                        NettyConfigOperator operator = new NettyConfigOperator(channel, localHandler);
                         protocol.configServerProtocolHandler(url, operator);
                         ctx.pipeline().remove(this);
                     case NEED_MORE_DATA:
@@ -108,7 +125,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             Set<String> supported = url.getApplicationModel()
                 .getExtensionLoader(WireProtocol.class)
                 .getSupportedExtensions();
-            LOGGER.error(String.format("Can not recognize protocol from downstream=%s . "
+            LOGGER.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Can not recognize protocol from downstream=%s . "
                     + "preface=%s protocols=%s", ctx.channel().remoteAddress(),
                 Bytes.bytes2hex(preface),
                 supported));
@@ -121,9 +138,12 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        if (sslCtx != null) {
+            p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
+        }
         p.addLast("unificationA",
-            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols, channels, handler));
+            new NettyPortUnificationServerHandler(url, sslCtx, false, protocols,
+                handler, dubboChannels, urlMapper, handlerMapper));
         p.remove(this);
     }
 

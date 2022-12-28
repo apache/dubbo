@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 
+import io.netty.handler.codec.http2.Http2Headers;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,7 +42,11 @@ public enum TripleHeaderEnum {
     GRPC_ACCEPT_ENCODING("grpc-accept-encoding"),
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
     SERVICE_VERSION("tri-service-version"),
-    SERVICE_GROUP("tri-service-group");
+    SERVICE_GROUP("tri-service-group"),
+
+    TRI_HEADER_CONVERT("tri-header-convert"),
+
+    ;
 
     static final Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
 
@@ -57,6 +63,11 @@ public enum TripleHeaderEnum {
         excludeAttachmentsSet.add(CommonConstants.APPLICATION_KEY);
         excludeAttachmentsSet.add(TripleConstant.SERIALIZATION_KEY);
         excludeAttachmentsSet.add(TripleConstant.TE_KEY);
+
+        for (Http2Headers.PseudoHeaderName value : Http2Headers.PseudoHeaderName.values()) {
+            excludeAttachmentsSet.add(value.value().toString());
+        }
+
     }
 
     private final String header;

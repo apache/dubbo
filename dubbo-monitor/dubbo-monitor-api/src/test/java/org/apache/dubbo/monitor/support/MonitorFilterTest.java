@@ -56,7 +56,7 @@ import static org.mockito.Mockito.verify;
 /**
  * MonitorFilterTest
  */
-public class MonitorFilterTest {
+class MonitorFilterTest {
 
     private volatile URL lastStatistics;
 
@@ -114,7 +114,7 @@ public class MonitorFilterTest {
     };
 
     @Test
-    public void testFilter() throws Exception {
+    void testFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
         monitorFilter.setMonitorFactory(monitorFactory);
         Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
@@ -143,7 +143,7 @@ public class MonitorFilterTest {
     }
 
     @Test
-    public void testSkipMonitorIfNotHasKey() {
+    void testSkipMonitorIfNotHasKey() {
         MonitorFilter monitorFilter = new MonitorFilter();
         MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
         monitorFilter.setMonitorFactory(mockMonitorFactory);
@@ -157,7 +157,7 @@ public class MonitorFilterTest {
     }
 
     @Test
-    public void testGenericFilter() throws Exception {
+    void testGenericFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
         monitorFilter.setMonitorFactory(monitorFactory);
         Invocation invocation = new RpcInvocation("$invoke", MonitorService.class.getName(), "", new Class<?>[]{String.class, String[].class, Object[].class}, new Object[]{"xxx", new String[]{}, new Object[]{}});
@@ -186,7 +186,7 @@ public class MonitorFilterTest {
     }
 
     @Test
-    public void testSafeFailForMonitorCollectFail() {
+    void testSafeFailForMonitorCollectFail() {
         MonitorFilter monitorFilter = new MonitorFilter();
         MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
         Monitor mockMonitor = mock(Monitor.class);
@@ -200,7 +200,7 @@ public class MonitorFilterTest {
     }
 
     @Test
-    public void testOnResponseWithoutStartTime() {
+    void testOnResponseWithoutStartTime() {
         MonitorFilter monitorFilter = new MonitorFilter();
         MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
         Monitor mockMonitor = mock(Monitor.class);
@@ -215,7 +215,7 @@ public class MonitorFilterTest {
     }
 
     @Test
-    public void testOnErrorWithoutStartTime() {
+    void testOnErrorWithoutStartTime() {
         MonitorFilter monitorFilter = new MonitorFilter();
         MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
         Monitor mockMonitor = mock(Monitor.class);

@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 class TriDecoderTest {
 
     @Test
-    public void decode() {
+    void decode() {
         final RecordListener listener = new RecordListener();
         TriDecoder decoder = new TriDecoder(DeCompressor.NONE, listener);
         final ByteBuf buf = Unpooled.buffer();

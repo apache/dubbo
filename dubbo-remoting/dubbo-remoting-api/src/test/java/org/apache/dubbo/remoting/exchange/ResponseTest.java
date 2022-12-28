@@ -21,9 +21,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 
-public class ResponseTest {
+class ResponseTest {
     @Test
-    public void test() {
+    void test() {
         Response response = new Response();
         response.setStatus(Response.OK);
         response.setId(1);

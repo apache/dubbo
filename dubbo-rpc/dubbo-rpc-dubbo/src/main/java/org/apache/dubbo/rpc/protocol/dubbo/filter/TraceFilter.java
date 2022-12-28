@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -39,13 +39,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
+
 /**
  * TraceFilter
  */
 @Activate(group = CommonConstants.PROVIDER)
 public class TraceFilter implements Filter {
 
-    private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(TraceFilter.class);
 
     private static final String TRACE_MAX = "trace.max";
 
@@ -113,7 +115,7 @@ public class TraceFilter implements Filter {
                             }
                         } catch (Throwable e) {
                             channels.remove(channel);
-                            logger.warn(e.getMessage(), e);
+                            logger.warn(PROTOCOL_FAILED_PARSE, "", "", e.getMessage(), e);
                         }
                     } else {
                         channels.remove(channel);

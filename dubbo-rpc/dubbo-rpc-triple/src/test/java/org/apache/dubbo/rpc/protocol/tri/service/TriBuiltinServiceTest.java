@@ -16,24 +16,33 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.service;
 
+import io.grpc.health.v1.DubboHealthTriple;
 import org.apache.dubbo.rpc.PathResolver;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.stub.StubSuppliers;
-
-import io.grpc.health.v1.DubboHealthTriple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
  * {@link TriBuiltinService}
  */
-public class TriBuiltinServiceTest {
+class TriBuiltinServiceTest {
 
     @Test
-    public void test() {
+    void testDefaultNotEnable() {
         FrameworkModel frameworkModel = new FrameworkModel();
         TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
+        Assertions.assertFalse(triBuiltinService.enable());
+        Assertions.assertNull(triBuiltinService.getHealthStatusManager());
+    }
+
+    @Test
+    void testForceEnable(){
+        FrameworkModel frameworkModel = new FrameworkModel();
+        TriBuiltinService triBuiltinService = new TriBuiltinService(frameworkModel);
+        triBuiltinService.init();
         String serviceName = DubboHealthTriple.SERVICE_NAME;
         Assertions.assertNotNull(triBuiltinService.getHealthStatusManager());
         PathResolver pathResolver = frameworkModel.getExtensionLoader(PathResolver.class)

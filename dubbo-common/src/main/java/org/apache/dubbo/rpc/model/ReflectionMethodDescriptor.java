@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -32,9 +32,10 @@ import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 
 public class ReflectionMethodDescriptor implements MethodDescriptor {
-    private static final Logger logger = LoggerFactory.getLogger(ReflectionMethodDescriptor.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReflectionMethodDescriptor.class);
 
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
     public final String methodName;
@@ -57,7 +58,7 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
         try {
             returnTypesResult = ReflectUtils.getReturnTypes(method);
         } catch (Throwable throwable) {
-            logger.error(
+            logger.error(COMMON_FAILED_REFLECT, "", "",
                 "fail to get return types. Method name: " + methodName + " Declaring class:" + method.getDeclaringClass()
                     .getName(), throwable);
             returnTypesResult = new Type[]{returnClass, returnClass};

@@ -36,7 +36,7 @@ final class ServerInfoImpl extends Bootstrapper.ServerInfo {
     }
 
     @Override
-    String target() {
+    public String target() {
         return target;
     }
 

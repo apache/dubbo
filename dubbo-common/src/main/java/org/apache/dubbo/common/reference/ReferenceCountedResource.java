@@ -16,16 +16,18 @@
  */
 package org.apache.dubbo.common.reference;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 
 /**
  * inspired by Netty
  */
 public abstract class ReferenceCountedResource implements AutoCloseable {
-    private static final Logger logger = LoggerFactory.getLogger(ReferenceCountedResource.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReferenceCountedResource.class);
     private static final AtomicLongFieldUpdater<ReferenceCountedResource> COUNTER_UPDATER
         = AtomicLongFieldUpdater.newUpdater(ReferenceCountedResource.class, "counter");
 
@@ -53,7 +55,7 @@ public abstract class ReferenceCountedResource implements AutoCloseable {
             destroy();
             return true;
         } else if (remainingCount <= -1) {
-            logger.warn("This instance has been destroyed");
+            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "This instance has been destroyed");
             return false;
         } else {
             return false;

@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RECEIVE_RULE;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.DESTINATION_RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.INVALID_APP_NAME;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.KIND_KEY;
@@ -308,7 +309,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                 appToVDGroup.put(appName, vsDestinationGroup);
             }
         } catch (Throwable t) {
-            logger.error("2-13","failed to parse mesh route rule","","Error occurred when parsing rule component.",t);
+            logger.error(CLUSTER_FAILED_RECEIVE_RULE,"failed to parse mesh route rule","","Error occurred when parsing rule component.",t);
         }
 
         computeSubset(appToVDGroup);

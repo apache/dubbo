@@ -21,7 +21,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.Holder;
@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RULE_PARSING;
+
 /**
  * Abstract router which listens to dynamic configuration
  */
@@ -48,7 +50,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     public static final String NAME = "LISTENABLE_ROUTER";
     private static final String RULE_SUFFIX = ".condition-router";
 
-    private static final Logger logger = LoggerFactory.getLogger(ListenableStateRouter.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ListenableStateRouter.class);
     private volatile ConditionRouterRule routerRule;
     private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
     private String ruleKey;
@@ -75,8 +77,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
                 routerRule = ConditionRuleParser.parse(event.getContent());
                 generateConditions(routerRule);
             } catch (Exception e) {
-                logger.error("Failed to parse the raw condition rule and it will not take effect, please check " +
-                        "if the condition rule matches with the template, the raw rule is:\n " + event.getContent(), e);
+                logger.error(CLUSTER_FAILED_RULE_PARSING,"Failed to parse the raw condition rule","","Failed to parse the raw condition rule and it will not take effect, please check " +
+                    "if the condition rule matches with the template, the raw rule is:\n " + event.getContent(),e);
             }
         }
     }

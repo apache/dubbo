@@ -3,7 +3,7 @@
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License")); you may not use this file except in compliance with
+ * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -46,8 +46,9 @@ import static org.mockito.Mockito.mock;
  * RoundRobinLoadBalanceTest
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class LoadBalanceBaseTest {
+class LoadBalanceBaseTest {
     Invocation invocation;
+    Invocation genericInvocation;
     List<Invoker<LoadBalanceBaseTest>> invokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
     Invoker<LoadBalanceBaseTest> invoker1;
     Invoker<LoadBalanceBaseTest> invoker2;
@@ -78,6 +79,14 @@ public class LoadBalanceBaseTest {
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("method1");
         given(invocation.getArguments()).willReturn(new Object[] {"arg1","arg2","arg3"});
+
+        genericInvocation = mock(Invocation.class);
+        String methodName = "method1";
+        given(genericInvocation.getMethodName()).willReturn("$invoke");
+        String[] paraTypes = new String[] {String.class.getName(),String.class.getName(),String.class.getName()};
+        Object[] argsObject = new Object[] {"arg1","arg2","arg3"};
+        Object[] args = new Object[] {methodName,paraTypes,argsObject};
+        given(genericInvocation.getArguments()).willReturn(args);
 
         invoker1 = mock(Invoker.class);
         invoker2 = mock(Invoker.class);
@@ -132,12 +141,26 @@ public class LoadBalanceBaseTest {
         return counter;
     }
 
+    public Map<Invoker, AtomicLong> getGenericInvokeCounter(int runs, String loadbalanceName) {
+        Map<Invoker, AtomicLong> counter = new ConcurrentHashMap<Invoker, AtomicLong>();
+        LoadBalance lb = getLoadBalance(loadbalanceName);
+        for (Invoker invoker : invokers) {
+            counter.put(invoker, new AtomicLong(0));
+        }
+        URL url = invokers.get(0).getUrl();
+        for (int i = 0; i < runs; i++) {
+            Invoker sinvoker = lb.select(invokers, url, genericInvocation);
+            counter.get(sinvoker).incrementAndGet();
+        }
+        return counter;
+    }
+
     protected AbstractLoadBalance getLoadBalance(String loadbalanceName) {
         return (AbstractLoadBalance) ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(loadbalanceName);
     }
 
     @Test
-    public void testLoadBalanceWarmup() {
+    void testLoadBalanceWarmup() {
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(0));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(13));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));

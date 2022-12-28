@@ -18,13 +18,15 @@ package org.apache.dubbo.common.config.configcenter.wrapper;
 
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
 
 /**
  * support multiple config center, simply iterating each concrete config center.
@@ -33,7 +35,7 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
     public static final String NAME = "COMPOSITE";
 
-    private static final Logger logger = LoggerFactory.getLogger(CompositeDynamicConfiguration.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CompositeDynamicConfiguration.class);
 
     private Set<DynamicConfiguration> configurations = new HashSet<>();
 
@@ -90,7 +92,7 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             try {
                 configuration.close();
             } catch (Exception e) {
-                logger.warn("close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
+                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
             }
         }
         configurations.clear();

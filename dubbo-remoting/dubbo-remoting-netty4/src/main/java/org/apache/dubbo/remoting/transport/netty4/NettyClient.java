@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourceInitializer;
@@ -47,6 +48,9 @@ import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_CLIENT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_CONNECT_PROVIDER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_DISCONNECT_PROVIDER;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.eventLoopGroup;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
@@ -108,11 +112,11 @@ public class NettyClient extends AbstractClient {
 
     protected void initBootstrap(NettyClientHandler nettyClientHandler) {
         bootstrap.group(EVENT_LOOP_GROUP.get())
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
-                .channel(socketChannelClass());
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.TCP_NODELAY, true)
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
+            .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
@@ -127,13 +131,13 @@ public class NettyClient extends AbstractClient {
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                        .addLast("decoder", adapter.getDecoder())
-                        .addLast("encoder", adapter.getEncoder())
-                        .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
-                        .addLast("handler", nettyClientHandler);
+                    .addLast("decoder", adapter.getDecoder())
+                    .addLast("encoder", adapter.getEncoder())
+                    .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
+                    .addLast("handler", nettyClientHandler);
 
                 String socksProxyHost = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
-                if(socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
+                if (socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
                     int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
                     Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
@@ -149,8 +153,33 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doConnect() throws Throwable {
+        try {
+            String ipv6Address = NetUtils.getLocalHostV6();
+            InetSocketAddress connectAddress;
+            //first try ipv6 address
+            if (ipv6Address != null && getUrl().getParameter(CommonConstants.IPV6_KEY) != null) {
+                connectAddress = new InetSocketAddress(getUrl().getParameter(CommonConstants.IPV6_KEY), getUrl().getPort());
+                try {
+                    doConnect(connectAddress);
+                    return;
+                } catch (Throwable throwable) {
+                    //ignore
+                }
+            }
+
+            connectAddress = getConnectAddress();
+            doConnect(connectAddress);
+        } finally {
+            // just add new valid channel to NettyChannel's cache
+            if (!isConnected()) {
+                //future.cancel(true);
+            }
+        }
+    }
+
+    private void doConnect(InetSocketAddress serverAddress) throws RemotingException {
         long start = System.currentTimeMillis();
-        ChannelFuture future = bootstrap.connect(getConnectAddress());
+        ChannelFuture future = bootstrap.connect(serverAddress);
         try {
             boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
 
@@ -192,9 +221,9 @@ public class NettyClient extends AbstractClient {
                 // 6-1 Failed to connect to provider server by other reason.
 
                 RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + cause.getMessage(), cause);
+                    + serverAddress + ", error message is:" + cause.getMessage(), cause);
 
-                logger.error("6-1", "network disconnected", "",
+                logger.error(TRANSPORT_FAILED_CONNECT_PROVIDER, "network disconnected", "",
                     "Failed to connect to provider server by other reason.", cause);
 
                 throw remotingException;
@@ -204,11 +233,11 @@ public class NettyClient extends AbstractClient {
                 // 6-2 Client-side timeout
 
                 RemotingException remotingException = new RemotingException(this, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + " client-side timeout "
-                        + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+                    + serverAddress + " client-side timeout "
+                    + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
+                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
 
-                logger.error("6-2", "provider crash", "",
+                logger.error(TRANSPORT_CLIENT_CONNECT_TIMEOUT, "provider crash", "",
                     "Client-side timeout.", remotingException);
 
                 throw remotingException;
@@ -226,7 +255,7 @@ public class NettyClient extends AbstractClient {
         try {
             NettyChannel.removeChannelIfDisconnected(channel);
         } catch (Throwable t) {
-            logger.warn(t.getMessage());
+            logger.warn(TRANSPORT_FAILED_DISCONNECT_PROVIDER, "", "", t.getMessage());
         }
     }
 

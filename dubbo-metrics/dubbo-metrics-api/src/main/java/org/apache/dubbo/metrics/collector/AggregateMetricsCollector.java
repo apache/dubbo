@@ -54,6 +54,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private final Map<MethodMetric, TimeWindowCounter> totalRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> succeedRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> failedRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> businessFailedRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
 
@@ -113,6 +114,10 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
             case FAILED:
                 counter = failedRequests.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
                 break;
+            case BUSINESS_FAILED:
+                counter = businessFailedRequests.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+                break;
+
             default:
                 break;
         }
@@ -136,6 +141,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_TOTAL_AGG, k.getTags(), REQUESTS, v::get)));
         succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG, k.getTags(), REQUESTS, v::get)));
         failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+        businessFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectQPS(List<MetricSample> list) {

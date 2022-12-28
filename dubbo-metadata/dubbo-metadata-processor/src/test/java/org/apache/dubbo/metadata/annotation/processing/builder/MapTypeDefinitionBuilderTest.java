@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.6
  */
-public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
+class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTest {
 
     private MapTypeDefinitionBuilder builder;
 
@@ -77,7 +77,7 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     }
 
     @Test
-    public void testAccept() {
+    void testAccept() {
         assertTrue(builder.accept(processingEnv, stringsField.asType()));
         assertTrue(builder.accept(processingEnv, colorsField.asType()));
         assertTrue(builder.accept(processingEnv, primitiveTypeModelsField.asType()));
@@ -86,7 +86,7 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     }
 
     @Test
-    public void testBuild() {
+    void testBuild() {
 
         buildAndAssertTypeDefinition(processingEnv, stringsField,
                 "java.util.Map<java.lang.String,java.lang.String>",

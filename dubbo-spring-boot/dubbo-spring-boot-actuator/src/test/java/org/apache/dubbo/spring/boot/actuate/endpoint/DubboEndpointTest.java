@@ -49,7 +49,7 @@ import static org.apache.dubbo.common.Version.getVersion;
         }
 )
 @EnableAutoConfiguration
-public class DubboEndpointTest {
+class DubboEndpointTest {
 
 
     @Autowired
@@ -66,7 +66,7 @@ public class DubboEndpointTest {
     }
 
     @Test
-    public void testInvoke() {
+    void testInvoke() {
 
         Map<String, Object> metadata = dubboEndpoint.invoke();
 

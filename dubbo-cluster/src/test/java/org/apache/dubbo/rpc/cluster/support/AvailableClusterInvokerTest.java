@@ -40,7 +40,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Test for AvailableClusterInvoker
  */
-public class AvailableClusterInvokerTest {
+class AvailableClusterInvokerTest {
 
     private final URL url = URL.valueOf("test://test:80/test");
     private final Invoker<AvailableClusterInvokerTest> invoker1 = mock(Invoker.class);
@@ -87,7 +87,7 @@ public class AvailableClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeNoException() {
+    void testInvokeNoException() {
 
         resetInvokerToNoException();
 
@@ -97,7 +97,7 @@ public class AvailableClusterInvokerTest {
     }
 
     @Test
-    public void testInvokeWithException() {
+    void testInvokeWithException() {
 
         // remove invokers for test exception
         dic.list(invocation).removeAll(invokers);

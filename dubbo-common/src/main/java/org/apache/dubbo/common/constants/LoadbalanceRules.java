@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.constants;
 
 /**
- *  constant for Loadbalance strategy
+ *  constant for Load-balance strategy
  */
 public interface LoadbalanceRules {
 
@@ -27,7 +27,7 @@ public interface LoadbalanceRules {
     String RANDOM = "random";
 
     /**
-     *  Round robin load balance.
+     * Round-robin load balance.
      **/
     String ROUND_ROBIN = "roundrobin";
 

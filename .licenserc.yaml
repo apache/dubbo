@@ -1,0 +1,198 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    content: |
+      Licensed to the Apache Software Foundation (ASF) under one or more
+      contributor license agreements.  See the NOTICE file distributed with
+      this work for additional information regarding copyright ownership.
+      The ASF licenses this file to You under the Apache License, Version 2.0
+      (the "License"); you may not use this file except in compliance with
+      the License.  You may obtain a copy of the License at
+      
+          http://www.apache.org/licenses/LICENSE-2.0
+      
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+  paths-ignore:
+    - '**/*.versionsBackup'
+    - '**/.idea/'
+    - '**/*.iml'
+    - '**/.settings/*'
+    - '**/.classpath'
+    - '**/.project'
+    - '**/target/**'
+    - '**/generated/**'
+    - '**/*.log'
+    - '**/codestyle/*'
+    - '**/resources/META-INF/**'
+    - '**/resources/mockito-extensions/**'
+    - '**/*.proto'
+    - '**/*.cache'
+    - '**/*.txt'
+    - '**/*.load'
+    - '**/*.flex'
+    - '**/*.fc'
+    - '**/*.javascript'
+    - '**/*.properties'
+    - '**/*.thrift'
+    - '**/*.sh'
+    - '**/*.bat'
+    - '**/*.md'
+    - '**/*.svg'
+    - '**/*.png'
+    - '**/*.json'
+    - '**/*.conf'
+    - '**/*.ftl'
+    - '**/*.tpl'
+    - '**/*.factories'
+    - '**/*.handlers'
+    - '**/*.schemas'
+    - '**/*.nojekyll'
+    - '.git/'
+    - '.github/**'
+    - '**/.gitignore'
+    - '**/.helmignore'
+    - '.repository/'
+    - 'compiler/**'
+    - '.gitmodules'
+    - '.mvn'
+    - 'mvnw'
+    - 'mvnw.cmd'
+    - 'LICENSE'
+    - 'NOTICE'
+    - 'CNAME'
+    - 'Jenkinsfile'
+    - '**/vendor/**'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/HashedWheelTimer.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/Timeout.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/Timer.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/timer/TimerTask.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/CIDRUtils.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/utils/Utf8Utils.java'
+    - 'dubbo-config/dubbo-config-spring/src/test/java/org/apache/dubbo/config/spring/EmbeddedZooKeeper.java'
+    - 'dubbo-common/src/main/java/org/apache/dubbo/common/threadpool/serial/SerializingExecutor.java'
+
+  comment: on-failure
+
+  license-location-threshold: 130
+
+dependency:
+  files:
+    - pom.xml
+    - dubbo-dependencies-bom/pom.xml
+  licenses:
+    - name: com.alibaba.spring:spring-context-support
+      license: Apache-2.0
+    - name: com.fasterxml.jackson.core:jackson-annotations
+      license: Apache-2.0
+    - name: com.fasterxml.jackson.core:jackson-core
+      license: Apache-2.0
+    - name: com.fasterxml.jackson.core:jackson-databind
+      license: Apache-2.0
+    - name: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml
+      license: Apache-2.0
+    - name: com.fasterxml.jackson.datatype:jackson-datatype-jsr310
+      license: Apache-2.0
+    - name: com.google.code.gson:gson
+      license: Apache-2.0
+    - name: com.google.guava:listenablefuture
+      license: Apache-2.0
+    - name: com.salesforce.servicelibs:grpc-contrib
+      license: BSD 3-clause
+    - name: com.squareup.okhttp3:logging-interceptor
+      license: Apache-2.0
+    - name: com.squareup.okhttp3:okhttp
+      license: Apache-2.0
+    - name: com.squareup.okio:okio
+      license: Apache-2.0
+    - name: com.sun.xml.fastinfoset:FastInfoset
+      license: Apache-2.0
+    - name: io.envoyproxy.controlplane:api
+      license: Apache-2.0
+    - name: io.swagger:swagger-annotations
+      license: Apache-2.0
+    - name: io.swagger:swagger-models
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-actuator
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-autoconfigure
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-configuration-processor
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-starter
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-starter-actuator
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-starter-logging
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-starter-tomcat
+      license: Apache-2.0
+    - name: org.springframework.boot:spring-boot-starter-web
+      license: Apache-2.0
+    - name: org.slf4j:slf4j-api
+      license: MIT
+    - name: org.slf4j:slf4j-log4j12
+      license: MIT
+    - name: org.jboss.resteasy:resteasy-jaxrs
+      license: Apache-2.0
+    - name: org.jboss.resteasy:resteasy-client
+      license: Apache-2.0
+    - name: org.jboss.resteasy:resteasy-netty4
+      license: Apache-2.0
+    - name: org.jboss.resteasy:resteasy-jdk-http
+      license: Apache-2.0
+    - name: org.jboss.resteasy:resteasy-jackson-provider
+      license: Apache-2.0
+    - name: org.jboss.resteasy:resteasy-jaxb-provider
+      license: Apache-2.0
+    - name: net.jcip:jcip-annotations
+      license: Apache-2.0
+    - name: org.apache.zookeeper:zookeeper
+      license: Apache-2.0
+    - name: org.apache.zookeeper:zookeeper-jute
+      license: Apache-2.0
+    - name: net.bytebuddy:byte-buddy
+      license: Apache-2.0
+    - name: javax.enterprise:cdi-api
+      license: Apache-2.0
+    - name: org.codehaus.plexus:plexus-component-annotations
+      license: Apache-2.0
+    - name: org.slf4j:jcl-over-slf4j
+      license: Apache-2.0
+    - name: org.slf4j:jul-to-slf4j
+      license: Apache-2.0
+    # multi license
+    - name: org.javassist:javassist
+      license: Apache-2.0
+    - name: javax.annotation:javax.annotation-api
+      license: CDDL-1.0
+    - name: com.salesforce.servicelibs:jprotoc
+      license: CDDL-1.0
+    - name: org.checkerframework:checker-compat-qual
+      license: MIT
+    - name: ch.qos.logback:logback-classic
+      license: EPL-1.0
+    - name: ch.qos.logback:logback-core
+      license: EPL-1.0
+    - name: javax.servlet:javax.servlet-api
+      license: CDDL-1.1
+    - name: com.sun.activation:javax.activation
+      license: CDDL-1.1
+    - name: javax.activation:activation
+      license: CDDL-1.1
+    - name: jakarta.annotation:jakarta.annotation-api
+      license: EPL-2.0
+    - name: org.glassfish:jakarta.el
+      license: EPL-2.0
+    - name: org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec
+      license: CDDL-1.1
+  excludes:
+    - name: javax.xml.bind:jsr173_api

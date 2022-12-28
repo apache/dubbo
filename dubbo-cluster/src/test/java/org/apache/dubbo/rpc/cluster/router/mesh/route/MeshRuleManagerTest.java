@@ -44,7 +44,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class MeshRuleManagerTest {
+class MeshRuleManagerTest {
     private final static String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
         "kind: DestinationRule\n" +
         "metadata: { name: demo-route.Type1 }\n" +
@@ -94,7 +94,7 @@ public class MeshRuleManagerTest {
     }
 
     @Test
-    public void testRegister1() {
+    void testRegister1() {
         MeshRuleManager meshRuleManager = new MeshRuleManager(moduleModel);
 
         MeshRuleListener meshRuleListener1 = new MeshRuleListener() {
@@ -158,7 +158,7 @@ public class MeshRuleManagerTest {
     }
 
     @Test
-    public void testRegister2() {
+    void testRegister2() {
         MeshRuleManager meshRuleManager = new MeshRuleManager(moduleModel);
 
         AtomicInteger invokeTimes = new AtomicInteger(0);
@@ -199,7 +199,7 @@ public class MeshRuleManagerTest {
     }
 
     @Test
-    public void testRegister3() {
+    void testRegister3() {
         MeshEnvListenerFactory meshEnvListenerFactory1 = Mockito.mock(MeshEnvListenerFactory.class);
         MeshEnvListenerFactory meshEnvListenerFactory2 = Mockito.mock(MeshEnvListenerFactory.class);
 

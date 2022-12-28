@@ -36,6 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_FAILED_RECEIVE_RULE;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.METADATA_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.NAME_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.STANDARD_ROUTER_KEY;
@@ -78,17 +79,17 @@ public class MeshAppRuleListener implements ConfigurationListener {
                     if (ruleType != null) {
                         groupMap.computeIfAbsent(ruleType, (k)-> new LinkedList<>()).add(resultMap);
                     } else {
-                        logger.error("2-13","receive mesh app route rule is invalid","","Unable to get rule type from raw rule. " +
+                        logger.error(CLUSTER_FAILED_RECEIVE_RULE,"receive mesh app route rule is invalid","","Unable to get rule type from raw rule. " +
                             "Probably the metadata.name is absent. App Name: " + appName + " RawRule: " + configInfo);
                     }
                 } else {
-                    logger.error("2-13","receive mesh app route rule is invalid","","Rule format is unacceptable. App Name: " + appName + " RawRule: " + configInfo);
+                    logger.error(CLUSTER_FAILED_RECEIVE_RULE,"receive mesh app route rule is invalid","","Rule format is unacceptable. App Name: " + appName + " RawRule: " + configInfo);
                 }
             }
 
             ruleMapHolder = groupMap;
         } catch (Exception e) {
-            logger.error("2-13","failed to receive mesh app route rule","","[MeshAppRule] parse failed: " + configInfo,e);
+            logger.error(CLUSTER_FAILED_RECEIVE_RULE,"failed to receive mesh app route rule","","[MeshAppRule] parse failed: " + configInfo,e);
         }
         if (ruleMapHolder != null) {
             meshRuleDispatcher.post(ruleMapHolder);

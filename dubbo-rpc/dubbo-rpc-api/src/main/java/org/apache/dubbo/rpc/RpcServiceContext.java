@@ -186,6 +186,9 @@ public class RpcServiceContext extends RpcContext {
     @Override
     public void setUrls(List<URL> urls) {
         this.urls = urls;
+        if (!urls.isEmpty()) {
+            this.url = urls.get(0);
+        }
     }
 
     @Override

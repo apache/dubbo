@@ -28,10 +28,10 @@ import java.util.List;
 /**
  * {@link AbstractServiceDiscoveryFactory}
  */
-public class AbstractServiceDiscoveryFactoryTest {
+class AbstractServiceDiscoveryFactoryTest {
 
     @Test
-    public void testGetServiceDiscoveryWithCache() {
+    void testGetServiceDiscoveryWithCache() {
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("AbstractServiceDiscoveryFactoryTest"));
         URL url = URL.valueOf("mock://127.0.0.1:8888");
         ServiceDiscoveryFactory factory = ServiceDiscoveryFactory.getExtension(url);

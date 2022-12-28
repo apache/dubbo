@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
@@ -30,8 +30,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
+
 public class FrameworkExecutorRepository implements Disposable {
-    private static final Logger logger = LoggerFactory.getLogger(FrameworkExecutorRepository.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(FrameworkExecutorRepository.class);
 
     private final ExecutorService sharedExecutor;
     private final ScheduledExecutorService sharedScheduledExecutor;
@@ -198,6 +200,9 @@ public class FrameworkExecutorRepository implements Disposable {
         shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
             "registryNotificationExecutorRing");
 
+        // mappingRefreshingExecutor
+        shutdownExecutorService(mappingRefreshingExecutor,
+            "mappingRefreshingExecutor");
     }
 
     private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {
@@ -211,7 +216,7 @@ public class FrameworkExecutorRepository implements Disposable {
             executorService.shutdownNow();
         } catch (Exception e) {
             String msg = "shutdown executor service [" + name + "] failed: ";
-            logger.warn(msg + e.getMessage(), e);
+            logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", msg + e.getMessage(), e);
         }
     }
 }

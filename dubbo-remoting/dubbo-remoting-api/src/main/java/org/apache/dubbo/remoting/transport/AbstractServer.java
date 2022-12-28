@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
@@ -45,7 +46,7 @@ import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
     protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
-    private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractServer.class);
     private Set<ExecutorService> executors = new ConcurrentHashSet<>();
     private InetSocketAddress localAddress;
     private InetSocketAddress bindAddress;
@@ -72,7 +73,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
             }
         } catch (Throwable t) {
             throw new RemotingException(url.toInetSocketAddress(), null, "Failed to bind " + getClass().getSimpleName()
-                    + " on " + getLocalAddress() + ", cause: " + t.getMessage(), t);
+                + " on " + bindAddress + ", cause: " + t.getMessage(), t);
         }
         executors.add(executorRepository.createExecutorIfAbsent(url));
     }
@@ -95,7 +96,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
                 }
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
         }
 
         ExecutorService executor = executorRepository.createExecutorIfAbsent(url);
@@ -127,13 +128,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         try {
             super.close();
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
         }
 
         try {
             doClose();
         } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
         }
     }
 
@@ -162,13 +163,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
         if (this.isClosing() || this.isClosed()) {
-            logger.warn("Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();
             return;
         }
 
         if (accepts > 0 && getChannels().size() > accepts) {
-            logger.error("Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
+            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
             ch.close();
             return;
         }
@@ -179,7 +180,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     public void disconnected(Channel ch) throws RemotingException {
         Collection<Channel> channels = getChannels();
         if (channels.isEmpty()) {
-            logger.warn("All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
+            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
     }

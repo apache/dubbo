@@ -272,7 +272,6 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
             ApplicationConfig.class,
             ProtocolConfig.class,
             RegistryConfig.class,
-            MetadataReportConfig.class,
             MonitorConfig.class,
             MetricsConfig.class,
             SslConfig.class);
@@ -294,6 +293,14 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
                     ", configs: " + Arrays.asList(prevProtocol, protocol));
             }
             protocolPortMap.put(port, protocol);
+        }
+
+        // Log the current configurations.
+        logger.info("The current configurations or effective configurations are as follows:");
+        for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
+            getConfigs(configType).stream().forEach((config) -> {
+                logger.info(config.toString());
+            });
         }
     }
 

@@ -53,6 +53,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 
@@ -84,7 +85,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * The remote service group the customer/provider side will reference
      */
     protected String group;
-    
+
     protected ServiceMetadata serviceMetadata;
     /**
      * Local impl class name for the service interface
@@ -225,7 +226,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         // change referenced config's scope model
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(getScopeModel());
         if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
             this.configCenter.setScopeModel(applicationModel);
         }
@@ -253,7 +254,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         for (RegistryConfig registryConfig : registries) {
             if (!registryConfig.isValid()) {
                 throw new IllegalStateException("No registry config found or it's not a valid config! " +
-                        "The registry config is: " + registryConfig);
+                    "The registry config is: " + registryConfig);
             }
         }
     }
@@ -285,6 +286,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * To obtain the method list in the port, use reflection when in native mode and javassist otherwise.
+     *
      * @param interfaceClass
      * @return
      */
@@ -312,7 +314,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 return;
             }
             if (!interfaceClass.isInterface()) {
-                throw new IllegalStateException(interfaceName+" is not an interface");
+                throw new IllegalStateException(interfaceName + " is not an interface");
             }
 
             // Auto create MethodConfig/ArgumentConfig according to config props
@@ -378,7 +380,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
                 "<dubbo:method name=\"\" ... /></<dubbo:reference>";
             if (ignoreInvalidMethodConfig) {
-                logger.warn(msg);
+                logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
             } else {
                 throw new IllegalStateException(msg);
@@ -390,7 +392,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             String msg = "Found invalid method config, the interface " + interfaceClass.getName() + " not found method \""
                 + methodName + "\" : [" + methodConfig + "]";
             if (ignoreInvalidMethodConfig) {
-                logger.warn(msg);
+                logger.warn(CONFIG_NO_METHOD_FOUND, "", "", msg);
                 return false;
             } else {
                 throw new IllegalStateException(msg);
@@ -437,18 +439,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         verifyStubAndLocal(stub, "Stub", interfaceClass);
     }
 
-    private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass){
+    private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass) {
         if (ConfigUtils.isNotEmpty(className)) {
             Class<?> localClass = ConfigUtils.isDefault(className) ?
-                    ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
-                        verify(interfaceClass, localClass);
-            }
+                ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
+            verify(interfaceClass, localClass);
+        }
     }
 
     private void verify(Class<?> interfaceClass, Class<?> localClass) {
         if (!interfaceClass.isAssignableFrom(localClass)) {
             throw new IllegalStateException("The local implementation class " + localClass.getName() +
-                    " not implement interface " + interfaceClass.getName());
+                " not implement interface " + interfaceClass.getName());
         }
 
         try {
@@ -456,7 +458,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             ReflectUtils.findConstructor(localClass, interfaceClass);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("No such constructor \"public " + localClass.getSimpleName() +
-                    "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
+                "(" + interfaceClass.getName() + ")\" in local implementation class " + localClass.getName());
         }
     }
 
@@ -524,7 +526,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
     }
-    
+
     protected void computeValidRegistryIds() {
         if (application != null && notHasSelfRegistryProperty()) {
             setRegistries(application.getRegistries());
@@ -640,8 +642,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
      * @param application
+     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setApplication(ApplicationConfig application) {
@@ -659,8 +661,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
      * @param module
+     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setModule(ModuleConfig module) {
@@ -877,7 +879,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public String getVersion(AbstractInterfaceConfig interfaceConfig) {
         return StringUtils.isEmpty(getVersion()) ? (interfaceConfig != null ? interfaceConfig.getVersion() : getVersion()) : getVersion();
     }
-    
+
     public String getVersion() {
         return version;
     }
@@ -893,11 +895,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setGroup(String group) {
         this.group = group;
     }
-    
+
     public String getInterface() {
         return interfaceName;
     }
-    
+
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
     }

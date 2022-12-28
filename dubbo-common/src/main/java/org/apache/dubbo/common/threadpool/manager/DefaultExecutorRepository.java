@@ -19,8 +19,9 @@ package org.apache.dubbo.common.threadpool.manager;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -40,6 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
@@ -49,12 +51,15 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERNAL_EXECUTO
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_USE_THREAD_POOL;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_EXECUTORS_NO_FOUND;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
-    private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultExecutorRepository.class);
 
     private volatile ScheduledExecutorService serviceExportExecutor;
 
@@ -68,9 +73,12 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     private final ApplicationModel applicationModel;
     private final FrameworkExecutorRepository frameworkExecutorRepository;
 
+    private final DataStore dataStore;
+
     public DefaultExecutorRepository(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         this.frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        this.dataStore = applicationModel.getExtensionLoader(DataStore.class).getDefaultExtension();
     }
 
     /**
@@ -81,7 +89,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
      */
     @Override
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(getExecutorKey(url), k -> new ConcurrentHashMap<>());
+        String executorKey = getExecutorKey(url);
+        Map<Integer, ExecutorService> executors = data.computeIfAbsent(executorKey, k -> new ConcurrentHashMap<>());
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
 
@@ -101,6 +110,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executor = createExecutor(url);
             executors.put(portKey, executor);
         }
+
+        dataStore.put(executorKey, Integer.toString(portKey), executor);
         return executor;
     }
 
@@ -118,6 +129,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executorKey = EXECUTOR_SERVICE_COMPONENT_KEY;
 
         }
+
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+            executorKey = CONSUMER_SHARED_EXECUTOR_SERVICE_COMPONENT_KEY;
+        }
         return executorKey;
     }
 
@@ -134,8 +149,9 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
          * have Executor instances generated and stored.
          */
         if (executors == null) {
-            logger.warn("No available executors, this is not expected, framework should call createExecutorIfAbsent first " +
+            logger.warn(COMMON_EXECUTORS_NO_FOUND, "", "", "No available executors, this is not expected, framework should call createExecutorIfAbsent first" +
                 "before coming to here.");
+
             return null;
         }
 
@@ -179,7 +195,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 }
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(COMMON_ERROR_USE_THREAD_POOL, "", "", t.getMessage(), t);
         }
     }
 
@@ -205,7 +221,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                     serviceExportExecutor.shutdown();
                 } catch (Throwable ignored) {
                     // ignored
-                    logger.warn(ignored.getMessage(), ignored);
+                    logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", ignored.getMessage(), ignored);
                 }
             }
             serviceExportExecutor = null;
@@ -233,7 +249,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 try {
                     serviceReferExecutor.shutdown();
                 } catch (Throwable ignored) {
-                    logger.warn(ignored.getMessage(), ignored);
+                    logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", ignored.getMessage(), ignored);
                 }
             }
             serviceReferExecutor = null;
@@ -318,7 +334,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                             ExecutorUtil.shutdownNow(executor, 100);
                         } catch (Throwable ignored) {
                             // ignored
-                            logger.warn(ignored.getMessage(), ignored);
+                            logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", ignored.getMessage(), ignored);
                         }
                     }
                 });
@@ -332,7 +348,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             executorService.shutdownNow();
         } catch (Exception e) {
             String msg = "shutdown executor service [" + name + "] failed: ";
-            logger.warn(msg + e.getMessage(), e);
+            logger.warn(COMMON_UNEXPECTED_EXECUTORS_SHUTDOWN, "", "", msg + e.getMessage(), e);
         }
     }
 
