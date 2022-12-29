@@ -48,7 +48,7 @@ public class OmnipotentFilter implements Filter {
         if (isOmnipotent(invoker.getInterface())) {
             setOmnArgs(inv);
         }
-
+        inv.getObjectAttachments().remove(ORIGIN_GENERIC_PARAMETER_TYPES);
         return invoker.invoke(inv);
     }
 
@@ -78,7 +78,6 @@ public class OmnipotentFilter implements Filter {
         rpcInvocation.setAttachment(VERSION_KEY, inv.getAttachment(ORIGIN_VERSION_KEY));
         ((RpcInvocation) inv).setArguments(new Object[]{rpcInvocation});
 
-        inv.getObjectAttachments().remove(ORIGIN_GENERIC_PARAMETER_TYPES);
     }
 
 }
