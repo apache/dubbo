@@ -111,8 +111,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-        if (this.provider != null && this.provider.getScopeModel() != scopeModel) {
-            this.provider.setScopeModel(scopeModel);
+        if (this.provider != null && this.provider.getScopeModel() != getScopeModel()) {
+            this.provider.setScopeModel(getScopeModel());
         }
     }
 

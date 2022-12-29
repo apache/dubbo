@@ -110,10 +110,10 @@ public abstract class AbstractConfig implements Serializable {
      * <b>NOTE:</b> the model maybe changed during config processing,
      * the extension spi instance needs to be reinitialized after changing the model!
      */
-    protected ScopeModel scopeModel;
+    private volatile ScopeModel scopeModel;
 
     public AbstractConfig() {
-        this(ApplicationModel.defaultModel());
+        this(null);
     }
 
     public AbstractConfig(ScopeModel scopeModel) {
@@ -384,6 +384,9 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public ApplicationModel getApplicationModel() {
+        if (scopeModel == null) {
+            setScopeModel(getDefaultModel());
+        }
         if (scopeModel instanceof ApplicationModel) {
             return (ApplicationModel) scopeModel;
         } else if (scopeModel instanceof ModuleModel) {
@@ -394,11 +397,18 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public ScopeModel getScopeModel() {
+        if (scopeModel == null) {
+            setScopeModel(getDefaultModel());
+        }
         return scopeModel;
     }
 
+    protected ScopeModel getDefaultModel() {
+        return ApplicationModel.defaultModel();
+    }
+
     public final void setScopeModel(ScopeModel scopeModel) {
-        if (this.scopeModel != scopeModel) {
+        if (scopeModel != null && this.scopeModel != scopeModel) {
             checkScopeModel(scopeModel);
             ScopeModel oldScopeModel = this.scopeModel;
             this.scopeModel = scopeModel;
@@ -444,7 +454,7 @@ public abstract class AbstractConfig implements Serializable {
 
     protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (scopeModel == null) {
-            throw new IllegalStateException("scopeModel is not initialized");
+            setScopeModel(getScopeModel());
         }
         return scopeModel.getExtensionLoader(type);
     }

@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 /**
  * support multiple config center, simply iterating each concrete config center.
@@ -76,11 +76,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public Object getInternalProperty(String key, Object defaultValue) {
-        return iterateConfigOperation(configuration -> configuration.getInternalProperty(key, defaultValue));
-    }
-
-    @Override
     public boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
         boolean publishedAll = true;
         for (DynamicConfiguration configuration : configurations) {
@@ -97,7 +92,7 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             try {
                 configuration.close();
             } catch (Exception e) {
-                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
+                logger.warn(INTERNAL_ERROR, "unknown error in configuration-center related code in common module", "", "close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
             }
         }
         configurations.clear();

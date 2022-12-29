@@ -182,7 +182,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.21</commons_compress_version>
-        <revision>3.1.4-SNAPSHOT</revision>
+        <revision>3.1.5-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
@@ -354,7 +354,6 @@
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
                 <version>${protobuf-java_version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.google.protobuf</groupId>

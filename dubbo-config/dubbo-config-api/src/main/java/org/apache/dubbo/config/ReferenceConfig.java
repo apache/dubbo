@@ -617,7 +617,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     !curUrl.getParameter(UNLOAD_CLUSTER_RELATED, false)) {
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);
-                invoker = Cluster.getCluster(scopeModel, Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
+                invoker = Cluster.getCluster(getScopeModel(), Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
             }
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
@@ -647,7 +647,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
                 URL curUrl = invokers.get(0).getUrl();
                 String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
-                invoker = Cluster.getCluster(scopeModel, cluster).join(new StaticDirectory(curUrl, invokers), true);
+                invoker = Cluster.getCluster(getScopeModel(), cluster).join(new StaticDirectory(curUrl, invokers), true);
             }
         }
     }

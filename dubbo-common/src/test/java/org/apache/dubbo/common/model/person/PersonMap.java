@@ -14,27 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config;
+package org.apache.dubbo.common.model.person;
 
-import org.apache.dubbo.common.utils.StringUtils;
+import java.util.HashMap;
 
-import java.util.Map;
+public class PersonMap extends HashMap<String, String> {
 
-/**
- * Configuration from system environment
- */
-public class EnvironmentConfiguration implements Configuration {
+    private static final String ID = "1";
+    private static final String NAME = "hand";
 
-    @Override
-    public Object getInternalProperty(String key) {
-        String value = System.getenv(key);
-        if (StringUtils.isEmpty(value)) {
-            value = System.getenv(StringUtils.toOSStyleKey(key));
-        }
-        return value;
+    String personId;
+    String personName;
+
+    public String getPersonId() {
+        return get(ID);
     }
 
-    public Map<String, String> getProperties() {
-        return System.getenv();
+    public void setPersonId(String personId) {
+        this.personId = personId;
+    }
+
+    public String getPersonName() {
+        return get(NAME);
+    }
+
+    public void setPersonName(String personName) {
+        this.personName = personName;
     }
 }
+
