@@ -73,21 +73,22 @@ public class StreamUtils {
             }
             res.put(k, v);
         });
-        return res;
+        return convertNoLowerCaseHeader(origin, res);
     }
 
-    public static void convertNoLowerCaseHeader(Map<String, Object> requestMetadata, Map<String, Object> attachments) {
+    /**
+     * According to the tri-header-convert header to convert no lower attachments.
+     *
+     * @param requestMetadata      the metadata holder
+     * @param attachments          KV pairs
+     */
+    public static Map<String, Object> convertNoLowerCaseHeader(Map<String, ?> requestMetadata,
+                                                               Map<String, Object> attachments) {
         if (attachments == null || !requestMetadata.containsKey(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader())) {
-            return;
+            return attachments;
         }
 
-        attachments.put(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(),
-            requestMetadata.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()));
-        convertNoLowerCaseHeader(attachments);
-    }
-
-    public static Map<String, Object> convertNoLowerCaseHeader(Map<String, Object> attachments) {
-        Object obj = attachments.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        Object obj = requestMetadata.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
         if (obj == null) {
             return attachments;
         }
@@ -132,7 +133,7 @@ public class StreamUtils {
                 continue;
             }
             if (needConvertHeaderKey && !key.equals(entry.getKey())) {
-                needConvertKey.put(key, entry.getKey());
+                needConvertKey.put(entry.getKey(), key);
             }
             final Object v = entry.getValue();
             convertSingleAttachment(headers, key, v);

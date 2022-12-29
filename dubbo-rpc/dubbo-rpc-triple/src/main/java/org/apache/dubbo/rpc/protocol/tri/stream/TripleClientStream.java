@@ -189,7 +189,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
 
             final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers);
-            final Map<String, Object> finalAttachments = StreamUtils.convertNoLowerCaseHeader(attachments);
+            final Map<String, Object> finalAttachments = StreamUtils.convertNoLowerCaseHeader(reserved, attachments);
             listener.onComplete(status, finalAttachments, reserved);
         }
 
