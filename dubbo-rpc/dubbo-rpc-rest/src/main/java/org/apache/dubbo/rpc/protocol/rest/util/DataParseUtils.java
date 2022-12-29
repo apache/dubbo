@@ -2,12 +2,14 @@ package org.apache.dubbo.rpc.protocol.rest.util;
 
 import org.apache.dubbo.common.utils.JsonUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class DataParseUtils {
 
@@ -27,6 +29,106 @@ public class DataParseUtils {
         }
 
         return value;
+
+    }
+
+
+    /**
+     * content-type text
+     *
+     * @param object
+     * @param outputStream
+     * @throws IOException
+     */
+    public static void writeTextContent(Object object, OutputStream outputStream) throws IOException {
+        outputStream.write(objectTextConvertToByteArray(object));
+    }
+
+    /**
+     * content-type json
+     *
+     * @param object
+     * @param outputStream
+     * @throws Exception
+     */
+    public static void writeJsonContent(Object object, OutputStream outputStream) throws Exception {
+        JsonUtils.getJson().serializeObject(outputStream, object);
+    }
+
+    /**
+     * content-type form
+     *
+     * @param formData
+     * @param outputStream
+     * @throws Exception
+     */
+    public static void writeFormContent(Map formData, OutputStream outputStream) throws Exception {
+        outputStream.write(serializeForm(formData, Charset.defaultCharset()).getBytes());
+    }
+
+    // TODO file multipart
+
+    public static String serializeForm(Map formData, Charset charset) {
+        StringBuilder builder = new StringBuilder();
+        formData.forEach((name, values) -> {
+            if (name == null) {
+
+                return;
+            }
+            ((List) values).forEach(value -> {
+                try {
+                    if (builder.length() != 0) {
+                        builder.append('&');
+                    }
+                    builder.append(URLEncoder.encode((String) name, charset.name()));
+                    if (value != null) {
+                        builder.append('=');
+                        builder.append(URLEncoder.encode(String.valueOf(value), charset.name()));
+                    }
+                } catch (UnsupportedEncodingException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            });
+        });
+
+        return builder.toString();
+    }
+
+    public static byte[] objectTextConvertToByteArray(Object object) {
+        Class<?> objectClass = object.getClass();
+
+        if (objectClass == Boolean.class) {
+            return object.toString().getBytes();
+        }
+
+        if (objectClass == String.class) {
+            return ((String) object).getBytes();
+        }
+
+        if (objectClass.isAssignableFrom(Number.class)) {
+            return (byte[]) NumberUtils.numberToBytes((Number) object);
+        }
+
+        return object.toString().getBytes();
+
+    }
+
+    public static byte[] objectJsonConvertToByteArray(Object object) {
+        Class<?> objectClass = object.getClass();
+
+        if (objectClass == Boolean.class) {
+            return object.toString().getBytes();
+        }
+
+        if (objectClass == String.class) {
+            return ((String) object).getBytes();
+        }
+
+        if (objectClass.isAssignableFrom(Number.class)) {
+            return (byte[]) NumberUtils.numberToBytes((Number) object);
+        }
+
+        return object.toString().getBytes();
 
     }
 

@@ -12,7 +12,6 @@ import java.util.Set;
 public class NumberUtils {
 
 
-
     public static final Set<Class<?>> STANDARD_NUMBER_TYPES;
 
     static {
@@ -104,6 +103,31 @@ public class NumberUtils {
             }
         }
         return sb.toString();
+    }
+
+
+    public static Object numberToBytes(Number number) {
+
+        if (number instanceof Byte) {
+            // Use default encoding.
+            return Byte.toString(number.byteValue()).getBytes();
+        } else if (number instanceof Double) {
+            return Double.toString(number.doubleValue()).getBytes();
+        } else if (number instanceof Float) {
+            return Float.toString(number.floatValue()).getBytes();
+        } else if (number instanceof Integer) {
+            return Float.toString(number.intValue()).getBytes();
+        } else if (number instanceof Long) {
+            return Long.toString(number.longValue()).getBytes();
+        } else if (number instanceof Short) {
+            return Short.toString(number.shortValue()).getBytes();
+        } else if (number instanceof BigDecimal) {
+            return BigDecimal.class.cast(number).toString().getBytes();
+        }
+
+        return number;
+
+
     }
 
 }
