@@ -42,7 +42,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
@@ -203,9 +202,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Lock mappingLock = serviceNameMapping.getMappingLock(key);
             try {
                 mappingLock.lock();
-                mappingByUrl = serviceNameMapping.getCachedMapping(url);
+                mappingByUrl = serviceNameMapping.getMapping(url);
                 try {
-                    MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
+                    MappingListener mappingListener = new DefaultMappingListener(url, mappingByUrl, listener);
                     mappingByUrl = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
                     mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
                 } catch (Exception e) {
