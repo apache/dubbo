@@ -512,8 +512,21 @@ public class ConfigValidationUtils {
         }
     }
 
-    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+    public static boolean isValidMetadataConfig(MetadataReportConfig metadataReportConfig) {
         if (metadataReportConfig == null) {
+            return false;
+        }
+
+        if (Boolean.FALSE.equals(metadataReportConfig.getReportMetadata()) &&
+            Boolean.FALSE.equals(metadataReportConfig.getReportDefinition())) {
+            return false;
+        }
+
+        return !isEmpty(metadataReportConfig.getAddress());
+    }
+
+    public static void validateMetadataConfig(MetadataReportConfig metadataReportConfig) {
+        if (!isValidMetadataConfig(metadataReportConfig)) {
             return;
         }
 

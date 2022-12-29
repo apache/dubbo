@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -134,6 +135,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 .getDefaultConsumer()
                 .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
+        // try set properties from `dubbo.reference` if not set in current config
+        refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
     }
 
     @Override
@@ -237,8 +240,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-        if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
-            this.consumer.setScopeModel(scopeModel);
+        if (this.consumer != null && this.consumer.getScopeModel() != getScopeModel()) {
+            this.consumer.setScopeModel(getScopeModel());
         }
     }
 
@@ -248,7 +251,21 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
         this.interfaceClass = interfaceClass;
-        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        if (getInterfaceClassLoader() == null) {
+            setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        } else {
+            if (interfaceClass != null) {
+                try {
+                    if (!interfaceClass.equals(Class.forName(interfaceClass.getName(), false, getInterfaceClassLoader()))) {
+                        // interfaceClass is not visible from origin classloader, override the classloader from interfaceClass into referenceConfig
+                        setInterfaceClassLoader(interfaceClass.getClassLoader());
+                    }
+                } catch (ClassNotFoundException e) {
+                    // class not found from origin classloader, override the classloader from interfaceClass into referenceConfig
+                    setInterfaceClassLoader(interfaceClass.getClassLoader());
+                }
+            }
+        }
     }
 
     @Parameter(excluded = true)

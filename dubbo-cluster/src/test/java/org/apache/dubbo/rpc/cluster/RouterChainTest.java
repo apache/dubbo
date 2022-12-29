@@ -120,7 +120,7 @@ class RouterChainTest {
         Invoker<DemoService> invoker5 = createNormalInvoker(map5);
 
         BitList<Invoker<DemoService>> invokers = new BitList<>(Arrays.asList(mockInvoker, invoker1, invoker2, invoker3, invoker4, invoker5));
-        routerChain.setInvokers(invokers);
+        routerChain.setInvokers(invokers, () -> {});
 
         // mesh rule for MeshStateRouter
         MeshRuleManager meshRuleManager = mockInvoker.getUrl().getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);

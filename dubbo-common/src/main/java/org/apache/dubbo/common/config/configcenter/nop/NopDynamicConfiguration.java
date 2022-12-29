@@ -37,11 +37,6 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public Object getInternalProperty(String key, Object defaultValue) {
-        return null;
-    }
-
-    @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         // no-op
     }

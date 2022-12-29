@@ -1947,7 +1947,14 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter"
+    "name": "org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.Invoker",
@@ -2072,7 +2079,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -2146,7 +2153,7 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": ["org.apache.dubbo.rpc.model.ApplicationModel"]
       }
     ]
   },
@@ -2557,6 +2564,10 @@
     ]
   },
   {
+    "name": "org.apache.logging.log4j.Level",
+    "allPublicMethods": true
+  },
+  {
     "name": "org.apache.log4j.helpers.Loader"
   },
   {
@@ -2565,6 +2576,10 @@
   {
     "name": "org.apache.zookeeper.ClientCnxnSocketNIO",
     "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.zookeeper.client.ZKClientConfig"]
+      },
       {
         "name": "<init>",
         "parameterTypes": []

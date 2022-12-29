@@ -70,23 +70,23 @@ class SystemConfigurationTest {
     void testConvert() {
         Assertions.assertEquals(
             MOCK_STRING_VALUE, sysConfig.convert(String.class, NOT_EXIST_KEY, MOCK_STRING_VALUE));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_BOOL_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_BOOL_VALUE));
         Assertions.assertEquals(MOCK_BOOL_VALUE, sysConfig.convert(Boolean.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_STRING_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_STRING_VALUE));
         Assertions.assertEquals(MOCK_STRING_VALUE, sysConfig.convert(String.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_INT_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_INT_VALUE));
         Assertions.assertEquals(MOCK_INT_VALUE, sysConfig.convert(Integer.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_LONG_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_LONG_VALUE));
         Assertions.assertEquals(MOCK_LONG_VALUE, sysConfig.convert(Long.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_SHORT_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_SHORT_VALUE));
         Assertions.assertEquals(MOCK_SHORT_VALUE, sysConfig.convert(Short.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_FLOAT_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_FLOAT_VALUE));
         Assertions.assertEquals(MOCK_FLOAT_VALUE, sysConfig.convert(Float.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_DOUBLE_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_DOUBLE_VALUE));
         Assertions.assertEquals(MOCK_DOUBLE_VALUE, sysConfig.convert(Double.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(MOCK_BYTE_VALUE));
+        System.setProperty(MOCK_KEY, String.valueOf(MOCK_BYTE_VALUE));
         Assertions.assertEquals(MOCK_BYTE_VALUE, sysConfig.convert(Byte.class, MOCK_KEY, null));
-        sysConfig.overwriteCache(MOCK_KEY, String.valueOf(ConfigMock.MockOne));
+        System.setProperty(MOCK_KEY, String.valueOf(ConfigMock.MockOne));
         Assertions.assertEquals(ConfigMock.MockOne, sysConfig.convert(ConfigMock.class, MOCK_KEY, null));
     }
 

@@ -20,9 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.api.pu.ChannelOperator;
-
-import io.netty.channel.ChannelPipeline;
-import io.netty.handler.ssl.SslContext;
+import org.apache.dubbo.remoting.api.ssl.ContextOperator;
 
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface WireProtocol {
@@ -31,7 +29,7 @@ public interface WireProtocol {
 
     void configServerProtocolHandler(URL url, ChannelOperator operator);
 
-    void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext);
+    void configClientPipeline(URL url, ChannelOperator operator, ContextOperator contextOperator);
 
     void close();
 }

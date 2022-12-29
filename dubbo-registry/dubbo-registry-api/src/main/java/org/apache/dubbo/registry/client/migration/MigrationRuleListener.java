@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_THREAD_INTERRUPTED_EXCEPTION;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
@@ -135,7 +135,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         try {
             delay = Integer.parseInt(delayStr);
         } catch (Exception e) {
-            logger.warn(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", "Invalid migration delay param " + delayStr);
+            logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Invalid migration delay param " + delayStr);
         }
         return delay;
     }
@@ -146,7 +146,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (StringUtils.isEmpty(rawRule)) {
             // fail back to startup status
             rawRule = INIT;
-            //logger.warn(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", "Received empty migration rule, will ignore.");
+            //logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Received empty migration rule, will ignore.");
         }
         try {
             ruleQueue.put(rawRule);
@@ -226,7 +226,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             try {
                 tmpRule = MigrationRule.parse(rawRule);
             } catch (Exception e) {
-                logger.error(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", "Failed to parse migration rule...", e);
+                logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "Failed to parse migration rule...", e);
             }
         }
         return tmpRule;
