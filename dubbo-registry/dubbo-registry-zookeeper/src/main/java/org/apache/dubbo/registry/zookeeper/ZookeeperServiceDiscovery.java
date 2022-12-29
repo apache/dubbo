@@ -42,6 +42,8 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildServiceDiscovery;
@@ -103,6 +105,19 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         if (serviceInstance != null) {
             doInServiceRegistry(serviceDiscovery -> serviceDiscovery.unregisterService(build(serviceInstance)));
+        }
+    }
+
+    @Override
+    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
+            reportMetadata(serviceInstance.getServiceMetadata());
+        }
+
+        try {
+            serviceDiscovery.updateService(build(serviceInstance));
+        } catch (Exception e) {
+            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + serviceInstance.toString(), e);
         }
     }
 
