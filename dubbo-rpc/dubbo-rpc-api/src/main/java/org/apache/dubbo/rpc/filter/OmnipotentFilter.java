@@ -77,6 +77,8 @@ public class OmnipotentFilter implements Filter {
         rpcInvocation.setAttachment(PATH_KEY, inv.getAttachment(ORIGIN_PATH_KEY));
         rpcInvocation.setAttachment(VERSION_KEY, inv.getAttachment(ORIGIN_VERSION_KEY));
         ((RpcInvocation) inv).setArguments(new Object[]{rpcInvocation});
+
+        inv.getObjectAttachments().remove(ORIGIN_GENERIC_PARAMETER_TYPES);
     }
 
 }
