@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.UUID;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ZOOKEEPER_SERVER_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_INIT_ZOOKEEPER_SERVER_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER;
 
 /**
@@ -240,7 +240,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 if (errorHandler != null) {
                     errorHandler.handleError(e);
                 } else {
-                    logger.error(CONFIG_ZOOKEEPER_SERVER_ERROR, "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
+                    logger.error(TESTING_INIT_ZOOKEEPER_SERVER_ERROR, "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
                 }
             }
         }

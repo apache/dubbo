@@ -124,6 +124,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_UNABLE_ACCESS_KUBERNETES = "1-22";
 
+    /**
+     * Absent. Original '1-23' is changed to '81-3'.
+     */
     String REGISTRY_FAILED_DOWNLOAD_FILE = "1-23";
 
     /**
@@ -264,7 +267,7 @@ public interface LoggerCodeConstants {
 
     String PROTOCOL_FAILED_DECODE = "4-20";
 
-    // config module
+    // Config module
     String CONFIG_FAILED_CONNECT_REGISTRY = "5-1";
 
     String CONFIG_FAILED_SHUTDOWN_HOOK = "5-2";
@@ -301,6 +304,9 @@ public interface LoggerCodeConstants {
 
     String CONFIG_FAILED_NOTIFY_EVENT = "5-18";
 
+    /**
+     * Absent. Changed to 81-4.
+     */
     String CONFIG_ZOOKEEPER_SERVER_ERROR = "5-19";
 
     String CONFIG_STOP_DUBBO_ERROR = "5-20";
@@ -345,7 +351,7 @@ public interface LoggerCodeConstants {
 
     String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
 
-    // transport module
+    // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
 
     String TRANSPORT_CLIENT_CONNECT_TIMEOUT = "6-2";
@@ -391,10 +397,14 @@ public interface LoggerCodeConstants {
 
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
-    // Test module (8[X], where [X] is number of the module to be tested.)
+    // Testing module (8[X], where [X] is number of the module to be tested.)
     String TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER = "81-1";
 
     String TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER = "81-2";
+
+    String TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE = "81-3";
+
+    String TESTING_INIT_ZOOKEEPER_SERVER_ERROR = "81-4";
 
     // Internal unknown error.
 
