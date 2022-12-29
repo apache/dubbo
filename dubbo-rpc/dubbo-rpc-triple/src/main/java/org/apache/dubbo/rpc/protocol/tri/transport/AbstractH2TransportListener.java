@@ -95,9 +95,6 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         Map<String, String> excludeHeaders = new HashMap<>(trailers.size());
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
             String key = header.getKey().toString();
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                excludeHeaders.put(key, trailers.getAndRemove(key).toString());
-            }
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 excludeHeaders.put(key, trailers.getAndRemove(key).toString());
             }
