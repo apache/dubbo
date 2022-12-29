@@ -130,7 +130,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.1.4-SNAPSHOT</revision>
+        <revision>3.2.4-traffic-SNAPSHOT</revision>
     </properties>
 
     <modules>

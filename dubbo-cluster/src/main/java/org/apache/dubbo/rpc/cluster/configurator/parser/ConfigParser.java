@@ -174,7 +174,7 @@ public class ConfigParser {
             sb.append('&');
             sb.append(OVERRIDE_PROVIDERS_KEY);
             sb.append('=');
-            sb.append(CollectionUtils.join(item.getAddresses(), ","));
+            sb.append(CollectionUtils.join(parseAddresses(item), ","));
         }
 
         return sb.toString();

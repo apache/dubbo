@@ -230,8 +230,8 @@ class TagStateRouterTest {
         assert tagRouterRule.getTagnameToAddresses().get("tag1").size() == 2;
         assert tagRouterRule.getTagnameToAddresses().get("tag2").size() == 2;
         assert tagRouterRule.getTagnameToAddresses().get("tag3").size() == 1;
-        assert tagRouterRule.getTagnameToAddresses().get("tag4").size() == 0;
         assert tagRouterRule.getTagnameToAddresses().get("tag5").size() == 1;
+        assert tagRouterRule.getTagnameToAddresses().get("tag4") == null;
 
     }
 

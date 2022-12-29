@@ -65,7 +65,7 @@ public class AppScriptStateRouter<T> extends AbstractStateRouter<T> implements C
                                           Holder<String> messageHolder) throws RpcException {
         if (scriptRouter == null || !scriptRule.isValid() || !scriptRule.isEnabled()) {
             if (needToPrintMessage) {
-                messageHolder.set("Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: \n" + scriptRule.getRawRule());
+                messageHolder.set("Directly return from script router. Reason: Invokers from previous router is empty or script is not enabled. Script rule is: " + (scriptRule == null ? "null" : scriptRule.getRawRule()));
             }
             return invokers;
         }
