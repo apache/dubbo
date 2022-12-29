@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.OmnipotentService;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -49,6 +50,7 @@ public class OmnipotentFilter implements Filter {
             setOmnArgs(inv);
         }
         inv.getObjectAttachments().remove(ORIGIN_GENERIC_PARAMETER_TYPES);
+        RpcContext.getServerAttachment().removeAttachment(ORIGIN_GENERIC_PARAMETER_TYPES);
         return invoker.invoke(inv);
     }
 
