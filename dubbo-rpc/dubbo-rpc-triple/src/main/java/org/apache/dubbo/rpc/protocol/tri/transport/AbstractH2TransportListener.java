@@ -30,6 +30,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
@@ -44,7 +45,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
      * @param trailers the metadata from remote
      * @return KV pairs map
      */
-    protected Map<String, Object> headersToMap(Http2Headers trailers) {
+    protected Map<String, Object> headersToMap(Http2Headers trailers, Supplier<Object> convertUpperHeaderSupplier) {
         if (trailers == null) {
             return Collections.emptyMap();
         }
@@ -67,7 +68,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
         }
 
         // try convert upper key
-        Object obj = attachments.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+        Object obj = convertUpperHeaderSupplier.get();
         if (obj == null) {
             return attachments;
         }

@@ -192,7 +192,9 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             halfClosed = true;
 
             final Map<String, String> reserved = filterReservedHeaders(trailers);
-            final Map<String, Object> attachments = headersToMap(trailers);
+            final Map<String, Object> attachments = headersToMap(trailers, () -> {
+                return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+            });
             listener.onComplete(status, attachments, reserved);
         }
 
