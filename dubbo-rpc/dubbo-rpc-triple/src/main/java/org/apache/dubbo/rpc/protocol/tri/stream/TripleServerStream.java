@@ -372,7 +372,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             }
 
             Map<String, Object> requestMetadata = headersToMap(headers, () -> {
-                return headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader()).toString();
+                return headers.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader(), "").toString();
             });
             boolean hasStub = pathResolver.hasNativeStub(path);
             if (hasStub) {
