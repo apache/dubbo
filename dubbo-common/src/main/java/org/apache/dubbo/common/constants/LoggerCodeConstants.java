@@ -385,7 +385,7 @@ public interface LoggerCodeConstants {
     /**
      * Absent. Merged to 99-0.
      */
-    String TRANSPORT_64 = "6-4";
+    String TRANSPORT_UNEXPECTED_EXCEPTION = "6-4";
 
     String TRANSPORT_FAILED_DISCONNECT_PROVIDER = "6-5";
 
