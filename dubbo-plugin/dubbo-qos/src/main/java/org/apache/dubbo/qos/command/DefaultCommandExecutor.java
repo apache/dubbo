@@ -16,9 +16,14 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Arrays;
+
 public class DefaultCommandExecutor implements CommandExecutor {
+    private final static Logger logger = LoggerFactory.getLogger(DefaultCommandExecutor.class);
     private FrameworkModel frameworkModel;
 
     public DefaultCommandExecutor(FrameworkModel frameworkModel) {
@@ -27,6 +32,8 @@ public class DefaultCommandExecutor implements CommandExecutor {
 
     @Override
     public String execute(CommandContext commandContext) throws NoSuchCommandException {
+        logger.info("[Dubbo QoS] Command Process start. Command: " + commandContext.getCommandName() +
+            ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Remote Address: " + commandContext.getRemote().remoteAddress());
         BaseCommand command = null;
         try {
             command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
@@ -34,8 +41,22 @@ public class DefaultCommandExecutor implements CommandExecutor {
                 //can't find command
         }
         if (command == null) {
+            logger.info("[Dubbo QoS] Command Not found. Command: " + commandContext.getCommandName() +
+                ", Remote Address: " + commandContext.getRemote().remoteAddress());
             throw new NoSuchCommandException(commandContext.getCommandName());
         }
-        return command.execute(commandContext, commandContext.getArgs());
+
+        try {
+            String result = command.execute(commandContext, commandContext.getArgs());
+            logger.info("[Dubbo QoS] Command Process start. Command: " + commandContext.getCommandName() +
+                ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Result: " + result +
+                ", Remote Address: " + commandContext.getRemote().remoteAddress());
+            return result;
+        } catch (Throwable t) {
+            logger.info("[Dubbo QoS] Command Process Failed. Command: " + commandContext.getCommandName() +
+                ", Args: " + Arrays.toString(commandContext.getArgs()) +
+                ", Remote Address: " + commandContext.getRemote().remoteAddress(), t);
+            throw t;
+        }
     }
 }
