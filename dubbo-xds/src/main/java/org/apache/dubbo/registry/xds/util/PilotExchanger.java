@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.xds.util;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import org.apache.dubbo.registry.xds.util.protocol.impl.EdsProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.impl.LdsProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.impl.RdsProtocol;
@@ -26,6 +27,7 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
+import org.apache.dubbo.rpc.cluster.router.xds.RdsVirtualHostListener;
 
 import java.util.Collections;
 import java.util.Map;
@@ -51,6 +53,10 @@ public class PilotExchanger {
     private final Map<String, Long> domainObserveRequest = new ConcurrentHashMap<>();
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
+
+    private final Map<String, Long> rdsObserveRequest = new ConcurrentHashMap<>();
+
+    private final Map<String, Consumer<RdsVirtualHostListener>> rdsObserveConsumer = new ConcurrentHashMap<>();
 
     private PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
@@ -158,5 +164,22 @@ public class PilotExchanger {
                             consumer1 -> consumer1.accept(endpointResult.getEndpoints())));
             domainObserveRequest.put(domain, endpointRequest);
         }
+    }
+
+    public void unObserveEndpoints(String domain, Consumer<Set<Endpoint>> consumer) {
+        domainObserveConsumer.get(domain).remove(consumer);
+        Long requestId = domainObserveRequest.remove(domain);
+        if (requestId != null) {
+            edsProtocol.removeObserve(requestId);
+        }
+    }
+
+    public VirtualHost getVirtualHost(String domain) {
+        return routeResult.searchVirtualHost(domain);
+    }
+
+    public void unObserveRds(String domain) {
+        routeResult.removeVirtualHost(domain);
+        rdsProtocol.removeObserve(observeRouteRequest.get());
     }
 }

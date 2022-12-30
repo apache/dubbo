@@ -42,6 +42,6 @@ public class DeltaRoute implements DeltaResource<RouteResult> {
     public RouteResult getResource() {
         Map<String, Set<String>> result = new ConcurrentHashMap<>();
         data.values().forEach(result::putAll);
-        return new RouteResult(result);
+        return new RouteResult(result,new ConcurrentHashMap<>());
     }
 }

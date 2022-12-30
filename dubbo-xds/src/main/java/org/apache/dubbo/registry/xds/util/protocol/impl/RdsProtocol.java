@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
-
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.Node;
@@ -30,11 +30,13 @@ import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsDomainResult;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
@@ -55,21 +57,23 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     @Override
     protected RouteResult decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
-            Map<String, Set<String>> map = response.getResourcesList().stream()
+            XdsDomainResult xdsDomainResult = response.getResourcesList().stream()
                 .map(RdsProtocol::unpackRouteConfiguration)
                 .filter(Objects::nonNull)
                 .map(RdsProtocol::decodeResourceToListener)
                 .reduce((a, b) -> {
-                    a.putAll(b);
+                    a.getMap().putAll(b.getMap());
+                    a.getRdsVirtualhostMap().putAll(b.getRdsVirtualhostMap());
                     return a;
-                }).orElse(new HashMap<>());
-            return new RouteResult(map);
+                }).orElse(new XdsDomainResult(new HashMap<>(), new HashMap<>()));
+        return new RouteResult(xdsDomainResult.getMap(),xdsDomainResult.getRdsVirtualhostMap());
         }
         return new RouteResult();
     }
 
-    private static Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {
+    private static XdsDomainResult decodeResourceToListener(RouteConfiguration resource) {
         Map<String, Set<String>> map = new HashMap<>();
+        Map<String, VirtualHost> rdsVirtualhostMap = new ConcurrentHashMap<>();
         resource.getVirtualHostsList()
             .forEach(virtualHost -> {
                 Set<String> cluster = virtualHost.getRoutesList().stream()
@@ -78,9 +82,10 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                     .collect(Collectors.toSet());
                 for (String domain : virtualHost.getDomainsList()) {
                     map.put(domain, cluster);
+                    rdsVirtualhostMap.put(domain,virtualHost);
                 }
             });
-        return map;
+        return new XdsDomainResult(map,rdsVirtualhostMap);
     }
 
     private static RouteConfiguration unpackRouteConfiguration(Any any) {
