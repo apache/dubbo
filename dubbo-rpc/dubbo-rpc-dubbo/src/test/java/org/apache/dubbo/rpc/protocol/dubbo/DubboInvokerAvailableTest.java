@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
@@ -51,7 +52,7 @@ class DubboInvokerAvailableTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = new DubboProtocol(FrameworkModel.defaultModel());
     }
 
     @AfterAll

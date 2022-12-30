@@ -22,6 +22,7 @@ import org.apache.dubbo.common.model.User;
 import org.apache.dubbo.common.model.person.BigPerson;
 import org.apache.dubbo.common.model.person.FullAddress;
 import org.apache.dubbo.common.model.person.PersonInfo;
+import org.apache.dubbo.common.model.person.PersonMap;
 import org.apache.dubbo.common.model.person.PersonStatus;
 import org.apache.dubbo.common.model.person.Phone;
 
@@ -765,7 +766,7 @@ class PojoUtilsTest {
 
     @Test
     void testJava8Time() {
-        
+
         Object localDateTimeGen = PojoUtils.generalize(LocalDateTime.now());
         Object localDateTime = PojoUtils.realize(localDateTimeGen, LocalDateTime.class);
         assertEquals(localDateTimeGen, localDateTime.toString());
@@ -777,6 +778,15 @@ class PojoUtilsTest {
         Object localTimeGen = PojoUtils.generalize(LocalTime.now());
         Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
         assertEquals(localTimeGen, localTime.toString());
+    }
+
+    @Test
+    public void testJSONObjectToPersonMapPojo() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("personId", "1");
+        jsonObject.put("personName", "hand");
+        Object result = PojoUtils.realize(jsonObject, PersonMap.class);
+        assertEquals(PersonMap.class, result.getClass());
     }
 
     public enum Day {

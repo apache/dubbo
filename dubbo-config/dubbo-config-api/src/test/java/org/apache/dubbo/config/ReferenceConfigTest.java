@@ -1092,10 +1092,47 @@ class ReferenceConfigTest {
         Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
         Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
+        Thread.currentThread().setContextClassLoader(classLoader1);
+        callBean1.invoke(object1, requestClazzCustom2.newInstance());
+        Assertions.assertEquals(classLoader1, Thread.currentThread().getContextClassLoader());
+
         applicationModel.destroy();
         DubboBootstrap.getInstance().destroy();
         Thread.currentThread().setContextClassLoader(classLoader);
         Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
+    }
+
+    @Test
+    void testClassLoader() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+
+        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader classLoader = new ClassLoader(originClassLoader) {};
+        Thread.currentThread().setContextClassLoader(classLoader);
+
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setProtocol(new ProtocolConfig("dubbo", -1));
+        serviceConfig.setRegistry(new RegistryConfig("N/A"));
+        serviceConfig.setRef(new DemoServiceImpl());
+        serviceConfig.export();
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>(applicationModel.newModule());
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.setRegistry(new RegistryConfig("N/A"));
+        DemoService demoService = referenceConfig.get();
+
+        demoService.sayName("Dubbo");
+        Assertions.assertEquals(classLoader, Thread.currentThread().getContextClassLoader());
+
+        Thread.currentThread().setContextClassLoader(null);
+        demoService.sayName("Dubbo");
+        Assertions.assertNull(Thread.currentThread().getContextClassLoader());
+
+        Thread.currentThread().setContextClassLoader(originClassLoader);
+        frameworkModel.destroy();
     }
 
     private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {

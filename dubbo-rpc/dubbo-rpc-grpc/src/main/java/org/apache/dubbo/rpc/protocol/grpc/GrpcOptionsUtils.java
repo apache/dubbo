@@ -17,13 +17,13 @@
 package org.apache.dubbo.rpc.protocol.grpc;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ClientInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.GrpcConfigurator;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
@@ -236,7 +236,7 @@ public class GrpcOptionsUtils {
 
     private static Optional<GrpcConfigurator> getConfigurator() {
         // Give users the chance to customize ServerBuilder
-        Set<GrpcConfigurator> configurators = ExtensionLoader.getExtensionLoader(GrpcConfigurator.class)
+        Set<GrpcConfigurator> configurators = FrameworkModel.defaultModel().getExtensionLoader(GrpcConfigurator.class)
             .getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(configurators)) {
             return Optional.of(configurators.iterator().next());

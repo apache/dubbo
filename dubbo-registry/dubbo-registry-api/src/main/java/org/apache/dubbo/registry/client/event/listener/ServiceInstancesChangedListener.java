@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_REFRESH_ADDRESS;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
@@ -179,9 +179,9 @@ public class ServiceInstancesChangedListener {
                 try {
                     retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 } catch (Exception e) {
-                    logger.error(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Error submitting async retry task.");
+                    logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "Error submitting async retry task.");
                 }
-                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Address refresh try task submitted");
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Address refresh try task submitted");
             }
 
             // return if all metadata is empty, this notification will not take effect.
@@ -283,12 +283,12 @@ public class ServiceInstancesChangedListener {
     protected boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
-            logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Received address refresh retry event, " + retryEvent.getFailureRecordTime());
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Received address refresh retry event, " + retryEvent.getFailureRecordTime());
             if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata) {
-                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
                 return true;
             }
-            logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Retrying address notification...");
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Retrying address notification...");
         }
         return false;
     }
@@ -332,7 +332,7 @@ public class ServiceInstancesChangedListener {
 
         if (emptyMetadataNum > 0) {
             builder.insert(0, emptyMetadataNum + "/" + revisionToInstances.size() + " revisions failed to get metadata from remote: ");
-            logger.error(REGISTRY_UNEXPECTED_EXCEPTION, "", "", builder.toString());
+            logger.error(INTERNAL_ERROR, "unknown error in registry module", "", builder.toString());
         } else {
             builder.insert(0, revisionToInstances.size() + " unique working revisions: ");
             logger.info(builder.toString());

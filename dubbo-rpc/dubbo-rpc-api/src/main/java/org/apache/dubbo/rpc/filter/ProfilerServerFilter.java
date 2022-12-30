@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.Profiler;
 import org.apache.dubbo.common.profiler.ProfilerEntry;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -29,10 +30,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.Constants;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_TIMEOUT_RESPONSE;
 
 @Activate(group = PROVIDER, order = Integer.MIN_VALUE)
@@ -60,6 +66,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         afterInvoke(invoker, invocation);
+        addAdaptiveResponse(appResponse, invocation);
     }
 
     @Override
@@ -76,6 +83,18 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
 
                 dumpIfNeed(invoker, invocation, (ProfilerEntry) fromInvocation);
             }
+        }
+    }
+    private void addAdaptiveResponse(Result appResponse, Invocation invocation) {
+        String adaptiveLoadAttachment = invocation.getAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY);
+        if (StringUtils.isNotEmpty(adaptiveLoadAttachment)) {
+            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+
+            StringBuilder sb = new StringBuilder(64);
+            sb.append("curTime:").append(System.currentTimeMillis());
+            sb.append(COMMA_SEPARATOR).append("load:").append(operatingSystemMXBean.getSystemLoadAverage() * 100 / operatingSystemMXBean.getAvailableProcessors() );
+
+            appResponse.setAttachment(Constants.ADAPTIVE_LOADBALANCE_ATTACHMENT_KEY,sb.toString());
         }
     }
 

@@ -42,6 +42,8 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildServiceDiscovery;
@@ -107,6 +109,19 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
+    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
+            reportMetadata(serviceInstance.getServiceMetadata());
+        }
+
+        try {
+            serviceDiscovery.updateService(build(serviceInstance));
+        } catch (Exception e) {
+            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + serviceInstance.toString(), e);
+        }
+    }
+
+    @Override
     public Set<String> getServices() {
         return doInServiceDiscovery(s -> new LinkedHashSet<>(s.queryForNames()));
     }
@@ -129,9 +144,14 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
-            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(buildServicePath(serviceName));
+            String servicePath = buildServicePath(serviceName);
+            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.get(servicePath);
             if (watcher != null) {
-                watcher.stopWatching();
+                watcher.getListeners().remove(listener);
+                if (watcher.getListeners().isEmpty()) {
+                    watcher.stopWatching();
+                    watcherCaches.remove(servicePath);
+                }
             }
         });
     }

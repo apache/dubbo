@@ -18,14 +18,14 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * constants for logger
+ * Constants of Error codes used in logger.
  */
 public interface LoggerCodeConstants {
 
-    // common module
+    // Common module
     String COMMON_THREAD_POOL_EXHAUSTED = "0-1";
 
-    String COMMON_PROPERTY_MISSPELLING = "0-2";
+    String COMMON_PROPERTY_TYPE_MISMATCH = "0-2";
 
     String COMMON_CACHE_PATH_INACCESSIBLE = "0-3";
 
@@ -75,9 +75,15 @@ public interface LoggerCodeConstants {
 
     String COMMON_METADATA_PROCESSOR = "0-26";
 
-    // registry module
+    String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
+
+    // Registry module
+
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
+    /**
+     * Absent. Merged with 0-2.
+     */
     String REGISTRY_ABSENCE = "1-2";
 
     String REGISTRY_FAILED_URL_EVICTING = "1-3";
@@ -146,6 +152,9 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_ZOOKEEPER_EXCEPTION = "1-35";
 
+    /**
+     * Absent. Merged with 99-0.
+     */
     String REGISTRY_UNEXPECTED_EXCEPTION = "1-36";
 
     String REGISTRY_NACOS_EXCEPTION = "1-37";
@@ -155,6 +164,8 @@ public interface LoggerCodeConstants {
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
     String REGISTRY_ROUTER_WAIT_LONG = "1-40";
+
+    String REGISTRY_ISTIO_EXCEPTION = "1-41";
 
     // cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
@@ -197,7 +208,7 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    // proxy module 3-1
+    // Proxy module. 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
@@ -212,7 +223,9 @@ public interface LoggerCodeConstants {
 
     String PROXY_TIMEOUT_RESPONSE = "3-7";
 
-    // protocol module
+    String PROXY_FAILED = "3-8";
+
+    // Protocol module.
     String PROTOCOL_UNSUPPORTED = "4-1";
 
     String PROTOCOL_FAILED_INIT_SERIALIZATION_OPTIMIZER = "4-2";
@@ -380,7 +393,13 @@ public interface LoggerCodeConstants {
 
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
 
+    String QOS_PERMISSION_DENY_EXCEPTION = "7-7";
+
     // Internal unknown error.
+
+    /**
+     * Unknown internal error. (99-0)
+     */
     String INTERNAL_ERROR = "99-0";
 
     String INTERNAL_INTERRUPTED = "99-1";
