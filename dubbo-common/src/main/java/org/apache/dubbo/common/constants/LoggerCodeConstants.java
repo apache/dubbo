@@ -22,7 +22,7 @@ package org.apache.dubbo.common.constants;
  *
  * <p>Format: <i>[Category]-[Code]</i>, where:
  * <li>[Category] is the category code which identifies the module.
- * <li>[Code] is the specified code.
+ * <li>[Code] is the detailed code.
  * <li>Every blanks should be filled with positive number.
  *
  * <br /><br />
@@ -30,7 +30,7 @@ package org.apache.dubbo.common.constants;
  * <li>Synchronize this file across different branches. (Use merge and cherry-pick.)
  * <li>Double-check the usage in different branches before deleting any of the error code.
  * <li>If applicable, use error code that already appears in this file.
- * <li>If it's required to add an error code, find an error code that's marked by 'Absent', and rename it.
+ * <li>If it's required to add an error code, find an error code that's marked by 'Absent', and rename it. (so that no code is wasted)
  * <li>Update the corresponding file in dubbo-website repository.
  */
 public interface LoggerCodeConstants {
