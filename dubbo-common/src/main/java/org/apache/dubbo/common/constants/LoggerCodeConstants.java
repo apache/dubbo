@@ -235,7 +235,10 @@ public interface LoggerCodeConstants {
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
 
-    String PROXY_FAILED_JAVASSIST = "3-3";
+    /**
+     * Absent. Merged with 3-8.
+     */
+    String PROXY_33 = "3-3";
 
     String PROXY_TIMEOUT_REQUEST = "3-4";
 
