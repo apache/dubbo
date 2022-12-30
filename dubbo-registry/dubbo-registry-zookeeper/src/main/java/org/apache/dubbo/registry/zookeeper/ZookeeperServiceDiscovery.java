@@ -31,8 +31,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.zookeeper.KeeperException;
+import org.apache.curator.x.discovery.ServiceCache;
 
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -144,13 +145,17 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
-            String servicePath = buildServicePath(serviceName);
-            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.get(servicePath);
+            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.get(serviceName);
             if (watcher != null) {
                 watcher.getListeners().remove(listener);
                 if (watcher.getListeners().isEmpty()) {
-                    watcher.stopWatching();
-                    watcherCaches.remove(servicePath);
+                    watcherCaches.remove(serviceName);
+                    try {
+                        watcher.getCacheInstance().close();
+                    } catch (IOException e) {
+                        logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "curator stop watch failed", "",
+                            "Curator Stop service discovery watch failed. Service Name: " + serviceName);
+                    }
                 }
             }
         });
@@ -166,66 +171,26 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
-        String path = buildServicePath(serviceName);
-        try {
-            curatorFramework.create().creatingParentsIfNeeded().forPath(path);
-        } catch (KeeperException.NodeExistsException e) {
-            // ignored
-            if (logger.isDebugEnabled()) {
-                logger.debug(e);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.", e);
-        }
-
         CountDownLatch latch = new CountDownLatch(1);
-        ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(path, key -> {
-            ZookeeperServiceDiscoveryChangeWatcher tmpWatcher = new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, path, latch);
+
+        ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(serviceName, name -> {
+            ServiceCache<ZookeeperInstance> serviceCache = serviceDiscovery.serviceCacheBuilder()
+                .name(name)
+                .build();
+            ZookeeperServiceDiscoveryChangeWatcher newer = new ZookeeperServiceDiscoveryChangeWatcher(this, serviceCache, name, latch);
+            serviceCache.addListener(newer);
+
             try {
-                curatorFramework.getChildren().usingWatcher(tmpWatcher).forPath(path);
-            } catch (KeeperException.NoNodeException e) {
-                // ignored
-                if (logger.isErrorEnabled()) {
-                    logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", e.getMessage());
-                }
+                serviceCache.start();
             } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
+                throw new RpcException(REGISTRY_EXCEPTION, "Failed subscribe service: " + name, e);
             }
-            return tmpWatcher;
+
+            return newer;
         });
+
         watcher.addListener(listener);
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));
         latch.countDown();
-    }
-
-    /**
-     * 1. re-register, taken care by curator ServiceDiscovery
-     * 2. re-subscribe, register curator watcher and notify the latest provider list
-     */
-    public void recover() {
-        watcherCaches.forEach((path, watcher) -> {
-            CountDownLatch latch = new CountDownLatch(1);
-            Set<ServiceInstancesChangedListener> listeners = watcher.getListeners();
-            try {
-                watcher.setLatch(latch);
-                curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
-            } catch (Exception e) {
-                logger.error(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Trying to recover from new zkClient session failed, path is " + path + ", error msg: " + e.getMessage());
-            }
-
-            List<ServiceInstance> instances = this.getInstances(watcher.getServiceName());
-            for (ServiceInstancesChangedListener listener : listeners) {
-                listener.onEvent(new ServiceInstancesChangedEvent(watcher.getServiceName(), instances));
-            }
-            latch.countDown();
-        });
-    }
-
-    public void reRegisterWatcher(ZookeeperServiceDiscoveryChangeWatcher watcher) throws Exception {
-        curatorFramework.getChildren().usingWatcher(watcher).forPath(watcher.getPath());
-    }
-
-    private String buildServicePath(String serviceName) {
-        return rootPath + "/" + serviceName;
     }
 }

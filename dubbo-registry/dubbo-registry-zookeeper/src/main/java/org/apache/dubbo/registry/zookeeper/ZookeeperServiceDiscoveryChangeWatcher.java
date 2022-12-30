@@ -25,16 +25,16 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
-import org.apache.zookeeper.WatchedEvent;
+import org.apache.curator.framework.state.ConnectionState;
+import org.apache.curator.x.discovery.ServiceCache;
+import org.apache.curator.x.discovery.details.ServiceCacheListener;
 import org.apache.zookeeper.Watcher;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-
-import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
-import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
 
 /**
  * Zookeeper {@link ServiceDiscovery} Change {@link CuratorWatcher watcher} only interests in
@@ -43,29 +43,26 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  *
  * @since 2.7.5
  */
-public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
-    private Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
+public class ZookeeperServiceDiscoveryChangeWatcher implements ServiceCacheListener {
+    private final Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
+
+    private final ServiceCache<ZookeeperInstance> cacheInstance;
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
     private final RegistryNotifier notifier;
 
-    private volatile boolean keepWatching = true;
-
     private final String serviceName;
 
-    private final String path;
-
-    private CountDownLatch latch;
+    private final CountDownLatch latch;
 
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
+                                                  ServiceCache<ZookeeperInstance> cacheInstance,
                                                   String serviceName,
-                                                  String path,
                                                   CountDownLatch latch) {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
+        this.cacheInstance = cacheInstance;
         this.serviceName = serviceName;
-        this.path = path;
-        this.latch = latch;
         this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getUrl(), zookeeperServiceDiscovery.getDelay(),
             ScopeModelUtil.getFrameworkModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class).getServiceDiscoveryAddressNotificationExecutor()) {
@@ -74,51 +71,35 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
                 listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent) rawAddresses));
             }
         };
+        this.latch = latch;
     }
 
     @Override
-    public void process(WatchedEvent event) throws Exception {
+    public void cacheChanged() {
         try {
             latch.await();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
+            Thread.currentThread().interrupt();
         }
 
-        Watcher.Event.EventType eventType = event.getType();
-
-        if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
-            if (shouldKeepWatching()) {
-                zookeeperServiceDiscovery.reRegisterWatcher(this);
-                List<ServiceInstance> instanceList = zookeeperServiceDiscovery.getInstances(serviceName);
-                notifier.notify(new ServiceInstancesChangedEvent(serviceName, instanceList));
-            }
-        }
+        List<ServiceInstance> instanceList = zookeeperServiceDiscovery.getInstances(serviceName);
+        notifier.notify(new ServiceInstancesChangedEvent(serviceName, instanceList));
     }
 
-    public String getPath() {
-        return path;
+    @Override
+    public void stateChanged(CuratorFramework curatorFramework, ConnectionState connectionState) {
+        // ignore: taken care by curator ServiceDiscovery
     }
 
-    public void addListener(ServiceInstancesChangedListener listener) {
-        listeners.add(listener);
+    public ServiceCache<ZookeeperInstance> getCacheInstance() {
+        return cacheInstance;
     }
 
     public Set<ServiceInstancesChangedListener> getListeners() {
         return listeners;
     }
 
-    public boolean shouldKeepWatching() {
-        return keepWatching;
-    }
-
-    public void stopWatching() {
-        this.keepWatching = false;
-    }
-
-    public void setLatch(CountDownLatch latch) {
-        this.latch = latch;
-    }
-
-    public String getServiceName() {
-        return serviceName;
+    public void addListener(ServiceInstancesChangedListener listener) {
+        listeners.add(listener);
     }
 }
