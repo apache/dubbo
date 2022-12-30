@@ -52,7 +52,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 
 
 /**
@@ -215,7 +215,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
                     }
                 });
             } else {
-                LOGGER.error(COMMON_FAILED_REFLECT, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+                LOGGER.error(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
             }
             return attachments;
         }
