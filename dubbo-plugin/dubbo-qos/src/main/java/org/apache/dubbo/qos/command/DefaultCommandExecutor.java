@@ -48,7 +48,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
 
         try {
             String result = command.execute(commandContext, commandContext.getArgs());
-            logger.info("[Dubbo QoS] Command Process start. Command: " + commandContext.getCommandName() +
+            logger.info("[Dubbo QoS] Command Process success. Command: " + commandContext.getCommandName() +
                 ", Args: " + Arrays.toString(commandContext.getArgs()) + ", Result: " + result +
                 ", Remote Address: " + commandContext.getRemote().remoteAddress());
             return result;
