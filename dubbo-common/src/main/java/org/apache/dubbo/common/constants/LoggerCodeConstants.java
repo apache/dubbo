@@ -335,7 +335,7 @@ public interface LoggerCodeConstants {
 
     String CONFIG_STOP_DUBBO_ERROR = "5-20";
 
-    String CONFIG_FAILED_EXECUTE_DESTORY = "5-21";
+    String CONFIG_FAILED_EXECUTE_DESTROY = "5-21";
 
     String CONFIG_FAILED_INIT_CONFIG_CENTER = "5-22";
 
@@ -382,7 +382,10 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_FAILED_CLOSE = "6-3";
 
-    String TRANSPORT_UNEXPECTED_EXCEPTION = "6-4";
+    /**
+     * Absent. Merged to 99-0.
+     */
+    String TRANSPORT_814 = "6-4";
 
     String TRANSPORT_FAILED_DISCONNECT_PROVIDER = "6-5";
 
