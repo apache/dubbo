@@ -61,7 +61,7 @@ public class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
                 logger.info("TLS negotiation succeed with session: " + session);
                 ctx.pipeline().remove(this);
             } else {
-                logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
+                logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
                 ctx.fireExceptionCaught(handshakeEvent.cause());
             }
         }

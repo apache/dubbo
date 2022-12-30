@@ -59,7 +59,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.", cause);
+        logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "TLS negotiation failed when trying to accept new connection.", cause);
     }
 
     @Override

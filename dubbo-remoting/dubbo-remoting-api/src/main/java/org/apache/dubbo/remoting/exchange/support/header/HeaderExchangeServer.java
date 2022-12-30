@@ -221,7 +221,7 @@ public class HeaderExchangeServer implements ExchangeServer {
                 startIdleCheckTask(url);
             }
         } catch (Throwable t) {
-            logger.error(INTERNAL_ERROR, "", "", t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
     }
 

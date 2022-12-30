@@ -64,7 +64,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(INTERNAL_ERROR, "", "", "Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
+            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "Exception when reconnect to remote channel " + channel.getRemoteAddress(), t);
         }
     }
 }

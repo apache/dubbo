@@ -70,7 +70,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.warn(INTERNAL_ERROR, "", "", String.format("Channel error:%s", ctx.channel()), cause);
+        log.warn(INTERNAL_ERROR, "unknown error in remoting module", "", String.format("Channel error:%s", ctx.channel()), cause);
         ctx.close();
     }
 

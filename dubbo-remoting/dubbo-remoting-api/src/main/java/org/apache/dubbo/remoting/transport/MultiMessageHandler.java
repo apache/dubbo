@@ -45,11 +45,11 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
                 try {
                     handler.received(channel, obj);
                 } catch (Throwable t) {
-                    logger.error(INTERNAL_ERROR, "", "", "MultiMessageHandler received fail.", t);
+                    logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler received fail.", t);
                     try {
                         handler.caught(channel, t);
                     } catch (Throwable t1) {
-                        logger.error(INTERNAL_ERROR, "", "", "MultiMessageHandler caught fail.", t1);
+                        logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler caught fail.", t1);
                     }
                 }
             }

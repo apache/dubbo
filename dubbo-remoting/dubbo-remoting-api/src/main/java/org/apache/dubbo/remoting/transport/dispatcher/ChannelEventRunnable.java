@@ -60,7 +60,7 @@ public class ChannelEventRunnable implements Runnable {
             try {
                 handler.received(channel, message);
             } catch (Exception e) {
-                logger.warn(INTERNAL_ERROR, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                     + ", message is " + message, e);
             }
         } else {
@@ -69,21 +69,21 @@ public class ChannelEventRunnable implements Runnable {
                     try {
                         handler.connected(channel);
                     } catch (Exception e) {
-                        logger.warn(INTERNAL_ERROR, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
+                        logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
                     }
                     break;
                 case DISCONNECTED:
                     try {
                         handler.disconnected(channel);
                     } catch (Exception e) {
-                        logger.warn(INTERNAL_ERROR, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
+                        logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel, e);
                     }
                     break;
                 case SENT:
                     try {
                         handler.sent(channel, message);
                     } catch (Exception e) {
-                        logger.warn(INTERNAL_ERROR, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                        logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                             + ", message is " + message, e);
                     }
                     break;
@@ -91,12 +91,12 @@ public class ChannelEventRunnable implements Runnable {
                     try {
                         handler.caught(channel, exception);
                     } catch (Exception e) {
-                        logger.warn(INTERNAL_ERROR, "", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
+                        logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                             + ", message is: " + message + ", exception is " + exception, e);
                     }
                     break;
                 default:
-                    logger.warn(INTERNAL_ERROR, "", "", "unknown state: " + state + ", message is " + message);
+                    logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "unknown state: " + state + ", message is " + message);
             }
         }
         InternalThreadLocal.removeAll();

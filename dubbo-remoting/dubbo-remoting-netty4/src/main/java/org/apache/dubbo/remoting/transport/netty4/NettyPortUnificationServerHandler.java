@@ -71,7 +71,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.error(INTERNAL_ERROR, "", "", "Unexpected exception from downstream before protocol detected.", cause);
+        LOGGER.error(INTERNAL_ERROR, "unknown error in remoting module", "", "Unexpected exception from downstream before protocol detected.", cause);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class NettyPortUnificationServerHandler extends ByteToMessageDecoder {
             Set<String> supported = url.getApplicationModel()
                 .getExtensionLoader(WireProtocol.class)
                 .getSupportedExtensions();
-            LOGGER.error(INTERNAL_ERROR, "", "", String.format("Can not recognize protocol from downstream=%s . "
+            LOGGER.error(INTERNAL_ERROR, "unknown error in remoting module", "", String.format("Can not recognize protocol from downstream=%s . "
                     + "preface=%s protocols=%s", ctx.channel().remoteAddress(),
                 Bytes.bytes2hex(preface),
                 supported));
