@@ -437,6 +437,9 @@ public class RpcInvocation implements Invocation, Serializable {
     public Map<String, String> getAttachments() {
         try {
             attachmentLock.lock();
+            if (attachments == null) {
+                attachments = new HashMap<>();
+            }
             return new AttachmentsAdapter.ObjectToStringMap(attachments);
         } finally {
             attachmentLock.unlock();
