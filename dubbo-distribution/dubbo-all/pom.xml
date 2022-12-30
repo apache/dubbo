@@ -923,6 +923,12 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.ExceptionProcessor
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.remoting.api.pu.PortUnificationTransporter
                                     </resource>
                                 </transformer>
