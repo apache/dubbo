@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
@@ -82,7 +81,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                 }
             }
         } else {
-            LOGGER.error(COMMON_FAILED_REFLECT, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+            LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }
