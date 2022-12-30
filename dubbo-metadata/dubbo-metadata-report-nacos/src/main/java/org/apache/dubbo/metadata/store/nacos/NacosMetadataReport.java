@@ -236,7 +236,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     @Override
     public ConfigItem getConfigItem(String key, String group) {
         String content = getConfig(key, group);
-        String casMd5 = "";
+        String casMd5 = "0";
         if (StringUtils.isNotEmpty(content)) {
             casMd5 = md5Utils.getMd5(content);
         }

@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 
 public class ReflectionMethodDescriptor implements MethodDescriptor {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(ReflectionMethodDescriptor.class);
@@ -58,7 +58,7 @@ public class ReflectionMethodDescriptor implements MethodDescriptor {
         try {
             returnTypesResult = ReflectUtils.getReturnTypes(method);
         } catch (Throwable throwable) {
-            logger.error(COMMON_FAILED_REFLECT, "", "",
+            logger.error(COMMON_REFLECTIVE_OPERATION_FAILED, "", "",
                 "fail to get return types. Method name: " + methodName + " Declaring class:" + method.getDeclaringClass()
                     .getName(), throwable);
             returnTypesResult = new Type[]{returnClass, returnClass};
