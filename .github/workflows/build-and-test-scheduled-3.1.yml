@@ -162,6 +162,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
         if: ${{ startsWith( matrix.os, 'ubuntu') }}
@@ -202,6 +210,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
             ${{ runner.os }}-maven-
+      - uses: actions/cache@v3
+        name: "Cache zookeeper binary archive"
+        id: "cache-zookeeper"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
+          restore-keys: |
+            zookeeper-${{ runner.os }}-
       - name: "Test with Maven with Integration Tests"
         timeout-minutes: 70
         if: ${{ startsWith( matrix.os, 'ubuntu') }}

@@ -32,6 +32,8 @@ public interface QosConstants {
 
     String ACCEPT_FOREIGN_IP_WHITELIST = "qos.accept.foreign.ip.whitelist";
 
+    String ANONYMOUS_ACCESS_PERMISSION_LEVEL = "qos.anonymous.access.permission.level";
+
     String QOS_ENABLE_COMPATIBLE = "qos-enable";
 
     String QOS_HOST_COMPATIBLE = "qos-host";
@@ -41,4 +43,6 @@ public interface QosConstants {
     String ACCEPT_FOREIGN_IP_COMPATIBLE = "qos-accept-foreign-ip";
 
     String ACCEPT_FOREIGN_IP_WHITELIST_COMPATIBLE = "qos-accept-foreign-ip-whitelist";
+
+    String ANONYMOUS_ACCESS_PERMISSION_LEVEL_COMPATIBLE = "qos-anonymous-access-permission-level";
 }

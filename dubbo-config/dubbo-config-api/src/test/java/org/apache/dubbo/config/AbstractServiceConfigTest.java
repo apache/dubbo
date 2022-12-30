@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class AbstractServiceConfigTest {
     @Test
@@ -175,6 +176,45 @@ class AbstractServiceConfigTest {
         ServiceConfig serviceConfig = new ServiceConfig();
         serviceConfig.setSerialization("serialization");
         assertThat(serviceConfig.getSerialization(), equalTo("serialization"));
+    }
+
+    @Test
+    void testPreferSerialization() throws Exception {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setPreferSerialization("preferSerialization");
+        assertThat(serviceConfig.getPreferSerialization(), equalTo("preferSerialization"));
+    }
+
+    @Test
+    void testPreferSerializationDefault1() throws Exception {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.checkDefault();
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig = new ServiceConfig();
+        serviceConfig.setSerialization("x-serialization");
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.checkDefault();
+        assertThat(serviceConfig.getPreferSerialization(), equalTo("x-serialization"));
+    }
+
+    @Test
+    void testPreferSerializationDefault2() throws Exception {
+        ServiceConfig serviceConfig = new ServiceConfig();
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.refresh();
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig = new ServiceConfig();
+        serviceConfig.setSerialization("x-serialization");
+        assertNull(serviceConfig.getPreferSerialization());
+
+        serviceConfig.refresh();
+        assertThat(serviceConfig.getPreferSerialization(), equalTo("x-serialization"));
     }
 
 

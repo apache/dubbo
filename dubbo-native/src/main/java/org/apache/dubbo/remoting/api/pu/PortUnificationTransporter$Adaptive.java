@@ -18,7 +18,7 @@ package org.apache.dubbo.remoting.api.pu;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 public class PortUnificationTransporter$Adaptive implements org.apache.dubbo.remoting.api.pu.PortUnificationTransporter {
-public org.apache.dubbo.remoting.Client connect(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
+public org.apache.dubbo.remoting.api.connection.AbstractConnectionClient connect(org.apache.dubbo.common.URL arg0, org.apache.dubbo.remoting.ChannelHandler arg1) throws org.apache.dubbo.remoting.RemotingException {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
 String extName = url.getParameter("client", url.getParameter("transporter", "netty4"));

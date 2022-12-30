@@ -33,7 +33,6 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -276,8 +275,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             serviceMetadata.generateServiceKey();
 
             Map<String, String> referenceParameters = appendConfig();
-            // init service-application mapping
-            initServiceAppsMapping(referenceParameters);
 
             ModuleServiceRepository repository = getScopeModel().getServiceRepository();
             ServiceDescriptor serviceDescriptor;
@@ -337,12 +334,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             throw t;
         }
         initialized = true;
-    }
-
-    private void initServiceAppsMapping(Map<String, String> referenceParameters) {
-        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceName, referenceParameters);
-        serviceNameMapping.initInterfaceAppMapping(url);
     }
 
     /**

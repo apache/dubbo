@@ -75,8 +75,10 @@ public interface LoggerCodeConstants {
 
     String COMMON_METADATA_PROCESSOR = "0-26";
 
+    String COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR = "0-27";
+
     // Registry module
-    
+
     String REGISTRY_ADDRESS_INVALID = "1-1";
 
     /**
@@ -161,7 +163,11 @@ public interface LoggerCodeConstants {
 
     String REGISTRY_FAILED_LOAD_METADATA = "1-39";
 
-    // cluster module
+    String REGISTRY_ROUTER_WAIT_LONG = "1-40";
+
+    String REGISTRY_ISTIO_EXCEPTION = "1-41";
+
+    // cluster module 2-x
     String CLUSTER_FAILED_SITE_SELECTION = "2-1";
 
     String CLUSTER_NO_VALID_PROVIDER = "2-2";
@@ -202,7 +208,7 @@ public interface LoggerCodeConstants {
 
     String CLUSTER_FAILED_GROUP_MERGE = "2-20";
 
-    // Proxy module.
+    // Proxy module. 3-1
     String PROXY_FAILED_CONVERT_URL = "3-1";
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
@@ -216,6 +222,8 @@ public interface LoggerCodeConstants {
     String PROXY_UNSUPPORTED_INVOKER = "3-6";
 
     String PROXY_TIMEOUT_RESPONSE = "3-7";
+
+    String PROXY_FAILED = "3-8";
 
     // Protocol module.
     String PROTOCOL_UNSUPPORTED = "4-1";
@@ -384,6 +392,8 @@ public interface LoggerCodeConstants {
     String QOS_COMMAND_NOT_FOUND = "7-5";
 
     String QOS_UNEXPECTED_EXCEPTION = "7-6";
+
+    String QOS_PERMISSION_DENY_EXCEPTION = "7-7";
 
     // Internal unknown error.
 
