@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_PARSE;
 
 public abstract class AbstractH2TransportListener implements H2TransportListener {
@@ -66,7 +67,7 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
             }
         }
 
-        // try convert upper key
+        // try converting upper key
         Object obj = convertUpperHeaderSupplier.get();
         if (obj == null) {
             return attachments;
@@ -81,7 +82,10 @@ public abstract class AbstractH2TransportListener implements H2TransportListener
                 }
             }
         } else {
-            LOGGER.error(PROTOCOL_FAILED_PARSE, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
+            // If convertUpperHeaderSupplier does not return String, just fail...
+            // Internal invocation, use INTERNAL_ERROR instead.
+
+            LOGGER.error(INTERNAL_ERROR, "wrong internal invocation", "", "Triple convertNoLowerCaseHeader error, obj is not String");
         }
         return attachments;
     }
