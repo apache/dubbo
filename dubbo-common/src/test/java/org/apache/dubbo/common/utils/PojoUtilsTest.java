@@ -32,6 +32,9 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -707,12 +710,12 @@ public class PojoUtilsTest {
         String dateTimeStr = "2018-09-12 10:12:33";
         String[] dateFormat = new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd", "HH:mm:ss"};
 
-        //java.util.Date
+        // java.util.Date
         Object date = PojoUtils.realize(dateTimeStr, Date.class, (Type) Date.class);
         assertEquals(Date.class, date.getClass());
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(date));
 
-        //java.sql.Time
+        // java.sql.Time
         Object time = PojoUtils.realize(dateTimeStr, java.sql.Time.class, (Type) java.sql.Time.class);
         assertEquals(java.sql.Time.class, time.getClass());
         assertEquals(timeStr, new SimpleDateFormat(dateFormat[2]).format(time));
@@ -790,6 +793,22 @@ public class PojoUtilsTest {
         assertEquals(parent.getFeatures().get("divorce"), "false");
         assertEquals(parent.getFeatures().get("money"), "0");
         assertEquals(parent.getFeatures().get("height"), "177cm");
+    }
+
+    @Test
+    public void testJava8Time() {
+        
+        Object localDateTimeGen = PojoUtils.generalize(LocalDateTime.now());
+        Object localDateTime = PojoUtils.realize(localDateTimeGen, LocalDateTime.class);
+        assertEquals(localDateTimeGen, localDateTime.toString());
+
+        Object localDateGen = PojoUtils.generalize(LocalDate.now());
+        Object localDate = PojoUtils.realize(localDateGen, LocalDate.class);
+        assertEquals(localDateGen, localDate.toString());
+
+        Object localTimeGen = PojoUtils.generalize(LocalTime.now());
+        Object localTime = PojoUtils.realize(localTimeGen, LocalTime.class);
+        assertEquals(localTimeGen, localTime.toString());
     }
 
     public enum Day {

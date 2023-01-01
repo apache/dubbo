@@ -244,6 +244,11 @@
                             <![CDATA[ The routers ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="serialization" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>

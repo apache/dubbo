@@ -26,7 +26,7 @@
         <dubbo:parameter key="enable-auto-migration" value="true"/>
     </dubbo:application>
 
-    <dubbo:metadata-report address="zookeeper://127.0.1:2181"/>
+    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 

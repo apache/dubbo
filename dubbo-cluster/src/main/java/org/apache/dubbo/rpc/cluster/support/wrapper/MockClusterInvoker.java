@@ -75,6 +75,11 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public void destroy() {
+        //directory need destroy, because do not have directory manager, so who get the directory need destroy
+        //directory need support destroy multi times
+        //other ClusterInvoker maybe also have directory, so it also destroy
+        this.directory.destroy();
+
         this.invoker.destroy();
     }
 
@@ -103,7 +108,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
                 result = this.invoker.invoke(invocation);
 
                 //fix:#4585
-                if(result.getException() != null && result.getException() instanceof RpcException){
+                if(result.getException() instanceof RpcException){
                     RpcException rpcException= (RpcException)result.getException();
                     if(rpcException.isBiz()){
                         throw  rpcException;

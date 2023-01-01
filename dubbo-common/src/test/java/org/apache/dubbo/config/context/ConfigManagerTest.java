@@ -113,7 +113,7 @@ public class ConfigManagerTest {
 
     // Test MonitorConfig correlative methods
     @Test
-    public void tesModuleConfig() {
+    public void testModuleConfig() {
         ModuleConfig config = new ModuleConfig();
         configManager.setModule(config);
         assertTrue(configManager.getModule().isPresent());
@@ -122,7 +122,7 @@ public class ConfigManagerTest {
 
     // Test MetricsConfig correlative methods
     @Test
-    public void tesMetricsConfig() {
+    public void testMetricsConfig() {
         MetricsConfig config = new MetricsConfig();
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());

@@ -103,4 +103,6 @@ public interface Constants {
      * prefix of arguments router key
      */
     String ARGUMENTS = "arguments";
+
+    String SHOULD_FAIL_FAST_KEY = "dubbo.router.should-fail-fast";
 }

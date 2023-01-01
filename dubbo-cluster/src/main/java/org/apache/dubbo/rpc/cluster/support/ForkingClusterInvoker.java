@@ -34,9 +34,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.FORKS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FORKS;
 
 /**
@@ -66,7 +64,6 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             checkInvokers(invokers, invocation);
             final List<Invoker<T>> selected;
             final int forks = getUrl().getParameter(FORKS_KEY, DEFAULT_FORKS);
-            final int timeout = getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
             if (forks <= 0 || forks >= invokers.size()) {
                 selected = invokers;
             } else {
@@ -96,7 +93,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 });
             }
             try {
-                Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
+                Object ret = ref.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                 if (ret instanceof Throwable) {
                     Throwable e = (Throwable) ret;
                     throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : 0, "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);

@@ -295,4 +295,10 @@ public @interface DubboReference {
      * @see RegistryConstants#PROVIDED_BY
      */
     String[] providedBy() default {};
+
+    /**
+     * specify serialization from consumer side
+     * @see org.apache.dubbo.remoting.Constants#SERIALIZATION_KEY
+     */
+    String serialization() default "";
 }

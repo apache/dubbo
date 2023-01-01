@@ -112,7 +112,8 @@
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.2.0</maven_jar_version>
-        <maven_surefire_version>2.22.2</maven_surefire_version>
+        <maven_surefire_version>3.0.0-M5</maven_surefire_version>
+        <maven_failsafe_version>3.0.0-M5</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.8.1</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
@@ -126,7 +127,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.14-SNAPSHOT</revision>
+        <revision>2.7.21-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -322,7 +323,7 @@
         <profile>
             <id>release</id>
             <properties>
-                <log4j2_version>2.11.1</log4j2_version>
+                <log4j2_version>2.17.2</log4j2_version>
             </properties>
             <build>
                 <plugins>
@@ -426,6 +427,22 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk9-compile</id>
+            <activation>
+                <jdk>[1.9,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <release>8</release>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -641,11 +658,15 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven_surefire_version}</version>
+                    <configuration>
+                        <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                    </configuration>
                 </plugin>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>${maven_failsafe_version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>

@@ -89,8 +89,16 @@ public class NettyClient extends AbstractClient {
      */
     @Override
     protected void doOpen() throws Throwable {
-        final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
+        final NettyClientHandler nettyClientHandler = createNettyClientHandler();
         bootstrap = new Bootstrap();
+        initBootstrap(nettyClientHandler);
+    }
+
+    protected NettyClientHandler createNettyClientHandler() {
+        return new NettyClientHandler(getUrl(), this);
+    }
+
+    protected void initBootstrap(NettyClientHandler nettyClientHandler) {
         bootstrap.group(EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -213,5 +221,13 @@ public class NettyClient extends AbstractClient {
     @Override
     public boolean canHandleIdle() {
         return true;
+    }
+
+    protected EventLoopGroup getEventLoopGroup() {
+        return EVENT_LOOP_GROUP;
+    }
+
+    protected Bootstrap getBootstrap() {
+        return bootstrap;
     }
 }

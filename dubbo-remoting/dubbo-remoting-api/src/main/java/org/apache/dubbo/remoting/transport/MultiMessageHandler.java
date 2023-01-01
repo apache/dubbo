@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
@@ -43,9 +42,13 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
             for (Object obj : list) {
                 try {
                     handler.received(channel, obj);
-                } catch (ExecutionException e) {
-                    logger.error("MultiMessageHandler received fail.", e);
-                    handler.caught(channel, e);
+                } catch (Throwable t) {
+                    logger.error("MultiMessageHandler received fail.", t);
+                    try {
+                        handler.caught(channel, t);
+                    } catch (Throwable t1) {
+                        logger.error("MultiMessageHandler caught fail.", t1);
+                    }
                 }
             }
         } else {
