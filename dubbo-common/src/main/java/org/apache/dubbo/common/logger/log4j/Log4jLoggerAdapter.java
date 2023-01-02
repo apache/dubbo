@@ -26,10 +26,31 @@ import org.apache.log4j.LogManager;
 
 import java.io.File;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Log4jLoggerAdapter implements LoggerAdapter {
 
     private File file;
+
+    private static final Map<Level, org.apache.log4j.Level> toLevel = new HashMap<>();
+    private static final Map<org.apache.log4j.Level, Level> toApacheLevel = new HashMap<>();
+
+    static {
+        toLevel.put(Level.ALL, org.apache.log4j.Level.ALL);
+        toLevel.put(Level.TRACE, org.apache.log4j.Level.TRACE);
+        toLevel.put(Level.DEBUG, org.apache.log4j.Level.DEBUG);
+        toLevel.put(Level.INFO, org.apache.log4j.Level.INFO);
+        toLevel.put(Level.WARN, org.apache.log4j.Level.WARN);
+        toLevel.put(Level.ERROR, org.apache.log4j.Level.ERROR);
+
+        toApacheLevel.put(org.apache.log4j.Level.ALL, Level.ALL);
+        toApacheLevel.put(org.apache.log4j.Level.TRACE, Level.TRACE);
+        toApacheLevel.put(org.apache.log4j.Level.DEBUG, Level.DEBUG);
+        toApacheLevel.put(org.apache.log4j.Level.INFO, Level.INFO);
+        toApacheLevel.put(org.apache.log4j.Level.WARN, Level.WARN);
+        toApacheLevel.put(org.apache.log4j.Level.ERROR, Level.ERROR);
+    }
 
     @SuppressWarnings("unchecked")
     public Log4jLoggerAdapter() {
@@ -54,49 +75,11 @@ public class Log4jLoggerAdapter implements LoggerAdapter {
     }
 
     private static org.apache.log4j.Level toLog4jLevel(Level level) {
-        if (level == Level.ALL) {
-            return org.apache.log4j.Level.ALL;
-        }
-        if (level == Level.TRACE) {
-            return org.apache.log4j.Level.TRACE;
-        }
-        if (level == Level.DEBUG) {
-            return org.apache.log4j.Level.DEBUG;
-        }
-        if (level == Level.INFO) {
-            return org.apache.log4j.Level.INFO;
-        }
-        if (level == Level.WARN) {
-            return org.apache.log4j.Level.WARN;
-        }
-        if (level == Level.ERROR) {
-            return org.apache.log4j.Level.ERROR;
-        }
-        // if (level == Level.OFF)
-        return org.apache.log4j.Level.OFF;
+        return toLevel.getOrDefault(level, org.apache.log4j.Level.OFF);
     }
 
     private static Level fromLog4jLevel(org.apache.log4j.Level level) {
-        if (level == org.apache.log4j.Level.ALL) {
-            return Level.ALL;
-        }
-        if (level == org.apache.log4j.Level.TRACE) {
-            return Level.TRACE;
-        }
-        if (level == org.apache.log4j.Level.DEBUG) {
-            return Level.DEBUG;
-        }
-        if (level == org.apache.log4j.Level.INFO) {
-            return Level.INFO;
-        }
-        if (level == org.apache.log4j.Level.WARN) {
-            return Level.WARN;
-        }
-        if (level == org.apache.log4j.Level.ERROR) {
-            return Level.ERROR;
-        }
-        // if (level == org.apache.log4j.Level.OFF)
-        return Level.OFF;
+        return toApacheLevel.getOrDefault(level, Level.OFF);
     }
 
     @Override
