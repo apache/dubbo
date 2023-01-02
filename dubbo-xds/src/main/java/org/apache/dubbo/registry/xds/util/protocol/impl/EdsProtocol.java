@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
-import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
-import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaEndpoint;
-import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
-import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
-
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.HealthStatus;
@@ -32,10 +24,19 @@ import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaEndpoint;
+import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
+import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
@@ -44,6 +45,7 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(EdsProtocol.class);
 
+    private Map<String, EndpointResult> endpointDecodeResult = new HashMap<>();
     public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
         super(xdsChannel, node, pollingTimeout, applicationModel);
     }
@@ -54,26 +56,28 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
     }
 
     @Override
-    public EndpointResult getDsResult(Set<String> resourceNames) {
-        EndpointResult endpointResult = new EndpointResult();
-        for (String resourceName : resourceNames) {
-            endpointResult.getEndpoints().addAll((Set<Endpoint>)resourcesMap.get(resourceName));
+    protected Map<String, EndpointResult> getDsResult(Map<String, Object> resourcesMap) {
+        Map<String, EndpointResult> results = new HashMap<>();
+        for (Map.Entry<String, Object> entry : resourcesMap.entrySet()) {
+            EndpointResult endpointResult = new EndpointResult();
+            endpointResult.getEndpoints().addAll((Set<Endpoint>) entry.getValue());
+            results.put(entry.getKey(), endpointResult);
         }
-        return endpointResult;
+        return results;
     }
 
 
     @Override
-    protected EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, EndpointResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             Set<Endpoint> set = response.getResourcesList().stream()
                 .map(EdsProtocol::unpackClusterLoadAssignment)
                 .filter(Objects::nonNull)
                 .flatMap((e) -> decodeResourceToEndpoint(e).stream())
                 .collect(Collectors.toSet());
-            return new EndpointResult(set);
+            return endpointDecodeResult;
         }
-        return new EndpointResult();
+        return new HashMap<>();
     }
 
     private Set<Endpoint> decodeResourceToEndpoint(ClusterLoadAssignment resource) {
@@ -82,6 +86,8 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
             .map(EdsProtocol::decodeLbEndpointToEndpoint)
             .collect(Collectors.toSet());
         resourcesMap.put(resource.getClusterName(), endpoints);
+        this.endpointDecodeResult = new HashMap<>();
+        endpointDecodeResult.put(resource.getClusterName(), new EndpointResult(endpoints));
         return endpoints;
     }
 

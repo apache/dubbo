@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -27,7 +29,7 @@ public interface XdsProtocol<T> {
      * @param resourceNames specified resource name
      * @return resources, null if request failed
      */
-    T getResource(Set<String> resourceNames);
+    Map<String, T> getResource(Set<String> resourceNames);
 
     /**
      * Add a observer resource with {@link Consumer}
@@ -36,5 +38,5 @@ public interface XdsProtocol<T> {
      * @param consumer      resource notifier, will be called when resource updated
      * @return requestId, used when resourceNames update with {@link XdsProtocol#updateObserve(long, Set)}
      */
-    void observeResource(Set<String> resourceNames, Consumer<T> consumer, boolean isReConnect);
+    void observeResource(Set<String> resourceNames, Consumer<Map<String, T>> consumer, boolean isReConnect);
 }

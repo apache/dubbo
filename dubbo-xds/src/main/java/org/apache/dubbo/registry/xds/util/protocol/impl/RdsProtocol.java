@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
-import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
-import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
-import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
-
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.Node;
@@ -30,12 +23,18 @@ import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
+import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
@@ -44,6 +43,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
+    private Map<String, RouteResult> routeDecodeResult = new HashMap<>();
     public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
         super(xdsChannel, node, pollingTimeout, applicationModel);
     }
@@ -54,19 +54,21 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     }
 
     @Override
-    public RouteResult getDsResult(Set<String> resourceNames) {
-        RouteResult routeResult = new RouteResult();
-        for (String resourceName : resourceNames) {
-            if ("".equals(resourceName)) {
+    protected Map<String, RouteResult> getDsResult(Map<String, Object> resourcesMap) {
+        Map<String, RouteResult> results = new HashMap<>();
+        for (Map.Entry<String, Object> entry : resourcesMap.entrySet()) {
+            if ("".equals(entry.getValue())) {
                 continue;
             }
-            routeResult.getDomainMap().putAll((Map<String, Set<String>>) resourcesMap.get(resourceName));
+            RouteResult routeResult = new RouteResult();
+            routeResult.getDomainMap().putAll((Map<String, Set<String>>) entry.getValue());
+            results.put(entry.getKey(), routeResult);
         }
-        return routeResult;
+        return results;
     }
 
     @Override
-    protected RouteResult decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, RouteResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             Map<String, Set<String>> map = response.getResourcesList().stream()
                 .map(RdsProtocol::unpackRouteConfiguration)
@@ -76,9 +78,9 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                     a.putAll(b);
                     return a;
                 }).orElse(new HashMap<>());
-            return new RouteResult(map);
+            return routeDecodeResult;
         }
-        return new RouteResult();
+        return new HashMap<>();
     }
 
     private Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {
@@ -93,7 +95,9 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                     map.put(domain, cluster);
                 }
                 resourcesMap.put(resource.getName(), map);
+                routeDecodeResult.put(resource.getName(), new RouteResult(map));
             });
+        Map<String, Map<Set<String>, RouteResult>> stringMapMap = new HashMap<>();
         return map;
     }
 

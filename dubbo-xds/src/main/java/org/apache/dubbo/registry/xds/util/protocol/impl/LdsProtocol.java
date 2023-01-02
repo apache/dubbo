@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util.protocol.impl;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
-import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
-import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaListener;
-import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
-
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.Node;
@@ -31,19 +24,28 @@ import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaListener;
+import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Set;
-import java.util.Objects;
 import java.util.Collections;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_RESPONSE_XDS;
 
 public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener> {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(LdsProtocol.class);
 
+    private Map<String, ListenerResult> listenerDecodeResult = new HashMap<>();
     public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
         super(xdsChannel, node, pollingTimeout, applicationModel);
     }
@@ -54,34 +56,37 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     @Override
-    public ListenerResult getDsResult(Set<String> resourceNames) {
-        ListenerResult listenerResult = new ListenerResult();
-        for (String resourceName : resourceNames) {
-            listenerResult.getRouteConfigNames().addAll((Set<String>) resourcesMap.get(resourceName));
+    protected Map<String, ListenerResult> getDsResult(Map<String, Object> resourcesMap) {
+        Map<String, ListenerResult> results = new HashMap<>();
+        for (Map.Entry<String, Object> entry : resourcesMap.entrySet()) {
+            ListenerResult listenerResult = new ListenerResult();
+            listenerResult.getRouteConfigNames().addAll((Set<String>) entry.getValue());
+            results.put(entry.getKey(), listenerResult);
         }
-        return listenerResult;
+        return results;
     }
 
 
-    public ListenerResult getListeners() {
+    public Map<String, ListenerResult> getListeners() {
         return getResource(null);
     }
 
-    public void observeListeners(Consumer<ListenerResult> consumer) {
+    public void observeListeners(Consumer<Map<String, ListenerResult>> consumer) {
         observeResource(Collections.emptySet(), consumer, false);
     }
 
     @Override
-    protected ListenerResult decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, ListenerResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
             Set<String> set = response.getResourcesList().stream()
                 .map(LdsProtocol::unpackListener)
                 .filter(Objects::nonNull)
                 .flatMap((e) -> decodeResourceToListener(e).stream())
                 .collect(Collectors.toSet());
-            return new ListenerResult(set);
+            listenerDecodeResult.put(ldsResourcesName, new ListenerResult(set));
+            return listenerDecodeResult;
         }
-        return new ListenerResult();
+        return new HashMap<>();
     }
 
     private Set<String> decodeResourceToListener(Listener resource) {
