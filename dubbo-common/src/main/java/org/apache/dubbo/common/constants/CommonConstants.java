@@ -221,6 +221,8 @@ public interface CommonConstants {
 
     String DUMP_DIRECTORY = "dump.directory";
 
+    String DUMP_ENABLE = "dump.enable";
+
     String CLASSIFIER_KEY = "classifier";
 
     String VERSION_KEY = "version";

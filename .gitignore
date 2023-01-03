@@ -48,3 +48,9 @@ dubbo-demo/dubbo-demo-triple/build/*
 
 # global registry center
 .tmp
+
+dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer/src/main/resources/META-INF/native-image
+dubbo-demo/dubbo-demo-native/dubbo-demo-native-consumer/src/main/generated
+dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider/src/main/resources/META-INF/native-image
+dubbo-demo/dubbo-demo-native/dubbo-demo-native-provider/src/main/generated
+

@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest.springmvc;
 
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -47,6 +48,10 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.RE
 public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
 
     private static final int FIRST_ELEMENT_INDEX = 0;
+
+    public SpringMvcServiceRestMetadataResolver(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     @Override
     protected boolean supports0(Class<?> serviceType) {

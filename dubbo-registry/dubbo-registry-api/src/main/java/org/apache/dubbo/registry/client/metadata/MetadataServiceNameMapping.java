@@ -38,7 +38,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
@@ -101,7 +101,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                 }
             } catch (Exception e) {
                 result = false;
-                logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", "Failed registering mapping to remote." + metadataReport, e);
+                logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", "Failed registering mapping to remote." + metadataReport, e);
             }
         }
 

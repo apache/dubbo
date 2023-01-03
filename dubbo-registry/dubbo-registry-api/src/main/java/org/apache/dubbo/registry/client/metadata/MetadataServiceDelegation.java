@@ -95,6 +95,9 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getExportedServiceURLs();
+            if (serviceURLs == null) {
+                continue;
+            }
             for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
                 SortedSet<URL> urls = entry.getValue();
                 if (urls != null) {
@@ -115,6 +118,9 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getSubscribedServiceURLs();
+            if (serviceURLs == null) {
+                continue;
+            }
             for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
                 SortedSet<URL> urls = entry.getValue();
                 if (urls != null) {

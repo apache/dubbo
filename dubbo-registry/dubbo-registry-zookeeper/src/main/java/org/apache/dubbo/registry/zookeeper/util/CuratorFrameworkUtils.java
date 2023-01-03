@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.zookeeper.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -31,8 +29,6 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
-import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
@@ -47,9 +43,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.curator.x.discovery.ServiceInstance.builder;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ZOOKEEPER_EXCEPTION;
 import static org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery.DEFAULT_GROUP;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BASE_SLEEP_TIME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.BLOCK_UNTIL_CONNECTED_UNIT;
@@ -94,8 +87,6 @@ public abstract class CuratorFrameworkUtils {
             });
         }
         CuratorFramework curatorFramework = builder.build();
-
-        curatorFramework.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(connectionURL, serviceDiscovery));
 
         curatorFramework.start();
         curatorFramework.blockUntilConnected(BLOCK_UNTIL_CONNECTED_WAIT.getParameterValue(connectionURL),
@@ -168,55 +159,5 @@ public abstract class CuratorFrameworkUtils {
             }
         }
         return group;
-    }
-
-    private static class CuratorConnectionStateListener implements ConnectionStateListener {
-        private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(CuratorConnectionStateListener.class);
-        private final long UNKNOWN_SESSION_ID = -1L;
-        protected final int DEFAULT_CONNECTION_TIMEOUT_MS = 30 * 1000;
-        protected final int DEFAULT_SESSION_TIMEOUT_MS = 60 * 1000;
-
-        private long lastSessionId;
-        private final int timeout;
-        private final int sessionExpireMs;
-        private final ZookeeperServiceDiscovery serviceDiscovery;
-
-        public CuratorConnectionStateListener(URL url, ZookeeperServiceDiscovery serviceDiscovery) {
-            this.timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
-            this.sessionExpireMs = url.getParameter(SESSION_KEY, DEFAULT_SESSION_TIMEOUT_MS);
-            this.serviceDiscovery = serviceDiscovery;
-        }
-
-        @Override
-        public void stateChanged(CuratorFramework client, ConnectionState state) {
-            long sessionId = UNKNOWN_SESSION_ID;
-            try {
-                sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
-            } catch (Exception e) {
-                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator client state changed, but failed to get the related zk session instance.");
-            }
-
-            if (state == ConnectionState.LOST) {
-                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator zookeeper session " + Long.toHexString(lastSessionId) + " expired.");
-            } else if (state == ConnectionState.SUSPENDED) {
-                logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator zookeeper connection of session " + Long.toHexString(sessionId) + " timed out. " +
-                    "connection timeout value is " + timeout + ", session expire timeout value is " + sessionExpireMs);
-            } else if (state == ConnectionState.CONNECTED) {
-                lastSessionId = sessionId;
-                logger.info("Curator zookeeper client instance initiated successfully, session id is " + Long.toHexString(sessionId));
-            } else if (state == ConnectionState.RECONNECTED) {
-                if (lastSessionId == sessionId && sessionId != UNKNOWN_SESSION_ID) {
-                    logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "Curator zookeeper connection recovered from connection lose, " +
-                        "reuse the old session " + Long.toHexString(sessionId));
-                    serviceDiscovery.recover();
-                } else {
-                    logger.warn(REGISTRY_ZOOKEEPER_EXCEPTION, "", "", "New session created after old session lost, " +
-                        "old session " + Long.toHexString(lastSessionId) + ", new session " + Long.toHexString(sessionId));
-                    lastSessionId = sessionId;
-                    serviceDiscovery.recover();
-                }
-            }
-        }
-
     }
 }

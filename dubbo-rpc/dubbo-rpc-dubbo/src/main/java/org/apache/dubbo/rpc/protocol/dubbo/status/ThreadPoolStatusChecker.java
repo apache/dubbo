@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc.protocol.dubbo.status;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.store.DataStore;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -33,9 +33,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Activate
 public class ThreadPoolStatusChecker implements StatusChecker {
 
+    private final ApplicationModel applicationModel;
+
+    public ThreadPoolStatusChecker(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     public Status check() {
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore = applicationModel.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         StringBuilder msg = new StringBuilder();
