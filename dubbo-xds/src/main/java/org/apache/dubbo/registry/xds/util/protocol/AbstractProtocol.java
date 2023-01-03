@@ -20,7 +20,6 @@ package org.apache.dubbo.registry.xds.util.protocol;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -31,10 +30,10 @@ import io.grpc.stub.StreamObserver;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -199,27 +198,18 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     v.add(consumer);
                     return v;
                 });
+                consumer.accept(getResource(resourceNames));
             } finally {
                 writeLock.unlock();
             }
         }
-        Map<Set<String>, List<Consumer<Map<String, T>>>> consumerObserveList = new HashMap<>();
         try {
             writeLock.lock();
-            for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
-                Set<String> newKey = JsonUtils.getJson().toJavaObject(JsonUtils.getJson().toJson(entry.getKey()), Set.class);
-                for (Consumer<Map<String, T>> observeConsumer : entry.getValue()) {
-                    Consumer<Map<String, T>> newObserveConsumer = observeConsumer::accept;
-                    consumerObserveList.computeIfAbsent(newKey, (k) -> new ArrayList<>()).add(newObserveConsumer);
-                }
-            }
+            this.observeResourcesName = consumerObserveMap.keySet()
+                .stream().flatMap(Set::stream).collect(Collectors.toSet());
         } finally {
             writeLock.unlock();
         }
-        consumerObserveList.forEach((resourcesName, consumerList) -> consumerList.forEach(o -> {
-            o.accept(getResource(resourcesName));
-        }));
-        this.observeResourcesName = resourceNames;
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames) {
@@ -250,7 +240,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
         @Override
         public void onNext(DiscoveryResponse value) {
-            logger.info("receive notification from xds server, type: " + getTypeUrl());
             Map<String, T> newResult = decodeDiscoveryResponse(value);
             Map<String, T> oldResource = resourcesMap;
             discoveryResponseListener(oldResource, newResult);
@@ -259,10 +248,32 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         }
 
         public void discoveryResponseListener(Map<String, T> oldResult, Map<String, T> newResult) {
+            Set<String> changedResourceNames = new HashSet<>();
+            oldResult.forEach((key, origin) -> {
+                if (!Objects.equals(origin, newResult.get(key))) {
+                    changedResourceNames.add(key);
+                }
+            });
+            newResult.forEach((key, origin) -> {
+                if (!Objects.equals(origin, oldResult.get(key))) {
+                    changedResourceNames.add(key);
+                }
+            });
+            if (changedResourceNames.isEmpty()) {
+                return;
+            }
+
+            logger.info("Receive resource update notification from xds server. Change resource count: " + changedResourceNames.stream() + ". Type: " + getTypeUrl());
+
             // call once for full data
             try {
                 readLock.lock();
                 for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
+                    if (entry.getKey().stream().noneMatch(changedResourceNames::contains)) {
+                        // none update
+                        continue;
+                    }
+
                     Map<String, T> dsResultMap = entry.getKey()
                         .stream()
                         .collect(Collectors.toMap(k -> k, newResult::get));
