@@ -61,7 +61,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
 
-    protected Consumer<Map<String, T>> futureConsumer;
     protected final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
 
     protected Set<String> observeResourcesName;
@@ -141,7 +140,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                 consumerObserveResourceNames = resourceNames;
             }
 
-            this.futureConsumer = future::complete;
+            Consumer<Map<String, T>> futureConsumer = future::complete;
             try {
                 writeLock.lock();
                 consumerObserveMap.computeIfAbsent(consumerObserveResourceNames, key -> new ArrayList<>())
@@ -306,12 +305,17 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         scheduledFuture.scheduleAtFixedRate(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
             if (xdsChannel.getChannel() != null) {
-                for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
-                    if (entry.getKey().equals(observeResourcesName)) {
-                        for (Consumer<Map<String, T>> consumer : entry.getValue()) {
-                            observeResource(observeResourcesName, consumer, true);
+                try {
+                    readLock.lock();
+                    for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
+                        if (entry.getKey().equals(observeResourcesName)) {
+                            for (Consumer<Map<String, T>> consumer : entry.getValue()) {
+                                observeResource(observeResourcesName, consumer, true);
+                            }
                         }
                     }
+                } finally {
+                    readLock.unlock();
                 }
                 if (isConnectFail.get()) {
                     scheduledFuture.shutdown();
