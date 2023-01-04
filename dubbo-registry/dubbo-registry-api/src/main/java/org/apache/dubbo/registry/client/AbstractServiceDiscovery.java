@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -32,10 +36,6 @@ import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
@@ -130,10 +130,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
+        ServiceInstance oldServiceInstance = this.serviceInstance;
+        DefaultServiceInstance newServiceInstance = new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
+        boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
-            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", this.serviceInstance.getServiceMetadata().getRevision()));
-            doUpdate(this.serviceInstance);
+            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", newServiceInstance.getServiceMetadata().getRevision()));
+            doUpdate(oldServiceInstance, newServiceInstance);
+            this.serviceInstance = newServiceInstance;
         }
     }
 
@@ -247,12 +250,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
-    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
-        this.unregister();
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+        this.doUnregister(oldServiceInstance);
 
         if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
             reportMetadata(serviceInstance.getServiceMetadata());
-            this.doRegister(serviceInstance);
+            this.serviceInstance = newServiceInstance;
+            this.doRegister(newServiceInstance);
         }
     }
 
