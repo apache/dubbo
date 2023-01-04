@@ -16,16 +16,22 @@
  */
 package org.apache.dubbo.qos.command;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.qos.common.QosConstants;
-import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.command.exception.NoSuchCommandException;
 import org.apache.dubbo.qos.command.exception.PermissionDenyException;
+import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.permission.DefaultAnonymousAccessPermissionChecker;
 import org.apache.dubbo.qos.permission.PermissionChecker;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import io.netty.channel.Channel;
 
 public class DefaultCommandExecutor implements CommandExecutor {
     private final static Logger logger = LoggerFactory.getLogger(DefaultCommandExecutor.class);
@@ -86,5 +92,6 @@ public class DefaultCommandExecutor implements CommandExecutor {
                 ", Args: " + Arrays.toString(commandContext.getArgs()) +
                 ", Remote Address: " + remoteAddress, t);
             throw t;
-        }    }
+        }
+    }
 }
