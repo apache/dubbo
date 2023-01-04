@@ -18,7 +18,20 @@
 package org.apache.dubbo.common.constants;
 
 /**
- * Constants of Error codes used in logger.
+ * <p>Constants of Error Codes used in logger.
+ *
+ * <p>Format: <i>[Category]-[Code]</i>, where:
+ * <li>[Category] is the category code which identifies the module.
+ * <li>[Code] is the detailed code.
+ * <li>Every blanks should be filled with positive number.
+ *
+ * <br /><br />
+ * <p>Hint:
+ * <li>Synchronize this file across different branches. (Use merge and cherry-pick.)
+ * <li>Double-check the usage in different branches before deleting any of the error code.
+ * <li>If applicable, use error code that already appears in this file.
+ * <li>If it's required to add an error code, find an error code that's marked by 'Absent', and rename it. (so that no code is wasted)
+ * <li>Update the corresponding file in dubbo-website repository.
  */
 public interface LoggerCodeConstants {
 
@@ -222,7 +235,10 @@ public interface LoggerCodeConstants {
 
     String PROXY_FAILED_EXPORT_SERVICE = "3-2";
 
-    String PROXY_FAILED_JAVASSIST = "3-3";
+    /**
+     * Absent. Merged with 3-8.
+     */
+    String PROXY_33 = "3-3";
 
     String PROXY_TIMEOUT_REQUEST = "3-4";
 
@@ -319,7 +335,7 @@ public interface LoggerCodeConstants {
 
     String CONFIG_STOP_DUBBO_ERROR = "5-20";
 
-    String CONFIG_FAILED_EXECUTE_DESTORY = "5-21";
+    String CONFIG_FAILED_EXECUTE_DESTROY = "5-21";
 
     String CONFIG_FAILED_INIT_CONFIG_CENTER = "5-22";
 
@@ -366,6 +382,9 @@ public interface LoggerCodeConstants {
 
     String TRANSPORT_FAILED_CLOSE = "6-3";
 
+    /**
+     * Absent. Merged to 99-0.
+     */
     String TRANSPORT_UNEXPECTED_EXCEPTION = "6-4";
 
     String TRANSPORT_FAILED_DISCONNECT_PROVIDER = "6-5";

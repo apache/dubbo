@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -55,8 +54,6 @@ import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.Executor;
-
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 
 
 /**
@@ -236,29 +233,10 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             halfClosed = true;
 
             final Map<String, String> reserved = filterReservedHeaders(trailers);
-            final Map<String, Object> attachments = headersToMap(trailers);
-            final Map<String, Object> finalAttachments = convertNoLowerCaseHeader(attachments);
-            listener.onComplete(status, finalAttachments, reserved);
-        }
-
-        private Map<String, Object> convertNoLowerCaseHeader(Map<String, Object> attachments) {
-            Object obj = attachments.remove(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
-            if (obj == null) {
-                return attachments;
-            }
-            if (obj instanceof String) {
-                String json = TriRpcStatus.decodeMessage((String) obj);
-                Map<String, String> map = JsonUtils.getJson().toJavaObject(json, Map.class);
-                map.forEach((originalKey, lowerCaseKey) -> {
-                    Object val = attachments.remove(lowerCaseKey);
-                    if (val != null) {
-                        attachments.put(originalKey, val);
-                    }
-                });
-            } else {
-                LOGGER.error(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", "Triple convertNoLowerCaseHeader error, obj is not String");
-            }
-            return attachments;
+            final Map<String, Object> attachments = headersToMap(trailers, () -> {
+                return reserved.get(TripleHeaderEnum.TRI_HEADER_CONVERT.getHeader());
+            });
+            listener.onComplete(status, attachments, reserved);
         }
 
         private TriRpcStatus validateHeaderStatus(Http2Headers headers) {
