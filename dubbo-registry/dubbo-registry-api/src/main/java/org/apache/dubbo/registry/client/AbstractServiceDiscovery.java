@@ -19,6 +19,10 @@ package org.apache.dubbo.registry.client;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -59,6 +63,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected final String serviceName;
     protected volatile ServiceInstance serviceInstance;
     protected volatile MetadataInfo metadataInfo;
+    protected final ConcurrentHashMap<String, MetadataInfoStat> metadataInfos = new ConcurrentHashMap<>();
+    protected final ScheduledFuture<?> refreshCacheFuture;
     protected MetadataReport metadataReport;
     protected String metadataType;
     protected final MetaCacheManager metaCacheManager;
@@ -88,6 +94,27 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.metaCacheManager = new MetaCacheManager(localCacheEnabled, getCacheNameSuffix(),
             applicationModel.getFrameworkModel().getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
+        this.refreshCacheFuture = applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
+            .scheduleAtFixedRate(() -> {
+                // > 16 个 && > 10min
+                while (metadataInfos.size() > 16) {
+                    AtomicReference<String> oldestRevision = new AtomicReference<>();
+                    AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
+                    metadataInfos.forEach((k, v) -> {
+                        if (System.currentTimeMillis() - v.getUpdateTime() > 600_000) {
+                            if (oldestStat.get() == null || oldestStat.get().getUpdateTime() < v.getUpdateTime()) {
+                                oldestRevision.set(k);
+                                oldestStat.set(v);
+                            }
+                        }
+                    });
+                    if (oldestStat.get() != null) {
+                        metadataInfos.remove(oldestRevision.get(), oldestStat.get());
+                    }
+                }
+                metadataInfos.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().getUpdateTime() > 600_000);
+            }, 600, 600, TimeUnit.SECONDS);
     }
 
 
@@ -164,6 +191,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
+    public MetadataInfo getLocalMetadata(String revision) {
+        MetadataInfoStat metadataInfoStat = metadataInfos.get(revision);
+        if (metadataInfoStat != null) {
+            return metadataInfoStat.getMetadataInfo();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public MetadataInfo getRemoteMetadata(String revision, List<ServiceInstance> instances) {
         MetadataInfo metadata = metaCacheManager.get(revision);
 
@@ -217,6 +254,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public final void destroy() throws Exception {
         isDestroy = true;
         metaCacheManager.destroy();
+        refreshCacheFuture.cancel(true);
         doDestroy();
     }
 
@@ -297,6 +335,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                 metadataReport.publishAppMetadata(identifier, metadataInfo);
             }
         }
+        MetadataInfo clonedMetadataInfo = metadataInfo.clone();
+        metadataInfos.put(metadataInfo.getRevision(), new MetadataInfoStat(clonedMetadataInfo));
     }
 
     protected void unReportMetadata(MetadataInfo metadataInfo) {
@@ -327,5 +367,22 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             stringBuilder.append(url.getBackupAddress());
         }
         return stringBuilder.toString();
+    }
+
+    private static class MetadataInfoStat {
+        private final MetadataInfo metadataInfo;
+        private final long updateTime = System.currentTimeMillis();
+
+        public MetadataInfoStat(MetadataInfo metadataInfo) {
+            this.metadataInfo = metadataInfo;
+        }
+
+        public MetadataInfo getMetadataInfo() {
+            return metadataInfo;
+        }
+
+        public long getUpdateTime() {
+            return updateTime;
+        }
     }
 }
