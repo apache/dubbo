@@ -103,19 +103,23 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.refreshCacheFuture = applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
             .scheduleAtFixedRate(() -> {
-                while (metadataInfos.size() > metadataInfoCacheSize) {
-                    AtomicReference<String> oldestRevision = new AtomicReference<>();
-                    AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
-                    metadataInfos.forEach((k, v) -> {
-                        if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
-                            (oldestStat.get() == null || oldestStat.get().getUpdateTime() < v.getUpdateTime())) {
-                            oldestRevision.set(k);
-                            oldestStat.set(v);
+                try {
+                    while (metadataInfos.size() > metadataInfoCacheSize) {
+                        AtomicReference<String> oldestRevision = new AtomicReference<>();
+                        AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
+                        metadataInfos.forEach((k, v) -> {
+                            if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
+                                (oldestStat.get() == null || oldestStat.get().getUpdateTime() > v.getUpdateTime())) {
+                                oldestRevision.set(k);
+                                oldestStat.set(v);
+                            }
+                        });
+                        if (oldestStat.get() != null) {
+                            metadataInfos.remove(oldestRevision.get(), oldestStat.get());
                         }
-                    });
-                    if (oldestStat.get() != null) {
-                        metadataInfos.remove(oldestRevision.get(), oldestStat.get());
                     }
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
             }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
     }
