@@ -41,7 +41,11 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_INFO_CACHE_EXPIRE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_INFO_CACHE_SIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CACHE_EXPIRE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CACHE_SIZE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
@@ -94,27 +98,26 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.metaCacheManager = new MetaCacheManager(localCacheEnabled, getCacheNameSuffix(),
             applicationModel.getFrameworkModel().getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
+        int metadataInfoCacheExpireTime = registryURL.getParameter(METADATA_INFO_CACHE_EXPIRE_KEY, DEFAULT_METADATA_INFO_CACHE_EXPIRE);
+        int metadataInfoCacheSize = registryURL.getParameter(METADATA_INFO_CACHE_SIZE_KEY, DEFAULT_METADATA_INFO_CACHE_SIZE);
         this.refreshCacheFuture = applicationModel.getFrameworkModel().getBeanFactory()
             .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
             .scheduleAtFixedRate(() -> {
-                // > 16 个 && > 10min
-                while (metadataInfos.size() > 16) {
+                while (metadataInfos.size() > metadataInfoCacheSize) {
                     AtomicReference<String> oldestRevision = new AtomicReference<>();
                     AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
                     metadataInfos.forEach((k, v) -> {
-                        if (System.currentTimeMillis() - v.getUpdateTime() > 600_000) {
-                            if (oldestStat.get() == null || oldestStat.get().getUpdateTime() < v.getUpdateTime()) {
-                                oldestRevision.set(k);
-                                oldestStat.set(v);
-                            }
+                        if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
+                            (oldestStat.get() == null || oldestStat.get().getUpdateTime() < v.getUpdateTime())) {
+                            oldestRevision.set(k);
+                            oldestStat.set(v);
                         }
                     });
                     if (oldestStat.get() != null) {
                         metadataInfos.remove(oldestRevision.get(), oldestStat.get());
                     }
                 }
-                metadataInfos.entrySet().removeIf(e -> System.currentTimeMillis() - e.getValue().getUpdateTime() > 600_000);
-            }, 600, 600, TimeUnit.SECONDS);
+            }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
     }
 
 
