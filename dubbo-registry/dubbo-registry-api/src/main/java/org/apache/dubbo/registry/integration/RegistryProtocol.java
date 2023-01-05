@@ -230,8 +230,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(providerUrl).getOverrideListeners();
-        overrideListeners.put(registryUrl, overrideSubscribeListener);
+        Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(overrideSubscribeUrl).getOverrideListeners();
+        overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
@@ -898,7 +898,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             try {
                 if (subscribeUrl != null) {
                     Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
-                    NotifyListener listener = overrideListeners.remove(registerUrl);
+                    NotifyListener listener = overrideListeners.remove(subscribeUrl);
                     if (listener != null) {
                         if (!registry.isServiceDiscovery()) {
                             registry.unsubscribe(subscribeUrl, listener);
