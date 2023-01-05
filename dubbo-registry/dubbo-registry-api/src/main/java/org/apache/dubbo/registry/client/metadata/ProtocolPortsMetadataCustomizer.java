@@ -17,6 +17,9 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -25,10 +28,8 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
 
@@ -39,7 +40,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @since 2.7.5
  */
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
-
+    private static final ErrorTypeAwareLogger LOGGER = LoggerFactory.getErrorTypeAwareLogger(ProtocolPortsMetadataCustomizer.class);
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
         MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
@@ -48,17 +49,17 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
         }
 
         Map<String, Integer> protocols = new HashMap<>();
-        Set<URL> urls = new HashSet<>();
-        Map<String, SortedSet<URL>> exportedURLS = metadataInfo.getExportedServiceURLs();
-        for (Map.Entry<String, SortedSet<URL>> entry : exportedURLS.entrySet()) {
-            if (entry.getValue() != null) {
-                urls.addAll(entry.getValue());
-            }
-        }
-
+        Set<URL> urls = metadataInfo.collectExportedURLSet();
         urls.forEach(url -> {
             // TODO, same protocol listen on different ports will override with each other.
-            protocols.put(url.getProtocol(), url.getPort());
+            String protocol = url.getProtocol();
+            Integer oldPort = protocols.get(protocol);
+            int newPort = url.getPort();
+            if (oldPort != null && oldPort != newPort) {
+                LOGGER.warn(LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES, "the protocol is listening multiple ports", "", "Same protocol " + "[" + protocol + "]" + " listens on different ports " + "[" + oldPort + "," + newPort + "]" + " will override with each other" +
+                    ". The port [" + oldPort + "] is overridden with port [" + newPort + "].");
+            }
+            protocols.put(protocol, newPort);
         });
 
         if (protocols.size() > 0) {// set endpoints only for multi-protocol scenario

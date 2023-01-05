@@ -242,6 +242,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             meta.packableMethod = ReflectionPackableMethod.init(methodDescriptor, url);
         }
         meta.convertNoLowerHeader = TripleProtocol.CONVERT_NO_LOWER_HEADER;
+        meta.ignoreDefaultVersion = TripleProtocol.IGNORE_1_0_0_VERSION;
         meta.method = methodDescriptor;
         meta.scheme = getSchemeFromUrl(url);
         // TODO read compressor from config
@@ -306,7 +307,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (countdown == null) {
             timeout = (int) RpcUtils.getTimeout(getUrl(), methodName,
                 RpcContext.getClientAttachment(), invocation, 3000);
-            if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+            if (getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
                     timeout); // pass timeout to remote server
             }
@@ -316,6 +317,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY,
                 timeout);// pass timeout to remote server
         }
+
+        invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
         return timeout;
     }
 }

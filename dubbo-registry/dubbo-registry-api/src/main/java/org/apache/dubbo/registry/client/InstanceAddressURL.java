@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -51,8 +50,6 @@ public class InstanceAddressURL extends URL {
     private final MetadataInfo metadataInfo;
 
     // cached numbers
-    private volatile transient Map<String, Number> numbers;
-    private volatile transient Map<String, Map<String, Number>> methodNumbers;
     private volatile transient Set<String> providerFirstParams;
     // one instance address url serves only one protocol.
     private final transient String protocol;
@@ -523,43 +520,6 @@ public class InstanceAddressURL extends URL {
     @Override
     public URLAddress getUrlAddress() {
         throw new UnsupportedOperationException("URLAddress is replaced with ServiceInstance in instance url");
-    }
-
-    @Override
-    protected Map<String, Number> getServiceNumbers(String protocolServiceKey) {
-        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
-
-        return null == serviceInfo ? new ConcurrentHashMap<>() : serviceInfo.getNumbers();
-    }
-
-    @Override
-    protected Map<String, Number> getNumbers() {
-        String protocolServiceKey = getProtocolServiceKey();
-        if (isEmpty(protocolServiceKey)) {
-            if (numbers == null) { // concurrent initialization is tolerant
-                numbers = new ConcurrentHashMap<>();
-            }
-            return numbers;
-        }
-        return getServiceNumbers(protocolServiceKey);
-    }
-
-    @Override
-    protected Map<String, Map<String, Number>> getServiceMethodNumbers(String protocolServiceKey) {
-        MetadataInfo.ServiceInfo serviceInfo = getServiceInfo(protocolServiceKey);
-        return null == serviceInfo ? new ConcurrentHashMap<>() : serviceInfo.getMethodNumbers();
-    }
-
-    @Override
-    protected Map<String, Map<String, Number>> getMethodNumbers() {
-        String protocolServiceKey = getProtocolServiceKey();
-        if (isEmpty(protocolServiceKey)) {
-            if (methodNumbers == null) { // concurrent initialization is tolerant
-                methodNumbers = new ConcurrentHashMap<>();
-            }
-            return methodNumbers;
-        }
-        return getServiceMethodNumbers(protocolServiceKey);
     }
 
     private MetadataInfo.ServiceInfo getServiceInfo(String protocolServiceKey) {

@@ -51,7 +51,7 @@ public class Exchangers {
     }
 
     public static ExchangeServer bind(URL url, ChannelHandler handler, Replier<?> replier) throws RemotingException {
-        return bind(url, new ExchangeHandlerDispatcher(replier, handler));
+        return bind(url, new ExchangeHandlerDispatcher(url.getOrDefaultFrameworkModel(), replier, handler));
     }
 
     public static ExchangeServer bind(String url, ExchangeHandler handler) throws RemotingException {
@@ -90,7 +90,7 @@ public class Exchangers {
     }
 
     public static ExchangeClient connect(URL url, ChannelHandler handler, Replier<?> replier) throws RemotingException {
-        return connect(url, new ExchangeHandlerDispatcher(replier, handler));
+        return connect(url, new ExchangeHandlerDispatcher(url.getOrDefaultFrameworkModel(), replier, handler));
     }
 
     public static ExchangeClient connect(String url, ExchangeHandler handler) throws RemotingException {

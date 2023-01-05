@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -39,21 +40,21 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
     private final TelnetHandler telnetHandler;
 
     public ExchangeHandlerDispatcher() {
-        this(null, null);
+        this(FrameworkModel.defaultModel(), null, (ChannelHandler) null);
     }
 
     public ExchangeHandlerDispatcher(Replier<?> replier) {
-        this(replier, null);
+        this(FrameworkModel.defaultModel(), replier, (ChannelHandler) null);
     }
 
     public ExchangeHandlerDispatcher(ChannelHandler... handlers) {
-        this(null, handlers);
+        this(FrameworkModel.defaultModel(), null, handlers);
     }
 
-    public ExchangeHandlerDispatcher(Replier<?> replier, ChannelHandler... handlers) {
+    public ExchangeHandlerDispatcher(FrameworkModel frameworkModel, Replier<?> replier, ChannelHandler... handlers) {
         replierDispatcher = new ReplierDispatcher(replier);
         handlerDispatcher = new ChannelHandlerDispatcher(handlers);
-        telnetHandler = new TelnetHandlerAdapter();
+        telnetHandler = new TelnetHandlerAdapter(frameworkModel);
     }
 
     public ExchangeHandlerDispatcher addChannelHandler(ChannelHandler handler) {

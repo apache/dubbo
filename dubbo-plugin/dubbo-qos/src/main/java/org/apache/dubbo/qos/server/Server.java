@@ -19,6 +19,8 @@ package org.apache.dubbo.qos.server;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.common.QosConfiguration;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -52,6 +54,9 @@ public class Server {
     private int port;
 
     private boolean acceptForeignIp = true;
+    private String acceptForeignIpWhitelist = StringUtils.EMPTY_STRING;
+
+    private String anonymousAccessPermissionLevel = PermissionLevel.NONE.name();
 
     private EventLoopGroup boss;
 
@@ -97,7 +102,14 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp));
+                ch.pipeline().addLast(new QosProcessHandler(frameworkModel,
+                    QosConfiguration.builder()
+                        .welcome(welcome)
+                        .acceptForeignIp(acceptForeignIp)
+                        .acceptForeignIpWhitelist(acceptForeignIpWhitelist)
+                        .anonymousAccessPermissionLevel(anonymousAccessPermissionLevel)
+                        .build()
+                ));
             }
         });
         try {
@@ -145,6 +157,14 @@ public class Server {
 
     public void setAcceptForeignIp(boolean acceptForeignIp) {
         this.acceptForeignIp = acceptForeignIp;
+    }
+
+    public void setAcceptForeignIpWhitelist(String acceptForeignIpWhitelist) {
+        this.acceptForeignIpWhitelist = acceptForeignIpWhitelist;
+    }
+
+    public void setAnonymousAccessPermissionLevel(String anonymousAccessPermissionLevel) {
+        this.anonymousAccessPermissionLevel = anonymousAccessPermissionLevel;
     }
 
     public String getWelcome() {

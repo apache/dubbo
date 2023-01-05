@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.probe.LivenessProbe;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -29,9 +30,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Cmd(name = "live", summary = "Judge if service is alive? ")
+@Cmd(name = "live", summary = "Judge if service is alive? ", requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class Live implements BaseCommand {
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public Live(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
