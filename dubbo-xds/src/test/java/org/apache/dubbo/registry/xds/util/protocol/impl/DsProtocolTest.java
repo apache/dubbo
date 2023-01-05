@@ -192,15 +192,6 @@ public class DsProtocolTest {
     @Test
     void observeDsReConnect() {
         StreamObserver<DiscoveryRequest> requestStreamObserver = mock(StreamObserver.class);
-        mockStatic(NettyChannelBuilder.class);
-
-        // mock managedChannel
-        ManagedChannel managedChannel = mock(ManagedChannel.class);
-        NettyChannelBuilder nettyChannelBuilder = mock(NettyChannelBuilder.class);
-        when(NettyChannelBuilder.forAddress(url.getHost(), url.getPort())).thenReturn(nettyChannelBuilder);
-        when(nettyChannelBuilder.usePlaintext()).thenReturn(nettyChannelBuilder);
-        when(nettyChannelBuilder.build()).thenReturn(managedChannel);
-        when(xdsChannel.getChannel()).thenReturn(managedChannel);
 
         // mock lds reconnect
         when(xdsChannel.createDeltaDiscoveryRequest(any(StreamObserver.class))).thenReturn(requestStreamObserver);
