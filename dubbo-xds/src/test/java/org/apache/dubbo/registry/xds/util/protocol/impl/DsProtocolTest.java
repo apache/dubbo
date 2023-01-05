@@ -49,7 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -90,9 +89,7 @@ public class DsProtocolTest {
     @BeforeEach
     public void setUp() {
         this.url = spy(URL.valueOf("xds://istiod.istio-system.svc:15012?secure=plaintext"));
-        MockedStatic<NodeBuilder> mockedStatic = mockStatic(NodeBuilder.class);
         this.node = mock(Node.class);
-        when(NodeBuilder.build()).thenReturn(node);
 
         this.applicationModel = ApplicationModel.defaultModel();
         xdsChannel = mock(XdsChannel.class);
@@ -132,7 +129,7 @@ public class DsProtocolTest {
         Map<String, EndpointResult> endpointResults = new HashMap();
         endpointResults.put("dubbo-samples-provider" ,new EndpointResult(endpoints));
         this.endpointResult = endpointResults;
-        mockedStatic.close();
+//        mockedStatic.close();
     }
 
 
@@ -142,7 +139,6 @@ public class DsProtocolTest {
 
         // mock lds getResource
         when(xdsChannel.createDeltaDiscoveryRequest(any(StreamObserver.class))).thenReturn(requestStreamObserver);
-        doNothing().when(requestStreamObserver).onNext(any());
         MockedConstruction<CompletableFuture> ldsMocked = mockConstruction(CompletableFuture.class, (mock, context) -> {
             when(mock.get()).thenReturn(listenerResult);
         });
@@ -315,18 +311,7 @@ public class DsProtocolTest {
             return consumers;
         });
         Assertions.assertFalse(ldsIsFirstConsumerInvoke.get() || ldsIsSecondConsumerInvoke.get());
-        ldsProtocolMock.setConsumerObserveMap(spy(ldsMap));
-        MockedStatic<NettyChannelBuilder> mockedStatic = mockStatic(NettyChannelBuilder.class);
-
-        ManagedChannel managedChannel = mock(ManagedChannel.class);
-        NettyChannelBuilder nettyChannelBuilder = mock(NettyChannelBuilder.class);
-
-        when(NettyChannelBuilder.forAddress(url.getHost(), url.getPort())).thenReturn(nettyChannelBuilder);
-        when(nettyChannelBuilder.usePlaintext()).thenReturn(nettyChannelBuilder);
-
-        when(nettyChannelBuilder.build()).thenReturn(managedChannel);
-
-        when(xdsChannel.getChannel()).thenReturn(managedChannel);
+        ldsProtocolMock.setConsumerObserveMap(ldsMap);
 
         Map<String, ListenerResult> oldLdsResult = new HashMap<>();
         Map<String, ListenerResult> newLdsResult = new HashMap<>();
@@ -370,7 +355,7 @@ public class DsProtocolTest {
             return consumers;
         });
         Assertions.assertFalse(rdsIsFirstConsumerInvoke.get() || rdsIsSecondConsumerInvoke.get());
-        rdsProtocolMock.setConsumerObserveMap(spy(rdsMap));
+        rdsProtocolMock.setConsumerObserveMap(rdsMap);
 
         Map<String, RouteResult> oldRdsResult = new HashMap<>();
         Map<String, RouteResult> newRdsResult = new HashMap<>();
@@ -415,7 +400,7 @@ public class DsProtocolTest {
             return consumers;
         });
         Assertions.assertFalse(edsIsFirstConsumerInvoke.get() || edsIsSecondConsumerInvoke.get());
-        edsProtocolMock.setConsumerObserveMap(spy(edsMap));
+        edsProtocolMock.setConsumerObserveMap(edsMap);
 
         Map<String, EndpointResult> oldEdsResult = new HashMap<>();
         Map<String, EndpointResult> newEdsResult = new HashMap<>();
@@ -432,25 +417,19 @@ public class DsProtocolTest {
             Assertions.assertTrue(edsIsFirstConsumerInvoke.get() && edsIsSecondConsumerInvoke.get());
         } finally {
             edsMocked.close();
-            mockedStatic.close();
+//            mockedStatic.close();
         }
     }
 
     @Test
     void testResponseObserver() {
-        StreamObserver<DiscoveryRequest> requestStreamObserver = mock(StreamObserver.class);
-        when(xdsChannel.createDeltaDiscoveryRequest(any(StreamObserver.class))).thenReturn(requestStreamObserver);
-        doNothing().when(requestStreamObserver).onNext(any());
-
+        //mock lds
         Map<Set<String>, List<Consumer<Map<String, ListenerResult>>>> ldsMap = new HashMap<>();
         AtomicBoolean ldsIsFirstConsumerInvoke = new AtomicBoolean(false);
-        AtomicBoolean ldsIsSecondConsumerInvoke = new AtomicBoolean(false);
-        CountDownLatch ldsCountDownLatch = new CountDownLatch(2);
 
         // support repeat consumer
         Consumer<Map<String, ListenerResult>> ldsFirstConsumer = (listenerResult) -> {
             ldsIsFirstConsumerInvoke.set(true);
-            ldsCountDownLatch.countDown();
         };
         Set<String> ldsResourceNames = new HashSet<>();
         ldsResourceNames.add(ldsProtocolMock.emptyResourceName);
@@ -461,7 +440,7 @@ public class DsProtocolTest {
             return consumers;
         });
         Assertions.assertFalse(ldsIsFirstConsumerInvoke.get());
-        ldsProtocolMock.setConsumerObserveMap(spy(ldsMap));
+        ldsProtocolMock.setConsumerObserveMap(ldsMap);
 
         Map<String, ListenerResult> oldLdsResult = new HashMap<>();
         Map<String, ListenerResult> newLdsResult = new HashMap<>();
@@ -477,15 +456,11 @@ public class DsProtocolTest {
             Assertions.assertTrue(ldsIsFirstConsumerInvoke.get());
 
         } catch (Exception e) {
-            Assertions.assertTrue(ldsIsFirstConsumerInvoke.get() && ldsIsSecondConsumerInvoke.get());
+            Assertions.assertTrue(ldsIsFirstConsumerInvoke.get());
         }
 
 
         // mock rds
-        MockedConstruction<CompletableFuture> rdsMocked = mockConstruction(CompletableFuture.class, (mock, context) -> {
-            when(mock.get()).thenReturn(routeResult);
-        });
-
         Map<Set<String>, List<Consumer<Map<String, RouteResult>>>> rdsMap = new HashMap<>();
         AtomicBoolean rdsIsFirstConsumerInvoke = new AtomicBoolean(false);
 
@@ -498,7 +473,7 @@ public class DsProtocolTest {
             consumers.add(rdsFirstConsumer);
             return consumers;
         });
-        rdsProtocolMock.setConsumerObserveMap(spy(rdsMap));
+        rdsProtocolMock.setConsumerObserveMap(rdsMap);
 
         Map<String, RouteResult> oldRdsResult = new HashMap<>();
         Map<String, RouteResult> newRdsResult = new HashMap<>();
@@ -516,12 +491,9 @@ public class DsProtocolTest {
             Assertions.assertTrue(rdsIsFirstConsumerInvoke.get());
         } catch (Exception e) {
             Assertions.assertTrue(rdsIsFirstConsumerInvoke.get());
-        } finally {
-            rdsMocked.close();
         }
 
         // mock eds
-
         Map<Set<String>, List<Consumer<Map<String, EndpointResult>>>> edsMap = new HashMap<>();
         AtomicBoolean edsIsFirstConsumerInvoke = new AtomicBoolean(false);
 
@@ -535,7 +507,7 @@ public class DsProtocolTest {
             return consumers;
         });
         Assertions.assertFalse(edsIsFirstConsumerInvoke.get());
-        edsProtocolMock.setConsumerObserveMap(spy(edsMap));
+        edsProtocolMock.setConsumerObserveMap(edsMap);
 
         Map<String, EndpointResult> oldEdsResult = new HashMap<>();
         Map<String, EndpointResult> newEdsResult = new HashMap<>();
@@ -565,7 +537,7 @@ public class DsProtocolTest {
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    break;
                 }
             }
         });

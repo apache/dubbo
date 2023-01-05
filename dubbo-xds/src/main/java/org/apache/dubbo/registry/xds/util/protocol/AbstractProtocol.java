@@ -279,7 +279,6 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     Map<String, T> dsResultMap = entry.getKey()
                         .stream()
                         .collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
-
                     entry.getValue().forEach(o -> o.accept(dsResultMap));
                 }
             } finally {
