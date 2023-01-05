@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
+import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -65,7 +66,12 @@ public class OmnipotentFilter implements Filter {
 
         Object[] args = new Object[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            args[i] = JavaBeanSerializeUtil.serialize(arguments[i], JavaBeanAccessor.METHOD);
+            // In gateway mode, consumer has used JavaBeanDescriptor as parameter
+            if (arguments[i] instanceof JavaBeanDescriptor) {
+                args[i] = arguments[i];
+            } else {
+                args[i] = JavaBeanSerializeUtil.serialize(arguments[i], JavaBeanAccessor.METHOD);
+            }
         }
 
         RpcInvocation rpcInvocation = new RpcInvocation(inv);
