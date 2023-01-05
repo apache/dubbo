@@ -45,6 +45,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERROR_REQUEST_XDS;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 
 public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T> {
 
@@ -169,10 +171,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
                 return result;
             } catch (InterruptedException e) {
-                logger.error("InterruptedException occur when request control panel. error={}", e);
+                logger.error(INTERNAL_INTERRUPTED, "", "", "InterruptedException occur when request control panel. error=", e);
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
-                logger.error("Error occur when request control panel. error=. ", e);
+                logger.error(PROTOCOL_FAILED_REQUEST, "", "", "Error occur when request control panel. error=", e);
             }
         } finally {
             resourceLock.unlock();
