@@ -86,7 +86,6 @@ public class PilotExchanger {
     }
 
     private void createRouteObserve() {
-        // newResult 入口应该是一个Map
         rdsProtocol.observeResource(listenerResult.values().iterator().next().getRouteConfigNames(), (newResult) -> {
             // check if observed domain update ( will update endpoint observation )
             domainObserveConsumer.forEach((domain, consumer) -> {
