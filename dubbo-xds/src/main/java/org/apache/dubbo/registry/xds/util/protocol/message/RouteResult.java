@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.xds.util.protocol.message;
 
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;

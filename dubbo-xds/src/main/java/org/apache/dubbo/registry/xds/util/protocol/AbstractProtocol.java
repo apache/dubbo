@@ -17,16 +17,15 @@
 package org.apache.dubbo.registry.xds.util.protocol;
 
 
+import io.envoyproxy.envoy.config.core.v3.Node;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
+import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.grpc.stub.StreamObserver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,10 +64,14 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected Set<String> observeResourcesName;
 
-    protected static final String emptyResourceName = "emptyResourcesName";
+    public static final String emptyResourceName = "emptyResourcesName";
     private final ReentrantLock resourceLock = new ReentrantLock();
 
     protected Map<Set<String>, List<Consumer<Map<String, T>>>> consumerObserveMap = new ConcurrentHashMap<>();
+
+    public Map<Set<String>, List<Consumer<Map<String, T>>>> getConsumerObserveMap() {
+        return consumerObserveMap;
+    }
     private final ApplicationModel applicationModel;
 
     public AbstractProtocol(XdsChannel xdsChannel, Node node, int checkInterval, ApplicationModel applicationModel) {
@@ -89,7 +92,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     public abstract String getTypeUrl();
 
-    protected boolean isCacheExistResource(Set<String> resourceNames) {
+    public boolean isCacheExistResource(Set<String> resourceNames) {
         for (String resourceName : resourceNames) {
             if ("".equals(resourceName)) {
                 continue;
@@ -275,7 +278,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
                     Map<String, T> dsResultMap = entry.getKey()
                         .stream()
-                        .collect(Collectors.toMap(k -> k, newResult::get));
+                        .collect(Collectors.toMap(k -> k, v -> newResult.get(v)));
 
                     entry.getValue().forEach(o -> o.accept(dsResultMap));
                 }
@@ -305,18 +308,17 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         scheduledFuture.scheduleAtFixedRate(() -> {
             xdsChannel = new XdsChannel(xdsChannel.getUrl());
             if (xdsChannel.getChannel() != null) {
+                Set<String> reConnectResourcesNames;
                 try {
                     readLock.lock();
-                    for (Map.Entry<Set<String>, List<Consumer<Map<String, T>>>> entry : consumerObserveMap.entrySet()) {
-                        if (entry.getKey().equals(observeResourcesName)) {
-                            for (Consumer<Map<String, T>> consumer : entry.getValue()) {
-                                observeResource(observeResourcesName, consumer, true);
-                            }
-                        }
-                    }
+                    reConnectResourcesNames = consumerObserveMap.keySet()
+                        .stream()
+                        .flatMap(Set::stream)
+                        .collect(Collectors.toSet());
                 } finally {
                     readLock.unlock();
                 }
+                getResourceFromRemote(reConnectResourcesNames);
                 if (isConnectFail.get()) {
                     scheduledFuture.shutdown();
                 }
