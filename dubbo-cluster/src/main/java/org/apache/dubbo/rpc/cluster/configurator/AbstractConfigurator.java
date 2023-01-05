@@ -101,7 +101,7 @@ public abstract class AbstractConfigurator implements Configurator {
     @Deprecated
     private URL configureDeprecated(URL url) {
         if (log.isWarnEnabled()) {
-            log.warn(CLUSTER_METHOD_DEPRECATED, "This method has been deprecated", "", "This else branch is deprecated and is left only to keep compatibility with versions before 2.7.0.");
+            log.warn(CLUSTER_METHOD_DEPRECATED, "This method has been deprecated", "", "This configureDeprecated method is deprecated and is left only to keep compatibility with versions before 2.7.0.");
         }
         // If override url has port, means it is a provider address. We want to control a specific provider with this override url, it may take effect on the specific provider instance or on consumers holding this provider instance.
         if (configuratorUrl.getPort() != 0) {
