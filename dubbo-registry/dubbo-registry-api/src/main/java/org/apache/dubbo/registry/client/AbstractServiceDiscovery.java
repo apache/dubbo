@@ -48,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CA
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CACHE_SIZE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -119,7 +120,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
                         }
                     }
                 } catch (Throwable t) {
-                    t.printStackTrace();
+                    logger.error(INTERNAL_ERROR, "", "", "Error occurred when clean up metadata info cache.", t);
                 }
             }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
     }
