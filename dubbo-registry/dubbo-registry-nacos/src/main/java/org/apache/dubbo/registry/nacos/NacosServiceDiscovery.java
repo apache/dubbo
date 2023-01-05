@@ -46,6 +46,8 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
@@ -96,6 +98,18 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             Instance instance = toInstance(serviceInstance);
             service.deregisterInstance(instance.getServiceName(), group, instance);
         });
+    }
+
+    @Override
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+        // register first to ensure that consumer will not throw no provider exception
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
+            reportMetadata(serviceInstance.getServiceMetadata());
+            this.serviceInstance = newServiceInstance;
+            this.doRegister(newServiceInstance);
+        }
+
+        this.doUnregister(oldServiceInstance);
     }
 
     @Override
