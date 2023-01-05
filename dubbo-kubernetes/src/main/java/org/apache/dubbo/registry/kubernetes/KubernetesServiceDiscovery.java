@@ -16,6 +16,15 @@
  */
 package org.apache.dubbo.registry.kubernetes;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,6 +40,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import com.alibaba.fastjson.JSONObject;
+
 import io.fabric8.kubernetes.api.model.EndpointAddress;
 import io.fabric8.kubernetes.api.model.EndpointPort;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
@@ -44,18 +54,9 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_ACCESS_KUBERNETES;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_FIND_SERVICE_KUBERNETES;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_MATCH_KUBERNETES;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNABLE_ACCESS_KUBERNETES;
 
 public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
     private final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -141,12 +142,12 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     /**
-     * Comparing to {@link AbstractServiceDiscovery#doUpdate(ServiceInstance)}, unregister() is unnecessary here.
+     * Comparing to {@link AbstractServiceDiscovery#doUpdate(ServiceInstance, ServiceInstance)}, unregister() is unnecessary here.
      */
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
-        reportMetadata(serviceInstance.getServiceMetadata());
-        this.doRegister(serviceInstance);
+    public void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+        reportMetadata(newServiceInstance.getServiceMetadata());
+        this.doRegister(newServiceInstance);
     }
 
     @Override
