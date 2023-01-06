@@ -45,20 +45,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import org.junit.jupiter.api.Test;
 
 class MetricsFilterTest {
 
