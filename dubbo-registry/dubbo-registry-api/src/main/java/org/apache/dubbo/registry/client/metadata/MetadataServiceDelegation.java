@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.resource.Disposable;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -39,6 +27,18 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
@@ -182,8 +182,8 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         }
 
         for (ServiceDiscovery sd : registryManager.getServiceDiscoveries()) {
-            MetadataInfo metadataInfo = sd.getLocalMetadata();
-            if (revision.equals(metadataInfo.getRevision())) {
+            MetadataInfo metadataInfo = sd.getLocalMetadata(revision);
+            if (metadataInfo != null && revision.equals(metadataInfo.getRevision())) {
                 return metadataInfo;
             }
         }
