@@ -156,6 +156,9 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
+        if (!instanceListeners.remove(listener)) {
+            return;
+        }
         listener.getServiceNames().forEach(serviceName -> {
             ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.get(serviceName);
             if (watcher != null) {
