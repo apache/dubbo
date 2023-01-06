@@ -64,10 +64,22 @@ public class MetricsCollectExecutor {
     public void throwExecute(Throwable throwable){
         if (throwable instanceof RpcException) {
             RpcException rpcException = (RpcException)throwable;
-            if (rpcException.isBiz()) {
-                collector.businessFailedRequests(interfaceName, methodName, group, version);
-            }else{
-                collector.increaseFailedRequests(interfaceName, methodName, group, version);
+            switch (rpcException.getCode()) {
+
+                case RpcException.TIMEOUT_EXCEPTION:
+                    collector.timeoutRequests(interfaceName, methodName, group, version);
+                    break;
+
+                case RpcException.LIMIT_EXCEEDED_EXCEPTION:
+                    collector.limitRequests(interfaceName, methodName, group, version);
+                    break;
+
+                case RpcException.BIZ_EXCEPTION:
+                    collector.businessFailedRequests(interfaceName, methodName, group, version);
+                    break;
+
+                default:
+                    collector.increaseFailedRequests(interfaceName, methodName, group, version);
             }
         }
         endExecute(()-> throwable instanceof RpcException && ((RpcException) throwable).isBiz());

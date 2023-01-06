@@ -58,7 +58,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
 /**
@@ -526,7 +526,7 @@ public class PojoUtils {
                                 } catch (Exception e) {
                                     String exceptionDescription = "Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
                                         + " value " + value.getClass() + ", cause: " + e.getMessage();
-                                    logger.error(COMMON_FAILED_REFLECT, "", "", exceptionDescription, e);
+                                    logger.error(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", exceptionDescription, e);
                                     throw new RuntimeException(exceptionDescription, e);
                                 }
                             } else if (field != null) {

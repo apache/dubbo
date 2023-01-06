@@ -29,6 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MethodCallbackImpl implements MethodCallback {
     private String onInvoke1 = "";
+
+    private final Object lock = new Object();
+
     private String onReturn1 = "";
     private String onThrow1 = "";
 
@@ -55,11 +58,11 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            synchronized (this.onInvoke1) {
+            synchronized (lock) {
                 this.onInvoke1 += "dubbo invoke success!";
             }
         } catch (Exception e) {
-            synchronized (this.onInvoke1) {
+            synchronized (lock) {
                 this.onInvoke1 += e.toString();
             }
             throw e;
@@ -72,11 +75,11 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            synchronized (this.onInvoke2) {
+            synchronized (lock) {
                 this.onInvoke2 += "dubbo invoke success(2)!";
             }
         } catch (Exception e) {
-            synchronized (this.onInvoke2) {
+            synchronized (lock) {
                 this.onInvoke2 += e.toString();
             }
             throw e;
@@ -89,11 +92,11 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            synchronized (this.onReturn1) {
+            synchronized (lock) {
                 this.onReturn1 += "dubbo return success!";
             }
         } catch (Exception e) {
-            synchronized (this.onReturn1) {
+            synchronized (lock) {
                 this.onReturn1 += e.toString();
             }
             throw e;
@@ -108,11 +111,11 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            synchronized (this.onReturn2) {
+            synchronized (lock) {
                 this.onReturn2 += "dubbo return success(2)!";
             }
         } catch (Exception e) {
-            synchronized (this.onReturn2) {
+            synchronized (lock) {
                 this.onReturn2 += e.toString();
             }
             throw e;
@@ -127,11 +130,11 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            synchronized (this.onThrow1) {
+            synchronized (lock) {
                 this.onThrow1 += "dubbo throw exception!";
             }
         } catch (Exception e) {
-            synchronized (this.onThrow1) {
+            synchronized (lock) {
                 this.onThrow1 += e.toString();
             }
             throw e;
@@ -144,11 +147,11 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            synchronized (this.onThrow2) {
+            synchronized (lock) {
                 this.onThrow2 += "dubbo throw exception(2)!";
             }
         } catch (Exception e) {
-            synchronized (this.onThrow2) {
+            synchronized (lock) {
                 this.onThrow2 += e.toString();
             }
             throw e;

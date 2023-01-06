@@ -55,6 +55,8 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private final Map<MethodMetric, TimeWindowCounter> succeedRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> failedRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> businessFailedRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> timeoutRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> limitRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
 
@@ -118,6 +120,14 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
                 counter = businessFailedRequests.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
                 break;
 
+            case REQUEST_TIMEOUT:
+                counter = timeoutRequests.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+                break;
+
+            case REQUEST_LIMIT:
+                counter = limitRequests.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+                break;
+
             default:
                 break;
         }
@@ -142,6 +152,8 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_SUCCEED_AGG, k.getTags(), REQUESTS, v::get)));
         failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
         businessFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+        timeoutRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG, k.getTags(), REQUESTS, v::get)));
+        limitRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectQPS(List<MetricSample> list) {

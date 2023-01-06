@@ -95,6 +95,18 @@ public class DefaultMetricsCollector implements MetricsCollector {
         });
     }
 
+    public void timeoutRequests(String interfaceName, String methodName, String group, String version) {
+        doExecute(RequestEvent.Type.REQUEST_TIMEOUT,statHandler->{
+            statHandler.increase(interfaceName, methodName, group, version);
+        });
+    }
+
+    public void limitRequests(String interfaceName, String methodName, String group, String version) {
+        doExecute(RequestEvent.Type.REQUEST_LIMIT,statHandler->{
+            statHandler.increase(interfaceName, methodName, group, version);
+        });
+    }
+
     public void increaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
         doExecute(RequestEvent.Type.PROCESSING,statHandler-> {
             statHandler.increase(interfaceName, methodName, group, version);
@@ -137,6 +149,14 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
         doExecute(RequestEvent.Type.BUSINESS_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED, k.getTags(), REQUESTS, v::get))));
+
+
+        doExecute(RequestEvent.Type.REQUEST_TIMEOUT, MetricsStatHandler::get).filter(e->!e.isEmpty())
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG, k.getTags(), REQUESTS, v::get))));
+
+        doExecute(RequestEvent.Type.REQUEST_LIMIT, MetricsStatHandler::get).filter(e->!e.isEmpty())
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get))));
+
     }
 
     private void collectRT(List<MetricSample> list) {

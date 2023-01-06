@@ -39,8 +39,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETE
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.$INVOKE_OMN;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
@@ -69,7 +69,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(COMMON_FAILED_REFLECT, "", "", t.getMessage(), t);
+            logger.warn(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", t.getMessage(), t);
         }
         return null;
     }
@@ -99,7 +99,7 @@ public class RpcUtils {
                 }
             }
         } catch (Throwable t) {
-            logger.warn(COMMON_FAILED_REFLECT, "", "", t.getMessage(), t);
+            logger.warn(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", t.getMessage(), t);
         }
         return null;
     }
