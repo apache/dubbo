@@ -16,10 +16,26 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
@@ -36,21 +52,6 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
@@ -185,28 +186,33 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory of type " + this.getClass().getSimpleName() +  " already destroyed for service " + getConsumerUrl().getServiceKey() + " from registry " + getUrl());
         }
 
-        BitList<Invoker<T>> availableInvokers;
-        // use clone to avoid being modified at doList().
-        if (invokersInitialized) {
-            availableInvokers = validInvokers.clone();
-        } else {
-            availableInvokers = invokers.clone();
-        }
+        try {
+            routerChain.getLock().readLock().lock();
+            BitList<Invoker<T>> availableInvokers;
+            // use clone to avoid being modified at doList().
+            if (invokersInitialized) {
+                availableInvokers = validInvokers.clone();
+            } else {
+                availableInvokers = invokers.clone();
+            }
 
-        List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
-        if (routedResult.isEmpty()) {
-            // 2-2 - No provider available.
+            List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
+            if (routedResult.isEmpty()) {
+                // 2-2 - No provider available.
 
-            logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
-                "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                + " All validInvokers' size: " + validInvokers.size()
-                + " All routed invokers' size: " + routedResult.size()
-                + " All invokers' size: " + invokers.size()
-                + " from registry " + getUrl().getAddress()
-                + " on the consumer " + NetUtils.getLocalHost()
-                + " using the dubbo version " + Version.getVersion() + ".");
+                logger.warn(CLUSTER_NO_VALID_PROVIDER, "provider server or registry center crashed", "",
+                    "No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
+                        + " All validInvokers' size: " + validInvokers.size()
+                        + " All routed invokers' size: " + routedResult.size()
+                        + " All invokers' size: " + invokers.size()
+                        + " from registry " + getUrl().getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost()
+                        + " using the dubbo version " + Version.getVersion() + ".");
+            }
+            return Collections.unmodifiableList(routedResult);
+        } finally {
+            routerChain.getLock().readLock().unlock();
         }
-        return Collections.unmodifiableList(routedResult);
     }
 
     @Override
@@ -374,6 +380,30 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             } catch (Throwable ignore) {
 
             }
+        }
+    }
+
+    protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
+        BitList<Invoker<T>> origin = getInvokers();
+        try {
+            routerChain.setInvokers(newlyInvokers.clone(), switchAction);
+        } catch (Throwable t1) {
+            logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain. " +
+                "Will roll back to origin invokers and address notification will be ignored. " +
+                "The addresses from notification: " +
+                newlyInvokers.stream()
+                    .map(Invoker::getUrl)
+                    .map(URL::getAddress)
+                    .collect(Collectors.joining(", ")), t1);
+
+            try {
+                routerChain.setInvokers(origin.clone(), () -> this.setInvokers(origin));
+            } catch (Throwable t2) {
+                logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain. " +
+                    "And roll back FAILED.", t2);
+            }
+
+            throw t1;
         }
     }
 
