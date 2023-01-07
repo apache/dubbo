@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
+import com.google.protobuf.Message;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 
@@ -60,6 +61,7 @@ public class TripleProtocol extends AbstractProtocol {
      */
     public static boolean CONVERT_NO_LOWER_HEADER = false;
 
+    public final static boolean HAS_PROTOBUF = hasProtobuf();
 
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -78,6 +80,16 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     public int getDefaultPort() {
         return 50051;
+    }
+
+
+    private static boolean hasProtobuf() {
+        try {
+            Class.forName(Message.class.getName());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     @Override

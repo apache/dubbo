@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
@@ -132,6 +133,9 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
 
     private TriRpcStatus getStatusFromTrailers(Map<String, String> metadata) {
         if (null == metadata) {
+            return null;
+        }
+        if (!TripleProtocol.HAS_PROTOBUF){
             return null;
         }
         // second get status detail
