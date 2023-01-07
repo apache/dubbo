@@ -187,7 +187,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         try {
-            routerChain.getLock().readLock().lock();
+            if (routerChain != null) {
+                routerChain.getLock().readLock().lock();
+            }
             BitList<Invoker<T>> availableInvokers;
             // use clone to avoid being modified at doList().
             if (invokersInitialized) {
@@ -211,7 +213,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             }
             return Collections.unmodifiableList(routedResult);
         } finally {
-            routerChain.getLock().readLock().unlock();
+            if (routerChain != null) {
+                routerChain.getLock().readLock().unlock();
+            }
         }
     }
 
