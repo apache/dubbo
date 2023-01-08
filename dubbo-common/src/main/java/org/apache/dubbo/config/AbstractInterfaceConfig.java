@@ -226,7 +226,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         // change referenced config's scope model
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(getScopeModel());
         if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
             this.configCenter.setScopeModel(applicationModel);
         }

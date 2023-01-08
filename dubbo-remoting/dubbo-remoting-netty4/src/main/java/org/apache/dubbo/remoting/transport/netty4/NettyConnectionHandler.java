@@ -31,6 +31,7 @@ import io.netty.util.AttributeKey;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RECONNECT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
 
 @ChannelHandler.Sharable
@@ -80,7 +81,7 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             try {
                 connectionClient.doConnect();
             } catch (Throwable e) {
-                LOGGER.error("Fail to connect to " + connectionClient.getChannel(), e);
+                LOGGER.error(TRANSPORT_FAILED_RECONNECT, "", "",  "Fail to connect to " + connectionClient.getChannel(), e);
             }
         }, 1, TimeUnit.SECONDS);
     }

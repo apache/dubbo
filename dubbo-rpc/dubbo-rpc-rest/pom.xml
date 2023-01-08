@@ -112,5 +112,10 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

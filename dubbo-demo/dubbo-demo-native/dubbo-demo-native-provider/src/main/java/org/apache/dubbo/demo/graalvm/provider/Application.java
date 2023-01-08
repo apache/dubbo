@@ -24,6 +24,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import org.apace.dubbo.graalvm.demo.DemoService;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class Application {
     public static void main(String[] args) throws Exception {
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
+        System.setProperty("dubbo.json-framework.prefer","fastjson");
         if (isClassic(args)) {
             startWithExport();
         } else {
@@ -47,18 +49,18 @@ public class Application {
     }
 
     private static void startWithBootstrap() {
-        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
-
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
 
-        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-provider");
+        ApplicationConfig applicationConfig = new ApplicationConfig( "dubbo-demo-api-provider");
         applicationConfig.setQosEnable(false);
         applicationConfig.setCompiler("jdk");
         Map<String, String> m = new HashMap<>(1);
         m.put("proxy", "jdk");
         applicationConfig.setParameters(m);
+
+        ServiceConfig<DemoService> service = new ServiceConfig<>();
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
 
         bootstrap.application(applicationConfig)
             .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
@@ -66,13 +68,11 @@ public class Application {
             .service(service)
             .start()
             .await();
+
+        System.out.println("dubbo service started");
     }
 
     private static void startWithExport() throws InterruptedException {
-        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
-
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-provider");
         applicationConfig.setQosEnable(false);
         applicationConfig.setCompiler("jdk");
@@ -80,6 +80,13 @@ public class Application {
         Map<String, String> m = new HashMap<>(1);
         m.put("proxy", "jdk");
         applicationConfig.setParameters(m);
+
+        ModuleModel moduleModel = applicationConfig.getApplicationModel().newModule();
+
+
+        ServiceConfig<DemoService> service = new ServiceConfig<>(moduleModel);
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
 
         service.setApplication(applicationConfig);
         service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));

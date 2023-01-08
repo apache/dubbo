@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.config.mock;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class MockServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
@@ -48,8 +48,8 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+        this.serviceInstance = newServiceInstance;
     }
 
     @Override

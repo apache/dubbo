@@ -28,7 +28,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 /**
@@ -80,7 +80,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 }
             }
         } catch (Throwable t) {
-            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "", "", t.getMessage(), t);
         }
 
         try {
@@ -88,7 +88,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
                 this.codec = getChannelCodec(url);
             }
         } catch (Throwable t) {
-            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
     }
 

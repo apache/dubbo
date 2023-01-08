@@ -56,11 +56,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_MISSPELLING;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_EMPTY_ADDRESS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_CLEAR_CACHED_URLS;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_URL_EVICTING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NO_PARAMETERS_URL;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_ENABLE_EMPTY_PROTECTION;
@@ -115,7 +115,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             } catch (NumberFormatException e) {
                 // 0-2 Property type mismatch.
 
-                logger.warn(COMMON_PROPERTY_MISSPELLING, "typo in property value", "This property requires an integer value.",
+                logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "typo in property value", "This property requires an integer value.",
                     "Invalid registry properties configuration key " + key + ", value " + str);
             }
         }

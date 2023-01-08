@@ -31,7 +31,7 @@ import io.netty.handler.ssl.SslHandshakeCompletionEvent;
 import javax.net.ssl.SSLSession;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 public class SslServerTlsHandler extends ByteToMessageDecoder {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SslServerTlsHandler.class);
@@ -59,7 +59,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "TLS negotiation failed when trying to accept new connection.", cause);
+        logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "TLS negotiation failed when trying to accept new connection.", cause);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
                 // Remove after handshake success.
                 ctx.pipeline().remove(this);
             } else {
-                logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
+                logger.error(INTERNAL_ERROR, "", "", "TLS negotiation failed when trying to accept new connection.", handshakeEvent.cause());
                 ctx.close();
             }
         }

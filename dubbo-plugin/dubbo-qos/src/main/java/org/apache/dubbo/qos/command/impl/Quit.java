@@ -19,9 +19,10 @@ package org.apache.dubbo.qos.command.impl;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.permission.PermissionLevel;
 import org.apache.dubbo.qos.common.QosConstants;
 
-@Cmd(name = "quit",summary = "quit telnet console")
+@Cmd(name = "quit", summary = "quit telnet console", requiredPermissionLevel = PermissionLevel.PUBLIC)
 public class Quit implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {

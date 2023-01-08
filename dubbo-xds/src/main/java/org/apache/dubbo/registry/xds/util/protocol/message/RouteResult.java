@@ -35,6 +35,11 @@ public class RouteResult {
         this.domainMap = domainMap;
     }
 
+
+    public Map<String, Set<String>> getDomainMap() {
+        return domainMap;
+    }
+
     public boolean isNotEmpty() {
         return !domainMap.isEmpty();
     }

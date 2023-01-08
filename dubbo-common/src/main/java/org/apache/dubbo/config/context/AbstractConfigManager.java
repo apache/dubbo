@@ -60,7 +60,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_MISSPELLING;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
 
@@ -121,7 +121,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             }
         } catch (Exception e) {
             String msg = "Illegal '" + ConfigKeys.DUBBO_CONFIG_MODE + "' config value [" + configModeStr + "], available values " + Arrays.toString(ConfigMode.values());
-            logger.error(COMMON_PROPERTY_MISSPELLING, "", "", msg, e);
+            logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", msg, e);
             throw new IllegalArgumentException(msg, e);
         }
 
@@ -506,7 +506,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     this.addConfig(config);
                     tmpConfigs.add(config);
                 } catch (Exception e) {
-                    logger.error(COMMON_PROPERTY_MISSPELLING, "", "", "load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
+                    logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
                 } finally {
                     if (addDefaultNameConfig && key != null) {
