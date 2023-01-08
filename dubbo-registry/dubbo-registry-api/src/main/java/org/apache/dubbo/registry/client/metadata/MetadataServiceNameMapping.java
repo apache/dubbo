@@ -104,7 +104,15 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     }
                     succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
                     if (!succeeded) {
-                        Thread.sleep(ThreadLocalRandom.current().nextInt(casRetryWaitTime));
+                        int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
+                        logger.info("Failed to publish service name mapping to metadata center by cas operation. " +
+                            "Times: " + casRetryTimes + ". " +
+                            "Next retry delay: " + waitTime + ". " +
+                            "Service Interface: " + serviceInterface + ". " +
+                            "Origin Content: " + oldConfigContent + ". " +
+                            "Ticket: " + configItem.getTicket() + ". " +
+                            "Excepted context: " + newConfigContent);
+                        Thread.sleep(waitTime);
                     }
                 } while (!succeeded && currentRetryTimes++ <= casRetryTimes);
 
