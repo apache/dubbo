@@ -106,7 +106,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     if (!succeeded) {
                         int waitTime = ThreadLocalRandom.current().nextInt(casRetryWaitTime);
                         logger.info("Failed to publish service name mapping to metadata center by cas operation. " +
-                            "Times: " + casRetryTimes + ". " +
+                            "Times: " + currentRetryTimes + ". " +
                             "Next retry delay: " + waitTime + ". " +
                             "Service Interface: " + serviceInterface + ". " +
                             "Origin Content: " + oldConfigContent + ". " +
