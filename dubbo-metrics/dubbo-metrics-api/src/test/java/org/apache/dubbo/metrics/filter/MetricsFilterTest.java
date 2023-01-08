@@ -17,8 +17,23 @@
 
 package org.apache.dubbo.metrics.filter;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.model.MetricsKey;
+import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.AppResponse;
@@ -27,24 +42,10 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.apache.dubbo.common.constants.CommonConstants.*;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 class MetricsFilterTest {
 
@@ -141,6 +142,57 @@ class MetricsFilterTest {
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
+    }
+
+
+    @Test
+    void testTimeoutRequests() {
+        collector.setCollectEnabled(true);
+
+        given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
+        initParam();
+
+        Long count = 2L;
+
+        for (int i = 0; i < count; i++) {
+            try {
+                filter.invoke(invoker, invocation);
+            } catch (Exception e) {
+                Assertions.assertTrue(e instanceof RpcException);
+                filter.onError(e, invoker, invocation);
+            }
+        }
+        Map<String, MetricSample> metricsMap = getMetricsMap();
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName()));
+
+        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName());
+
+        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+    }
+
+    @Test
+    void testLimitRequests() {
+        collector.setCollectEnabled(true);
+
+        given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION));
+        initParam();
+
+        Long count = 3L;
+
+        for (int i = 0; i < count; i++) {
+            try {
+                filter.invoke(invoker, invocation);
+            } catch (Exception e) {
+                Assertions.assertTrue(e instanceof RpcException);
+                filter.onError(e, invoker, invocation);
+            }
+        }
+        Map<String, MetricSample> metricsMap = getMetricsMap();
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_LIMIT_AGG.getName()));
+
+        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT_AGG.getName());
+
+        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
     }
 
     @Test

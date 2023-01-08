@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -110,8 +111,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     @Override
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
-        if (this.provider != null && this.provider.getScopeModel() != scopeModel) {
-            this.provider.setScopeModel(scopeModel);
+        if (this.provider != null && this.provider.getScopeModel() != getScopeModel()) {
+            this.provider.setScopeModel(getScopeModel());
         }
     }
 
@@ -174,6 +175,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                     .getDefaultProvider()
                     .orElseThrow(() -> new IllegalStateException("Default provider is not initialized"));
         }
+        // try set properties from `dubbo.service` if not set in current config
+        refreshWithPrefixes(super.getPrefixes(), ConfigMode.OVERRIDE_IF_ABSENT);
     }
 
     @Override

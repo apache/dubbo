@@ -200,6 +200,9 @@ public class FrameworkExecutorRepository implements Disposable {
         shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
             "registryNotificationExecutorRing");
 
+        // mappingRefreshingExecutor
+        shutdownExecutorService(mappingRefreshingExecutor,
+            "mappingRefreshingExecutor");
     }
 
     private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {

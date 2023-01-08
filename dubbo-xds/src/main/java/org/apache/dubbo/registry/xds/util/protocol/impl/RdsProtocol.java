@@ -22,6 +22,7 @@ import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -43,8 +44,8 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(RdsProtocol.class);
 
-    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
-        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
+    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingTimeout, ApplicationModel applicationModel) {
+        super(xdsChannel, node, pollingTimeout, applicationModel);
     }
 
     @Override
@@ -53,22 +54,17 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
     }
 
     @Override
-    protected RouteResult decodeDiscoveryResponse(DiscoveryResponse response) {
+    protected Map<String, RouteResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
-            Map<String, Set<String>> map = response.getResourcesList().stream()
+            return response.getResourcesList().stream()
                 .map(RdsProtocol::unpackRouteConfiguration)
                 .filter(Objects::nonNull)
-                .map(RdsProtocol::decodeResourceToListener)
-                .reduce((a, b) -> {
-                    a.putAll(b);
-                    return a;
-                }).orElse(new HashMap<>());
-            return new RouteResult(map);
+                .collect(Collectors.toConcurrentMap(RouteConfiguration::getName, this::decodeResourceToListener));
         }
-        return new RouteResult();
+        return new HashMap<>();
     }
 
-    private static Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {
+    private RouteResult decodeResourceToListener(RouteConfiguration resource) {
         Map<String, Set<String>> map = new HashMap<>();
         resource.getVirtualHostsList()
             .forEach(virtualHost -> {
@@ -80,7 +76,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                     map.put(domain, cluster);
                 }
             });
-        return map;
+        return new RouteResult(map);
     }
 
     private static RouteConfiguration unpackRouteConfiguration(Any any) {

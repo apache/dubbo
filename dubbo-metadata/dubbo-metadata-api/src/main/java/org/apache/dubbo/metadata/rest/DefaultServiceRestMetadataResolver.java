@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -26,6 +28,9 @@ import java.util.Set;
  * @since 2.7.6
  */
 public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetadataResolver {
+    public DefaultServiceRestMetadataResolver(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     @Override
     protected boolean supports0(Class<?> serviceType) {

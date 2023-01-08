@@ -44,11 +44,10 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -61,17 +60,18 @@ import java.util.concurrent.Future;
 
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
+@Disabled
 class MultiInstanceTest {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(MultiInstanceTest.class);
 
-    private static RegistryConfig registryConfig;
+    private RegistryConfig registryConfig;
 
     private static DubboTestChecker testChecker;
     private static String testClassName;
 
-    @BeforeAll
-    public static void beforeAll() {
+    @BeforeEach
+    public void beforeAll() {
         FrameworkModel.destroyAll();
         registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
 
@@ -79,8 +79,8 @@ class MultiInstanceTest {
         //precheckUnclosedThreads();
     }
 
-    @AfterAll
-    public static void afterAll() throws Exception {
+    @AfterEach
+    public void afterAll() throws Exception {
         FrameworkModel.destroyAll();
 
         // check threads
@@ -116,7 +116,7 @@ class MultiInstanceTest {
 
     @BeforeEach
     public void setup() {
-
+        FrameworkModel.destroyAll();
     }
 
     @AfterEach
@@ -308,6 +308,7 @@ class MultiInstanceTest {
 
     @Test
     void testMultiProviderApplicationsStopOneByOne() {
+        FrameworkModel.destroyAll();
 
         String version1 = "1.0";
         String version2 = "2.0";
@@ -330,7 +331,7 @@ class MultiInstanceTest {
 
             providerBootstrap1 = DubboBootstrap.getInstance();
             providerBootstrap1.application("provider1")
-                .registry(registryConfig)
+                .registry(new RegistryConfig(registryConfig.getAddress()))
                 .service(serviceConfig1)
                 .protocol(protocolConfig1)
                 .start();

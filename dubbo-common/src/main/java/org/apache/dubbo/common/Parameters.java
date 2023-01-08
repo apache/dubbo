@@ -62,21 +62,37 @@ public class Parameters {
         return parameters;
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getExtension(Class<T> type, String key) {
         String name = getParameter(key);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getExtension(Class<T> type, String key, String defaultValue) {
         String name = getParameter(key, defaultValue);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getMethodExtension(Class<T> type, String method, String key) {
         String name = getMethodParameter(method, key);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);
     }
 
+    /**
+     * @deprecated will be removed in 3.3.0
+     */
+    @Deprecated
     public <T> T getMethodExtension(Class<T> type, String method, String key, String defaultValue) {
         String name = getMethodParameter(method, key, defaultValue);
         return ExtensionLoader.getExtensionLoader(type).getExtension(name);

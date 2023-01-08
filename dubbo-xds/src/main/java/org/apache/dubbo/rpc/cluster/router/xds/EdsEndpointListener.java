@@ -14,10 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.command;
+package org.apache.dubbo.rpc.cluster.router.xds;
 
-public class NoSuchCommandException extends Exception {
-    public NoSuchCommandException(String msg) {
-        super("NoSuchCommandException:" + msg);
-    }
+import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
+
+import java.util.Set;
+
+
+public interface EdsEndpointListener {
+
+    void onEndPointChange(String cluster, Set<Endpoint> endpoints);
+
 }

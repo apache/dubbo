@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -64,7 +63,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
-    private final String version;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
@@ -79,8 +77,6 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.clients = clients;
-        // get version.
-        this.version = url.getVersion(DEFAULT_VERSION);
         this.invokers = invokers;
         this.serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(getUrl().getScopeModel());
     }
@@ -179,7 +175,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         int timeout;
         if (countdown == null) {
             timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), invocation, DEFAULT_TIMEOUT);
-            if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+            if (getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
             }
         } else {
@@ -187,6 +183,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
         }
+
+        invocation.getObjectAttachments().remove(TIME_COUNTDOWN_KEY);
         return timeout;
     }
 }

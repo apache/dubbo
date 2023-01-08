@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 
 /**
  * @see MultiMessage
@@ -45,11 +45,11 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
                 try {
                     handler.received(channel, obj);
                 } catch (Throwable t) {
-                    logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "MultiMessageHandler received fail.", t);
+                    logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler received fail.", t);
                     try {
                         handler.caught(channel, t);
                     } catch (Throwable t1) {
-                        logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "MultiMessageHandler caught fail.", t1);
+                        logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "MultiMessageHandler caught fail.", t1);
                     }
                 }
             }

@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
@@ -74,6 +75,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * {@link Invoker} default attachment
      */
     private final Map<String, Object> attachment;
+
+    protected final String version;
 
     /**
      * {@link Node} available
@@ -109,7 +112,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         this.type = type;
         this.url = url;
-        this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
+        
+        this.attachment = attachment == null
+            ? null
+            : Collections.unmodifiableMap(attachment);
+        this.version = url.getVersion(DEFAULT_VERSION);
+
     }
 
     private static Map<String, Object> convertAttachment(URL url, String[] keys) {
