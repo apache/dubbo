@@ -26,6 +26,7 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.MetricsConstants;
@@ -115,6 +116,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             new JvmGcMetrics(extraTags).bindTo(compositeRegistry);
             new ProcessorMetrics(extraTags).bindTo(compositeRegistry);
             new JvmThreadMetrics(extraTags).bindTo(compositeRegistry);
+            new UptimeMetrics(extraTags).bindTo(compositeRegistry);
         }
     }
 
