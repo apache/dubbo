@@ -838,12 +838,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     return;
                 }
 
-                // refresh for 30s when deployer is not started, prevent submit too many revision
+                // refresh for 30 times (default for 30s) when deployer is not started, prevent submit too many revision
                 if (instanceRefreshScheduleTimes.incrementAndGet() % 30 != 0 && !isStarted()) {
                     return;
                 }
 
-                // refresh for 5s when services are being updated by other threads, prevent submit too many revision
+                // refresh for 5 times (default for 5s) when services are being updated by other threads, prevent submit too many revision
                 // note: should not always wait here
                 if (serviceRefreshState.get() != 0 && instanceRefreshScheduleTimes.get() % 5 != 0) {
                     return;
