@@ -31,11 +31,11 @@ import org.apache.dubbo.rpc.RpcInvocation;
 public class MetricsCollectExecutor {
 
     private final DefaultMetricsCollector collector;
-    private final Invocation    invocation;
-    private String  interfaceName;
-    private String  methodName;
-    private String  group;
-    private String  version;
+    private final Invocation invocation;
+    private String interfaceName;
+    private String methodName;
+    private String group;
+    private String version;
 
 
     public MetricsCollectExecutor(DefaultMetricsCollector collector, Invocation invocation) {
