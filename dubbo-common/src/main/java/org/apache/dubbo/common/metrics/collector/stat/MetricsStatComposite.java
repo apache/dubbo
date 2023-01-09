@@ -128,6 +128,20 @@ public class MetricsStatComposite{
         });
 
         stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler(applicationName));
+
+        stats.put(RequestEvent.Type.REQUEST_LIMIT, new DefaultMetricsStatHandler(applicationName) {
+            @Override
+            public void doNotify(MethodMetric metric) {
+                publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_LIMIT));
+            }
+        });
+
+        stats.put(RequestEvent.Type.REQUEST_TIMEOUT, new DefaultMetricsStatHandler(applicationName) {
+            @Override
+            public void doNotify(MethodMetric metric) {
+                publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_TIMEOUT));
+            }
+        });
     }
 
     private void publishEvent(MetricsEvent event) {
