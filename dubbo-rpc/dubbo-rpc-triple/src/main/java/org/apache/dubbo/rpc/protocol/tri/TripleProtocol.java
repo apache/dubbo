@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
-import com.google.protobuf.Message;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 
@@ -85,10 +84,10 @@ public class TripleProtocol extends AbstractProtocol {
 
     private static boolean hasProtobuf() {
         try {
-            Class.forName(Message.class.getName());
+            Class.forName("com.google.protobuf.Message");
             return true;
-        } catch (ClassNotFoundException e) {
-            return false;
+        } catch (ClassNotFoundException ignore) {
+           return false;
         }
     }
 
