@@ -60,8 +60,6 @@ public class TripleProtocol extends AbstractProtocol {
      */
     public static boolean CONVERT_NO_LOWER_HEADER = false;
 
-    public final static boolean HAS_PROTOBUF = hasProtobuf();
-
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         this.triBuiltinService = new TriBuiltinService(frameworkModel);
@@ -81,15 +79,6 @@ public class TripleProtocol extends AbstractProtocol {
         return 50051;
     }
 
-
-    private static boolean hasProtobuf() {
-        try {
-            Class.forName("com.google.protobuf.Message");
-            return true;
-        } catch (ClassNotFoundException ignore) {
-           return false;
-        }
-    }
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
