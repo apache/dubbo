@@ -28,4 +28,14 @@ public interface RestConstant {
     String RPCCONTEXT_INTERCEPT = "rpc-context";
     String SERIALIZE_INTERCEPT = "serialize";
     String PATH_SEPARATOR = "/";
+    String REQUEST_PARAM_INTERCEPT = "param";
+    String REQUEST_HEADER_INTERCEPT = "header";
+    String PATH_INTERCEPT = "path";
+    String KEEP_ALIVE_HEADER = "Keep-Alive";
+    String CONNECTION = "Connection";
+    String KEEP_ALIVE = "keep-alive";
+    String CONTENT_TYPE = "Content-Type";
+    String APPLICATION_JSON_VALUE = "application/json";
+    String APPLICATION_FORM_URLENCODED_VALUE = "application/x-www-form-urlencoded";
+    String TEXT_PLAIN = "text/plain";
 }

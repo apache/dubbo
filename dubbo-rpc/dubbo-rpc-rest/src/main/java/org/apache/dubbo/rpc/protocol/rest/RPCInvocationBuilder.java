@@ -5,7 +5,7 @@ import org.apache.dubbo.metadata.rest.PathMatcher;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
-import org.apache.dubbo.rpc.protocol.rest.annotation.ParseContext;
+import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider.ProviderParseContext;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import org.apache.dubbo.rpc.protocol.rest.exception.PathNoFoundException;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacadeFactory;
@@ -31,7 +31,7 @@ public class RPCInvocationBuilder {
 
         RpcInvocation rpcInvocation = createBaseRpcInvocation(request);
 
-        ParseContext parseContext = createParseContext(request, response, rpcInvocation);
+        ProviderParseContext parseContext = createParseContext(request, response, rpcInvocation);
 
         Object[] args = paramParser.providerParamParse(parseContext);
         rpcInvocation.setArguments(args);
@@ -40,8 +40,8 @@ public class RPCInvocationBuilder {
 
     }
 
-    private static ParseContext createParseContext(Object request, Object response, RpcInvocation rpcInvocation) {
-        ParseContext parseContext = new ParseContext(RequestFacadeFactory.createRequestFacade(request));
+    private static ProviderParseContext createParseContext(Object request, Object response, RpcInvocation rpcInvocation) {
+        ProviderParseContext parseContext = new ProviderParseContext(RequestFacadeFactory.createRequestFacade(request));
         parseContext.setResponse(response);
         parseContext.setRequest(request);
 

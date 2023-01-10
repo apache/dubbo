@@ -3,7 +3,7 @@ package org.apache.dubbo.metadata.rest;
 import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 
-public interface SPRING_MVCClassConstants extends RestMetadataConstants.SPRING_MVC {
+public interface SpringMvcClassConstants extends RestMetadataConstants.SPRING_MVC {
     /**
      * The annotation class of @RequestMapping
      */

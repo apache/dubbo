@@ -35,6 +35,8 @@ public interface ServiceRestMetadataResolver {
      */
     boolean supports(Class<?> serviceType);
 
+    boolean supports(Class<?> serviceType,boolean consumer);
+
     /**
      * Resolve the {@link ServiceRestMetadata REST metadata} from the specified
      * Dubbo Service interface or type
@@ -43,4 +45,6 @@ public interface ServiceRestMetadataResolver {
      * @return
      */
     ServiceRestMetadata resolve(Class<?> serviceType);
+
+    ServiceRestMetadata resolve(Class<?> serviceType,ServiceRestMetadata serviceRestMetadata);
 }

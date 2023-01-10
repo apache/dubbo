@@ -3,7 +3,7 @@ package org.apache.dubbo.metadata.rest;
 import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 
-public interface JAX_RSClassConstants extends RestMetadataConstants.JAX_RS {
+public interface JAXRSClassConstants extends RestMetadataConstants.JAX_RS {
     /**
      * The annotation class of @Path
      */

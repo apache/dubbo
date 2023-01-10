@@ -1,29 +1,25 @@
-package org.apache.dubbo.rpc.protocol.rest.annotation;
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.provider;
 
 
 import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.rpc.protocol.rest.annotation.BaseParseContext;
 import org.apache.dubbo.rpc.protocol.rest.request.RequestFacade;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class ParseContext {
+public class ProviderParseContext extends BaseParseContext {
 
 
     private RequestFacade requestFacade;
-
-    private List<Object> args;
-
-    private List<ArgInfo> argInfos;
-
     private Object response;
     private Object request;
 
 
-    public ParseContext() {
+    public ProviderParseContext() {
     }
 
-    public ParseContext(RequestFacade request, List<ArgInfo> argInfos) {
+    public ProviderParseContext(RequestFacade request, List<ArgInfo> argInfos) {
         this.requestFacade = request;
         this.argInfos = argInfos;
         args = createDefaultListArgs(argInfos.size());
@@ -33,30 +29,8 @@ public class ParseContext {
         return Arrays.asList(new Object[size]);
     }
 
-    public ParseContext(RequestFacade request) {
+    public ProviderParseContext(RequestFacade request) {
         this.requestFacade = request;
-    }
-
-    public List<ArgInfo> getArgInfos() {
-        return argInfos;
-    }
-
-    public void setArgInfos(List<ArgInfo> argInfos) {
-        this.argInfos = argInfos;
-        createDefaultListArgs(argInfos.size());
-    }
-
-
-    public ArgInfo getArgInfoByIndex(int index) {
-        return getArgInfos().get(index);
-    }
-
-    public List<Object> getArgs() {
-        return args;
-    }
-
-    public void setArgs(List<Object> args) {
-        this.args = args;
     }
 
     public RequestFacade getRequestFacade() {
