@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.*;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
+import org.apache.dubbo.rpc.protocol.rest.request.convert.factory.RequestConvertFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -30,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class HttpInvokeInvocationHandler<CLIENT> implements InvocationHandler {
-    private static final RequestConvert requestConvertAdaptive = ApplicationModel.defaultModel().getExtensionLoader(RequestConvert.class).getAdaptiveExtension();
+    private static final RequestConvertFactory requestConvertAdaptive = ApplicationModel.defaultModel().getExtensionLoader(RequestConvertFactory.class).getAdaptiveExtension();
 
     private static Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
         ApplicationModel.defaultModel().getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();

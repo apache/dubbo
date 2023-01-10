@@ -14,21 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.request.convert;
+package org.apache.dubbo.rpc.protocol.rest.request.convert.factory;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
-import org.apache.dubbo.rpc.protocol.rest.request.client.ClientFacade;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
 
-@SPI
-public interface RequestConvert<REQ, RES, CLIENT> extends ClientFacade<REQ, RES> {
-
-    REQ convert(RequestTemplate requestTemplate);
-
-    Object convertResponse(RES response) throws Exception;
-
-    Object request(RequestTemplate requestTemplate) throws RemotingException;
+@SPI("okhttp")
+public interface RequestConvertFactory<CLIENT> {
 
 
+    @Adaptive
+    RequestConvert createRequestConvert(URL url, CLIENT restClient, RestMethodMetadata restMethodMetadata);
 }

@@ -46,10 +46,7 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
     }
 
 
-    @Override
-    public RequestConvert createRequestConvert(URL url, OKHttpRestClient restClient, RestMethodMetadata restMethodMetadata) {
-        return new OkHttpRequestConvert(restClient, restMethodMetadata, url);
-    }
+
 
     @Override
     public Request convert(RequestTemplate requestTemplate) {
