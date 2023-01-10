@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.request.convert;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.request.client.ClientFacade;
@@ -29,6 +30,8 @@ public interface RequestConvert<REQ, RES, CLIENT> extends ClientFacade<REQ, RES>
     Object convertResponse(RES response) throws Exception;
 
     Object request(RequestTemplate requestTemplate) throws RemotingException;
+
+    RequestConvert init(CLIENT restClient, RestMethodMetadata restMethodMetadata);
 
 
 }

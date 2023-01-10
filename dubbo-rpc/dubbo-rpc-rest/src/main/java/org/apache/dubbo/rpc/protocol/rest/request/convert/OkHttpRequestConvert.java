@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest.request.convert;
 
 import okhttp3.*;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
@@ -30,14 +30,15 @@ import org.apache.dubbo.rpc.protocol.rest.request.BaseConvert;
 import java.util.Collection;
 import java.util.Map;
 
-@Adaptive("okhttp")
+@Activate("okhttp")
 public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpRestClient> {
 
     public OkHttpRequestConvert(OKHttpRestClient restClient, RestMethodMetadata restMethodMetadata, URL url) {
         super(restClient, restMethodMetadata, url);
     }
 
-    public OkHttpRequestConvert() {
+    public OkHttpRequestConvert(URL url) {
+        super(url);
     }
 
     @Override

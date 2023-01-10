@@ -19,13 +19,16 @@ package org.apache.dubbo.rpc.protocol.rest.request.convert.factory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
 
 @SPI("okhttp")
 public interface RequestConvertFactory<CLIENT> {
 
 
-    @Adaptive
-    RequestConvert createRequestConvert(URL url, CLIENT restClient, RestMethodMetadata restMethodMetadata);
+    @Adaptive({Constants.CLIENT_KEY})
+    RequestConvert createRequestConvert(URL url );
+
+
+
 }

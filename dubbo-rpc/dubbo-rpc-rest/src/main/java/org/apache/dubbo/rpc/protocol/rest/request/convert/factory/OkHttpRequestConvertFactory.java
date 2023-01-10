@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest.request.convert.factory;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.OkHttpRequestConvert;
 import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
@@ -26,7 +25,9 @@ import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
 @Activate("okhttp")
 public class OkHttpRequestConvertFactory implements RequestConvertFactory<OKHttpRestClient> {
 
-    public RequestConvert createRequestConvert(URL url, OKHttpRestClient restClient, RestMethodMetadata restMethodMetadata) {
-        return new OkHttpRequestConvert(restClient, restMethodMetadata, url);
+    @Override
+    public RequestConvert createRequestConvert(URL url) {
+        return new OkHttpRequestConvert(url);
     }
+
 }

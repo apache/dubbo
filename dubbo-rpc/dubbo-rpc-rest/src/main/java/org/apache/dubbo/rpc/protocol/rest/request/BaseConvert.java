@@ -35,7 +35,8 @@ public abstract class BaseConvert<REQ, RES, CLIENT> implements RequestConvert<RE
     protected RestMethodMetadata restMethodMetadata;
     protected URL url;
 
-    public BaseConvert() {
+    public BaseConvert(URL url) {
+        this.url = url;
     }
 
     public BaseConvert(CLIENT restClient, RestMethodMetadata restMethodMetadata, URL url) {
@@ -89,5 +90,12 @@ public abstract class BaseConvert<REQ, RES, CLIENT> implements RequestConvert<RE
 
     public CLIENT getRestClient() {
         return restClient;
+    }
+
+    @Override
+    public RequestConvert init(CLIENT restClient, RestMethodMetadata restMethodMetadata) {
+        this.restClient = restClient;
+        this.restMethodMetadata = restMethodMetadata;
+        return this;
     }
 }

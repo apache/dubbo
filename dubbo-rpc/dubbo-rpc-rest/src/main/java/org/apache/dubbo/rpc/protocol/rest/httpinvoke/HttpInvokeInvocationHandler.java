@@ -64,7 +64,7 @@ public class HttpInvokeInvocationHandler<CLIENT> implements InvocationHandler {
             intercept.intercept(httpConnectionCreateContext);
         }
 
-        RequestConvert requestConvert = requestConvertAdaptive.createRequestConvert(url, restClient, restMethodMetadata);
+        RequestConvert requestConvert = requestConvertAdaptive.createRequestConvert(url).init(restClient, restMethodMetadata);
 
 
         return requestConvert.request(requestTemplate);
