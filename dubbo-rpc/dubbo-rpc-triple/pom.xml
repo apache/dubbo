@@ -32,6 +32,7 @@
         <dubbo.compiler.version>0.0.4.1-SNAPSHOT</dubbo.compiler.version>
         <reactive.version>1.0.4</reactive.version>
         <reactor.version>3.4.19</reactor.version>
+        <protobuf-java.version>3.18.3</protobuf-java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -52,6 +53,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
+            <version>${protobuf-java.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -112,7 +114,7 @@
                 <version>0.6.1</version>
                 <configuration>
                     <protocArtifact>
-                        com.google.protobuf:protoc:3.11.0:exe:${os.detected.classifier}
+                        com.google.protobuf:protoc:${protobuf-java.version}:exe:${os.detected.classifier}
                     </protocArtifact>
                     <protocPlugins>
                         <protocPlugin>
