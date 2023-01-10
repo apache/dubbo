@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.registry.nacos.util;
 
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -32,10 +35,6 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 
-import java.util.Map;
-import java.util.Properties;
-
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
@@ -164,8 +163,6 @@ public class NacosNamingServiceUtils {
         if (StringUtils.isNotEmpty(url.getPassword())) {
             properties.put(PASSWORD, url.getPassword());
         }
-
-        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
