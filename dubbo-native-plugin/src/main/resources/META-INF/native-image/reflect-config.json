@@ -2431,6 +2431,16 @@
     "methods": [
       {
         "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.AdaptiveMetrics",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
         "parameterTypes": []
       }
     ]
