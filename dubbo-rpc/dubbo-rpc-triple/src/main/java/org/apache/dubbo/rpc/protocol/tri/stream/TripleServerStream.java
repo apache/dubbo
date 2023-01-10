@@ -182,7 +182,7 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
         String grpcMessage = getGrpcMessage(rpcStatus);
         grpcMessage = TriRpcStatus.encodeMessage(TriRpcStatus.limitSizeTo1KB(grpcMessage));
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
-        if (!GRPC_STATUS_DETAIL_ENABLED) {
+        if (!getGrpcStatusDetailEnabled()) {
             return headers;
         }
         Status.Builder builder = Status.newBuilder().setCode(rpcStatus.code.code)

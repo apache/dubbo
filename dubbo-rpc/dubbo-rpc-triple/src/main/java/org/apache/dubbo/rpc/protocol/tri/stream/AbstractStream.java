@@ -32,13 +32,16 @@ public abstract class AbstractStream implements Stream {
     protected final FrameworkModel frameworkModel;
 
 
-    public static final boolean HAS_PROTOBUF = hasProtobuf();
-
-    public static final boolean GRPC_STATUS_DETAIL_ENABLED = HAS_PROTOBUF;
+    private static final boolean HAS_PROTOBUF = hasProtobuf();
 
     public AbstractStream(Executor executor, FrameworkModel frameworkModel) {
         this.executor = new SerializingExecutor(executor);
         this.frameworkModel = frameworkModel;
+    }
+
+
+    public static boolean getGrpcStatusDetailEnabled() {
+        return HAS_PROTOBUF;
     }
 
 

@@ -334,7 +334,7 @@ public class TripleClientStream extends AbstractStream implements ClientStream {
             if (null == metadata) {
                 return null;
             }
-            if (!GRPC_STATUS_DETAIL_ENABLED){
+            if (!getGrpcStatusDetailEnabled()){
                 return null;
             }
             // second get status detail
