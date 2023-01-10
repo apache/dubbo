@@ -154,8 +154,12 @@ public class CodecSupport {
      * @param proto
      * @return
      */
-    public static boolean isHeartBeat(byte[] payload, byte proto) {
-        return Arrays.equals(payload, getNullBytesOf(getSerializationById(proto)));
+    public static boolean isHeartBeat(byte[] payload, byte proto) throws IOException{
+        Serialization serialization = getSerializationById(proto);
+        if (serialization == null) {
+            throw new IOException("Unrecognized serialize type from peer: " + proto+", This may be caused by default serialization type of version 2&3 is inconsistent, go to https://cn.dubbo.apache.org/zh/docs3-v2/java-sdk/upgrades-and-compatibility/serialization-upgrade/ to find instructions.");
+        }
+        return Arrays.equals(payload, getNullBytesOf(serialization));
     }
 
     public static void checkSerialization(String path, String version, Byte id) throws IOException {
