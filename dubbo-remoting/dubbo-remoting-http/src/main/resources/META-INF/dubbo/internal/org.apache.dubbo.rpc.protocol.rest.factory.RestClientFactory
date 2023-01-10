@@ -1,0 +1,2 @@
+okhttp=org.apache.dubbo.remoting.http.factory.impl.OkHttpClientFactory
+

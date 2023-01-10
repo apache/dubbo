@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.factory.impl;
+package org.apache.dubbo.remoting.http.factory.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.rest.factory.AbstractHttpClientFactory;
+import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
 
 @Activate("okhttp")
 public class OkHttpClientFactory extends AbstractHttpClientFactory {

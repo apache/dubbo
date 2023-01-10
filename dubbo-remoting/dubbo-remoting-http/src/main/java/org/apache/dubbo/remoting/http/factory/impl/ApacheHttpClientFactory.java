@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.factory;
+package org.apache.dubbo.remoting.http.factory.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
 
-/**
- * RestClientFactory. (API/SPI, Singleton, ThreadSafe)
- */
-@SPI(value = "okhttp", scope = ExtensionScope.FRAMEWORK)
-public interface RestClientFactory {
+@Activate(value = "apacheHttpclient")
+public class ApacheHttpClientFactory extends AbstractHttpClientFactory {
+
+    @Override
+    protected void beforeCreated(URL url) {
+
+    }
+
+    @Override
+    protected RestClient doCreateRestClient(URL url) throws RpcException {
 
 
-    @Adaptive({Constants.CLIENT_KEY})
-    RestClient createRestClient(URL url) throws RpcException;
-
-
+        return null;
+    }
 }

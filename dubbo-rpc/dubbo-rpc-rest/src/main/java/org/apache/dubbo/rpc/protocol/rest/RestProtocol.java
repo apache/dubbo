@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.rpc.protocol.rest.factory.RestClientFactory;
+import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeClientBuilder;
 import org.jboss.resteasy.util.GetRestful;
 

@@ -1,2 +1,0 @@
-okhttp=org.apache.dubbo.rpc.protocol.rest.factory.impl.OkHttpClientFactory
-
