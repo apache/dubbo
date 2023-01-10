@@ -137,7 +137,7 @@
         <prometheus_client.version>0.10.0</prometheus_client.version>
         <reactive.version>1.0.4</reactive.version>
         <reactor.version>3.4.19</reactor.version>
-        <okhttp.version>3.14.9</okhttp.version>
+        <okhttp_version>3.14.9</okhttp_version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -402,7 +402,7 @@
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
-                <scope>${okhttp.version}</scope>
+                <version>${okhttp_version}</version>
             </dependency>
 
             <dependency>
