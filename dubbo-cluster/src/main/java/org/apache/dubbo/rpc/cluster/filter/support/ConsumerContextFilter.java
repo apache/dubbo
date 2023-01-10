@@ -41,7 +41,6 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 
 /**
@@ -106,7 +105,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                 // the subsequent calls launched by the Server side will be enabled by default,
                 // and support to turn off the function on a node to get rid of the timeout control.
                 if (invoker.getUrl().getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, true)) {
-                    context.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, countDown);
+                    context.setObjectAttachment(TIME_COUNTDOWN_KEY, countDown);
 
                     TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
                     if (timeoutCountDown.isExpired()) {
