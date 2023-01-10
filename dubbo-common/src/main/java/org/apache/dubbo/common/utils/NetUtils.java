@@ -129,8 +129,7 @@ public final class NetUtils {
                 USED_PORT.set(i);
                 port = i;
                 break;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // continue
             }
         }
@@ -146,8 +145,7 @@ public final class NetUtils {
     public static boolean isPortInUsed(int port) {
         try (ServerSocket ignored = new ServerSocket(port)) {
             return false;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // continue
         }
         return true;
@@ -243,8 +241,7 @@ public final class NetUtils {
         if (i > 0) {
             try {
                 return InetAddress.getByName(addr.substring(0, i) + '%' + address.getScopeId());
-            }
-            catch (UnknownHostException e) {
+            } catch (UnknownHostException e) {
                 // ignore
                 logger.debug("Unknown IPV6 address: ", e);
             }
@@ -284,7 +281,7 @@ public final class NetUtils {
             return HOST_ADDRESS_V6;
         }
         //avoid to search network interface card many times
-        if ("".equals(HOST_ADDRESS_V6)) {
+        if("".equals(HOST_ADDRESS_V6)){
             return null;
         }
 
@@ -311,14 +308,12 @@ public final class NetUtils {
             if (NetUtils.isInvalidLocalHost(u.getHost())) {
                 return u.setHost(NetUtils.getLocalHost()).toFullString();
             }
-        }
-        else if (host.contains(":")) {
+        } else if (host.contains(":")) {
             int i = host.lastIndexOf(':');
             if (NetUtils.isInvalidLocalHost(host.substring(0, i))) {
                 return NetUtils.getLocalHost() + host.substring(i);
             }
-        }
-        else {
+        } else {
             if (NetUtils.isInvalidLocalHost(host)) {
                 return NetUtils.getLocalHost();
             }
@@ -385,14 +380,12 @@ public final class NetUtils {
                         if (addressOp.get().isReachable(100)) {
                             return addressOp.get();
                         }
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         // ignore
                     }
                 }
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             logger.warn(e);
         }
 
@@ -402,8 +395,7 @@ public final class NetUtils {
             if (addressOp.isPresent()) {
                 return addressOp.get();
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             logger.warn(e);
         }
 
@@ -430,8 +422,7 @@ public final class NetUtils {
                     }
                 }
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             logger.warn(e);
         }
 
@@ -472,13 +463,10 @@ public final class NetUtils {
                 boolean matched = false;
                 try {
                     matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
-                }
-                catch (PatternSyntaxException e) {
+                } catch (PatternSyntaxException e) {
                     // if trimIgnoredInterface is an invalid regular expression, a PatternSyntaxException will be thrown out
-                    logger
-                        .warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
-                }
-                finally {
+                    logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
+                } finally {
                     if (matched) {
                         return true;
                     }
@@ -535,8 +523,7 @@ public final class NetUtils {
         List<NetworkInterface> validNetworkInterfaces = emptyList();
         try {
             validNetworkInterfaces = getValidNetworkInterfaces();
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             logger.warn(e);
         }
 
@@ -560,8 +547,7 @@ public final class NetUtils {
                             if (addressOp.get().isReachable(100)) {
                                 return networkInterface;
                             }
-                        }
-                        catch (IOException e) {
+                        } catch (IOException e) {
                             // ignore
                         }
                     }
@@ -592,8 +578,7 @@ public final class NetUtils {
                 HOST_NAME_CACHE.put(address, hostname);
                 return hostname;
             }
-        }
-        catch (Throwable e) {
+        } catch (Throwable e) {
             // ignore
         }
         return address;
@@ -602,8 +587,7 @@ public final class NetUtils {
     public static String getLocalHostName() {
         try {
             return InetAddress.getLocalHost().getHostName();
-        }
-        catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {
             return getLocalAddress().getHostName();
         }
     }
@@ -615,8 +599,7 @@ public final class NetUtils {
     public static String getIpByHost(String hostName) {
         try {
             return InetAddress.getByName(hostName).getHostAddress();
-        }
-        catch (UnknownHostException e) {
+        } catch (UnknownHostException e) {
             return hostName;
         }
     }
@@ -632,8 +615,7 @@ public final class NetUtils {
         if (i > -1) {
             host = address.substring(0, i);
             port = Integer.parseInt(address.substring(i + 1));
-        }
-        else {
+        } else {
             host = address;
             port = 0;
         }
@@ -676,20 +658,17 @@ public final class NetUtils {
                             interfaceSet = true;
                             break;
                         }
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         // ignore
                     }
-                }
-                else if (!preferIpv6 && address instanceof Inet4Address) {
+                } else if (!preferIpv6 && address instanceof Inet4Address) {
                     try {
                         if (address.isReachable(100)) {
                             multicastSocket.setInterface(address);
                             interfaceSet = true;
                             break;
                         }
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         // ignore
                     }
                 }
@@ -760,8 +739,7 @@ public final class NetUtils {
         for (int i = 0; i < mask.length; i++) {
             if ("*".equals(mask[i]) || mask[i].equals(ipAddress[i])) {
                 continue;
-            }
-            else if (mask[i].contains("-")) {
+            } else if (mask[i].contains("-")) {
                 String[] rangeNumStrs = StringUtils.split(mask[i], '-');
                 if (rangeNumStrs.length != 2) {
                     throw new IllegalArgumentException("There is wrong format of ip Address: " + mask[i]);
@@ -772,12 +750,9 @@ public final class NetUtils {
                 if (ip < min || ip > max) {
                     return false;
                 }
-            }
-            else if ("0".equals(ipAddress[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000"
-                .equals(mask[i]) || "0000".equals(mask[i]))) {
+            } else if ("0".equals(ipAddress[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
                 continue;
-            }
-            else if (!mask[i].equals(ipAddress[i])) {
+            } else if (!mask[i].equals(ipAddress[i])) {
                 return false;
             }
         }
@@ -814,8 +789,7 @@ public final class NetUtils {
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
             }
-        }
-        else {
+        } else {
             if (mask.length != 4) {
                 throw new IllegalArgumentException("The host is ipv4, but the pattern is not ipv4 pattern : " + pattern);
             }
@@ -829,19 +803,16 @@ public final class NetUtils {
             result[0] = pattern.substring(1, end);
             result[1] = pattern.substring(end + 2);
             return result;
-        }
-        else if (pattern.startsWith("[") && pattern.endsWith("]")) {
+        } else if (pattern.startsWith("[") && pattern.endsWith("]")) {
             result[0] = pattern.substring(1, pattern.length() - 1);
             result[1] = null;
             return result;
-        }
-        else if (isIpv4 && pattern.contains(":")) {
+        } else if (isIpv4 && pattern.contains(":")) {
             int end = pattern.indexOf(":");
             result[0] = pattern.substring(0, end);
             result[1] = pattern.substring(end + 1);
             return result;
-        }
-        else {
+        } else {
             result[0] = pattern;
             return result;
         }
@@ -858,11 +829,9 @@ public final class NetUtils {
     public static boolean isIPV6URLStdFormat(String ip) {
         if ((ip.charAt(0) == '[' && ip.indexOf(']') > 2)) {
             return true;
-        }
-        else if (ip.indexOf(":") != ip.lastIndexOf(":")) {
+        } else if (ip.indexOf(":") != ip.lastIndexOf(":")) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -875,8 +844,7 @@ public final class NetUtils {
             ip = nhost.substring(0, ind + 1);
             ip = ip.substring(1, ind);
             return ip;
-        }
-        else {
+        } else {
             return ip;
         }
     }
