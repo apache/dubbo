@@ -55,6 +55,11 @@ public class NacosNamingServiceUtils {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
     private static final String NACOS_GROUP_KEY = "nacos.group";
 
+    private static final String NACOS_RETRY_KEY = "nacos.retry";
+
+    private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
+
+
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
      *
@@ -123,7 +128,9 @@ public class NacosNamingServiceUtils {
             }
             throw new IllegalStateException(e);
         }
-        return new NacosNamingServiceWrapper(namingService);
+        int retryTimes = connectionURL.getParameter(NACOS_RETRY_KEY, 10);
+        int sleepMsBetweenRetries = connectionURL.getParameter(NACOS_RETRY_WAIT_KEY, 10);
+        return new NacosNamingServiceWrapper(namingService, retryTimes, sleepMsBetweenRetries);
     }
 
     private static Properties buildNacosProperties(URL url) {
