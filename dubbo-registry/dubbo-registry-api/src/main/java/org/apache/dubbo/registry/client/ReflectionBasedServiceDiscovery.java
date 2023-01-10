@@ -16,6 +16,19 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -38,19 +51,6 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
 import com.alibaba.fastjson.JSONObject;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_NOTIFY_EVENT;
 
@@ -177,11 +177,6 @@ public class ReflectionBasedServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
-        updateInstanceMetadata(serviceInstance);
-    }
-
-    @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         updateInstanceMetadata(serviceInstance);
     }
 

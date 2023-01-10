@@ -29,8 +29,8 @@ import java.lang.reflect.Method;
 import java.util.Properties;
 import java.util.UUID;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_ZOOKEEPER_SERVER_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_STOP_ZOOKEEPER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_INIT_ZOOKEEPER_SERVER_ERROR;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER;
 
 /**
  * from: https://github.com/spring-projects/spring-xd/blob/v1.3.1.RELEASE/spring-xd-dirt/src/main/java/org/springframework/xd/dirt/zookeeper/ZooKeeperUtils.java
@@ -187,7 +187,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 zkServerThread = null;
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                logger.warn(REGISTRY_FAILED_STOP_ZOOKEEPER, "", "", "Interrupted while waiting for embedded ZooKeeper to exit");
+                logger.warn(TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER, "", "", "Interrupted while waiting for embedded ZooKeeper to exit");
                 // abandoning zk thread
                 zkServerThread = null;
             }
@@ -240,7 +240,7 @@ public class EmbeddedZooKeeper implements SmartLifecycle {
                 if (errorHandler != null) {
                     errorHandler.handleError(e);
                 } else {
-                    logger.error(CONFIG_ZOOKEEPER_SERVER_ERROR, "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
+                    logger.error(TESTING_INIT_ZOOKEEPER_SERVER_ERROR, "ZooKeeper server error", "", "Exception running embedded ZooKeeper.", e);
                 }
             }
         }

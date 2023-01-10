@@ -29,8 +29,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_START_ZOOKEEPER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_STOP_ZOOKEEPER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER;
 
 /**
  * The abstract implementation of {@link Processor} is to provide some common methods on Unix OS.
@@ -50,7 +50,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
             try {
                 process.destroy();
             } catch (Throwable cause) {
-                logger.warn(REGISTRY_FAILED_STOP_ZOOKEEPER, "", "", String.format("Failed to kill the process, with client port %s !", clientPort), cause);
+                logger.warn(TESTING_REGISTRY_FAILED_TO_STOP_ZOOKEEPER, "", "", String.format("Failed to kill the process, with client port %s !", clientPort), cause);
             }
         }
     }
@@ -64,7 +64,7 @@ public abstract class ZookeeperUnixProcessor implements Processor {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                logger.error(REGISTRY_FAILED_START_ZOOKEEPER,"","",line);
+                logger.error(TESTING_REGISTRY_FAILED_TO_START_ZOOKEEPER,"","",line);
             }
         } catch (IOException e) {
             /* eat quietly */

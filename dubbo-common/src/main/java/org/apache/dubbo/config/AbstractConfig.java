@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_OVERRIDE_FIELD;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
@@ -507,7 +507,7 @@ public abstract class AbstractConfig implements Serializable {
                         }
                     }
                 } catch (Throwable e) {
-                    logger.error(COMMON_FAILED_REFLECT, "", "", e.getMessage(), e);
+                    logger.error(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", e.getMessage(), e);
                 }
             }
         }

@@ -44,7 +44,7 @@ import java.lang.reflect.Type;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_FAILED_REFLECT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
@@ -196,7 +196,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
                             }
                             field.set(targetException, exception.getExceptionMessage());
                         } catch (Throwable e) {
-                            logger.warn(COMMON_FAILED_REFLECT, "", "", e.getMessage(), e);
+                            logger.warn(COMMON_REFLECTIVE_OPERATION_FAILED, "", "", e.getMessage(), e);
                         }
                         appResponse.setException(targetException);
                     } else if (lastException != null) {
