@@ -27,6 +27,8 @@ import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.cluster.router.xds.RdsVirtualHostListener;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,6 +56,10 @@ public class PilotExchanger {
     private final HashSet<String> domainObserveRequest = new HashSet<>();
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
+
+    private final Map<String, Long> rdsObserveRequest = new ConcurrentHashMap<>();
+
+    private final Map<String, Consumer<RdsVirtualHostListener>> rdsObserveConsumer = new ConcurrentHashMap<>();
 
     protected PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
@@ -170,5 +176,25 @@ public class PilotExchanger {
             }
         }
 
+    }
+
+    public void unObserveEndpoints(String domain, Consumer<Set<Endpoint>> consumer) {
+        domainObserveConsumer.get(domain).remove(consumer);
+        domainObserveRequest.remove(domain);
+    }
+
+    public VirtualHost getVirtualHost(String domain) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
+            if (entry.getValue().searchVirtualHost(domain) != null) {
+                return entry.getValue().searchVirtualHost(domain);
+            }
+        }
+        return null;
+    }
+
+    public void unObserveRds(String domain) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
+            entry.getValue().removeVirtualHost(domain);
+        }
     }
 }

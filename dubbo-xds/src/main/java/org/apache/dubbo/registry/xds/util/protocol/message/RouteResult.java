@@ -23,18 +23,28 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+
 
 public class RouteResult {
     private final Map<String, Set<String>> domainMap;
+    private Map<String, VirtualHost> virtualHostMap;
+
 
     public RouteResult() {
         this.domainMap = new ConcurrentHashMap<>();
+        this.virtualHostMap = new ConcurrentHashMap<>();
     }
 
     public RouteResult(Map<String, Set<String>> domainMap) {
         this.domainMap = domainMap;
+        this.virtualHostMap = new ConcurrentHashMap<>();
     }
 
+    public RouteResult(Map<String, Set<String>> domainMap,Map<String, VirtualHost> virtualHostMap) {
+        this.domainMap = domainMap;
+        this.virtualHostMap = virtualHostMap;
+    }
 
     public Map<String, Set<String>> getDomainMap() {
         return domainMap;
@@ -67,6 +77,16 @@ public class RouteResult {
     @Override
     public int hashCode() {
         return Objects.hash(domainMap);
+    }
+
+
+    public VirtualHost searchVirtualHost(String domain) {
+        return virtualHostMap.get(domain);
+    }
+
+
+    public void removeVirtualHost(String domain) {
+        virtualHostMap.remove(domain);
     }
 
     @Override
