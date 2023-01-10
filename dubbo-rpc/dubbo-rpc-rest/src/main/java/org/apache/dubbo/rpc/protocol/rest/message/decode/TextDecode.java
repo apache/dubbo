@@ -16,7 +16,7 @@ public class TextDecode extends AbstractMessageDecode {
 
     @Override
     public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.StringTypeConvert(targetType, StreamUtils.copyToString(inputStream, Charset.defaultCharset()));
+        return DataParseUtils.stringTypeConvert(targetType, StreamUtils.copyToString(inputStream, Charset.defaultCharset()));
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.*;
 
 public class DataParseUtils {
 
-    public static Object StringTypeConvert(Class targetType, String value) {
+    public static Object stringTypeConvert(Class targetType, String value) {
 
 
         if (targetType == Boolean.class) {

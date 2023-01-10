@@ -1,3 +1,0 @@
-jakarta=org.apache.dubbo.rpc.protocol.rest.request.JakartaServletRequestFacade
-netty=org.apache.dubbo.rpc.protocol.rest.request.NettyRequestFacade
-javax=org.apache.dubbo.rpc.protocol.rest.request.JavaxServletRequestFacade
