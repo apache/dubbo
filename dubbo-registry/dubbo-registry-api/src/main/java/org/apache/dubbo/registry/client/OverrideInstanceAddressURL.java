@@ -31,18 +31,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class OverrideInstanceAddressURL extends InstanceAddressURL {
     private static final long serialVersionUID = 1373220432794558426L;
 
     private final URLParam overrideParams;
     private final InstanceAddressURL originUrl;
-
-    private final transient Map<String, Map<String, Map<String, Number>>> methodNumberCache = new ConcurrentHashMap<>();
-    private volatile transient Map<String, Map<String, Number>> methodNumbers;
-    private final transient Map<String, Map<String, Number>> serviceNumberCache = new ConcurrentHashMap<>();
-    private volatile transient Map<String, Number> numbers;
 
     public OverrideInstanceAddressURL(InstanceAddressURL originUrl) {
         this.originUrl = originUrl;
@@ -238,32 +232,6 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
     @Override
     public URLAddress getUrlAddress() {
         return originUrl.getUrlAddress();
-    }
-
-    @Override
-    protected Map<String, Number> getServiceNumbers(String protocolServiceKey) {
-        return serviceNumberCache.computeIfAbsent(protocolServiceKey, (k) -> new ConcurrentHashMap<>());
-    }
-
-    @Override
-    protected Map<String, Number> getNumbers() {
-        if (numbers == null) { // concurrent initialization is tolerant
-            numbers = new ConcurrentHashMap<>();
-        }
-        return numbers;
-    }
-
-    @Override
-    protected Map<String, Map<String, Number>> getServiceMethodNumbers(String protocolServiceKey) {
-        return methodNumberCache.computeIfAbsent(protocolServiceKey, (k) -> new ConcurrentHashMap<>());
-    }
-
-    @Override
-    protected Map<String, Map<String, Number>> getMethodNumbers() {
-        if (methodNumbers == null) { // concurrent initialization is tolerant
-            methodNumbers = new ConcurrentHashMap<>();
-        }
-        return methodNumbers;
     }
 
     public URLParam getOverrideParams() {

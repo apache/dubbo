@@ -17,6 +17,8 @@
 package org.apache.dubbo.qos.command;
 
 import io.netty.channel.Channel;
+import org.apache.dubbo.qos.permission.PermissionLevel;
+import org.apache.dubbo.qos.common.QosConfiguration;
 
 public class CommandContext {
 
@@ -26,6 +28,8 @@ public class CommandContext {
     private boolean isHttp;
     private Object originRequest;
     private int httpCode = 200;
+
+    private QosConfiguration qosConfiguration;
 
     public CommandContext(String commandName) {
         this.commandName = commandName;
@@ -83,5 +87,17 @@ public class CommandContext {
 
     public void setHttpCode(int httpCode) {
         this.httpCode = httpCode;
+    }
+
+    public void setQosConfiguration(QosConfiguration qosConfiguration) {
+        this.qosConfiguration = qosConfiguration;
+    }
+
+    public boolean hasPermission(PermissionLevel cmdRequiredPermissionLevel) {
+        return cmdRequiredPermissionLevel.getLevel() <= qosConfiguration.getAnonymousAccessPermissionLevel().getLevel();
+    }
+
+    public boolean isAllowAnonymousAccess(){
+        return this.qosConfiguration.isAllowAnonymousAccess();
     }
 }

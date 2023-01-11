@@ -22,6 +22,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -38,7 +39,6 @@ import java.util.function.Consumer;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 import static org.apache.dubbo.common.utils.AnnotationUtils.isAnyAnnotationPresent;
 import static org.apache.dubbo.common.utils.ClassUtils.forName;
@@ -58,8 +58,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     private final Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap;
     private final Set<NoAnnotatedParameterRequestTagProcessor> noAnnotatedParameterRequestTagProcessors;
 
-    public AbstractServiceRestMetadataResolver() {
-        this.parameterProcessorsMap = loadAnnotatedMethodParameterProcessors();
+    public AbstractServiceRestMetadataResolver(ApplicationModel applicationModel) {
+        this.parameterProcessorsMap = loadAnnotatedMethodParameterProcessors(applicationModel);
         this.noAnnotatedParameterRequestTagProcessors = loadNoAnnotatedMethodParameterProcessors();
     }
 
@@ -363,9 +363,9 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         PathUtil.setArgInfoSplitIndex(metadata.getRequest().getPath(), metadata.getArgInfos());
     }
 
-    private static Map<String, List<AnnotatedMethodParameterProcessor>> loadAnnotatedMethodParameterProcessors() {
+    private static Map<String, List<AnnotatedMethodParameterProcessor>> loadAnnotatedMethodParameterProcessors(ApplicationModel applicationModel) {
         Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = new LinkedHashMap<>();
-        getExtensionLoader(AnnotatedMethodParameterProcessor.class)
+        applicationModel.getExtensionLoader(AnnotatedMethodParameterProcessor.class)
             .getSupportedExtensionInstances()
             .forEach(processor -> {
                 List<AnnotatedMethodParameterProcessor> processors =

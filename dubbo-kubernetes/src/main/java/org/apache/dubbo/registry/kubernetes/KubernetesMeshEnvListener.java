@@ -36,9 +36,9 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ERR
 
 public class KubernetesMeshEnvListener implements MeshEnvListener {
     public static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(KubernetesMeshEnvListener.class);
-    private volatile static boolean usingApiServer = false;
-    private volatile static KubernetesClient kubernetesClient;
-    private volatile static String namespace;
+    private static volatile boolean usingApiServer = false;
+    private static volatile KubernetesClient kubernetesClient;
+    private static volatile String namespace;
 
     private final Map<String, MeshAppRuleListener> appRuleListenerMap = new ConcurrentHashMap<>();
 
@@ -103,11 +103,11 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                             }
                         }
 
-                    @Override
-                    public void onClose(WatcherException cause) {
-                        // ignore
-                    }
-                });
+                        @Override
+                        public void onClose(WatcherException cause) {
+                            // ignore
+                        }
+                    });
             vsAppWatch.put(appName, watch);
             try {
                 GenericKubernetesResource vsRule = kubernetesClient

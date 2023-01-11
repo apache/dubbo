@@ -43,21 +43,15 @@ public class DubboIsolationExecutorSupport extends AbstractIsolationExecutorSupp
             return null;
         }
 
-        try {
-            Request request = (Request) data;
-            if (request.getData() == null || !(request.getData() instanceof Invocation)) {
-                return null;
-            }
-            Invocation inv = (Invocation) request.getData();
-            Map<String, String> attachments = inv.getAttachments();
-            String interfaceName = attachments.get(PATH_KEY);
-            String version = attachments.get(VERSION_KEY);
-            String group = attachments.get(GROUP_KEY);
-            return new ServiceKey(interfaceName, version, group);
-        } catch (Throwable e) {
-            logger.error("failed to get service key, maybe the build rule for data is wrong, data = " + data, e);
+        Request request = (Request) data;
+        if (!(request.getData() instanceof Invocation)) {
+            return null;
         }
-
-        return null;
+        Invocation inv = (Invocation) request.getData();
+        Map<String, String> attachments = inv.getAttachments();
+        String interfaceName = attachments.get(PATH_KEY);
+        String version = attachments.get(VERSION_KEY);
+        String group = attachments.get(GROUP_KEY);
+        return new ServiceKey(interfaceName, version, group);
     }
 }

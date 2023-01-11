@@ -53,7 +53,6 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
         this.doExecute(interfaceName,methodName,group,version,(metric,counts)->{
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
-
         });
     }
 
@@ -69,6 +68,5 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
         return counts;
     }
 
-    public  void doNotify(MethodMetric metric){}
-
+    public void doNotify(MethodMetric metric){}
 }

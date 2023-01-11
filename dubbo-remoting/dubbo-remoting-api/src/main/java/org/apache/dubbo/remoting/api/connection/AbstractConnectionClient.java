@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.api.connection;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -28,9 +28,11 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
+
 public abstract class AbstractConnectionClient extends AbstractClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConnectionClient.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(AbstractConnectionClient.class);
 
     protected WireProtocol protocol;
 
@@ -72,7 +74,7 @@ public abstract class AbstractConnectionClient extends AbstractClient {
             destroy();
             return true;
         } else if (remainingCount <= -1) {
-            logger.warn("This instance has been destroyed");
+            logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "This instance has been destroyed");
             return false;
         } else {
             return false;

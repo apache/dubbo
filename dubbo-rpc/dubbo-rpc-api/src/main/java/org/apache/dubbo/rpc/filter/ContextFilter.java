@@ -121,12 +121,12 @@ public class ContextFilter implements Filter, Filter.Listener {
         long timeout = RpcUtils.getTimeout(invocation, -1);
         if (timeout != -1) {
             // pass to next hop
-            RpcContext.getClientAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
+            RpcContext.getServerAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
         }
 
         // merged from dubbox
         // we may already add some attachments into RpcContext before this filter (e.g. in rest protocol)
-        if (attachments != null) {
+        if (CollectionUtils.isNotEmptyMap(attachments)) {
             if (context.getObjectAttachments().size() > 0) {
                 context.getObjectAttachments().putAll(attachments);
             } else {
@@ -135,7 +135,8 @@ public class ContextFilter implements Filter, Filter.Listener {
         }
 
         if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation) invocation).setInvoker(invoker);
+            RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+            rpcInvocation.setInvoker(invoker);
         }
 
         try {
