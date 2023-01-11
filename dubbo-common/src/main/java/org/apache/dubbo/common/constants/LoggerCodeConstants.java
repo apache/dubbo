@@ -291,6 +291,8 @@ public interface LoggerCodeConstants {
 
     String PROTOCOL_FAILED_DECODE = "4-20";
 
+    String PROTOCOL_UNTRUSTED_SERIALIZE_CLASS = "4-21";
+
     // Config module
     String CONFIG_FAILED_CONNECT_REGISTRY = "5-1";
 

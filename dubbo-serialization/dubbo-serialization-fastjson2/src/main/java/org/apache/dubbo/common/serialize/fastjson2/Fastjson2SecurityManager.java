@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.common.serialize.fastjson2;
 
-import org.apache.dubbo.common.logger.Logger;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -28,18 +32,15 @@ import com.alibaba.fastjson2.filter.ContextAutoTypeBeforeHandler;
 import com.alibaba.fastjson2.filter.Filter;
 import com.alibaba.fastjson2.util.TypeUtils;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import static com.alibaba.fastjson2.util.TypeUtils.loadClass;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNTRUSTED_SERIALIZE_CLASS;
 
 public class Fastjson2SecurityManager implements AllowClassNotifyListener {
     private Filter securityFilter = new Handler(AllowClassNotifyListener.DEFAULT_STATUS, new String[0]);
 
-    private final static Logger logger = LoggerFactory.getLogger(Fastjson2SecurityManager.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Fastjson2SecurityManager.class);
 
-    private final static Set<String> warnedClasses = new ConcurrentHashSet<>(1);
+    private static final Set<String> warnedClasses = new ConcurrentHashSet<>(1);
 
     public Fastjson2SecurityManager(FrameworkModel frameworkModel) {
         SerializeSecurityManager securityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
@@ -77,7 +78,8 @@ public class Fastjson2SecurityManager implements AllowClassNotifyListener {
                     Class<?> localClass = loadClassDirectly(typeName);
                     if (localClass != null) {
                         if (status == SerializeCheckStatus.WARN && warnedClasses.add(typeName)) {
-                            logger.error("[Serialization Security] Serialized class " + localClass.getName() + " is not in allow list. " +
+                            logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
+                                "[Serialization Security] Serialized class " + localClass.getName() + " is not in allow list. " +
                                 "Current mode is `WARN`, will allow to deserialize it by default. " +
                                 "Dubbo will set to `STRICT` mode by default in the future. " +
                                 "Please add it into security/serialize.allowlist or follow FAQ to configure it.");

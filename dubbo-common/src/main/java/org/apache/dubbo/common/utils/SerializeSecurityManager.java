@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -36,12 +32,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 
 public class SerializeSecurityManager {
     private final Set<String> allowedPrefix = new LinkedHashSet<>();
 
-    private final static Logger logger = LoggerFactory.getLogger(SerializeSecurityManager.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityManager.class);
 
     private final SerializeClassChecker checker = SerializeClassChecker.getInstance();
 
@@ -59,6 +61,7 @@ public class SerializeSecurityManager {
                 .collect(Collectors.toList());
             for (URL u : urls) {
                 try {
+                    logger.info("Read serialize allow list from " + u);
                     String[] lines = IOUtils.readLines(u.openStream());
                     for (String line : lines) {
                         line = line.trim();
@@ -68,11 +71,12 @@ public class SerializeSecurityManager {
                         allowedPrefix.add(line);
                     }
                 } catch (IOException e) {
-                    logger.error("Failed to load allow class list! Will ignore allow lis from " + u, e);
+                    logger.error(COMMON_IO_EXCEPTION, "", "",  "Failed to load allow class list! Will ignore allow lis from " + u, e);
                 }
             }
         } catch (InterruptedException e) {
-            logger.error("Failed to load allow class list! Will ignore allow list from configuration.", e);
+            logger.error(INTERNAL_INTERRUPTED, "", "",  "Failed to load allow class list! Will ignore allow list from configuration.", e);
+            Thread.currentThread().interrupt();
         }
     }
 

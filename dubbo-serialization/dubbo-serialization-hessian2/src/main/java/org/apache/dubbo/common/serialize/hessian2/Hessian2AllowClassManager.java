@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.logger.Logger;
+import java.util.Arrays;
+import java.util.Set;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.AllowClassNotifyListener;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -24,8 +27,7 @@ import org.apache.dubbo.common.utils.SerializeCheckStatus;
 import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.Arrays;
-import java.util.Set;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_UNTRUSTED_SERIALIZE_CLASS;
 
 /**
  * Inspired by Fastjson2
@@ -34,9 +36,9 @@ import java.util.Set;
 public class Hessian2AllowClassManager implements AllowClassNotifyListener {
     private static final long MAGIC_HASH_CODE = 0xcbf29ce484222325L;
     private static final long MAGIC_PRIME = 0x100000001b3L;
-    private static final Logger logger = LoggerFactory.getLogger(Hessian2AllowClassManager.class);
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(Hessian2AllowClassManager.class);
     private volatile SerializeCheckStatus checkStatus = AllowClassNotifyListener.DEFAULT_STATUS;
-    private final static Set<String> warnedClasses = new ConcurrentHashSet<>(1);
+    private static final Set<String> warnedClasses = new ConcurrentHashSet<>(1);
     private volatile long[] allowPrefixes = new long[0];
 
     public Hessian2AllowClassManager(FrameworkModel frameworkModel) {
@@ -106,7 +108,8 @@ public class Hessian2AllowClassManager implements AllowClassNotifyListener {
         } else {
             Class<?> clazz = Class.forName(className, false, classLoader);
             if (warnedClasses.add(className)) {
-                logger.error("[Serialization Security] Serialized class " + clazz.getName() + " is not in allow list. " +
+                logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
+                    "[Serialization Security] Serialized class " + clazz.getName() + " is not in allow list. " +
                     "Current mode is `WARN`, will allow to deserialize it by default. " +
                     "Dubbo will set to `STRICT` mode by default in the future. " +
                     "Please add it into security/serialize.allowlist or follow FAQ to configure it.");
