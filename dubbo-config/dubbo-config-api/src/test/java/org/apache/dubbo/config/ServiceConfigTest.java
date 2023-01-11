@@ -17,6 +17,14 @@
 
 package org.apache.dubbo.config;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
@@ -27,22 +35,22 @@ import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import com.google.common.collect.Lists;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -59,6 +67,7 @@ import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -528,5 +537,81 @@ class ServiceConfigTest {
 
             service.export();
         });
+    }
+
+    @Test
+    void testMappingRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.exported();
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+        AtomicInteger count = new AtomicInteger(0);
+        ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
+            @Override
+            public boolean map(URL url) {
+                if (count.incrementAndGet() < 5) {
+                    throw new RuntimeException();
+                }
+                return count.get() > 10;
+            }
+
+            @Override
+            public void initInterfaceAppMapping(URL subscribedURL) {
+
+            }
+
+            @Override
+            public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public void putCachedMapping(String serviceKey, Set<String> apps) {
+
+            }
+
+            @Override
+            public Set<String> getCachedMapping(String mappingKey) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getCachedMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getRemoteMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Map<String, Set<String>> getCachedMapping() {
+                return null;
+            }
+
+            @Override
+            public Set<String> removeCachedMapping(String serviceKey) {
+                return null;
+            }
+
+            @Override
+            public void $destroy() {
+
+            }
+        };
+        ApplicationConfig applicationConfig = new ApplicationConfig("app");
+        applicationConfig.setMappingRetryInterval(10);
+        serviceConfig.setApplication(applicationConfig);
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+
+        await().until(() -> count.get() > 10);
+        scheduledExecutorService.shutdown();
     }
 }
