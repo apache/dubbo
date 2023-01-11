@@ -101,7 +101,7 @@ public class Hessian2AllowClassManager implements AllowClassNotifyListener {
                 "Current mode is `STRICT`, will disallow to deserialize it by default. " +
                 "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
             if (warnedClasses.add(className)) {
-                logger.error(msg);
+                logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
             }
 
             throw new IllegalArgumentException(msg);
