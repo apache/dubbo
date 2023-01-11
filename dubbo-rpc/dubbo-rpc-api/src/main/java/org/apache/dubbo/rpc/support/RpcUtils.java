@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.OmnipotentService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -39,7 +38,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETE
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.$INVOKE_OMN;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_REFLECTIVE_OPERATION_FAILED;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
@@ -206,10 +204,6 @@ public class RpcUtils {
     // check parameterTypesDesc to fix CVE-2020-1948
     public static boolean isGenericCall(String parameterTypesDesc, String method) {
         return ($INVOKE.equals(method) || $INVOKE_ASYNC.equals(method)) && GENERIC_PARAMETER_DESC.equals(parameterTypesDesc);
-    }
-
-    public static boolean isGenericOmnCall(String method,String serviceName) {
-        return $INVOKE_OMN.equals(method) && serviceName.equals(OmnipotentService.class.getName());
     }
 
     // check parameterTypesDesc to fix CVE-2020-1948

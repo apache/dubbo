@@ -15,11 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.remoting;
+package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.remoting.Decodeable;
+import org.apache.dubbo.remoting.RetryHandleException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Request;
+
+import java.util.Map;
 
 /**
  * <p>Interface for handling exceptions in specific spi-extended classes.
@@ -29,9 +33,10 @@ import org.apache.dubbo.remoting.exchange.Request;
  *
  * <p>Allow three kinds of customized operations, customize abnormal results and return,
  * customize normal results and return, interrupt and retry the process.
+ *
  * @since 3.2.0
  */
-@SPI("snf")
+@SPI
 public interface ExceptionProcessor {
 
     /**
@@ -52,8 +57,24 @@ public interface ExceptionProcessor {
      * <p>The number of times decode handle exceptions will not exceed 2.
      * <p>If decode still cannot process the request, the error message of retry exception will be returned eventually,
      * and the real reason that cannot be processed needs to be set instead of the literal exception information of retry.
+     *
      * @return Msg information, If non-null, means that the exception is customized
      * @since 3.2.0
      */
     String wrapAndHandleException(ExchangeChannel channel, Request req) throws RetryHandleException;
+
+
+    default boolean throwErrorWhenSnf(String methodName, String path) {
+        return false;
+    }
+
+    default void customPts(RpcInvocation rpcInvocation, Class<?>[] pts) {
+
+    }
+
+    default void customAttachment(Map<String, Object> map) {
+
+    }
+
+
 }

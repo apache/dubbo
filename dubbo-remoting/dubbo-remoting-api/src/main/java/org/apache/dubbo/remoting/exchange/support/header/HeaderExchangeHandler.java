@@ -34,7 +34,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
-import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.net.InetSocketAddress;

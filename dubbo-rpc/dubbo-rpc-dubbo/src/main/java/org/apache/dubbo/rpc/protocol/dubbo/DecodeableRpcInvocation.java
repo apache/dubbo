@@ -17,18 +17,20 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.utils.CacheableSupplier;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CacheableSupplier;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
+import org.apache.dubbo.rpc.ExceptionProcessor;
 import org.apache.dubbo.remoting.ServiceNotFoundException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
@@ -47,18 +49,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXCEPTION_PROCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.TMP_OBJECT_INPUT;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GROUP_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
@@ -89,7 +92,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.request = request;
         this.inputStream = is;
         this.serializationType = id;
-        this.callbackServiceCodecFactory = CacheableSupplier.newSupplier(()->
+        this.callbackServiceCodecFactory = CacheableSupplier.newSupplier(() ->
             new CallbackServiceCodec(frameworkModel));
     }
 
@@ -200,7 +203,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         ObjectInput in = (ObjectInput) getObjectAttachment(TMP_OBJECT_INPUT);
         if (in == null) {
             in = CodecSupport.getSerialization(serializationType)
-                    .deserialize(channel.getUrl(), input);
+                .deserialize(channel.getUrl(), input);
             setAttachment(TMP_OBJECT_INPUT, in);
         }
         this.put(SERIALIZATION_ID_KEY, serializationType);
@@ -233,6 +236,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             setParameterTypesDesc(desc);
         }
 
+        String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
+        ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+        ExceptionProcessor expProcessor = exPs == null ? null : extensionLoader.getOrDefaultExtension(exPs);
+
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
@@ -244,7 +251,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 pts = drawPts(path, version, desc, pts);
 
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
-                    if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isGenericOmnCall(getMethodName(), path) && !RpcUtils.isEcho(desc, getMethodName())) {
+                    boolean throwErrorWhenSnf = !RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName());
+                    if (handleSnfError(expProcessor)) {
+                        throwErrorWhenSnf = Objects.requireNonNull(expProcessor).throwErrorWhenSnf(getMethodName(), path);
+                    }
+                    if (throwErrorWhenSnf) {
                         throw new ServiceNotFoundException("Service not found:" + path + ", " + getMethodName());
                     }
                     pts = ReflectUtils.desc2classArray(desc);
@@ -255,21 +266,16 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (getParameterTypes() == null) {
                 setParameterTypes(pts);
             }
-            setAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, pts);
+            if (handleSnfError(expProcessor)) {
+                Objects.requireNonNull(expProcessor).customPts(this,pts);
+                setAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, pts);
+            }
 
             Map<String, Object> map = in.readAttachments();
             if (CollectionUtils.isNotEmptyMap(map)) {
-                if (RpcUtils.isGenericOmnCall(getMethodName(), path)) {
-                    // Omn needs to use the default path, version and group,
-                    // and the original value starts with origin to save the variable
-                    map.remove(PATH_KEY);
-                    map.remove(VERSION_KEY);
-                    if (map.containsKey(GROUP_KEY)) {
-                        map.put(ORIGIN_GROUP_KEY, map.get(GROUP_KEY));
-                        map.remove(GROUP_KEY);
-                    }
+                if (handleSnfError(expProcessor)) {
+                    Objects.requireNonNull(expProcessor).customAttachment(map);
                 }
-
                 addObjectAttachments(map);
             }
 
@@ -283,6 +289,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         }
     }
 
+    private boolean handleSnfError(ExceptionProcessor expProcessor) {
+        return isRetryProcess() && expProcessor != null;
+    }
+
     private void decodeArgument(Channel channel, Class<?>[] pts, Object[] args) throws IOException {
         CallbackServiceCodec callbackServiceCodec = callbackServiceCodecFactory.get();
         for (int i = 0; i < args.length; i++) {
@@ -291,8 +301,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         setArguments(args);
         String targetServiceName = buildKey(getAttachment(PATH_KEY),
-                getAttachment(GROUP_KEY),
-                getAttachment(VERSION_KEY));
+            getAttachment(GROUP_KEY),
+            getAttachment(VERSION_KEY));
         setTargetServiceUniqueName(targetServiceName);
     }
 
@@ -354,6 +364,10 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
         }
         return pts;
+    }
+
+    public boolean isRetryProcess() {
+        return request.isRetry();
     }
 
     public void resetHasDecoded() {

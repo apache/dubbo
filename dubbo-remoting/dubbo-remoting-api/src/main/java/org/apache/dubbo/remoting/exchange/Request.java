@@ -166,6 +166,10 @@ public class Request {
         }
     }
 
+    public boolean isRetry() {
+        return this.retryNum > 0;
+    }
+
     @Override
     public String toString() {
         return "Request [id=" + mId + ", version=" + mVersion + ", twoWay=" + mTwoWay + ", event=" + mEvent
