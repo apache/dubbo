@@ -31,7 +31,7 @@ public enum MetricsKey {
     METRIC_REQUESTS_BUSINESS_FAILED_AGG("requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
     METRIC_REQUESTS_TIMEOUT_AGG("requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
     METRIC_REQUESTS_LIMIT_AGG("requests.limit.aggregate", "Aggregated limit Requests"),
-
+    METRIC_REQUESTS_TOTAL_FAILED_AGG("requests.failed.total.aggregate", "Aggregated failed total Requests"),
     METRIC_QPS("qps", "Query Per Seconds"),
     METRIC_RT_LAST("rt.last", "Last Response Time"),
     METRIC_RT_MIN("rt.min", "Min Response Time"),

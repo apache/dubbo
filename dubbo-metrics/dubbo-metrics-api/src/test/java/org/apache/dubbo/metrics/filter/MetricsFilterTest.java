@@ -163,11 +163,15 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
+        
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG.getName()));
 
-        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        MetricSample timeoutSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        MetricSample failedTotalSample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TOTAL_FAILED_AGG.getName());
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
+        Assertions.assertSame(((GaugeMetricSample) failedTotalSample).getSupplier().get().longValue(), count);
     }
 
     @Test
