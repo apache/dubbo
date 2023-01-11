@@ -557,8 +557,8 @@ class ServiceConfigTest {
             }
 
             @Override
-            public void initInterfaceAppMapping(URL subscribedURL) {
-
+            public Set<String> getMapping(URL consumerURL) {
+                return null;
             }
 
             @Override
@@ -577,22 +577,7 @@ class ServiceConfigTest {
             }
 
             @Override
-            public Set<String> getCachedMapping(String mappingKey) {
-                return null;
-            }
-
-            @Override
-            public Set<String> getCachedMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
             public Set<String> getRemoteMapping(URL consumerURL) {
-                return null;
-            }
-
-            @Override
-            public Map<String, Set<String>> getCachedMapping() {
                 return null;
             }
 
