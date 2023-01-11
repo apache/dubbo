@@ -272,6 +272,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     protected void mapServiceName(URL url, ServiceNameMapping serviceNameMapping, ScheduledExecutorService scheduledExecutor) {
+        if (!exported) {
+            return;
+        }
         logger.info("Try to register interface application mapping for service " + url.getServiceKey());
         boolean succeeded = false;
         try {
