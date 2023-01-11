@@ -203,7 +203,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
                 if (routerChain != null) {
                     singleChain = routerChain.getSingleChain(getConsumerUrl(), availableInvokers, invocation);
-                    singleChain.getLock().readLock();
+                    singleChain.getLock().readLock().lock();
                 }
             } finally {
                 if (routerChain != null) {
