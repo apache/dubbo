@@ -14,30 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.fastjson2;
+package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModelInitializer;
+import org.apache.dubbo.rpc.model.ScopeClassLoaderListener;
 
-public class Fastjson2ScopeModelInitializer implements ScopeModelInitializer {
-
+public class Hessian2ClassLoaderListener implements ScopeClassLoaderListener<FrameworkModel> {
     @Override
-    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
-        beanFactory.registerBean(Fastjson2CreatorManager.class);
-        beanFactory.registerBean(Fastjson2SecurityManager.class);
+    public void onAddClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
+        // noop
     }
 
     @Override
-    public void initializeApplicationModel(ApplicationModel applicationModel) {
-
-    }
-
-    @Override
-    public void initializeModuleModel(ModuleModel moduleModel) {
-
+    public void onRemoveClassLoader(FrameworkModel scopeModel, ClassLoader classLoader) {
+        Hessian2FactoryManager hessian2FactoryManager = scopeModel.getBeanFactory().getBean(Hessian2FactoryManager.class);
+        hessian2FactoryManager.onRemoveClassLoader(classLoader);
     }
 }

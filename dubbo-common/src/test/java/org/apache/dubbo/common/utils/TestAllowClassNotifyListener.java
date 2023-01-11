@@ -14,20 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
+package org.apache.dubbo.common.utils;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class Hessian2SerializerFactory extends SerializerFactory {
-
-    private Hessian2AllowClassManager hessian2AllowClassManager;
-
-    public Hessian2SerializerFactory(Hessian2AllowClassManager hessian2AllowClassManager) {
-        this.hessian2AllowClassManager = hessian2AllowClassManager;
-    }
+public class TestAllowClassNotifyListener implements AllowClassNotifyListener {
+    private final static AtomicReference<Set<String>> prefixList = new AtomicReference<>();
 
     @Override
-    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
-        return hessian2AllowClassManager.loadClass(getClassLoader(), className);
+    public void notify(SerializeCheckStatus status, Set<String> prefixList) {
+        TestAllowClassNotifyListener.prefixList.set(prefixList);
+    }
+
+    public static Set<String> getPrefixList() {
+        return prefixList.get();
     }
 }

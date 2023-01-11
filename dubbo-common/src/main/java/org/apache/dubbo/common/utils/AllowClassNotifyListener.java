@@ -14,20 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
+package org.apache.dubbo.common.utils;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import java.util.Set;
 
-public class Hessian2SerializerFactory extends SerializerFactory {
+public interface AllowClassNotifyListener {
 
-    private Hessian2AllowClassManager hessian2AllowClassManager;
+    SerializeCheckStatus DEFAULT_STATUS = SerializeCheckStatus.STRICT;
 
-    public Hessian2SerializerFactory(Hessian2AllowClassManager hessian2AllowClassManager) {
-        this.hessian2AllowClassManager = hessian2AllowClassManager;
-    }
-
-    @Override
-    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
-        return hessian2AllowClassManager.loadClass(getClassLoader(), className);
-    }
+    void notify(SerializeCheckStatus status, Set<String> prefixList);
 }

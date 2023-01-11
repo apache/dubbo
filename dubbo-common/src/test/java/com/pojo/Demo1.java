@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
+package com.pojo;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+public class Demo1 {
+    private Simple simple;
 
-public class Hessian2SerializerFactory extends SerializerFactory {
-
-    private Hessian2AllowClassManager hessian2AllowClassManager;
-
-    public Hessian2SerializerFactory(Hessian2AllowClassManager hessian2AllowClassManager) {
-        this.hessian2AllowClassManager = hessian2AllowClassManager;
+    public Simple getSimple() {
+        return simple;
     }
 
-    @Override
-    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
-        return hessian2AllowClassManager.loadClass(getClassLoader(), className);
+    public void setSimple(Simple simple) {
+        this.simple = simple;
     }
 }
