@@ -105,9 +105,10 @@ public class RouterChain<T> {
         // 3. Main chain has been update success => notifyingInvokers.get() != null
         //     If `availableInvokers` is created from origin invokers => use backup chain
         //     If `availableInvokers` is created from newly invokers  => use main chain
-        if (currentChain == backupChain &&
-            notifyingInvokers.get() != null &&
-            availableInvokers.getOriginList() == notifyingInvokers.get().getOriginList()) {
+        BitList<Invoker<T>> notifying = notifyingInvokers.get();
+        if (notifying != null &&
+            currentChain == backupChain &&
+            availableInvokers.getOriginList() == notifying.getOriginList()) {
             return mainChain.route(url, availableInvokers, invocation);
         }
         return currentChain.route(url, availableInvokers, invocation);
