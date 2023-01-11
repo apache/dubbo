@@ -544,6 +544,7 @@ class ServiceConfigTest {
         FrameworkModel frameworkModel = new FrameworkModel();
         ApplicationModel applicationModel = frameworkModel.newApplication();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.exported();
         ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         AtomicInteger count = new AtomicInteger(0);
         ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
