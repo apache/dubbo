@@ -42,6 +42,10 @@ public class NacosNamingServiceUtils {
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceUtils.class);
     private static final String NACOS_GROUP_KEY = "nacos.group";
 
+    private static final String NACOS_RETRY_KEY = "nacos.retry";
+
+    private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
+
     private NacosNamingServiceUtils() {
         throw new IllegalStateException("NacosNamingServiceUtils should not be instantiated");
     }
@@ -104,6 +108,8 @@ public class NacosNamingServiceUtils {
      * @since 2.7.5
      */
     public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
-        return new NacosNamingServiceWrapper(new NacosConnectionManager(connectionURL));
+        int retryTimes = connectionURL.getParameter(NACOS_RETRY_KEY, 10);
+        int sleepMsBetweenRetries = connectionURL.getParameter(NACOS_RETRY_WAIT_KEY, 10);
+        return new NacosNamingServiceWrapper(new NacosConnectionManager(connectionURL), retryTimes, sleepMsBetweenRetries);
     }
 }
