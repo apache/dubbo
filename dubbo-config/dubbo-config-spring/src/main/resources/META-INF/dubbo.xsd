@@ -456,6 +456,11 @@
                 <xsd:documentation><![CDATA[ The preferred protocol to use, set protocol name. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="mapping-retry-interval" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The retry interval of service name mapping. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">

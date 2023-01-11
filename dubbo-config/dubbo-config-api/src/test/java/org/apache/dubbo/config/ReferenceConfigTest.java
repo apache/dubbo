@@ -1038,6 +1038,7 @@ class ReferenceConfigTest {
     @Test
     @DisabledForJreRange(min = JRE.JAVA_16)
     public void testDifferentClassLoaderRequest() throws Exception {
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -1046,7 +1047,7 @@ class ReferenceConfigTest {
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
 
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
-        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
         ModuleModel moduleModel = new ModuleModel(applicationModel);
 
