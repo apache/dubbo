@@ -49,6 +49,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.SingleRouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -186,19 +187,31 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory of type " + this.getClass().getSimpleName() +  " already destroyed for service " + getConsumerUrl().getServiceKey() + " from registry " + getUrl());
         }
 
+        BitList<Invoker<T>> availableInvokers;
+        SingleRouterChain<T> singleChain = null;
         try {
-            if (routerChain != null) {
-                routerChain.getLock().readLock().lock();
-            }
-            BitList<Invoker<T>> availableInvokers;
-            // use clone to avoid being modified at doList().
-            if (invokersInitialized) {
-                availableInvokers = validInvokers.clone();
-            } else {
-                availableInvokers = invokers.clone();
+            try {
+                if (routerChain != null) {
+                    routerChain.getLock().readLock().lock();
+                }
+                // use clone to avoid being modified at doList().
+                if (invokersInitialized) {
+                    availableInvokers = validInvokers.clone();
+                } else {
+                    availableInvokers = invokers.clone();
+                }
+
+                if (routerChain != null) {
+                    singleChain = routerChain.getSingleChain(getConsumerUrl(), availableInvokers, invocation);
+                    singleChain.getLock().readLock();
+                }
+            } finally {
+                if (routerChain != null) {
+                    routerChain.getLock().readLock().unlock();
+                }
             }
 
-            List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
+            List<Invoker<T>> routedResult = doList(singleChain, availableInvokers, invocation);
             if (routedResult.isEmpty()) {
                 // 2-2 - No provider available.
 
@@ -213,8 +226,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             }
             return Collections.unmodifiableList(routedResult);
         } finally {
-            if (routerChain != null) {
-                routerChain.getLock().readLock().unlock();
+            if (singleChain != null) {
+                singleChain.getLock().readLock().unlock();
             }
         }
     }
@@ -470,7 +483,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
     }
 
-    protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
+    protected abstract List<Invoker<T>> doList(SingleRouterChain<T> singleRouterChain,
+                                               BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
 
     protected String joinValidInvokerAddresses() {
         BitList<Invoker<T>> validInvokers = getValidInvokers().clone();

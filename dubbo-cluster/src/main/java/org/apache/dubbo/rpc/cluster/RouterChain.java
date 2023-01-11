@@ -98,7 +98,7 @@ public class RouterChain<T> {
         return lock;
     }
 
-    public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+    public SingleRouterChain<T> getSingleChain(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         // If current is in:
         // 1. `setInvokers` is in progress
         // 2. Most of the invocation should use backup chain => currentChain == backupChain
@@ -109,9 +109,17 @@ public class RouterChain<T> {
         if (notifying != null &&
             currentChain == backupChain &&
             availableInvokers.getOriginList() == notifying.getOriginList()) {
-            return mainChain.route(url, availableInvokers, invocation);
+            return mainChain;
         }
-        return currentChain.route(url, availableInvokers, invocation);
+        return currentChain;
+    }
+
+    /**
+     * @deprecated use {@link RouterChain#getSingleChain(URL, BitList, Invocation)} and {@link SingleRouterChain#route(URL, BitList, Invocation)} instead
+     */
+    @Deprecated
+    public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        return getSingleChain(url, availableInvokers, invocation).route(url, availableInvokers, invocation);
     }
 
     /**
@@ -132,16 +140,21 @@ public class RouterChain<T> {
         }
 
         // Refresh main chain.
-        // No one can call main chain now.
-        //  =>
-        //     1. No one is using main chain. Directory list lock can unsure this.
-        //     2. No one can use main chain. `currentChain` is backup chain. `route` method cannot access main chain.
+        // No one can request to use main chain. `currentChain` is backup chain. `route` method cannot access main chain.
         try {
+            // Lock main chain to wait all invocation end
+            // To wait until no one is using main chain.
+            mainChain.getLock().writeLock().lock();
+
+            // refresh
             mainChain.setInvokers(invokers);
         } catch (Throwable t) {
             logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain.", t);
             // Refresh chain failed. Continue use backup chain now to prevent affect.
             throw t;
+        } finally {
+            // Unlock main chain
+            mainChain.getLock().writeLock().lock();
         }
 
         // Set the reference of newly invokers to temp variable.
@@ -173,9 +186,13 @@ public class RouterChain<T> {
             lock.writeLock().unlock();
         }
 
-        // Refresh backup chain.
-        // No one can call backup chain now.
+        // Refresh main chain.
+        // No one can request to use main chain. `currentChain` is main chain. `route` method cannot access backup chain.
         try {
+            // Lock main chain to wait all invocation end
+            backupChain.getLock().writeLock().lock();
+
+            // refresh
             backupChain.setInvokers(invokers);
         } catch (Throwable t) {
             logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain.", t);
@@ -191,6 +208,9 @@ public class RouterChain<T> {
             backupChain = tmp;
 
             throw t;
+        } finally {
+            // Unlock backup chain
+            backupChain.getLock().writeLock().lock();
         }
     }
 

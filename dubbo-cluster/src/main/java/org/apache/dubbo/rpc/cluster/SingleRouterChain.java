@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
@@ -74,6 +76,8 @@ public class SingleRouterChain<T> {
     private final boolean shouldFailFast;
 
     private final RouterSnapshotSwitcher routerSnapshotSwitcher;
+
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     public SingleRouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast, RouterSnapshotSwitcher routerSnapshotSwitcher) {
         initWithRouters(routers);
@@ -314,6 +318,10 @@ public class SingleRouterChain<T> {
     @Deprecated
     public List<StateRouter<T>> getStateRouters() {
         return stateRouters;
+    }
+
+    public ReadWriteLock getLock() {
+        return lock;
     }
 
     public void destroy() {
