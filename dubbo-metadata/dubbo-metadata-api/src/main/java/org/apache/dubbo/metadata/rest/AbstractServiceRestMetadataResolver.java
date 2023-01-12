@@ -60,7 +60,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     public AbstractServiceRestMetadataResolver(ApplicationModel applicationModel) {
         this.parameterProcessorsMap = loadAnnotatedMethodParameterProcessors(applicationModel);
-        this.noAnnotatedParameterRequestTagProcessors = loadNoAnnotatedMethodParameterProcessors();
+        this.noAnnotatedParameterRequestTagProcessors = loadNoAnnotatedMethodParameterProcessors(applicationModel);
     }
 
     @Override
@@ -375,8 +375,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         return parameterProcessorsMap;
     }
 
-    private static Set<NoAnnotatedParameterRequestTagProcessor> loadNoAnnotatedMethodParameterProcessors() {
-        Set<NoAnnotatedParameterRequestTagProcessor> supportedExtensionInstances = getExtensionLoader(NoAnnotatedParameterRequestTagProcessor.class)
+    private static Set<NoAnnotatedParameterRequestTagProcessor> loadNoAnnotatedMethodParameterProcessors(ApplicationModel applicationModel) {
+        Set<NoAnnotatedParameterRequestTagProcessor> supportedExtensionInstances = applicationModel.getExtensionLoader(NoAnnotatedParameterRequestTagProcessor.class)
             .getSupportedExtensionInstances();
 
         return supportedExtensionInstances;
