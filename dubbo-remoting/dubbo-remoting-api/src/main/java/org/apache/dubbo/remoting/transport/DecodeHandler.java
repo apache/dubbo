@@ -41,14 +41,16 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
     public void received(Channel channel, Object message) throws RemotingException {
         doRecveived(message);
 
+
         try {
             handler.received(channel, message);
         } catch (RetryHandleException e) {
-            // Retry only once
-            doRecveived(message);
             if (message instanceof Request) {
-                ((Request) message).setBroken(false);
+                Request request = (Request) message;
+                retry(request.getData());
+                request.setBroken(false);
             } else {
+                // Retry only once, and only Request will throw an RetryHandleException
                 throw new RemotingException(channel, "Unknown error encountered when retry handle: " + e.getMessage());
             }
             handler.received(channel, message);
@@ -77,6 +79,20 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
             if (log.isDebugEnabled()) {
                 log.debug("Decode decodeable message " + message.getClass().getName());
             }
+        } catch (Throwable e) {
+            if (log.isWarnEnabled()) {
+                log.warn(TRANSPORT_FAILED_DECODE, "", "", "Call Decodeable.decode failed: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    private void retry(Object message) {
+        if (!(message instanceof Decodeable)) {
+            return;
+        }
+
+        try {
+            ((Decodeable) message).retry();
         } catch (Throwable e) {
             if (log.isWarnEnabled()) {
                 log.warn(TRANSPORT_FAILED_DECODE, "", "", "Call Decodeable.decode failed: " + e.getMessage(), e);

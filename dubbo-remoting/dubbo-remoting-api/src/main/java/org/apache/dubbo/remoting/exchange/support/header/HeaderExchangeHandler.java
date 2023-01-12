@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
@@ -40,6 +41,7 @@ import java.net.InetSocketAddress;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXCEPTION_PROCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_RESPONSE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNSUPPORTED_MESSAGE;
@@ -96,15 +98,17 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
             if (error != null) {
                 // Give ExceptionProcessors a chance to retry request handle or custom exception information.
-                String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get("exception.processor");
-                ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
-                ExceptionProcessor expProcessor = exPs == null ? extensionLoader.getDefaultExtension() : extensionLoader.getOrDefaultExtension(exPs);
-                msg = StringUtils.toString(error);
-                boolean handleError = expProcessor.shouldHandleError(error);
-                if (handleError) {
-                    // Allow to custom error message, return directly
-                    // Or interrupt, reHandle the process, process req, and continue to return normal information
-                    msg = Optional.ofNullable(expProcessor.wrapAndHandleException(channel, req)).orElse(msg);
+                String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
+                if (StringUtils.isNotBlank(exPs)) {
+                    ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+                    ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
+                    msg = StringUtils.toString(error);
+                    boolean handleError = expProcessor.shouldHandleError(error);
+                    if (handleError) {
+                        // Allow to custom error message, return directly
+                        // Or interrupt, reHandle the process, process req, and continue to return normal information
+                        msg = Optional.ofNullable(expProcessor.wrapAndHandleException(channel, req)).orElse(msg);
+                    }
                 }
             }
 

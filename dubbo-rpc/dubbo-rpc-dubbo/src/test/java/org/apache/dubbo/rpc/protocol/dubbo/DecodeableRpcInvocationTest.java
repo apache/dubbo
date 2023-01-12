@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
@@ -30,6 +31,7 @@ import org.apache.dubbo.remoting.buffer.ChannelBufferOutputStream;
 import org.apache.dubbo.remoting.buffer.ChannelBuffers;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -42,10 +44,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXCEPTION_PROCESSOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.TMP_OBJECT_INPUT;
 import static org.apache.dubbo.rpc.protocol.dubbo.DubboCodec.DUBBO_VERSION;
 
 /**
@@ -84,7 +85,7 @@ class DecodeableRpcInvocationTest {
         Assertions.assertEquals(decodeableRpcInvocation.getParameterTypesDesc(), inv.getParameterTypesDesc());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getParameterTypes(), inv.getParameterTypes());
         Assertions.assertArrayEquals(decodeableRpcInvocation.getArguments(), inv.getArguments());
-        decodeableRpcInvocation.getObjectAttachments().remove(ORIGIN_GENERIC_PARAMETER_TYPES);
+        decodeableRpcInvocation.getObjectAttachments().remove("originGenericParameterTypes");
         Assertions.assertTrue(CollectionUtils.mapEquals(decodeableRpcInvocation.getObjectAttachments(), inv.getObjectAttachments()));
         Assertions.assertEquals(decodeableRpcInvocation.getTargetServiceUniqueName(), inv.getTargetServiceUniqueName());
 
@@ -118,7 +119,7 @@ class DecodeableRpcInvocationTest {
         DecodeableRpcInvocation decodeableRpcInvocation = new DecodeableRpcInvocation(frameworkModel, channel, request, is, proto);
         decodeableRpcInvocation.decode();
         // Does not remove TMP_OBJECT_INPUT when a retry exception occurs
-        Assertions.assertTrue(decodeableRpcInvocation.getObjectAttachments().containsKey(TMP_OBJECT_INPUT));
+        Assertions.assertTrue(decodeableRpcInvocation.getObjectAttachments().containsKey("objectInput"));
 
 
         decodeableRpcInvocation = new DecodeableRpcInvocation(frameworkModel, channel, request, is, proto);
@@ -126,10 +127,11 @@ class DecodeableRpcInvocationTest {
         buffer = writeBuffer(url, inv, proto);
         is = new ChannelBufferInputStream(buffer, buffer.readableBytes());
         ChannelBufferInputStream finalIs = is;
+        String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
+        ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+        ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
         DecodeableRpcInvocation finalDecodeableRpcInvocation = decodeableRpcInvocation;
-        Assertions.assertThrows(ServiceNotFoundException.class, () -> {
-            finalDecodeableRpcInvocation.retryableDecode(channel, finalIs);
-        });
+        Assertions.assertThrows(ServiceNotFoundException.class, () -> finalDecodeableRpcInvocation.retryDecode(channel, expProcessor));
 
     }
 

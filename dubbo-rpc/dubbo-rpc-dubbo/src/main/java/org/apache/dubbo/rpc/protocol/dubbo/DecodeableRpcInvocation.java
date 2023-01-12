@@ -30,7 +30,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Decodeable;
-import org.apache.dubbo.rpc.ExceptionProcessor;
+import org.apache.dubbo.remoting.ExceptionProcessor;
 import org.apache.dubbo.remoting.ServiceNotFoundException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
@@ -49,7 +49,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
@@ -60,8 +59,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DECODE;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.ORIGIN_GENERIC_PARAMETER_TYPES;
-import static org.apache.dubbo.common.constants.OmnipotentCommonConstants.TMP_OBJECT_INPUT;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
@@ -74,6 +71,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     private byte serializationType;
 
     private InputStream inputStream;
+
+    private ObjectInput objectInput;
 
     private Request request;
 
@@ -96,12 +95,21 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             new CallbackServiceCodec(frameworkModel));
     }
 
+
+    public ObjectInput getObjectInput() {
+        return objectInput;
+    }
+
+    public void setObjectInput(ObjectInput objectInput) {
+        this.objectInput = objectInput;
+    }
+
     @Override
     public void decode() throws Exception {
         boolean finishDecode = false;
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
-                retryableDecode(channel, inputStream);
+                decode(channel, inputStream);
                 finishDecode = true;
             } catch (Throwable e) {
                 if (log.isWarnEnabled() && !(e instanceof ServiceNotFoundException)) {
@@ -111,14 +119,40 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 request.setError(e);
             } finally {
                 hasDecoded = true;
-                // Whether the process ends normally or abnormally (retry at most once), resources must be released
-                if (!request.tryIncreaseRetryNum() || finishDecode) {
-                    ObjectInput in = (ObjectInput) getObjectAttachment(TMP_OBJECT_INPUT);
+                if (finishDecode) {
+                    ObjectInput in = getObjectInput();
                     if (in instanceof Cleanable) {
                         ((Cleanable) in).cleanup();
                     }
-                    getObjectAttachments().remove(TMP_OBJECT_INPUT);
                 }
+                // Whether the process ends normally or abnormally (retry at most once), resources must be released
+            }
+        }
+    }
+
+    @Override
+    public void retry() throws Exception {
+
+        String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
+        if (StringUtils.isEmpty(exPs)) {
+            return;
+        }
+
+        ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
+        ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
+        expProcessor.setContext(this);
+
+        if (channel != null) {
+            try {
+                retryDecode(channel, expProcessor);
+            } catch (Throwable e) {
+                if (log.isWarnEnabled()) {
+                    log.warn(PROTOCOL_FAILED_DECODE, "", "", "Decode rpc invocation failed: " + e.getMessage(), e);
+                }
+                request.setBroken(true);
+                request.setError(e);
+            } finally {
+                expProcessor.cleanUp();
             }
         }
     }
@@ -136,6 +170,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(serializationType)
             .deserialize(channel.getUrl(), input);
+        setObjectInput(in);
         this.put(SERIALIZATION_ID_KEY, serializationType);
 
         String dubboVersion = in.readUTF();
@@ -182,9 +217,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
             Thread.currentThread().setContextClassLoader(originClassLoader);
-            if (in instanceof Cleanable) {
-                ((Cleanable) in).cleanup();
-            }
         }
         return this;
     }
@@ -199,46 +231,12 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     }
 
 
-    public void retryableDecode(Channel channel, InputStream input) throws IOException {
-        ObjectInput in = (ObjectInput) getObjectAttachment(TMP_OBJECT_INPUT);
-        if (in == null) {
-            in = CodecSupport.getSerialization(serializationType)
-                .deserialize(channel.getUrl(), input);
-            setAttachment(TMP_OBJECT_INPUT, in);
-        }
-        this.put(SERIALIZATION_ID_KEY, serializationType);
-
-        if (!getObjectAttachments().containsKey(DUBBO_VERSION_KEY)) {
-            String dubboVersion = in.readUTF();
-            request.setVersion(dubboVersion);
-            setAttachment(DUBBO_VERSION_KEY, dubboVersion);
-        }
-
+    public void retryDecode(Channel channel, ExceptionProcessor expProcessor) throws IOException {
+        ObjectInput in = getObjectInput();
         String path = getAttachment(PATH_KEY);
-        if (path == null) {
-            path = in.readUTF();
-            setAttachment(PATH_KEY, path);
-        }
-
         String version = getAttachment(VERSION_KEY);
-        if (version == null) {
-            version = in.readUTF();
-            setAttachment(VERSION_KEY, version);
-        }
-
-        if (getMethodName() == null) {
-            setMethodName(in.readUTF());
-        }
-
         String desc = getParameterTypesDesc();
-        if (desc == null) {
-            desc = in.readUTF();
-            setParameterTypesDesc(desc);
-        }
 
-        String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
-        ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
-        ExceptionProcessor expProcessor = exPs == null ? null : extensionLoader.getOrDefaultExtension(exPs);
 
         ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
@@ -251,10 +249,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 pts = drawPts(path, version, desc, pts);
 
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
-                    boolean throwErrorWhenSnf = !RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName());
-                    if (handleSnfError(expProcessor)) {
-                        throwErrorWhenSnf = Objects.requireNonNull(expProcessor).throwErrorWhenSnf(getMethodName(), path);
-                    }
+                    boolean throwErrorWhenSnf = expProcessor.throwErrorWhenSnf(getMethodName(), path);
                     if (throwErrorWhenSnf) {
                         throw new ServiceNotFoundException("Service not found:" + path + ", " + getMethodName());
                     }
@@ -266,16 +261,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (getParameterTypes() == null) {
                 setParameterTypes(pts);
             }
-            if (handleSnfError(expProcessor)) {
-                Objects.requireNonNull(expProcessor).customPts(this,pts);
-                setAttachment(ORIGIN_GENERIC_PARAMETER_TYPES, pts);
-            }
+            expProcessor.customPts(pts);
 
             Map<String, Object> map = in.readAttachments();
             if (CollectionUtils.isNotEmptyMap(map)) {
-                if (handleSnfError(expProcessor)) {
-                    Objects.requireNonNull(expProcessor).customAttachment(map);
-                }
+                expProcessor.customAttachment(map);
                 addObjectAttachments(map);
             }
 
@@ -285,12 +275,11 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
+            if (in instanceof Cleanable) {
+                ((Cleanable) in).cleanup();
+            }
             Thread.currentThread().setContextClassLoader(originClassLoader);
         }
-    }
-
-    private boolean handleSnfError(ExceptionProcessor expProcessor) {
-        return isRetryProcess() && expProcessor != null;
     }
 
     private void decodeArgument(Channel channel, Class<?>[] pts, Object[] args) throws IOException {
@@ -366,9 +355,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         return pts;
     }
 
-    public boolean isRetryProcess() {
-        return request.isRetry();
-    }
 
     public void resetHasDecoded() {
         this.hasDecoded = false;

@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Decodeable;
-import org.apache.dubbo.remoting.RetryHandleException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Request;
 
@@ -68,7 +66,7 @@ public interface ExceptionProcessor {
         return false;
     }
 
-    default void customPts(RpcInvocation rpcInvocation, Class<?>[] pts) {
+    default void customPts(Class<?>[] pts) {
 
     }
 
@@ -76,5 +74,9 @@ public interface ExceptionProcessor {
 
     }
 
+    default void cleanUp() {
 
+    }
+
+    void setContext(Object context);
 }
