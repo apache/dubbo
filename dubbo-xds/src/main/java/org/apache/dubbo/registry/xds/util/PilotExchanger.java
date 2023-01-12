@@ -57,8 +57,6 @@ public class PilotExchanger {
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
 
-    private final Map<String, Long> rdsObserveRequest = new ConcurrentHashMap<>();
-
     private final Map<String, Consumer<RdsVirtualHostListener>> rdsObserveConsumer = new ConcurrentHashMap<>();
 
     protected PilotExchanger(URL url) {
