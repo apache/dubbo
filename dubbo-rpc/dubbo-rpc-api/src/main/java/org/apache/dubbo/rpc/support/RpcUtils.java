@@ -283,12 +283,14 @@ public class RpcUtils {
 
     public static int calculateTimeout(URL url, Invocation invocation, String methodName, long defaultTimeout) {
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
-        int timeout;
+        int timeout = (int) defaultTimeout;
         if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(url, methodName, RpcContext.getClientAttachment(), invocation, DEFAULT_TIMEOUT);
-            if (url.getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
-                // pass timeout to remote server
-                invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);
+            if (url != null) {
+                timeout = (int) RpcUtils.getTimeout(url, methodName, RpcContext.getClientAttachment(), invocation, defaultTimeout);
+                if (url.getMethodParameter(methodName, ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
+                    // pass timeout to remote server
+                    invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);
+                }
             }
         } else {
             TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
