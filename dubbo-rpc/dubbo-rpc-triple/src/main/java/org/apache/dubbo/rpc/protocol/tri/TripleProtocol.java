@@ -60,7 +60,6 @@ public class TripleProtocol extends AbstractProtocol {
      */
     public static boolean CONVERT_NO_LOWER_HEADER = false;
 
-
     public TripleProtocol(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         this.triBuiltinService = new TriBuiltinService(frameworkModel);
@@ -79,6 +78,7 @@ public class TripleProtocol extends AbstractProtocol {
     public int getDefaultPort() {
         return 50051;
     }
+
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {

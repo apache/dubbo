@@ -23,10 +23,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.TriRpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
@@ -34,14 +31,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleClientStream;
 
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.ErrorInfo;
-import com.google.rpc.Status;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -111,15 +100,8 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
             return;
         }
         done = true;
-        final TriRpcStatus detailStatus;
-        final TriRpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
-        if (statusFromTrailers != null) {
-            detailStatus = statusFromTrailers;
-        } else {
-            detailStatus = status;
-        }
         try {
-            listener.onClose(detailStatus, StreamUtils.toAttachments(attachments));
+            listener.onClose(status, StreamUtils.toAttachments(attachments));
         } catch (Throwable t) {
             cancelByLocal(
                 TriRpcStatus.INTERNAL.withDescription("Close stream error").withCause(t)
@@ -128,59 +110,6 @@ public class TripleClientCall implements ClientCall, ClientStream.Listener {
         if (requestMetadata.cancellationContext != null) {
             requestMetadata.cancellationContext.cancel(null);
         }
-    }
-
-    private TriRpcStatus getStatusFromTrailers(Map<String, String> metadata) {
-        if (null == metadata) {
-            return null;
-        }
-        // second get status detail
-        if (!metadata.containsKey(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
-            return null;
-        }
-        final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader()));
-        byte[] statusDetailBin = StreamUtils.decodeASCIIByte(raw);
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            final Status statusDetail = Status.parseFrom(statusDetailBin);
-            List<Any> detailList = statusDetail.getDetailsList();
-            Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
-
-            // get common exception from DebugInfo
-            TriRpcStatus status = TriRpcStatus.fromCode(statusDetail.getCode())
-                .withDescription(TriRpcStatus.decodeMessage(statusDetail.getMessage()));
-            DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
-            if (debugInfo != null) {
-                String msg = ExceptionUtils.getStackFrameString(
-                    debugInfo.getStackEntriesList());
-                status = status.appendDescription(msg);
-            }
-            return status;
-        } catch (IOException ioException) {
-            return null;
-        } finally {
-            ClassLoadUtil.switchContextLoader(tccl);
-        }
-
-    }
-
-    private Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
-        Map<Class<?>, Object> map = new HashMap<>(detailList.size());
-        try {
-            for (Any any : detailList) {
-                if (any.is(ErrorInfo.class)) {
-                    ErrorInfo errorInfo = any.unpack(ErrorInfo.class);
-                    map.putIfAbsent(ErrorInfo.class, errorInfo);
-                } else if (any.is(DebugInfo.class)) {
-                    DebugInfo debugInfo = any.unpack(DebugInfo.class);
-                    map.putIfAbsent(DebugInfo.class, debugInfo);
-                }
-                // support others type but now only support this
-            }
-        } catch (Throwable t) {
-            LOGGER.error(PROTOCOL_FAILED_RESPONSE, "", "", "tran from grpc-status-details error", t);
-        }
-        return map;
     }
 
     @Override
