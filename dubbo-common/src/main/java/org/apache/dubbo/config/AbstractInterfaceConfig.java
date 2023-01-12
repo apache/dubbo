@@ -643,7 +643,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param application
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @deprecated Use {@link AbstractConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setApplication(ApplicationConfig application) {
@@ -662,7 +662,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param module
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @deprecated Use {@link AbstractConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setModule(ModuleConfig module) {

@@ -20,6 +20,7 @@ package org.apache.dubbo.common.serialize;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +29,22 @@ import java.io.OutputStream;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface MultipleSerialization {
 
-    void serialize(URL url, String serializeType, String clz, Object obj, OutputStream os) throws IOException;
 
-    Object deserialize(URL url, String serializeType, String clz, InputStream os) throws IOException, ClassNotFoundException;
+    default void serialize(URL url, String serializeType, String clzStr, Object obj, OutputStream os) throws IOException, ClassNotFoundException {
+        Class<?> clz = ClassUtils.forName(clzStr);
+        serialize(url, serializeType, clz, obj, os);
+    }
+
+
+    void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException;
+
+
+    default Object deserialize(URL url, String serializeType, String clzStr, InputStream os) throws IOException, ClassNotFoundException {
+        Class<?> clz = ClassUtils.forName(clzStr);
+        return deserialize(url, serializeType, clz, os);
+    }
+
+
+    Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException;
 
 }

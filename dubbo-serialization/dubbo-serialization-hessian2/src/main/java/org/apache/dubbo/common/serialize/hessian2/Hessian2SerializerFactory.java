@@ -20,7 +20,14 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 public class Hessian2SerializerFactory extends SerializerFactory {
 
-    public Hessian2SerializerFactory() {
+    private Hessian2AllowClassManager hessian2AllowClassManager;
+
+    public Hessian2SerializerFactory(Hessian2AllowClassManager hessian2AllowClassManager) {
+        this.hessian2AllowClassManager = hessian2AllowClassManager;
     }
 
+    @Override
+    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
+        return hessian2AllowClassManager.loadClass(getClassLoader(), className);
+    }
 }

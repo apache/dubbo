@@ -26,7 +26,7 @@ import java.io.OutputStream;
 public class DefaultMultipleSerialization implements MultipleSerialization {
 
     @Override
-    public void serialize(URL url, String serializeType, String clz, Object obj, OutputStream os) throws IOException {
+    public void serialize(URL url, String serializeType, Class<?> clz, Object obj, OutputStream os) throws IOException {
         serializeType = convertHessian(serializeType);
         final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
         final ObjectOutput serialize = serialization.serialize(null, os);
@@ -35,11 +35,11 @@ public class DefaultMultipleSerialization implements MultipleSerialization {
     }
 
     @Override
-    public Object deserialize(URL url, String serializeType, String clz, InputStream os) throws IOException, ClassNotFoundException {
+    public Object deserialize(URL url, String serializeType, Class<?> clz, InputStream os) throws IOException, ClassNotFoundException {
         serializeType = convertHessian(serializeType);
         final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
         final ObjectInput in = serialization.deserialize(null, os);
-        return in.readObject();
+        return in.readObject(clz);
     }
 
     private String convertHessian(String ser) {
