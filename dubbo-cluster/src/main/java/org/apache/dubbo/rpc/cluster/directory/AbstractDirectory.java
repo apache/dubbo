@@ -401,26 +401,17 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     protected final void refreshRouter(BitList<Invoker<T>> newlyInvokers, Runnable switchAction) {
-        BitList<Invoker<T>> origin = getInvokers();
         try {
             routerChain.setInvokers(newlyInvokers.clone(), switchAction);
-        } catch (Throwable t1) {
+        } catch (Throwable t) {
             logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain. " +
-                "Will roll back to origin invokers and address notification will be ignored. " +
                 "The addresses from notification: " +
                 newlyInvokers.stream()
                     .map(Invoker::getUrl)
                     .map(URL::getAddress)
-                    .collect(Collectors.joining(", ")), t1);
+                    .collect(Collectors.joining(", ")), t);
 
-            try {
-                routerChain.setInvokers(origin.clone(), () -> this.setInvokers(origin));
-            } catch (Throwable t2) {
-                logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain. " +
-                    "And roll back FAILED.", t2);
-            }
-
-            throw t1;
+            throw t;
         }
     }
 

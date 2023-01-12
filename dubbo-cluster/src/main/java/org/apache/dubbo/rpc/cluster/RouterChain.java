@@ -150,7 +150,6 @@ public class RouterChain<T> {
             mainChain.setInvokers(invokers);
         } catch (Throwable t) {
             logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain.", t);
-            // Refresh chain failed. Continue use backup chain now to prevent affect.
             throw t;
         } finally {
             // Unlock main chain
@@ -196,17 +195,6 @@ public class RouterChain<T> {
             backupChain.setInvokers(invokers);
         } catch (Throwable t) {
             logger.error(LoggerCodeConstants.INTERNAL_ERROR, "", "", "Error occurred when refreshing router chain.", t);
-
-            // Refresh chain failed. The main chain is ok and backup chain is broken.
-            // Swap the main chain and backup chain.
-            // Reason: Directory will roll back later, and this can unsure that the broken chain
-            //         will not be used in the next time `setInvokers`. The broken chain will be
-            //         refreshed firstly in the next time, which will use the origin invokers to
-            //         refresh. This can prevent the broken chain being used for invocation list.
-            SingleRouterChain<T> tmp = mainChain;
-            mainChain = backupChain;
-            backupChain = tmp;
-
             throw t;
         } finally {
             // Unlock backup chain
