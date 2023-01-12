@@ -43,8 +43,6 @@ public class Request {
 
     private Throwable mError;
 
-    private int retryNum = 0;
-
 
     public Request() {
         mId = newId();
@@ -155,19 +153,6 @@ public class Request {
         copy.mEvent = this.mEvent;
         copy.mBroken = this.mBroken;
         return copy;
-    }
-
-    public boolean tryIncreaseRetryNum() {
-        if (this.retryNum == 0) {
-            this.retryNum++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isRetry() {
-        return this.retryNum > 0;
     }
 
     @Override
