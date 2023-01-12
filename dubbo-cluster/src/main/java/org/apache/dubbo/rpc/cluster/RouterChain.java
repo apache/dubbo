@@ -154,7 +154,7 @@ public class RouterChain<T> {
             throw t;
         } finally {
             // Unlock main chain
-            mainChain.getLock().writeLock().lock();
+            mainChain.getLock().writeLock().unlock();
         }
 
         // Set the reference of newly invokers to temp variable.
@@ -210,7 +210,7 @@ public class RouterChain<T> {
             throw t;
         } finally {
             // Unlock backup chain
-            backupChain.getLock().writeLock().lock();
+            backupChain.getLock().writeLock().unlock();
         }
     }
 
