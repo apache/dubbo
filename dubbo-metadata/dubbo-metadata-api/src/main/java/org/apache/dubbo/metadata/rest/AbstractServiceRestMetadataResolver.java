@@ -16,14 +16,6 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-import org.apache.dubbo.common.utils.MethodComparator;
-import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
-import org.apache.dubbo.metadata.definition.model.MethodDefinition;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -35,6 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import org.apache.dubbo.common.utils.MethodComparator;
+import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
+import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.MethodDefinition;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.sort;
@@ -70,7 +70,6 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final boolean supports(Class<?> serviceType, boolean consumer) {
-
         if (consumer) {
             return serviceType.isInterface() && supports0(serviceType);
         }
