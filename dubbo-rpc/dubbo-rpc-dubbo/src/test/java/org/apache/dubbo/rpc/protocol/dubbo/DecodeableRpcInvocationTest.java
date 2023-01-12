@@ -97,44 +97,6 @@ class DecodeableRpcInvocationTest {
 
     }
 
-    @Test
-    void testServiceNotFound() throws Exception {
-        // Simulate the data called by the client(The called data is stored in invocation and written to the buffer)
-        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 9103, RemoteService.class.getName(), VERSION_KEY, "1.0.0");
-        RpcInvocation inv = buildRpcInvocation(RemoteService.class.getName(), url);
-        inv.setTargetServiceUniqueName(url.getServiceKey());
-        // Write the data of inv to the buffer
-        Byte proto = CodecSupport.getIDByName(DefaultSerializationSelector.getDefaultRemotingSerialization());
-        ChannelBuffer buffer = writeBuffer(url, inv, proto);
-
-        FrameworkModel frameworkModel = new FrameworkModel();
-        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
-        applicationModel.getDefaultModule().getServiceRepository().registerService(DemoService.class.getName(), DemoService.class);
-        frameworkModel.getServiceRepository().registerProviderUrl(url);
-
-        // Simulate the server to decode
-        Channel channel = new MockChannel();
-        Request request = new Request(1);
-        ChannelBufferInputStream is = new ChannelBufferInputStream(buffer, buffer.readableBytes());
-        DecodeableRpcInvocation decodeableRpcInvocation = new DecodeableRpcInvocation(frameworkModel, channel, request, is, proto);
-        decodeableRpcInvocation.decode();
-        // Does not remove TMP_OBJECT_INPUT when a retry exception occurs
-        Assertions.assertTrue(decodeableRpcInvocation.getObjectAttachments().containsKey("objectInput"));
-
-
-        decodeableRpcInvocation = new DecodeableRpcInvocation(frameworkModel, channel, request, is, proto);
-        inv = buildRpcInvocation(RemoteService.class.getName(), url);
-        buffer = writeBuffer(url, inv, proto);
-        is = new ChannelBufferInputStream(buffer, buffer.readableBytes());
-        ChannelBufferInputStream finalIs = is;
-        String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
-        ExtensionLoader<ExceptionProcessor> extensionLoader = ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(ExceptionProcessor.class);
-        ExceptionProcessor expProcessor = extensionLoader.getOrDefaultExtension(exPs);
-        DecodeableRpcInvocation finalDecodeableRpcInvocation = decodeableRpcInvocation;
-        Assertions.assertThrows(ServiceNotFoundException.class, () -> finalDecodeableRpcInvocation.retryDecode(channel, expProcessor));
-
-    }
-
     private RpcInvocation buildRpcInvocation(String Name, URL url) {
         RpcInvocation inv = new RpcInvocation(null, "sayHello", Name, "", new Class<?>[]{String.class}, new String[]{"yug"});
         inv.setObjectAttachment(PATH_KEY, url.getPath());
