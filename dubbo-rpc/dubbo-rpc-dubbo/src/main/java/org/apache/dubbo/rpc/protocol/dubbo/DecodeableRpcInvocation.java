@@ -249,10 +249,6 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 pts = drawPts(path, version, desc, pts);
 
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
-                    boolean throwErrorWhenSnf = expProcessor.throwErrorWhenSnf(getMethodName(), path);
-                    if (throwErrorWhenSnf) {
-                        throw new ServiceNotFoundException("Service not found:" + path + ", " + getMethodName());
-                    }
                     pts = ReflectUtils.desc2classArray(desc);
                 }
                 args = drawArgs(in, pts);

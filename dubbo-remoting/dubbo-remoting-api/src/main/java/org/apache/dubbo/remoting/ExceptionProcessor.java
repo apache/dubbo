@@ -38,11 +38,17 @@ import java.util.Map;
 public interface ExceptionProcessor {
 
     /**
+     * The context required for actual processing, generally rpcInvocation
+     *
+     * @param context rpcInvocation or any other process object
+     */
+    void setContext(Object context);
+
+    /**
      * Whether to custom handle error when an exception
      * with the specified parameter is encountered
      *
      * @param throwable specified exception
-     * @since 3.2.0
      */
     boolean shouldHandleError(Throwable throwable);
 
@@ -57,26 +63,33 @@ public interface ExceptionProcessor {
      * and the real reason that cannot be processed needs to be set instead of the literal exception information of retry.
      *
      * @return Msg information, If non-null, means that the exception is customized
-     * @since 3.2.0
      */
     String wrapAndHandleException(ExchangeChannel channel, Request req) throws RetryHandleException;
 
 
-    default boolean throwErrorWhenSnf(String methodName, String path) {
-        return false;
-    }
-
+    /**
+     * Custom handling of parameter types that can preserve the original parameter type
+     *
+     * @param pts The actual parameters passed by consumer
+     */
     default void customPts(Class<?>[] pts) {
 
     }
 
+    /**
+     * Custom handling of attachment
+     *
+     * @param map The actual attachment passed by consumer
+     */
     default void customAttachment(Map<String, Object> map) {
 
     }
 
+    /**
+     * release resources
+     */
     default void cleanUp() {
 
     }
 
-    void setContext(Object context);
 }
