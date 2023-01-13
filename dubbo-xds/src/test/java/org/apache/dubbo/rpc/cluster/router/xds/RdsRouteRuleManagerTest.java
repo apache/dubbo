@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
+import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.HTTPRouteDestination;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.HttpRequestMatch;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
@@ -31,6 +32,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 
 public class RdsRouteRuleManagerTest {
 
@@ -45,6 +47,8 @@ public class RdsRouteRuleManagerTest {
     @Test
     public void subscribeRdsTest() {
         RdsRouteRuleManager manager = new RdsRouteRuleManager();
+        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
+        manager.setPilotExchanger(pilotExchanger);
         String domain = "testApp";
         int subscribeNum = 3;
         for (int i = 0; i < subscribeNum; i++) {
@@ -68,6 +72,8 @@ public class RdsRouteRuleManagerTest {
     @Test
     public void unsubscribeRdsTest() {
         RdsRouteRuleManager manager = new RdsRouteRuleManager();
+        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
+        manager.setPilotExchanger(pilotExchanger);
         String domain = "testApp";
         XdsRouteRuleListener listener = new XdsRouteRuleListener() {
             @Override
@@ -113,6 +119,8 @@ public class RdsRouteRuleManagerTest {
         };
 
         RdsRouteRuleManager manager = new RdsRouteRuleManager();
+        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
+        manager.setPilotExchanger(pilotExchanger);
         manager.subscribeRds(domain, listener);
         manager.notifyRuleChange(domain, xdsRouteRules);
         assertEquals(cacheData.get(domain), xdsRouteRules);

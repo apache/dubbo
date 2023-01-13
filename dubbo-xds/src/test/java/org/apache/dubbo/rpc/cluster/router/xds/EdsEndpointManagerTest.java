@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 
 public class EdsEndpointManagerTest {
 
@@ -43,6 +46,8 @@ public class EdsEndpointManagerTest {
     @Test
     public void subscribeEdsTest() {
         EdsEndpointManager manager = new EdsEndpointManager();
+        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
+        manager.setPilotExchanger(pilotExchanger);
         String cluster = "testApp";
         int subscribeNum = 3;
         for (int i = 0; i < subscribeNum; i++) {
@@ -61,6 +66,8 @@ public class EdsEndpointManagerTest {
     @Test
     public void unsubscribeRdsTest() {
         EdsEndpointManager manager = new EdsEndpointManager();
+        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
+        manager.setPilotExchanger(pilotExchanger);
         String domain = "testApp";
         EdsEndpointListener listener = new EdsEndpointListener() {
             @Override
@@ -95,6 +102,8 @@ public class EdsEndpointManagerTest {
         };
 
         EdsEndpointManager manager = new EdsEndpointManager();
+        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
+        manager.setPilotExchanger(pilotExchanger);
         manager.subscribeEds(domain, listener);
         manager.notifyEndpointChange(domain, endpoints);
         assertEquals(cacheData.get(domain), endpoints);
