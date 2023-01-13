@@ -21,7 +21,7 @@ public interface Decodeable {
 
     void decode() throws Exception;
 
-    default void retry() throws Exception {
+    default void retry() {
 
     }
 

@@ -131,7 +131,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     }
 
     @Override
-    public void retry() throws Exception {
+    public void retry(){
 
         String exPs = ApplicationModel.defaultModel().getCurrentConfig().getParameters().get(EXCEPTION_PROCESSOR_KEY);
         if (StringUtils.isEmpty(exPs)) {
@@ -143,6 +143,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         expProcessor.setContext(this);
 
         if (channel != null) {
+            request.setBroken(false);
             try {
                 retryDecode(channel, expProcessor);
             } catch (Throwable e) {
