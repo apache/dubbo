@@ -243,7 +243,7 @@ jobs:
       fail-fast: false
       matrix:
         jdk: [ 8, 11, 17, 19 ]
-        job_id: [1, 2, 3]
+        job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v3
         with:
