@@ -14,10 +14,10 @@ env:
   SHOW_ERROR_DETAIL: 1
   #multi-version size limit
   VERSIONS_LIMIT: 4
+  ALL_REMOTE_VERSION: true
   CANDIDATE_VERSIONS: '
-    spring.version:4.3.30.RELEASE;
-    spring-boot.version:1.5.22.RELEASE;
-    spring-boot.version:2.4.1;
+    spring.version:5.3.24;
+    spring-boot.version:2.7.6;
     '
 
 jobs:
@@ -216,7 +216,7 @@ jobs:
   integration-test-prepare:
     runs-on: ubuntu-latest
     env:
-      JOB_COUNT: 3
+      JOB_COUNT: 5
     steps:
       - uses: actions/checkout@v3
         with:
@@ -237,12 +237,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      JAVA_VER: 8
+      JAVA_VER: ${{matrix.jdk}}
       TEST_CASE_FILE: jobs/testjob_${{matrix.job_id}}.txt
     strategy:
       fail-fast: false
       matrix:
-        job_id: [1, 2, 3]
+        jdk: [ 8, 11, 17, 19 ]
+        job_id: [1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -269,10 +270,10 @@ jobs:
         with:
           name: test-list
           path: test/jobs/
-      - name: "Set up JDK 8"
+      - name: "Set up JDK ${{matrix.jdk}}"
         uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: ${{matrix.jdk}}
       - name: "Init Candidate Versions"
         run: |
           DUBBO_VERSION="${{needs.build-source.outputs.version}}"
@@ -287,7 +288,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: test-result
+          name: test-result-${{matrix.jdk}}
           path: test/jobs/*-result*
 
   integration-test-result:
@@ -295,7 +296,10 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     env:
-      JAVA_VER: 8
+      JAVA_VER: ${{matrix.jdk}}
+    strategy:
+      matrix:
+        jdk: [ 8, 11, 17, 19 ]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -304,11 +308,10 @@ jobs:
       - name: "Download test result"
         uses: actions/download-artifact@v3
         with:
-          name: test-result
+          name: test-result-${{matrix.jdk}}
           path: test/jobs/
       - name: "Merge test result"
         run: ./test/scripts/merge-test-results.sh
-
 
   error-code-inspecting:
     runs-on: ubuntu-latest
