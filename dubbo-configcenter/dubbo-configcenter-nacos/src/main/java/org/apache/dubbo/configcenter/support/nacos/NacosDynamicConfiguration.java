@@ -71,6 +71,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
 
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+
     /**
      * The nacos configService
      */
@@ -92,11 +94,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private NacosConfigServiceWrapper buildConfigService(URL url) {
         int retryTimes = url.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = url.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
+        boolean check = url.getParameter(NACOS_CHECK_KEY, true);
         ConfigService tmpConfigServices = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 tmpConfigServices = NacosFactory.createConfigService(nacosProperties);
-                if (UP.equals(tmpConfigServices.getServerStatus())) {
+                if (!check || UP.equals(tmpConfigServices.getServerStatus())) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.CONFIG_ERROR_NACOS, "", "",

@@ -59,4 +59,27 @@ class RetryTest {
             }
         }
     }
+    @Test
+    void testDisable() {
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            ConfigService mock = new MockConfigService() {
+                @Override
+                public String getServerStatus() {
+                    return DOWN;
+                }
+            };
+            nacosFactoryMockedStatic.when(() -> NacosFactory.createConfigService((Properties) any())).thenReturn(mock);
+
+
+            URL url = URL.valueOf("nacos://127.0.0.1:8848")
+                .addParameter("nacos.retry", 5)
+                .addParameter("nacos.retry-wait", 10)
+                .addParameter("nacos.check", "false");
+            try {
+                new NacosMetadataReport(url);
+            } catch (Throwable t) {
+                Assertions.fail(t);
+            }
+        }
+    }
 }

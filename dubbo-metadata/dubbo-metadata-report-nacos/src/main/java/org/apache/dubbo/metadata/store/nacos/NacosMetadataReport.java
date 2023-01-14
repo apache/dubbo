@@ -90,6 +90,8 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
 
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+
     public NacosMetadataReport(URL url) {
         super(url);
         this.configService = buildConfigService(url);
@@ -100,11 +102,12 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         Properties nacosProperties = buildNacosProperties(url);
         int retryTimes = url.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = url.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
+        boolean check = url.getParameter(NACOS_CHECK_KEY, true);
         ConfigService tmpConfigServices = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 tmpConfigServices = NacosFactory.createConfigService(nacosProperties);
-                if (UP.equals(tmpConfigServices.getServerStatus())) {
+                if (!check || UP.equals(tmpConfigServices.getServerStatus())) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.CONFIG_ERROR_NACOS, "", "",
