@@ -322,7 +322,10 @@ public class ReflectionPackableMethod implements PackableMethod {
         @Override
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            Class<?> clz = obj.getClass();
+            Class<?> clz = this.actualResponseType;
+            if (obj != null) {
+                clz = obj.getClass();
+            }
             multipleSerialization.serialize(url, serialize, clz, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
                 .setSerializeType(serialize)
