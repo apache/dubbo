@@ -19,11 +19,15 @@ package org.apache.dubbo.registry.nacos;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test for NacosServiceDiscoveryFactory
@@ -44,7 +48,9 @@ class NacosServiceDiscoveryFactoryTest {
     void testGetServiceDiscoveryWithCache() {
         URL url = URL.valueOf("dubbo://test:8080");
         ServiceDiscovery discovery = nacosServiceDiscoveryFactory.createDiscovery(url);
-
-        Assertions.assertTrue(discovery instanceof NacosServiceDiscovery);
+        try (MockedStatic<NacosNamingServiceUtils> mock = Mockito.mockStatic(NacosNamingServiceUtils.class)) {
+            mock.when(() -> NacosNamingServiceUtils.createNamingService(any())).thenReturn(null);
+            Assertions.assertTrue(discovery instanceof NacosServiceDiscovery);
+        }
     }
 }

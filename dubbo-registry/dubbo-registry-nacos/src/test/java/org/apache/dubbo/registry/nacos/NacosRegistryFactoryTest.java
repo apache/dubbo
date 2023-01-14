@@ -18,11 +18,15 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test for NacosRegistryFactory
@@ -33,7 +37,10 @@ class NacosRegistryFactoryTest {
 
     @BeforeEach
     public void setup() {
-        nacosRegistryFactory = new NacosRegistryFactory();
+        try (MockedStatic<NacosNamingServiceUtils> mock = Mockito.mockStatic(NacosNamingServiceUtils.class)) {
+            mock.when(() -> NacosNamingServiceUtils.createNamingService(any())).thenReturn(null);
+            nacosRegistryFactory = new NacosRegistryFactory();
+        }
     }
 
     @AfterEach
