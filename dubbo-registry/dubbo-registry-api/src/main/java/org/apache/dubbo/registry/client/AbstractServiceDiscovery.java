@@ -296,12 +296,22 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
-    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+    /**
+     * Update Service Instance. Unregister and then register by default.
+     * Can be override if registry support update instance directly.
+     * <br/>
+     * NOTICE: Remind to update {@link AbstractServiceDiscovery#serviceInstance}'s reference if updated
+     *         and report metadata by {@link AbstractServiceDiscovery#reportMetadata(MetadataInfo)}
+     *
+     * @param oldServiceInstance origin service instance
+     * @param newServiceInstance new service instance
+     */
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) {
         this.doUnregister(oldServiceInstance);
 
         if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
-            reportMetadata(serviceInstance.getServiceMetadata());
             this.serviceInstance = newServiceInstance;
+            reportMetadata(newServiceInstance.getServiceMetadata());
             this.doRegister(newServiceInstance);
         }
     }

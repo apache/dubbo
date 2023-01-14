@@ -37,6 +37,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
+import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_CHECK_STATUS_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 
@@ -74,6 +75,9 @@ public class SerializeSecurityManager {
                     logger.error(COMMON_IO_EXCEPTION, "", "",  "Failed to load allow class list! Will ignore allow lis from " + u, e);
                 }
             }
+
+            this.checkStatus = SerializeCheckStatus.valueOf(System.getProperty(SERIALIZE_CHECK_STATUS_KEY, AllowClassNotifyListener.DEFAULT_STATUS.name()));
+            logger.info("Serialize check level: " + checkStatus.name());
         } catch (InterruptedException e) {
             logger.error(INTERNAL_INTERRUPTED, "", "",  "Failed to load allow class list! Will ignore allow list from configuration.", e);
             Thread.currentThread().interrupt();
