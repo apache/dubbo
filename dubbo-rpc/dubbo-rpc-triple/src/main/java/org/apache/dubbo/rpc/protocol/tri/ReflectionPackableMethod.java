@@ -320,10 +320,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         @Override
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serialize, actualResponseType, obj, bos);
+            Class<?> clz = obj.getClass();
+            multipleSerialization.serialize(url, serialize, clz, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
                 .setSerializeType(serialize)
-                .setType(actualResponseType.getName())
+                .setType(clz.getName())
                 .setData(bos.toByteArray())
                 .build()
                 .toByteArray();
@@ -349,7 +350,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            return serialization.deserialize(url, serializeType, returnClass, bais);
+            return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
         }
     }
 
@@ -385,10 +386,8 @@ public class ReflectionPackableMethod implements PackableMethod {
             }
             final TripleCustomerProtocolWapper.TripleRequestWrapper.Builder builder = TripleCustomerProtocolWapper.TripleRequestWrapper.Builder.newBuilder();
             builder.setSerializeType(serialize);
-            for (String type : argumentsType) {
-                builder.addArgTypes(type);
-            }
             for (Object argument : arguments) {
+                builder.addArgTypes(argument.getClass().getName());
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 multipleSerialization.serialize(url, serialize, argument.getClass(), argument, bos);
                 builder.addArgs(bos.toByteArray());
@@ -452,7 +451,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                     wrapper.getArgs().get(i));
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
-                    actualRequestTypes[i],
+                    wrapper.getArgTypes().get(i),
                     bais);
             }
             return ret;
