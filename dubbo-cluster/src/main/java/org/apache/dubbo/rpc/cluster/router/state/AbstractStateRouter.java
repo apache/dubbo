@@ -36,7 +36,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
     private volatile URL url;
     private volatile StateRouter<T> nextRouter = null;
 
-    private final GovernanceRuleRepository ruleRepository;
+    protected final GovernanceRuleRepository ruleRepository;
 
     /**
      * Should continue route if current router's result is empty

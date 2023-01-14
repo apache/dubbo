@@ -44,7 +44,8 @@ public class ExpressionRouterTest {
 
         String params = "?remote.application=dubbo-demo-annotation-provider&application=dubbo-demo-annotation-consumer";
         String consumer = "consumer://" + LOCAL_HOST + SERVICE + params;
-        ObserverRouter router = (ObserverRouter)new ExpressionRouterFactory().getRouter(URL.valueOf(consumer));
+
+        ObserverRouter router = (ObserverRouter)new ExpressionRouterFactory().getRouter(String.class, URL.valueOf(consumer));
 
         BitList<Invoker> fileredInvokers = router.route(bitInvokers.clone(), URL.valueOf(consumer), invocation, false, new Holder<>());
 
