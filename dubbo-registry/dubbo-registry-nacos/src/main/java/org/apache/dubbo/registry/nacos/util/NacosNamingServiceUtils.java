@@ -46,6 +46,8 @@ public class NacosNamingServiceUtils {
 
     private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
 
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+
     private NacosNamingServiceUtils() {
         throw new IllegalStateException("NacosNamingServiceUtils should not be instantiated");
     }
@@ -108,8 +110,10 @@ public class NacosNamingServiceUtils {
      * @since 2.7.5
      */
     public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
-        int retryTimes = connectionURL.getParameter(NACOS_RETRY_KEY, 10);
-        int sleepMsBetweenRetries = connectionURL.getParameter(NACOS_RETRY_WAIT_KEY, 10);
-        return new NacosNamingServiceWrapper(new NacosConnectionManager(connectionURL), retryTimes, sleepMsBetweenRetries);
+        boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
+        int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
+        int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 10);
+        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(connectionURL, check, retryTimes, sleepMsBetweenRetries);
+        return new NacosNamingServiceWrapper(nacosConnectionManager, retryTimes, sleepMsBetweenRetries);
     }
 }

@@ -91,7 +91,7 @@ class NacosNamingServiceWrapperTest {
     @Test
     void testRegisterNacos2_0_x() throws NacosException {
         List<NamingService> namingServiceList = new LinkedList<>();
-        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf("")) {
+        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf(""), false, 0, 0) {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
@@ -140,7 +140,7 @@ class NacosNamingServiceWrapperTest {
     @Test
     void testRegisterNacos2_1_xClient2_0_xServer() throws NacosException {
         List<NamingService> namingServiceList = new LinkedList<>();
-        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf("")) {
+        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf(""), false, 0, 0) {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
@@ -204,7 +204,7 @@ class NacosNamingServiceWrapperTest {
     @Test
     void testRegisterNacos2_1_xClient2_1_xServer() throws NacosException {
         List<NamingService> namingServiceList = new LinkedList<>();
-        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf("")) {
+        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf(""), false, 0, 0) {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);
@@ -307,7 +307,7 @@ class NacosNamingServiceWrapperTest {
     @Test
     void testUnregister() throws NacosException {
         List<NamingService> namingServiceList = new LinkedList<>();
-        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf("")) {
+        NacosConnectionManager nacosConnectionManager = new NacosConnectionManager(URL.valueOf(""), false, 0, 0) {
             @Override
             protected NamingService createNamingService() {
                 NamingService namingService = Mockito.mock(NamingService.class);

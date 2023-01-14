@@ -416,7 +416,7 @@ public class NacosNamingServiceWrapper {
                 logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
                     "Failed to request nacos naming server. " +
                         (times < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
-                        "Try times: " + times + 1, e);
+                        "Try times: " + (times + 1), e);
                 if (times < retryTimes) {
                     try {
                         Thread.sleep(sleepMsBetweenRetries);
@@ -450,7 +450,7 @@ public class NacosNamingServiceWrapper {
                 logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
                     "Failed to request nacos naming server. " +
                         (times < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
-                        "Try times: " + times + 1, e);
+                        "Try times: " + (times + 1), e);
                 if (times < retryTimes) {
                     try {
                         Thread.sleep(sleepMsBetweenRetries);
