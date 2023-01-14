@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -25,10 +31,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.api.naming.pojo.ListView;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,11 +39,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.internal.util.collections.Sets;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,7 +63,7 @@ class NacosServiceDiscoveryTest {
 
     private static final String LOCALHOST = "127.0.0.1";
 
-    protected URL registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
+    protected URL registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort() + "?nacos.check=false");
 
     private NacosServiceDiscovery nacosServiceDiscovery;
 
@@ -79,7 +79,7 @@ class NacosServiceDiscoveryTest {
         public NacosServiceDiscoveryGroupTest1() {
             super();
             group = "test-group1";
-            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort()).addParameter("group", group);
+            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort() + "?nacos.check=false").addParameter("group", group);
         }
     }
 
@@ -87,7 +87,7 @@ class NacosServiceDiscoveryTest {
         public NacosServiceDiscoveryGroupTest2() {
             super();
             group = "test-group2";
-            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort()).addParameter("group", group);
+            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort() + "?nacos.check=false").addParameter("group", group);
         }
     }
 
@@ -97,7 +97,7 @@ class NacosServiceDiscoveryTest {
         public NacosServiceDiscoveryGroupTest3() {
             super();
             group = DEFAULT_GROUP;
-            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort()).addParameter("group", "test-group3");
+            registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort() + "?nacos.check=false").addParameter("group", "test-group3");
         }
 
         @BeforeAll
