@@ -60,10 +60,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
         return getResource(null);
     }
 
-    public void observeListeners(Consumer<Map<String, ListenerResult>> consumer) {
-        observeResource(Collections.emptySet(), consumer, false);
-    }
-
     @Override
     protected Map<String, ListenerResult> decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
