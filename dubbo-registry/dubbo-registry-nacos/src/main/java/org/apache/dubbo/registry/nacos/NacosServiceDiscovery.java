@@ -104,8 +104,8 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
         // register first to ensure that consumer will not throw no provider exception
         if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
-            reportMetadata(serviceInstance.getServiceMetadata());
             this.serviceInstance = newServiceInstance;
+            reportMetadata(newServiceInstance.getServiceMetadata());
             this.doRegister(newServiceInstance);
         }
 
