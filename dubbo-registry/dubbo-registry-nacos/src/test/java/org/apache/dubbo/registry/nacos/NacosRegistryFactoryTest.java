@@ -18,15 +18,10 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
-import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test for NacosRegistryFactory
@@ -37,10 +32,7 @@ class NacosRegistryFactoryTest {
 
     @BeforeEach
     public void setup() {
-        try (MockedStatic<NacosNamingServiceUtils> mock = Mockito.mockStatic(NacosNamingServiceUtils.class)) {
-            mock.when(() -> NacosNamingServiceUtils.createNamingService(any())).thenReturn(null);
-            nacosRegistryFactory = new NacosRegistryFactory();
-        }
+        nacosRegistryFactory = new NacosRegistryFactory();
     }
 
     @AfterEach
@@ -49,7 +41,7 @@ class NacosRegistryFactoryTest {
 
     @Test
     void testCreateRegistryCacheKey() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080");
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?nacos.check=false");
         String registryCacheKey1 = nacosRegistryFactory.createRegistryCacheKey(url);
         String registryCacheKey2 = nacosRegistryFactory.createRegistryCacheKey(url);
         Assertions.assertEquals(registryCacheKey1, registryCacheKey2);
@@ -57,7 +49,7 @@ class NacosRegistryFactoryTest {
 
     @Test
     void testCreateRegistryCacheKeyWithNamespace() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?namespace=test");
+        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080?namespace=test&nacos.check=false");
         String registryCacheKey1 = nacosRegistryFactory.createRegistryCacheKey(url);
         String registryCacheKey2 = nacosRegistryFactory.createRegistryCacheKey(url);
         Assertions.assertEquals(registryCacheKey1, registryCacheKey2);

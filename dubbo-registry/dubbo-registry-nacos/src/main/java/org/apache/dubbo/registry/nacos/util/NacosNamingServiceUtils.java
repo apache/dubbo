@@ -60,6 +60,8 @@ public class NacosNamingServiceUtils {
 
     private static final String NACOS_RETRY_KEY = "nacos.retry";
 
+    private static final String NACOS_CHECK_KEY = "nacos.check";
+
     private static final String NACOS_RETRY_WAIT_KEY = "nacos.retry-wait";
 
 
@@ -124,11 +126,12 @@ public class NacosNamingServiceUtils {
         Properties nacosProperties = buildNacosProperties(connectionURL);
         int retryTimes = connectionURL.getPositiveParameter(NACOS_RETRY_KEY, 10);
         int sleepMsBetweenRetries = connectionURL.getPositiveParameter(NACOS_RETRY_WAIT_KEY, 1000);
+        boolean check = connectionURL.getParameter(NACOS_CHECK_KEY, true);
         NamingService namingService = null;
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 namingService = NacosFactory.createNamingService(nacosProperties);
-                if (UP.equals(namingService.getServerStatus())) {
+                if (!check || UP.equals(namingService.getServerStatus())) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",

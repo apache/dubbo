@@ -77,7 +77,7 @@ class NacosNamingServiceUtilsTest {
 
     @Test
     void testCreateNamingService() {
-        URL url = URL.valueOf("test://test:8080/test?backup=backup");
+        URL url = URL.valueOf("test://test:8080/test?backup=backup&nacos.check=false");
         NacosNamingServiceWrapper namingService = NacosNamingServiceUtils.createNamingService(url);
         Assertions.assertNotNull(namingService);
     }
