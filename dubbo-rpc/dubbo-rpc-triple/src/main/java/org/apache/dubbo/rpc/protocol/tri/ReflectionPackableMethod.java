@@ -353,6 +353,9 @@ public class ReflectionPackableMethod implements PackableMethod {
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
+            if (Void.TYPE.getName().equals(wrapper.getType())) {
+                return null;
+            }
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
             return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
