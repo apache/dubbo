@@ -69,7 +69,7 @@ class NacosRegistryTest {
 
         int nacosServerPort = NetUtils.getAvailablePort();
 
-        this.registryUrl = URL.valueOf("nacos://localhost:" + nacosServerPort);
+        this.registryUrl = URL.valueOf("nacos://localhost:" + nacosServerPort + "?nacos.check=false");
 
         this.nacosRegistryFactory = new NacosRegistryFactory();
 

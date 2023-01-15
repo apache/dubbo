@@ -16,7 +16,15 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,18 +35,13 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.PASSWORD;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.PropertyKeyConst.USERNAME;
+import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
@@ -52,8 +55,17 @@ public class NacosConnectionManager {
 
     private final List<NamingService> namingServiceList = new LinkedList<>();
 
-    public NacosConnectionManager(URL connectionURL) {
+    private final int retryTimes;
+
+    private final int sleepMsBetweenRetries;
+
+    private final boolean check;
+
+    public NacosConnectionManager(URL connectionURL, boolean check, int retryTimes, int sleepMsBetweenRetries) {
         this.connectionURL = connectionURL;
+        this.check = check;
+        this.retryTimes = retryTimes;
+        this.sleepMsBetweenRetries = sleepMsBetweenRetries;
         // create default one
         this.namingServiceList.add(createNamingService());
     }
@@ -64,6 +76,9 @@ public class NacosConnectionManager {
     @Deprecated
     protected NacosConnectionManager(NamingService namingService) {
         this.connectionURL = null;
+        this.retryTimes = 0;
+        this.sleepMsBetweenRetries = 0;
+        this.check = false;
         // create default one
         this.namingServiceList.add(namingService);
     }
@@ -103,15 +118,37 @@ public class NacosConnectionManager {
      */
     protected NamingService createNamingService() {
         Properties nacosProperties = buildNacosProperties(this.connectionURL);
-        NamingService namingService;
+        NamingService namingService = null;
         try {
-            namingService = NacosFactory.createNamingService(nacosProperties);
+            for (int i = 0; i < retryTimes + 1; i++) {
+                namingService = NacosFactory.createNamingService(nacosProperties);
+                if (!check || UP.equals(namingService.getServerStatus())) {
+                    break;
+                } else {
+                    logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
+                        "Failed to connect to nacos naming server. " +
+                            (i < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
+                            "Try times: " + (i + 1));
+                }
+                namingService.shutDown();
+                namingService = null;
+                Thread.sleep(sleepMsBetweenRetries);
+            }
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(REGISTRY_NACOS_EXCEPTION, "", "", e.getErrMsg(), e);
             }
+        } catch (InterruptedException e) {
+            logger.error(INTERNAL_INTERRUPTED, "", "", "Interrupted when creating nacos naming service client.", e);
+            Thread.currentThread().interrupt();
             throw new IllegalStateException(e);
         }
+
+        if (namingService == null) {
+            logger.error(REGISTRY_NACOS_EXCEPTION, "", "", "Failed to create nacos naming service client. Reason: server status check failed.");
+            throw new IllegalStateException("Failed to create nacos naming service client. Reason: server status check failed.");
+        }
+
         return namingService;
     }
 
