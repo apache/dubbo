@@ -24,6 +24,7 @@ import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.xds.util.XdsChannel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -126,7 +127,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     private Map<String, T> getResourceFromCache(Set<String> resourceNames) {
-        return resourceNames.stream()
+        return resourceNames.stream().filter(o -> !StringUtils.isEmpty(o))
             .collect(Collectors.toMap(k -> k, this::getCacheResource));
     }
 
@@ -183,18 +184,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     public void observeResource(Set<String> resourceNames, Consumer<Map<String, T>> consumer, boolean isReConnect) {
-        resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         // call once for full data
         if (!isReConnect) {
             try {
                 writeLock.lock();
-                Set<String> consumerObserveResourceNames = new HashSet<>();
-                if (resourceNames.isEmpty()) {
-                    consumerObserveResourceNames.add(emptyResourceName);
-                } else {
-                    consumerObserveResourceNames = resourceNames;
-                }
-                consumerObserveMap.compute(consumerObserveResourceNames, (k, v) -> {
+                consumerObserveMap.compute(resourceNames, (k, v) -> {
                     if (v == null) {
                         v = new ArrayList<>();
                     }
@@ -202,10 +196,10 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     v.add(consumer);
                     return v;
                 });
-                consumer.accept(getResource(resourceNames));
             } finally {
                 writeLock.unlock();
             }
+            consumer.accept(getResource(resourceNames));
         }
         try {
             writeLock.lock();

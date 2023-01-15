@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.xds.util;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.impl.EdsProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.impl.LdsProtocol;
 import org.apache.dubbo.registry.xds.util.protocol.impl.RdsProtocol;
@@ -72,6 +73,8 @@ public class PilotExchanger {
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.values().iterator().next().getRouteConfigNames());
 
+        Set<String> ldsResourcesName = new HashSet<>();
+        ldsResourcesName.add(AbstractProtocol.emptyResourceName);
         // Observer RDS update
         if (CollectionUtils.isNotEmpty(listenerResult.values().iterator().next().getRouteConfigNames())) {
             createRouteObserve();
@@ -79,7 +82,7 @@ public class PilotExchanger {
         }
 
         // Observe LDS updated
-        ldsProtocol.observeListeners((newListener) -> {
+        ldsProtocol.observeResource(ldsResourcesName,(newListener) -> {
             // update local cache
             if (!newListener.equals(listenerResult)) {
                 this.listenerResult = newListener;
@@ -88,7 +91,7 @@ public class PilotExchanger {
                     createRouteObserve();
                 }
             }
-        });
+        }, false);
     }
 
     private void createRouteObserve() {
