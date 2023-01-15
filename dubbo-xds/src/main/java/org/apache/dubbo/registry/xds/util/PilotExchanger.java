@@ -72,7 +72,6 @@ public class PilotExchanger {
 
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.values().iterator().next().getRouteConfigNames());
-
         Set<String> ldsResourcesName = new HashSet<>();
         ldsResourcesName.add(AbstractProtocol.emptyResourceName);
         // Observer RDS update
@@ -80,9 +79,8 @@ public class PilotExchanger {
             createRouteObserve();
             isRdsObserve.set(true);
         }
-
         // Observe LDS updated
-        ldsProtocol.observeResource(ldsResourcesName,(newListener) -> {
+        ldsProtocol.observeResource(ldsResourcesName, (newListener) -> {
             // update local cache
             if (!newListener.equals(listenerResult)) {
                 this.listenerResult = newListener;
