@@ -60,7 +60,7 @@ public class PilotExchanger {
 
     private final Map<String, Consumer<RdsVirtualHostListener>> rdsObserveConsumer = new ConcurrentHashMap<>();
 
-    private static  PilotExchanger GLOBAL_PILOTEXCHANGER = null;
+    private static  PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
     protected PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
@@ -116,11 +116,20 @@ public class PilotExchanger {
     }
 
     public static PilotExchanger initialize(URL url) {
-        if (GLOBAL_PILOTEXCHANGER != null) {
-            return GLOBAL_PILOTEXCHANGER;
+        synchronized (PilotExchanger.class){
+            if (GLOBAL_PILOT_EXCHANGER != null) {
+                return GLOBAL_PILOT_EXCHANGER;
+            }
+            return (GLOBAL_PILOT_EXCHANGER = new PilotExchanger(url));
         }
-        return (GLOBAL_PILOTEXCHANGER = new PilotExchanger(url));
     }
+
+    public static PilotExchanger getInstance() {
+        synchronized (PilotExchanger.class) {
+            return GLOBAL_PILOT_EXCHANGER;
+        }
+    }
+
 
     public void destroy() {
         xdsChannel.destroy();

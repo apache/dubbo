@@ -46,8 +46,6 @@ public class EdsEndpointManagerTest {
     @Test
     public void subscribeEdsTest() {
         EdsEndpointManager manager = new EdsEndpointManager();
-        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
-        manager.setPilotExchanger(pilotExchanger);
         String cluster = "testApp";
         int subscribeNum = 3;
         for (int i = 0; i < subscribeNum; i++) {
@@ -66,8 +64,6 @@ public class EdsEndpointManagerTest {
     @Test
     public void unsubscribeRdsTest() {
         EdsEndpointManager manager = new EdsEndpointManager();
-        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
-        manager.setPilotExchanger(pilotExchanger);
         String domain = "testApp";
         EdsEndpointListener listener = new EdsEndpointListener() {
             @Override
@@ -102,8 +98,6 @@ public class EdsEndpointManagerTest {
         };
 
         EdsEndpointManager manager = new EdsEndpointManager();
-        PilotExchanger pilotExchanger = mock(PilotExchanger.class);
-        manager.setPilotExchanger(pilotExchanger);
         manager.subscribeEds(domain, listener);
         manager.notifyEndpointChange(domain, endpoints);
         assertEquals(cacheData.get(domain), endpoints);

@@ -34,8 +34,6 @@ public class RdsRouteRuleManager {
 
     private static final ConcurrentHashMap<String, RdsVirtualHostListener> RDS_LISTENERS = new ConcurrentHashMap<>();
 
-    private PilotExchanger pilotExchanger;
-
     public RdsRouteRuleManager() {
     }
 
@@ -57,7 +55,7 @@ public class RdsRouteRuleManager {
     private void doSubscribeRds(String domain) {
         RDS_LISTENERS.computeIfAbsent(domain, key -> new RdsVirtualHostListener(domain, this));
         RdsVirtualHostListener rdsVirtualHostListener = RDS_LISTENERS.get(domain);
-        rdsVirtualHostListener.parseVirtualHost(pilotExchanger.getVirtualHost(domain));
+        rdsVirtualHostListener.parseVirtualHost(PilotExchanger.getInstance().getVirtualHost(domain));
     }
 
     public synchronized void unSubscribeRds(String domain, XdsRouteRuleListener listener) {
@@ -76,7 +74,7 @@ public class RdsRouteRuleManager {
         RdsVirtualHostListener rdsVirtualHostListener = RDS_LISTENERS.remove(domain);
 
         if (rdsVirtualHostListener != null) {
-            pilotExchanger.unObserveRds(domain);
+            PilotExchanger.getInstance().unObserveRds(domain);
         }
         ROUTE_DATA_CACHE.remove(domain);
     }
@@ -98,10 +96,6 @@ public class RdsRouteRuleManager {
                 listener.onRuleChange(domain, xdsRouteRules);
             }
         }
-    }
-
-    public void setPilotExchanger(PilotExchanger pilotExchanger) {
-        this.pilotExchanger = pilotExchanger;
     }
 
     // for test
