@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +29,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
 
 public class EdsEndpointManagerTest {
 

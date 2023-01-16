@@ -61,7 +61,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
 
     private static final String BINARY_HEADER_SUFFIX = "-bin";
 
-
     public XdsRouter(URL url) {
         super(url);
         rdsRouteRuleManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
