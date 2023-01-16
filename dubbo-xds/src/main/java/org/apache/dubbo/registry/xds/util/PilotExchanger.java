@@ -54,7 +54,7 @@ public class PilotExchanger {
     protected Map<String, RouteResult> routeResult;
 
     private final AtomicBoolean isRdsObserve = new AtomicBoolean(false);
-    private final HashSet<String> domainObserveRequest = new HashSet<>();
+    private final Set<String> domainObserveRequest = new ConcurrentHashSet<String>();
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
 
