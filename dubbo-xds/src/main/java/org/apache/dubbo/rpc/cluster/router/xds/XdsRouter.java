@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -64,7 +63,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
 
     public XdsRouter(URL url) {
         super(url);
-        PilotExchanger.initialize(url);
         rdsRouteRuleManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RdsRouteRuleManager.class);
         edsEndpointManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(EdsEndpointManager.class);
         subscribeApplications = new ConcurrentHashSet<>();
@@ -78,7 +76,6 @@ public class XdsRouter<T> extends AbstractStateRouter<T> implements XdsRouteRule
      */
     protected XdsRouter(URL url, RdsRouteRuleManager rdsRouteRuleManager, EdsEndpointManager edsEndpointManager) {
         super(url);
-        PilotExchanger.initialize(url);
         this.rdsRouteRuleManager = rdsRouteRuleManager;
         this.edsEndpointManager = edsEndpointManager;
         subscribeApplications = new ConcurrentHashSet<>();
