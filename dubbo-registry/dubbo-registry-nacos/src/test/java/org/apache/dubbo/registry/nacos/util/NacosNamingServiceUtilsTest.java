@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.nacos.util;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,6 +92,65 @@ class NacosNamingServiceUtilsTest {
                 @Override
                 public String getServerStatus() {
                     return atomicInteger.incrementAndGet() > 10 ? UP : DOWN;
+                }
+            };
+            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
+
+
+            URL url = URL.valueOf("nacos://127.0.0.1:8848")
+                .addParameter("nacos.retry", 5)
+                .addParameter("nacos.retry-wait", 10);
+            Assertions.assertThrows(IllegalStateException.class, () -> NacosNamingServiceUtils.createNamingService(url));
+
+            try {
+                NacosNamingServiceUtils.createNamingService(url);
+            } catch (Throwable t) {
+                Assertions.fail(t);
+            }
+        }
+    }
+
+    @Test
+    void testDisable() {
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            NamingService mock = new MockNamingService() {
+                @Override
+                public String getServerStatus() {
+                    return DOWN;
+                }
+            };
+            nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);
+
+
+            URL url = URL.valueOf("nacos://127.0.0.1:8848")
+                .addParameter("nacos.retry", 5)
+                .addParameter("nacos.retry-wait", 10)
+                .addParameter("nacos.check", "false");
+            try {
+                NacosNamingServiceUtils.createNamingService(url);
+            } catch (Throwable t) {
+                Assertions.fail(t);
+            }
+        }
+    }
+
+    @Test
+    void testRequest() {
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            AtomicInteger atomicInteger = new AtomicInteger(0);
+            NamingService mock = new MockNamingService() {
+                @Override
+                public List<Instance> getAllInstances(String serviceName, boolean subscribe) throws NacosException {
+                    if (atomicInteger.incrementAndGet() > 10) {
+                        return null;
+                    } else {
+                        throw new NacosException();
+                    }
+                }
+
+                @Override
+                public String getServerStatus() {
+                    return UP;
                 }
             };
             nacosFactoryMockedStatic.when(() -> NacosFactory.createNamingService((Properties) any())).thenReturn(mock);

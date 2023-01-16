@@ -27,6 +27,7 @@ import org.mockito.Mockito;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.DOWN;
 import static com.alibaba.nacos.client.constant.Constants.HealthCheck.UP;
@@ -75,6 +76,41 @@ class RetryTest {
                 .addParameter("nacos.retry", 5)
                 .addParameter("nacos.retry-wait", 10)
                 .addParameter("nacos.check", "false");
+            try {
+                new NacosMetadataReport(url);
+            } catch (Throwable t) {
+                Assertions.fail(t);
+            }
+        }
+    }
+
+    @Test
+    void testRequest() {
+        try (MockedStatic<NacosFactory> nacosFactoryMockedStatic = Mockito.mockStatic(NacosFactory.class)) {
+            AtomicInteger atomicInteger = new AtomicInteger(0);
+            ConfigService mock = new MockConfigService() {
+                @Override
+                public String getConfig(String dataId, String group, long timeoutMs) throws NacosException {
+                    if (atomicInteger.incrementAndGet() > 10) {
+                        return "";
+                    } else {
+                        throw new NacosException();
+                    }
+                }
+
+                @Override
+                public String getServerStatus() {
+                    return UP;
+                }
+            };
+            nacosFactoryMockedStatic.when(() -> NacosFactory.createConfigService((Properties) any())).thenReturn(mock);
+
+
+            URL url = URL.valueOf("nacos://127.0.0.1:8848")
+                .addParameter("nacos.retry", 5)
+                .addParameter("nacos.retry-wait", 10);
+            Assertions.assertThrows(IllegalStateException.class, () -> new NacosMetadataReport(url));
+
             try {
                 new NacosMetadataReport(url);
             } catch (Throwable t) {
