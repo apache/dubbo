@@ -358,7 +358,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            Class<?> clz = getClassFormCache(wrapper.getType(), classCache, actualResponseType);
+            Class<?> clz = getClassFromCache(wrapper.getType(), classCache, actualResponseType);
             return serialization.deserialize(url, serializeType, clz, bais);
         }
     }
@@ -457,7 +457,7 @@ public class ReflectionPackableMethod implements PackableMethod {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                     wrapper.getArgs().get(i));
                 String className = wrapper.getArgTypes().get(i);
-                Class<?> clz = getClassFormCache(className, classCache, actualRequestTypes[i]);
+                Class<?> clz = getClassFromCache(className, classCache, actualRequestTypes[i]);
                 ret[i] = serialization.deserialize(url, wrapper.getSerializeType(), clz, bais);
             }
             return ret;
@@ -467,7 +467,7 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
 
-    private static Class<?> getClassFormCache(String className, Map<String, Class<?>> classCache, Class<?> expectedClass) {
+    private static Class<?> getClassFromCache(String className, Map<String, Class<?>> classCache, Class<?> expectedClass) {
         Class<?> clz = classCache.get(className);
         if (clz == null) {
             try {
