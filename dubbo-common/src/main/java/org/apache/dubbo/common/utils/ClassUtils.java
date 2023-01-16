@@ -113,6 +113,7 @@ public class ClassUtils {
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Integer.class, int.class);
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Long.class, long.class);
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Short.class, short.class);
+        PRIMITIVE_WRAPPER_TYPE_MAP.put(Void.class, void.class);
 
         Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
