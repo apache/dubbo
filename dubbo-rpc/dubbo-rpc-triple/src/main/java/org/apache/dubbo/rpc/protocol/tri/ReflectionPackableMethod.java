@@ -320,9 +320,11 @@ public class ReflectionPackableMethod implements PackableMethod {
         @Override
         public byte[] pack(Object obj) throws IOException {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            Class<?> clz = this.actualResponseType;
+            Class<?> clz;
             if (obj != null) {
                 clz = obj.getClass();
+            } else {
+                clz = actualResponseType;
             }
             multipleSerialization.serialize(url, serialize, clz, obj, bos);
             return TripleCustomerProtocolWapper.TripleResponseWrapper.Builder.newBuilder()
@@ -351,9 +353,6 @@ public class ReflectionPackableMethod implements PackableMethod {
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
             TripleCustomerProtocolWapper.TripleResponseWrapper wrapper = TripleCustomerProtocolWapper.TripleResponseWrapper
                 .parseFrom(data);
-            if (Void.TYPE.getName().equals(wrapper.getType())) {
-                return null;
-            }
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
             return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
