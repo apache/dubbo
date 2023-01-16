@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -33,6 +34,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
@@ -91,8 +94,8 @@ public class ReflectionPackableMethod implements PackableMethod {
 
             this.requestPack = new WrapRequestPack(serialization, url, serializeName, singleArgument);
             this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
-            this.requestUnpack = new WrapRequestUnpack(serialization, url);
-            this.responseUnpack = new WrapResponseUnpack(serialization, url);
+            this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
+            this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
         }
     }
 
@@ -336,12 +339,17 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     private static class WrapResponseUnpack implements UnPack {
 
+        private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+
         private final MultipleSerialization serialization;
         private final URL url;
 
-        private WrapResponseUnpack(MultipleSerialization serialization, URL url) {
+        private final Class<?> actualResponseType;
+
+        private WrapResponseUnpack(MultipleSerialization serialization, URL url, Class<?> actualResponseType) {
             this.serialization = serialization;
             this.url = url;
+            this.actualResponseType = actualResponseType;
         }
 
         @Override
@@ -350,7 +358,8 @@ public class ReflectionPackableMethod implements PackableMethod {
                 .parseFrom(data);
             final String serializeType = convertHessianFromWrapper(wrapper.getSerializeType());
             ByteArrayInputStream bais = new ByteArrayInputStream(wrapper.getData());
-            return serialization.deserialize(url, serializeType, wrapper.getType(), bais);
+            Class<?> clz = getClassFormCache(wrapper.getType(), classCache, actualResponseType);
+            return serialization.deserialize(url, serializeType, clz, bais);
         }
     }
 
@@ -425,12 +434,17 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     private class WrapRequestUnpack implements UnPack {
 
+        private Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+
         private final MultipleSerialization serialization;
         private final URL url;
 
-        private WrapRequestUnpack(MultipleSerialization serialization, URL url) {
+        private final Class<?>[] actualRequestTypes;
+
+        private WrapRequestUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes) {
             this.serialization = serialization;
             this.url = url;
+            this.actualRequestTypes = actualRequestTypes;
         }
 
         @Override
@@ -442,11 +456,27 @@ public class ReflectionPackableMethod implements PackableMethod {
             for (int i = 0; i < wrapper.getArgs().size(); i++) {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                     wrapper.getArgs().get(i));
-                ret[i] = serialization.deserialize(url, wrapper.getSerializeType(),
-                    wrapper.getArgTypes().get(i),
-                    bais);
+                String className = wrapper.getArgTypes().get(i);
+                Class<?> clz = getClassFormCache(className, classCache, actualRequestTypes[i]);
+                ret[i] = serialization.deserialize(url, wrapper.getSerializeType(), clz, bais);
             }
             return ret;
         }
+
+
+    }
+
+
+    private static Class<?> getClassFormCache(String className, Map<String, Class<?>> classCache, Class<?> expectedClass) {
+        Class<?> clz = classCache.get(className);
+        if (clz == null) {
+            try {
+                clz = ClassUtils.forName(className);
+                classCache.put(className, clz);
+            } catch (ClassNotFoundException e) {
+                clz = expectedClass;
+            }
+        }
+        return clz;
     }
 }
