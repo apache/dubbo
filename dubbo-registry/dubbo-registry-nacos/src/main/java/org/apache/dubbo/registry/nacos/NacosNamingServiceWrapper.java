@@ -63,6 +63,7 @@ public class NacosNamingServiceWrapper {
     public NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager, int retryTimes, int sleepMsBetweenRetries) {
         this.nacosConnectionManager = nacosConnectionManager;
         this.isSupportBatchRegister = MethodUtils.findMethod(NamingService.class, "batchRegisterInstance", String.class, String.class, List.class) != null;
+        logger.info("Nacos batch register enable: " + isSupportBatchRegister);
         this.retryTimes = Math.max(retryTimes, 0);
         this.sleepMsBetweenRetries = sleepMsBetweenRetries;
     }
@@ -141,6 +142,7 @@ public class NacosNamingServiceWrapper {
                     instancesInfo.setBatchRegistered(true);
                     return;
                 } catch (NacosException e) {
+                    logger.info("Failed to batch register to nacos. Service Name: " + serviceName + ". Maybe nacos server not support. Will fallback to multi connection register.");
                     // ignore
                 }
             }
@@ -165,6 +167,52 @@ public class NacosNamingServiceWrapper {
             NamingService namingService = nacosConnectionManager.getNamingService(selectedNamingServices);
             accept(() -> namingService.registerInstance(nacosServiceName, group, instance));
             instancesInfo.getInstances().add(new InstanceInfo(instance, namingService));
+        } finally {
+            instancesInfo.unlock();
+        }
+    }
+
+    public void updateInstance(String serviceName, String group, Instance oldInstance, Instance newInstance) throws NacosException {
+        String nacosServiceName = handleInnerSymbol(serviceName);
+        InstancesInfo instancesInfo;
+        try {
+            mapLock.lock();
+            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+        } finally {
+            mapLock.unlock();
+        }
+
+        try {
+            instancesInfo.lock();
+            if (!instancesInfo.isValid() || instancesInfo.getInstances().isEmpty()) {
+                throw new IllegalArgumentException(serviceName + " has not been registered to nacos.");
+            }
+
+            Optional<InstanceInfo> optional = instancesInfo.getInstances()
+                .stream()
+                .filter(instanceInfo -> instanceInfo.getInstance().equals(oldInstance))
+                .findAny();
+
+            if (!optional.isPresent()) {
+                throw new IllegalArgumentException(oldInstance + " has not been registered to nacos.");
+            }
+
+            InstanceInfo oldInstanceInfo = optional.get();
+            instancesInfo.getInstances().remove(oldInstanceInfo);
+            instancesInfo.getInstances().add(new InstanceInfo(newInstance, oldInstanceInfo.getNamingService()));
+
+            if (isSupportBatchRegister && instancesInfo.isBatchRegistered()) {
+                NamingService namingService = oldInstanceInfo.getNamingService();
+                List<Instance> instanceListToRegister = instancesInfo.getInstances().stream()
+                    .map(InstanceInfo::getInstance)
+                    .collect(Collectors.toList());
+
+                accept(() -> namingService.batchRegisterInstance(nacosServiceName, group, instanceListToRegister));
+                return;
+            }
+
+            // fallback to register one by one
+            accept(() -> oldInstanceInfo.getNamingService().registerInstance(nacosServiceName, group, newInstance));
         } finally {
             instancesInfo.unlock();
         }
