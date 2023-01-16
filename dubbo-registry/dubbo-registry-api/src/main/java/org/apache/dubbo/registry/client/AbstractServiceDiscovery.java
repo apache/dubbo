@@ -309,8 +309,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) {
         this.doUnregister(oldServiceInstance);
 
-        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
-            this.serviceInstance = newServiceInstance;
+        this.serviceInstance = newServiceInstance;
+
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
             reportMetadata(newServiceInstance.getServiceMetadata());
             this.doRegister(newServiceInstance);
         }
