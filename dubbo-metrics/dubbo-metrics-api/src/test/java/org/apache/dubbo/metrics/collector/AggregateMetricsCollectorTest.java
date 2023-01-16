@@ -104,12 +104,12 @@ class AggregateMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get("requests.total.aggregate"), 1L);
-        Assertions.assertEquals(sampleMap.get("requests.succeed.aggregate"), 1L);
-        Assertions.assertEquals(sampleMap.get("requests.failed.aggregate"), 1L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED_AGG.getName()), 1L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG.getName()), 1L);
 
-        Assertions.assertTrue(sampleMap.containsKey("qps"));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_QPS.getName()));
     }
 
     @Test
@@ -132,7 +132,7 @@ class AggregateMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertTrue(sampleMap.containsKey("rt.p99"));
-        Assertions.assertTrue(sampleMap.containsKey("rt.p95"));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P99.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P95.getName()));
     }
 }
