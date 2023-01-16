@@ -436,7 +436,7 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     private class WrapRequestUnpack implements UnPack {
 
-        private Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+        private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 
         private final MultipleSerialization serialization;
         private final URL url;
@@ -474,10 +474,10 @@ public class ReflectionPackableMethod implements PackableMethod {
         if (clz == null) {
             try {
                 clz = ClassUtils.forName(className);
-                classCache.put(className, clz);
             } catch (ClassNotFoundException e) {
                 clz = expectedClass;
             }
+            classCache.put(className, clz);
         }
         return clz;
     }
