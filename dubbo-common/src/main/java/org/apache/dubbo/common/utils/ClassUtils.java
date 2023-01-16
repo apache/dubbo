@@ -164,7 +164,7 @@ public class ClassUtils {
         if (cl == null) {
             try {
                 cl = Thread.currentThread().getContextClassLoader();
-            } catch (Throwable ex) {
+            } catch (Exception ignored) {
                 // Cannot access thread context ClassLoader - falling back to system class loader...
             }
             if (cl == null) {
@@ -174,7 +174,7 @@ public class ClassUtils {
                     // getClassLoader() returning null indicates the bootstrap ClassLoader
                     try {
                         cl = ClassLoader.getSystemClassLoader();
-                    } catch (Throwable ex) {
+                    } catch (Exception ignored) {
                         // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
                     }
                 }
@@ -476,7 +476,7 @@ public class ClassUtils {
     public static boolean isPresent(String className, ClassLoader classLoader) {
         try {
             forName(className, classLoader);
-        } catch (Throwable ignored) { // Ignored
+        } catch (Exception ignored) { // Ignored
             return false;
         }
         return true;
@@ -494,7 +494,7 @@ public class ClassUtils {
         Class<?> targetClass = null;
         try {
             targetClass = forName(className, classLoader);
-        } catch (Throwable ignored) { // Ignored
+        } catch (Exception ignored) { // Ignored
         }
         return targetClass;
     }
