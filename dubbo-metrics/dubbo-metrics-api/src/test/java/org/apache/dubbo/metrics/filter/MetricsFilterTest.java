@@ -162,6 +162,7 @@ class MetricsFilterTest {
                 filter.onError(e, invoker, invocation);
             }
         }
+
         Map<String, MetricSample> metricsMap = getMetricsMap();
         
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName()));
