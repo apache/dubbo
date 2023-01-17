@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public class EdsEndpointManager {
 
@@ -57,7 +57,9 @@ public class EdsEndpointManager {
             notifyEndpointChange(cluster, endpoints);
         });
         Consumer<Set<Endpoint>> consumer = EDS_LISTENERS.get(cluster);
-        PilotExchanger.getInstance().observeEndpoints(cluster,consumer);
+        if (PilotExchanger.isEnabled()) {
+            PilotExchanger.getInstance().observeEndpoints(cluster, consumer);
+        }
     }
 
     public synchronized void unSubscribeEds(String cluster, EdsEndpointListener listener) {
@@ -75,7 +77,7 @@ public class EdsEndpointManager {
     private void doUnsubscribeEds(String cluster) {
         Consumer<Set<Endpoint>> consumer = EDS_LISTENERS.remove(cluster);
 
-        if (consumer != null) {
+        if (consumer != null && PilotExchanger.isEnabled()) {
             PilotExchanger.getInstance().unObserveEndpoints(cluster,consumer);
         }
         ENDPOINT_DATA_CACHE.remove(cluster);

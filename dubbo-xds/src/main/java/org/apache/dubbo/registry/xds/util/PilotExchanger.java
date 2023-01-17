@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.registry.xds.util;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -27,17 +35,10 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.cluster.router.xds.RdsVirtualHostListener;
-import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 
 public class PilotExchanger {
 
@@ -126,6 +127,10 @@ public class PilotExchanger {
         synchronized (PilotExchanger.class) {
             return GLOBAL_PILOT_EXCHANGER;
         }
+    }
+
+    public static boolean isEnabled() {
+        return GLOBAL_PILOT_EXCHANGER != null;
     }
 
 
