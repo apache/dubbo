@@ -122,7 +122,7 @@ public class NacosConnectionManager {
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 namingService = NacosFactory.createNamingService(nacosProperties);
-                if (!check || UP.equals(namingService.getServerStatus())) {
+                if (!check || (UP.equals(namingService.getServerStatus()) && testNamingService(namingService))) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
@@ -151,6 +151,16 @@ public class NacosConnectionManager {
 
         return namingService;
     }
+
+    private boolean testNamingService(NamingService namingService) {
+        try {
+            namingService.getAllInstances("Dubbo-Nacos-Test", false);
+            return true;
+        } catch (NacosException e) {
+            return false;
+        }
+    }
+
 
     private Properties buildNacosProperties(URL url) {
         Properties properties = new Properties();

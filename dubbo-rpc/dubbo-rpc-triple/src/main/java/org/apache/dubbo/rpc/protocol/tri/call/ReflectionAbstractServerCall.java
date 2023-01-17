@@ -46,13 +46,13 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     private List<MethodDescriptor> methodDescriptors;
 
     public ReflectionAbstractServerCall(Invoker<?> invoker,
-        ServerStream serverStream,
-        FrameworkModel frameworkModel,
-        String acceptEncoding,
-        String serviceName,
-        String methodName,
-        List<HeaderFilter> headerFilters,
-        Executor executor) {
+                                        ServerStream serverStream,
+                                        FrameworkModel frameworkModel,
+                                        String acceptEncoding,
+                                        String serviceName,
+                                        String methodName,
+                                        List<HeaderFilter> headerFilters,
+                                        Executor executor) {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl()),
             acceptEncoding, serviceName, methodName,
@@ -155,10 +155,8 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (isClosed()) {
             return null;
         }
-        if (serviceDescriptor != null) {
-            ClassLoadUtil.switchContextLoader(
-                serviceDescriptor.getServiceInterfaceClass().getClassLoader());
-        }
+        ClassLoadUtil.switchContextLoader(
+            invoker.getUrl().getServiceModel().getClassLoader());
         return packableMethod.getRequestUnpack().unpack(data);
     }
 

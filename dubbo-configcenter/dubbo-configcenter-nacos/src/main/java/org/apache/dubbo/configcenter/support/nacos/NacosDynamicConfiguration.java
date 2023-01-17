@@ -99,7 +99,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         try {
             for (int i = 0; i < retryTimes + 1; i++) {
                 tmpConfigServices = NacosFactory.createConfigService(nacosProperties);
-                if (!check || UP.equals(tmpConfigServices.getServerStatus())) {
+                if (!check || (UP.equals(tmpConfigServices.getServerStatus()) && testConfigService(tmpConfigServices))) {
                     break;
                 } else {
                     logger.warn(LoggerCodeConstants.CONFIG_ERROR_NACOS, "", "",
@@ -126,6 +126,15 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         }
 
         return new NacosConfigServiceWrapper(tmpConfigServices);
+    }
+
+    private boolean testConfigService(ConfigService configService) {
+        try {
+            configService.getConfig("Dubbo-Nacos-Test", "Dubbo-Nacos-Test", DEFAULT_TIMEOUT);
+            return true;
+        } catch (NacosException e) {
+            return false;
+        }
     }
 
     private Properties buildNacosProperties(URL url) {
