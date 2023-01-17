@@ -73,7 +73,29 @@ public class ThreadPoolMetric {
         return tags;
     }
 
-    public double getCorePoolSize(){
-        return  threadPoolExecutor.getCorePoolSize();
+    public double getCorePoolSize() {
+        return threadPoolExecutor.getCorePoolSize();
     }
+
+    public double getLargestPoolSize() {
+        return threadPoolExecutor.getLargestPoolSize();
+    }
+
+    public double getMaximumPoolSize() {
+        return threadPoolExecutor.getMaximumPoolSize();
+    }
+
+    public double getActiveCount() {
+        return threadPoolExecutor.getActiveCount();
+    }
+
+    public double getPoolSize(){
+        return threadPoolExecutor.getPoolSize();
+    }
+
+    public double getQueueSize(){
+        return threadPoolExecutor.getQueue().size();
+    }
+
+
 }
