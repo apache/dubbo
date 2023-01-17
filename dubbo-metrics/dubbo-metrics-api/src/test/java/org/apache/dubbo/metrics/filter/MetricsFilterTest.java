@@ -146,7 +146,7 @@ class MetricsFilterTest {
 
 
     @Test
-    void testTimeoutRequests() {
+    void testTimeoutAndFailedRequests() {
         collector.setCollectEnabled(true);
 
         given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
@@ -164,10 +164,13 @@ class MetricsFilterTest {
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
         Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG.getName()));
 
-        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        MetricSample timeoutSample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        GaugeMetricSample failedSample = (GaugeMetricSample)metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG.getName());
+        Assertions.assertSame(failedSample.getSupplier().get().longValue(), count);
     }
 
     @Test

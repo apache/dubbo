@@ -82,6 +82,9 @@ public class MetricsCollectExecutor {
                     collector.increaseFailedRequests(interfaceName, methodName, group, version);
             }
         }
+
+        collector.totalFailedRequests(interfaceName, methodName, group, version);
+
         endExecute(()-> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
 

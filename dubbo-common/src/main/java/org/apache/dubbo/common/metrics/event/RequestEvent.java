@@ -43,6 +43,7 @@ public class RequestEvent extends MetricsEvent {
         BUSINESS_FAILED,
         REQUEST_TIMEOUT,
         REQUEST_LIMIT,
-        PROCESSING
+        PROCESSING,
+        TOTAL_FAILED
     }
 }

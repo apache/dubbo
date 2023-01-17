@@ -142,6 +142,13 @@ public class MetricsStatComposite{
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_TIMEOUT));
             }
         });
+
+        stats.put(RequestEvent.Type.TOTAL_FAILED, new DefaultMetricsStatHandler(applicationName) {
+            @Override
+            public void doNotify(MethodMetric metric) {
+                publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL_FAILED));
+            }
+        });
     }
 
     private void publishEvent(MetricsEvent event) {
