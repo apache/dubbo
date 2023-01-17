@@ -113,6 +113,7 @@ public class ClassUtils {
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Integer.class, int.class);
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Long.class, long.class);
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Short.class, short.class);
+        PRIMITIVE_WRAPPER_TYPE_MAP.put(Void.class, void.class);
 
         Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
@@ -163,7 +164,7 @@ public class ClassUtils {
         if (cl == null) {
             try {
                 cl = Thread.currentThread().getContextClassLoader();
-            } catch (Throwable ex) {
+            } catch (Exception ignored) {
                 // Cannot access thread context ClassLoader - falling back to system class loader...
             }
             if (cl == null) {
@@ -173,7 +174,7 @@ public class ClassUtils {
                     // getClassLoader() returning null indicates the bootstrap ClassLoader
                     try {
                         cl = ClassLoader.getSystemClassLoader();
-                    } catch (Throwable ex) {
+                    } catch (Exception ignored) {
                         // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
                     }
                 }
@@ -475,7 +476,7 @@ public class ClassUtils {
     public static boolean isPresent(String className, ClassLoader classLoader) {
         try {
             forName(className, classLoader);
-        } catch (Throwable ignored) { // Ignored
+        } catch (Exception ignored) { // Ignored
             return false;
         }
         return true;
@@ -493,7 +494,7 @@ public class ClassUtils {
         Class<?> targetClass = null;
         try {
             targetClass = forName(className, classLoader);
-        } catch (Throwable ignored) { // Ignored
+        } catch (Exception ignored) { // Ignored
         }
         return targetClass;
     }

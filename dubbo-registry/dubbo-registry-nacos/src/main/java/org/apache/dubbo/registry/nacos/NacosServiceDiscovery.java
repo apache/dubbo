@@ -113,13 +113,15 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         if (!Objects.equals(oldServiceInstance.getServiceName(), newServiceInstance.getServiceName()) ||
             !Objects.equals(oldServiceInstance.getAddress(), newServiceInstance.getAddress()) ||
             !Objects.equals(oldServiceInstance.getPort(), newServiceInstance.getPort())) {
-            // ignore if host-ip changed
+            // Ignore if host-ip changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }
 
         try {
             this.serviceInstance = newServiceInstance;
+            reportMetadata(newServiceInstance.getServiceMetadata());
+
             // override without unregister
             this.doRegister(newServiceInstance);
         } catch (Exception e) {
