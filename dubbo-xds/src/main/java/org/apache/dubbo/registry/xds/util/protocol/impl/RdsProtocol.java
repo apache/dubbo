@@ -31,6 +31,8 @@ import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
+import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +68,7 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private RouteResult decodeResourceToListener(RouteConfiguration resource) {
         Map<String, Set<String>> map = new HashMap<>();
+        Map<String, VirtualHost> rdsVirtualhostMap = new ConcurrentHashMap<>();
         resource.getVirtualHostsList()
             .forEach(virtualHost -> {
                 Set<String> cluster = virtualHost.getRoutesList().stream()
@@ -74,9 +77,10 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
                     .collect(Collectors.toSet());
                 for (String domain : virtualHost.getDomainsList()) {
                     map.put(domain, cluster);
+                    rdsVirtualhostMap.put(domain,virtualHost);
                 }
             });
-        return new RouteResult(map);
+        return new RouteResult(map,rdsVirtualhostMap);
     }
 
     private static RouteConfiguration unpackRouteConfiguration(Any any) {

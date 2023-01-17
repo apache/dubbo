@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.registry.xds.util;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -27,15 +35,10 @@ import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
+import org.apache.dubbo.rpc.cluster.router.xds.RdsVirtualHostListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import io.envoyproxy.envoy.config.route.v3.VirtualHost;
 
 public class PilotExchanger {
 
@@ -52,9 +55,13 @@ public class PilotExchanger {
     protected Map<String, RouteResult> routeResult;
 
     private final AtomicBoolean isRdsObserve = new AtomicBoolean(false);
-    private final HashSet<String> domainObserveRequest = new HashSet<>();
+    private final Set<String> domainObserveRequest = new ConcurrentHashSet<String>();
 
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
+
+    private final Map<String, Consumer<RdsVirtualHostListener>> rdsObserveConsumer = new ConcurrentHashMap<>();
+
+    private static  PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
     protected PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
@@ -108,8 +115,24 @@ public class PilotExchanger {
     }
 
     public static PilotExchanger initialize(URL url) {
-        return new PilotExchanger(url);
+        synchronized (PilotExchanger.class){
+            if (GLOBAL_PILOT_EXCHANGER != null) {
+                return GLOBAL_PILOT_EXCHANGER;
+            }
+            return (GLOBAL_PILOT_EXCHANGER = new PilotExchanger(url));
+        }
     }
+
+    public static PilotExchanger getInstance() {
+        synchronized (PilotExchanger.class) {
+            return GLOBAL_PILOT_EXCHANGER;
+        }
+    }
+
+    public static boolean isEnabled() {
+        return GLOBAL_PILOT_EXCHANGER != null;
+    }
+
 
     public void destroy() {
         xdsChannel.destroy();
@@ -171,5 +194,25 @@ public class PilotExchanger {
             }
         }
 
+    }
+
+    public void unObserveEndpoints(String domain, Consumer<Set<Endpoint>> consumer) {
+        domainObserveConsumer.get(domain).remove(consumer);
+        domainObserveRequest.remove(domain);
+    }
+
+    public VirtualHost getVirtualHost(String domain) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
+            if (entry.getValue().searchVirtualHost(domain) != null) {
+                return entry.getValue().searchVirtualHost(domain);
+            }
+        }
+        return null;
+    }
+
+    public void unObserveRds(String domain) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
+            entry.getValue().removeVirtualHost(domain);
+        }
     }
 }
