@@ -17,6 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
@@ -28,14 +36,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.PackableMethod;
 
 import com.google.protobuf.Message;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.ParameterizedType;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
@@ -470,11 +470,16 @@ public class ReflectionPackableMethod implements PackableMethod {
 
 
     private static Class<?> getClassFromCache(String className, Map<String, Class<?>> classCache, Class<?> expectedClass) {
+        if (expectedClass.getName().equals(className)) {
+            return expectedClass;
+        }
+
         Class<?> clz = classCache.get(className);
         if (clz == null) {
             try {
                 clz = ClassUtils.forName(className);
-            } catch (ClassNotFoundException e) {
+            } catch (Throwable e) {
+                // To catch IllegalStateException, LinkageError, ClassNotFoundException
                 clz = expectedClass;
             }
             classCache.put(className, clz);
