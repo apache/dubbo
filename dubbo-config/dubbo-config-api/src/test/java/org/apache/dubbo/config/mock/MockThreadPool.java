@@ -18,11 +18,12 @@
 package org.apache.dubbo.config.mock;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.MetricThreadPool;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 
 import java.util.concurrent.Executor;
 
-public class MockThreadPool implements ThreadPool {
+public class MockThreadPool extends MetricThreadPool {
     @Override
     public Executor getExecutor(URL url) {
         return null;

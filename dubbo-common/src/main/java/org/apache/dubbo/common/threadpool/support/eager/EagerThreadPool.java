@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.support.eager;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.MetricThreadPool;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 
@@ -40,7 +41,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
  * When the core threads are all in busy,
  * create new thread instead of putting task into blocking queue.
  */
-public class EagerThreadPool implements ThreadPool {
+public class EagerThreadPool extends MetricThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
@@ -60,6 +61,7 @@ public class EagerThreadPool implements ThreadPool {
                 new NamedInternalThreadFactory(name, true),
                 new AbortPolicyWithReport(name, url));
         taskQueue.setExecutor(executor);
+        addThreadPoolMetric(executor, name);
         return executor;
     }
 }

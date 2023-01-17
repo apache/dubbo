@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.support.cached;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
+import org.apache.dubbo.common.threadpool.MetricThreadPool;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 
@@ -44,7 +45,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
  *
  * @see java.util.concurrent.Executors#newCachedThreadPool()
  */
-public class CachedThreadPool implements ThreadPool {
+public class CachedThreadPool extends MetricThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
@@ -53,10 +54,12 @@ public class CachedThreadPool implements ThreadPool {
         int threads = url.getParameter(THREADS_KEY, Integer.MAX_VALUE);
         int queues = url.getParameter(QUEUES_KEY, DEFAULT_QUEUES);
         int alive = url.getParameter(ALIVE_KEY, DEFAULT_ALIVE);
-        return new ThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS,
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(cores, threads, alive, TimeUnit.MILLISECONDS,
                 queues == 0 ? new SynchronousQueue<Runnable>() :
                         (queues < 0 ? new MemorySafeLinkedBlockingQueue<Runnable>()
                                 : new LinkedBlockingQueue<Runnable>(queues)),
                 new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+        addThreadPoolMetric(threadPoolExecutor, name);
+        return threadPoolExecutor;
     }
 }

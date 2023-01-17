@@ -19,6 +19,7 @@ package org.apache.dubbo.common.threadpool.support.fixed;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.MemorySafeLinkedBlockingQueue;
+import org.apache.dubbo.common.threadpool.MetricThreadPool;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 
@@ -41,7 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
  *
  * @see java.util.concurrent.Executors#newFixedThreadPool(int)
  */
-public class FixedThreadPool implements ThreadPool {
+public class FixedThreadPool extends MetricThreadPool {
 
     @Override
     public Executor getExecutor(URL url) {
@@ -59,8 +60,11 @@ public class FixedThreadPool implements ThreadPool {
             blockingQueue = new LinkedBlockingQueue<>(queues);
         }
 
-        return new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MILLISECONDS, blockingQueue,
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MILLISECONDS, blockingQueue,
                 new NamedInternalThreadFactory(name, true), new AbortPolicyWithReport(name, url));
+
+        addThreadPoolMetric(threadPoolExecutor, name);
+        return threadPoolExecutor;
     }
 
 }
