@@ -16,6 +16,18 @@
  */
 package org.apache.dubbo.config;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -24,6 +36,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -49,17 +62,6 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
@@ -74,6 +76,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_EXECUTOR;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXPORT_SERVICE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_SERVER_DISCONNECTED;
@@ -263,19 +266,39 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exportedURLs.forEach(url -> {
             if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
                 ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
-                try {
-                    boolean succeeded = serviceNameMapping.map(url);
-                    if (succeeded) {
-                        logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
-                    } else {
-                        logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
-                    }
-                } catch (Exception e) {
-                    logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
-                }
+                ScheduledExecutorService scheduledExecutor = getScopeModel().getBeanFactory()
+                    .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor();
+                mapServiceName(url, serviceNameMapping, scheduledExecutor);
             }
         });
         onExported();
+    }
+
+    protected void mapServiceName(URL url, ServiceNameMapping serviceNameMapping, ScheduledExecutorService scheduledExecutor) {
+        if (!exported) {
+            return;
+        }
+        logger.info("Try to register interface application mapping for service " + url.getServiceKey());
+        boolean succeeded = false;
+        try {
+            succeeded = serviceNameMapping.map(url);
+            if (succeeded) {
+                logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
+            } else {
+                logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey());
+            }
+        } catch (Exception e) {
+            logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
+        }
+        if (!succeeded) {
+            scheduleToMapping(scheduledExecutor, serviceNameMapping, url);
+        }
+    }
+
+    private void scheduleToMapping(ScheduledExecutorService scheduledExecutor, ServiceNameMapping serviceNameMapping, URL url) {
+        Integer mappingRetryInterval = getApplication().getMappingRetryInterval();
+        scheduledExecutor.schedule(() -> mapServiceName(url, serviceNameMapping, scheduledExecutor),
+            mappingRetryInterval == null ? 5000 : mappingRetryInterval, TimeUnit.MILLISECONDS);
     }
 
     private void checkAndUpdateSubConfigs() {
@@ -431,7 +454,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (getExecutor() != null) {
             String mode = application.getExecutorManagementMode();
             if (!EXECUTOR_MANAGEMENT_MODE_ISOLATION.equals(mode)) {
-                logger.warn("The current executor management mode is " + mode +
+                logger.warn(COMMON_ISOLATED_EXECUTOR_CONFIGURATION_ERROR, "", "", "The current executor management mode is " + mode +
                     ", the configured service executor cannot take effect unless the mode is configured as " + EXECUTOR_MANAGEMENT_MODE_ISOLATION);
                 return;
             }

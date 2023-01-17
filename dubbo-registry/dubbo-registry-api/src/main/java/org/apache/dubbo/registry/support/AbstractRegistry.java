@@ -66,7 +66,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAI
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DESTROY_UNREGISTER_URL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_READ_WRITE_CACHE_FILE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DELETE_LOCKFILE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -566,7 +566,7 @@ public abstract class AbstractRegistry implements Registry {
                 registryCacheExecutor.schedule(() -> doSaveProperties(version), DEFAULT_INTERVAL_SAVE_PROPERTIES, TimeUnit.MILLISECONDS);
             }
         } catch (Throwable t) {
-            logger.warn(REGISTRY_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
+            logger.warn(INTERNAL_ERROR, "unknown error in registry module", "", t.getMessage(), t);
         }
     }
 

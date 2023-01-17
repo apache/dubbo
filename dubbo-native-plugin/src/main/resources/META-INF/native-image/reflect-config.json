@@ -1066,19 +1066,6 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.serialize.hessian2.dubbo.DefaultHessian2FactoryInitializer",
-    "allPublicMethods": true,
-    "methods": [
-      {
-        "name": "<init>",
-        "parameterTypes": []
-      }
-    ]
-  },
-  {
-    "name": "org.apache.dubbo.common.serialize.hessian2.dubbo.WhitelistHessian2FactoryInitializer"
-  },
-  {
     "name": "org.apache.dubbo.common.status.reporter.FrameworkStatusReportService",
     "methods": [
       {
@@ -1947,7 +1934,14 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter"
+    "name": "org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
   },
   {
     "name": "org.apache.dubbo.rpc.Invoker",
@@ -2424,6 +2418,16 @@
     "methods": [
       {
         "name": "<init>",
+        "parameterTypes": ["org.apache.dubbo.rpc.model.FrameworkModel"]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.rpc.AdaptiveMetrics",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
         "parameterTypes": []
       }
     ]
@@ -2557,6 +2561,10 @@
     ]
   },
   {
+    "name": "org.apache.logging.log4j.Level",
+    "allPublicMethods": true
+  },
+  {
     "name": "org.apache.log4j.helpers.Loader"
   },
   {
@@ -2565,6 +2573,10 @@
   {
     "name": "org.apache.zookeeper.ClientCnxnSocketNIO",
     "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": ["org.apache.zookeeper.client.ZKClientConfig"]
+      },
       {
         "name": "<init>",
         "parameterTypes": []

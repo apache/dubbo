@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.function.ThrowableFunction;
@@ -37,15 +43,11 @@ import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION;
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
@@ -96,6 +98,18 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             Instance instance = toInstance(serviceInstance);
             service.deregisterInstance(instance.getServiceName(), group, instance);
         });
+    }
+
+    @Override
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
+        // register first to ensure that consumer will not throw no provider exception
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
+            this.serviceInstance = newServiceInstance;
+            reportMetadata(newServiceInstance.getServiceMetadata());
+            this.doRegister(newServiceInstance);
+        }
+
+        this.doUnregister(oldServiceInstance);
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
@@ -81,7 +82,7 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTORY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTROY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
@@ -722,7 +723,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         try {
             metricsServiceExporter.export();
         } catch (Exception e) {
-            logger.error("exportMetricsService an exception occurred when handle starting event", e);
+            logger.error(LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION, "", "",
+                "exportMetricsService an exception occurred when handle starting event", e);
         }
     }
 
@@ -1122,7 +1124,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 serviceDiscovery.destroy();
             } catch (Throwable ignored) {
-                logger.warn(CONFIG_FAILED_EXECUTE_DESTORY, "", "", ignored.getMessage(), ignored);
+                logger.warn(CONFIG_FAILED_EXECUTE_DESTROY, "", "", ignored.getMessage(), ignored);
             }
         });
         if (logger.isDebugEnabled()) {

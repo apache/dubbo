@@ -54,7 +54,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_LOAD_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.rpc.Constants.IS_SERVER_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_PROXY_KEY;
@@ -286,7 +286,7 @@ public class CallbackServiceCodec {
             }
             channel.setAttribute(countkey, count);
         } catch (Exception e) {
-            logger.error(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", e.getMessage(), e);
+            logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", e.getMessage(), e);
         }
     }
 
@@ -300,7 +300,7 @@ public class CallbackServiceCodec {
             }
             channel.setAttribute(countkey, count);
         } catch (Exception e) {
-            logger.error(PROTOCOL_INCORRECT_PARAMETER_VALUES, "", "", e.getMessage(), e);
+            logger.error(COMMON_PROPERTY_TYPE_MISMATCH, "", "", e.getMessage(), e);
         }
     }
 

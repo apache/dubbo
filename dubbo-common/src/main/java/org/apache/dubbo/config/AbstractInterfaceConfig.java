@@ -16,6 +16,15 @@
  */
 package org.apache.dubbo.config;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -27,22 +36,12 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -74,7 +73,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The classLoader of interface belong to
      */
-    protected ClassLoader interfaceClassLoader;
+    protected transient ClassLoader interfaceClassLoader;
 
     /**
      * The remote service version the customer/provider side will reference
@@ -226,7 +225,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         // change referenced config's scope model
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(getScopeModel());
         if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
             this.configCenter.setScopeModel(applicationModel);
         }
@@ -643,7 +642,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param application
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @deprecated Use {@link org.apache.dubbo.config.AbstractConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setApplication(ApplicationConfig application) {
@@ -662,7 +661,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * @param module
-     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @deprecated Use {@link org.apache.dubbo.config.AbstractConfig#setScopeModel(ScopeModel)}
      */
     @Deprecated
     public void setModule(ModuleConfig module) {
@@ -811,7 +810,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link ConfigManager#getMetadataConfigs()}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getMetadataConfigs()}
      */
     @Deprecated
     public MetadataReportConfig getMetadataReportConfig() {
@@ -826,7 +825,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * @deprecated Use {@link ConfigManager#addMetadataReport(MetadataReportConfig)}
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addMetadataReport(MetadataReportConfig)}
      */
     @Deprecated
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {

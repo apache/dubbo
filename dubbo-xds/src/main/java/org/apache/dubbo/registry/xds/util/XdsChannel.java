@@ -49,14 +49,25 @@ public class XdsChannel {
 
     private static final String USE_AGENT = "use-agent";
 
+    private URL url;
+
     private static final String SECURE = "secure";
 
     private static final String PLAINTEXT = "plaintext";
 
     private final ManagedChannel channel;
 
-    protected XdsChannel(URL url) {
+    public URL getUrl() {
+        return url;
+    }
+
+    public ManagedChannel getChannel() {
+        return channel;
+    }
+
+    public XdsChannel(URL url) {
         ManagedChannel managedChannel = null;
+        this.url = url;
         try {
             if (!url.getParameter(USE_AGENT, false)) {
                 if(PLAINTEXT.equals(url.getParameter(SECURE))){

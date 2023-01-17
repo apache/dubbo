@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -61,13 +62,16 @@ class PrometheusMetricsReporterTest {
     @Test
     void testJvmMetrics() {
         metricsConfig.setEnableJvmMetrics(true);
+        String name = "metrics-test";
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig(name));
+
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
 
         PrometheusMeterRegistry prometheusRegistry = reporter.getPrometheusRegistry();
         Double d1 = prometheusRegistry.getPrometheusRegistry().getSampleValue("none_exist_metric");
-        Double d2 = prometheusRegistry.getPrometheusRegistry().getSampleValue("jvm_gc_memory_promoted_bytes_total");
-
+        Double d2 = prometheusRegistry.getPrometheusRegistry().getSampleValue("jvm_gc_memory_promoted_bytes_total",
+            new String[]{"application_name"},new String[]{name});
         Assertions.assertNull(d1);
         Assertions.assertNotNull(d2);
     }
@@ -84,7 +88,7 @@ class PrometheusMetricsReporterTest {
         prometheusConfig.setExporter(exporter);
         metricsConfig.setPrometheus(prometheusConfig);
         metricsConfig.setEnableJvmMetrics(true);
-
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("metrics-test"));
         PrometheusMetricsReporter reporter = new PrometheusMetricsReporter(metricsConfig.toUrl(), applicationModel);
         reporter.init();
 

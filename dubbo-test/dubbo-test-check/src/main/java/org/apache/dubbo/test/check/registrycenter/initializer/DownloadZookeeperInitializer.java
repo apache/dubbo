@@ -37,7 +37,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_DOWNLOAD_FILE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE;
 
 /**
  * Download zookeeper binary archive.
@@ -169,7 +169,7 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
 
             @Override
             public void onThrowable(Throwable t) {
-                logger.warn(REGISTRY_FAILED_DOWNLOAD_FILE, "", "", "Failed to download the file, download url: " + url);
+                logger.warn(TESTING_REGISTRY_FAILED_TO_DOWNLOAD_ZK_FILE, "", "", "Failed to download the file, download url: " + url);
                 super.onThrowable(t);
             }
         });

@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -54,9 +55,9 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
             String protocol = url.getProtocol();
             Integer oldPort = protocols.get(protocol);
             int newPort = url.getPort();
-            if (oldPort != null) {
-                LOGGER.warn("same protocol " + "[" + protocol + "]" + " listen on different ports " + "[" + oldPort + "," + newPort + "]" + " will override with each other" +
-                    ".Override port [" + oldPort + "] with port [" + newPort + "]");
+            if (oldPort != null && oldPort != newPort) {
+                LOGGER.warn(LoggerCodeConstants.PROTOCOL_INCORRECT_PARAMETER_VALUES, "the protocol is listening multiple ports", "", "Same protocol " + "[" + protocol + "]" + " listens on different ports " + "[" + oldPort + "," + newPort + "]" + " will override with each other" +
+                    ". The port [" + oldPort + "] is overridden with port [" + newPort + "].");
             }
             protocols.put(protocol, newPort);
         });
