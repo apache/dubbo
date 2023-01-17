@@ -75,4 +75,6 @@ public interface MetricsConstants {
     String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
 
     String METRIC_FILTER_START_TIME = "metric_filter_start_time";
+
+    String TAG_THREAD_NAME = "threadPoolName";
 }

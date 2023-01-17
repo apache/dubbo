@@ -17,12 +17,7 @@
 
 package org.apache.dubbo.common.metrics.collector;
 
-import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
-import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -33,9 +28,12 @@ import org.apache.dubbo.common.metrics.collector.stat.MetricsStatHandler;
 import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MetricsKey;
+import org.apache.dubbo.common.metrics.model.ThreadPoolMetric;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.*;
 
 /**
  * Default implementation of {@link MetricsCollector}
@@ -46,6 +44,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final List<MetricsListener> listeners = new ArrayList<>();
     private final ApplicationModel applicationModel;
     private final MetricsStatComposite stats;
+    private final Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<ThreadPoolMetric>();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -128,8 +127,16 @@ public class DefaultMetricsCollector implements MetricsCollector {
         List<MetricSample> list = new ArrayList<>();
         collectRequests(list);
         collectRT(list);
-
+        collectThreadPool(list);
         return list;
+    }
+
+    public void addThreadPoolMetric(ThreadPoolMetric metric) {
+        threadPoolMetricSet.add(metric);
+    }
+
+    private void collectThreadPool(List<MetricSample> list) {
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_CORE_SIZE, e.getTags(), THREAD_POOL, e::getCorePoolSize)));
     }
 
     private void collectRequests(List<MetricSample> list) {

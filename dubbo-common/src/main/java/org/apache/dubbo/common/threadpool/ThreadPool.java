@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.concurrent.Executor;
 
@@ -30,7 +31,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
  */
 //TODO which scope for ThreadPool? APPLICATION or FRAMEWORK
 @SPI(value = "fixed", scope = ExtensionScope.FRAMEWORK)
-public interface ThreadPool {
+public interface ThreadPool extends ScopeModelAware {
 
     /**
      * Thread pool
