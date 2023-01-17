@@ -103,11 +103,11 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         TimeWindowQuantile quantile = rt.computeIfAbsent(metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
 
-        TimeWindowCounter total = rtTotal.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-        total.increment(responseTime);
+        TimeWindowCounter totalCounter = rtTotal.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+        totalCounter.increment(responseTime);
 
-        TimeWindowCounter count = rtCount.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-        count.increment();
+        TimeWindowCounter countCounter = rtCount.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+        countCounter.increment();
     }
 
     private void onRequestEvent(RequestEvent event) {
