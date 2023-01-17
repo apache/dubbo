@@ -32,7 +32,7 @@ public enum MetricsKey {
     PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG("dubbo.provider.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
     PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG("dubbo.provider.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
     PROVIDER_METRIC_REQUESTS_LIMIT_AGG("dubbo.provider.requests.limit.aggregate", "Aggregated limit Requests"),
-
+    PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.provider.requests.failed.total.aggregate", "Aggregated failed total Requests"),
     PROVIDER_METRIC_QPS("dubbo.provider.qps", "Query Per Seconds"),
     PROVIDER_METRIC_RT_LAST("dubbo.provider.rt.last", "Last Response Time"),
     PROVIDER_METRIC_RT_MIN("dubbo.provider.rt.min", "Min Response Time"),

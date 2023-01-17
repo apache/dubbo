@@ -119,6 +119,12 @@ public class DefaultMetricsCollector implements MetricsCollector {
         });
     }
 
+    public void totalFailedRequests(String interfaceName, String methodName, String group, String version) {
+        doExecute(RequestEvent.Type.TOTAL_FAILED,statHandler-> {
+            statHandler.increase(interfaceName, methodName, group, version);
+        });
+    }
+
     public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
         stats.addRT(interfaceName, methodName, group, version, responseTime);
     }
@@ -153,6 +159,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
         doExecute(RequestEvent.Type.REQUEST_LIMIT, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get))));
+
+        doExecute(RequestEvent.Type.TOTAL_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG, k.getTags(), REQUESTS, v::get))));
+
     }
 
     private void collectRT(List<MetricSample> list) {
