@@ -38,8 +38,6 @@ import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 import org.apache.dubbo.rpc.cluster.router.xds.RdsVirtualHostListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import io.envoyproxy.envoy.config.route.v3.VirtualHost;
-
 public class PilotExchanger {
 
     protected final XdsChannel xdsChannel;
@@ -61,15 +59,16 @@ public class PilotExchanger {
 
     private final Map<String, Consumer<RdsVirtualHostListener>> rdsObserveConsumer = new ConcurrentHashMap<>();
 
-    private static  PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
+    private static PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
     protected PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
-        this.ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
-        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
-        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingTimeout, applicationModel);
+        AdsObserver adsObserver = new AdsObserver(url, NodeBuilder.build());
+        this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
+        this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
+        this.edsProtocol = new EdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
 
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.values().iterator().next().getRouteConfigNames());
@@ -115,7 +114,7 @@ public class PilotExchanger {
     }
 
     public static PilotExchanger initialize(URL url) {
-        synchronized (PilotExchanger.class){
+        synchronized (PilotExchanger.class) {
             if (GLOBAL_PILOT_EXCHANGER != null) {
                 return GLOBAL_PILOT_EXCHANGER;
             }
@@ -140,7 +139,7 @@ public class PilotExchanger {
 
     public Set<String> getServices() {
         Set<String> domains = new HashSet<>();
-        for (Map.Entry<String, RouteResult> entry: routeResult.entrySet()) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
             domains.addAll(entry.getValue().getDomains());
         }
         return domains;
@@ -148,7 +147,7 @@ public class PilotExchanger {
 
     public Set<Endpoint> getEndpoints(String domain) {
         Set<Endpoint> endpoints = new HashSet<>();
-        for (Map.Entry<String, RouteResult> entry: routeResult.entrySet()) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
             Set<String> cluster = entry.getValue().searchDomain(domain);
             if (CollectionUtils.isNotEmpty(cluster)) {
                 Map<String, EndpointResult> endpointResultList = edsProtocol.getResource(cluster);
@@ -176,7 +175,7 @@ public class PilotExchanger {
     }
 
     private void doObserveEndpoints(String domain) {
-        for (Map.Entry<String, RouteResult> entry: routeResult.entrySet()) {
+        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
             Set<String> router = entry.getValue().searchDomain(domain);
             // if router is empty, do nothing
             // observation will be created when RDS updates
@@ -201,18 +200,20 @@ public class PilotExchanger {
         domainObserveRequest.remove(domain);
     }
 
-    public VirtualHost getVirtualHost(String domain) {
-        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
-            if (entry.getValue().searchVirtualHost(domain) != null) {
-                return entry.getValue().searchVirtualHost(domain);
-            }
-        }
-        return null;
+    public void observeEds(Set<String> clusterNames, Consumer<Map<String, EndpointResult>> consumer) {
+        edsProtocol.observeResource(clusterNames, consumer, false);
     }
 
-    public void unObserveRds(String domain) {
-        for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
-            entry.getValue().removeVirtualHost(domain);
-        }
+    public void unObserveEds(Set<String> clusterNames, Consumer<Map<String, EndpointResult>> consumer) {
+        edsProtocol.unobserveResource(clusterNames, consumer);
     }
+
+    public void observeRds(Set<String> clusterNames, Consumer<Map<String, RouteResult>> consumer) {
+        rdsProtocol.observeResource(clusterNames, consumer, false);
+    }
+
+    public void unObserveRds(Set<String> clusterNames, Consumer<Map<String, RouteResult>> consumer) {
+        rdsProtocol.unobserveResource(clusterNames, consumer);
+    }
+
 }
