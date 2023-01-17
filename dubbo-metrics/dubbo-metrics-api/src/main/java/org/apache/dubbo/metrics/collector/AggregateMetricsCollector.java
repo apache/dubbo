@@ -39,8 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.QPS;
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
 
 /**
@@ -60,6 +60,9 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private final Map<MethodMetric, TimeWindowCounter> totalFailedRequests = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
     private final Map<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> rtTotal = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> rtCount = new ConcurrentHashMap<>();
+
 
     private final ApplicationModel applicationModel;
 
@@ -99,6 +102,12 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         Long responseTime = event.getRt();
         TimeWindowQuantile quantile = rt.computeIfAbsent(metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
+
+        TimeWindowCounter total = rtTotal.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+        total.increment(responseTime);
+
+        TimeWindowCounter count = rtCount.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+        count.increment();
     }
 
     private void onRequestEvent(RequestEvent event) {
@@ -148,6 +157,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         collectRequests(list);
         collectQPS(list);
         collectRT(list);
+        collectRTAvg(list);
 
         return list;
     }
@@ -171,6 +181,13 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         rt.forEach((k, v) -> {
             list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_P99, k.getTags(), RT, () -> v.quantile(0.99)));
             list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_P95, k.getTags(), RT, () -> v.quantile(0.95)));
+        });
+    }
+
+    private void collectRTAvg(List<MetricSample> list) {
+        rtTotal.forEach((k, v) -> {
+            TimeWindowCounter count = rtCount.get(k);
+            list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_AVG, k.getTags(), RT, () -> v.get() / count.get()));
         });
     }
 }

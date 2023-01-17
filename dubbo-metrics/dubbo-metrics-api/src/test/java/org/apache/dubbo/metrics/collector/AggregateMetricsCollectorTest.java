@@ -25,7 +25,6 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +85,7 @@ class AggregateMetricsCollectorTest {
         defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
         defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
         defaultCollector.increaseFailedRequests(interfaceName, methodName, group, version);
-        defaultCollector.businessFailedRequests(interfaceName,methodName,group,version);
+        defaultCollector.businessFailedRequests(interfaceName, methodName, group, version);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -134,5 +133,7 @@ class AggregateMetricsCollectorTest {
 
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P99.getName()));
         Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_P95.getName()));
+        Assertions.assertTrue(sampleMap.containsKey(MetricsKey.PROVIDER_METRIC_RT_AVG.getName()));
+
     }
 }
