@@ -18,13 +18,18 @@ package org.apache.dubbo.registry.xds.util;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
@@ -61,10 +66,12 @@ public class PilotExchanger {
 
     private static PilotExchanger GLOBAL_PILOT_EXCHANGER = null;
 
+    private final ApplicationModel applicationModel;
+
     protected PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
         int pollingTimeout = url.getParameter("pollingTimeout", 10);
-        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
+        this.applicationModel = url.getOrDefaultApplicationModel();
         AdsObserver adsObserver = new AdsObserver(url, NodeBuilder.build());
         this.ldsProtocol = new LdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
         this.rdsProtocol = new RdsProtocol(adsObserver, NodeBuilder.build(), pollingTimeout);
@@ -95,21 +102,26 @@ public class PilotExchanger {
     private void createRouteObserve() {
         rdsProtocol.observeResource(listenerResult.values().iterator().next().getRouteConfigNames(), (newResult) -> {
             // check if observed domain update ( will update endpoint observation )
+            List<String> domainsToUpdate = new LinkedList<>();
             domainObserveConsumer.forEach((domain, consumer) -> {
                 newResult.values().forEach(o -> {
                     Set<String> newRoute = o.searchDomain(domain);
-                    for (Map.Entry<String, RouteResult> entry: routeResult.entrySet()) {
+                    for (Map.Entry<String, RouteResult> entry : routeResult.entrySet()) {
                         if (!entry.getValue().searchDomain(domain).equals(newRoute)) {
                             // routers in observed domain has been updated
 //                    Long domainRequest = domainObserveRequest.get(domain);
                             // router list is empty when observeEndpoints() called and domainRequest has not been created yet
                             // create new observation
-                            doObserveEndpoints(domain);
+                            domainsToUpdate.add(domain);
+//                            doObserveEndpoints(domain);
                         }
                     }
                 });
             });
             routeResult = newResult;
+            ExecutorService executorService = applicationModel.getFrameworkModel().getBeanFactory()
+                .getBean(FrameworkExecutorRepository.class).getSharedExecutor();
+            executorService.submit(() -> domainsToUpdate.forEach(this::doObserveEndpoints));
         }, false);
     }
 
@@ -183,11 +195,13 @@ public class PilotExchanger {
                 edsProtocol.observeResource(
                     router,
                     (endpointResultMap) -> {
-                        endpointResultMap.forEach((k, v) -> {
-                            // notify consumers
-                            domainObserveConsumer.get(domain).forEach(
-                                consumer1 -> consumer1.accept(v.getEndpoints()));
-                        });
+                        Set<Endpoint> endpoints = endpointResultMap.values().stream()
+                            .map(EndpointResult::getEndpoints)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet());
+                        for (Consumer<Set<Endpoint>> consumer : domainObserveConsumer.get(domain)) {
+                            consumer.accept(endpoints);
+                        }
                     }, false);
                 domainObserveRequest.add(domain);
             }
@@ -214,6 +228,14 @@ public class PilotExchanger {
 
     public void unObserveRds(Set<String> clusterNames, Consumer<Map<String, RouteResult>> consumer) {
         rdsProtocol.unobserveResource(clusterNames, consumer);
+    }
+
+    public void observeLds(Consumer<Map<String, ListenerResult>> consumer) {
+        ldsProtocol.observeResource(Collections.singleton(AbstractProtocol.emptyResourceName), consumer, false);
+    }
+
+    public void unObserveLds(Consumer<Map<String, ListenerResult>> consumer) {
+        ldsProtocol.unobserveResource(Collections.singleton(AbstractProtocol.emptyResourceName), consumer);
     }
 
 }

@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.rpc.cluster.router.xds;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
+import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 import org.apache.dubbo.rpc.cluster.router.xds.rule.XdsRouteRule;
 
@@ -39,7 +38,13 @@ public class RdsRouteRuleManager {
 
     private static final ConcurrentHashMap<String, List<XdsRouteRule>> ROUTE_DATA_CACHE = new ConcurrentHashMap<>();
 
-    private static final ConcurrentHashMap<String, Consumer<Map<String, RouteResult>>> RDS_LISTENERS = new ConcurrentHashMap<>();
+    private static final Map<String, RdsVirtualHostListener> RDS_LISTENERS = new ConcurrentHashMap<>();
+
+    private static volatile Consumer<Map<String, ListenerResult>> LDS_LISTENER;
+
+    private static volatile Consumer<Map<String, RouteResult>> RDS_LISTENER;
+
+    private static Map<String, RouteResult> RDS_RESULT;
 
     public RdsRouteRuleManager() {
     }
@@ -60,17 +65,50 @@ public class RdsRouteRuleManager {
     }
 
     private void doSubscribeRds(String domain) {
-        RDS_LISTENERS.computeIfAbsent(domain, key -> notify -> {
-            List<VirtualHost> virtualHosts = notify.values()
-                .stream()
-                .map(r -> r.searchVirtualHost(domain))
-                .collect(Collectors.toList());
-            new RdsVirtualHostListener(domain, this).parseVirtualHost(virtualHosts.size() > 0 ? virtualHosts.get(0) : null);
-        });
-        Consumer<Map<String, RouteResult>> consumer = RDS_LISTENERS.get(domain);
-        if (PilotExchanger.isEnabled()) {
-           PilotExchanger.getInstance().observeRds(Collections.singleton(domain), consumer);
+        synchronized (RdsRouteRuleManager.class) {
+            if (RDS_LISTENER == null) {
+                RDS_LISTENER = rds -> {
+                    if (rds == null) {
+                        return;
+                    }
+                    for (RouteResult routeResult : rds.values()) {
+                        for (String domainToNotify : RDS_LISTENERS.keySet()) {
+                            VirtualHost virtualHost = routeResult.searchVirtualHost(domainToNotify);
+                            if (virtualHost != null) {
+                                RDS_LISTENERS.get(domainToNotify).parseVirtualHost(virtualHost);
+                            }
+                        }
+                    }
+                    RDS_RESULT = rds;
+                };
+            }
+            if (LDS_LISTENER == null) {
+                LDS_LISTENER = new Consumer<Map<String, ListenerResult>>() {
+                    private volatile Set<String> configNames = null;
+
+                    @Override
+                    public void accept(Map<String, ListenerResult> listenerResults) {
+                        if (listenerResults.size() == 1) {
+                            for (ListenerResult listenerResult : listenerResults.values()) {
+                                Set<String> newConfigNames = listenerResult.getRouteConfigNames();
+                                if (configNames == null) {
+                                    PilotExchanger.getInstance().observeRds(newConfigNames, RDS_LISTENER);
+                                } else if (!configNames.equals(newConfigNames)) {
+                                    PilotExchanger.getInstance().unObserveRds(configNames, RDS_LISTENER);
+                                    PilotExchanger.getInstance().observeRds(newConfigNames, RDS_LISTENER);
+                                }
+                                configNames = newConfigNames;
+                            }
+                        }
+                    }
+                };
+                if (PilotExchanger.isEnabled()) {
+                    PilotExchanger.getInstance().observeLds(LDS_LISTENER);
+                }
+            }
         }
+        RDS_LISTENERS.computeIfAbsent(domain, key -> new RdsVirtualHostListener(domain, this));
+        RDS_LISTENER.accept(RDS_RESULT);
     }
 
     public synchronized void unSubscribeRds(String domain, XdsRouteRuleListener listener) {
@@ -86,12 +124,7 @@ public class RdsRouteRuleManager {
     }
 
     private void doUnsubscribeRds(String domain) {
-        Consumer<Map<String, RouteResult>> consumer = RDS_LISTENERS.remove(domain);
-
-        if (consumer != null && PilotExchanger.isEnabled()) {
-            PilotExchanger.getInstance().unObserveRds(Collections.singleton(domain), consumer);
-        }
-        ROUTE_DATA_CACHE.remove(domain);
+        RDS_LISTENERS.remove(domain);
     }
 
 
@@ -124,7 +157,7 @@ public class RdsRouteRuleManager {
     }
 
     // for test
-    static ConcurrentHashMap<String, Consumer<Map<String, RouteResult>>> getRdsListeners() {
+    static Map<String, RdsVirtualHostListener> getRdsListeners() {
         return RDS_LISTENERS;
     }
 
