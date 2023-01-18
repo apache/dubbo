@@ -80,7 +80,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.withSettings;
 
 class ServiceConfigTest {
@@ -557,6 +561,11 @@ class ServiceConfigTest {
             }
 
             @Override
+            public boolean hasValidMetadataCenter() {
+                return true;
+            }
+
+            @Override
             public void initInterfaceAppMapping(URL subscribedURL) {
 
             }
@@ -612,6 +621,70 @@ class ServiceConfigTest {
         serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
 
         await().until(() -> count.get() > 10);
+        scheduledExecutorService.shutdown();
+    }
+    
+    @Test
+    void testMappingNoRetry() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+        ApplicationModel applicationModel = frameworkModel.newApplication();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>(applicationModel.newModule());
+        serviceConfig.exported();
+        ScheduledExecutorService scheduledExecutorService = Mockito.spy(Executors.newScheduledThreadPool(1));
+        AtomicInteger count = new AtomicInteger(0);
+        ServiceNameMapping serviceNameMapping = new ServiceNameMapping() {
+            @Override
+            public boolean map(URL url) {
+                return false;
+            }
+
+            @Override
+            public boolean hasValidMetadataCenter() {
+                return false;
+            }
+
+            @Override
+            public Set<String> getMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
+                return null;
+            }
+
+            @Override
+            public void putCachedMapping(String serviceKey, Set<String> apps) {
+
+            }
+
+            @Override
+            public Set<String> getRemoteMapping(URL consumerURL) {
+                return null;
+            }
+
+            @Override
+            public Set<String> removeCachedMapping(String serviceKey) {
+                return null;
+            }
+
+            @Override
+            public void $destroy() {
+
+            }
+        };
+        ApplicationConfig applicationConfig = new ApplicationConfig("app");
+        applicationConfig.setMappingRetryInterval(10);
+        serviceConfig.setApplication(applicationConfig);
+        serviceConfig.mapServiceName(URL.valueOf(""), serviceNameMapping, scheduledExecutorService);
+
+        verify(scheduledExecutorService.schedule((Runnable) any(), anyLong(), any()), times(0));
+
         scheduledExecutorService.shutdown();
     }
 }

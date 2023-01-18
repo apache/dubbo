@@ -287,7 +287,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } catch (Exception e) {
             logger.error(CONFIG_SERVER_DISCONNECTED, "configuration server disconnected", "", "Failed register interface application mapping for service " + url.getServiceKey(), e);
         }
-        if (!succeeded) {
+        if (!succeeded && serviceNameMapping.hasValidMetadataCenter()) {
             scheduleToMapping(scheduledExecutor, serviceNameMapping, url);
         }
     }

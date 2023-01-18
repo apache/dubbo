@@ -63,6 +63,11 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         casRetryWaitTime = ConfigurationUtils.getGlobalConfiguration(applicationModel).getInt(CAS_RETRY_WAIT_TIME_KEY, DEFAULT_CAS_RETRY_WAIT_TIME);
     }
 
+    @Override
+    public boolean hasValidMetadataCenter() {
+        return !CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs());
+    }
+
     /**
      * Simply register to all metadata center
      */
