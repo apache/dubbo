@@ -132,8 +132,8 @@
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
         <envoy_api_version>0.1.23</envoy_api_version>
-        <micrometer.version>1.10.2</micrometer.version>
-        <micrometer-tracing.version>1.0.0</micrometer-tracing.version>
+        <micrometer.version>1.10.3</micrometer.version>
+        <micrometer-tracing.version>1.0.1</micrometer-tracing.version>
         <t_digest.version>3.3</t_digest.version>
         <prometheus_client.version>0.16.0</prometheus_client.version>
         <reactive.version>1.0.4</reactive.version>
