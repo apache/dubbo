@@ -168,7 +168,6 @@ public final class FileCacheStoreFactory {
 
     private static void tryFileLock(FileCacheStore.Builder builder, String fileName) throws PathNotExclusiveException {
         File lockFile = new File(fileName + ".lock");
-        lockFile.deleteOnExit();
 
         FileLock dirLock;
         try {
@@ -188,6 +187,7 @@ public final class FileCacheStoreFactory {
             throw new PathNotExclusiveException(fileName + " is not exclusive. Maybe multiple Dubbo instances are using the same folder.");
         }
 
+        lockFile.deleteOnExit();
         builder.directoryLock(dirLock).lockFile(lockFile);
     }
 
