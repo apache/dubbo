@@ -19,13 +19,13 @@ package org.apache.dubbo.metrics.filter.observation;
 import io.micrometer.common.KeyValues;
 
 /**
- * Default implementation of the {@link DubboProviderObservationConvention}.
+ * Default implementation of the {@link DubboClientObservationConvention}.
  */
-public class DefaultDubboClientObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboProviderObservationConvention {
+public class DefaultDubboClientObservationConvention extends AbstractDefaultDubboObservationConvention implements DubboClientObservationConvention {
     /**
      * Singleton instance of {@link DefaultDubboClientObservationConvention}.
      */
-    public static final DubboProviderObservationConvention INSTANCE = new DefaultDubboClientObservationConvention();
+    public static final DubboClientObservationConvention INSTANCE = new DefaultDubboClientObservationConvention();
 
     @Override
     public String getName() {

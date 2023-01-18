@@ -22,7 +22,7 @@ import io.micrometer.observation.ObservationConvention;
 /**
  * {@link ObservationConvention} for a {@link DubboServerContext}.
  */
-public interface DubboConsumerObservationConvention extends ObservationConvention<DubboServerContext> {
+public interface DubboServerObservationConvention extends ObservationConvention<DubboServerContext> {
     @Override
     default boolean supportsContext(Observation.Context context) {
         return context instanceof DubboServerContext;

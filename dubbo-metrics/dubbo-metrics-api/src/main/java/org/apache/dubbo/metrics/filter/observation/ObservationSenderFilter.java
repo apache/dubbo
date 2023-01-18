@@ -41,12 +41,12 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
 
     private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
-    private DubboProviderObservationConvention providerObservationConvention = null;
+    private DubboClientObservationConvention clientObservationConvention = null;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-        providerObservationConvention = applicationModel.getBeanFactory().getBean(DubboProviderObservationConvention.class);
+        clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
     }
 
     @Override
@@ -55,8 +55,8 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
             return invoker.invoke(invocation);
         }
         RpcContextAttachment context = RpcContext.getClientAttachment();
-        DubboClientContext senderContext = new DubboClientContext(invocation.getAttachments(), context, invoker, invocation);
-        Observation observation = DubboObservation.CLIENT.observation(this.providerObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
+        DubboClientContext senderContext = new DubboClientContext(context, invoker, invocation);
+        Observation observation = DubboObservation.CLIENT.observation(this.clientObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
         return observation.observe(() -> invoker.invoke(invocation));
     }
 

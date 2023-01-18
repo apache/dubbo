@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metrics.filter.observation;
 
-import java.util.Map;
 import java.util.Objects;
 
 import io.micrometer.observation.transport.SenderContext;
@@ -27,7 +26,7 @@ import org.apache.dubbo.rpc.RpcContextAttachment;
 /**
  * Provider context for RPC.
  */
-public class DubboClientContext extends SenderContext<Map<String, String>> {
+public class DubboClientContext extends SenderContext<RpcContextAttachment> {
 
     private final RpcContextAttachment rpcContextAttachment;
 
@@ -35,12 +34,12 @@ public class DubboClientContext extends SenderContext<Map<String, String>> {
 
     private final Invocation invocation;
 
-    public DubboClientContext(Map<String, String> attachments, RpcContextAttachment rpcContextAttachment, Invoker<?> invoker, Invocation invocation) {
-        super((map, key, value) -> Objects.requireNonNull(map).put(key, value));
+    public DubboClientContext(RpcContextAttachment rpcContextAttachment, Invoker<?> invoker, Invocation invocation) {
+        super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
         this.rpcContextAttachment = rpcContextAttachment;
         this.invoker = invoker;
         this.invocation = invocation;
-        setCarrier(attachments);
+        setCarrier(rpcContextAttachment);
     }
 
     public RpcContextAttachment getRpcContextAttachment() {

@@ -84,7 +84,7 @@ public class ObservationConfiguration {
     }
 
     @Bean
-    SpanExporter spanExporter() {
+    ArrayListSpanProcessor spanExporter() {
         return new ArrayListSpanProcessor();
     }
 
@@ -152,6 +152,11 @@ public class ObservationConfiguration {
         return new MetricsDumper(meterRegistry);
     }
 
+    @Bean
+    TracesDumper tracesDumper(ArrayListSpanProcessor arrayListSpanProcessor) {
+        return new TracesDumper(arrayListSpanProcessor);
+    }
+
     static class ObservationHandlerRegistrar {
 
         private final ObservationRegistry observationRegistry;
@@ -189,6 +194,22 @@ public class ObservationConfiguration {
         void dumpMetrics() {
             System.out.println("==== METRICS ====");
             this.meterRegistry.getMeters().forEach(meter -> System.out.println(" - Metric type \t[" + meter.getId().getType() + "],\tname [" + meter.getId().getName() + "],\ttags " + meter.getId().getTags() + ",\tmeasurements " + meter.measure()));
+            System.out.println("=================");
+        }
+    }
+
+
+    static class TracesDumper {
+        private final ArrayListSpanProcessor arrayListSpanProcessor;
+
+        TracesDumper(ArrayListSpanProcessor arrayListSpanProcessor) {
+            this.arrayListSpanProcessor = arrayListSpanProcessor;
+        }
+
+        @PreDestroy
+        void dumpTraces() {
+            System.out.println("==== TRACES ====");
+            this.arrayListSpanProcessor.spans().forEach(System.out::println);
             System.out.println("=================");
         }
     }

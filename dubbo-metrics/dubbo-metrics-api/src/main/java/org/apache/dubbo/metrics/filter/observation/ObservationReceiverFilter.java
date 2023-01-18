@@ -40,12 +40,12 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
 
     private ObservationRegistry observationRegistry = ObservationRegistry.NOOP;
 
-    private DubboConsumerObservationConvention consumerObservationConvention = null;
+    private DubboServerObservationConvention serverObservationConvention = null;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
-        consumerObservationConvention = applicationModel.getBeanFactory().getBean(DubboConsumerObservationConvention.class);
+        serverObservationConvention = applicationModel.getBeanFactory().getBean(DubboServerObservationConvention.class);
     }
 
     @Override
@@ -54,8 +54,8 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
             return invoker.invoke(invocation);
         }
         RpcContextAttachment context = RpcContext.getServerAttachment();
-        DubboServerContext receiverContext = new DubboServerContext(invocation.getAttachments(), context, invoker, invocation);
-        Observation observation = DubboObservation.SERVER.observation(this.consumerObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
+        DubboServerContext receiverContext = new DubboServerContext(context, invoker, invocation);
+        Observation observation = DubboObservation.SERVER.observation(this.serverObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
         return observation.observe(() -> invoker.invoke(invocation));
     }
 
