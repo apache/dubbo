@@ -28,6 +28,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.serialize.support.DefaultSerializationSelector;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.rpc.AppResponse;
@@ -63,6 +65,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.*;
 
 /**
  * TripleInvoker
@@ -248,6 +251,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         meta.group = url.getGroup();
         meta.version = url.getVersion();
         meta.acceptEncoding = acceptEncodings;
+        meta.contentType = getSerializationContentType(url);
         if (timeout != null) {
             meta.timeout = timeout + "m";
         }
@@ -258,6 +262,21 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         meta.application = application;
         meta.attachments = invocation.getObjectAttachments();
         return meta;
+    }
+
+    private String getSerializationContentType(URL url) {
+        String serializeType = url.getParameter(SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
+        serializeType = convertHessian(serializeType);
+
+        final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
+        return serialization.getContentType();
+    }
+
+    private String convertHessian(String ser) {
+        if (ser.equals(HESSIAN4)) {
+            return HESSIAN2;
+        }
+        return ser;
     }
 
     @Override

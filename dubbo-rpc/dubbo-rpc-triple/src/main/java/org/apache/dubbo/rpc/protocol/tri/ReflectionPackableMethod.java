@@ -54,6 +54,8 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final Pack responsePack;
     private final UnPack requestUnpack;
     private final UnPack responseUnpack;
+    private final Pack originalPack;
+    private final UnPack originalUnpack;
 
     public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
         Class<?>[] actualRequestTypes;
@@ -83,9 +85,12 @@ public class ReflectionPackableMethod implements PackableMethod {
         boolean singleArgument = method.getRpcType() != MethodDescriptor.RpcType.UNARY;
         if (!needWrap(method, actualRequestTypes, actualResponseType)) {
             requestPack = new PbArrayPacker(singleArgument);
+            originalPack = new PbArrayPacker(singleArgument);
             responsePack = PB_PACK;
             requestUnpack = new PbUnpack<>(actualRequestTypes[0]);
             responseUnpack = new PbUnpack<>(actualResponseType);
+            originalUnpack = new PbUnpack<>(actualResponseType);
+
         } else {
             final MultipleSerialization serialization = url.getOrDefaultFrameworkModel()
                 .getExtensionLoader(MultipleSerialization.class)
@@ -94,8 +99,10 @@ public class ReflectionPackableMethod implements PackableMethod {
 
             this.requestPack = new WrapRequestPack(serialization, url, serializeName, singleArgument);
             this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
+            this.originalPack = new OriginalPack(serialization, url, serializeName, singleArgument);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
             this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
+            this.originalUnpack = new OriginalUnpack(serialization, url, serializeName,actualResponseType);
         }
     }
 
@@ -399,20 +406,6 @@ public class ReflectionPackableMethod implements PackableMethod {
             return builder.build().toByteArray();
         }
 
-        /**
-         * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version
-         * (hessian4)
-         *
-         * @param serializeType literal type
-         * @return hessian4 if the param is hessian2, otherwise return the param
-         */
-        private String convertHessianToWrapper(String serializeType) {
-            if (TripleConstant.HESSIAN2.equals(serializeType)) {
-                return TripleConstant.HESSIAN4;
-            }
-            return serializeType;
-        }
-
     }
 
     private static class PbArrayPacker implements Pack {
@@ -466,6 +459,63 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     }
 
+    private static class OriginalPack implements Pack{
+
+        private final String serialize;
+        private final MultipleSerialization multipleSerialization;
+        private final URL url;
+        private final boolean singleArgument;
+
+        private OriginalPack(MultipleSerialization multipleSerialization,
+                             URL url,
+                             String serialize,
+                             boolean singleArgument) {
+            this.url = url;
+            this.serialize = convertHessianToWrapper(serialize);
+            this.multipleSerialization = multipleSerialization;
+            this.singleArgument = singleArgument;
+        }
+
+        @Override
+        public byte[] pack(Object obj) throws IOException {
+            Object[] arguments = singleArgument ? new Object[]{obj} : (Object[]) obj;
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            for (int i = 0; i < arguments.length; i++) {
+                multipleSerialization.serialize(url, serialize, arguments.getClass(), arguments, bos);
+            }
+
+            return  bos.toByteArray();
+        }
+
+    }
+
+    private static class OriginalUnpack implements UnPack{
+        private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+
+        private final String serialize;
+        private final MultipleSerialization serialization;
+        private final URL url;
+        private final Class<?> actualResponseType;
+
+        private OriginalUnpack(MultipleSerialization serialization,
+                               URL url,
+                               String serialize,
+                               Class<?> actualResponseType) {
+            this.serialization = serialization;
+            this.serialize = convertHessianToWrapper(serialize);
+            this.url = url;
+            this.actualResponseType=actualResponseType;
+        }
+
+        @Override
+        public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            Class<?> clz = getClassFromCache(Object[].class.getName(), classCache, actualResponseType);
+            return serialization.deserialize(url, serialize,clz, bais);
+        }
+    }
 
     private static Class<?> getClassFromCache(String className, Map<String, Class<?>> classCache, Class<?> expectedClass) {
         if (expectedClass.getName().equals(className)) {
@@ -484,4 +534,19 @@ public class ReflectionPackableMethod implements PackableMethod {
         }
         return clz;
     }
+
+    /**
+     * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version
+     * (hessian4)
+     *
+     * @param serializeType literal type
+     * @return hessian4 if the param is hessian2, otherwise return the param
+     */
+    private static String convertHessianToWrapper(String serializeType) {
+        if (TripleConstant.HESSIAN2.equals(serializeType)) {
+            return TripleConstant.HESSIAN4;
+        }
+        return serializeType;
+    }
+
 }

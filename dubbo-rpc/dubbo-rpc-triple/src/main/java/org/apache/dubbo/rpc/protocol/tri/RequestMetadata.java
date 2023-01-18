@@ -41,6 +41,7 @@ public class RequestMetadata {
     public String group;
     public String address;
     public String acceptEncoding;
+    public String contentType;
     public String timeout;
     public Compressor compressor;
     public CancellationContext cancellationContext;
@@ -56,7 +57,7 @@ public class RequestMetadata {
             .authority(address)
             .method(HttpMethod.POST.asciiName())
             .path("/" + service + "/" + method.getMethodName())
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), getRemotingSerialization())
             .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
         if (!ignoreDefaultVersion || !"1.0.0".equals(version)) {
@@ -73,6 +74,11 @@ public class RequestMetadata {
         }
         StreamUtils.convertAttachment(header, attachments, convertNoLowerHeader);
         return header;
+    }
+
+    private String getRemotingSerialization() {
+//        TripleConstant.CONTENT_PROTO
+        return contentType;
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key,
