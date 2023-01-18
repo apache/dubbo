@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
@@ -49,7 +50,7 @@ public class ScopeBeanFactory {
     private final ScopeBeanFactory parent;
     private ExtensionAccessor extensionAccessor;
     private List<ExtensionPostProcessor> extensionPostProcessors;
-    private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
     private List<BeanInfo> registeredBeanInfos = new CopyOnWriteArrayList<>();
     private InstantiationStrategy instantiationStrategy;
     private AtomicBoolean destroyed = new AtomicBoolean();
@@ -183,7 +184,7 @@ public class ScopeBeanFactory {
     }
 
     private int getNextId(Class<?> beanClass) {
-        return beanNameIdCounterMap.computeIfAbsent(beanClass, key -> new AtomicInteger()).incrementAndGet();
+        return ConcurrentHashMapUtils.computeIfAbsent(beanNameIdCounterMap, beanClass, key -> new AtomicInteger()).incrementAndGet();
     }
 
     public <T> T getBean(Class<T> type) {

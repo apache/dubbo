@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.dubbo.common.URL;
@@ -48,6 +49,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.FieldUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -81,12 +83,12 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * tag name cache, speed up get tag name frequently
      */
-    private static final Map<Class, String> tagNameCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class, String> tagNameCache = new ConcurrentHashMap<>();
 
     /**
      * attributed getter method cache for equals(), hashCode() and toString()
      */
-    private static final Map<Class, List<Method>> attributedMethodCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class, List<Method>> attributedMethodCache = new ConcurrentHashMap<>();
 
     /**
      * The suffix container
@@ -122,7 +124,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public static String getTagName(Class<?> cls) {
-        return tagNameCache.computeIfAbsent(cls, (key) -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(tagNameCache, cls, (key) -> {
             String tag = cls.getSimpleName();
             for (String suffix : SUFFIXES) {
                 if (tag.endsWith(suffix)) {
@@ -1031,7 +1033,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private List<Method> getAttributedMethods() {
         Class<? extends AbstractConfig> cls = this.getClass();
-        return attributedMethodCache.computeIfAbsent(cls, (key) -> computeAttributedMethods());
+        return ConcurrentHashMapUtils.computeIfAbsent(attributedMethodCache, cls, (key) -> computeAttributedMethods());
     }
 
     /**
