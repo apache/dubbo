@@ -129,7 +129,7 @@ class DefaultMetricsCollectorTest {
         Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MIN.getName()), 0L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MAX.getName()), 10L);
         Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_AVG.getName()), 5L);
-        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_TOTAL.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_SUM.getName()), 10L);
     }
 
     @Test
