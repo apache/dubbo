@@ -44,7 +44,8 @@ class AbstractDefaultDubboObservationConvention {
 
     String getContextualName(Invocation invocation) {
         String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
-        String method = StringUtils.hasText(invocation.getMethodName()) ? invocation.getMethodName() : "";
+        String methodName = RpcUtils.getMethodName(invocation);
+        String method = StringUtils.hasText(methodName) ? methodName : "";
         return serviceName + "/" + method;
     }
 
