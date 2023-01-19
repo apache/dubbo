@@ -43,8 +43,7 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
 
     private DubboClientObservationConvention clientObservationConvention = null;
 
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public ObservationSenderFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
         clientObservationConvention = applicationModel.getBeanFactory().getBean(DubboClientObservationConvention.class);
     }
