@@ -140,7 +140,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private void collectRequests(List<MetricSample> list) {
         doExecute(RequestEvent.Type.TOTAL, MetricsStatHandler::get).filter(e->!e.isEmpty())
-            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL, k.getTags(), REQUESTS, v::get))));
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS, k.getTags(), REQUESTS, v::get))));
 
         doExecute(RequestEvent.Type.SUCCEED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get))));
@@ -171,7 +171,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
         this.stats.getMaxRT().forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_MAX, k.getTags(), RT, v::get)));
 
         this.stats.getTotalRT().forEach((k, v) -> {
-            list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_TOTAL, k.getTags(), RT, v::get));
+            list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_RT_SUM, k.getTags(), RT, v::get));
 
             AtomicLong avg = this.stats.getAvgRT().get(k);
             AtomicLong count = this.stats.getRtCount().get(k);
