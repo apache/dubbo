@@ -26,10 +26,15 @@ import java.util.function.Function;
 
 public class ConcurrentHashMapUtils {
 
-    private static final boolean IS_JAVA8;
+    private static boolean IS_JAVA8;
 
     static {
-        IS_JAVA8 = System.getProperty("java.version").startsWith("1.8.");
+        try {
+            IS_JAVA8 = System.getProperty("java.version").startsWith("1.8.");
+        } catch (Exception ignore) {
+            // exception is ignored
+            IS_JAVA8 = true;
+        }
     }
 
     /**
