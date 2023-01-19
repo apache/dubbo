@@ -320,13 +320,6 @@
                 <version>${eureka.version}</version>
             </dependency>
 
-            <!-- Alibaba -->
-            <dependency>
-                <groupId>com.alibaba.spring</groupId>
-                <artifactId>spring-context-support</artifactId>
-                <version>${alibaba_spring_context_support_version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
                 <artifactId>xmemcached</artifactId>

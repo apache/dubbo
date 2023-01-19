@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.boot.bind.RelaxedDataBinder;
 

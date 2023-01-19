@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getSubProperties;
+
 
 /**
  * Default {@link DubboConfigBinder} implementation based on Spring {@link DataBinder}

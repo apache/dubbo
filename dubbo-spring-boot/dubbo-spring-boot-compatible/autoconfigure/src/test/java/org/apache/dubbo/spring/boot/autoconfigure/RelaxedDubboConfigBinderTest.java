@@ -20,8 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,18 +34,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Map;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getSubProperties;
+
 
 /**
  * {@link RelaxedDubboConfigBinder} Test
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = {
-        "dubbo.application.NAME=hello",
-        "dubbo.application.owneR=world",
-        "dubbo.registry.Address=10.20.153.17",
-        "dubbo.protocol.pORt=20881",
-        "dubbo.service.invoke.timeout=2000",
+    "dubbo.application.NAME=hello",
+    "dubbo.application.owneR=world",
+    "dubbo.registry.Address=10.20.153.17",
+    "dubbo.protocol.pORt=20881",
+    "dubbo.service.invoke.timeout=2000",
 })
 @ContextConfiguration(classes = RelaxedDubboConfigBinder.class)
 public class RelaxedDubboConfigBinderTest {
@@ -78,12 +78,12 @@ public class RelaxedDubboConfigBinderTest {
 
         RegistryConfig registryConfig = new RegistryConfig();
         properties = getSubProperties(environment.getPropertySources(), "dubbo.registry");
-        dubboConfigBinder.bind(properties, true, true,  registryConfig);
+        dubboConfigBinder.bind(properties, true, true, registryConfig);
         Assert.assertEquals("10.20.153.17", registryConfig.getAddress());
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         properties = getSubProperties(environment.getPropertySources(), "dubbo.protocol");
-        dubboConfigBinder.bind(properties, true, true,  protocolConfig);
+        dubboConfigBinder.bind(properties, true, true, protocolConfig);
         Assert.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
 
     }

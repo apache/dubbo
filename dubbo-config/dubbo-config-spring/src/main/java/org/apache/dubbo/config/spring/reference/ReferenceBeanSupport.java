@@ -22,8 +22,6 @@ import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -48,6 +46,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.common.utils.StringUtils.join;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAnnotationAttributes;
 
 public class ReferenceBeanSupport {
 
@@ -131,9 +130,9 @@ public class ReferenceBeanSupport {
             value = convertToString(key, value);
 
             beanNameBuilder.append(key)
-                    .append('=')
-                    .append(value)
-                    .append(',');
+                .append('=')
+                .append(value)
+                .append(',');
         }
 
         // replace the latest "," to be ")"
@@ -164,7 +163,7 @@ public class ReferenceBeanSupport {
 
         //to string
         if (obj instanceof Annotation) {
-            AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes((Annotation) obj, true);
+            AnnotationAttributes attributes = getAnnotationAttributes((Annotation) obj, true);
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                 entry.setValue(convertToString(entry.getKey(), entry.getValue()));
             }
@@ -216,7 +215,7 @@ public class ReferenceBeanSupport {
             }
 
             if (value == null ||
-                    (value instanceof String && StringUtils.isBlank((String) value))
+                (value instanceof String && StringUtils.isBlank((String) value))
             ) {
                 //ignore null or blank string
                 continue;

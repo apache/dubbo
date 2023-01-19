@@ -33,8 +33,6 @@ import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.reference.ReferenceCreator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
-import com.alibaba.spring.util.AnnotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAnnotationAttributes;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.util.ReflectionUtils.findField;
@@ -127,7 +126,7 @@ class ReferenceCreatorTest {
         Field helloServiceField = findField(getClass(), "helloService");
         DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);
         // filter default value
-        AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, true);
+        AnnotationAttributes attributes = getAnnotationAttributes(reference, true);
         ReferenceConfig referenceBean = ReferenceCreator.create(attributes, context)
             .defaultInterfaceClass(helloServiceField.getType())
             .build();

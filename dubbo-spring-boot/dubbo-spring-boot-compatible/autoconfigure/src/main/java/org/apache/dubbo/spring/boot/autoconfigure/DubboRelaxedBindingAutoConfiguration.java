@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

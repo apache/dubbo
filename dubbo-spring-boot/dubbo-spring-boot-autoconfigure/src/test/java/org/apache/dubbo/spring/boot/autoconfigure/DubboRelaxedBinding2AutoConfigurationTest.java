@@ -18,9 +18,8 @@ package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
-
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ObjectProvider;
@@ -48,7 +47,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DubboRelaxedBinding2AutoConfigurationTest.class, properties = {
-        "dubbo.scan.basePackages = org.apache.dubbo.spring.boot.autoconfigure"
+    "dubbo.scan.basePackages = org.apache.dubbo.spring.boot.autoconfigure"
 })
 @EnableAutoConfiguration
 @PropertySource(value = "classpath:/dubbo.properties")
@@ -83,7 +82,7 @@ class DubboRelaxedBinding2AutoConfigurationTest {
         assertNotNull(serviceAnnotationPostProcessor);
         assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
 
-        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =  DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
         assertNotNull(referenceAnnotationBeanPostProcessor);
 
         assertNotNull(environment);

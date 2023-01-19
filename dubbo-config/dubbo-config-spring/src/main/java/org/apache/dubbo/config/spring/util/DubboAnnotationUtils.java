@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getAttribute;
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
 import static org.springframework.util.StringUtils.hasText;
 

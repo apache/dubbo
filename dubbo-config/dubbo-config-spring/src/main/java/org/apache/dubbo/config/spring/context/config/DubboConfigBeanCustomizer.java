@@ -18,8 +18,6 @@ package org.apache.dubbo.config.spring.context.config;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
-
-import com.alibaba.spring.context.config.ConfigurationBeanCustomizer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
 
@@ -34,7 +32,7 @@ import org.springframework.core.Ordered;
  * @see DubboConfigBinder#bind(String, AbstractConfig)
  * @since 2.6.6
  */
-public interface DubboConfigBeanCustomizer extends ConfigurationBeanCustomizer, Ordered {
+public interface DubboConfigBeanCustomizer extends  Ordered {
 
     /**
      * Customize {@link AbstractConfig Dubbo Config Bean}
@@ -44,7 +42,7 @@ public interface DubboConfigBeanCustomizer extends ConfigurationBeanCustomizer, 
      */
     void customize(String beanName, AbstractConfig dubboConfigBean);
 
-    @Override
+
     default void customize(String beanName, Object configurationBean) {
         if (configurationBean instanceof AbstractConfig) {
             customize(beanName, (AbstractConfig) configurationBean);

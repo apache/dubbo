@@ -20,7 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
-import com.alibaba.spring.context.config.ConfigurationBeanBinder;
+import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Map;
 
-import static com.alibaba.spring.util.PropertySourcesUtils.getSubProperties;
+import static org.apache.dubbo.config.spring.util.SpringUtils.getSubProperties;
+
 
 /**
  * {@link BinderDubboConfigBinder} Test
