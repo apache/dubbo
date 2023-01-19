@@ -34,12 +34,11 @@ public class DubboClientContext extends SenderContext<RpcContextAttachment> {
 
     private final Invocation invocation;
 
-    public DubboClientContext(RpcContextAttachment rpcContextAttachment, Invoker<?> invoker, Invocation invocation) {
+    public DubboClientContext(Invoker<?> invoker, Invocation invocation) {
         super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
-        this.rpcContextAttachment = rpcContextAttachment;
         this.invoker = invoker;
         this.invocation = invocation;
-        setCarrier(rpcContextAttachment);
+        setCarrier(invocation);
     }
 
     public RpcContextAttachment getRpcContextAttachment() {
