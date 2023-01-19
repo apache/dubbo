@@ -19,7 +19,6 @@ package org.apache.dubbo.common.config.configcenter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;

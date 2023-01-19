@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
