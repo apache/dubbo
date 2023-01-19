@@ -21,7 +21,6 @@ import io.micrometer.common.KeyValues;
 import io.micrometer.core.tck.MeterRegistryAssert;
 import io.micrometer.tracing.test.simple.SpansAssert;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;

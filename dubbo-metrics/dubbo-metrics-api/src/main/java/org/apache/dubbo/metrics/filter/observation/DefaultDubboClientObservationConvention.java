@@ -18,7 +18,6 @@ package org.apache.dubbo.metrics.filter.observation;
 
 import io.micrometer.common.KeyValues;
 import org.apache.dubbo.rpc.RpcContextAttachment;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;

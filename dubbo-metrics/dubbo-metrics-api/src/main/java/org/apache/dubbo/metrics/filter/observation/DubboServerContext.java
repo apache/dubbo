@@ -19,7 +19,6 @@ package org.apache.dubbo.metrics.filter.observation;
 import io.micrometer.observation.transport.ReceiverContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContextAttachment;
 
 /**
  * Consumer context for RPC.
