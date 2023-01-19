@@ -93,7 +93,7 @@
         <hazelcast_version>3.11.1</hazelcast_version>
         <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
-        <el_api_version>2.2.4</el_api_version>
+        <el_api_version>2.2.5</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2.2</cglib_version>
         <mockito_version>4.8.0</mockito_version>
