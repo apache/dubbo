@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
@@ -45,7 +46,7 @@ public class EdsEndpointManager {
 
     public synchronized void subscribeEds(String cluster, EdsEndpointListener listener) {
 
-        Set<EdsEndpointListener> listeners = ENDPOINT_LISTENERS.computeIfAbsent(cluster, key ->
+        Set<EdsEndpointListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(ENDPOINT_LISTENERS, cluster, key ->
             new ConcurrentHashSet<>()
         );
         if (CollectionUtils.isEmpty(listeners)) {
@@ -59,7 +60,7 @@ public class EdsEndpointManager {
     }
 
     private void doSubscribeEds(String cluster) {
-        EDS_LISTENERS.computeIfAbsent(cluster, key -> endpoints -> {
+        ConcurrentHashMapUtils.computeIfAbsent(EDS_LISTENERS, cluster, key -> endpoints -> {
             Set<Endpoint> result = endpoints.values()
                 .stream()
                 .map(EndpointResult::getEndpoints)
