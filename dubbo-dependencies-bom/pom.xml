@@ -92,7 +92,7 @@
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
         <spring_version>5.2.20.RELEASE</spring_version>
-        <javassist_version>3.28.0-GA</javassist_version>
+        <javassist_version>3.29.2-GA</javassist_version>
         <bytebuddy.version>1.12.22</bytebuddy.version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.72.Final</netty4_version>
