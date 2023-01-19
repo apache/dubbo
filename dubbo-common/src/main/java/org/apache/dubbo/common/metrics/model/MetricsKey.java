@@ -25,9 +25,9 @@ public enum MetricsKey {
     PROVIDER_METRIC_REQUESTS_FAILED("dubbo.provider.requests.failed", "Failed Requests"),
     PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed","Failed Business Requests"),
     PROVIDER_METRIC_REQUESTS_PROCESSING("dubbo.provider.requests.processing", "Processing Requests"),
-    PROVIDER_METRIC_REQUESTS_TIMEOUT("dubbo.provider.requests.timeout.failed", "Timeout Failed Requests"),
-    PROVIDER_METRIC_REQUESTS_LIMIT("dubbo.provider.requests.limit", "Limit Requests"),
-    PROVIDER_METRIC_REQUESTS_TOTAL_FAILED("dubbo.provider.requests.failed.total", "Failed Total Requests"),
+    PROVIDER_METRIC_REQUESTS_TIMEOUT("dubbo.provider.requests.timeout.total", "Total Timeout Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_LIMIT("dubbo.provider.requests.limit.total", "Total Limit Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_TOTAL_FAILED("dubbo.provider.requests.failed.total", "Total Failed Requests"),
 
 
     PROVIDER_METRIC_REQUESTS_TOTAL_AGG("dubbo.provider.requests.total.aggregate", "Aggregated Total Requests"),
