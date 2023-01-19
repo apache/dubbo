@@ -17,6 +17,11 @@
 package org.apache.dubbo.metrics.filter.observation;
 
 import io.micrometer.common.KeyValues;
+import org.apache.dubbo.rpc.RpcContextAttachment;
+import org.apache.dubbo.rpc.support.RpcUtils;
+
+import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
+import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;
 
 /**
  * Default implementation of the {@link DubboClientObservationConvention}.
@@ -34,11 +39,18 @@ public class DefaultDubboClientObservationConvention extends AbstractDefaultDubb
 
     @Override
     public KeyValues getLowCardinalityKeyValues(DubboClientContext context) {
-        return super.getLowCardinalityKeyValues(context.getInvocation(), context.getRpcContextAttachment());
+        KeyValues keyValues = super.getLowCardinalityKeyValues(context.getInvocation());
+        RpcContextAttachment rpcContextAttachment = context.getRpcContextAttachment();
+        keyValues = appendNonNull(keyValues, NET_PEER_NAME, rpcContextAttachment.getRemoteHostName());
+        if (rpcContextAttachment.getRemotePort() == 0) {
+            return keyValues;
+        }
+        int port = rpcContextAttachment.getRemotePort() != 0 ? rpcContextAttachment.getRemotePort() : rpcContextAttachment.getLocalPort();
+        return appendNonNull(keyValues, NET_PEER_PORT, String.valueOf(port));
     }
 
     @Override
     public String getContextualName(DubboClientContext context) {
-        return super.getContextualName(context.getInvocation(), context.getRpcContextAttachment());
+        return super.getContextualName(context.getInvocation());
     }
 }

@@ -24,24 +24,17 @@ import org.apache.dubbo.rpc.RpcContextAttachment;
 /**
  * Consumer context for RPC.
  */
-public class DubboServerContext extends ReceiverContext<RpcContextAttachment> {
-
-    private final RpcContextAttachment rpcContextAttachment;
+public class DubboServerContext extends ReceiverContext<Invocation> {
 
     private final Invoker<?> invoker;
 
     private final Invocation invocation;
 
-    public DubboServerContext(RpcContextAttachment rpcContextAttachment, Invoker<?> invoker, Invocation invocation) {
+    public DubboServerContext(Invoker<?> invoker, Invocation invocation) {
         super((stringObjectMap, s) -> String.valueOf(stringObjectMap.getAttachment(s)));
-        this.rpcContextAttachment = rpcContextAttachment;
         this.invoker = invoker;
         this.invocation = invocation;
-        setCarrier(rpcContextAttachment);
-    }
-
-    public RpcContextAttachment getRpcContextAttachment() {
-        return this.rpcContextAttachment;
+        setCarrier(invocation);
     }
 
     public Invoker<?> getInvoker() {

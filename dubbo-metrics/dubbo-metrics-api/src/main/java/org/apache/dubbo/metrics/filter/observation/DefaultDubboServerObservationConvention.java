@@ -35,11 +35,11 @@ public class DefaultDubboServerObservationConvention extends AbstractDefaultDubb
 
     @Override
     public KeyValues getLowCardinalityKeyValues(DubboServerContext context) {
-        return super.getLowCardinalityKeyValues(context.getInvocation(), context.getRpcContextAttachment());
+        return super.getLowCardinalityKeyValues(context.getInvocation());
     }
 
     @Override
     public String getContextualName(DubboServerContext context) {
-        return super.getContextualName(context.getInvocation(), context.getRpcContextAttachment());
+        return super.getContextualName(context.getInvocation());
     }
 }

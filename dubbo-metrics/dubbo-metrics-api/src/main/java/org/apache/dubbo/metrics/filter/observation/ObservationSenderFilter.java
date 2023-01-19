@@ -56,16 +56,26 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
         RpcContextAttachment context = RpcContext.getClientAttachment();
         DubboClientContext senderContext = new DubboClientContext(context, invoker, invocation);
         Observation observation = DubboObservation.CLIENT.observation(this.clientObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
-        return observation.observe(() -> invoker.invoke(invocation));
+        invocation.put(Observation.class, observation.start());
+        return observation.scoped(() -> invoker.invoke(invocation));
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-
+        Observation observation = (Observation) invocation.get(Observation.class);
+        if (observation == null) {
+            return;
+        }
+        observation.stop();
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        Observation observation = (Observation) invocation.get(Observation.class);
+        if (observation == null) {
+            return;
+        }
+        observation.error(t);
+        observation.stop();
     }
 }

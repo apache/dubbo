@@ -45,14 +45,15 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
             setupAttachments(buildingBlocks.getTracer());
             invoker = new AssertingInvoker(buildingBlocks.getTracer());
 
-            filter.invoke(invoker, invocation);
+            ObservationReceiverFilter senderFilter = (ObservationReceiverFilter) filter;
+            senderFilter.invoke(invoker, invocation);
+            senderFilter.onResponse(null, invoker, invocation);
 
             MeterRegistryAssert.then(meterRegistry)
-                .hasMeterWithNameAndTags("rpc.server.duration", KeyValues.of("net.peer.name", "foo.bar.com", "net.peer.port", "8080", "rpc.method", "mockMethod", "rpc.service", "DemoService", "rpc.system", "apache_dubbo"));
+                .hasMeterWithNameAndTags("rpc.server.duration", KeyValues.of("rpc.method", "mockMethod", "rpc.service", "DemoService", "rpc.system", "apache_dubbo"));
             SpansAssert.then(buildingBlocks.getFinishedSpans())
-                .hasASpanWithNameIgnoreCase("demoservice/foo", spanAssert ->
+                .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert ->
                     spanAssert
-                    .hasTag("net.peer.port", "8080")
                     .hasTag("rpc.method", "mockMethod")
                     .hasTag("rpc.service", "DemoService")
                     .hasTag("rpc.system", "apache_dubbo"));
@@ -70,9 +71,7 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
 
     @Override
     Filter createFilter(ApplicationModel applicationModel) {
-        ObservationReceiverFilter observationReceiverFilter = new ObservationReceiverFilter();
-        observationReceiverFilter.setApplicationModel(applicationModel);
-        return observationReceiverFilter;
+        return new ObservationReceiverFilter(applicationModel);
     }
 
     static class AssertingInvoker implements Invoker {

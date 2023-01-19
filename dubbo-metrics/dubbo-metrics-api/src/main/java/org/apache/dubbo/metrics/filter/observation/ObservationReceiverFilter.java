@@ -24,8 +24,6 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcContextAttachment;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
@@ -42,8 +40,7 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
 
     private DubboServerObservationConvention serverObservationConvention = null;
 
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public ObservationReceiverFilter(ApplicationModel applicationModel) {
         observationRegistry = applicationModel.getBeanFactory().getBean(ObservationRegistry.class);
         serverObservationConvention = applicationModel.getBeanFactory().getBean(DubboServerObservationConvention.class);
     }
@@ -53,19 +50,28 @@ public class ObservationReceiverFilter implements Filter, BaseFilter.Listener, S
         if (observationRegistry == null) {
             return invoker.invoke(invocation);
         }
-        RpcContextAttachment context = RpcContext.getServerAttachment();
-        DubboServerContext receiverContext = new DubboServerContext(context, invoker, invocation);
+        DubboServerContext receiverContext = new DubboServerContext(invoker, invocation);
         Observation observation = DubboObservation.SERVER.observation(this.serverObservationConvention, DefaultDubboServerObservationConvention.INSTANCE, () -> receiverContext, observationRegistry);
-        return observation.observe(() -> invoker.invoke(invocation));
+        invocation.put(Observation.class, observation.start());
+        return observation.scoped(() -> invoker.invoke(invocation));
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-
+        Observation observation = (Observation) invocation.get(Observation.class);
+        if (observation == null) {
+            return;
+        }
+        observation.stop();
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        Observation observation = (Observation) invocation.get(Observation.class);
+        if (observation == null) {
+            return;
+        }
+        observation.error(t);
+        observation.stop();
     }
 }

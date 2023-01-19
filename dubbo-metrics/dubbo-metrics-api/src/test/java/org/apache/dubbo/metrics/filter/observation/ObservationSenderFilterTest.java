@@ -35,14 +35,17 @@ class ObservationSenderFilterTest extends AbstractObservationFilterTest {
             setupConfig();
             setupAttachments();
 
-            filter.invoke(invoker, invocation);
+            ObservationSenderFilter senderFilter = (ObservationSenderFilter) filter;
+            senderFilter.invoke(invoker, invocation);
+            senderFilter.onResponse(null, invoker, invocation);
 
-            BDDAssertions.then(RpcContext.getClientAttachment().getAttachment("X-B3-TraceId")).isNotEmpty();
+            BDDAssertions.then(invocation.getObjectAttachment("X-B3-TraceId")).isNotNull();
             MeterRegistryAssert.then(meterRegistry)
                 .hasMeterWithNameAndTags("rpc.client.duration", KeyValues.of("net.peer.name", "foo.bar.com", "net.peer.port", "8080", "rpc.method", "mockMethod", "rpc.service", "DemoService", "rpc.system", "apache_dubbo"));
             SpansAssert.then(buildingBlocks.getFinishedSpans())
-                .hasASpanWithNameIgnoreCase("demoservice/foo", spanAssert ->
+                .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert ->
                     spanAssert
+                        .hasTag("net.peer.name", "foo.bar.com")
                         .hasTag("net.peer.port", "8080")
                         .hasTag("rpc.method", "mockMethod")
                         .hasTag("rpc.service", "DemoService")
@@ -52,14 +55,11 @@ class ObservationSenderFilterTest extends AbstractObservationFilterTest {
 
     void setupAttachments() {
         RpcContext.getClientAttachment().setUrl(URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&side=consumer"));
-        RpcContext.getClientAttachment().setMethodName("foo");
         RpcContext.getClientAttachment().setRemoteAddress("foo.bar.com", 8080);
     }
 
     @Override
     ClusterFilter createFilter(ApplicationModel applicationModel) {
-        ObservationSenderFilter observationSenderFilter = new ObservationSenderFilter();
-        observationSenderFilter.setApplicationModel(applicationModel);
-        return observationSenderFilter;
+        return new ObservationSenderFilter(applicationModel);
     }
 }

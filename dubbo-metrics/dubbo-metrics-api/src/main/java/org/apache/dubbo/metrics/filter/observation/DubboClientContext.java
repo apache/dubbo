@@ -26,18 +26,19 @@ import org.apache.dubbo.rpc.RpcContextAttachment;
 /**
  * Provider context for RPC.
  */
-public class DubboClientContext extends SenderContext<RpcContextAttachment> {
-
-    private final RpcContextAttachment rpcContextAttachment;
+public class DubboClientContext extends SenderContext<Invocation> {
 
     private final Invoker<?> invoker;
 
     private final Invocation invocation;
 
-    public DubboClientContext(Invoker<?> invoker, Invocation invocation) {
+    private final RpcContextAttachment rpcContextAttachment;
+
+    public DubboClientContext(RpcContextAttachment rpcContextAttachment, Invoker<?> invoker, Invocation invocation) {
         super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
         this.invoker = invoker;
         this.invocation = invocation;
+        this.rpcContextAttachment = rpcContextAttachment;
         setCarrier(invocation);
     }
 

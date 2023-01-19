@@ -21,38 +21,30 @@ import io.micrometer.common.docs.KeyName;
 import io.micrometer.common.lang.Nullable;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcContextAttachment;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
-import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_METHOD;
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_SERVICE;
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.RPC_SYSTEM;
 
 class AbstractDefaultDubboObservationConvention {
-    KeyValues getLowCardinalityKeyValues(Invocation invocation, RpcContextAttachment rpcContextAttachment) {
+    KeyValues getLowCardinalityKeyValues(Invocation invocation) {
         KeyValues keyValues = KeyValues.of(RPC_SYSTEM.withValue("apache_dubbo"));
         String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
         keyValues = appendNonNull(keyValues, RPC_SERVICE, serviceName);
-        keyValues = appendNonNull(keyValues, RPC_METHOD, invocation.getMethodName());
-        keyValues = appendNonNull(keyValues, NET_PEER_NAME, rpcContextAttachment.getRemoteHostName());
-        if (rpcContextAttachment.getRemotePort() == 0) {
-            return keyValues;
-        }
-        int port = rpcContextAttachment.getRemotePort() != 0 ? rpcContextAttachment.getRemotePort() : rpcContextAttachment.getLocalPort();
-        return appendNonNull(keyValues, NET_PEER_PORT, String.valueOf(port));
+        return appendNonNull(keyValues, RPC_METHOD, RpcUtils.getMethodName(invocation));
     }
 
-    private KeyValues appendNonNull(KeyValues keyValues, KeyName keyName, @Nullable String value) {
+    protected KeyValues appendNonNull(KeyValues keyValues, KeyName keyName, @Nullable String value) {
         if (value != null) {
             return keyValues.and(keyName.withValue(value));
         }
         return keyValues;
     }
 
-    String getContextualName(Invocation invocation, RpcContextAttachment rpcContextAttachment) {
+    String getContextualName(Invocation invocation) {
         String serviceName = StringUtils.hasText(invocation.getServiceName()) ? invocation.getServiceName() : readServiceName(invocation.getTargetServiceUniqueName());
-        String method = StringUtils.hasText(rpcContextAttachment.getMethodName()) ? rpcContextAttachment.getMethodName() : invocation.getMethodName();
+        String method = StringUtils.hasText(invocation.getMethodName()) ? invocation.getMethodName() : "";
         return serviceName + "/" + method;
     }
 
