@@ -158,7 +158,7 @@
         <embedded_redis_version>0.10.0</embedded_redis_version>
 
         <!-- Eureka -->
-        <eureka.version>1.9.12</eureka.version>
+        <eureka.version>1.10.18</eureka.version>
 
         <!-- Fabric8 for Kubernetes -->
         <fabric8_kubernetes_version>6.1.1</fabric8_kubernetes_version>
