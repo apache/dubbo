@@ -68,11 +68,11 @@ public class MockInvocation extends RpcInvocation {
     }
 
     public Class<?>[] getParameterTypes() {
-        return new Class[]{String.class};
+        return new Class[] {String.class};
     }
 
     public Object[] getArguments() {
-        return new Object[]{"aa"};
+        return new Object[] {"aa"};
     }
 
     public Map<String, String> getAttachments() {

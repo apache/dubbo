@@ -17,23 +17,14 @@
 
 package org.apache.dubbo.metrics.filter.observation;
 
-import io.micrometer.common.KeyValues;
-import io.micrometer.core.tck.MeterRegistryAssert;
 import io.micrometer.tracing.test.SampleTestRunner;
-import io.micrometer.tracing.test.simple.SpansAssert;
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.BaseFilter;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -82,7 +73,7 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
     private void initParam() {
         invocation.setTargetServiceUniqueName(GROUP + "/" + INTERFACE_NAME + ":" + VERSION);
         invocation.setMethodName(METHOD_NAME);
-        invocation.setParameterTypes(new Class[]{String.class});
+        invocation.setParameterTypes(new Class[] {String.class});
     }
 
 }

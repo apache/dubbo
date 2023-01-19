@@ -51,9 +51,9 @@ class ObservationReceiverFilterTest extends AbstractObservationFilterTest {
             SpansAssert.then(buildingBlocks.getFinishedSpans())
                 .hasASpanWithNameIgnoreCase("DemoService/mockMethod", spanAssert ->
                     spanAssert
-                    .hasTag("rpc.method", "mockMethod")
-                    .hasTag("rpc.service", "DemoService")
-                    .hasTag("rpc.system", "apache_dubbo"));
+                        .hasTag("rpc.method", "mockMethod")
+                        .hasTag("rpc.service", "DemoService")
+                        .hasTag("rpc.system", "apache_dubbo"));
         };
     }
 
