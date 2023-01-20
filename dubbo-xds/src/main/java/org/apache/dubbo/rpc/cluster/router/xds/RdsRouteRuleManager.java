@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
@@ -38,7 +40,7 @@ public class RdsRouteRuleManager {
 
     private static final ConcurrentHashMap<String, List<XdsRouteRule>> ROUTE_DATA_CACHE = new ConcurrentHashMap<>();
 
-    private static final Map<String, RdsVirtualHostListener> RDS_LISTENERS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, RdsVirtualHostListener> RDS_LISTENERS = new ConcurrentHashMap<>();
 
     private static volatile Consumer<Map<String, ListenerResult>> LDS_LISTENER;
 
@@ -51,7 +53,7 @@ public class RdsRouteRuleManager {
 
     public synchronized void subscribeRds(String domain, XdsRouteRuleListener listener) {
 
-        Set<XdsRouteRuleListener> listeners = RULE_LISTENERS.computeIfAbsent(domain, key ->
+        Set<XdsRouteRuleListener> listeners = ConcurrentHashMapUtils.computeIfAbsent(RULE_LISTENERS, domain, key ->
             new ConcurrentHashSet<>()
         );
         if (CollectionUtils.isEmpty(listeners)) {
@@ -107,7 +109,7 @@ public class RdsRouteRuleManager {
                 }
             }
         }
-        RDS_LISTENERS.computeIfAbsent(domain, key -> new RdsVirtualHostListener(domain, this));
+        ConcurrentHashMapUtils.computeIfAbsent(RDS_LISTENERS, domain, key -> new RdsVirtualHostListener(domain, this));
         RDS_LISTENER.accept(RDS_RESULT);
     }
 
