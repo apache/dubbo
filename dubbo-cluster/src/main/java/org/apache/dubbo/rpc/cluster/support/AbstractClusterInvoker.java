@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
@@ -38,11 +43,6 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.RpcUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RESELECT_COUNT;
@@ -376,6 +376,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 InvocationProfilerUtils.enterProfiler(invocation, "Invoker invoke. Target Address: " + invoker.getUrl().getAddress());
             }
+            invocation.addInvokedInvoker(invoker);
             result = invoker.invoke(invocation);
         } finally {
             clearContext(invoker);
