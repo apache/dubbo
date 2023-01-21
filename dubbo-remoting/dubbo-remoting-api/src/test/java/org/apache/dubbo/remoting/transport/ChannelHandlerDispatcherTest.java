@@ -19,12 +19,13 @@ package org.apache.dubbo.remoting.transport;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 
 class ChannelHandlerDispatcherTest {
 
@@ -55,6 +56,23 @@ class ChannelHandlerDispatcherTest {
         channelHandlerDispatcher = channelHandlerDispatcher.removeChannelHandler(channelHandler1);
         Assertions.assertFalse(channelHandlerDispatcher.getChannelHandlers().contains(channelHandler1));
 
+    }
+
+    @Test
+    void constructorNullObjectTest() {
+        ChannelHandlerDispatcher channelHandlerDispatcher = new ChannelHandlerDispatcher(null, null);
+        Assertions.assertEquals(channelHandlerDispatcher.getChannelHandlers().size(), 0);
+        ChannelHandlerDispatcher channelHandlerDispatcher1 = new ChannelHandlerDispatcher((MockChannelHandler) null);
+        Assertions.assertEquals(channelHandlerDispatcher1.getChannelHandlers().size(), 0);
+        ChannelHandlerDispatcher channelHandlerDispatcher2 = new ChannelHandlerDispatcher(null, new MockChannelHandler());
+        Assertions.assertEquals(channelHandlerDispatcher2.getChannelHandlers().size(), 1);
+        ChannelHandlerDispatcher channelHandlerDispatcher3 = new ChannelHandlerDispatcher(Collections.singleton(new MockChannelHandler()));
+        Assertions.assertEquals(channelHandlerDispatcher3.getChannelHandlers().size(), 1);
+        Collection<ChannelHandler> mockChannelHandlers = new HashSet<>();
+        mockChannelHandlers.add(new MockChannelHandler());
+        mockChannelHandlers.add(null);
+        ChannelHandlerDispatcher channelHandlerDispatcher4 = new ChannelHandlerDispatcher(mockChannelHandlers);
+        Assertions.assertEquals(channelHandlerDispatcher4.getChannelHandlers().size(), 1);
     }
 
 }
