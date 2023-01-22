@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.JsonUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -108,10 +109,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         setUrl(reportServerURL);
 
         boolean localCacheEnabled = reportServerURL.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
+
+        String appAndAddressName = reportServerURL.getApplication() + "-" + reportServerURL.getAddress().replaceAll(":", "-");
+        MD5Utils md5Utils = new MD5Utils();
+
         // Start file save timer
+        String defaultFileContent = System.getProperty(USER_HOME) + DUBBO_METADATA +
+            appAndAddressName + CACHE;
+        properties.setProperty("metadata.realFilePath", defaultFileContent);
         String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
-            reportServerURL.getApplication() + "-" +
-            replace(reportServerURL.getAddress(), ":", "-") + CACHE;
+            md5Utils.getMd5(appAndAddressName) + CACHE;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (localCacheEnabled && ConfigUtils.isNotEmpty(filename)) {

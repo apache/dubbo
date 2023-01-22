@@ -65,4 +65,9 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
     protected String getName() {
         return "mapping";
     }
+
+    @Override
+    public String getDefaultFileName() {
+        return DEFAULT_FILE_NAME;
+    }
 }

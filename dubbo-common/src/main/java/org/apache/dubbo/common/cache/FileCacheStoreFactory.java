@@ -19,22 +19,27 @@ package org.apache.dubbo.common.cache;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.MD5Utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_READ_WRITE_CACHE_FILE;
 
 /**
  * ClassLoader Level static share.
@@ -71,11 +76,11 @@ public final class FileCacheStoreFactory {
         }
     }});
 
-    public static FileCacheStore getInstance(String basePath, String cacheName) {
-        return getInstance(basePath, cacheName, true);
+    public static FileCacheStore getInstance(String basePath, String filePrefix, String cacheName) {
+        return getInstance(basePath, filePrefix, cacheName, true);
     }
 
-    public static FileCacheStore getInstance(String basePath, String cacheName, boolean enableFileCache) {
+    public static FileCacheStore getInstance(String basePath, String filePrefix, String cacheName, boolean enableFileCache) {
         if (basePath == null) {
             // default case: ~/.dubbo
             basePath = System.getProperty("user.home") + File.separator + ".dubbo";
@@ -105,10 +110,17 @@ public final class FileCacheStoreFactory {
         if (!cacheName.endsWith(SUFFIX)) {
             cacheName = cacheName + SUFFIX;
         }
+        // basePath: /Users/aming/.dubbo   cacheName: .metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
+//        String cacheFilePath = basePath + File.separator + cacheName;
+        // /Users/aming/.dubbo/.metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
+        String fileContent = basePath + File.separator + cacheName;
+        // /Users/aming/.dubbo/.metadata
+        basePath = basePath + File.separator + filePrefix;
 
-        String cacheFilePath = basePath + File.separator + cacheName;
+        MD5Utils md5Utils = new MD5Utils();
+        String finalPath = basePath + File.separator + md5Utils.getMd5(cacheName);
 
-        return cacheMap.computeIfAbsent(cacheFilePath, k -> getFile(k, enableFileCache));
+        return cacheMap.computeIfAbsent(finalPath, k -> getFile(k, fileContent, enableFileCache));
     }
 
     /**
@@ -138,7 +150,7 @@ public final class FileCacheStoreFactory {
      * @param name the file name
      * @return a file object
      */
-    private static FileCacheStore getFile(String name, boolean enableFileCache) {
+    private static FileCacheStore getFile(String name, String fileContent, boolean enableFileCache) {
         if (!enableFileCache) {
             return FileCacheStore.Empty.getInstance(name);
         }
@@ -147,10 +159,18 @@ public final class FileCacheStoreFactory {
             FileCacheStore.Builder builder = FileCacheStore.newBuilder();
             tryFileLock(builder, name);
             File file = new File(name);
-
             if (!file.exists()) {
                 Path pathObjectOfFile = file.toPath();
                 Files.createFile(pathObjectOfFile);
+            }
+
+            // Save
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            try (FileOutputStream outputFile = new FileOutputStream(file)) {
+                outputFile.write(fileContent.getBytes(StandardCharsets.UTF_8), 0, fileContent.length());
             }
 
             builder.cacheFilePath(name)

@@ -70,4 +70,9 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
     protected String getName() {
         return "meta";
     }
+
+    @Override
+    public String getDefaultFileName() {
+        return DEFAULT_FILE_NAME;
+    }
 }
