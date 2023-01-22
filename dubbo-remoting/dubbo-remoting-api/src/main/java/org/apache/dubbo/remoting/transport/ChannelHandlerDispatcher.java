@@ -51,7 +51,7 @@ public class ChannelHandlerDispatcher implements ChannelHandler {
     public ChannelHandlerDispatcher(Collection<ChannelHandler> handlers) {
         if (CollectionUtils.isNotEmpty(handlers)) {
             // filter null object
-            this.channelHandlers.addAll(handlers.stream().filter(Objects::nonNull).collect(Collectors.toSet()));
+            handlers.stream().filter(Objects::nonNull).foreach(this.channelHandlers::add);
         }
     }
 
