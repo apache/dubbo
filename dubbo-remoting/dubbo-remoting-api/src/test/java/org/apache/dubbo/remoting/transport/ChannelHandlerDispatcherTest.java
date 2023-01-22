@@ -61,18 +61,18 @@ class ChannelHandlerDispatcherTest {
     @Test
     void constructorNullObjectTest() {
         ChannelHandlerDispatcher channelHandlerDispatcher = new ChannelHandlerDispatcher(null, null);
-        Assertions.assertEquals(channelHandlerDispatcher.getChannelHandlers().size(), 0);
+        Assertions.assertEquals(0, channelHandlerDispatcher.getChannelHandlers().size());
         ChannelHandlerDispatcher channelHandlerDispatcher1 = new ChannelHandlerDispatcher((MockChannelHandler) null);
-        Assertions.assertEquals(channelHandlerDispatcher1.getChannelHandlers().size(), 0);
+        Assertions.assertEquals(0, channelHandlerDispatcher1.getChannelHandlers().size());
         ChannelHandlerDispatcher channelHandlerDispatcher2 = new ChannelHandlerDispatcher(null, new MockChannelHandler());
-        Assertions.assertEquals(channelHandlerDispatcher2.getChannelHandlers().size(), 1);
+        Assertions.assertEquals(1, channelHandlerDispatcher2.getChannelHandlers().size());
         ChannelHandlerDispatcher channelHandlerDispatcher3 = new ChannelHandlerDispatcher(Collections.singleton(new MockChannelHandler()));
-        Assertions.assertEquals(channelHandlerDispatcher3.getChannelHandlers().size(), 1);
+        Assertions.assertEquals(1, channelHandlerDispatcher3.getChannelHandlers().size());
         Collection<ChannelHandler> mockChannelHandlers = new HashSet<>();
         mockChannelHandlers.add(new MockChannelHandler());
         mockChannelHandlers.add(null);
         ChannelHandlerDispatcher channelHandlerDispatcher4 = new ChannelHandlerDispatcher(mockChannelHandlers);
-        Assertions.assertEquals(channelHandlerDispatcher4.getChannelHandlers().size(), 1);
+        Assertions.assertEquals(1, channelHandlerDispatcher4.getChannelHandlers().size());
     }
 
 }
