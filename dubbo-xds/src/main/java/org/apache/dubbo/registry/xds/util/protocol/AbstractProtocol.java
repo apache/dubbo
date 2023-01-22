@@ -43,6 +43,7 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_FAILED_REQUEST;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
 public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements XdsProtocol<T>, XdsListener {
 
@@ -138,7 +139,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             Consumer<Map<String, T>> futureConsumer = future::complete;
             try {
                 writeLock.lock();
-                consumerObserveMap.computeIfAbsent(consumerObserveResourceNames, key -> new ArrayList<>())
+                ConcurrentHashMapUtils.computeIfAbsent((ConcurrentHashMap<Set<String>, List<Consumer<Map<String, T>>>>)consumerObserveMap,consumerObserveResourceNames, key -> new ArrayList<>())
                     .add(futureConsumer);
             } finally {
                 writeLock.unlock();

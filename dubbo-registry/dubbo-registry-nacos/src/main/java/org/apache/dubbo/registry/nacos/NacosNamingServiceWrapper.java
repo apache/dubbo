@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 import org.apache.dubbo.common.constants.LoggerCodeConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.nacos.function.NacosConsumer;
@@ -56,8 +58,8 @@ public class NacosNamingServiceWrapper {
 
     private final boolean isSupportBatchRegister;
 
-    private final Map<InstanceId, InstancesInfo> registerStatus = new ConcurrentHashMap<>();
-    private final Map<SubscribeInfo, NamingService> subscribeStatus = new ConcurrentHashMap<>();
+    private final ConcurrentMap<InstanceId, InstancesInfo> registerStatus = new ConcurrentHashMap<>();
+    private final ConcurrentMap<SubscribeInfo, NamingService> subscribeStatus = new ConcurrentHashMap<>();
     private final Lock mapLock = new ReentrantLock();
 
     public NacosNamingServiceWrapper(NacosConnectionManager nacosConnectionManager, int retryTimes, int sleepMsBetweenRetries) {
@@ -86,7 +88,7 @@ public class NacosNamingServiceWrapper {
     public void subscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
         String nacosServiceName = handleInnerSymbol(serviceName);
         SubscribeInfo subscribeInfo = new SubscribeInfo(nacosServiceName, group, eventListener);
-        NamingService namingService = subscribeStatus.computeIfAbsent(subscribeInfo, info -> nacosConnectionManager.getNamingService());
+        NamingService namingService = ConcurrentHashMapUtils.computeIfAbsent(subscribeStatus, subscribeInfo, info -> nacosConnectionManager.getNamingService());
         accept(() -> namingService.subscribe(nacosServiceName, group, eventListener));
     }
 
@@ -109,7 +111,7 @@ public class NacosNamingServiceWrapper {
         InstancesInfo instancesInfo;
         try {
             mapLock.lock();
-            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
         } finally {
             mapLock.unlock();
         }
@@ -177,7 +179,7 @@ public class NacosNamingServiceWrapper {
         InstancesInfo instancesInfo;
         try {
             mapLock.lock();
-            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
         } finally {
             mapLock.unlock();
         }
@@ -223,7 +225,7 @@ public class NacosNamingServiceWrapper {
         InstancesInfo instancesInfo;
         try {
             mapLock.lock();
-            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
         } finally {
             mapLock.unlock();
         }
@@ -250,7 +252,7 @@ public class NacosNamingServiceWrapper {
         InstancesInfo instancesInfo;
         try {
             mapLock.lock();
-            instancesInfo = registerStatus.computeIfAbsent(new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
+            instancesInfo = ConcurrentHashMapUtils.computeIfAbsent(registerStatus, new InstanceId(nacosServiceName, group), id -> new InstancesInfo());
         } finally {
             mapLock.unlock();
         }

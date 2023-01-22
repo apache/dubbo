@@ -156,6 +156,12 @@
       },
       {
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsServiceExporter\\E"
+      },
+      {
+        "pattern": "\\Qsecurity/serialize.blockedlist\\E"
+      },
+      {
+        "pattern": "\\Qsecurity/serialize.allowlist\\E"
       }
     ]
   },

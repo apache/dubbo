@@ -18,18 +18,20 @@ package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ServiceConfigURL extends URL {
 
 
-    private volatile transient Map<String, URL> urls;
-    private volatile transient Map<String, Number> numbers;
-    private volatile transient Map<String, Map<String, Number>> methodNumbers;
+    private volatile transient ConcurrentMap<String, URL> urls;
+    private volatile transient ConcurrentMap<String, Number> numbers;
+    private volatile transient ConcurrentMap<String, Map<String, Number>> methodNumbers;
     private volatile transient String full;
     private volatile transient String string;
     private volatile transient String identity;
@@ -77,12 +79,12 @@ public class ServiceConfigURL extends URL {
     }
 
     public ServiceConfigURL(String protocol,
-               String username,
-               String password,
-               String host,
-               int port,
-               String path,
-               Map<String, String> parameters) {
+                            String username,
+                            String password,
+                            String host,
+                            int port,
+                            String path,
+                            Map<String, String> parameters) {
         this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), null);
     }
 
@@ -551,11 +553,11 @@ public class ServiceConfigURL extends URL {
     }
 
     private void updateCachedNumber(String method, String key, Number n) {
-        Map<String, Number> keyNumber = getMethodNumbers().computeIfAbsent(method, m -> new HashMap<>());
+        Map<String, Number> keyNumber = ConcurrentHashMapUtils.computeIfAbsent(getMethodNumbers(), method, m -> new HashMap<>());
         keyNumber.put(key, n);
     }
 
-    protected Map<String, Map<String, Number>> getMethodNumbers() {
+    protected ConcurrentMap<String, Map<String, Number>> getMethodNumbers() {
         if (methodNumbers == null) { // concurrent initialization is tolerant
             methodNumbers = new ConcurrentHashMap<>();
         }
