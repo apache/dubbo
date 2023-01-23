@@ -17,6 +17,7 @@
 package org.apache.dubbo.metrics.filter.observation;
 
 import io.micrometer.common.KeyValues;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
@@ -40,12 +41,31 @@ public class DefaultDubboClientObservationConvention extends AbstractDefaultDubb
     public KeyValues getLowCardinalityKeyValues(DubboClientContext context) {
         KeyValues keyValues = super.getLowCardinalityKeyValues(context.getInvocation());
         RpcContextAttachment rpcContextAttachment = context.getRpcContextAttachment();
-        keyValues = appendNonNull(keyValues, NET_PEER_NAME, rpcContextAttachment.getRemoteHostName());
-        if (rpcContextAttachment.getRemotePort() == 0) {
+        URL url = context.getInvoker().getUrl();
+        String remoteHost = remoteHost(rpcContextAttachment, url);
+        int remotePort = remotePort(rpcContextAttachment, url);
+        return withRemoteHostPort(keyValues, remoteHost, remotePort);
+    }
+
+    private String remoteHost(RpcContextAttachment rpcContextAttachment, URL url) {
+        String remoteHost = url != null ? url.getHost() : null;
+        return remoteHost != null ? remoteHost : rpcContextAttachment.getRemoteHost();
+    }
+
+    private int remotePort(RpcContextAttachment rpcContextAttachment, URL url) {
+        Integer remotePort = url != null ? url.getPort() : null;
+        if (remotePort != null) {
+            return remotePort;
+        }
+        return rpcContextAttachment.getRemotePort() != 0 ? rpcContextAttachment.getRemotePort() : rpcContextAttachment.getLocalPort();
+    }
+
+    private KeyValues withRemoteHostPort(KeyValues keyValues, String remoteHostName, int remotePort) {
+        keyValues = appendNonNull(keyValues, NET_PEER_NAME, remoteHostName);
+        if (remotePort == 0) {
             return keyValues;
         }
-        int port = rpcContextAttachment.getRemotePort() != 0 ? rpcContextAttachment.getRemotePort() : rpcContextAttachment.getLocalPort();
-        return appendNonNull(keyValues, NET_PEER_PORT, String.valueOf(port));
+        return appendNonNull(keyValues, NET_PEER_PORT, String.valueOf(remotePort));
     }
 
     @Override
