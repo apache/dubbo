@@ -36,7 +36,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <spring-boot-maven-plugin.version>2.7.7</spring-boot-maven-plugin.version>
+        <spring-boot-maven-plugin.version>2.7.8</spring-boot-maven-plugin.version>
     </properties>
 
 </project>
