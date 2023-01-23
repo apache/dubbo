@@ -16,8 +16,12 @@
  */
 package org.apache.dubbo.metrics.filter.observation;
 
+import java.util.List;
+
 import io.micrometer.common.KeyValues;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
 
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
@@ -40,8 +44,18 @@ public class DefaultDubboClientObservationConvention extends AbstractDefaultDubb
     @Override
     public KeyValues getLowCardinalityKeyValues(DubboClientContext context) {
         KeyValues keyValues = super.getLowCardinalityKeyValues(context.getInvocation());
-        RpcContextAttachment rpcContextAttachment = context.getRpcContextAttachment();
-        URL url = context.getInvoker().getUrl();
+        return withRemoteHostPort(keyValues, context);
+    }
+
+    private KeyValues withRemoteHostPort(KeyValues keyValues, DubboClientContext context) {
+        List<Invoker<?>> invokedInvokers = context.getInvocation().getInvokedInvokers();
+        if (invokedInvokers.isEmpty()) {
+            return keyValues;
+        }
+        // We'll attach tags only from the first invoker
+        Invoker<?> invoker = invokedInvokers.get(0);
+        URL url = invoker.getUrl();
+        RpcContextAttachment rpcContextAttachment = RpcContext.getClientAttachment();
         String remoteHost = remoteHost(rpcContextAttachment, url);
         int remotePort = remotePort(rpcContextAttachment, url);
         return withRemoteHostPort(keyValues, remoteHost, remotePort);

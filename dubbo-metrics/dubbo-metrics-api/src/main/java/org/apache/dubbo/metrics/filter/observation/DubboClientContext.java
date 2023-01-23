@@ -21,7 +21,6 @@ import java.util.Objects;
 import io.micrometer.observation.transport.SenderContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContextAttachment;
 
 /**
  * Provider context for RPC.
@@ -32,18 +31,11 @@ public class DubboClientContext extends SenderContext<Invocation> {
 
     private final Invocation invocation;
 
-    private final RpcContextAttachment rpcContextAttachment;
-
-    public DubboClientContext(RpcContextAttachment rpcContextAttachment, Invoker<?> invoker, Invocation invocation) {
+    public DubboClientContext(Invoker<?> invoker, Invocation invocation) {
         super((map, key, value) -> Objects.requireNonNull(map).setAttachment(key, value));
         this.invoker = invoker;
         this.invocation = invocation;
-        this.rpcContextAttachment = rpcContextAttachment;
         setCarrier(invocation);
-    }
-
-    public RpcContextAttachment getRpcContextAttachment() {
-        return rpcContextAttachment;
     }
 
     public Invoker<?> getInvoker() {

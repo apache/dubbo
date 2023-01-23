@@ -24,8 +24,6 @@ import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcContextAttachment;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -53,8 +51,7 @@ public class ObservationSenderFilter implements ClusterFilter, BaseFilter.Listen
         if (observationRegistry == null) {
             return invoker.invoke(invocation);
         }
-        RpcContextAttachment context = RpcContext.getClientAttachment();
-        DubboClientContext senderContext = new DubboClientContext(context, invoker, invocation);
+        DubboClientContext senderContext = new DubboClientContext(invoker, invocation);
         Observation observation = DubboObservation.CLIENT.observation(this.clientObservationConvention, DefaultDubboClientObservationConvention.INSTANCE, () -> senderContext, observationRegistry);
         invocation.put(Observation.class, observation.start());
         return observation.scoped(() -> invoker.invoke(invocation));
