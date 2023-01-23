@@ -120,7 +120,7 @@ public final class FileCacheStoreFactory {
         MD5Utils md5Utils = new MD5Utils();
         String finalPath = basePath + File.separator + md5Utils.getMd5(cacheName);
 
-        return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(k, enableFileCache));
+        return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, finalPath, k -> getFile(finalPath, fileContent, enableFileCache));
     }
 
     /**
