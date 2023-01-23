@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.File;
@@ -145,7 +146,7 @@ public class LoggerFactory {
      * @return logger
      */
     public static Logger getLogger(Class<?> key) {
-        return LOGGERS.computeIfAbsent(key.getName(), name -> new FailsafeLogger(loggerAdapter.getLogger(name)));
+        return ConcurrentHashMapUtils.computeIfAbsent(LOGGERS, key.getName(), name -> new FailsafeLogger(loggerAdapter.getLogger(name)));
     }
 
     /**
@@ -155,7 +156,7 @@ public class LoggerFactory {
      * @return logger provider
      */
     public static Logger getLogger(String key) {
-        return LOGGERS.computeIfAbsent(key, k -> new FailsafeLogger(loggerAdapter.getLogger(k)));
+        return ConcurrentHashMapUtils.computeIfAbsent(LOGGERS, key, k -> new FailsafeLogger(loggerAdapter.getLogger(k)));
     }
 
     /**
@@ -165,7 +166,7 @@ public class LoggerFactory {
      * @return error type aware logger
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(Class<?> key) {
-        return ERROR_TYPE_AWARE_LOGGERS.computeIfAbsent(key.getName(), name -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
+        return ConcurrentHashMapUtils.computeIfAbsent(ERROR_TYPE_AWARE_LOGGERS, key.getName(), name -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(name)));
     }
 
     /**
@@ -175,7 +176,7 @@ public class LoggerFactory {
      * @return error type aware logger
      */
     public static ErrorTypeAwareLogger getErrorTypeAwareLogger(String key) {
-        return ERROR_TYPE_AWARE_LOGGERS.computeIfAbsent(key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(k)));
+        return ConcurrentHashMapUtils.computeIfAbsent(ERROR_TYPE_AWARE_LOGGERS, key, k -> new FailsafeErrorTypeAwareLogger(loggerAdapter.getLogger(k)));
     }
 
     /**

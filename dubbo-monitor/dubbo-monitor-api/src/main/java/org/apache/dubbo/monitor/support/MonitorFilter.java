@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -109,7 +110,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
      */
     private AtomicInteger getConcurrent(Invoker<?> invoker, Invocation invocation) {
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-        return concurrents.computeIfAbsent(key, k -> new AtomicInteger());
+        return ConcurrentHashMapUtils.computeIfAbsent(concurrents, key, k -> new AtomicInteger());
     }
 
     @Override

@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+package org.apache.dubbo.common.utils;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-/**
- * If you want to provide a router implementation based on design of v2.7.0, please extend from this abstract class.
- * For 2.6.x style router, please implement and use RouterFactory directly.
- */
-public abstract class CacheableRouterFactory implements RouterFactory {
-    private ConcurrentMap<String, Router> routerMap = new ConcurrentHashMap<>();
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    @Override
-    public Router getRouter(URL url) {
-        return ConcurrentHashMapUtils.computeIfAbsent(routerMap, url.getServiceKey(), k -> createRouter(url));
+
+class ConcurrentHashMapUtilsTest {
+
+    @Test
+    public void testComputeIfAbsent() {
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
+        String ifAbsent = ConcurrentHashMapUtils.computeIfAbsent(map, "mxsm", k -> "mxsm");
+        assertEquals("mxsm", ifAbsent);
+        ifAbsent = ConcurrentHashMapUtils.computeIfAbsent(map, "mxsm", k -> "mxsm1");
+        assertEquals("mxsm", ifAbsent);
+        map.remove("mxsm");
+        ifAbsent = ConcurrentHashMapUtils.computeIfAbsent(map, "mxsm", k -> "mxsm1");
+        assertEquals("mxsm1", ifAbsent);
     }
-
-    protected abstract Router createRouter(URL url);
 }

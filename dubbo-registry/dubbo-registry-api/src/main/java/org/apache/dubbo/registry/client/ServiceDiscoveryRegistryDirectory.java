@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.apache.dubbo.common.ProtocolServiceKey;
@@ -37,6 +38,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.AddressListener;
@@ -86,7 +88,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private final Set<String> providerFirstParams;
     private final ModuleModel moduleModel;
     private final ProtocolServiceKey consumerProtocolServiceKey;
-    private final Map<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ProtocolServiceKey, URL> customizedConsumerUrlMap = new ConcurrentHashMap<>();
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
@@ -351,7 +353,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                         }
                         if (enabled) {
                             if (shouldWrap) {
-                                URL newConsumerUrl = customizedConsumerUrlMap.computeIfAbsent(matchedProtocolServiceKey,
+                                URL newConsumerUrl = ConcurrentHashMapUtils.computeIfAbsent(customizedConsumerUrlMap, matchedProtocolServiceKey,
                                     k -> consumerUrl.setProtocol(k.getProtocol())
                                         .addParameter(CommonConstants.GROUP_KEY, k.getGroup())
                                         .addParameter(CommonConstants.VERSION_KEY, k.getVersion()));

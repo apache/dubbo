@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
@@ -152,7 +153,7 @@ public class DubboMonitor implements Monitor {
         int concurrent = url.getParameter(CONCURRENT_KEY, 0);
         // init atomic reference
         Statistics statistics = new Statistics(url);
-        AtomicReference<StatisticsItem> reference = statisticsMap.computeIfAbsent(statistics, k -> new AtomicReference<>());
+        AtomicReference<StatisticsItem> reference = ConcurrentHashMapUtils.computeIfAbsent(statisticsMap, statistics, k -> new AtomicReference<>());
         // use CompareAndSet to sum
         StatisticsItem current;
         StatisticsItem update = new StatisticsItem();

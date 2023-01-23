@@ -35,7 +35,7 @@ public class Application {
     public static void main(String[] args) throws Exception {
         System.setProperty("dubbo.application.logger", "log4j");
         System.setProperty("native", "true");
-        System.setProperty("dubbo.json-framework.prefer","fastjson");
+        System.setProperty("dubbo.json-framework.prefer", "fastjson");
         if (isClassic(args)) {
             startWithExport();
         } else {
@@ -51,7 +51,7 @@ public class Application {
     private static void startWithBootstrap() {
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
 
-        ApplicationConfig applicationConfig = new ApplicationConfig( "dubbo-demo-api-provider");
+        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-provider");
         applicationConfig.setQosEnable(false);
         applicationConfig.setCompiler("jdk");
         Map<String, String> m = new HashMap<>(1);
@@ -62,9 +62,11 @@ public class Application {
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
 
+        ProtocolConfig protocolConfig = new ProtocolConfig(CommonConstants.DUBBO, -1);
+        protocolConfig.setSerialization("fastjson2");
         bootstrap.application(applicationConfig)
             .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO, -1))
+            .protocol(protocolConfig)
             .service(service)
             .start()
             .await();
