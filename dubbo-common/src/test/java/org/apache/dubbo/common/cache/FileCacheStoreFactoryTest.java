@@ -29,11 +29,11 @@ class FileCacheStoreFactoryTest {
 
     @Test
     void testSafeName() throws URISyntaxException {
-        FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../dubbo");
+        FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "", "../../../dubbo");
         Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002fdubbo.dubbo.cache", store1.getCacheFilePath());
         store1.destroy();
 
-        FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "../../../中文");
+        FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "", "../../../中文");
         Assertions.assertEquals(getDirectoryOfClassPath() + "..%002f..%002f..%002f%4e2d%6587.dubbo.cache", store2.getCacheFilePath());
         store2.destroy();
     }
@@ -44,22 +44,22 @@ class FileCacheStoreFactoryTest {
         String filePath = basePath + File.separator + "isFile";
         new File(filePath).createNewFile();
 
-        Assertions.assertThrows(RuntimeException.class, () -> FileCacheStoreFactory.getInstance(filePath, "dubbo"));
+        Assertions.assertThrows(RuntimeException.class, () -> FileCacheStoreFactory.getInstance(filePath, "", "dubbo"));
     }
 
     @Test
     void testCacheContains() throws URISyntaxException {
-        FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
+        FileCacheStore store1 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "", "testCacheContains");
         Assertions.assertNotNull(store1.getCacheFilePath());
 
         FileCacheStoreFactory.getCacheMap().remove(store1.getCacheFilePath());
-        FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
+        FileCacheStore store2 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "", "testCacheContains");
         Assertions.assertEquals(FileCacheStore.Empty.class, store2.getClass());
 
         store1.destroy();
         store2.destroy();
 
-        FileCacheStore store3 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "testCacheContains");
+        FileCacheStore store3 = FileCacheStoreFactory.getInstance(getDirectoryOfClassPath(), "", "testCacheContains");
         Assertions.assertNotNull(store3.getCacheFilePath());
         store3.destroy();
     }

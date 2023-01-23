@@ -33,7 +33,7 @@ class FileCacheStoreTest {
     void testCache() throws Exception {
         String directoryPath = getDirectoryOfClassPath();
         String filePath = "test-cache.dubbo.cache";
-        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, filePath);
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "", filePath);
         Map<String, String> properties = cacheStore.loadCache(10);
         assertEquals(2, properties.size());
 
@@ -42,7 +42,7 @@ class FileCacheStoreTest {
         newProperties.put("newKey2", "newValue2");
         newProperties.put("newKey3", "newValue3");
         newProperties.put("newKey4", "newValue4");
-        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "non-exit.dubbo.cache");
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "", "non-exit.dubbo.cache");
         cacheStore.refreshCache(newProperties, "test refresh cache", 0);
         Map<String, String> propertiesLimitTo2 = cacheStore.loadCache(2);
         assertEquals(2, propertiesLimitTo2.size());
@@ -61,7 +61,7 @@ class FileCacheStoreTest {
         newProperties.put("newKey2", "newValue2");
         newProperties.put("newKey3", "newValue3");
         newProperties.put("newKey4", "newValue4");
-        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "non-exit.dubbo.cache");
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "", "non-exit.dubbo.cache");
         cacheStore.refreshCache(newProperties, "test refresh cache", 2);
         Map<String, String> propertiesLimitTo1 = cacheStore.loadCache(2);
         assertEquals(0, propertiesLimitTo1.size());
