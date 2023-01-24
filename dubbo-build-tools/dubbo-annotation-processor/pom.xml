@@ -52,7 +52,7 @@
 
     <profiles>
         <profile>
-            <id>default-profile</id>
+            <id>default-profile-in-jdk-8</id>
             <activation>
                 <file>
                     <exists>${java.home}/../lib/tools.jar</exists>
@@ -75,7 +75,7 @@
         </profile>
 
         <profile>
-            <id>mac-profile</id>
+            <id>mac-profile-in-jdk-8</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <file>
