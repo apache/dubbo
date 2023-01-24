@@ -60,6 +60,7 @@ abstract class AbstractObservationFilterTest extends SampleTestRunner {
         applicationModel.getApplicationConfigManager().setApplication(config);
 
         invocation = new RpcInvocation(new MockInvocation());
+        invocation.addInvokedInvoker(invoker);
 
         applicationModel.getBeanFactory().registerBean(getObservationRegistry());
 
