@@ -18,13 +18,7 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>javac</groupId>
-            <artifactId>javac</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${toolsjar}</systemPath>
-        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -35,10 +29,21 @@
                 <file>
                     <exists>${java.home}/../lib/tools.jar</exists>
                 </file>
+                <jdk>1.8</jdk>
             </activation>
             <properties>
                 <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
             </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>javac</groupId>
+                    <artifactId>javac</artifactId>
+                    <version>1.0</version>
+                    <scope>system</scope>
+                    <systemPath>${toolsjar}</systemPath>
+                </dependency>
+            </dependencies>
         </profile>
         <profile>
             <id>mac-profile</id>
@@ -47,10 +52,22 @@
                 <file>
                     <exists>${java.home}/../Classes/classes.jar</exists>
                 </file>
+                <jdk>1.8</jdk>
             </activation>
+
             <properties>
                 <toolsjar>${java.home}/../Classes/classes.jar</toolsjar>
             </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>javac</groupId>
+                    <artifactId>javac</artifactId>
+                    <version>1.0</version>
+                    <scope>system</scope>
+                    <systemPath>${toolsjar}</systemPath>
+                </dependency>
+            </dependencies>
         </profile>
     </profiles>
 
