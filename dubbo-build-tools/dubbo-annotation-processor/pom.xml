@@ -23,8 +23,35 @@
             <artifactId>javac</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>D:/Program Files/Java/graalvm-ce-java8-21.1.0/lib/tools.jar</systemPath>
+            <systemPath>${toolsjar}</systemPath>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>default-profile</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <file>
+                    <exists>${java.home}/../lib/tools.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac-profile</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>${java.home}/../Classes/classes.jar</exists>
+                </file>
+            </activation>
+            <properties>
+                <toolsjar>${java.home}/../Classes/classes.jar</toolsjar>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
