@@ -41,6 +41,10 @@ package org.apache.dubbo.annotation.permit;
  * THE SOFTWARE.
  */
 
+import org.apache.dubbo.annotation.permit.dummy.Parent;
+
+import sun.misc.Unsafe;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -358,4 +362,77 @@ public class Permit {
         throw (T) t;
     }
 
+    private static Object getJdkCompilerModule() {
+		/* call public api: ModuleLayer.boot().findModule("jdk.compiler").get();
+		   but use reflection because we don't want this code to crash on jdk1.7 and below.
+		   In that case, none of this stuff was needed in the first place, so we just exit via
+		   the catch block and do nothing.
+		 */
+
+        try {
+            Class<?> cModuleLayer = Class.forName("java.lang.ModuleLayer");
+            Method mBoot = cModuleLayer.getDeclaredMethod("boot");
+            Object bootLayer = mBoot.invoke(null);
+            Class<?> cOptional = Class.forName("java.util.Optional");
+            Method mFindModule = cModuleLayer.getDeclaredMethod("findModule", String.class);
+            Object oCompilerO = mFindModule.invoke(bootLayer, "jdk.compiler");
+            return cOptional.getDeclaredMethod("get").invoke(oCompilerO);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static Object getOwnModule() {
+        try {
+            Method m = Permit.getMethod(Class.class, "getModule");
+            return m.invoke(Permit.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static long getFirstFieldOffset(Unsafe unsafe) {
+        try {
+            return unsafe.objectFieldOffset(Parent.class.getDeclaredField("first"));
+        } catch (NoSuchFieldException e) {
+            // can't happen.
+            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            // can't happen
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void addOpens() {
+        Class<?> cModule;
+        try {
+            cModule = Class.forName("java.lang.Module");
+        } catch (ClassNotFoundException e) {
+            return; //jdk8-; this is not needed.
+        }
+
+        Unsafe unsafe = UNSAFE;
+
+        Object jdkCompilerModule = getJdkCompilerModule();
+        Object ownModule = getOwnModule();
+        String[] allPkgs = {
+            "com.sun.tools.javac.code",
+            "com.sun.tools.javac.comp",
+            "com.sun.tools.javac.file",
+            "com.sun.tools.javac.main",
+            "com.sun.tools.javac.model",
+            "com.sun.tools.javac.parser",
+            "com.sun.tools.javac.processing",
+            "com.sun.tools.javac.tree",
+            "com.sun.tools.javac.util",
+            "com.sun.tools.javac.jvm",
+        };
+
+        try {
+            Method m = cModule.getDeclaredMethod("implAddOpens", String.class, cModule);
+            long firstFieldOffset = getFirstFieldOffset(unsafe);
+            unsafe.putBooleanVolatile(m, firstFieldOffset, true);
+            for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
+        } catch (Exception ignore) {}
+    }
 }
