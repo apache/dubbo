@@ -57,7 +57,7 @@
                 <file>
                     <exists>${java.home}/../lib/tools.jar</exists>
                 </file>
-                <jdk>1.8</jdk>
+                <jdk>(, 9)</jdk>
             </activation>
             <properties>
                 <toolsjar>${java.home}/../lib/tools.jar</toolsjar>
@@ -81,7 +81,7 @@
                 <file>
                     <exists>${java.home}/../Classes/classes.jar</exists>
                 </file>
-                <jdk>1.8</jdk>
+                <jdk>(, 9)</jdk>
             </activation>
 
             <properties>
