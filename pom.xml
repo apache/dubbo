@@ -134,6 +134,7 @@
     </properties>
 
     <modules>
+        <module>dubbo-annotation-processor</module>
         <module>dubbo-common</module>
         <module>dubbo-container</module>
         <module>dubbo-compiler</module>
@@ -161,8 +162,6 @@
         <module>dubbo-kubernetes</module>
         <module>dubbo-xds</module>
         <module>dubbo-native-plugin</module>
-        <module>dubbo-maven-plugin</module>
-        <module>dubbo-annotation-processor</module>
     </modules>
 
     <dependencyManagement>
