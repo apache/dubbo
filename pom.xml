@@ -162,6 +162,7 @@
         <module>dubbo-xds</module>
         <module>dubbo-native-plugin</module>
         <module>dubbo-maven-plugin</module>
+        <module>dubbo-annotation-processor</module>
     </modules>
 
     <dependencyManagement>
