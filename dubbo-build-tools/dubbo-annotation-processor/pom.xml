@@ -23,14 +23,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>org.apache.dubbo</groupId>
     <artifactId>dubbo-annotation-processor</artifactId>
     <version>1.0.0</version>
-
-    <parent>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-build-tools</artifactId>
-        <version>1.0.0</version>
-    </parent>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -42,6 +37,8 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
+
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <packaging>jar</packaging>
