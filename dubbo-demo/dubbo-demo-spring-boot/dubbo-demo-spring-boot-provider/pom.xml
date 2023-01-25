@@ -103,7 +103,6 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
@@ -131,6 +130,16 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+
+        <!-- Observability -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
         </dependency>
 
     </dependencies>

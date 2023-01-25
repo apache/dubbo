@@ -133,6 +133,17 @@
             <artifactId>log4j</artifactId>
         </dependency>
 
+        <!-- Observabililty -->
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
