@@ -33,6 +33,7 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
@@ -75,10 +76,13 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
 
         super.init(processingEnv);
 
-        Object o = processingEnv.getClass() == JavacProcessingEnvironment.class ? processingEnv : jbUnwrap(JavacProcessingEnvironment.class, processingEnv);
+        Object procEnvToUnwrap = processingEnv.getClass() == JavacProcessingEnvironment.class ?
+            processingEnv : jbUnwrap(JavacProcessingEnvironment.class, processingEnv);
 
-        Context context = ((JavacProcessingEnvironment) o).getContext();
-        javacTrees = JavacTrees.instance(jbUnwrap(ProcessingEnvironment.class, processingEnv));
+        JavacProcessingEnvironment jcProcessingEnvironment = (JavacProcessingEnvironment) procEnvToUnwrap;
+
+        Context context = jcProcessingEnvironment.getContext();
+        javacTrees = JavacTrees.instance(jcProcessingEnvironment);
         treeMaker = TreeMaker.instance(context);
         names = Names.instance(context);
     }
@@ -138,5 +142,10 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latest();
     }
 }
