@@ -123,16 +123,16 @@
                             <compilerArgs>
                                 <arg>-proc:none</arg>
 
-                                <arg>--add-exports</arg>
+                                <arg>-J--add-exports</arg>
                                 <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
 
-                                <arg>--add-exports</arg>
+                                <arg>-J--add-exports</arg>
                                 <arg>jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
 
-                                <arg>--add-exports</arg>
+                                <arg>-J--add-exports</arg>
                                 <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
 
-                                <arg>--add-exports</arg>
+                                <arg>-J--add-exports</arg>
                                 <arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
                             </compilerArgs>
 
