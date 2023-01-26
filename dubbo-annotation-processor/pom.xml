@@ -120,22 +120,6 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.10.1</version>
                         <configuration>
-                            <compilerArgs>
-                                <arg>-proc:none</arg>
-
-                                <arg>-J--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-
-                                <arg>-J--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
-
-                                <arg>-J--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
-
-                                <arg>-J--add-exports</arg>
-                                <arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
-                            </compilerArgs>
-
                             <fork>true</fork>
                         </configuration>
                     </plugin>
