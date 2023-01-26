@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -635,7 +636,7 @@ public class NacosRegistry extends FailbackRegistry {
             instance.getPort(),
             path,
             instance.getMetadata());
-        return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
+        return new DubboServiceAddressURL(url.getUrlAddress(), URLParam.parse(url.toString()), consumerURL, null);
     }
 
     private Instance createInstance(URL url) {
