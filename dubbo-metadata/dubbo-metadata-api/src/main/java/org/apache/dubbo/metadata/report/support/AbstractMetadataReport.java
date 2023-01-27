@@ -58,10 +58,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_DEFINITION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REPORT_METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_TIMES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_UNEXPECTED_EXCEPTION;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROXY_FAILED_EXPORT_SERVICE;
-import static org.apache.dubbo.metadata.report.support.Constants.*;
+import static org.apache.dubbo.metadata.report.support.Constants.CACHE;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
+import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
+import static org.apache.dubbo.metadata.report.support.Constants.DUBBO_METADATA;
+import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
 public abstract class AbstractMetadataReport implements MetadataReport {
 
