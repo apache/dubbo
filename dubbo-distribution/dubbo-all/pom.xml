@@ -1,4 +1,4 @@
-<!--
+ <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -1169,13 +1169,13 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/MetricsService
+                                        META-INF/dubbo/internal/org.apache.dubbo.metrics.service.MetricsService
                                     </resource>
                                 </transformer>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/MetricsServiceExporter
+                                        META-INF/dubbo/internal/org.apache.dubbo.metrics.service.MetricsServiceExporter
                                     </resource>
                                 </transformer>
                                 <transformer
