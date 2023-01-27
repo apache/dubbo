@@ -1169,19 +1169,19 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsService
+                                        META-INF/dubbo/internal/MetricsService
                                     </resource>
                                 </transformer>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsServiceExporter
+                                        META-INF/dubbo/internal/MetricsServiceExporter
                                     </resource>
                                 </transformer>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.metrics.MetricsReporterFactory
+                                        META-INF/dubbo/internal/org.apache.dubbo.metrics.report.MetricsReporterFactory
                                     </resource>
                                 </transformer>
                                 <transformer

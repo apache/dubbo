@@ -27,7 +27,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.AbstractMetricsReporter;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -38,19 +38,19 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_METRICS_COLLECTOR_EXCEPTION;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_ENABLED_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PORT_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PORT;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PATH_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PATH;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_ENABLED_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_JOB_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_JOB_NAME;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PATH;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_METRICS_PORT;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_DEFAULT_PUSH_INTERVAL;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_USERNAME_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PATH_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_EXPORTER_METRICS_PORT_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_JOB_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_PUSH_INTERVAL_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROMETHEUS_PUSHGATEWAY_USERNAME_KEY;
 
 /**
  * Metrics reporter for prometheus.
