@@ -16,28 +16,28 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.WebApplicationException;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.RestClient;
+import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeClientBuilder;
 import org.jboss.resteasy.util.GetRestful;
-
-import javax.servlet.ServletContext;
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.WebApplicationException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
@@ -119,12 +119,12 @@ public class RestProtocol extends AbstractProxyProtocol {
     protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
 
         ReferenceCountedClient<? extends RestClient> refClient =
-            clients.computeIfAbsent(url.getAddress(), _key -> createReferenceCountedClient(url));
+            clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url));
 
         refClient.retain();
 
         // resolve metadata
-        Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type,url);
+        Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
         // create proxy ref
         return HttpInvokeClientBuilder.build(metadataMap, url, type, refClient.getClient());

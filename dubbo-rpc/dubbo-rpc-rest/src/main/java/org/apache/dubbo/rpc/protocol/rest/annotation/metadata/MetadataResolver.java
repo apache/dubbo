@@ -16,40 +16,41 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.metadata;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.rest.PathMatcher;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.rest.exception.CodeStyleNotSupportException;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Set;
-
 public class MetadataResolver {
-    // TODO  choose resolver by url code Style ?
-    private static Set<ServiceRestMetadataResolver> serviceRestMetadataResolvers =
-        ApplicationModel.defaultModel().getExtensionLoader(ServiceRestMetadataResolver.class).getSupportedExtensionInstances();
+    private MetadataResolver() {
+    }
 
     /**
      * for consumer
      *
-     * @param serviceImpl
-     * @return
+     * @param targetClass target service class
+     * @param url consumer url
+     * @return rest metadata
+     * @throws CodeStyleNotSupportException not support type
      */
-    public static Map<Method, RestMethodMetadata> resolveConsumerServiceMetadata(Class serviceImpl, URL url) {
+    public static Map<Method, RestMethodMetadata> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
+        ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
-        for (ServiceRestMetadataResolver serviceRestMetadataResolver : serviceRestMetadataResolvers) {
-            boolean supports = serviceRestMetadataResolver.supports(serviceImpl, true);
-            if (supports) {
+        for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {
+            if (serviceRestMetadataResolver.supports(targetClass, true)) {
                 ServiceRestMetadata serviceRestMetadata = new ServiceRestMetadata(url.getServiceInterface(), url.getVersion(), url.getGroup(), true);
-                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(serviceImpl, serviceRestMetadata);
+                ServiceRestMetadata resolve = serviceRestMetadataResolver.resolve(targetClass, serviceRestMetadata);
                 return resolve.getMethodToServiceMap();
             }
         }
-        throw new CodeStyleNotSupportException("service is:" + serviceImpl + ",just support rest or spring-web annotation");
+
+        // TODO support Dubbo style service
+        throw new CodeStyleNotSupportException("service is: " + targetClass + ", only support " + extensionLoader.getSupportedExtensions() + " annotation");
     }
 
 

@@ -46,5 +46,5 @@ public interface ServiceRestMetadataResolver {
      */
     ServiceRestMetadata resolve(Class<?> serviceType);
 
-    ServiceRestMetadata resolve(Class<?> serviceType,ServiceRestMetadata serviceRestMetadata);
+    ServiceRestMetadata resolve(Class<?> serviceType, ServiceRestMetadata serviceRestMetadata);
 }
