@@ -22,6 +22,7 @@ import org.apache.dubbo.demo.RestDemoService;
 import org.apache.dubbo.demo.TripleService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import po.TestPO;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -56,7 +57,9 @@ public class Application {
         new Thread(() -> {
             while (true) {
                 try {
-                    String restResult = restDemoService.sayHello("rest");
+                    Object restResult = restDemoService.sayHello("rest");
+                    System.out.println(restResult + " from separated thread.");
+                    restResult = restDemoService.testBody5(TestPO.getInstance());
                     System.out.println(restResult + " from separated thread.");
                 } catch (Exception e) {
                     e.printStackTrace();
