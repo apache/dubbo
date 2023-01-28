@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 import java.util.Arrays;
 import java.util.List;
 
-@Activate(RestConstant.PATH_INTERCEPT)
+@Activate(value = RestConstant.PATH_INTERCEPT,order = 4)
 public class PathVariableIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override

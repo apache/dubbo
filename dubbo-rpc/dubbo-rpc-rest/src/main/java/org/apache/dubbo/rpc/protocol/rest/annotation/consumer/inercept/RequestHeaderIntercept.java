@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.util.Set;
 
-@Activate(RestConstant.REQUEST_HEADER_INTERCEPT)
+@Activate(value = RestConstant.REQUEST_HEADER_INTERCEPT,order = 2)
 public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
@@ -39,7 +39,7 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
-        requestTemplate.addHeaders("Accept", consumes);
+        requestTemplate.addHeaders("Content-type", consumes);
 
     }
 

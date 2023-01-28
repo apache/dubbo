@@ -16,19 +16,26 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 
-
-import org.apache.dubbo.rpc.protocol.rest.annotation.BaseParseContext;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 
-public class ConsumerParseContext extends BaseParseContext {
-    private RequestTemplate requestTemplate;
+import java.util.List;
 
-    public ConsumerParseContext(RequestTemplate requestTemplate) {
-        this.requestTemplate = requestTemplate;
+@Activate("consumer-parameter")
+public class ParameterConsumerParamParser implements BaseConsumerParamParser{
+    @Override
+    public void parse(ConsumerParseContext parseContext, ArgInfo argInfo) {
+        List<Object> args = parseContext.getArgs();
+
+        RequestTemplate requestTemplate = parseContext.getRequestTemplate();
+
+        requestTemplate.addParam(argInfo.getParamName(), args.get(argInfo.getIndex()));
     }
 
-    public RequestTemplate getRequestTemplate() {
-        return requestTemplate;
+    @Override
+    public boolean paramTypeMatch(ArgInfo argInfo) {
+        return ParamType.PARAM.supportAnno(argInfo.getParamAnnotationType());
     }
-
 }

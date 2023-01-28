@@ -14,30 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
-
+package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
+import org.apache.dubbo.metadata.rest.ArgInfo;
+import org.apache.dubbo.metadata.rest.ParamType;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
-@Activate(RestConstant.REQUEST_PARAM_INTERCEPT)
-public class RequestParamIntercept implements HttpConnectionPreBuildIntercept {
+import java.util.List;
 
+@Activate("consumer-body")
+public class BodyConsumerParamParser implements BaseConsumerParamParser {
     @Override
-    public void intercept(HttpConnectionCreateContext connectionCreateContext) {
-
-        RestMethodMetadata restMethodMetadata = connectionCreateContext.getRestMethodMetadata();
-        RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
+    public void parse(ConsumerParseContext parseContext, ArgInfo argInfo) {
 
 
-        // TODO add param according to arg info
+        List<Object> args = parseContext.getArgs();
+
+        RequestTemplate requestTemplate = parseContext.getRequestTemplate();
+
+        requestTemplate.body(args.get(argInfo.getIndex()));
 
 
     }
 
-
+    @Override
+    public boolean paramTypeMatch(ArgInfo argInfo) {
+        return ParamType.BODY.supportAnno(argInfo.getParamAnnotationType());
+    }
 }

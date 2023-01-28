@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation;
 
 
+import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BaseConsumerParamParser;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;
@@ -45,9 +46,14 @@ public class ParamParserManager {
         List<Object> args = parseContext.getArgs();
 
         for (int i = 0; i < args.size(); i++) {
-            for (ParamParser paramParser : consumerParamParsers) {
+            for (BaseConsumerParamParser paramParser : consumerParamParsers) {
+                ArgInfo argInfoByIndex = parseContext.getArgInfoByIndex(i);
 
-                paramParser.parse(parseContext, parseContext.getArgInfoByIndex(i));
+                if (!paramParser.paramTypeMatch(argInfoByIndex)) {
+                    continue;
+                }
+
+                paramParser.parse(parseContext, argInfoByIndex);
             }
         }
 

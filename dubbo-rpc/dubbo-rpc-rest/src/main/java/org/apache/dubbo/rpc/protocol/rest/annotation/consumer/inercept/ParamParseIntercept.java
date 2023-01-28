@@ -21,14 +21,15 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;
-@Activate("paramparse")
+
+@Activate(value = "paramparse",order = 5)
 public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
     private static final ParamParserManager paramParser = new ParamParserManager();
 
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
 
-        ConsumerParseContext consumerParseContext = new ConsumerParseContext();
+        ConsumerParseContext consumerParseContext = new ConsumerParseContext(connectionCreateContext.getRequestTemplate());
         consumerParseContext.setArgInfos(connectionCreateContext.getRestMethodMetadata().getArgInfos());
         consumerParseContext.setArgs(connectionCreateContext.getMethodRealArgs());
         paramParser.consumerParamParse(consumerParseContext);

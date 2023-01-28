@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
@@ -26,7 +25,7 @@ import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreB
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
-@Activate(RestConstant.ADD_MUST_ATTTACHMENT)
+@Activate(value = RestConstant.ADD_MUST_ATTTACHMENT,order = 1)
 public class AddMustAttachmentIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
@@ -35,7 +34,6 @@ public class AddMustAttachmentIntercept implements HttpConnectionPreBuildInterce
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
         ServiceRestMetadata serviceRestMetadata = connectionCreateContext.getServiceRestMetadata();
         HttpConnectionConfig connectionConfig = connectionCreateContext.getConnectionConfig();
-        MethodDefinition method = connectionCreateContext.getRestMethodMetadata().getMethod();
 
 
         requestTemplate.addHeader(RestConstant.GROUP, serviceRestMetadata.getGroup());

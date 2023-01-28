@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.io.ByteArrayOutputStream;
 
-@Activate(RestConstant.SERIALIZE_INTERCEPT)
+@Activate(value = RestConstant.SERIALIZE_INTERCEPT,order = 6)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
     private static final Logger logger = LoggerFactory.getLogger(SerializeBodyIntercept.class);
 

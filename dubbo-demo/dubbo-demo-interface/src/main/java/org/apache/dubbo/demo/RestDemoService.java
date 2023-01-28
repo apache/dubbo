@@ -17,6 +17,8 @@
 package org.apache.dubbo.demo;
 
 
+import po.TestPO;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -43,4 +45,30 @@ public interface RestDemoService {
     @GET
     @Path("/getRemoteApplicationName")
     String getRemoteApplicationName();
+
+    @POST
+    @Path("/testBody1")
+    @Consumes({MediaType.TEXT_PLAIN})
+    Integer testBody(Integer b);
+
+    @POST
+    @Path("/testBody2")
+    @Consumes({MediaType.TEXT_PLAIN})
+    String testBody2(String b);
+
+    @POST
+    @Path("/testBody3")
+    @Consumes({MediaType.TEXT_PLAIN})
+    Boolean testBody2(Boolean b);
+
+    @POST
+    @Path("/testBody3")
+    @Consumes({MediaType.TEXT_PLAIN})
+    TestPO testBody2(TestPO b);
+
+
+    @POST
+    @Path("/testBody5")
+    @Consumes({MediaType.APPLICATION_JSON})
+    TestPO testBody5(TestPO testPO);
 }
