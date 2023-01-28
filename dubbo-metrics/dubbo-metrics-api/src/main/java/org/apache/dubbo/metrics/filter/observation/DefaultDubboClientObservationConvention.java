@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.metrics.filter.observation;
 
+import java.util.List;
+
 import io.micrometer.common.KeyValues;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcContextAttachment;
-
-import java.util.List;
 
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_NAME;
 import static org.apache.dubbo.metrics.filter.observation.DubboObservation.LowCardinalityKeyNames.NET_PEER_PORT;

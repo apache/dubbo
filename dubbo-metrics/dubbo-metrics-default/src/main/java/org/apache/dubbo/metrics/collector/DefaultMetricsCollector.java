@@ -69,7 +69,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     public void increaseTotalRequests(String interfaceName, String methodName, String group, String version) {
-        doExecute(RequestEvent.Type.TOTAL, statHandler-> {
+        doExecute(RequestEvent.Type.TOTAL,statHandler-> {
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }

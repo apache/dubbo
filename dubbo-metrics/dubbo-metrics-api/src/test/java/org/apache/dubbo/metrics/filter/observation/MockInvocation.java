@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.metrics.filter.observation;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.dubbo.rpc.AttachmentsAdapter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ServiceModel;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
