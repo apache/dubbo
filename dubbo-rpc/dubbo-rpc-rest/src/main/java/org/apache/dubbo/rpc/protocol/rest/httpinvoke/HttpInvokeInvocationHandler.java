@@ -57,7 +57,7 @@ public class HttpInvokeInvocationHandler<CLIENT> implements InvocationHandler {
 
         HttpConnectionCreateContext httpConnectionCreateContext = createBuildContext(requestTemplate,
             connectionConfig,
-            restMethodMetadata, Arrays.asList(args));
+            restMethodMetadata, Arrays.asList(args),url);
 
         for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
 
@@ -74,12 +74,13 @@ public class HttpInvokeInvocationHandler<CLIENT> implements InvocationHandler {
 
     private static HttpConnectionCreateContext createBuildContext(RequestTemplate requestTemplate,
                                                                   HttpConnectionConfig connectionConfig,
-                                                                  RestMethodMetadata restMethodMetadata, List<Object> rags) {
+                                                                  RestMethodMetadata restMethodMetadata, List<Object> rags,URL url) {
         HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
         httpConnectionCreateContext.setConnectionConfig(connectionConfig);
         httpConnectionCreateContext.setRequestTemplate(requestTemplate);
         httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
         httpConnectionCreateContext.setMethodRealArgs(rags);
+        httpConnectionCreateContext.setUrl(url);
         return httpConnectionCreateContext;
     }
 }

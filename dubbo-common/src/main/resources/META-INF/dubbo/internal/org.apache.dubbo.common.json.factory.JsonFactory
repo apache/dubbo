@@ -1,0 +1,4 @@
+fastjson=org.apache.dubbo.common.json.factory.FastJsonFactoryImpl
+fastjson2=org.apache.dubbo.common.json.factory.FastJson2FactoryImpl
+gson=org.apache.dubbo.common.json.factory.GsonJsonFactoryImpl
+jackson=org.apache.dubbo.common.json.factory.JacksonJsonFactoryImpl

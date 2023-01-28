@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
@@ -27,6 +28,7 @@ public class HttpConnectionCreateContext {
     private HttpConnectionConfig connectionConfig;
     private RestMethodMetadata restMethodMetadata;
     private List<Object> methodRealArgs;
+    private URL url;
 
     public HttpConnectionCreateContext() {
     }
@@ -75,5 +77,13 @@ public class HttpConnectionCreateContext {
 
     public void setMethodRealArgs(List<Object> methodRealArgs) {
         this.methodRealArgs = methodRealArgs;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 }
