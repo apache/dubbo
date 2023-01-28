@@ -21,6 +21,7 @@ import org.apache.dubbo.annotation.permit.Permit;
 
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -55,8 +56,12 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
     );
 
     private JavacTrees javacTrees;
+
     private TreeMaker treeMaker;
+
     private Names names;
+
+    private Context javacContext;
 
     private static <T> T jbUnwrap(Class<? extends T> iface, T wrapper) {
         T unwrapped = null;
@@ -82,6 +87,8 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
         JavacProcessingEnvironment jcProcessingEnvironment = (JavacProcessingEnvironment) procEnvToUnwrap;
 
         Context context = jcProcessingEnvironment.getContext();
+
+        javacContext = context;
         javacTrees = JavacTrees.instance(jcProcessingEnvironment);
         treeMaker = TreeMaker.instance(context);
         names = Names.instance(context);
@@ -122,12 +129,12 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
                             com.sun.tools.javac.util.List.nil(),
 
                             treeMaker.Select(
-                                treeMaker.Ident(names.fromString("org.apache.dubbo.common.logger.LoggerFactory")),
-                                names.fromString("getLogger")
+                                treeMaker.Ident(names.fromString("LoggerFactory")),
+                                names.fromString("getErrorTypeAwareLogger")
                             ),
 
                             com.sun.tools.javac.util.List.of(
-                                treeMaker.Ident(names.fromString("testing-ap"))
+                                treeMaker.ClassLiteral(((Symbol.ClassSymbol) classSymbol).erasure(Types.instance(javacContext)))
                             )
                         )
                     );
