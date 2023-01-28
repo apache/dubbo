@@ -22,6 +22,6 @@ public class UnSupportContentTypeException extends RuntimeException {
 
     public UnSupportContentTypeException(String message) {
 
-        super("Current Support content type: " + MediaType.getAllContentType() + message);
+        super("Current Support content type: " + MediaType.getAllContentType() + "; Do not support  content type" + message);
     }
 }
