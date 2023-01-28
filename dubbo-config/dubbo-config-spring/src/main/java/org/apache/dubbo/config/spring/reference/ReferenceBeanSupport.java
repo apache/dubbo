@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.annotation.DubboProvidedbBy;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -78,6 +79,11 @@ public class ReferenceBeanSupport {
             interfaceName = defaultInterfaceClass.getName();
         }
         Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
+        Class<?> clazz = ClassUtils.resolveClass(interfaceName, defaultInterfaceClass.getClassLoader());
+        DubboProvidedbBy dubboProvidedbBy = clazz.getAnnotation(DubboProvidedbBy.class);
+        if (dubboProvidedbBy != null && dubboProvidedbBy.name() != null && !"".equals(dubboProvidedbBy.name())) {
+            attributes.put(ReferenceAttributes.DUBBO_PROVIDED_BY, dubboProvidedbBy.name());
+        }
         attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
         attributes.remove(ReferenceAttributes.INTERFACE_NAME);
         attributes.remove(ReferenceAttributes.INTERFACE_CLASS);

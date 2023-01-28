@@ -51,6 +51,7 @@ public interface ReferenceAttributes {
     String PARAMETERS = "parameters";
 
     String PROVIDED_BY = "providedBy";
+    String DUBBO_PROVIDED_BY = "dubboProvidedBy";
 
     String PROVIDER_PORT = "providerPort";
 

@@ -84,6 +84,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected String providedBy;
 
     /**
+     * declares which app or service this interface belongs to
+     */
+    protected String dubboProvidedBy;
+
+    /**
      * By VirtualService and DestinationRule, envoy will generate a new route rule,such as 'demo.default.svc.cluster.local:80',the default port is 80.
      * When you want to specify the provider port,you can use this config.
      *
