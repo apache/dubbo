@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 
+import io.swagger.models.auth.In;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.json.JSON;
@@ -30,7 +31,7 @@ import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.io.ByteArrayOutputStream;
 
-@Activate(RestConstant.SERIALIZE_INTERCEPT)
+@Activate(value = RestConstant.SERIALIZE_INTERCEPT,order = Integer.MAX_VALUE)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializeBodyIntercept.class);
