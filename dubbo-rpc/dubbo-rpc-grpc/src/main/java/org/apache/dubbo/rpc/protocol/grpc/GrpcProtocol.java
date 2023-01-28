@@ -132,20 +132,6 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     }
 
     /**
-     * not used
-     *
-     * @param type
-     * @param url
-     * @param <T>
-     * @return
-     * @throws RpcException
-     */
-    @Override
-    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
-        throw new UnsupportedOperationException("not used");
-    }
-
-    /**
      * Get shared channel connection
      */
     private ReferenceCountManagedChannel getSharedChannel(URL url) {

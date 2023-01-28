@@ -31,29 +31,24 @@ import org.apache.dubbo.remoting.http.RestClient;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
-import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeClientBuilder;
 import org.jboss.resteasy.util.GetRestful;
 
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
     private static final String DEFAULT_SERVER = "jetty";
-
-    private static final int HTTPCLIENTCONNECTIONMANAGER_MAXPERROUTE = 20;
-    private static final int HTTPCLIENTCONNECTIONMANAGER_MAXTOTAL = 20;
-    private static final int HTTPCLIENT_KEEPALIVEDURATION = 30 * 1000;
-    private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEWAITTIME_MS = 1000;
-    private static final int HTTPCLIENTCONNECTIONMANAGER_CLOSEIDLETIME_S = 30;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
@@ -115,8 +110,9 @@ public class RestProtocol extends AbstractProxyProtocol {
         };
     }
 
+
     @Override
-    protected <T> T doRefer(Class<T> type, URL url) throws RpcException {
+    protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
 
         ReferenceCountedClient<? extends RestClient> refClient =
             clients.computeIfAbsent(url.getAddress(), key -> createReferenceCountedClient(url));
@@ -127,8 +123,46 @@ public class RestProtocol extends AbstractProxyProtocol {
         Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
         // create proxy ref
-        return HttpInvokeClientBuilder.build(metadataMap, url, type, refClient.getClient());
+        T restInvoker = HttpInvokeClientBuilder.build(metadataMap, url, type, refClient.getClient());
+
+        final Invoker<T> target = proxyFactory.getInvoker(restInvoker, type, url);
+        Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
+            @Override
+            protected Result doInvoke(Invocation invocation) {
+                try {
+                    Result result = target.invoke(invocation);
+                    // FIXME result is an AsyncRpcResult instance.
+                    Throwable e = result.getException();
+                    if (e != null) {
+                        for (Class<?> rpcException : rpcExceptions) {
+                            if (rpcException.isAssignableFrom(e.getClass())) {
+                                throw getRpcException(type, url, invocation, e);
+                            }
+                        }
+                    }
+                    return result;
+                } catch (RpcException e) {
+                    if (e.getCode() == RpcException.UNKNOWN_EXCEPTION) {
+                        e.setCode(getErrorCode(e.getCause()));
+                    }
+                    throw e;
+                } catch (Throwable e) {
+                    throw getRpcException(type, url, invocation, e);
+                }
+            }
+
+            @Override
+            public void destroy() {
+                super.destroy();
+                target.destroy();
+                invokers.remove(this);
+                destroyInternal(url);
+            }
+        };
+        invokers.add(invoker);
+        return invoker;
     }
+
 
     private ReferenceCountedClient<? extends RestClient> createReferenceCountedClient(URL url) throws RpcException {
 
