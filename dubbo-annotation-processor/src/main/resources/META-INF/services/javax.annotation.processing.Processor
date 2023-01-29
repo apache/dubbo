@@ -1,1 +1,1 @@
-org.apache.dubbo.annotation.DeprecatedAnnotationProcessor
+org.apache.dubbo.annotation.DispatchingAnnotationProcessor

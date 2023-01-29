@@ -1,24 +1,7 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package org.apache.dubbo.annotation.handler;
 
-package org.apache.dubbo.annotation;
-
-import org.apache.dubbo.annotation.model.AnnotationProcessorContext;
-import org.apache.dubbo.annotation.permit.Permit;
+import org.apache.dubbo.annotation.AnnotationProcessingHandler;
+import org.apache.dubbo.annotation.AnnotationProcessorContext;
 
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
@@ -27,13 +10,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.ListBuffer;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,32 +22,17 @@ import java.util.Set;
  *
  * @author Andy Cheung
  */
-@SupportedAnnotationTypes("*")
-public class DeprecatedAnnotationProcessor extends AbstractProcessor {
-
-    private static final Set<Class<? extends Annotation>> ANNOTATIONS_TO_HANDLE = new HashSet<>(
-        Collections.singletonList(Deprecated.class)
-    );
-
-    private AnnotationProcessorContext apContext;
+public class DeprecatedHandler implements AnnotationProcessingHandler {
 
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv) {
-        Permit.addOpens();
-        super.init(processingEnv);
-
-        apContext = AnnotationProcessorContext.fromProcessingEnvironment(processingEnv);
+    public Set<Class<? extends Annotation>> getAnnotationsToHandle() {
+        return new HashSet<>(
+            Collections.singletonList(Deprecated.class)
+        );
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        System.err.println("Hello AP! ");
-        Set<Element> elements = new HashSet<>(32);
-
-        for (Class<? extends Annotation> annotationClass : ANNOTATIONS_TO_HANDLE) {
-            elements.addAll(roundEnv.getElementsAnnotatedWith(annotationClass));
-        }
-
+    public void process(Set<Element> elements, AnnotationProcessorContext apContext) {
         for (Element element : elements) {
             // Only interested in methods.
             if (!(element instanceof Symbol.MethodSymbol)) {
@@ -79,8 +41,8 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
 
             Symbol.ClassSymbol classSymbol = (Symbol.ClassSymbol) element.getEnclosingElement();
 
-            addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
-            addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
+            addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
+            addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
 
             JCTree classTree = apContext.getJavacTrees().getTree(classSymbol);
             JCTree methodTree = apContext.getJavacTrees().getTree(element);
@@ -140,11 +102,13 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
                 }
             });
         }
-
-        return true;
     }
 
-    private void addImportStatement(Element classSymbol, String packageName, String className) {
+    private void addImportStatement(AnnotationProcessorContext apContext,
+                                    Symbol.ClassSymbol classSymbol,
+                                    String packageName,
+                                    String className) {
+
         JCTree.JCImport jcImport = apContext.getTreeMaker().Import(
             apContext.getTreeMaker().Select(
                 apContext.getTreeMaker().Ident(apContext.getNames().fromString(packageName)),
@@ -175,10 +139,5 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
                 }
             });
         }
-    }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() {
-        return SourceVersion.latest();
     }
 }
