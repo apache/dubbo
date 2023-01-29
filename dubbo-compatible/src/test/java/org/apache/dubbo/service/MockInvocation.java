@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import org.apache.dubbo.rpc.AttachmentsAdapter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ServiceModel;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -178,5 +179,15 @@ public class MockInvocation implements Invocation {
             return defaultValue;
         }
         return result;
+    }
+
+    @Override
+    public void addInvokedInvoker(Invoker<?> invoker) {
+
+    }
+
+    @Override
+    public List<Invoker<?>> getInvokedInvokers() {
+        return null;
     }
 }

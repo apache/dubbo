@@ -412,9 +412,11 @@ public final class NetUtils {
             while (addresses.hasMoreElements()) {
                 InetAddress address = addresses.nextElement();
                 if (address instanceof Inet6Address) {
-                    if (!address.isLoopbackAddress() //filter 127.x.x.x
-                        && !address.isAnyLocalAddress() // filter 0.0.0.0
-                        && !address.isLinkLocalAddress() //filter 169.254.0.0/16
+                    if (!address.isLoopbackAddress() //filter ::1
+                        && !address.isAnyLocalAddress() // filter ::/128
+                        && !address.isLinkLocalAddress() //filter fe80::/10
+                        && !address.isSiteLocalAddress()// filter fec0::/10
+                        && !isUniqueLocalAddress(address) //filter fd00::/8
                         && address.getHostAddress().contains(":")) {//filter IPv6
                         return (Inet6Address) address;
                     }
@@ -425,6 +427,17 @@ public final class NetUtils {
         }
 
         return null;
+    }
+
+    /**
+     * If the address is Unique Local Address.
+     *
+     * @param address {@link InetAddress}
+     * @return {@code true} if the address is Unique Local Address,otherwise {@code false}
+     */
+    private static boolean isUniqueLocalAddress(InetAddress address) {
+        byte[] ip = address.getAddress();
+        return (ip[0] & 0xff) == 0xfd;
     }
 
     /**

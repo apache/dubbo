@@ -24,11 +24,11 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -46,7 +46,7 @@ public class ClassLoaderResourceLoader {
         GlobalResourcesRepository.registerGlobalDisposable(() -> destroy());
     }
 
-    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) throws InterruptedException {
+    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, Collection<ClassLoader> classLoaders) throws InterruptedException {
         Map<ClassLoader, Set<URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {

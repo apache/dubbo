@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class FrameworkServiceRepository {
             // throw new IllegalStateException("Register duplicate provider for key: " + key);
         }
         String keyWithoutGroup = keyWithoutGroup(key);
-        providersWithoutGroup.computeIfAbsent(keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>()).add(providerModel);
+        ConcurrentHashMapUtils.computeIfAbsent(providersWithoutGroup, keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>()).add(providerModel);
     }
 
     public void unregisterProvider(ProviderModel providerModel) {
@@ -82,7 +83,7 @@ public class FrameworkServiceRepository {
     }
 
     public void registerProviderUrl(URL url) {
-        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new CopyOnWriteArrayList<>()).add(url);
+        ConcurrentHashMapUtils.computeIfAbsent(providerUrlsWithoutGroup, keyWithoutGroup(url.getServiceKey()), (k) -> new CopyOnWriteArrayList<>()).add(url);
     }
 
     public ProviderModel lookupExportedService(String serviceKey) {

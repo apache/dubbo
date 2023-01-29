@@ -20,6 +20,7 @@ package org.apache.dubbo.common.metrics.collector.stat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAccumulator;
 
@@ -29,20 +30,22 @@ import org.apache.dubbo.common.metrics.event.RTEvent;
 import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
-public class MetricsStatComposite{
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+
+public class MetricsStatComposite {
 
     public Map<RequestEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
-    private final Map<MethodMetric, AtomicLong>     lastRT = new ConcurrentHashMap<>();
-    private final Map<MethodMetric, LongAccumulator> minRT  = new ConcurrentHashMap<>();
-    private final Map<MethodMetric, LongAccumulator> maxRT  = new ConcurrentHashMap<>();
-    private final Map<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
-    private final Map<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
-    private final Map<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, AtomicLong> lastRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, LongAccumulator> minRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, LongAccumulator> maxRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
     private final String applicationName;
     private final List<MetricsListener> listeners;
     private DefaultMetricsCollector collector;
 
-    public MetricsStatComposite(String applicationName, DefaultMetricsCollector collector){
+    public MetricsStatComposite(String applicationName, DefaultMetricsCollector collector) {
         this.applicationName = applicationName;
         this.listeners = collector.getListener();
         this.collector = collector;
@@ -53,23 +56,27 @@ public class MetricsStatComposite{
         return stats.get(statType);
     }
 
-    public Map<MethodMetric, AtomicLong> getLastRT(){
+    public Map<MethodMetric, AtomicLong> getLastRT() {
         return this.lastRT;
     }
-    public Map<MethodMetric, LongAccumulator> getMinRT(){
+
+    public Map<MethodMetric, LongAccumulator> getMinRT() {
         return this.minRT;
     }
 
-    public Map<MethodMetric, LongAccumulator> getMaxRT(){
+    public Map<MethodMetric, LongAccumulator> getMaxRT() {
         return this.maxRT;
     }
-    public Map<MethodMetric, AtomicLong> getAvgRT(){
+
+    public Map<MethodMetric, AtomicLong> getAvgRT() {
         return this.avgRT;
     }
-    public Map<MethodMetric, AtomicLong> getTotalRT(){
+
+    public Map<MethodMetric, AtomicLong> getTotalRT() {
         return this.totalRT;
     }
-    public Map<MethodMetric, AtomicLong> getRtCount(){
+
+    public Map<MethodMetric, AtomicLong> getRtCount() {
         return this.rtCount;
     }
 
@@ -77,29 +84,29 @@ public class MetricsStatComposite{
         if (collector.isCollectEnabled()) {
             MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
 
-            AtomicLong last = lastRT.computeIfAbsent(metric, k -> new AtomicLong());
+            AtomicLong last = ConcurrentHashMapUtils.computeIfAbsent(lastRT, metric, k -> new AtomicLong());
             last.set(responseTime);
 
-            LongAccumulator min = minRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
+            LongAccumulator min = ConcurrentHashMapUtils.computeIfAbsent(minRT, metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
             min.accumulate(responseTime);
 
-            LongAccumulator max = maxRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
+            LongAccumulator max = ConcurrentHashMapUtils.computeIfAbsent(maxRT, metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
             max.accumulate(responseTime);
 
-            AtomicLong total = totalRT.computeIfAbsent(metric, k -> new AtomicLong());
+            AtomicLong total = ConcurrentHashMapUtils.computeIfAbsent(totalRT, metric, k -> new AtomicLong());
             total.addAndGet(responseTime);
 
-            AtomicLong count = rtCount.computeIfAbsent(metric, k -> new AtomicLong());
+            AtomicLong count = ConcurrentHashMapUtils.computeIfAbsent(rtCount, metric, k -> new AtomicLong());
             count.incrementAndGet();
 
-            avgRT.computeIfAbsent(metric, k -> new AtomicLong());
+            ConcurrentHashMapUtils.computeIfAbsent(avgRT, metric, k -> new AtomicLong());
 
             publishEvent(new RTEvent(metric, responseTime));
         }
     }
 
     private void init() {
-        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricsStatHandler(applicationName){
+        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricsStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL));
@@ -140,6 +147,13 @@ public class MetricsStatComposite{
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_TIMEOUT));
+            }
+        });
+
+        stats.put(RequestEvent.Type.TOTAL_FAILED, new DefaultMetricsStatHandler(applicationName) {
+            @Override
+            public void doNotify(MethodMetric metric) {
+                publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL_FAILED));
             }
         });
     }

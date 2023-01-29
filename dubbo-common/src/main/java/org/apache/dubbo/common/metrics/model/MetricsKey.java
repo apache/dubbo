@@ -19,27 +19,31 @@ package org.apache.dubbo.common.metrics.model;
 
 public enum MetricsKey {
 
-    METRIC_REQUESTS_TOTAL("requests.total", "Total Requests"),
-    METRIC_REQUESTS_SUCCEED("requests.succeed", "Succeed Requests"),
-    METRIC_REQUESTS_FAILED("requests.failed", "Failed Requests"),
-    METRIC_REQUEST_BUSINESS_FAILED("requests.business.failed","Failed Business Requests"),
-    METRIC_REQUESTS_PROCESSING("requests.processing", "Processing Requests"),
+    // provider metrics key
+    PROVIDER_METRIC_REQUESTS("dubbo.provider.requests.total", "Total Requests"),
+    PROVIDER_METRIC_REQUESTS_SUCCEED("dubbo.provider.requests.succeed.total", "Succeed Requests"),
+    PROVIDER_METRIC_REQUESTS_FAILED("dubbo.provider.requests.failed.total", "Failed Requests"),
+    PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed.total","Failed Business Requests"),
+    PROVIDER_METRIC_REQUESTS_PROCESSING("dubbo.provider.requests.processing", "Processing Requests"),
 
-    METRIC_REQUESTS_TOTAL_AGG("requests.total.aggregate", "Aggregated Total Requests"),
-    METRIC_REQUESTS_SUCCEED_AGG("requests.succeed.aggregate", "Aggregated Succeed Requests"),
-    METRIC_REQUESTS_FAILED_AGG("requests.failed.aggregate", "Aggregated Failed Requests"),
-    METRIC_REQUESTS_BUSINESS_FAILED_AGG("requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
-    METRIC_REQUESTS_TIMEOUT_AGG("requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
-    METRIC_REQUESTS_LIMIT_AGG("requests.limit.aggregate", "Aggregated limit Requests"),
+    PROVIDER_METRIC_REQUESTS_TOTAL_AGG("dubbo.provider.requests.total.aggregate", "Aggregated Total Requests"),
+    PROVIDER_METRIC_REQUESTS_SUCCEED_AGG("dubbo.provider.requests.succeed.aggregate", "Aggregated Succeed Requests"),
+    PROVIDER_METRIC_REQUESTS_FAILED_AGG("dubbo.provider.requests.failed.aggregate", "Aggregated Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG("dubbo.provider.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG("dubbo.provider.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
+    PROVIDER_METRIC_REQUESTS_LIMIT_AGG("dubbo.provider.requests.limit.aggregate", "Aggregated limit Requests"),
+    PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.provider.requests.failed.total.aggregate", "Aggregated failed total Requests"),
 
-    METRIC_QPS("qps", "Query Per Seconds"),
-    METRIC_RT_LAST("rt.last", "Last Response Time"),
-    METRIC_RT_MIN("rt.min", "Min Response Time"),
-    METRIC_RT_MAX("rt.max", "Max Response Time"),
-    METRIC_RT_TOTAL("rt.total", "Total Response Time"),
-    METRIC_RT_AVG("rt.avg", "Average Response Time"),
-    METRIC_RT_P99("rt.p99", "Response Time P99"),
-    METRIC_RT_P95("rt.p95", "Response Time P95"),
+    PROVIDER_METRIC_QPS("dubbo.provider.qps.seconds", "Query Per Seconds"),
+    PROVIDER_METRIC_RT_LAST("dubbo.provider.rt.seconds.last", "Last Response Time"),
+    PROVIDER_METRIC_RT_MIN("dubbo.provider.rt.seconds.min", "Min Response Time"),
+    PROVIDER_METRIC_RT_MAX("dubbo.provider.rt.seconds.max", "Max Response Time"),
+    PROVIDER_METRIC_RT_SUM("dubbo.provider.rt.seconds.sum", "Sum Response Time"),
+    PROVIDER_METRIC_RT_AVG("dubbo.provider.rt.seconds.avg", "Average Response Time"),
+    PROVIDER_METRIC_RT_P99("dubbo.provider.rt.seconds.p99", "Response Time P99"),
+    PROVIDER_METRIC_RT_P95("dubbo.provider.rt.seconds.p95", "Response Time P95"),
+
+    // consumer metrics key
     ;
 
     private final String name;

@@ -17,8 +17,8 @@
 package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
@@ -31,12 +31,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
  */
 public abstract class AbstractDynamicConfigurationFactory implements DynamicConfigurationFactory {
 
-    private volatile Map<String, DynamicConfiguration> dynamicConfigurations = new ConcurrentHashMap<>();
+    private volatile ConcurrentHashMap<String, DynamicConfiguration> dynamicConfigurations = new ConcurrentHashMap<>();
 
     @Override
     public final DynamicConfiguration getDynamicConfiguration(URL url) {
         String key = url == null ? DEFAULT_KEY : url.toServiceString();
-        return dynamicConfigurations.computeIfAbsent(key, k -> createDynamicConfiguration(url));
+        return ConcurrentHashMapUtils.computeIfAbsent(dynamicConfigurations, key, k -> createDynamicConfiguration(url));
     }
 
     protected abstract DynamicConfiguration createDynamicConfiguration(URL url);

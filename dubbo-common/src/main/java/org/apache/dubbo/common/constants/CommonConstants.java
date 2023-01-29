@@ -435,6 +435,10 @@ public interface CommonConstants {
 
     String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
 
+    String SERIALIZE_ALLOW_LIST_FILE_PATH = "security/serialize.allowlist";
+
+    String SERIALIZE_CHECK_STATUS_KEY = "dubbo.application.serialize-check-status";
+
     String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
 
     String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";

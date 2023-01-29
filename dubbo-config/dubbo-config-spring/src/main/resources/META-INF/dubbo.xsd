@@ -482,6 +482,11 @@
                 <xsd:documentation><![CDATA[ Saving thread dump or not, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="mapping-retry-interval" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The retry interval of service name mapping. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="moduleType">

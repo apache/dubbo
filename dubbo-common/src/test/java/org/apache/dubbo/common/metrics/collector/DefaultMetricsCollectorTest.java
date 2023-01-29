@@ -21,6 +21,7 @@ import org.apache.dubbo.common.metrics.event.MetricsEvent;
 import org.apache.dubbo.common.metrics.event.RTEvent;
 import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
+import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -99,7 +100,7 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get("requests.processing"), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_PROCESSING.getName()), 0L);
     }
 
     @Test
@@ -124,11 +125,11 @@ class DefaultMetricsCollectorTest {
             return number.longValue();
         }));
 
-        Assertions.assertEquals(sampleMap.get("rt.last"), 0L);
-        Assertions.assertEquals(sampleMap.get("rt.min"), 0L);
-        Assertions.assertEquals(sampleMap.get("rt.max"), 10L);
-        Assertions.assertEquals(sampleMap.get("rt.avg"), 5L);
-        Assertions.assertEquals(sampleMap.get("rt.total"), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_LAST.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MIN.getName()), 0L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_MAX.getName()), 10L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_AVG.getName()), 5L);
+        Assertions.assertEquals(sampleMap.get(MetricsKey.PROVIDER_METRIC_RT_SUM.getName()), 10L);
     }
 
     @Test

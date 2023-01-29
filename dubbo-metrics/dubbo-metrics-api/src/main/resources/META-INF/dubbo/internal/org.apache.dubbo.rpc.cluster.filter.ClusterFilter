@@ -1,0 +1,2 @@
+metrics-beta=org.apache.dubbo.metrics.filter.MetricsFilter
+observationsender=org.apache.dubbo.metrics.filter.observation.ObservationSenderFilter

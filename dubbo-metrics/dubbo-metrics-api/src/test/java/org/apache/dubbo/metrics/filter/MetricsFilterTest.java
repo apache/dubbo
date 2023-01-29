@@ -103,10 +103,10 @@ class MetricsFilterTest {
         }
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey("requests.failed"));
-        Assertions.assertFalse(metricsMap.containsKey("requests.succeed"));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED.getName()));
+        Assertions.assertFalse(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName()));
 
-        MetricSample sample = metricsMap.get("requests.failed");
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED.getName());
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
@@ -131,10 +131,10 @@ class MetricsFilterTest {
         }
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED.getName()));
-        Assertions.assertFalse(metricsMap.containsKey("requests.succeed"));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUEST_BUSINESS_FAILED.getName()));
+        Assertions.assertFalse(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName()));
 
-        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUEST_BUSINESS_FAILED.getName());
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUEST_BUSINESS_FAILED.getName());
 
         Map<String, String> tags = sample.getTags();
 
@@ -146,7 +146,7 @@ class MetricsFilterTest {
 
 
     @Test
-    void testTimeoutRequests() {
+    void testTimeoutAndFailedRequests() {
         collector.setCollectEnabled(true);
 
         given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
@@ -163,11 +163,14 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG.getName()));
 
-        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        MetricSample timeoutSample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
 
-        Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
+        GaugeMetricSample failedSample = (GaugeMetricSample)metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG.getName());
+        Assertions.assertSame(failedSample.getSupplier().get().longValue(), count);
     }
 
     @Test
@@ -188,9 +191,9 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.METRIC_REQUESTS_LIMIT_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG.getName()));
 
-        MetricSample sample = metricsMap.get(MetricsKey.METRIC_REQUESTS_LIMIT_AGG.getName());
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG.getName());
 
         Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
     }
@@ -206,10 +209,10 @@ class MetricsFilterTest {
         filter.onResponse(result, invoker, invocation);
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertFalse(metricsMap.containsKey("requests.failed"));
-        Assertions.assertTrue(metricsMap.containsKey("requests.succeed"));
+        Assertions.assertFalse(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUEST_BUSINESS_FAILED.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName()));
 
-        MetricSample sample = metricsMap.get("requests.succeed");
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName());
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
@@ -232,7 +235,7 @@ class MetricsFilterTest {
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
-        MetricSample sample = metricsMap.get("requests.succeed");
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName());
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
@@ -255,7 +258,7 @@ class MetricsFilterTest {
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
-        MetricSample sample = metricsMap.get("requests.succeed");
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName());
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
@@ -278,7 +281,7 @@ class MetricsFilterTest {
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
-        MetricSample sample = metricsMap.get("requests.succeed");
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED.getName());
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
@@ -305,7 +308,7 @@ class MetricsFilterTest {
 
         Map<String, MetricSample> metricsMap = getMetricsMap();
 
-        MetricSample sample = metricsMap.get("requests.processing");
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_PROCESSING.getName());
         Map<String, String> tags = sample.getTags();
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
