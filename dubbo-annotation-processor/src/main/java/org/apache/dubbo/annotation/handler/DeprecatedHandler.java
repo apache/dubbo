@@ -34,9 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Info here.
- *
- * @author Andy Cheung
+ * Handles @Deprecated annotation and adds logger warn call to the methods that are annotated with it.
  */
 public class DeprecatedHandler implements AnnotationProcessingHandler {
 

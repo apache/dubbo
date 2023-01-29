@@ -34,9 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Info here.
- *
- * @author Andy Cheung
+ * Dispatching annotation processor, which uses a file to locate handlers and invoke them.
  */
 @SupportedAnnotationTypes("*")
 public class DispatchingAnnotationProcessor extends AbstractProcessor {
