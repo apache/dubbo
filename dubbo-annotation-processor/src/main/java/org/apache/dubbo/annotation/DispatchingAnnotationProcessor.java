@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.annotation;
 
-import org.apache.dubbo.annotation.handler.DeprecatedHandler;
 import org.apache.dubbo.annotation.permit.Permit;
+import org.apache.dubbo.annotation.util.FileUtils;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -28,11 +28,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Info here.
@@ -42,24 +41,29 @@ import java.util.stream.Collectors;
 @SupportedAnnotationTypes("*")
 public class DispatchingAnnotationProcessor extends AbstractProcessor {
 
-    private static final Set<Class<? extends AnnotationProcessingHandler>> handlerClasses = new HashSet<>(
-        Arrays.asList(DeprecatedHandler.class)
-    );
-
     private static final Set<AnnotationProcessingHandler> handlers = loadHandlers();
 
-    private AnnotationProcessorContext apContext;
-
     private static Set<AnnotationProcessingHandler> loadHandlers() {
-        return Collections.unmodifiableSet(handlerClasses.stream().map(x -> {
+        List<String> classNames = FileUtils.loadConfigurationFileInResources("handlers.cfg");
+        Set<AnnotationProcessingHandler> tempReporters = new HashSet<>();
+
+        for (String clsName : classNames) {
             try {
-                return x.getConstructor().newInstance();
+                Class<? extends AnnotationProcessingHandler> cls = (Class<? extends AnnotationProcessingHandler>) Class.forName(clsName);
+                AnnotationProcessingHandler r = cls.getConstructor().newInstance();
+
+                tempReporters.add(r);
+
             } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
-                     IllegalAccessException e) {
+                     IllegalAccessException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        }).collect(Collectors.toSet()));
+        }
+
+        return Collections.unmodifiableSet(tempReporters);
     }
+
+    private AnnotationProcessorContext apContext;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
