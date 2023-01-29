@@ -19,6 +19,8 @@ package org.apache.dubbo.annotation;
 
 import org.apache.dubbo.annotation.permit.Permit;
 
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Types;
@@ -41,6 +43,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -62,6 +65,10 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
     private Names names;
 
     private Context javacContext;
+
+    private Trees trees;
+
+    private boolean importStatementAdded = false;
 
     private static <T> T jbUnwrap(Class<? extends T> iface, T wrapper) {
         T unwrapped = null;
@@ -92,6 +99,8 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
         javacTrees = JavacTrees.instance(jcProcessingEnvironment);
         treeMaker = TreeMaker.instance(context);
         names = Names.instance(context);
+
+        trees = Trees.instance(jcProcessingEnvironment);
     }
 
     @Override
@@ -111,6 +120,9 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
 
             Element classSymbol = element.getEnclosingElement();
 
+            addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
+            addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
+
             JCTree classTree = javacTrees.getTree(classSymbol);
             JCTree methodTree = javacTrees.getTree(element);
 
@@ -123,24 +135,24 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
 
                     JCTree.JCBlock block = jcMethodDecl.body;
 
-                    JCTree.JCExpressionStatement getLoggerStatement = treeMaker.Exec(
-                        treeMaker.Apply(
-                            // Use definite name to distinguish the java.util.List.
-                            com.sun.tools.javac.util.List.nil(),
+                    JCTree.JCExpression getLoggerStatement = treeMaker.Apply(
+                        // Use definite name to distinguish the java.util.List.
+                        com.sun.tools.javac.util.List.nil(),
 
-                            treeMaker.Select(
-                                treeMaker.Ident(names.fromString("LoggerFactory")),
-                                names.fromString("getErrorTypeAwareLogger")
-                            ),
+                        treeMaker.Select(
+                            treeMaker.Ident(names.fromString("LoggerFactory")),
+                            names.fromString("getErrorTypeAwareLogger")
+                        ),
 
-                            com.sun.tools.javac.util.List.of(
-                                treeMaker.ClassLiteral(((Symbol.ClassSymbol) classSymbol).erasure(Types.instance(javacContext)))
-                            )
+                        com.sun.tools.javac.util.List.of(
+                            treeMaker.ClassLiteral(((Symbol.ClassSymbol) classSymbol).erasure(Types.instance(javacContext)))
                         )
                     );
 
+                    JCTree.JCExpressionStatement getLoggerExpressionStatement = treeMaker.Exec(getLoggerStatement);
+
                     ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
-                    statements.add(getLoggerStatement);
+                    statements.add(getLoggerExpressionStatement);
                     statements.addAll(block.stats);
 
                     block.stats = statements.toList();
@@ -149,6 +161,39 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    private void addImportStatement(Element classSymbol, String packageName, String className) {
+        JCTree.JCImport jcImport = treeMaker.Import(
+            treeMaker.Select(
+                treeMaker.Ident(names.fromString(packageName)),
+                names.fromString(className)
+            ), false);
+
+        TreePath treePath = trees.getPath(classSymbol);
+        TreePath parentPath = treePath.getParentPath();
+        JCTree.JCCompilationUnit compilationUnit = (JCTree.JCCompilationUnit) parentPath.getCompilationUnit();
+
+        // ((JCTree.JCImport) ((List) imports).get(7)).qualid.toString()
+        List<JCTree.JCImport> imports = compilationUnit.getImports();
+        if (imports.stream().noneMatch(x -> x.qualid.toString().contains(packageName + "." + className))) {
+
+            compilationUnit.accept(new JCTree.Visitor() {
+                @Override
+                public void visitTopLevel(JCTree.JCCompilationUnit that) {
+
+                    List<JCTree> defs = compilationUnit.defs;
+
+                    ListBuffer<JCTree> newDefs = new ListBuffer<>();
+
+                    newDefs.add(defs.get(0));
+                    newDefs.add(jcImport);
+                    newDefs.addAll(defs.subList(1, defs.size()));
+
+                    compilationUnit.defs = newDefs.toList();
+                }
+            });
+        }
     }
 
     @Override
