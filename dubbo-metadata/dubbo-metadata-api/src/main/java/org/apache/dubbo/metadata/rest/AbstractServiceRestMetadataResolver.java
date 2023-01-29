@@ -107,7 +107,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     @Override
     public final ServiceRestMetadata resolve(Class<?> serviceType, ServiceRestMetadata serviceRestMetadata) {
-
+        serviceRestMetadata.setCodeStyle(this.getClass());
         // Process RestMethodMetadata
         processAllRestMethodMetadata(serviceRestMetadata, serviceType);
 
@@ -228,6 +228,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         }
 
         RestMethodMetadata metadata = new RestMethodMetadata();
+
+        metadata.setCodeStyle(this.getClass());
 
         // to consumer service map
         metadata.setReflectMethod(serviceMethod);

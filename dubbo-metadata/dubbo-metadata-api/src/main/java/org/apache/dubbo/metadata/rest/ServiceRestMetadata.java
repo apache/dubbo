@@ -42,6 +42,11 @@ public class ServiceRestMetadata implements Serializable {
 
     private boolean consumer;
 
+    /**
+     * make a distinction between mvc & resteasy
+     */
+    private Class codeStyle;
+
     private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
     private Map<Method, RestMethodMetadata> methodToServiceMap;
 
@@ -148,6 +153,14 @@ public class ServiceRestMetadata implements Serializable {
         }
 
         this.methodToServiceMap.put(restMethodMetadata.getReflectMethod(), restMethodMetadata);
+    }
+
+    public Class getCodeStyle() {
+        return codeStyle;
+    }
+
+    public void setCodeStyle(Class codeStyle) {
+        this.codeStyle = codeStyle;
     }
 
     @Override

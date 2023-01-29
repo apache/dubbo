@@ -63,6 +63,11 @@ public class RestMethodMetadata implements Serializable {
 
     private Method reflectMethod;
 
+    /**
+     *  make a distinction between mvc & resteasy
+     */
+    private Class codeStyle;
+
     public MethodDefinition getMethod() {
         if (method == null) {
             method = new MethodDefinition();
@@ -191,6 +196,14 @@ public class RestMethodMetadata implements Serializable {
 
     public void setReflectMethod(Method reflectMethod) {
         this.reflectMethod = reflectMethod;
+    }
+
+    public Class getCodeStyle() {
+        return codeStyle;
+    }
+
+    public void setCodeStyle(Class codeStyle) {
+        this.codeStyle = codeStyle;
     }
 
     @Override

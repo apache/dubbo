@@ -60,7 +60,7 @@ public abstract class AbstractNoAnnotatedParameterProcessor implements NoAnnotat
     protected void addArgInfo(Parameter parameter, int parameterIndex,
                               RestMethodMetadata restMethodMetadata, boolean isFormBody) {
         ArgInfo argInfo = ArgInfo.build(parameterIndex, parameter)
-            .setParamAnnotationType(resolveClass(defaultAnnotationClassName(), getClassLoader()))
+            .setParamAnnotationType(resolveClass(defaultAnnotationClassName(restMethodMetadata), getClassLoader()))
             .setAnnotationNameAttribute(parameter.getName()).setFormContentType(isFormBody);
         restMethodMetadata.addArgInfo(argInfo);
     }

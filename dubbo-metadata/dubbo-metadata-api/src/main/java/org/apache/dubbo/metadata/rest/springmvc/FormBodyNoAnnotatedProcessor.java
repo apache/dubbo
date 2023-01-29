@@ -23,14 +23,14 @@ import org.apache.dubbo.metadata.rest.media.MediaType;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_BODY_ANNOTATION_CLASS_NAME;
 import static org.apache.dubbo.metadata.rest.media.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 
-public class NoRequestFormBodyProcessor extends AbstractNoAnnotatedParameterProcessor {
+public class FormBodyNoAnnotatedProcessor extends AbstractNoAnnotatedParameterProcessor {
     @Override
     public MediaType consumerContentType() {
         return APPLICATION_FORM_URLENCODED_VALUE;
     }
 
     @Override
-    public String defaultAnnotationClassName() {
+    public String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata) {
         return REQUEST_BODY_ANNOTATION_CLASS_NAME;
     }
 

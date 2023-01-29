@@ -25,7 +25,7 @@ import java.lang.reflect.Parameter;
 public interface NoAnnotatedParameterRequestTagProcessor {
     MediaType consumerContentType();
 
-    String defaultAnnotationClassName();
+    String defaultAnnotationClassName(RestMethodMetadata restMethodMetadata);
 
     void process(Parameter parameter, int parameterIndex, RestMethodMetadata restMethodMetadata);
 }
