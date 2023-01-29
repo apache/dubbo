@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.rest.request.convert;
 
 import okhttp3.*;
+import okhttp3.internal.http.HttpMethod;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
@@ -47,8 +48,6 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
     }
 
 
-
-
     @Override
     public Request convert(RequestTemplate requestTemplate) {
         Request.Builder builder = new Request.Builder();
@@ -65,8 +64,12 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
                 builder.addHeader(headerName, headerValue);
             }
         }
+        RequestBody requestBody = null;
+        if (HttpMethod.permitsRequestBody(requestTemplate.getHttpMethod())) {
+            requestBody = RequestBody.create(null, requestTemplate.getSerializedBody());
+        }
+        builder.method(requestTemplate.getHttpMethod(), requestBody);
 
-        builder.method(requestTemplate.getHttpMethod(), RequestBody.create(null, requestTemplate.getSerializedBody()));
         return builder.build();
     }
 

@@ -117,7 +117,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public boolean isBodyEmpty() {
-        return getSerializedBody() == null;
+        return getUnSerializedBody() == null;
     }
 
     public RequestTemplate body(Object body) {
