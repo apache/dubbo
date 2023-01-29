@@ -21,12 +21,15 @@ import po.TestPO;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 
 @Path("/demoService")
 public interface RestDemoService {
     @GET
     @Path("/hello")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
     Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
 
     @GET
@@ -68,4 +71,17 @@ public interface RestDemoService {
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_JSON})
     TestPO testBody5(TestPO testPO);
+
+    @POST
+    @Path("/testForm1")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    String testForm1(@FormParam("name") String test);
+
+
+    @POST
+    @Path("/testForm2")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_FORM_URLENCODED)
+    MultivaluedMap testForm2(MultivaluedMap map);
 }

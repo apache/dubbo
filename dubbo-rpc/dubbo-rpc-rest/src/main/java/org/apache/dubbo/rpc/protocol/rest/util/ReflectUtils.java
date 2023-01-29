@@ -74,6 +74,17 @@ public class ReflectUtils {
 
     }
 
+    public static Class findClassAndTryCatch(String name, ClassLoader classLoader) {
+
+        try {
+            return findClass(name, classLoader);
+        } catch (Throwable e) {
+
+        }
+        return null;
+
+    }
+
     public static Class findClass(String... name) throws ClassNotFoundException {
 
         return findClass(Thread.currentThread().getContextClassLoader(), name);
@@ -86,7 +97,7 @@ public class ReflectUtils {
 
         Class tmp;
         for (String s : names) {
-            tmp = findClassTryException(classLoader, s);
+            tmp = findClassAndTryCatch(s, classLoader);
             if (tmp == null) {
                 continue;
             } else {
@@ -100,7 +111,7 @@ public class ReflectUtils {
     public static Class findClassTryException(ClassLoader classLoader, String... name) {
 
         try {
-            return findClass(name);
+            return findClass(classLoader, name);
         } catch (Exception e) {
 
         }
@@ -110,12 +121,6 @@ public class ReflectUtils {
 
     public static Class findClassTryException(String... name) {
         return findClassTryException(Thread.currentThread().getContextClassLoader(), name);
-    }
-
-    public static Class findClassTryException(String name) {
-
-        return findClassTryException(Thread.currentThread().getContextClassLoader(), name);
-
     }
 
 

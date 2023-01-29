@@ -26,11 +26,10 @@ public class MultiValueCreator {
 
     private static Class multiValueMapClass = null;
     private static Method multiValueMapAdd = null;
-    private static Method multiValueMapConstruct = null;
 
     static {
         multiValueMapClass = ReflectUtils.findClassTryException(SPRING_MultiValueMap, JAVAX_MultiValueMap);
-        multiValueMapAdd = ReflectUtils.getMethodAndTryCatch(multiValueMapClass, "add", new Class[]{String.class, String.class});
+        multiValueMapAdd = ReflectUtils.getMethodAndTryCatch(multiValueMapClass, "add", new Class[]{Object.class, Object.class});
     }
 
 

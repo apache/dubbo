@@ -28,7 +28,8 @@ public enum ParamType {
     PARAM(Arrays.asList(JAXRSClassConstants.QUERY_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_PARAM_ANNOTATION_CLASS)),
 
-    BODY(Arrays.asList(JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
+    BODY(Arrays.asList(
+        JAXRSClassConstants.REST_EASY_BODY_ANNOTATION_CLASS,
         SpringMvcClassConstants.REQUEST_BODY_ANNOTATION_CLASS)),
     // TODO how to match arg type ?
     REQ_OR_RES(Arrays.asList(MetadataConstants.JAKARTA_SERVLET_REQ_CLASS,
@@ -38,6 +39,8 @@ public enum ParamType {
 
     PATH(Arrays.asList(JAXRSClassConstants.PATH_PARAM_ANNOTATION_CLASS,
         SpringMvcClassConstants.PATH_VARIABLE_ANNOTATION_CLASS)),
+
+    FORM(Arrays.asList(JAXRSClassConstants.FORM_PARAM_ANNOTATION_CLASS)),
 
     EMPTY(Arrays.asList());
     private List<Class> annotationClasses;
