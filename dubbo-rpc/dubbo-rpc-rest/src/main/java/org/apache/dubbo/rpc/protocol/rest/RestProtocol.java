@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
@@ -32,16 +35,16 @@ import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.*;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.model.*;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeClientBuilder;
+import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeInvocationHandler;
 import org.jboss.resteasy.util.GetRestful;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
@@ -122,39 +125,53 @@ public class RestProtocol extends AbstractProxyProtocol {
         // resolve metadata
         Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
-        // create proxy ref
-        T restInvoker = HttpInvokeClientBuilder.build(metadataMap, url, type, refClient.getClient());
+        HttpInvokeInvocationHandler httpInvoke = new HttpInvokeInvocationHandler(metadataMap, url, refClient.getClient());
 
-        final Invoker<T> target = proxyFactory.getInvoker(restInvoker, type, url);
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
-                    Result result = target.invoke(invocation);
-                    // FIXME result is an AsyncRpcResult instance.
-                    Throwable e = result.getException();
-                    if (e != null) {
-                        for (Class<?> rpcException : rpcExceptions) {
-                            if (rpcException.isAssignableFrom(e.getClass())) {
-                                throw getRpcException(type, url, invocation, e);
+
+                    RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+
+                    ConsumerMethodModel consumerMethodModel = (ConsumerMethodModel) rpcInvocation.get(Constants.METHOD_MODEL);
+
+                    Object value = httpInvoke.invoke(null, consumerMethodModel.getMethod(), invocation.getArguments());
+
+                    CompletableFuture<Object> future = wrapWithFuture(value, invocation);
+                    CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
+                        AppResponse result = new AppResponse(invocation);
+                        if (t != null) {
+                            if (t instanceof CompletionException) {
+                                result.setException(t.getCause());
+                            } else {
+                                result.setException(t);
                             }
+                        } else {
+                            result.setValue(obj);
                         }
-                    }
-                    return result;
+                        return result;
+                    });
+                    return new AsyncRpcResult(appResponseFuture, invocation);
+
                 } catch (RpcException e) {
                     if (e.getCode() == RpcException.UNKNOWN_EXCEPTION) {
                         e.setCode(getErrorCode(e.getCause()));
                     }
                     throw e;
+                } catch (InvocationTargetException e) {
+                    if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
+                        logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
+                    }
+                    return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException(), invocation);
                 } catch (Throwable e) {
-                    throw getRpcException(type, url, invocation, e);
+                    throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
                 }
             }
 
             @Override
             public void destroy() {
                 super.destroy();
-                target.destroy();
                 invokers.remove(this);
                 destroyInternal(url);
             }
@@ -243,6 +260,17 @@ public class RestProtocol extends AbstractProxyProtocol {
         } catch (Exception e) {
             logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
         }
+    }
+
+    private CompletableFuture<Object> wrapWithFuture(Object value, Invocation invocation) {
+        if (value instanceof CompletableFuture) {
+            invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
+            return (CompletableFuture<Object>) value;
+        } else if (RpcContext.getServerAttachment().isAsyncStarted()) {
+            invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
+            return ((AsyncContextImpl) (RpcContext.getServerAttachment().getAsyncContext())).getInternalFuture();
+        }
+        return CompletableFuture.completedFuture(value);
     }
 
 
