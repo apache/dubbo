@@ -17,20 +17,15 @@
 
 package org.apache.dubbo.annotation;
 
+import org.apache.dubbo.annotation.model.AnnotationProcessorContext;
 import org.apache.dubbo.annotation.permit.Permit;
 
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Types;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeTranslator;
-import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Names;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -40,7 +35,6 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -58,49 +52,14 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
         Collections.singletonList(Deprecated.class)
     );
 
-    private JavacTrees javacTrees;
-
-    private TreeMaker treeMaker;
-
-    private Names names;
-
-    private Context javacContext;
-
-    private Trees trees;
-
-    private boolean importStatementAdded = false;
-
-    private static <T> T jbUnwrap(Class<? extends T> iface, T wrapper) {
-        T unwrapped = null;
-        try {
-            final Class<?> apiWrappers = wrapper.getClass().getClassLoader().loadClass("org.jetbrains.jps.javac.APIWrappers");
-            final Method unwrapMethod = apiWrappers.getDeclaredMethod("unwrap", Class.class, Object.class);
-            unwrapped = iface.cast(unwrapMethod.invoke(null, iface, wrapper));
-        } catch (Throwable ignored) {
-        }
-
-        return unwrapped != null ? unwrapped : wrapper;
-    }
+    private AnnotationProcessorContext apContext;
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         Permit.addOpens();
-
         super.init(processingEnv);
 
-        Object procEnvToUnwrap = processingEnv.getClass() == JavacProcessingEnvironment.class ?
-            processingEnv : jbUnwrap(JavacProcessingEnvironment.class, processingEnv);
-
-        JavacProcessingEnvironment jcProcessingEnvironment = (JavacProcessingEnvironment) procEnvToUnwrap;
-
-        Context context = jcProcessingEnvironment.getContext();
-
-        javacContext = context;
-        javacTrees = JavacTrees.instance(jcProcessingEnvironment);
-        treeMaker = TreeMaker.instance(context);
-        names = Names.instance(context);
-
-        trees = Trees.instance(jcProcessingEnvironment);
+        apContext = AnnotationProcessorContext.fromProcessingEnvironment(processingEnv);
     }
 
     @Override
@@ -123,8 +82,8 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
             addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
             addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
 
-            JCTree classTree = javacTrees.getTree(classSymbol);
-            JCTree methodTree = javacTrees.getTree(element);
+            JCTree classTree = apContext.getJavacTrees().getTree(classSymbol);
+            JCTree methodTree = apContext.getJavacTrees().getTree(element);
 
             methodTree.accept(new TreeTranslator() {
                 @Override
@@ -135,39 +94,43 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
 
                     JCTree.JCBlock block = jcMethodDecl.body;
 
-                    JCTree.JCExpression getLoggerStatement = treeMaker.Apply(
+                    JCTree.JCExpression getLoggerStatement = apContext.getTreeMaker().Apply(
                         // Use definite name to distinguish the java.util.List.
                         com.sun.tools.javac.util.List.nil(),
 
-                        treeMaker.Select(
-                            treeMaker.Ident(names.fromString("LoggerFactory")),
-                            names.fromString("getErrorTypeAwareLogger")
+                        apContext.getTreeMaker().Select(
+                            apContext.getTreeMaker().Ident(apContext.getNames().fromString("LoggerFactory")),
+                            apContext.getNames().fromString("getErrorTypeAwareLogger")
                         ),
 
                         com.sun.tools.javac.util.List.of(
-                            treeMaker.ClassLiteral((classSymbol).erasure(Types.instance(javacContext)))
+                            apContext.getTreeMaker().ClassLiteral(
+                                classSymbol.erasure(
+                                    Types.instance(apContext.getJavacContext())
+                                )
+                            )
                         )
                     );
 
-                    JCTree.JCExpression fullStatement = treeMaker.Apply(
+                    JCTree.JCExpression fullStatement = apContext.getTreeMaker().Apply(
                         com.sun.tools.javac.util.List.nil(),
 
-                        treeMaker.Select(
+                        apContext.getTreeMaker().Select(
                             getLoggerStatement,
-                            names.fromString("warn")
+                            apContext.getNames().fromString("warn")
                         ),
 
                         com.sun.tools.javac.util.List.of(
-                            treeMaker.Literal("0-28"),
-                            treeMaker.Literal("invocation of deprecated method"),
-                            treeMaker.Literal(""),
-                            treeMaker.Literal("Deprecated method invoked. The method is "
+                            apContext.getTreeMaker().Literal("0-28"),
+                            apContext.getTreeMaker().Literal("invocation of deprecated method"),
+                            apContext.getTreeMaker().Literal(""),
+                            apContext.getTreeMaker().Literal("Deprecated method invoked. The method is "
                                 + classSymbol.getQualifiedName() + "."
                                 + jcMethodDecl.name.toString() + "(" + jcMethodDecl.params.toString() + ")")
                         )
                     );
 
-                    JCTree.JCExpressionStatement fullExpressionStatement = treeMaker.Exec(fullStatement);
+                    JCTree.JCExpressionStatement fullExpressionStatement = apContext.getTreeMaker().Exec(fullStatement);
 
                     ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
                     statements.add(fullExpressionStatement);
@@ -182,13 +145,13 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
     }
 
     private void addImportStatement(Element classSymbol, String packageName, String className) {
-        JCTree.JCImport jcImport = treeMaker.Import(
-            treeMaker.Select(
-                treeMaker.Ident(names.fromString(packageName)),
-                names.fromString(className)
+        JCTree.JCImport jcImport = apContext.getTreeMaker().Import(
+            apContext.getTreeMaker().Select(
+                apContext.getTreeMaker().Ident(apContext.getNames().fromString(packageName)),
+                apContext.getNames().fromString(className)
             ), false);
 
-        TreePath treePath = trees.getPath(classSymbol);
+        TreePath treePath = apContext.getTrees().getPath(classSymbol);
         TreePath parentPath = treePath.getParentPath();
         JCTree.JCCompilationUnit compilationUnit = (JCTree.JCCompilationUnit) parentPath.getCompilationUnit();
 
