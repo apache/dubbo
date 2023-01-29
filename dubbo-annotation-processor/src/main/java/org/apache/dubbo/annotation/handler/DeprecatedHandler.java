@@ -1,9 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.dubbo.annotation.handler;
 
 import org.apache.dubbo.annotation.AnnotationProcessingHandler;
 import org.apache.dubbo.annotation.AnnotationProcessorContext;
+import org.apache.dubbo.annotation.util.ASTUtils;
 
-import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.tree.JCTree;
@@ -14,7 +31,6 @@ import javax.lang.model.element.Element;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -41,8 +57,8 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
 
             Symbol.ClassSymbol classSymbol = (Symbol.ClassSymbol) element.getEnclosingElement();
 
-            addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
-            addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
+            ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
+            ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
 
             JCTree classTree = apContext.getJavacTrees().getTree(classSymbol);
             JCTree methodTree = apContext.getJavacTrees().getTree(element);
@@ -99,43 +115,6 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                     statements.addAll(block.stats);
 
                     block.stats = statements.toList();
-                }
-            });
-        }
-    }
-
-    private void addImportStatement(AnnotationProcessorContext apContext,
-                                    Symbol.ClassSymbol classSymbol,
-                                    String packageName,
-                                    String className) {
-
-        JCTree.JCImport jcImport = apContext.getTreeMaker().Import(
-            apContext.getTreeMaker().Select(
-                apContext.getTreeMaker().Ident(apContext.getNames().fromString(packageName)),
-                apContext.getNames().fromString(className)
-            ), false);
-
-        TreePath treePath = apContext.getTrees().getPath(classSymbol);
-        TreePath parentPath = treePath.getParentPath();
-        JCTree.JCCompilationUnit compilationUnit = (JCTree.JCCompilationUnit) parentPath.getCompilationUnit();
-
-        // ((JCTree.JCImport) ((List) imports).get(7)).qualid.toString()
-        List<JCTree.JCImport> imports = compilationUnit.getImports();
-        if (imports.stream().noneMatch(x -> x.qualid.toString().contains(packageName + "." + className))) {
-
-            compilationUnit.accept(new JCTree.Visitor() {
-                @Override
-                public void visitTopLevel(JCTree.JCCompilationUnit that) {
-
-                    List<JCTree> defs = compilationUnit.defs;
-
-                    ListBuffer<JCTree> newDefs = new ListBuffer<>();
-
-                    newDefs.add(defs.get(0));
-                    newDefs.add(jcImport);
-                    newDefs.addAll(defs.subList(1, defs.size()));
-
-                    compilationUnit.defs = newDefs.toList();
                 }
             });
         }
