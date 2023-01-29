@@ -17,9 +17,6 @@
 package org.apache.dubbo.config.annotation;
 
 
-import org.apache.dubbo.common.constants.ClusterRules;
-import org.apache.dubbo.common.constants.LoadbalanceRules;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

@@ -26,6 +26,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_NAMESPACE;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDER_PORT;
@@ -87,6 +88,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      * declares which app or service this interface belongs to
      */
     protected String dubboProvidedBy;
+    @Parameter(key = DUBBO_PROVIDED_BY)
+    public String getDubboProvidedBy() {
+        return dubboProvidedBy;
+    }
+
+    public void setDubboProvidedBy(String dubboProvidedBy) {
+        this.dubboProvidedBy = dubboProvidedBy;
+    }
 
     /**
      * By VirtualService and DestinationRule, envoy will generate a new route rule,such as 'demo.default.svc.cluster.local:80',the default port is 80.

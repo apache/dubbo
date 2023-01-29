@@ -102,6 +102,8 @@ public interface RegistryConstants {
 
     String PROVIDED_BY = "provided-by";
 
+    String DUBBO_PROVIDED_BY = "dubbo-provided-by";
+
     /**
      * The provider tri port
      *

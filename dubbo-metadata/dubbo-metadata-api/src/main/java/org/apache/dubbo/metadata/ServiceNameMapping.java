@@ -92,9 +92,17 @@ public interface ServiceNameMapping extends Destroyable {
     static Set<String> getMappingByUrl(URL consumerURL) {
         String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
         if(StringUtils.isBlank(providedBy)) {
-            return null;
+            return getDubboProvidedByServices(consumerURL);
         }
         return AbstractServiceNameMapping.parseServices(providedBy);
+    }
+
+    static Set<String> getDubboProvidedByServices(URL consumerURL) {
+        String dubboProvidedBy = consumerURL.getParameter(RegistryConstants.DUBBO_PROVIDED_BY);
+        if(StringUtils.isBlank(dubboProvidedBy)) {
+            return null;
+        }
+        return AbstractServiceNameMapping.parseServices(dubboProvidedBy);
     }
 
     /**
