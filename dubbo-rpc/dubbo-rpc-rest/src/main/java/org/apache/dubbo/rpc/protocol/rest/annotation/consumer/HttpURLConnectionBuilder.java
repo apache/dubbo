@@ -65,7 +65,7 @@ public class HttpURLConnectionBuilder {
 
     private static void writeHeaders(RequestTemplate requestTemplate, HttpURLConnection connection) {
         for (String field : requestTemplate.getAllHeaders().keySet()) {
-            for (String value : requestTemplate.getHeader(field)) {
+            for (String value : requestTemplate.getHeaders(field)) {
                 connection.addRequestProperty(field, value);
             }
         }

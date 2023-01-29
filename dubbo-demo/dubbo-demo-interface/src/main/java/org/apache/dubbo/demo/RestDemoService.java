@@ -19,11 +19,7 @@ package org.apache.dubbo.demo;
 
 import po.TestPO;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 
@@ -70,5 +66,6 @@ public interface RestDemoService {
     @POST
     @Path("/testBody5")
     @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
     TestPO testBody5(TestPO testPO);
 }

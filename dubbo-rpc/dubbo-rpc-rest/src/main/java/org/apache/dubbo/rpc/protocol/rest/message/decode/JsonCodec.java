@@ -16,27 +16,37 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.message.decode;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.json.JSON;
+import org.apache.dubbo.common.json.factory.JsonFactory;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageDecode;
+import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
-import org.apache.dubbo.rpc.protocol.rest.util.StreamUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
-@Activate("text")
-public class TextDecode extends AbstractMessageDecode {
+@Activate("json")
+public class JsonCodec extends AbstractMessageCodec {
 
 
     @Override
     public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.stringTypeConvert(targetType, StreamUtils.copyToString(inputStream, Charset.defaultCharset()));
+        return DataParseUtils.jsonConvert(targetType, inputStream);
     }
 
     @Override
     public boolean contentTypeSupport(MediaType mediaType) {
-        return MediaTypeMatcher.TEXT_PLAIN.mediaSupport(mediaType);
+        return MediaTypeMatcher.APPLICATION_JSON.mediaSupport(mediaType);
+    }
+
+
+    @Override
+    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+        JsonFactory jsonFactory = url.getApplicationModel().getAdaptiveExtension(JsonFactory.class);
+        JSON json = jsonFactory.createJson(url);
+        json.serializeObject(outputStream, unSerializedBody);
     }
 }

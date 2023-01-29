@@ -16,24 +16,34 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.message.decode;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageDecode;
+import org.apache.dubbo.rpc.protocol.rest.message.AbstractMessageCodec;
 import org.apache.dubbo.rpc.protocol.rest.message.MediaTypeMatcher;
 import org.apache.dubbo.rpc.protocol.rest.util.DataParseUtils;
+import org.apache.dubbo.rpc.protocol.rest.util.StreamUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-@Activate("multiValue")
-public class MultiValueDecode extends AbstractMessageDecode {
+import java.nio.charset.Charset;
+
+@Activate("text")
+public class TextCodec extends AbstractMessageCodec {
 
 
     @Override
     public Object decode(InputStream inputStream, Class targetType) throws Exception {
-        return DataParseUtils.multipartFormConvert(inputStream);
+        return DataParseUtils.stringTypeConvert(targetType, StreamUtils.copyToString(inputStream, Charset.defaultCharset()));
     }
 
     @Override
     public boolean contentTypeSupport(MediaType mediaType) {
-        return MediaTypeMatcher.MULTI_VALUE.mediaSupport(mediaType);
+        return MediaTypeMatcher.TEXT_PLAIN.mediaSupport(mediaType);
+    }
+
+    @Override
+    public void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception {
+        DataParseUtils.writeTextContent(unSerializedBody, outputStream);
     }
 }

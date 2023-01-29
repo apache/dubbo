@@ -16,6 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.message;
 
-public abstract class AbstractMessageDecode implements HttpMessageDecode{
+public abstract class AbstractMessageCodec implements HttpMessageCodec{
 
 }

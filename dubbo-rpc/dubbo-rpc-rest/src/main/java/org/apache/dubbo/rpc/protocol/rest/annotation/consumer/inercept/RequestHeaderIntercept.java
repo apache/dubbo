@@ -39,7 +39,7 @@ public class RequestHeaderIntercept implements HttpConnectionPreBuildIntercept {
 
         Set<String> consumes = restMethodMetadata.getRequest().getConsumes();
 
-        requestTemplate.addHeaders("Content-type", consumes);
+        requestTemplate.addHeaders(RestConstant.CONTENT_TYPE, consumes);
 
     }
 

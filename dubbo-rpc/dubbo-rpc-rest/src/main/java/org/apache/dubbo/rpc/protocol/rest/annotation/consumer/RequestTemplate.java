@@ -133,8 +133,24 @@ public class RequestTemplate implements Serializable {
         return headers;
     }
 
-    public Collection<String> getHeader(String name) {
+    public Collection<String> getHeaders(String name) {
         return headers.get(name);
+    }
+
+    public String getHeader(String name) {
+        if (headers.containsKey(name)) {
+
+            Collection<String> headers = getHeaders(name);
+
+            if (headers.isEmpty()) {
+                return null;
+            }
+            String[] strings = headers.toArray(new String[0]);
+            return strings[0];
+
+        } else {
+            return null;
+        }
     }
 
     public Collection<String> getEncodingValues() {
@@ -166,7 +182,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public void addHeaders(String key, Collection<String> values) {
-        Collection<String> header = getHeader(key);
+        Collection<String> header = getHeaders(key);
 
         if (header == null) {
             header = new HashSet<>();
@@ -235,7 +251,7 @@ public class RequestTemplate implements Serializable {
     }
 
     public byte getSerializeId() {
-        return Byte.parseByte(getHeader(RestConstant.SERIALIZATION_KEY).toArray(new String[0])[0]);
+        return Byte.parseByte(getHeaders(RestConstant.SERIALIZATION_KEY).toArray(new String[0])[0]);
     }
 
 

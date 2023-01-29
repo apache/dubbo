@@ -9,16 +9,18 @@ import java.util.List;
 public class MediaTypeUtil {
     private static final List<MediaType> mediaTypes = Arrays.asList(MediaType.values());
 
-    public static MediaType convertMediaType(String contentType) {
+    public static MediaType convertMediaType(String... contentTypes) {
 
-        for (MediaType mediaType : mediaTypes) {
+        for (String contentType : contentTypes) {
+            for (MediaType mediaType : mediaTypes) {
 
-            if (contentType != null && contentType.contains(mediaType.value)) {
-                return mediaType;
+                if (contentType != null && contentType.contains(mediaType.value)) {
+                    return mediaType;
+                }
             }
         }
 
-        throw new UnSupportContentTypeException(contentType);
+        throw new UnSupportContentTypeException(Arrays.toString(contentTypes));
 
     }
 }

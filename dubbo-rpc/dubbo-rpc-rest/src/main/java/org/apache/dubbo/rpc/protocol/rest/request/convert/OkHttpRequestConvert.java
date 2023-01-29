@@ -23,7 +23,7 @@ import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodec;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
 import org.apache.dubbo.rpc.protocol.rest.request.BaseConvert;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
@@ -77,7 +77,7 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
         String content_type = response.header(RestConstant.CONTENT_TYPE);
 
 
-        return HttpMessageCodec.httpMessageDecode(body.byteStream(), getReturnType(), MediaTypeUtil.convertMediaType(content_type));
+        return HttpMessageCodecManager.httpMessageDecode(body.byteStream(), getReturnType(), MediaTypeUtil.convertMediaType(content_type));
 
     }
 }

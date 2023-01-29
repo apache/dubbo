@@ -17,11 +17,13 @@
 package org.apache.dubbo.rpc.protocol.rest.message;
 
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.rest.media.MediaType;
+import org.apache.dubbo.common.URL;
 
-@SPI
-public interface HttpMessageCodec extends HttpMessageDecode, HttpMessageEncode {
+import java.io.ByteArrayOutputStream;
 
-    boolean contentTypeSupport(MediaType mediaType);
+
+public interface HttpMessageEncode {
+
+    void encode(ByteArrayOutputStream outputStream, Object unSerializedBody, URL url) throws Exception;
+
 }

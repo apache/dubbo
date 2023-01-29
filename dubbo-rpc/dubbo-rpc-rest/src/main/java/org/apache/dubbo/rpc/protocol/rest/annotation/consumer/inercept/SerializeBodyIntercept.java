@@ -17,21 +17,22 @@
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
 
-import io.swagger.models.auth.In;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.json.JSON;
-import org.apache.dubbo.common.json.factory.JsonFactory;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.rest.media.MediaType;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Collection;
 
-@Activate(value = RestConstant.SERIALIZE_INTERCEPT,order = Integer.MAX_VALUE)
+@Activate(value = RestConstant.SERIALIZE_INTERCEPT, order = Integer.MAX_VALUE)
 public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializeBodyIntercept.class);
@@ -43,16 +44,15 @@ public class SerializeBodyIntercept implements HttpConnectionPreBuildIntercept {
         if (requestTemplate.isBodyEmpty()) {
             return;
         }
-        Object unSerializedBody = requestTemplate.getUnSerializedBody();
 
 
         try {
-
+            Object unSerializedBody = requestTemplate.getUnSerializedBody();
             URL url = connectionCreateContext.getUrl();
-            JsonFactory jsonFactory = url.getApplicationModel().getAdaptiveExtension(JsonFactory.class);
-            JSON json = jsonFactory.createJson(url);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            json.serializeObject(outputStream, unSerializedBody);
+            Collection<String> headers = requestTemplate.getHeaders(RestConstant.CONTENT_TYPE);
+            MediaType mediaType = MediaTypeUtil.convertMediaType(headers.toArray(new String[0]));
+            HttpMessageCodecManager.httpMessageEncode(outputStream, unSerializedBody, url, mediaType);
             requestTemplate.serializeBody(outputStream.toByteArray());
         } catch (Exception e) {
 

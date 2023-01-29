@@ -1,0 +1,3 @@
+multiValue=org.apache.dubbo.rpc.protocol.rest.message.decode.MultiValueCodec
+text=org.apache.dubbo.rpc.protocol.rest.message.decode.TextCodec
+json=org.apache.dubbo.rpc.protocol.rest.message.decode.JsonCodec
