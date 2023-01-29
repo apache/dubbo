@@ -118,7 +118,7 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
                 continue;
             }
 
-            Element classSymbol = element.getEnclosingElement();
+            Symbol.ClassSymbol classSymbol = (Symbol.ClassSymbol) element.getEnclosingElement();
 
             addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
             addImportStatement(classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
@@ -145,14 +145,32 @@ public class DeprecatedAnnotationProcessor extends AbstractProcessor {
                         ),
 
                         com.sun.tools.javac.util.List.of(
-                            treeMaker.ClassLiteral(((Symbol.ClassSymbol) classSymbol).erasure(Types.instance(javacContext)))
+                            treeMaker.ClassLiteral((classSymbol).erasure(Types.instance(javacContext)))
                         )
                     );
 
-                    JCTree.JCExpressionStatement getLoggerExpressionStatement = treeMaker.Exec(getLoggerStatement);
+                    JCTree.JCExpression fullStatement = treeMaker.Apply(
+                        com.sun.tools.javac.util.List.nil(),
+
+                        treeMaker.Select(
+                            getLoggerStatement,
+                            names.fromString("warn")
+                        ),
+
+                        com.sun.tools.javac.util.List.of(
+                            treeMaker.Literal("0-28"),
+                            treeMaker.Literal("invocation of deprecated method"),
+                            treeMaker.Literal(""),
+                            treeMaker.Literal("Deprecated method invoked. The method is "
+                                + classSymbol.getQualifiedName() + "."
+                                + jcMethodDecl.name.toString() + "(" + jcMethodDecl.params.toString() + ")")
+                        )
+                    );
+
+                    JCTree.JCExpressionStatement fullExpressionStatement = treeMaker.Exec(fullStatement);
 
                     ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
-                    statements.add(getLoggerExpressionStatement);
+                    statements.add(fullExpressionStatement);
                     statements.addAll(block.stats);
 
                     block.stats = statements.toList();
