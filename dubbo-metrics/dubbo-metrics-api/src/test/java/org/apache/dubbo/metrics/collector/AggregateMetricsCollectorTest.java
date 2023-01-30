@@ -82,9 +82,10 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRequestsMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
+        String applicationName = applicationModel.getApplicationName();
         defaultCollector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
         defaultCollector.increaseSucceedRequests(applicationName, interfaceName, methodName, group, version);
-        defaultCollector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
+        defaultCollector.increaseUnknownFailedRequests(applicationName, interfaceName, methodName, group, version);
         defaultCollector.businessFailedRequests(applicationName, interfaceName,methodName,group,version);
 
         List<MetricSample> samples = collector.collect();

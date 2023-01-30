@@ -80,7 +80,7 @@ public class MetricsCollectExecutor {
                     break;
 
                 default:
-//                    collector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
+                    collector.increaseUnknownFailedRequests(applicationName, interfaceName, methodName, group, version);
             }
         }
 
