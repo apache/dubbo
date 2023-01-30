@@ -1,0 +1,3 @@
+consumerContextHolder=org.apache.dubbo.spring.security.filter.SecurityContextHolderParameterRequestFilter
+providerContextHolder=org.apache.dubbo.spring.security.filter.SecurityContextHolderParameterAwareFilter
+securityExceptionTranslation=org.apache.dubbo.spring.security.filter.SecurityExceptionTranslationFilter
