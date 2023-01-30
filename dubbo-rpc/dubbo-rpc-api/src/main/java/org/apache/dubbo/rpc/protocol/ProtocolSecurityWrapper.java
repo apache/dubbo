@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.SerializeSecurityManager;
+import org.apache.dubbo.common.utils.SerializeSecurityConfigurator;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -28,9 +31,6 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
-
-import java.util.List;
-import java.util.Optional;
 
 @Activate(order = 200)
 public class ProtocolSecurityWrapper implements Protocol {
@@ -56,9 +56,9 @@ public class ProtocolSecurityWrapper implements Protocol {
             .map(ServiceModel::getServiceModel)
             .map(ServiceDescriptor::getServiceInterfaceClass)
             .ifPresent((interfaceClass) -> {
-                SerializeSecurityManager serializeSecurityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
-                    .getBeanFactory().getBean(SerializeSecurityManager.class);
-                serializeSecurityManager.registerInterface(interfaceClass);
+                SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
+                    .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
+                serializeSecurityConfigurator.registerInterface(interfaceClass);
             });
         return protocol.export(invoker);
     }
@@ -67,14 +67,14 @@ public class ProtocolSecurityWrapper implements Protocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         ServiceModel serviceModel = url.getServiceModel();
         ScopeModel scopeModel = url.getScopeModel();
-        SerializeSecurityManager serializeSecurityManager = ScopeModelUtil.getFrameworkModel(scopeModel)
-            .getBeanFactory().getBean(SerializeSecurityManager.class);
+        SerializeSecurityConfigurator serializeSecurityConfigurator = ScopeModelUtil.getModuleModel(scopeModel)
+            .getBeanFactory().getBean(SerializeSecurityConfigurator.class);
 
         Optional.ofNullable(serviceModel)
             .map(ServiceModel::getServiceModel)
             .map(ServiceDescriptor::getServiceInterfaceClass)
-            .ifPresent(serializeSecurityManager::registerInterface);
-        serializeSecurityManager.registerInterface(type);
+            .ifPresent(serializeSecurityConfigurator::registerInterface);
+        serializeSecurityConfigurator.registerInterface(type);
 
         return protocol.refer(type, url);
     }
