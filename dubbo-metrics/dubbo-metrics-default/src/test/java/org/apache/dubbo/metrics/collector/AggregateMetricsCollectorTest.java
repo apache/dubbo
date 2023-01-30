@@ -20,19 +20,18 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
@@ -84,7 +83,7 @@ class AggregateMetricsCollectorTest {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
         defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
         defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
-        defaultCollector.increaseFailedRequests(interfaceName, methodName, group, version);
+        defaultCollector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
         defaultCollector.businessFailedRequests(interfaceName,methodName,group,version);
 
         List<MetricSample> samples = collector.collect();

@@ -120,10 +120,10 @@ public class MetricsStatComposite {
             }
         });
 
-        stats.put(RequestEvent.Type.FAILED, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.UNKNOWN_FAILED, new DefaultMetricsStatHandler(applicationName) {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.FAILED));
+                publishEvent(new RequestEvent(metric, RequestEvent.Type.UNKNOWN_FAILED));
             }
         });
 
