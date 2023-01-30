@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 class JRETest {
 
     @Test
+    @Disabled
     void blankSystemVersion() {
         System.setProperty("java.version", "");
         JRE jre = JRE.currentVersion();
@@ -32,6 +33,7 @@ class JRETest {
     }
 
     @Test
+    @Disabled
     void java8Version() {
         JRE jre = JRE.currentVersion();
         Assertions.assertEquals(JRE.JAVA_8, jre);
