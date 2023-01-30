@@ -27,7 +27,6 @@ import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,7 +41,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EX
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 
 public class SerializeSecurityManager {
-    private final Set<String> allowedPrefix = new LinkedHashSet<>();
+    private final Set<String> allowedPrefix = new ConcurrentHashSet<>();
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityManager.class);
 
@@ -84,7 +83,7 @@ public class SerializeSecurityManager {
         }
     }
 
-    public void registerInterface(Class<?> clazz) {
+    public synchronized void registerInterface(Class<?> clazz) {
         Set<Class<?>> markedClass = new HashSet<>();
         markedClass.add(clazz);
 
@@ -213,16 +212,18 @@ public class SerializeSecurityManager {
 
     public void registerListener(AllowClassNotifyListener listener) {
         listeners.add(listener);
-        listener.notify(checkStatus, allowedPrefix);
+        listener.notify(checkStatus, getAllowedPrefix());
     }
 
     private void notifyListeners() {
         for (AllowClassNotifyListener listener : listeners) {
-            listener.notify(checkStatus, allowedPrefix);
+            listener.notify(checkStatus, getAllowedPrefix());
         }
     }
 
     protected Set<String> getAllowedPrefix() {
-        return allowedPrefix;
+        Set<String> set = new ConcurrentHashSet<>();
+        set.addAll(allowedPrefix);
+        return set;
     }
 }
