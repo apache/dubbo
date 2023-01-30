@@ -17,9 +17,6 @@
 
 package org.apache.dubbo.common.metrics.collector;
 
-import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
-import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +33,9 @@ import org.apache.dubbo.common.metrics.model.MetricsKey;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
 
 /**
  * Default implementation of {@link MetricsCollector}
@@ -80,11 +80,11 @@ public class DefaultMetricsCollector implements MetricsCollector {
         });
     }
 
-    public void increaseFailedRequests(String interfaceName,
-                                       String methodName,
-                                       String group,
-                                       String version) {
-        doExecute(RequestEvent.Type.FAILED,statHandler->{
+    public void increaseUnknownFailedRequests(String interfaceName,
+                                              String methodName,
+                                              String group,
+                                              String version) {
+        doExecute(RequestEvent.Type.UNKNOWN_FAILED, statHandler->{
             statHandler.increase(interfaceName, methodName, group, version);
         });
     }
@@ -145,7 +145,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
         doExecute(RequestEvent.Type.SUCCEED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get))));
 
-        doExecute(RequestEvent.Type.FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
+        doExecute(RequestEvent.Type.UNKNOWN_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED, k.getTags(), REQUESTS, v::get))));
 
         doExecute(RequestEvent.Type.PROCESSING, MetricsStatHandler::get).filter(e->!e.isEmpty())
@@ -155,13 +155,13 @@ public class DefaultMetricsCollector implements MetricsCollector {
             .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUEST_BUSINESS_FAILED, k.getTags(), REQUESTS, v::get))));
 
         doExecute(RequestEvent.Type.REQUEST_TIMEOUT, MetricsStatHandler::get).filter(e->!e.isEmpty())
-            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG, k.getTags(), REQUESTS, v::get))));
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT, k.getTags(), REQUESTS, v::get))));
 
         doExecute(RequestEvent.Type.REQUEST_LIMIT, MetricsStatHandler::get).filter(e->!e.isEmpty())
-            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get))));
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT, k.getTags(), REQUESTS, v::get))));
 
         doExecute(RequestEvent.Type.TOTAL_FAILED, MetricsStatHandler::get).filter(e->!e.isEmpty())
-            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG, k.getTags(), REQUESTS, v::get))));
+            .ifPresent(map-> map.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED, k.getTags(), REQUESTS, v::get))));
 
     }
 

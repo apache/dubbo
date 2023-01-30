@@ -17,15 +17,6 @@
 
 package org.apache.dubbo.metrics.filter;
 
-import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
-import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -46,6 +37,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 
 class MetricsFilterTest {
 
@@ -90,7 +90,7 @@ class MetricsFilterTest {
     }
 
     @Test
-    void testFailedRequests() {
+    void testUnknownFailedRequests() {
         collector.setCollectEnabled(true);
         given(invoker.invoke(invocation)).willThrow(new RpcException("failed"));
         initParam();
@@ -146,7 +146,7 @@ class MetricsFilterTest {
 
 
     @Test
-    void testTimeoutAndFailedRequests() {
+    void testTimeoutRequests() {
         collector.setCollectEnabled(true);
 
         given(invoker.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
@@ -163,13 +163,13 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName()));
-        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED.getName()));
 
-        MetricSample timeoutSample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG.getName());
+        MetricSample timeoutSample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT.getName());
         Assertions.assertSame(((GaugeMetricSample) timeoutSample).getSupplier().get().longValue(), count);
 
-        GaugeMetricSample failedSample = (GaugeMetricSample)metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED_AGG.getName());
+        GaugeMetricSample failedSample = (GaugeMetricSample)metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_FAILED.getName());
         Assertions.assertSame(failedSample.getSupplier().get().longValue(), count);
     }
 
@@ -191,9 +191,9 @@ class MetricsFilterTest {
             }
         }
         Map<String, MetricSample> metricsMap = getMetricsMap();
-        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG.getName()));
+        Assertions.assertTrue(metricsMap.containsKey(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT.getName()));
 
-        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG.getName());
+        MetricSample sample = metricsMap.get(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT.getName());
 
         Assertions.assertSame(((GaugeMetricSample) sample).getSupplier().get().longValue(), count);
     }

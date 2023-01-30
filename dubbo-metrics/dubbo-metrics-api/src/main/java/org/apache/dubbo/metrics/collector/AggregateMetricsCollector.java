@@ -17,6 +17,11 @@
 
 package org.apache.dubbo.metrics.collector;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
 import org.apache.dubbo.common.metrics.event.MetricsEvent;
@@ -35,13 +40,8 @@ import org.apache.dubbo.metrics.aggregate.TimeWindowCounter;
 import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.QPS;
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
 
 /**
@@ -54,7 +54,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
     private final ConcurrentMap<MethodMetric, TimeWindowCounter> totalRequests = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowCounter> succeedRequests = new ConcurrentHashMap<>();
-    private final ConcurrentMap<MethodMetric, TimeWindowCounter> failedRequests = new ConcurrentHashMap<>();
+    private final ConcurrentMap<MethodMetric, TimeWindowCounter> unknownFailedRequests = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowCounter> businessFailedRequests = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowCounter> timeoutRequests = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, TimeWindowCounter> limitRequests = new ConcurrentHashMap<>();
@@ -115,8 +115,8 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
             case SUCCEED:
                 counter = ConcurrentHashMapUtils.computeIfAbsent(succeedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
                 break;
-            case FAILED:
-                counter = ConcurrentHashMapUtils.computeIfAbsent(failedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
+            case UNKNOWN_FAILED:
+                counter = ConcurrentHashMapUtils.computeIfAbsent(unknownFailedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
                 break;
             case BUSINESS_FAILED:
                 counter = ConcurrentHashMapUtils.computeIfAbsent(businessFailedRequests, metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
@@ -156,7 +156,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private void collectRequests(List<MetricSample> list) {
         totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TOTAL_AGG, k.getTags(), REQUESTS, v::get)));
         succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_SUCCEED_AGG, k.getTags(), REQUESTS, v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
+        unknownFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
         businessFailedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_BUSINESS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
         timeoutRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_TIMEOUT_AGG, k.getTags(), REQUESTS, v::get)));
         limitRequests.forEach((k, v) -> list.add(new GaugeMetricSample(MetricsKey.PROVIDER_METRIC_REQUESTS_LIMIT_AGG, k.getTags(), REQUESTS, v::get)));
