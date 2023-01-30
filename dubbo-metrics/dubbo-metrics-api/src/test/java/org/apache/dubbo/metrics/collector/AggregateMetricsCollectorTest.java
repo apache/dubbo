@@ -82,10 +82,10 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRequestsMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
-        defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
+        defaultCollector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
+        defaultCollector.increaseSucceedRequests(applicationName, interfaceName, methodName, group, version);
         defaultCollector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
-        defaultCollector.businessFailedRequests(interfaceName,methodName,group,version);
+        defaultCollector.businessFailedRequests(applicationName, interfaceName,methodName,group,version);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -114,7 +114,7 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRTMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.addRT(interfaceName, methodName, group, version, 10L);
+        defaultCollector.addRT(applicationName, interfaceName, methodName, group, version, 10L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

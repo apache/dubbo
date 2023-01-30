@@ -41,12 +41,10 @@ public class MetricsStatComposite {
     private final ConcurrentMap<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
-    private final String applicationName;
     private final List<MetricsListener> listeners;
     private DefaultMetricsCollector collector;
 
-    public MetricsStatComposite(String applicationName, DefaultMetricsCollector collector) {
-        this.applicationName = applicationName;
+    public MetricsStatComposite(DefaultMetricsCollector collector) {
         this.listeners = collector.getListener();
         this.collector = collector;
         this.init();
@@ -80,7 +78,7 @@ public class MetricsStatComposite {
         return this.rtCount;
     }
 
-    public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
+    public void addRT(String applicationName, String interfaceName, String methodName, String group, String version, Long responseTime) {
         if (collector.isCollectEnabled()) {
             MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
 
@@ -106,51 +104,51 @@ public class MetricsStatComposite {
     }
 
     private void init() {
-        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL));
             }
         });
 
-        stats.put(RequestEvent.Type.SUCCEED, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.SUCCEED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.SUCCEED));
             }
         });
 
-        stats.put(RequestEvent.Type.UNKNOWN_FAILED, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.UNKNOWN_FAILED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.UNKNOWN_FAILED));
             }
         });
 
-        stats.put(RequestEvent.Type.BUSINESS_FAILED, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.BUSINESS_FAILED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.BUSINESS_FAILED));
             }
         });
 
-        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler(applicationName));
+        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler());
 
-        stats.put(RequestEvent.Type.REQUEST_LIMIT, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.REQUEST_LIMIT, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_LIMIT));
             }
         });
 
-        stats.put(RequestEvent.Type.REQUEST_TIMEOUT, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.REQUEST_TIMEOUT, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_TIMEOUT));
             }
         });
 
-        stats.put(RequestEvent.Type.TOTAL_FAILED, new DefaultMetricsStatHandler(applicationName) {
+        stats.put(RequestEvent.Type.TOTAL_FAILED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
                 publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL_FAILED));

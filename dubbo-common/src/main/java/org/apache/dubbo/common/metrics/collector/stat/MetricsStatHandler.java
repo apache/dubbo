@@ -24,6 +24,6 @@ import org.apache.dubbo.common.metrics.model.MethodMetric;
 
 public interface MetricsStatHandler {
     Map<MethodMetric, AtomicLong> get();
-    void increase(String interfaceName, String methodName, String group, String version);
-    void decrease(String interfaceName, String methodName, String group, String version);
+    void increase(String applicationName, String interfaceName, String methodName, String group, String version);
+    void decrease(String applicationName, String interfaceName, String methodName, String group, String version);
 }
