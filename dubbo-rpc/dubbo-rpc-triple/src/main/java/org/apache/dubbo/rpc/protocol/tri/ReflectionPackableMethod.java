@@ -292,22 +292,31 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     @Override
     public Pack getRequestPack() {
-        return requestPack;
+        return isNotOriginalSerializeType() ? requestPack : originalPack;
     }
 
     @Override
     public Pack getResponsePack() {
-        return responsePack;
+        return isNotOriginalSerializeType() ? responsePack : originalPack;
     }
 
     @Override
     public UnPack getResponseUnpack() {
-        return responseUnpack;
+        return isNotOriginalSerializeType() ? responseUnpack : originalUnpack;
     }
 
     @Override
     public UnPack getRequestUnpack() {
-        return requestUnpack;
+        return isNotOriginalSerializeType() ? requestUnpack : originalUnpack;
+    }
+
+    private boolean isNotOriginalSerializeType() {
+        String serialize = ((OriginalPack) originalPack).serialize;
+
+        if (serialize == null) {
+            return true;
+        }
+        return serialize.startsWith(TripleConstant.APPLICATION_GRPC);
     }
 
     private static class WrapResponsePack implements Pack {
