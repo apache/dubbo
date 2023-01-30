@@ -91,7 +91,7 @@
     <properties>
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
-        <spring_version>5.2.20.RELEASE</spring_version>
+        <spring_version>5.3.25</spring_version>
         <javassist_version>3.29.2-GA</javassist_version>
         <bytebuddy.version>1.12.22</bytebuddy.version>
         <netty_version>3.2.5.Final</netty_version>
@@ -185,7 +185,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <commons_compress_version>1.21</commons_compress_version>
-        <revision>3.2.0-beta.4-SNAPSHOT</revision>
+        <revision>3.2.0-beta.5-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>

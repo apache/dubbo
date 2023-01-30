@@ -134,11 +134,6 @@
         </dependency>
 
         <!-- Observabililty -->
-
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metrics-default</artifactId>
