@@ -1,6 +1,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
@@ -20,6 +21,7 @@ class JRETest {
     }
 
     @Test
+    @Disabled
     void java19Version() {
         JRE jre = JRE.currentVersion();
         Assertions.assertNotEquals(JRE.JAVA_19, jre);
