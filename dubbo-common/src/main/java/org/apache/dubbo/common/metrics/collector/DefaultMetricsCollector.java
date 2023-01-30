@@ -44,11 +44,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final List<MetricsListener> listeners = new ArrayList<>();
-    private final FrameworkModel frameworkModel;
     private final MetricsStatComposite stats;
 
-    public DefaultMetricsCollector(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    public DefaultMetricsCollector() {
         this.stats = new MetricsStatComposite( this);
     }
 
