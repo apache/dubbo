@@ -37,7 +37,9 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import static org.apache.dubbo.metrics.model.MetricsCategory.*;
+import static org.apache.dubbo.metrics.model.MetricsCategory.QPS;
+import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
+import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
 /**
  * Aggregation metrics collector implementation of {@link MetricsCollector}.
