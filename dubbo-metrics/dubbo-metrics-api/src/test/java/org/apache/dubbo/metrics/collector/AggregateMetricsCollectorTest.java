@@ -58,7 +58,7 @@ class AggregateMetricsCollectorTest {
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        defaultCollector = new DefaultMetricsCollector(FrameworkModel.defaultModel());
+        defaultCollector = new DefaultMetricsCollector();
         defaultCollector.setCollectEnabled(true);
         MetricsConfig metricsConfig = new MetricsConfig();
         AggregationConfig aggregationConfig = new AggregationConfig();

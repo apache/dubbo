@@ -73,7 +73,7 @@ class DefaultMetricsCollectorTest {
 
     @Test
     void testRequestsMetrics() {
-        DefaultMetricsCollector collector = new DefaultMetricsCollector(frameworkModel);
+        DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
         collector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
@@ -107,7 +107,7 @@ class DefaultMetricsCollectorTest {
 
     @Test
     void testRTMetrics() {
-        DefaultMetricsCollector collector = new DefaultMetricsCollector(frameworkModel);
+        DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
         collector.addRT(applicationName, interfaceName, methodName, group, version, 10L);
@@ -137,7 +137,7 @@ class DefaultMetricsCollectorTest {
 
     @Test
     void testListener() {
-        DefaultMetricsCollector collector = new DefaultMetricsCollector(frameworkModel);
+        DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
 
         MockListener mockListener = new MockListener();
