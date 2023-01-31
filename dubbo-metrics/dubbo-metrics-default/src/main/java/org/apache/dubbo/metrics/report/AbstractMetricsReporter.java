@@ -113,6 +113,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 Optional.ofNullable(applicationModel.getApplicationName()).orElse(""));
             new ClassLoaderMetrics(extraTags).bindTo(compositeRegistry);
             new JvmMemoryMetrics(extraTags).bindTo(compositeRegistry);
+
+            @SuppressWarnings("java:S2095")
+            // Do not change JvmGcMetrics to try-with-resources as the JvmGcMetrics will not be available after (auto-)closing.
+            // See https://github.com/micrometer-metrics/micrometer/issues/1492
             JvmGcMetrics jvmGcMetrics = new JvmGcMetrics(extraTags);
             jvmGcMetrics.bindTo(compositeRegistry);
             Runtime.getRuntime().addShutdownHook(new Thread(jvmGcMetrics::close));
