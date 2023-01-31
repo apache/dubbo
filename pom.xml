@@ -710,7 +710,6 @@
                 <version>${maven_compiler_version}</version>
                 <configuration>
                     <compilerArgs>
-                        <compilerArg>-proc:none</compilerArg>
                         <compilerArg>-parameters</compilerArg>
                     </compilerArgs>
                     <fork>true</fork>
