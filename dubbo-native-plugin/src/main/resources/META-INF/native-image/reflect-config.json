@@ -1147,6 +1147,18 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.common.utils.DefaultSerializeClassChecker",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.FrameworkModel"
+        ]
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.common.utils.SerializeClassChecker",
     "allPublicMethods": true,
     "methods": [
