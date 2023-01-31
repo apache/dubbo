@@ -26,24 +26,13 @@ import java.util.function.Function;
 
 public class ConcurrentHashMapUtils {
 
-    private static boolean IS_JAVA8;
-
-    static {
-        try {
-            IS_JAVA8 = System.getProperty("java.version").startsWith("1.8.");
-        } catch (Exception ignore) {
-            // exception is ignored
-            IS_JAVA8 = true;
-        }
-    }
-
     /**
      * A temporary workaround for Java 8 ConcurrentHashMap#computeIfAbsent specific performance issue: JDK-8161372.</br>
      * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8161372">https://bugs.openjdk.java.net/browse/JDK-8161372</a>
      *
      */
     public static <K, V> V computeIfAbsent(ConcurrentMap<K, V> map, K key, Function<? super K, ? extends V> func) {
-        if (IS_JAVA8) {
+        if (JRE.JAVA_8.isCurrentVersion()) {
             V v = map.get(key);
             if (null == v) {
                 v = map.computeIfAbsent(key, func);
