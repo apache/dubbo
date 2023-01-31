@@ -24,6 +24,7 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import java.lang.annotation.Annotation;
@@ -68,11 +69,21 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
         Permit.addOpens();
         super.init(processingEnv);
 
+        if (processingEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
+            // Don't run on ECJ, since this processor is javac based.
+            return;
+        }
+
         apContext = AnnotationProcessorContext.fromProcessingEnvironment(processingEnv);
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+
+        if (processingEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
+            // Don't run on ECJ, since this processor is javac based.
+            return false;
+        }
 
         for (AnnotationProcessingHandler i : handlers) {
             Set<Element> elements = new HashSet<>(16);
@@ -85,5 +96,10 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
         }
 
         return true;
+    }
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
     }
 }
