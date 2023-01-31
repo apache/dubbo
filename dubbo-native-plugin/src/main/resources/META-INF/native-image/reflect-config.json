@@ -1142,7 +1142,6 @@
       {
         "name": "<init>",
         "parameterTypes": [
-          "org.apache.dubbo.rpc.model.FrameworkModel"
         ]
       }
     ]
