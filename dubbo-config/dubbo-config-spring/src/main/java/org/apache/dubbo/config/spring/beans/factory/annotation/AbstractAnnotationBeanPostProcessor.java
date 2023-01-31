@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.spring.util.SpringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
@@ -64,7 +63,7 @@ import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMe
  */
 @SuppressWarnings("unchecked")
 public abstract class AbstractAnnotationBeanPostProcessor implements
-        InstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor,
+    InstantiationAwareBeanPostProcessor, MergedBeanDefinitionPostProcessor,
     BeanFactoryAware, BeanClassLoaderAware, EnvironmentAware, DisposableBean {
 
     private final static int CACHE_SIZE = Integer.getInteger("", 32);
@@ -74,7 +73,7 @@ public abstract class AbstractAnnotationBeanPostProcessor implements
     private final Class<? extends Annotation>[] annotationTypes;
 
     private final ConcurrentMap<String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata> injectionMetadataCache =
-        new ConcurrentHashMap<String, AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>(CACHE_SIZE);
+        new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ConfigurableListableBeanFactory beanFactory;
 

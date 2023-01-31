@@ -32,7 +32,7 @@ import org.springframework.core.Ordered;
  * @see DubboConfigBinder#bind(String, AbstractConfig)
  * @since 2.6.6
  */
-public interface DubboConfigBeanCustomizer extends  Ordered {
+public interface DubboConfigBeanCustomizer extends Ordered {
 
     /**
      * Customize {@link AbstractConfig Dubbo Config Bean}
