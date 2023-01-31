@@ -19,9 +19,9 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.spring.context.config.ConfigurationBeanBinder;
-import org.apache.dubbo.config.spring.context.config.DefaultConfigurationBeanBinder;
 import org.apache.dubbo.config.spring.context.config.DubboConfigBeanCustomizer;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -29,6 +29,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.core.PriorityOrdered;
+import org.springframework.validation.DataBinder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -183,11 +184,19 @@ public class ConfigurationBeanBindingPostProcessor implements BeanPostProcessor,
 
     /**
      * Create {@link ConfigurationBeanBinder} instance.
-     *
-     * @return {@link DefaultConfigurationBeanBinder}
      */
     private ConfigurationBeanBinder defaultConfigurationBeanBinder() {
-        return new DefaultConfigurationBeanBinder();
+        return (configurationProperties, ignoreUnknownFields, ignoreInvalidFields, configurationBean) -> {
+            DataBinder dataBinder = new DataBinder(configurationBean);
+            // Set ignored*
+            dataBinder.setIgnoreInvalidFields(ignoreUnknownFields);
+            dataBinder.setIgnoreUnknownFields(ignoreInvalidFields);
+            // Get properties under specified prefix from PropertySources
+            // Convert Map to MutablePropertyValues
+            MutablePropertyValues propertyValues = new MutablePropertyValues(configurationProperties);
+            // Bind
+            dataBinder.bind(propertyValues);
+        };
     }
 
     static void initBeanMetadataAttributes(AbstractBeanDefinition beanDefinition,
