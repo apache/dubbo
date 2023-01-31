@@ -113,7 +113,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
                 Optional.ofNullable(applicationModel.getApplicationName()).orElse(""));
             new ClassLoaderMetrics(extraTags).bindTo(compositeRegistry);
             new JvmMemoryMetrics(extraTags).bindTo(compositeRegistry);
-            new JvmGcMetrics(extraTags).bindTo(compositeRegistry);
+            JvmGcMetrics jvmGcMetrics = new JvmGcMetrics(extraTags);
+            jvmGcMetrics.bindTo(compositeRegistry);
+            Runtime.getRuntime().addShutdownHook(new Thread(jvmGcMetrics::close));
+
             new ProcessorMetrics(extraTags).bindTo(compositeRegistry);
             new JvmThreadMetrics(extraTags).bindTo(compositeRegistry);
             new UptimeMetrics(extraTags).bindTo(compositeRegistry);
