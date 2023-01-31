@@ -32,6 +32,7 @@ import java.util.Objects;
  * The Context Object of Annotation Processor, which stores objects related to javac.
  */
 public class AnnotationProcessorContext {
+    private JavacProcessingEnvironment javacProcessingEnvironment;
     private JavacTrees javacTrees;
     private TreeMaker treeMaker;
     private Names names;
@@ -61,6 +62,8 @@ public class AnnotationProcessorContext {
         JavacProcessingEnvironment jcProcessingEnvironment = (JavacProcessingEnvironment) procEnvToUnwrap;
 
         Context context = jcProcessingEnvironment.getContext();
+
+        apContext.javacProcessingEnvironment = jcProcessingEnvironment;
 
         apContext.javacContext = context;
         apContext.javacTrees = JavacTrees.instance(jcProcessingEnvironment);
@@ -92,6 +95,10 @@ public class AnnotationProcessorContext {
 
     public Trees getTrees() {
         return trees;
+    }
+
+    public JavacProcessingEnvironment getJavacProcessingEnvironment() {
+        return javacProcessingEnvironment;
     }
 
     @Override

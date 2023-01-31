@@ -41,6 +41,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
 
         <junit_jupiter_version>5.9.0</junit_jupiter_version>
+        <javassist_version>3.29.2-GA</javassist_version>
     </properties>
 
     <packaging>jar</packaging>
@@ -66,6 +67,12 @@
             <artifactId>junit-jupiter-params</artifactId>
             <version>${junit_jupiter_version}</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist_version}</version>
         </dependency>
     </dependencies>
 

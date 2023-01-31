@@ -27,6 +27,7 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -44,14 +45,14 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
 
     private static Set<AnnotationProcessingHandler> loadHandlers() {
         List<String> classNames = FileUtils.loadConfigurationFileInResources("handlers.cfg");
-        Set<AnnotationProcessingHandler> tempReporters = new HashSet<>();
+        Set<AnnotationProcessingHandler> tempHandlers = new HashSet<>();
 
         for (String clsName : classNames) {
             try {
                 Class<? extends AnnotationProcessingHandler> cls = (Class<? extends AnnotationProcessingHandler>) Class.forName(clsName);
                 AnnotationProcessingHandler r = cls.getConstructor().newInstance();
 
-                tempReporters.add(r);
+                tempHandlers.add(r);
 
             } catch (InstantiationException | NoSuchMethodException | InvocationTargetException |
                      IllegalAccessException | ClassNotFoundException e) {
@@ -59,7 +60,7 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
             }
         }
 
-        return Collections.unmodifiableSet(tempReporters);
+        return Collections.unmodifiableSet(tempHandlers);
     }
 
     private AnnotationProcessorContext apContext;
@@ -71,6 +72,10 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
 
         if (processingEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
             // Don't run on ECJ, since this processor is javac based.
+            processingEnv
+                .getMessager()
+                .printMessage(Diagnostic.Kind.WARNING, "The Annotation processor doesn't support ECJ.");
+
             return;
         }
 
