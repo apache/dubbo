@@ -142,6 +142,7 @@
 
         <rs_api_version>2.1.1</rs_api_version>
         <resteasy_version>3.15.3.Final</resteasy_version>
+        <codehaus-jackson_version>1.9.13</codehaus-jackson_version>
         <tomcat_embed_version>8.5.85</tomcat_embed_version>
         <jetcd_version>0.7.5</jetcd_version>
         <nacos_version>2.1.2</nacos_version>
@@ -529,6 +530,26 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-jackson-provider</artifactId>
                 <version>${resteasy_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${codehaus-jackson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${codehaus-jackson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-jaxrs</artifactId>
+                <version>${codehaus-jackson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-xc</artifactId>
+                <version>${codehaus-jackson_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
