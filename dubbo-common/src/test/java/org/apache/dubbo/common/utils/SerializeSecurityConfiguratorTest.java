@@ -55,7 +55,7 @@ class SerializeSecurityConfiguratorTest {
         Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.sun.Interface1"));
         Assertions.assertTrue(ssm.getDisAllowedPrefix().contains("com.exampletest.DemoInterface"));
         Assertions.assertFalse(ssm.getAllowedPrefix().contains("com.sun.Interface2"));
-        Assertions.assertNull(ssm.getCheckStatus());
+        Assertions.assertEquals(AllowClassNotifyListener.DEFAULT_STATUS, ssm.getCheckStatus());
 
         frameworkModel.destroy();
     }
