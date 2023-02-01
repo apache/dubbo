@@ -1136,7 +1136,30 @@
     ]
   },
   {
+    "name": "org.apache.dubbo.common.utils.SerializeSecurityConfigurator",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ModuleModel"
+        ]
+      }
+    ]
+  },
+  {
     "name": "org.apache.dubbo.common.utils.SerializeSecurityManager",
+    "allPublicMethods": true,
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+        ]
+      }
+    ]
+  },
+  {
+    "name": "org.apache.dubbo.common.utils.DefaultSerializeClassChecker",
     "allPublicMethods": true,
     "methods": [
       {

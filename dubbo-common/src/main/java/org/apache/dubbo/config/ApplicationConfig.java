@@ -216,6 +216,14 @@ public class ApplicationConfig extends AbstractConfig {
 
     private Boolean enableEmptyProtection;
 
+    private String serializeCheckStatus;
+
+    private Boolean autoTrustSerializeClass;
+
+    private Integer trustSerializeClassLevel;
+
+    private Boolean checkSerializable;
+
     public ApplicationConfig() {
     }
 
@@ -611,6 +619,39 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setStartupProbe(String startupProbe) {
         this.startupProbe = startupProbe;
+    }
+
+
+    public String getSerializeCheckStatus() {
+        return serializeCheckStatus;
+    }
+
+    public void setSerializeCheckStatus(String serializeCheckStatus) {
+        this.serializeCheckStatus = serializeCheckStatus;
+    }
+
+    public Boolean getAutoTrustSerializeClass() {
+        return autoTrustSerializeClass;
+    }
+
+    public void setAutoTrustSerializeClass(Boolean autoTrustSerializeClass) {
+        this.autoTrustSerializeClass = autoTrustSerializeClass;
+    }
+
+    public Integer getTrustSerializeClassLevel() {
+        return trustSerializeClassLevel;
+    }
+
+    public void setTrustSerializeClassLevel(Integer trustSerializeClassLevel) {
+        this.trustSerializeClassLevel = trustSerializeClassLevel;
+    }
+
+    public Boolean getCheckSerializable() {
+        return checkSerializable;
+    }
+
+    public void setCheckSerializable(Boolean checkSerializable) {
+        this.checkSerializable = checkSerializable;
     }
 
     @Override
