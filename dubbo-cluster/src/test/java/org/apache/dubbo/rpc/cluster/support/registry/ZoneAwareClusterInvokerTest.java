@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
@@ -165,6 +166,18 @@ class ZoneAwareClusterInvokerTest {
 
         zoneAwareClusterInvoker = new ZoneAwareClusterInvoker<>(directory);
         Assertions.assertThrows(IllegalStateException.class,
+            () -> zoneAwareClusterInvoker.invoke(invocation));
+    }
+
+    @Test
+    public void testNoAvailableInvoker() {
+        given(directory.getUrl()).willReturn(url);
+        given(directory.getConsumerUrl()).willReturn(url);
+        given(directory.list(invocation)).willReturn(new ArrayList<>(0));
+
+        zoneAwareClusterInvoker = new ZoneAwareClusterInvoker<>(directory);
+
+        Assertions.assertThrows(RpcException.class,
             () -> zoneAwareClusterInvoker.invoke(invocation));
     }
 

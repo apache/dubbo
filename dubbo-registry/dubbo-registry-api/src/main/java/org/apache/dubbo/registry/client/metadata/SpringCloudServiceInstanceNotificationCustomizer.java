@@ -31,7 +31,8 @@ public class SpringCloudServiceInstanceNotificationCustomizer implements Service
         for (ServiceInstance instance : serviceInstance) {
             if ("SPRING_CLOUD".equals(instance.getMetadata("preserved.register.source"))) {
                 MetadataInfo.ServiceInfo serviceInfo = new MetadataInfo.ServiceInfo("*", "*", "*", "rest", instance.getPort(), "*", new HashMap<>());
-                MetadataInfo metadataInfo = new MetadataInfo(instance.getServiceName(), "SPRING_CLOUD", new ConcurrentHashMap<>(Collections.singletonMap("*", serviceInfo))) {
+                String revision = "SPRING_CLOUD-" + instance.getServiceName() + "-" + instance.getAddress() + "-" + instance.getPort();
+                MetadataInfo metadataInfo = new MetadataInfo(instance.getServiceName(), revision, new ConcurrentHashMap<>(Collections.singletonMap("*", serviceInfo))) {
                     @Override
                     public List<ServiceInfo> getMatchedServiceInfos(ProtocolServiceKey consumerProtocolServiceKey) {
                         getServices().putIfAbsent(consumerProtocolServiceKey.getServiceKeyString(),

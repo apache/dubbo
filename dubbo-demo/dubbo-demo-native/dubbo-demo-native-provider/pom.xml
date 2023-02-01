@@ -79,6 +79,17 @@
             <artifactId>dubbo-remoting-http</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-native</artifactId>
+        </dependency>
+
+
     </dependencies>
 
 
@@ -180,11 +191,20 @@
                                 --initialize-at-run-time=io.netty.channel.unix.Limits
                                 --initialize-at-run-time=io.netty.channel.unix.Socket
                                 --initialize-at-run-time=io.netty.channel.ChannelHandlerMask
+                                --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier
+                                --initialize-at-run-time=io.netty.internal.tcnative.AsyncSSLPrivateKeyMethod
+                                --initialize-at-run-time=io.netty.handler.ssl.ReferenceCountedOpenSslEngine
+                                --initialize-at-run-time=io.netty.handler.ssl.OpenSslPrivateKeyMethod
+                                --initialize-at-run-time=io.netty.internal.tcnative.CertificateVerifier
+                                --initialize-at-run-time=io.netty.internal.tcnative.SSL
+                                --initialize-at-run-time=io.netty.handler.ssl.OpenSslAsyncPrivateKeyMethod
+                                --initialize-at-run-time=io.netty.internal.tcnative.SSLPrivateKeyMethod
 
                                 --report-unsupported-elements-at-runtime
                                 --allow-incomplete-classpath
                                 --enable-url-protocols=http
                                 -H:+ReportExceptionStackTraces
+                                -H:+AllowJRTFileSystem
                             </buildArgs>
                         </configuration>
                     </plugin>

@@ -28,10 +28,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,9 +63,11 @@ class ExecutorUtilTest {
         when(executor.awaitTermination(20, TimeUnit.MILLISECONDS)).thenReturn(false);
         when(executor.awaitTermination(10, TimeUnit.MILLISECONDS)).thenReturn(false, true);
         ExecutorUtil.gracefulShutdown(executor, 20);
-        Thread.sleep(2000);
-        verify(executor).shutdown();
-        verify(executor, atLeast(2)).shutdownNow();
+
+        await().untilAsserted(() -> verify(executor, times(2)).awaitTermination(10, TimeUnit.MILLISECONDS));
+
+        verify(executor, times(1)).shutdown();
+        verify(executor, times(3)).shutdownNow();
     }
 
     @Test

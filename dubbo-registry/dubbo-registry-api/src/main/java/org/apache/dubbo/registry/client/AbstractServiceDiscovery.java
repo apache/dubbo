@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.registry.client;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,13 +41,14 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_INFO_CACHE_EXPIRE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_INFO_CACHE_SIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CACHE_EXPIRE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_INFO_CACHE_SIZE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_FETCH_INSTANCE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_FAILED_LOAD_METADATA;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -59,6 +68,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected final String serviceName;
     protected volatile ServiceInstance serviceInstance;
     protected volatile MetadataInfo metadataInfo;
+    protected final ConcurrentHashMap<String, MetadataInfoStat> metadataInfos = new ConcurrentHashMap<>();
+    protected final ScheduledFuture<?> refreshCacheFuture;
     protected MetadataReport metadataReport;
     protected String metadataType;
     protected final MetaCacheManager metaCacheManager;
@@ -88,6 +99,30 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.metaCacheManager = new MetaCacheManager(localCacheEnabled, getCacheNameSuffix(),
             applicationModel.getFrameworkModel().getBeanFactory()
                 .getBean(FrameworkExecutorRepository.class).getCacheRefreshingScheduledExecutor());
+        int metadataInfoCacheExpireTime = registryURL.getParameter(METADATA_INFO_CACHE_EXPIRE_KEY, DEFAULT_METADATA_INFO_CACHE_EXPIRE);
+        int metadataInfoCacheSize = registryURL.getParameter(METADATA_INFO_CACHE_SIZE_KEY, DEFAULT_METADATA_INFO_CACHE_SIZE);
+        this.refreshCacheFuture = applicationModel.getFrameworkModel().getBeanFactory()
+            .getBean(FrameworkExecutorRepository.class).getSharedScheduledExecutor()
+            .scheduleAtFixedRate(() -> {
+                try {
+                    while (metadataInfos.size() > metadataInfoCacheSize) {
+                        AtomicReference<String> oldestRevision = new AtomicReference<>();
+                        AtomicReference<MetadataInfoStat> oldestStat = new AtomicReference<>();
+                        metadataInfos.forEach((k, v) -> {
+                            if (System.currentTimeMillis() - v.getUpdateTime() > metadataInfoCacheExpireTime &&
+                                (oldestStat.get() == null || oldestStat.get().getUpdateTime() > v.getUpdateTime())) {
+                                oldestRevision.set(k);
+                                oldestStat.set(v);
+                            }
+                        });
+                        if (oldestStat.get() != null) {
+                            metadataInfos.remove(oldestRevision.get(), oldestStat.get());
+                        }
+                    }
+                } catch (Throwable t) {
+                    logger.error(INTERNAL_ERROR, "", "", "Error occurred when clean up metadata info cache.", t);
+                }
+            }, metadataInfoCacheExpireTime / 2, metadataInfoCacheExpireTime / 2, TimeUnit.MILLISECONDS);
     }
 
 
@@ -130,10 +165,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
+        ServiceInstance oldServiceInstance = this.serviceInstance;
+        DefaultServiceInstance newServiceInstance = new DefaultServiceInstance((DefaultServiceInstance) oldServiceInstance);
+        boolean revisionUpdated = calOrUpdateInstanceRevision(newServiceInstance);
         if (revisionUpdated) {
-            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", this.serviceInstance.getServiceMetadata().getRevision()));
-            doUpdate(this.serviceInstance);
+            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", newServiceInstance.getServiceMetadata().getRevision()));
+            doUpdate(oldServiceInstance, newServiceInstance);
+            this.serviceInstance = newServiceInstance;
         }
     }
 
@@ -158,6 +196,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     @Override
     public MetadataInfo getLocalMetadata() {
         return this.metadataInfo;
+    }
+
+    @Override
+    public MetadataInfo getLocalMetadata(String revision) {
+        MetadataInfoStat metadataInfoStat = metadataInfos.get(revision);
+        if (metadataInfoStat != null) {
+            return metadataInfoStat.getMetadataInfo();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -214,6 +262,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public final void destroy() throws Exception {
         isDestroy = true;
         metaCacheManager.destroy();
+        refreshCacheFuture.cancel(true);
         doDestroy();
     }
 
@@ -247,12 +296,24 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
-    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
-        this.unregister();
+    /**
+     * Update Service Instance. Unregister and then register by default.
+     * Can be override if registry support update instance directly.
+     * <br/>
+     * NOTICE: Remind to update {@link AbstractServiceDiscovery#serviceInstance}'s reference if updated
+     *         and report metadata by {@link AbstractServiceDiscovery#reportMetadata(MetadataInfo)}
+     *
+     * @param oldServiceInstance origin service instance
+     * @param newServiceInstance new service instance
+     */
+    protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) {
+        this.doUnregister(oldServiceInstance);
 
-        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
-            reportMetadata(serviceInstance.getServiceMetadata());
-            this.doRegister(serviceInstance);
+        this.serviceInstance = newServiceInstance;
+
+        if (!EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
+            reportMetadata(newServiceInstance.getServiceMetadata());
+            this.doRegister(newServiceInstance);
         }
     }
 
@@ -287,12 +348,17 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void reportMetadata(MetadataInfo metadataInfo) {
+        if (metadataInfo == null) {
+            return;
+        }
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             if ((DEFAULT_METADATA_STORAGE_TYPE.equals(metadataType) && metadataReport.shouldReportMetadata()) || REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 metadataReport.publishAppMetadata(identifier, metadataInfo);
             }
         }
+        MetadataInfo clonedMetadataInfo = metadataInfo.clone();
+        metadataInfos.put(metadataInfo.getRevision(), new MetadataInfoStat(clonedMetadataInfo));
     }
 
     protected void unReportMetadata(MetadataInfo metadataInfo) {
@@ -323,5 +389,22 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             stringBuilder.append(url.getBackupAddress());
         }
         return stringBuilder.toString();
+    }
+
+    private static class MetadataInfoStat {
+        private final MetadataInfo metadataInfo;
+        private final long updateTime = System.currentTimeMillis();
+
+        public MetadataInfoStat(MetadataInfo metadataInfo) {
+            this.metadataInfo = metadataInfo;
+        }
+
+        public MetadataInfo getMetadataInfo() {
+            return metadataInfo;
+        }
+
+        public long getUpdateTime() {
+            return updateTime;
+        }
     }
 }

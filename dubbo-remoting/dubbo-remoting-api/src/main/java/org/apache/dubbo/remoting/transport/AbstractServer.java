@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_UNEXPECTED_EXCEPTION;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_ACCEPTS;
 
@@ -96,7 +96,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
                 }
             }
         } catch (Throwable t) {
-            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", t.getMessage(), t);
+            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", t.getMessage(), t);
         }
 
         ExecutorService executor = executorRepository.createExecutorIfAbsent(url);
@@ -128,13 +128,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
         try {
             super.close();
         } catch (Throwable e) {
-            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
+            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", e.getMessage(), e);
         }
 
         try {
             doClose();
         } catch (Throwable e) {
-            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", e.getMessage(), e);
+            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", e.getMessage(), e);
         }
     }
 
@@ -163,13 +163,13 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     public void connected(Channel ch) throws RemotingException {
         // If the server has entered the shutdown process, reject any new connection
         if (this.isClosing() || this.isClosed()) {
-            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
+            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "Close new channel " + ch + ", cause: server is closing or has been closed. For example, receive a new connect request while in shutdown process.");
             ch.close();
             return;
         }
 
         if (accepts > 0 && getChannels().size() > accepts) {
-            logger.error(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
+            logger.error(INTERNAL_ERROR, "unknown error in remoting module", "", "Close channel " + ch + ", cause: The server " + ch.getLocalAddress() + " connections greater than max config " + accepts);
             ch.close();
             return;
         }
@@ -180,7 +180,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
     public void disconnected(Channel ch) throws RemotingException {
         Collection<Channel> channels = getChannels();
         if (channels.isEmpty()) {
-            logger.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
+            logger.warn(INTERNAL_ERROR, "unknown error in remoting module", "", "All clients has disconnected from " + ch.getLocalAddress() + ". You can graceful shutdown now.");
         }
         super.disconnected(ch);
     }

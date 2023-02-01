@@ -60,6 +60,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -68,16 +70,17 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTROY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REFRESH_INSTANCE_ERROR;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_REGISTER_INSTANCE_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_START_MODEL;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_EXECUTE_DESTORY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_INIT_CONFIG_CENTER;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
@@ -288,8 +291,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
-            ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-            validMetadataReportConfigs.add(metadataReportConfig);
+            if (ConfigValidationUtils.isValidMetadataConfig(metadataReportConfig)) {
+                ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+                validMetadataReportConfigs.add(metadataReportConfig);
+            }
         }
         metadataReportInstance.init(validMetadataReportConfigs);
         if (!metadataReportInstance.inited()) {
@@ -370,39 +375,55 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void useRegistryAsMetadataCenterIfNecessary() {
 
-        Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
-
-        if (CollectionUtils.isNotEmpty(metadataConfigs)) {
+        Collection<MetadataReportConfig> originMetadataConfigs = configManager.getMetadataConfigs();
+        if (originMetadataConfigs.stream().anyMatch(m -> Objects.nonNull(m.getAddress()))) {
             return;
         }
 
+        Collection<MetadataReportConfig> metadataConfigsToOverride = originMetadataConfigs
+            .stream()
+            .filter(m -> Objects.isNull(m.getAddress()))
+            .collect(Collectors.toList());
+
+        if (metadataConfigsToOverride.size() > 1) {
+            return;
+        }
+
+        MetadataReportConfig metadataConfigToOverride = metadataConfigsToOverride.stream().findFirst().orElse(null);
+
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
-        if (defaultRegistries.size() > 0) {
+        if (!defaultRegistries.isEmpty()) {
             defaultRegistries
                 .stream()
                 .filter(this::isUsedRegistryAsMetadataCenter)
-                .map(this::registryAsMetadataCenter)
+                .map(registryConfig -> registryAsMetadataCenter(registryConfig, metadataConfigToOverride))
                 .forEach(metadataReportConfig -> {
-                    if (metadataReportConfig.getId() == null) {
-                        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
-                        if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
-                            for (MetadataReportConfig existedConfig : metadataReportConfigs) {
-                                if (existedConfig.getId() == null && existedConfig.getAddress().equals(metadataReportConfig.getAddress())) {
-                                    return;
-                                }
-                            }
-                        }
-                        configManager.addMetadataReport(metadataReportConfig);
-                    } else {
-                        Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
-                        if (configOptional.isPresent()) {
-                            return;
-                        }
-                        configManager.addMetadataReport(metadataReportConfig);
-                    }
-                    logger.info("use registry as metadata-center: " + metadataReportConfig);
+                    overrideMetadataReportConfig(metadataConfigToOverride, metadataReportConfig);
                 });
         }
+    }
+
+    private void overrideMetadataReportConfig(MetadataReportConfig metadataConfigToOverride, MetadataReportConfig metadataReportConfig) {
+        if (metadataReportConfig.getId() == null) {
+            Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
+            if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
+                for (MetadataReportConfig existedConfig : metadataReportConfigs) {
+                    if (existedConfig.getId() == null && existedConfig.getAddress().equals(metadataReportConfig.getAddress())) {
+                        return;
+                    }
+                }
+            }
+            configManager.removeConfig(metadataConfigToOverride);
+            configManager.addMetadataReport(metadataReportConfig);
+        } else {
+            Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
+            if (configOptional.isPresent()) {
+                return;
+            }
+            configManager.removeConfig(metadataConfigToOverride);
+            configManager.addMetadataReport(metadataReportConfig);
+        }
+        logger.info("use registry as metadata-center: " + metadataReportConfig);
     }
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
@@ -460,24 +481,37 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return false;
     }
 
-    private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
-        String protocol = registryConfig.getProtocol();
-        URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
-        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-        metadataReportConfig.setId(registryConfig.getId());
+    private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig, MetadataReportConfig originMetadataReportConfig) {
+        MetadataReportConfig metadataReportConfig = originMetadataReportConfig == null ?
+            new MetadataReportConfig(registryConfig.getApplicationModel()) : originMetadataReportConfig;
+        if (metadataReportConfig.getId() == null) {
+            metadataReportConfig.setId(registryConfig.getId());
+        }
         metadataReportConfig.setScopeModel(applicationModel);
         if (metadataReportConfig.getParameters() == null) {
             metadataReportConfig.setParameters(new HashMap<>());
         }
         if (CollectionUtils.isNotEmptyMap(registryConfig.getParameters())) {
-            metadataReportConfig.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
+            for (Map.Entry<String, String> entry : registryConfig.getParameters().entrySet()) {
+                metadataReportConfig.getParameters().putIfAbsent(entry.getKey(), entry.getValue()); // copy the parameters
+            }
         }
         metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
-        metadataReportConfig.setGroup(registryConfig.getGroup());
-        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
-        metadataReportConfig.setUsername(registryConfig.getUsername());
-        metadataReportConfig.setPassword(registryConfig.getPassword());
-        metadataReportConfig.setTimeout(registryConfig.getTimeout());
+        if (metadataReportConfig.getGroup() == null) {
+            metadataReportConfig.setGroup(registryConfig.getGroup());
+        }
+        if (metadataReportConfig.getAddress() == null) {
+            metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
+        }
+        if (metadataReportConfig.getUsername() == null) {
+            metadataReportConfig.setUsername(registryConfig.getUsername());
+        }
+        if (metadataReportConfig.getPassword() == null) {
+            metadataReportConfig.setPassword(registryConfig.getPassword());
+        }
+        if (metadataReportConfig.getTimeout() == null) {
+            metadataReportConfig.setTimeout(registryConfig.getTimeout());
+        }
         return metadataReportConfig;
     }
 
@@ -1029,7 +1063,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 serviceDiscovery.destroy();
             } catch (Throwable ignored) {
-                logger.warn(CONFIG_FAILED_EXECUTE_DESTORY, "", "", ignored.getMessage(), ignored);
+                logger.warn(CONFIG_FAILED_EXECUTE_DESTROY, "", "", ignored.getMessage(), ignored);
             }
         });
         if (logger.isDebugEnabled()) {

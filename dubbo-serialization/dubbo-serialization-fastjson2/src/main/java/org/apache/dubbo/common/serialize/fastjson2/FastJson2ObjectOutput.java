@@ -98,6 +98,7 @@ public class FastJson2ObjectOutput implements ObjectOutput {
         updateClassLoaderIfNeed();
         byte[] bytes = JSONB.toBytes(obj, JSONWriter.Feature.WriteClassName,
             JSONWriter.Feature.FieldBased,
+            JSONWriter.Feature.ErrorOnNoneSerializable,
             JSONWriter.Feature.ReferenceDetection,
             JSONWriter.Feature.WriteNulls,
             JSONWriter.Feature.NotWriteDefaultValue,

@@ -105,4 +105,6 @@ public interface Constants {
     String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
 
     String H2_SUPPORT_NO_LOWER_HEADER_KEY = "dubbo.rpc.tri.support-no-lower-header";
+
+    String TRI_BUILTIN_SERVICE_INIT = "dubbo.tri.builtin.service.init";
 }

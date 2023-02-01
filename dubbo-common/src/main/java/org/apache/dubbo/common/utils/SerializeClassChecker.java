@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -52,10 +51,10 @@ public class SerializeClassChecker {
     private final AtomicLong counter = new AtomicLong(0);
 
     private SerializeClassChecker() {
-        String openCheckClass = ConfigurationUtils.getProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "true");
+        String openCheckClass = System.getProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "true");
         OPEN_CHECK_CLASS = Boolean.parseBoolean(openCheckClass);
 
-        String blockAllClassExceptAllow = ConfigurationUtils.getProperty(CLASS_DESERIALIZE_BLOCK_ALL, "false");
+        String blockAllClassExceptAllow = System.getProperty(CLASS_DESERIALIZE_BLOCK_ALL, "false");
 
         BLOCK_ALL_CLASS_EXCEPT_ALLOW = Boolean.parseBoolean(blockAllClassExceptAllow);
 
@@ -79,8 +78,8 @@ public class SerializeClassChecker {
             logger.error(COMMON_IO_EXCEPTION, "", "", "Failed to load blocked class list! Will ignore default blocked list.", e);
         }
 
-        String allowedClassList = ConfigurationUtils.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim().toLowerCase(Locale.ROOT);
-        String blockedClassList = ConfigurationUtils.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim().toLowerCase(Locale.ROOT);
+        String allowedClassList = System.getProperty(CLASS_DESERIALIZE_ALLOWED_LIST, "").trim().toLowerCase(Locale.ROOT);
+        String blockedClassList = System.getProperty(CLASS_DESERIALIZE_BLOCKED_LIST, "").trim().toLowerCase(Locale.ROOT);
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -120,34 +119,45 @@ public class SerializeClassChecker {
      * @throws IllegalArgumentException if class is blocked
      */
     public void validateClass(String name) {
+        validateClass(name, true);
+    }
+
+    public boolean validateClass(String name, boolean failOnError) {
         if (!OPEN_CHECK_CLASS) {
-            return;
+            return true;
         }
 
         name = name.toLowerCase(Locale.ROOT);
         if (CACHE == CLASS_ALLOW_LFU_CACHE.get(name)) {
-            return;
+            return true;
         }
 
         if (CACHE == CLASS_BLOCK_LFU_CACHE.get(name)) {
-            error(name);
+            if (failOnError) {
+                error(name);
+            }
+            return false;
         }
 
         for (String allowedPrefix : CLASS_DESERIALIZE_ALLOWED_SET) {
             if (name.startsWith(allowedPrefix)) {
                 CLASS_ALLOW_LFU_CACHE.put(name, CACHE);
-                return;
+                return true;
             }
         }
 
         for (String blockedPrefix : CLASS_DESERIALIZE_BLOCKED_SET) {
             if (BLOCK_ALL_CLASS_EXCEPT_ALLOW || name.startsWith(blockedPrefix)) {
                 CLASS_BLOCK_LFU_CACHE.put(name, CACHE);
-                error(name);
+                if (failOnError) {
+                    error(name);
+                }
+                return false;
             }
         }
 
         CLASS_ALLOW_LFU_CACHE.put(name, CACHE);
+        return true;
     }
 
     private void error(String name) {

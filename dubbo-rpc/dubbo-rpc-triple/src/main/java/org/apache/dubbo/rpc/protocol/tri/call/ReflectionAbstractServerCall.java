@@ -31,9 +31,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
+import org.apache.dubbo.rpc.protocol.tri.TripleCustomerProtocolWapper;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -46,13 +46,13 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     private List<MethodDescriptor> methodDescriptors;
 
     public ReflectionAbstractServerCall(Invoker<?> invoker,
-        ServerStream serverStream,
-        FrameworkModel frameworkModel,
-        String acceptEncoding,
-        String serviceName,
-        String methodName,
-        List<HeaderFilter> headerFilters,
-        Executor executor) {
+                                        ServerStream serverStream,
+                                        FrameworkModel frameworkModel,
+                                        String acceptEncoding,
+                                        String serviceName,
+                                        String methodName,
+                                        List<HeaderFilter> headerFilters,
+                                        Executor executor) {
         super(invoker, serverStream, frameworkModel,
             getServiceDescriptor(invoker.getUrl()),
             acceptEncoding, serviceName, methodName,
@@ -155,10 +155,8 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (isClosed()) {
             return null;
         }
-        if (serviceDescriptor != null) {
-            ClassLoadUtil.switchContextLoader(
-                serviceDescriptor.getServiceInterfaceClass().getClassLoader());
-        }
+        ClassLoadUtil.switchContextLoader(
+            invoker.getUrl().getServiceModel().getClassLoader());
         return packableMethod.getRequestUnpack().unpack(data);
     }
 
@@ -167,11 +165,11 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         if (methodDescriptor != null) {
             return;
         }
-        final TripleWrapper.TripleRequestWrapper request;
-        request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
+        final TripleCustomerProtocolWapper.TripleRequestWrapper request;
+        request = TripleCustomerProtocolWapper.TripleRequestWrapper.parseFrom(data);
 
-        final String[] paramTypes = request.getArgTypesList()
-            .toArray(new String[request.getArgsCount()]);
+        final String[] paramTypes = request.getArgTypes()
+            .toArray(new String[request.getArgs().size()]);
         // wrapper mode the method can overload so maybe list
         for (MethodDescriptor descriptor : methodDescriptors) {
             // params type is array

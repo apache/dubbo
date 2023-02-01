@@ -29,9 +29,6 @@
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.serialize.Serialization\\E"
       },
       {
-        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.serialize.hessian2.dubbo.Hessian2FactoryInitializer\\E"
-      },
-      {
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.threadpool.ThreadPool\\E"
       },
       {
@@ -153,6 +150,18 @@
       },
       {
         "pattern": "\\Qorg/apache/dubbo/remoting/exchange/Exchangers.class\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.store.DataStore\\E"
+      },
+      {
+        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.common.metrics.service.MetricsServiceExporter\\E"
+      },
+      {
+        "pattern": "\\Qsecurity/serialize.blockedlist\\E"
+      },
+      {
+        "pattern": "\\Qsecurity/serialize.allowlist\\E"
       }
     ]
   },

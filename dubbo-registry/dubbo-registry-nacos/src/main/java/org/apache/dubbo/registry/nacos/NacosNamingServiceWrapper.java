@@ -16,7 +16,14 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import java.util.List;
+
+import org.apache.dubbo.common.constants.LoggerCodeConstants;
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.nacos.function.NacosConsumer;
+import org.apache.dubbo.registry.nacos.function.NacosFunction;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
@@ -24,9 +31,8 @@ import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
-import java.util.List;
-
 public class NacosNamingServiceWrapper {
+    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(NacosNamingServiceWrapper.class);
 
     private static final String INNERCLASS_SYMBOL = "$";
 
@@ -34,8 +40,14 @@ public class NacosNamingServiceWrapper {
 
     private final NamingService namingService;
 
-    public NacosNamingServiceWrapper(NamingService namingService) {
+    private final int retryTimes;
+
+    private final int sleepMsBetweenRetries;
+
+    public NacosNamingServiceWrapper(NamingService namingService, int retryTimes, int sleepMsBetweenRetries) {
         this.namingService = namingService;
+        this.retryTimes = Math.max(retryTimes, 0);
+        this.sleepMsBetweenRetries = sleepMsBetweenRetries;
     }
 
 
@@ -44,36 +56,36 @@ public class NacosNamingServiceWrapper {
     }
 
     public void subscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
-        namingService.subscribe(handleInnerSymbol(serviceName), group, eventListener);
+        accept(naming -> naming.subscribe(handleInnerSymbol(serviceName), group, eventListener));
     }
 
     public void unsubscribe(String serviceName, String group, EventListener eventListener) throws NacosException {
-        namingService.unsubscribe(handleInnerSymbol(serviceName), group, eventListener);
+        accept(naming -> naming.unsubscribe(handleInnerSymbol(serviceName), group, eventListener));
     }
 
     public List<Instance> getAllInstances(String serviceName, String group) throws NacosException {
-        return namingService.getAllInstances(handleInnerSymbol(serviceName), group);
+        return apply(naming -> naming.getAllInstances(handleInnerSymbol(serviceName), group));
     }
 
     public void registerInstance(String serviceName, String group, Instance instance) throws NacosException {
-        namingService.registerInstance(handleInnerSymbol(serviceName), group, instance);
+        accept(naming -> naming.registerInstance(handleInnerSymbol(serviceName), group, instance));
     }
 
     public void deregisterInstance(String serviceName, String group, String ip, int port) throws NacosException {
-        namingService.deregisterInstance(handleInnerSymbol(serviceName), group, ip, port);
+        accept(naming -> naming.deregisterInstance(handleInnerSymbol(serviceName), group, ip, port));
     }
 
 
     public void deregisterInstance(String serviceName, String group, Instance instance) throws NacosException {
-        namingService.deregisterInstance(handleInnerSymbol(serviceName), group, instance);
+        accept(naming -> naming.deregisterInstance(handleInnerSymbol(serviceName), group, instance));
     }
 
     public ListView<String> getServicesOfServer(int pageNo, int pageSize, String group) throws NacosException {
-        return namingService.getServicesOfServer(pageNo, pageSize, group);
+        return apply(naming -> naming.getServicesOfServer(pageNo, pageSize, group));
     }
 
     public List<Instance> selectInstances(String serviceName, String group, boolean healthy) throws NacosException {
-        return namingService.selectInstances(handleInnerSymbol(serviceName), group, healthy);
+        return apply(naming -> naming.selectInstances(handleInnerSymbol(serviceName), group, healthy));
     }
 
     public void shutdown() throws NacosException {
@@ -89,5 +101,73 @@ public class NacosNamingServiceWrapper {
             return null;
         }
         return serviceName.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);
+    }
+
+    private <R> R apply(NacosFunction<NamingService, R> command) throws NacosException {
+        NacosException le = null;
+        R result = null;
+        int times = 0;
+        for (; times < retryTimes + 1; times++) {
+            try {
+                result = command.apply(namingService);
+                le = null;
+                break;
+            } catch (NacosException e) {
+                le = e;
+                logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
+                    "Failed to request nacos naming server. " +
+                    (times < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
+                    "Try times: " + (times + 1), e);
+                if (times < retryTimes) {
+                    try {
+                        Thread.sleep(sleepMsBetweenRetries);
+                    } catch (InterruptedException ex) {
+                        logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", "Interrupted when waiting to retry.", ex);
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+        if (le != null) {
+            throw le;
+        }
+        if (times > 1) {
+            logger.info("Failed to request nacos naming server for " + (times - 1) + " times and finally success. " +
+                "This may caused by high stress of nacos server.");
+        }
+        return result;
+    }
+
+    private void accept(NacosConsumer<NamingService> command) throws NacosException {
+        NacosException le = null;
+        int times = 0;
+        for (; times < retryTimes + 1; times++) {
+            try {
+                command.accept(namingService);
+                le = null;
+                break;
+            } catch (NacosException e) {
+                le = e;
+                logger.warn(LoggerCodeConstants.REGISTRY_NACOS_EXCEPTION, "", "",
+                    "Failed to request nacos naming server. " +
+                        (times < retryTimes ? "Dubbo will try to retry in " + sleepMsBetweenRetries + ". " : "Exceed retry max times.") +
+                        "Try times: " + (times + 1), e);
+                if (times < retryTimes) {
+                    try {
+                        Thread.sleep(sleepMsBetweenRetries);
+                    } catch (InterruptedException ex) {
+                        logger.warn(LoggerCodeConstants.INTERNAL_INTERRUPTED, "", "", "Interrupted when waiting to retry.", ex);
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+        if (le != null) {
+            throw le;
+        }
+        if (times > 1) {
+            logger.info("Failed to request nacos naming server for " + (times - 1) + " times and finally success. " +
+                "This may caused by high stress of nacos server.");
+        }
     }
 }
