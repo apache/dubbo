@@ -14,4 +14,3 @@ timeout=org.apache.dubbo.rpc.filter.TimeoutFilter
 tps=org.apache.dubbo.rpc.filter.TpsLimitFilter
 profiler-server=org.apache.dubbo.rpc.filter.ProfilerServerFilter
 flowControl=org.apache.dubbo.rpc.filter.FlowControlFilter
-active-limit=org.apache.dubbo.rpc.filter.ActiveLimitFilter
