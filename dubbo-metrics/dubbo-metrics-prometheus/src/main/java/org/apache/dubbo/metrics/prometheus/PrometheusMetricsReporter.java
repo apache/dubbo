@@ -27,7 +27,7 @@ import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metrics.AbstractMetricsReporter;
+import org.apache.dubbo.metrics.report.AbstractMetricsReporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;

@@ -120,7 +120,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> newInstance = build(newServiceInstance);
         if (!Objects.equals(newInstance.getName(), oldInstance.getName()) ||
             !Objects.equals(newInstance.getId(), oldInstance.getId())) {
-            // ignore if id changed
+            // Ignore if id changed. Should unregister first.
             super.doUpdate(oldServiceInstance, newServiceInstance);
             return;
         }
@@ -156,6 +156,9 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
+        if (!instanceListeners.remove(listener)) {
+            return;
+        }
         listener.getServiceNames().forEach(serviceName -> {
             ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.get(serviceName);
             if (watcher != null) {

@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.exception.NacosException;
@@ -51,6 +53,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
+import static org.apache.dubbo.rpc.RpcException.REGISTRY_EXCEPTION;
 
 /**
  * Nacos {@link ServiceDiscovery} implementation
@@ -102,14 +105,31 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     protected void doUpdate(ServiceInstance oldServiceInstance, ServiceInstance newServiceInstance) throws RuntimeException {
-        // register first to ensure that consumer will not throw no provider exception
-        if (!EMPTY_REVISION.equals(getExportedServicesRevision(serviceInstance))) {
-            reportMetadata(serviceInstance.getServiceMetadata());
-            this.serviceInstance = newServiceInstance;
-            this.doRegister(newServiceInstance);
+        if (EMPTY_REVISION.equals(getExportedServicesRevision(newServiceInstance))) {
+            super.doUpdate(oldServiceInstance, newServiceInstance);
+            return;
         }
 
-        this.doUnregister(oldServiceInstance);
+        if (!Objects.equals(newServiceInstance.getHost(), oldServiceInstance.getHost()) ||
+            !Objects.equals(newServiceInstance.getPort(), oldServiceInstance.getPort())) {
+            // Ignore if id changed. Should unregister first.
+            super.doUpdate(oldServiceInstance, newServiceInstance);
+            return;
+        }
+
+        Instance oldInstance = toInstance(oldServiceInstance);
+        Instance newInstance = toInstance(newServiceInstance);
+
+        try {
+            this.serviceInstance = newServiceInstance;
+            reportMetadata(newServiceInstance.getServiceMetadata());
+            execute(namingService, service -> {
+                Instance instance = toInstance(serviceInstance);
+                service.updateInstance(instance.getServiceName(), group, oldInstance, newInstance);
+            });
+        } catch (Exception e) {
+            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + newServiceInstance.toString(), e);
+        }
     }
 
     @Override

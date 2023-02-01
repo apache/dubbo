@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -429,7 +430,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     public Lock getAppSubscription(String key) {
-        return appSubscriptionLocks.computeIfAbsent(key, _k -> new ReentrantLock());
+        return ConcurrentHashMapUtils.computeIfAbsent(appSubscriptionLocks, key, _k -> new ReentrantLock());
     }
 
     public void removeAppSubscriptionLock(String key) {

@@ -17,17 +17,18 @@
 
 package org.apache.dubbo.cache;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.alibaba.dubbo.cache.Cache;
 import com.alibaba.dubbo.cache.CacheFactory;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 class CacheTest {
 
@@ -105,6 +106,16 @@ class CacheTest {
 
         @Override
         public Map<Object, Object> getAttributes() {
+            return null;
+        }
+
+        @Override
+        public void addInvokedInvoker(org.apache.dubbo.rpc.Invoker<?> invoker) {
+
+        }
+
+        @Override
+        public List<org.apache.dubbo.rpc.Invoker<?>> getInvokedInvokers() {
             return null;
         }
     }

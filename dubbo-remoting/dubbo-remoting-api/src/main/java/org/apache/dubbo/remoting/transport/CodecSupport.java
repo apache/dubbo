@@ -25,6 +25,7 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.remoting.ServiceNotFoundException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.TRANSPORT_FAILED_SERIALIZATION;
@@ -49,7 +51,7 @@ public class CodecSupport {
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
     // Cache null object serialize results, for heartbeat request/response serialize use.
-    private static Map<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Byte, byte[]> ID_NULLBYTES_MAP = new ConcurrentHashMap<>();
 
     private static final ThreadLocal<byte[]> TL_BUFFER = ThreadLocal.withInitial(() -> new byte[1024]);
 
@@ -108,7 +110,7 @@ public class CodecSupport {
      * @return serialize result of null object
      */
     public static byte[] getNullBytesOf(Serialization s) {
-        return ID_NULLBYTES_MAP.computeIfAbsent(s.getContentTypeId(), k -> {
+        return ConcurrentHashMapUtils.computeIfAbsent(ID_NULLBYTES_MAP, s.getContentTypeId(), k -> {
             //Pre-generated Null object bytes
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] nullBytes = new byte[0];

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
@@ -40,6 +41,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,7 +79,7 @@ public class AccessLogFilter implements Filter {
     // It's safe to declare it as singleton since it runs on single thread only
     private final DateFormat fileNameFormatter = new SimpleDateFormat(FILE_DATE_FORMAT);
 
-    private final Map<String, Queue<AccessLogData>> logEntries = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Queue<AccessLogData>> logEntries = new ConcurrentHashMap<>();
 
     private AtomicBoolean scheduled = new AtomicBoolean();
 
@@ -127,12 +129,12 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
-        Queue<AccessLogData> logQueue = logEntries.computeIfAbsent(accessLog, k -> new ConcurrentLinkedQueue<>());
+        Queue<AccessLogData> logQueue = ConcurrentHashMapUtils.computeIfAbsent(logEntries, accessLog, k -> new ConcurrentLinkedQueue<>());
 
         if (logQueue.size() < LOG_MAX_BUFFER) {
             logQueue.add(accessLogData);
         } else {
-            logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "","AccessLog buffer is full. Do a force writing to file to clear buffer.");
+            logger.warn(CONFIG_FILTER_VALIDATION_EXCEPTION, "", "", "AccessLog buffer is full. Do a force writing to file to clear buffer.");
             //just write current logSet to file.
             writeLogSetToFile(accessLog, logQueue);
             //after force writing, add accessLogData to current logSet
