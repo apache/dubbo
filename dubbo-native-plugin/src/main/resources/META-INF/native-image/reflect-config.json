@@ -2846,7 +2846,7 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector",
+    "name": "org.apache.dubbo.metrics.collector.DefaultMetricsCollector",
     "allPublicMethods": true,
     "methods": [
       {

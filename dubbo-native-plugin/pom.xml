@@ -66,6 +66,11 @@
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metrics-default</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
     </dependencies>
 
