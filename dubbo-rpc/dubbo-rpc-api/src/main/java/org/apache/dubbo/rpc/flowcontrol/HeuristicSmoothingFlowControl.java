@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.flowcontrol;
 import org.apache.dubbo.rpc.FlowControl;
 
 import org.apache.dubbo.rpc.flowcontrol.collector.CpuUsage;
-import org.apache.dubbo.rpc.flowcontrol.collector.LinuxCpuUsage;
 import org.apache.dubbo.rpc.flowcontrol.collector.ServerMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;

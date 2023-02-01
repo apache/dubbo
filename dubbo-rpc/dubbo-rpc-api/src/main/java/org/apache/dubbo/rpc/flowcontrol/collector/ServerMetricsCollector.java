@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,11 +15,6 @@
  * limitations under the License.
  */
 package org.apache.dubbo.rpc.flowcontrol.collector;
-
-
-import org.apache.dubbo.common.URL;
-
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 

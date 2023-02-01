@@ -17,14 +17,11 @@
 
 package org.apache.dubbo.rpc.flowcontrol;
 
-import org.apache.dubbo.common.URL;
+
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.FlowControl;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.flowcontrol.collector.CpuUsage;
-import org.apache.dubbo.rpc.flowcontrol.collector.LinuxCpuUsage;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
@@ -81,15 +78,7 @@ public class AutoConcurrencyLimier implements FlowControl, ScopeModelAware {
         halfSampleIntervalMS = 25000;
         resetLatencyUs = 0;
         remeasureStartUs = NextResetTime(System.nanoTime() / 1000);
-        /*
-        try{
-            cpuUsage = new LinuxCpuUsage();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        */
         cpuUsage = new CpuUsage();
-        //cpuUsage.setApplicationModel(applicationModel);
         cpuUsage.startPeriodAutoUpdate();
     }
 
