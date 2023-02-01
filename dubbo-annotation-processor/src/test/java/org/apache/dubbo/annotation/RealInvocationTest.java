@@ -12,11 +12,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -36,16 +32,6 @@ public class RealInvocationTest {
 
     @BeforeAll
     public static void compileTheSource() {
-        Path classPath = Paths.get(filePath.replace(".java", ".class"));
-
-        if (Files.exists(classPath)) {
-            try {
-                Files.delete(classPath);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
 
         StandardJavaFileManager javaFileManager = javaCompiler.getStandardFileManager(
@@ -64,7 +50,7 @@ public class RealInvocationTest {
         );
 
         compilationTask.setProcessors(
-            Collections.singletonList(new InitOnlyProcessor())
+            Collections.singletonList(new DispatchingAnnotationProcessor())
         );
 
         compilationTask.call();
