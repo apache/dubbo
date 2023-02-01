@@ -60,7 +60,6 @@ import static org.springframework.core.annotation.AnnotationUtils.getDefaultValu
 import static org.springframework.core.io.support.SpringFactoriesLoader.loadFactoryNames;
 import static org.springframework.util.ClassUtils.getShortName;
 import static org.springframework.util.ClassUtils.resolveClassName;
-import static org.springframework.util.CollectionUtils.arrayToList;
 import static org.springframework.util.CollectionUtils.isEmpty;
 import static org.springframework.util.ObjectUtils.containsElement;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
