@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -54,6 +49,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
@@ -410,6 +410,7 @@ public class PojoUtils {
                         CLASS_NOT_FOUND_CACHE.put((String) className, NOT_FOUND_VALUE);
                     }
                 }
+                SerializeClassChecker.getInstance().validateClass(type);
             }
 
             // special logic for enum
