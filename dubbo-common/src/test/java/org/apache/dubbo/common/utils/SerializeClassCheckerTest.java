@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-
-import javassist.compiler.Javac;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javassist.compiler.Javac;
 
 public class SerializeClassCheckerTest {
 
@@ -54,6 +54,26 @@ public class SerializeClassCheckerTest {
         Assertions.assertThrows(IllegalArgumentException.class, ()-> {
             serializeClassChecker.validateClass(Socket.class.getName());
         });
+    }
+
+    @Test
+    public void testSerializable1() {
+        SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
+        Assertions.assertThrows(IllegalArgumentException.class, ()-> serializeClassChecker.validateClass(List.class));
+    }
+
+    @Test
+    public void testSerializable2() {
+        System.setProperty(CommonConstants.CLASS_DESERIALIZE_CHECK_SERIALIZABLE, "false");
+        SerializeClassChecker serializeClassChecker = SerializeClassChecker.getInstance();
+
+        try {
+            serializeClassChecker.validateClass(List.class);
+        } catch (Throwable t) {
+            Assertions.fail(t);
+        }
+
+        System.clearProperty(CommonConstants.CLASS_DESERIALIZE_CHECK_SERIALIZABLE);
     }
 
     @Test
