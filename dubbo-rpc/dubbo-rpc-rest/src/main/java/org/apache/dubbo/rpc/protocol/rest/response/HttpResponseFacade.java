@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.request.convert.factory;
+package org.apache.dubbo.rpc.protocol.rest.response;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
-import org.apache.dubbo.rpc.protocol.rest.request.convert.OkHttpRequestConvert;
-import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
 
-@Activate("okhttp")
-public class OkHttpRequestConvertFactory implements RequestConvertFactory<OKHttpRestClient> {
+import java.io.InputStream;
 
-    @Override
-    public RequestConvert createRequestConvert(URL url) {
-        return new OkHttpRequestConvert(url);
-    }
+public interface HttpResponseFacade<RES> {
 
+    String getContentType();
+
+    InputStream getBody();
+
+    int getResponseCode();
 }

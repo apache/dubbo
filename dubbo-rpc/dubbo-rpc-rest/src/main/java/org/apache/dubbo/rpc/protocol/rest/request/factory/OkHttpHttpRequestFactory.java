@@ -14,42 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.request.convert;
+package org.apache.dubbo.rpc.protocol.rest.request.factory;
 
-import okhttp3.*;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.internal.http.HttpMethod;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
-import org.apache.dubbo.remoting.http.okhttp.OKHttpRestClient;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
-import org.apache.dubbo.rpc.protocol.rest.request.BaseConvert;
-import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 
 import java.util.Collection;
 import java.util.Map;
 
 @Activate("okhttp")
-public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpRestClient> {
+public class OkHttpHttpRequestFactory implements HttpRequestFactory<Request> {
 
-    public OkHttpRequestConvert(OKHttpRestClient restClient, RestMethodMetadata restMethodMetadata, URL url) {
-        super(restClient, restMethodMetadata, url);
+    public OkHttpHttpRequestFactory factory(URL url) {
+        return new OkHttpHttpRequestFactory();
     }
 
-    public OkHttpRequestConvert(URL url) {
-        super(url);
-    }
-
-    @Override
-    public Response send(Request request) throws Exception {
-        return getRestClient().send(request);
-    }
-
-
-    @Override
-    public Request convert(RequestTemplate requestTemplate) {
+    public Request createHttpRequest(RequestTemplate requestTemplate) {
         Request.Builder builder = new Request.Builder();
         // url
         builder.url(requestTemplate.getURL());
@@ -73,14 +57,4 @@ public class OkHttpRequestConvert extends BaseConvert<Request, Response, OKHttpR
         return builder.build();
     }
 
-    @Override
-    public Object convertResponse(Response response) throws Exception {
-        ResponseBody body = response.body();
-
-        String content_type = response.header(RestConstant.CONTENT_TYPE);
-
-
-        return HttpMessageCodecManager.httpMessageDecode(body.byteStream(), getReturnType(), MediaTypeUtil.convertMediaType(content_type));
-
-    }
 }

@@ -18,7 +18,10 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,8 +42,11 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.*;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
-import org.apache.dubbo.rpc.protocol.rest.httpinvoke.HttpInvokeInvocationHandler;
 import org.jboss.resteasy.util.GetRestful;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
@@ -57,7 +63,11 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private final Map<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
 
-    private final RestClientFactory clientFactory = FrameworkModel.defaultModel().getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
+    private static final RestClientFactory clientFactory =
+        FrameworkModel.defaultModel().getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
+
+    private static final Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
+        ApplicationModel.defaultModel().getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
 
     public RestProtocol() {
         super(WebApplicationException.class, ProcessingException.class);
@@ -125,7 +135,6 @@ public class RestProtocol extends AbstractProxyProtocol {
         // resolve metadata
         Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
-        HttpInvokeInvocationHandler httpInvoke = new HttpInvokeInvocationHandler(metadataMap, url, refClient.getClient());
 
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
@@ -136,9 +145,30 @@ public class RestProtocol extends AbstractProxyProtocol {
 
                     ConsumerMethodModel consumerMethodModel = (ConsumerMethodModel) rpcInvocation.get(Constants.METHOD_MODEL);
 
-                    Object value = httpInvoke.invoke(null, consumerMethodModel.getMethod(), invocation.getArguments());
+                    RestMethodMetadata restMethodMetadata = metadataMap.get(consumerMethodModel.getMethod());
+
+                    RequestTemplate requestTemplate = new RequestTemplate(restMethodMetadata.getRequest().getMethod(), url.getAddress());
+
+                    // TODO  dynamic load config
+                    HttpConnectionConfig connectionConfig = new HttpConnectionConfig();
+
+                    HttpConnectionCreateContext httpConnectionCreateContext = createBuildContext(requestTemplate,
+                        connectionConfig,
+                        restMethodMetadata, Arrays.asList(invocation.getArguments()), url);
+
+                    for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
+
+                        intercept.intercept(httpConnectionCreateContext);
+                    }
+
+
+                    RestHttpMessageManager restHttpMessageManager = new RestHttpMessageManager(refClient.getClient(),
+                        requestTemplate, restMethodMetadata.getReflectMethod(), getUrl());
+
+                    Object value = restHttpMessageManager.requestAndGetResponse();
 
                     CompletableFuture<Object> future = wrapWithFuture(value, invocation);
+
                     CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
                         AppResponse result = new AppResponse(invocation);
                         if (t != null) {
@@ -271,6 +301,18 @@ public class RestProtocol extends AbstractProxyProtocol {
             return ((AsyncContextImpl) (RpcContext.getServerAttachment().getAsyncContext())).getInternalFuture();
         }
         return CompletableFuture.completedFuture(value);
+    }
+
+    private static HttpConnectionCreateContext createBuildContext(RequestTemplate requestTemplate,
+                                                                  HttpConnectionConfig connectionConfig,
+                                                                  RestMethodMetadata restMethodMetadata, List<Object> rags, URL url) {
+        HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
+        httpConnectionCreateContext.setConnectionConfig(connectionConfig);
+        httpConnectionCreateContext.setRequestTemplate(requestTemplate);
+        httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
+        httpConnectionCreateContext.setMethodRealArgs(rags);
+        httpConnectionCreateContext.setUrl(url);
+        return httpConnectionCreateContext;
     }
 
 

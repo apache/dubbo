@@ -14,12 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.request.client;
 
 
-public interface ClientFacade<REQ,RES> {
+package org.apache.dubbo.rpc.protocol.rest.response;
 
-    RES send(REQ request) throws Exception;
+public class HttpResponseFactory {
 
 
+    public static HttpResponseFacade createFacade(String clientType, Object response) {
+        if ("okhttp".equals(clientType)) {
+            return new OkHttpHttpResponseFacade(response);
+        }
+
+
+        throw new RuntimeException("un support clientType : " + clientType);
+    }
 }

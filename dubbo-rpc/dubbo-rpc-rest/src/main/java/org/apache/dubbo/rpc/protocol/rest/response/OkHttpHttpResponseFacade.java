@@ -14,22 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.httpinvoke;
+package org.apache.dubbo.rpc.protocol.rest.response;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import okhttp3.Response;
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Map;
+import java.io.InputStream;
 
-public class HttpInvokeClientBuilder {
+public class OkHttpHttpResponseFacade extends AbstractHttpResponseFacade<Response> {
 
-
-    @SuppressWarnings("unchecked")
-    public static <T,Client> T build(Map<Method, RestMethodMetadata> metadataMap, URL url, Class<T> service, Client restClient) {
-        return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
-            new HttpInvokeInvocationHandler(metadataMap, url,restClient));
+    public OkHttpHttpResponseFacade(Object response) {
+        super((Response) response);
     }
 
+    @Override
+    public String getContentType() {
+
+        return response.header(RestConstant.CONTENT_TYPE);
+
+
+    }
+
+    @Override
+    public InputStream getBody() {
+        return response.body().byteStream();
+    }
+
+    @Override
+    public int getResponseCode() {
+        return response.code();
+    }
 }

@@ -1,1 +1,0 @@
-okhttp=org.apache.dubbo.rpc.protocol.rest.request.convert.factory.OkHttpRequestConvertFactory

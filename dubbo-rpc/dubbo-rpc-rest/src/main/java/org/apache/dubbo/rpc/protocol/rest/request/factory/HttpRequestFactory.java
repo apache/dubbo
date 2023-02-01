@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.request.convert.factory;
+package org.apache.dubbo.rpc.protocol.rest.request.factory;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.protocol.rest.request.convert.RequestConvert;
+import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
 
 @SPI("okhttp")
-public interface RequestConvertFactory<CLIENT> {
-
+public interface HttpRequestFactory<Req> {
 
     @Adaptive({Constants.CLIENT_KEY})
-    RequestConvert createRequestConvert(URL url );
+    HttpRequestFactory factory(URL url);
 
-
+    Req createHttpRequest(RequestTemplate requestTemplate);
 
 }
