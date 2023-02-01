@@ -17,10 +17,12 @@
 
 package org.apache.dubbo.spring.security.utils;
 
-final public class SecurityKeyNames {
+final public class SecurityNames {
 
     public static final String SECURITY_AUTHENTICATION_CONTEXT_KEY = "security_authentication_context";
 
-    private SecurityKeyNames() {}
+    public static final String SECURITY_CONTEXT_HOLDER_CLASS_NAME = "org.springframework.security.core.context.SecurityContextHolder";
+
+    private SecurityNames() {}
 
 }

@@ -18,28 +18,40 @@ package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.spring.security.authentication.DubboAuthenticationToken;
-import org.apache.dubbo.spring.security.authority.RoleGrantedAuthority;
-import org.apache.dubbo.spring.security.utils.SecurityKeyNames;
+import org.apache.dubbo.spring.security.filter.condition.AndFilterConditionMatcher;
+import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
+import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
+import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
+import org.apache.dubbo.spring.security.utils.SecurityNames;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.CONSUMER, order = -10000)
-public class SecurityContextHolderParameterRequestFilter implements Filter {
+public class ContextHolderAuthenticationPrepareFilter
+    extends AndFilterConditionMatcher implements ConditionFilter{
+
+    private static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
+
+    static{
+        conditionMatchers.add(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
+    }
+
+    public ContextHolderAuthenticationPrepareFilter() {
+        super(conditionMatchers);
+    }
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result doInvoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         setSecurityContext(invocation);
 
         return invoker.invoke(invocation);
@@ -50,21 +62,7 @@ public class SecurityContextHolderParameterRequestFilter implements Filter {
 
         Authentication authentication = context.getAuthentication();
 
-        if (authentication == null) {
-            return;
-        }
-
-        List<RoleGrantedAuthority> grantedAuthorities = Optional.ofNullable(authentication.getAuthorities())
-            .orElseGet(ArrayList::new)
-            .stream()
-            .map(authorize -> new RoleGrantedAuthority(authorize.getAuthority()))
-            .collect(Collectors.toList());
-
-        DubboAuthenticationToken dubboAuthenticationToken = DubboAuthenticationToken.authenticated(
-            authentication.getPrincipal(), authentication.getCredentials(), grantedAuthorities);
-
-
-        invocation.setObjectAttachment(SecurityKeyNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, dubboAuthenticationToken);
+        invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, ObjectMapperCodec.serialize(authentication));
     }
 
 }

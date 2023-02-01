@@ -1,3 +1,3 @@
-consumerContextHolder=org.apache.dubbo.spring.security.filter.SecurityContextHolderParameterRequestFilter
-providerContextHolder=org.apache.dubbo.spring.security.filter.SecurityContextHolderParameterAwareFilter
-securityExceptionTranslation=org.apache.dubbo.spring.security.filter.SecurityExceptionTranslationFilter
+authenticationPrepare=org.apache.dubbo.spring.security.filter.ContextHolderAuthenticationPrepareFilter
+authenticationResolver=org.apache.dubbo.spring.security.filter.ContextHolderAuthenticationResolverFilter
+securityExceptionTranslation=org.apache.dubbo.spring.security.filter.AuthenticationExceptionTranslatorFilter

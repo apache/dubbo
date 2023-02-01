@@ -18,35 +18,54 @@ package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.spring.security.utils.SecurityKeyNames;
+import org.apache.dubbo.spring.security.filter.condition.AndFilterConditionMatcher;
+import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
+import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
+import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
+import org.apache.dubbo.spring.security.utils.SecurityNames;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.PROVIDER, order = -10000)
-public class SecurityContextHolderParameterAwareFilter implements Filter {
+public class ContextHolderAuthenticationResolverFilter
+    extends AndFilterConditionMatcher implements ConditionFilter{
+
+    private static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
+
+    static{
+        conditionMatchers.add(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
+    }
+
+    public ContextHolderAuthenticationResolverFilter() {
+        super(conditionMatchers);
+
+    }
+
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result doInvoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         getSecurityContext(invocation);
 
         return invoker.invoke(invocation);
     }
 
     private static void getSecurityContext(Invocation invocation) {
-        Object authentication = invocation.getObjectAttachment(SecurityKeyNames.SECURITY_AUTHENTICATION_CONTEXT_KEY);
+        String authenticationJSON = invocation.getAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY);
 
-        if (Objects.nonNull(authentication)
-            && ClassUtils.isAssignableFrom(Authentication.class, authentication.getClass())) {
-
-            SecurityContextHolder.getContext().setAuthentication((Authentication) authentication);
+        if (StringUtils.isBlank(authenticationJSON)) {
+            return;
         }
+        Authentication authentication = ObjectMapperCodec.deserialize(authenticationJSON, Authentication.class);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
 }
