@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.LogHelper;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.SerializeClassChecker;
-
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -31,6 +25,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.LogHelper;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.SerializeClassChecker;
 
 public final class JavaBeanSerializeUtil {
 
@@ -466,7 +466,9 @@ public final class JavaBeanSerializeUtil {
             name = name.substring(1, name.length() - 1);
         }
         SerializeClassChecker.getInstance().validateClass(name);
-        return Class.forName(name, false, loader);
+        Class<?> aClass = Class.forName(name, false, loader);
+        SerializeClassChecker.getInstance().validateClass(aClass);
+        return aClass;
     }
 
     private static boolean isArray(String type) {
