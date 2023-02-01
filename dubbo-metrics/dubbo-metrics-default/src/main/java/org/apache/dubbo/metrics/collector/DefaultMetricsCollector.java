@@ -24,7 +24,6 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,13 +33,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.apache.dubbo.common.metrics.collector.stat.MetricsStatComposite;
-import org.apache.dubbo.common.metrics.collector.stat.MetricsStatHandler;
-import org.apache.dubbo.common.metrics.event.RequestEvent;
-import org.apache.dubbo.common.metrics.listener.MetricsListener;
-import org.apache.dubbo.common.metrics.model.MetricsKey;
-import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
