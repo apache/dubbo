@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.filter;
 
 import java.util.function.Supplier;
+
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -29,104 +30,60 @@ import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 public class MetricsCollectExecutor {
 
-    private final DefaultMetricsCollector collector;
-    private final Invocation invocation;
-    private String interfaceName;
-    private String methodName;
-    private String group;
-    private String version;
-
-
-    public MetricsCollectExecutor(DefaultMetricsCollector collector, Invocation invocation) {
-        init(invocation);
-
-        this.collector = collector;
-
-        this.invocation = invocation;
-    }
-
-    public void beforeExecute() {
-        collector.increaseTotalRequests(interfaceName, methodName, group, version);
-        collector.increaseProcessingRequests(interfaceName, methodName, group, version);
+    public static void beforeExecute(DefaultMetricsCollector collector, Invocation invocation) {
+        collector.increaseTotalRequests(invocation);
+        collector.increaseProcessingRequests(invocation);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
-    public void postExecute(Result result) {
+    public static void postExecute(DefaultMetricsCollector collector, Invocation invocation, Result result) {
         if (result.hasException()) {
-            this.throwExecute(result.getException());
+            throwExecute(collector, invocation, result.getException());
             return;
         }
-        collector.increaseSucceedRequests(interfaceName, methodName, group, version);
-        endExecute();
+        collector.increaseSucceedRequests(invocation);
+        endExecute(collector, invocation);
     }
 
-    public void throwExecute(Throwable throwable){
+    public static void throwExecute(DefaultMetricsCollector collector, Invocation invocation, Throwable throwable) {
         if (throwable instanceof RpcException) {
-            RpcException rpcException = (RpcException)throwable;
+            RpcException rpcException = (RpcException) throwable;
             switch (rpcException.getCode()) {
 
                 case RpcException.TIMEOUT_EXCEPTION:
-                    collector.timeoutRequests(interfaceName, methodName, group, version);
+                    collector.timeoutRequests(invocation);
                     break;
 
                 case RpcException.LIMIT_EXCEEDED_EXCEPTION:
-                    collector.limitRequests(interfaceName, methodName, group, version);
+                    collector.limitRequests(invocation);
                     break;
 
                 case RpcException.BIZ_EXCEPTION:
-                    collector.businessFailedRequests(interfaceName, methodName, group, version);
+                    collector.businessFailedRequests(invocation);
                     break;
 
                 default:
-                    collector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
+                    collector.increaseUnknownFailedRequests(invocation);
             }
         }
 
-        collector.totalFailedRequests(interfaceName, methodName, group, version);
+        collector.totalFailedRequests(invocation);
 
-        endExecute(()-> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
+        endExecute(collector, invocation, () -> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
 
-    private void endExecute(){
-        this.endExecute(() -> true);
+    private static void endExecute(DefaultMetricsCollector collector, Invocation invocation) {
+        endExecute(collector, invocation, () -> true);
     }
 
-    private void endExecute(Supplier<Boolean> rtStat){
+    private static void endExecute(DefaultMetricsCollector collector, Invocation invocation, Supplier<Boolean> rtStat) {
         if (rtStat.get()) {
             Long endTime = System.currentTimeMillis();
             Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
             Long rt = endTime - beginTime;
-            collector.addRT(interfaceName, methodName, group, version, rt);
+            collector.addRT(invocation, rt);
         }
-        collector.decreaseProcessingRequests(interfaceName, methodName, group, version);
+        collector.decreaseProcessingRequests(invocation);
     }
 
-    private void init(Invocation invocation) {
-        String serviceUniqueName = invocation.getTargetServiceUniqueName();
-        String methodName = invocation.getMethodName();
-        if (invocation instanceof RpcInvocation
-            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
-            && invocation.getArguments() != null
-            && invocation.getArguments().length == 3) {
-            methodName = ((String) invocation.getArguments()[0]).trim();
-        }
-        String group = null;
-        String interfaceAndVersion;
-        String[] arr = serviceUniqueName.split("/");
-        if (arr.length == 2) {
-            group = arr[0];
-            interfaceAndVersion = arr[1];
-        } else {
-            interfaceAndVersion = arr[0];
-        }
-
-        String[] ivArr = interfaceAndVersion.split(":");
-        String interfaceName = ivArr[0];
-        String version = ivArr.length == 2 ? ivArr[1] : null;
-
-        this.interfaceName = interfaceName;
-        this.methodName = methodName;
-        this.group = group;
-        this.version = version;
-    }
 }

@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector.stat;
+package org.apache.dubbo.metrics.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.metrics.listener.MetricsListener;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+public interface MetricsEventMulticaster {
 
-public interface MetricsStatHandler {
-    Map<MethodMetric, AtomicLong> get();
-    MetricsEvent increase(Invocation invocation);
-    MetricsEvent decrease(Invocation invocation);
+    void addListener(MetricsListener listener);
+
+    void publishEvent(MetricsEvent event);
 }

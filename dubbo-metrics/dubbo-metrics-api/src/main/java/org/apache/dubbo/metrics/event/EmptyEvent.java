@@ -15,17 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.collector.stat;
+package org.apache.dubbo.metrics.event;
 
-import org.apache.dubbo.metrics.event.MetricsEvent;
-import org.apache.dubbo.metrics.model.MethodMetric;
-import org.apache.dubbo.rpc.Invocation;
+/**
+ * EmptyEvent, do nothing.
+ */
+public class EmptyEvent extends MetricsEvent {
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+    private static final EmptyEvent empty = new EmptyEvent(new Object());
 
-public interface MetricsStatHandler {
-    Map<MethodMetric, AtomicLong> get();
-    MetricsEvent increase(Invocation invocation);
-    MetricsEvent decrease(Invocation invocation);
+    public EmptyEvent(Object source) {
+        super(source);
+    }
+
+    public static EmptyEvent instance() {
+        return empty;
+    }
 }

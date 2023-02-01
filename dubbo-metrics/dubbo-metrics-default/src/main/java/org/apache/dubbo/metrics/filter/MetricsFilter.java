@@ -50,26 +50,25 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        collect(invocation, MetricsCollectExecutor::beforeExecute);
+        MetricsCollectExecutor.beforeExecute(collector, invocation);
 
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector->collector.postExecute(result));
+        if (collector == null || !collector.isCollectEnabled()) {
+            return;
+        }
+        MetricsCollectExecutor.postExecute(collector, invocation, result);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector-> collector.throwExecute(t));
-    }
-
-    private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
-        execute.accept(collectorExecutor);
+        MetricsCollectExecutor.throwExecute(collector, invocation, t);
     }
+
 }

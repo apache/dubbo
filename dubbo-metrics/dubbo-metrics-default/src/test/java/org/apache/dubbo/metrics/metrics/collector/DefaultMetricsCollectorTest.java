@@ -30,6 +30,8 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +39,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
@@ -49,6 +53,7 @@ class DefaultMetricsCollectorTest {
     private String methodName;
     private String group;
     private String version;
+    private Invocation invocation;
 
     @BeforeEach
     public void setup() {
@@ -62,6 +67,10 @@ class DefaultMetricsCollectorTest {
         methodName = "mockMethod";
         group = "mockGroup";
         version = "1.0.0";
+
+        invocation = new RpcInvocation(methodName, interfaceName, "serviceKey", null, null);
+        invocation.setAttachment(GROUP_KEY, group);
+        invocation.setAttachment(VERSION_KEY, version);
     }
 
     @AfterEach
@@ -73,10 +82,10 @@ class DefaultMetricsCollectorTest {
     void testRequestsMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
-        collector.increaseTotalRequests(interfaceName, methodName, group, version);
-        collector.increaseProcessingRequests(interfaceName, methodName, group, version);
-        collector.increaseSucceedRequests(interfaceName, methodName, group, version);
-        collector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
+        collector.increaseTotalRequests(invocation);
+        collector.increaseProcessingRequests(invocation);
+        collector.increaseSucceedRequests(invocation);
+        collector.increaseUnknownFailedRequests(invocation);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -92,7 +101,7 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(supplier.get().longValue(), 1);
         }
 
-        collector.decreaseProcessingRequests(interfaceName, methodName, group, version);
+        collector.decreaseProcessingRequests(invocation);
         samples = collector.collect();
         Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
             Number number = ((GaugeMetricSample) k).getSupplier().get();
@@ -106,8 +115,8 @@ class DefaultMetricsCollectorTest {
     void testRTMetrics() {
         DefaultMetricsCollector collector = new DefaultMetricsCollector(applicationModel);
         collector.setCollectEnabled(true);
-        collector.addRT(interfaceName, methodName, group, version, 10L);
-        collector.addRT(interfaceName, methodName, group, version, 0L);
+        collector.addRT(invocation, 10L);
+        collector.addRT(invocation, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -139,12 +148,12 @@ class DefaultMetricsCollectorTest {
         MockListener mockListener = new MockListener();
         collector.addListener(mockListener);
 
-        collector.increaseTotalRequests(interfaceName, methodName, group, version);
+        collector.increaseTotalRequests(invocation);
         Assertions.assertNotNull(mockListener.getCurEvent());
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
         Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), RequestEvent.Type.TOTAL);
 
-        collector.addRT(interfaceName, methodName, group, version, 5L);
+        collector.addRT(invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);
         Assertions.assertEquals(((RTEvent) mockListener.getCurEvent()).getRt(), 5L);
     }
