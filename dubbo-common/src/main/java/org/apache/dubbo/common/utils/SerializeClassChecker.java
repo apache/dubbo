@@ -16,15 +16,18 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST;
@@ -43,6 +46,8 @@ public class SerializeClassChecker {
     private final Object CACHE = new Object();
     private final LFUCache<String, Object> CLASS_ALLOW_LFU_CACHE = new LFUCache<>();
     private final LFUCache<String, Object> CLASS_BLOCK_LFU_CACHE = new LFUCache<>();
+
+    private final boolean checkSerializable;
 
     private final AtomicLong counter = new AtomicLong(0);
 
@@ -83,6 +88,7 @@ public class SerializeClassChecker {
             CLASS_DESERIALIZE_BLOCKED_SET.addAll(Arrays.asList(classStrings));
         }
 
+        checkSerializable = Boolean.parseBoolean(ConfigurationUtils.getProperty(CommonConstants.CLASS_DESERIALIZE_CHECK_SERIALIZABLE, "true"));
     }
 
     public static SerializeClassChecker getInstance() {
@@ -135,6 +141,12 @@ public class SerializeClassChecker {
         }
 
         CLASS_ALLOW_LFU_CACHE.put(name, CACHE);
+    }
+
+    public void validateClass(Class<?> aClass) {
+        if (checkSerializable && !Serializable.class.isAssignableFrom(aClass)) {
+            error(aClass.getName());
+        }
     }
 
     private void error(String name) {

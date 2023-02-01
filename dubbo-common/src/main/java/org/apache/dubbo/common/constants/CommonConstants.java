@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.common.constants;
 
-import org.apache.dubbo.common.URL;
-
 import java.net.NetworkInterface;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
+
+import org.apache.dubbo.common.URL;
 
 public interface CommonConstants {
     String DUBBO = "dubbo";
@@ -411,6 +411,8 @@ public interface CommonConstants {
     String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
 
     String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String CLASS_DESERIALIZE_CHECK_SERIALIZABLE = "dubbo.application.check-serializable";
 
     String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
 
