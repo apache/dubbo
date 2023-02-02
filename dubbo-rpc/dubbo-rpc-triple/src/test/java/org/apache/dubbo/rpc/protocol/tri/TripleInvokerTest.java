@@ -53,7 +53,7 @@ class TripleInvokerTest {
                 .thenReturn(connectionClient);
         when(connectionClient.getChannel(true))
                 .thenReturn(channel);
-        when(connectionClient.isAvailable()).thenReturn(true);
+        when(connectionClient.isConnected()).thenReturn(true);
 
         ExecutorService executorService = ExecutorRepository.getInstance(url.getOrDefaultApplicationModel())
                 .createExecutorIfAbsent(url);
