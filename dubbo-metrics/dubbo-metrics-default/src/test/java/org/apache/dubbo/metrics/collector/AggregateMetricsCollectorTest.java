@@ -52,7 +52,7 @@ class AggregateMetricsCollectorTest {
     private String methodName;
     private String group;
     private String version;
-    private Invocation invocation;
+    private RpcInvocation invocation;
 
     @BeforeEach
     public void setup() {
@@ -78,6 +78,7 @@ class AggregateMetricsCollectorTest {
         group = "mockGroup";
         version = "1.0.0";
         invocation = new RpcInvocation(methodName, interfaceName, "serviceKey", null, null);
+        invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
         invocation.setAttachment(GROUP_KEY, group);
         invocation.setAttachment(VERSION_KEY, version);
 
