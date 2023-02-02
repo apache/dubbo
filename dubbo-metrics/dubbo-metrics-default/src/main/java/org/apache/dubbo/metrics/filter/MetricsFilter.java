@@ -27,8 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.function.Consumer;
-
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 @Activate(group = PROVIDER, order = -1)
