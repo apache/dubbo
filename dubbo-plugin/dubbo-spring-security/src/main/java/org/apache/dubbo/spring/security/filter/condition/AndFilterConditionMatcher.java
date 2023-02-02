@@ -40,9 +40,4 @@ public class AndFilterConditionMatcher implements FilterConditionMatcher{
             .allMatch(e->e.match(invoker,invocation));
 
     }
-
-    public AndFilterConditionMatcher and(FilterConditionMatcher conditionMatcher) {
-        this.conditionMatchers.add(conditionMatcher);
-        return this;
-    }
 }

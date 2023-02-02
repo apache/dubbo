@@ -42,7 +42,8 @@ final public class ObjectMapperCodec {
                 return null;
             }
 
-            return  mapper.readValue(bytes, clazz);
+            return mapper.readValue(bytes, clazz);
+
         } catch (Exception exception) {
             logger.error("objectMapper! deserialize error", exception);
 
@@ -64,6 +65,7 @@ final public class ObjectMapperCodec {
             }
 
             return mapper.writeValueAsString(object);
+
         } catch (Exception ex) {
             logger.error("objectMapper! serialize error", ex);
 

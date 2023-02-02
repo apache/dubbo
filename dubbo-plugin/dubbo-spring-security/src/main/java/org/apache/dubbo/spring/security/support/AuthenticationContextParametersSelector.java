@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY;
 
-public class AuthenticationContextPenetrateAttachmentSelector implements PenetrateAttachmentSelector {
+public class AuthenticationContextParametersSelector implements PenetrateAttachmentSelector {
 
     @Override
     public Map<String, Object> select(Invocation invocation, RpcContextAttachment clientAttachment,

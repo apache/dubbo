@@ -829,6 +829,14 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.qos.permission.PermissionChecker
                                     </resource>
                                 </transformer>
+
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.PenetrateAttachmentSelector
+                                    </resource>
+                                </transformer>
+
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>

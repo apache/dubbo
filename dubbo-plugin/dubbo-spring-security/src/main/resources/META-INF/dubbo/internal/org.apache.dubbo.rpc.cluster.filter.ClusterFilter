@@ -1,0 +1,1 @@
+authenticationPrepare=org.apache.dubbo.spring.security.filter.ContextHolderAuthenticationPrepareFilter

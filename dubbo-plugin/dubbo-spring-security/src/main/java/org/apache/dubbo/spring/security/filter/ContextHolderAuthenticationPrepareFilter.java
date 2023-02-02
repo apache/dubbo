@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.spring.security.filter.condition.AndFilterConditionMatcher;
 import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
 import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
@@ -38,7 +39,7 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 
 @Activate(group = CommonConstants.CONSUMER, order = -10000)
 public class ContextHolderAuthenticationPrepareFilter
-    extends AndFilterConditionMatcher implements ConditionFilter{
+    extends AndFilterConditionMatcher implements ConditionFilter, ClusterFilter {
 
     private static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
 

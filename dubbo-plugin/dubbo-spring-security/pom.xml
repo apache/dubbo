@@ -24,22 +24,19 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <properties>
+        <skip_maven_deploy>false</skip_maven_deploy>
+    </properties>
 
     <artifactId>dubbo-spring-security</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
+        <!-- dubbo -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-
-
-        <!-- ... spring security ... -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
         </dependency>
 
         <dependency>
@@ -49,13 +46,30 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-cluster</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <!-- dubbo -->
+
+        <!-- spring security -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <!-- spring security -->
+
+        <!-- jackson -->
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- jackson -->
 
     </dependencies>
 
