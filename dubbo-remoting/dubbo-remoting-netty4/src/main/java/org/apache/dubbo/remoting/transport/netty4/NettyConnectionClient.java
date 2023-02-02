@@ -33,8 +33,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -73,8 +71,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
 
     public static final AttributeKey<AbstractConnectionClient> CONNECTION = AttributeKey.valueOf("connection");
 
-    public static final AttributeKey<Boolean> ACTIVE = AttributeKey.valueOf("active");
-
 
     public NettyConnectionClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
@@ -110,7 +106,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 .channel(socketChannelClass());
 
         final NettyConnectionHandler connectionHandler = new NettyConnectionHandler(this);
-        final ChannelStateListener channelStateListener = new ChannelStateListener();
         nettyBootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getConnectTimeout());
         nettyBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
@@ -127,7 +122,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast("connectionHandler", connectionHandler);
-                pipeline.addLast("channelStateListener", channelStateListener);
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
                 // TODO support Socks5
@@ -265,13 +259,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
             return false;
         }
         io.netty.channel.Channel nettyChannel = getNettyChannel();
-        if (nettyChannel != null) {
-            Boolean active = nettyChannel.attr(ACTIVE).get();
-            if (active != null
-                && active) {
-                return true;
-            }
-        }
         if (nettyChannel != null && nettyChannel.isActive()) {
             return true;
         }
@@ -333,24 +320,6 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         return super.toString() + " (Ref=" + this.getCounter() + ",local=" +
                 (getChannel() == null ? null : getChannel().getLocalAddress()) + ",remote=" + getRemoteAddress();
     }
-
-    @io.netty.channel.ChannelHandler.Sharable
-    static class ChannelStateListener extends ChannelInboundHandlerAdapter {
-
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            ctx.channel().attr(ACTIVE).set(true);
-            super.channelActive(ctx);
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            ctx.channel().attr(ACTIVE).set(false);
-            super.channelInactive(ctx);
-        }
-
-    }
-
     class ConnectionListener implements ChannelFutureListener {
 
         @Override
