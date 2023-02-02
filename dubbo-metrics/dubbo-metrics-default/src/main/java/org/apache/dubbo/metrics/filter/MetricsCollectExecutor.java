@@ -31,23 +31,24 @@ public class MetricsCollectExecutor {
 
     private final DefaultMetricsCollector collector;
     private final Invocation invocation;
+    private final String applicationName;
+
     private String interfaceName;
     private String methodName;
     private String group;
     private String version;
 
 
-    public MetricsCollectExecutor(DefaultMetricsCollector collector, Invocation invocation) {
+    public MetricsCollectExecutor(String applicationName, DefaultMetricsCollector collector, Invocation invocation) {
         init(invocation);
-
         this.collector = collector;
-
         this.invocation = invocation;
+        this.applicationName = applicationName;
     }
 
     public void beforeExecute() {
-        collector.increaseTotalRequests(interfaceName, methodName, group, version);
-        collector.increaseProcessingRequests(interfaceName, methodName, group, version);
+        collector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
+        collector.increaseProcessingRequests(applicationName, interfaceName, methodName, group, version);
         invocation.put(METRIC_FILTER_START_TIME, System.currentTimeMillis());
     }
 
@@ -56,7 +57,7 @@ public class MetricsCollectExecutor {
             this.throwExecute(result.getException());
             return;
         }
-        collector.increaseSucceedRequests(interfaceName, methodName, group, version);
+        collector.increaseSucceedRequests(applicationName, interfaceName, methodName, group, version);
         endExecute();
     }
 
@@ -66,23 +67,23 @@ public class MetricsCollectExecutor {
             switch (rpcException.getCode()) {
 
                 case RpcException.TIMEOUT_EXCEPTION:
-                    collector.timeoutRequests(interfaceName, methodName, group, version);
+                    collector.timeoutRequests(applicationName, interfaceName, methodName, group, version);
                     break;
 
                 case RpcException.LIMIT_EXCEEDED_EXCEPTION:
-                    collector.limitRequests(interfaceName, methodName, group, version);
+                    collector.limitRequests(applicationName, interfaceName, methodName, group, version);
                     break;
 
                 case RpcException.BIZ_EXCEPTION:
-                    collector.businessFailedRequests(interfaceName, methodName, group, version);
+                    collector.businessFailedRequests(applicationName, interfaceName, methodName, group, version);
                     break;
 
                 default:
-                    collector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
+                    collector.increaseUnknownFailedRequests(applicationName, interfaceName, methodName, group, version);
             }
         }
 
-        collector.totalFailedRequests(interfaceName, methodName, group, version);
+        collector.totalFailedRequests(applicationName, interfaceName, methodName, group, version);
 
         endExecute(()-> throwable instanceof RpcException && ((RpcException) throwable).isBiz());
     }
@@ -96,9 +97,9 @@ public class MetricsCollectExecutor {
             Long endTime = System.currentTimeMillis();
             Long beginTime = (Long) invocation.get(METRIC_FILTER_START_TIME);
             Long rt = endTime - beginTime;
-            collector.addRT(interfaceName, methodName, group, version, rt);
+            collector.addRT(applicationName, interfaceName, methodName, group, version, rt);
         }
-        collector.decreaseProcessingRequests(interfaceName, methodName, group, version);
+        collector.decreaseProcessingRequests(applicationName, interfaceName, methodName, group, version);
     }
 
     private void init(Invocation invocation) {
