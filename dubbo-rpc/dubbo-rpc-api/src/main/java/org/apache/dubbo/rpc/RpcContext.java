@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 
 /**
@@ -728,11 +730,14 @@ public class RpcContext {
                 setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
                 // local invoke will return directly
+                boolean isInJvm = Objects.equals(getContext().getProtocol(), LOCAL_PROTOCOL);
                 if (o != null) {
                     if (o instanceof CompletableFuture) {
                         return (CompletableFuture<T>) o;
                     }
-                    return CompletableFuture.completedFuture(o);
+                    if (isInJvm) {
+                        return CompletableFuture.completedFuture(o);
+                    }
                 } else {
                     // The service has a normal sync method signature, should get future from RpcContext.
                 }
