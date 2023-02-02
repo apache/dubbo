@@ -24,6 +24,7 @@ import com.alibaba.com.caucho.hessian.io.Hessian2Input;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
@@ -110,9 +111,25 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
             mH2i.setSerializerFactory(hessian2FactoryManager.getSerializerFactory(Thread.currentThread().getContextClassLoader()));
+        }
+        if (type instanceof ParameterizedType) {
+            Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            Class<?>[] actualTypeClasses = new Class<?>[actualTypeArguments.length];
+            int index = 0;
+            for (Type actualType : actualTypeArguments) {
+                if (actualType instanceof Class) {
+                    actualTypeClasses[index++] = (Class<?>) actualType;
+                } else {
+                    break;
+                }
+            }
+            if (index == actualTypeArguments.length) {
+                return (T) mH2i.readObject(cls, actualTypeClasses);
+            }
         }
         return readObject(cls);
     }
