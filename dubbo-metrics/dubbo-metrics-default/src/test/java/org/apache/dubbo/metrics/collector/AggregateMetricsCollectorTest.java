@@ -28,6 +28,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,7 +57,7 @@ class AggregateMetricsCollectorTest {
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        defaultCollector = new DefaultMetricsCollector(applicationModel);
+        defaultCollector = new DefaultMetricsCollector();
         defaultCollector.setCollectEnabled(true);
         MetricsConfig metricsConfig = new MetricsConfig();
         AggregationConfig aggregationConfig = new AggregationConfig();
@@ -81,10 +82,11 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRequestsMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
-        defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
-        defaultCollector.increaseUnknownFailedRequests(interfaceName, methodName, group, version);
-        defaultCollector.businessFailedRequests(interfaceName,methodName,group,version);
+        String applicationName = applicationModel.getApplicationName();
+        defaultCollector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
+        defaultCollector.increaseSucceedRequests(applicationName, interfaceName, methodName, group, version);
+        defaultCollector.increaseUnknownFailedRequests(applicationName, interfaceName, methodName, group, version);
+        defaultCollector.businessFailedRequests(applicationName, interfaceName,methodName,group,version);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -113,7 +115,7 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRTMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.addRT(interfaceName, methodName, group, version, 10L);
+        defaultCollector.addRT(applicationModel.getApplicationName(), interfaceName, methodName, group, version, 10L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {

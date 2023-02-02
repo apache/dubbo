@@ -24,7 +24,6 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +44,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
 
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final List<MetricsListener> listeners = new ArrayList<>();
-    private final ApplicationModel applicationModel;
     private final MetricsStatComposite stats;
 
-    public DefaultMetricsCollector(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-        this.stats = new MetricsStatComposite(applicationModel.getApplicationName(), this);
+    public DefaultMetricsCollector() {
+        this.stats = new MetricsStatComposite( this);
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -69,65 +66,72 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return this.listeners;
     }
 
-    public void increaseTotalRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseTotalRequests(String applicationName, String interfaceName, String methodName,
+                                      String group, String version) {
         doExecute(RequestEvent.Type.TOTAL,statHandler-> {
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void increaseSucceedRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseSucceedRequests(String applicationName, String interfaceName, String methodName,
+                                        String group, String version) {
         doExecute(RequestEvent.Type.SUCCEED,statHandler->{
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void increaseUnknownFailedRequests(String interfaceName,
+    public void increaseUnknownFailedRequests(String applicationName, String interfaceName,
                                               String methodName,
                                               String group,
                                               String version) {
         doExecute(RequestEvent.Type.UNKNOWN_FAILED, statHandler->{
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void businessFailedRequests(String interfaceName, String methodName, String group, String version) {
+    public void businessFailedRequests(String applicationName, String interfaceName, String methodName,
+                                       String group, String version) {
         doExecute(RequestEvent.Type.BUSINESS_FAILED,statHandler->{
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void timeoutRequests(String interfaceName, String methodName, String group, String version) {
+    public void timeoutRequests(String applicationName, String interfaceName, String methodName, String group,
+                                String version) {
         doExecute(RequestEvent.Type.REQUEST_TIMEOUT,statHandler->{
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void limitRequests(String interfaceName, String methodName, String group, String version) {
+    public void limitRequests(String applicationName, String interfaceName, String methodName, String group, String version) {
         doExecute(RequestEvent.Type.REQUEST_LIMIT,statHandler->{
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void increaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseProcessingRequests(String applicationName, String interfaceName, String methodName,
+                                           String group, String version) {
         doExecute(RequestEvent.Type.PROCESSING,statHandler-> {
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void decreaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
+    public void decreaseProcessingRequests(String applicationName, String interfaceName, String methodName,
+                                           String group, String version) {
         doExecute(RequestEvent.Type.PROCESSING,statHandler-> {
-            statHandler.decrease(interfaceName, methodName, group, version);
+            statHandler.decrease(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void totalFailedRequests(String interfaceName, String methodName, String group, String version) {
+    public void totalFailedRequests(String applicationName, String interfaceName, String methodName, String group,
+                                    String version) {
         doExecute(RequestEvent.Type.TOTAL_FAILED,statHandler-> {
-            statHandler.increase(interfaceName, methodName, group, version);
+            statHandler.increase(applicationName, interfaceName, methodName, group, version);
         });
     }
 
-    public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
-        stats.addRT(interfaceName, methodName, group, version, responseTime);
+    public void addRT(String applicationName, String interfaceName, String methodName, String group, String version, Long responseTime) {
+        stats.addRT(applicationName, interfaceName, methodName, group, version, responseTime);
     }
 
     @Override

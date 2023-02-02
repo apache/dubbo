@@ -26,41 +26,40 @@ import org.apache.dubbo.metrics.model.MethodMetric;
 
 public class DefaultMetricsStatHandler implements MetricsStatHandler {
 
-    private final String applicationName;
     private final Map<MethodMetric, AtomicLong> counts = new ConcurrentHashMap<>();
 
-    public DefaultMetricsStatHandler(String applicationName) {
-        this.applicationName = applicationName;
+    public DefaultMetricsStatHandler() {
     }
 
     @Override
-    public void increase(String interfaceName, String methodName, String group, String version) {
-        this.doIncrExecute(interfaceName,methodName,group,version);
+    public void increase(String applicationName, String interfaceName, String methodName, String group, String version) {
+        this.doIncrExecute(applicationName, interfaceName,methodName,group,version);
     }
 
-    public void decrease(String interfaceName, String methodName, String group, String version){
-        this.doDecrExecute(interfaceName,methodName,group,version);
+    public void decrease(String applicationName, String interfaceName, String methodName, String group, String version){
+        this.doDecrExecute(applicationName, interfaceName,methodName,group,version);
     }
 
-    protected void doExecute(String interfaceName, String methodName, String group, String version, BiConsumer<MethodMetric,Map<MethodMetric, AtomicLong>> execute){
+    protected void doExecute(String applicationName, String interfaceName, String methodName, String version,
+                             BiConsumer<MethodMetric,Map<MethodMetric, AtomicLong>> execute, String group){
         MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
         execute.accept(metric,counts);
 
         this.doNotify(metric);
     }
 
-    protected void doIncrExecute(String interfaceName, String methodName, String group, String version){
-        this.doExecute(interfaceName,methodName,group,version,(metric,counts)->{
+    protected void doIncrExecute(String applicationName, String interfaceName, String methodName, String group, String version){
+        this.doExecute(applicationName, interfaceName,methodName, version, (metric, counts)->{
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
-        });
+        }, group);
     }
 
-    protected void doDecrExecute(String interfaceName, String methodName, String group, String version){
-        this.doExecute(interfaceName,methodName,group,version,(metric,counts)->{
+    protected void doDecrExecute(String applicationName, String interfaceName, String methodName, String group, String version){
+        this.doExecute(applicationName, interfaceName,methodName, version, (metric, counts)->{
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.decrementAndGet();
-        });
+        }, group);
     }
 
     @Override
