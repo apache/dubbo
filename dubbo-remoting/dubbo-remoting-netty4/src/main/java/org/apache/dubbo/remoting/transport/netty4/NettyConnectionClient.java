@@ -122,6 +122,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 pipeline.addLast("connectionHandler", connectionHandler);
+
                 NettyConfigOperator operator = new NettyConfigOperator(nettyChannel, getChannelHandler());
                 protocol.configClientPipeline(getUrl(), operator, nettySslContextOperator);
                 // TODO support Socks5
@@ -320,6 +321,7 @@ public class NettyConnectionClient extends AbstractConnectionClient {
         return super.toString() + " (Ref=" + this.getCounter() + ",local=" +
                 (getChannel() == null ? null : getChannel().getLocalAddress()) + ",remote=" + getRemoteAddress();
     }
+
     class ConnectionListener implements ChannelFutureListener {
 
         @Override
