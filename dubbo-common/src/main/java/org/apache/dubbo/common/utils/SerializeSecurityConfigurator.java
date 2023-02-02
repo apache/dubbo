@@ -290,7 +290,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         if (subs.length > trustSerializeClassLevel) {
             serializeSecurityManager.addToAllowed(Arrays.stream(subs)
                 .limit(trustSerializeClassLevel)
-                .collect(Collectors.joining(".")));
+                .collect(Collectors.joining(".")) + ".");
         } else {
             serializeSecurityManager.addToAllowed(className);
         }
