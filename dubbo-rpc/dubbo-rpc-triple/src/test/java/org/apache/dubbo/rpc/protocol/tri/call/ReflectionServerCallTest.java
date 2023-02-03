@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor.RpcType;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -46,8 +46,8 @@ class ReflectionServerCallTest {
         Invoker<?> invoker = Mockito.mock(Invoker.class);
         TripleServerStream serverStream = Mockito.mock(TripleServerStream.class);
         ProviderModel providerModel = Mockito.mock(ProviderModel.class);
-        ReflectionMethodDescriptor methodDescriptor = Mockito.mock(
-            ReflectionMethodDescriptor.class);
+        Method method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
+        MethodDescriptor methodDescriptor = new ReflectionMethodDescriptor(method);
         URL url = Mockito.mock(URL.class);
         when(invoker.getUrl())
             .thenReturn(url);
@@ -68,19 +68,11 @@ class ReflectionServerCallTest {
         }
 
         ServiceDescriptor serviceDescriptor = Mockito.mock(ServiceDescriptor.class);
-        when(providerModel.getServiceModel())
-            .thenReturn(serviceDescriptor);
         when(serviceDescriptor.getMethods(anyString()))
             .thenReturn(Collections.singletonList(methodDescriptor));
-        when(methodDescriptor.getRpcType())
-            .thenReturn(RpcType.UNARY);
-        Method method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
-        when(methodDescriptor.getMethod())
-            .thenReturn(method);
-        when(methodDescriptor.getParameterClasses())
-            .thenReturn(method.getParameterTypes());
-        when(methodDescriptor.getReturnClass())
-            .thenAnswer(invocation -> method.getReturnType());
+
+        when(providerModel.getServiceModel())
+            .thenReturn(serviceDescriptor);
 
         ReflectionAbstractServerCall call2 = new ReflectionAbstractServerCall(invoker, serverStream,
             new FrameworkModel(), "",
