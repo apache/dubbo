@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
+public final class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
     private static volatile SimpleMetricsEventMulticaster instance;
 
