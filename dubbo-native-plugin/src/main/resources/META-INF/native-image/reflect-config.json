@@ -2292,7 +2292,16 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
+    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter",
+    "allPublicMethods": true,
+    "methods": [
+       {
+         "name": "<init>",
+         "parameterTypes": [
+           "org.apache.dubbo.rpc.model.ModuleModel"
+         ]
+       }
+     ]
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter",
@@ -2478,9 +2487,6 @@
   },
   {
     "name": "org.apache.dubbo.rpc.filter.GenericFilter"
-  },
-  {
-    "name": "org.apache.dubbo.rpc.filter.GenericImplFilter"
   },
   {
     "name": "org.apache.dubbo.rpc.filter.TimeoutFilter"
