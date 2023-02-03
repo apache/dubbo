@@ -14,22 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
+package com.service.deep1.deep2.deep3;
 
-import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
-
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
-
-public class Hessian2SerializerFactory extends SerializerFactory {
-
-    private final DefaultSerializeClassChecker defaultSerializeClassChecker;
-
-    public Hessian2SerializerFactory(DefaultSerializeClassChecker defaultSerializeClassChecker) {
-        this.defaultSerializeClassChecker = defaultSerializeClassChecker;
-    }
-
-    @Override
-    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
-        return defaultSerializeClassChecker.loadClass(getClassLoader(), className);
-    }
+public interface DemoService3 {
 }
