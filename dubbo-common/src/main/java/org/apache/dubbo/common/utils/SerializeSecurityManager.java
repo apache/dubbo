@@ -81,7 +81,7 @@ public class SerializeSecurityManager {
         }
 
         // If has been set to WARN, ignore STRICT
-        if (this.checkStatus.level() < checkStatus.level()) {
+        if (this.checkStatus.level() <= checkStatus.level()) {
             return;
         }
 
