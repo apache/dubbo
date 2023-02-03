@@ -1,16 +1,15 @@
-package org.apache.dubbo.metrics.filter.consumer;
-
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.metrics.filter.MetricsCollectExecutor;
+
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.function.Consumer;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 
 @Activate(group =CONSUMER, order = -1)
@@ -39,7 +38,7 @@ public class MetricsFilterConsumer implements Filter, BaseFilter.Listener, Scope
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(collector, invocation);
+        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(applicationModel.getApplicationName(),collector, invocation);
         execute.accept(collectorExecutor);
     }
 
