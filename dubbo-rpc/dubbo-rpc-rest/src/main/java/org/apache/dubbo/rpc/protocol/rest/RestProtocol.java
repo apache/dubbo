@@ -45,8 +45,12 @@ import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
+import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
+import org.apache.dubbo.rpc.protocol.rest.response.HttpResponseFacade;
+import org.apache.dubbo.rpc.protocol.rest.response.HttpResponseFactory;
+import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.jboss.resteasy.util.GetRestful;
 
 import static org.apache.dubbo.common.constants.CommonConstants.*;
@@ -161,11 +165,18 @@ public class RestProtocol extends AbstractProxyProtocol {
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
+                    Object response = refClient.getClient().send(requestTemplate);
 
-                    RestHttpMessageManager restHttpMessageManager = new RestHttpMessageManager(refClient.getClient(),
-                        requestTemplate, restMethodMetadata.getReflectMethod(), getUrl());
+                    HttpResponseFacade responseFacade = HttpResponseFactory.
+                        createFacade(url.getParameter(org.apache.dubbo.remoting.Constants.CLIENT_KEY, "okhttp"), response);
 
-                    Object value = restHttpMessageManager.requestAndGetResponse();
+                    // TODO response code
+                    int responseCode = responseFacade.getResponseCode();
+
+
+                    Object value = HttpMessageCodecManager.httpMessageDecode(responseFacade.getBody(),
+                        restMethodMetadata.getReflectMethod().getReturnType(),
+                        MediaTypeUtil.convertMediaType(responseFacade.getContentType()));
 
                     CompletableFuture<Object> future = wrapWithFuture(value, invocation);
 

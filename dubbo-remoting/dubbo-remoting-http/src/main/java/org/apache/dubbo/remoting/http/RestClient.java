@@ -21,14 +21,14 @@ import org.apache.dubbo.remoting.RemotingException;
 import java.io.IOException;
 
 
-public interface RestClient<REQ, RES> {
+public interface RestClient<RES> {
     /**
      * send message.
      *
      * @param message
      * @throws RemotingException
      */
-    RES send(REQ message) throws IOException;
+    RES send(RequestTemplate message) throws IOException;
 
     /**
      * close the channel.

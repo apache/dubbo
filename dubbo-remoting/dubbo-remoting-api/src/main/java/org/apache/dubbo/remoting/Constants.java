@@ -148,4 +148,10 @@ public interface Constants {
     String CONNECTIONS_KEY = "connections";
 
     int DEFAULT_BACKLOG = 1024;
+
+    String CONNECTION = "Connection";
+
+    String KEEP_ALIVE = "keep-alive";
+
+    String KEEP_ALIVE_HEADER = "Keep-Alive";
 }

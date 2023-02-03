@@ -23,7 +23,7 @@ import org.apache.dubbo.metadata.rest.PathUtil;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
 import java.util.Arrays;

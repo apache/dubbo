@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
+package org.apache.dubbo.remoting.http;
 
-import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+
+import org.apache.dubbo.remoting.Constants;
 
 import java.io.Serializable;
 import java.util.*;
@@ -177,8 +178,8 @@ public class RequestTemplate implements Serializable {
     }
 
     public void addKeepAliveHeader(int time) {
-        addHeader(RestConstant.KEEP_ALIVE_HEADER, time);
-        addHeader(RestConstant.CONNECTION, RestConstant.KEEP_ALIVE);
+        addHeader(Constants.KEEP_ALIVE_HEADER, time);
+        addHeader(Constants.CONNECTION, Constants.KEEP_ALIVE);
     }
 
     public void addHeaders(String key, Collection<String> values) {
@@ -248,10 +249,6 @@ public class RequestTemplate implements Serializable {
 
         return Integer.parseInt(new ArrayList<>(strings).get(0));
 
-    }
-
-    public byte getSerializeId() {
-        return Byte.parseByte(getHeaders(RestConstant.SERIALIZATION_KEY).toArray(new String[0])[0]);
     }
 
 

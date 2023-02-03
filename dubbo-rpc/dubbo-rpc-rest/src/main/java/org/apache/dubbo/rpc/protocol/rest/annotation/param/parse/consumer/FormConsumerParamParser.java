@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.metadata.rest.ParamType;
-import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.RequestTemplate;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.util.MultiValueCreator;
 
 import java.util.List;
