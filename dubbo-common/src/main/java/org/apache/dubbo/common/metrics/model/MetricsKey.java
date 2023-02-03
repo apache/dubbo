@@ -48,6 +48,32 @@ public enum MetricsKey {
     PROVIDER_METRIC_RT_P95("dubbo.provider.rt.seconds.p95", "Response Time P95"),
 
     // consumer metrics key
+    CONSUMER_METRIC_REQUESTS("dubbo.consumer.requests.total", "Total Requests"),
+    CONSUMER_METRIC_REQUESTS_SUCCEED("dubbo.consumer.requests.succeed.total", "Succeed Requests"),
+    CONSUMER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.consumer.requests.business.failed.total","Failed Business Requests"),
+    CONSUMER_METRIC_REQUESTS_PROCESSING("dubbo.consumer.requests.processing", "Processing Requests"),
+    CONSUMER_METRIC_REQUESTS_TIMEOUT("dubbo.consumer.requests.timeout.total", "Total Timeout Failed Requests"),
+    CONSUMER_METRIC_REQUESTS_LIMIT("dubbo.consumer.requests.limit.total", "Total Limit Failed Requests"),
+    CONSUMER_METRIC_REQUESTS_FAILED("dubbo.consumer.requests.unknown.failed.total", "Unknown Failed Requests"),
+    CONSUMER_METRIC_REQUESTS_TOTAL_FAILED("dubbo.consumer.requests.failed.total", "Total Failed Requests"),
+
+
+    CONSUMER_METRIC_REQUESTS_TOTAL_AGG("dubbo.consumer.requests.total.aggregate", "Aggregated Total Requests"),
+    CONSUMER_METRIC_REQUESTS_SUCCEED_AGG("dubbo.consumer.requests.succeed.aggregate", "Aggregated Succeed Requests"),
+    CONSUMER_METRIC_REQUESTS_FAILED_AGG("dubbo.consumer.requests.failed.aggregate", "Aggregated Failed Requests"),
+    CONSUMER_METRIC_REQUESTS_BUSINESS_FAILED_AGG("dubbo.consumer.requests.business.failed.aggregate", "Aggregated Business Failed Requests"),
+    CONSUMER_METRIC_REQUESTS_TIMEOUT_AGG("dubbo.consumer.requests.timeout.failed.aggregate", "Aggregated timeout Failed Requests"),
+    CONSUMER_METRIC_REQUESTS_LIMIT_AGG("dubbo.consumer.requests.limit.aggregate", "Aggregated limit Requests"),
+    CONSUMER_METRIC_REQUESTS_TOTAL_FAILED_AGG("dubbo.consumer.requests.failed.total.aggregate", "Aggregated failed total Requests"),
+
+    CONSUMER_METRIC_QPS("dubbo.consumer.qps.seconds", "Query Per Seconds"),
+    CONSUMER_METRIC_RT_LAST("dubbo.consumer.rt.seconds.last", "Last Response Time"),
+    CONSUMER_METRIC_RT_MIN("dubbo.consumer.rt.seconds.min", "Min Response Time"),
+    CONSUMER_METRIC_RT_MAX("dubbo.consumer.rt.seconds.max", "Max Response Time"),
+    CONSUMER_METRIC_RT_SUM("dubbo.consumer.rt.seconds.sum", "Sum Response Time"),
+    CONSUMER_METRIC_RT_AVG("dubbo.consumer.rt.seconds.avg", "Average Response Time"),
+    CONSUMER_METRIC_RT_P99("dubbo.consumer.rt.seconds.p99", "Response Time P99"),
+    CONSUMER_METRIC_RT_P95("dubbo.consumer.rt.seconds.p95", "Response Time P95"),
     ;
 
     private final String name;
