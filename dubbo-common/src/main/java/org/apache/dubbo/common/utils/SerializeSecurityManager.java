@@ -34,6 +34,8 @@ public class SerializeSecurityManager {
 
     private final Set<AllowClassNotifyListener> listeners = new ConcurrentHashSet<>();
 
+    private final Set<String> warnedClasses = new ConcurrentHashSet<>(1);
+
     private volatile SerializeCheckStatus checkStatus = null;
 
     private volatile Boolean checkSerializable = null;
@@ -81,7 +83,7 @@ public class SerializeSecurityManager {
         }
 
         // If has been set to WARN, ignore STRICT
-        if (this.checkStatus.level() < checkStatus.level()) {
+        if (this.checkStatus.level() <= checkStatus.level()) {
             return;
         }
 
@@ -142,5 +144,9 @@ public class SerializeSecurityManager {
 
     protected boolean isCheckSerializable() {
         return checkSerializable == null || checkSerializable;
+    }
+
+    public Set<String> getWarnedClasses() {
+        return warnedClasses;
     }
 }
