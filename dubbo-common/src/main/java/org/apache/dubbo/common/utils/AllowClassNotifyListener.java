@@ -22,5 +22,9 @@ public interface AllowClassNotifyListener {
 
     SerializeCheckStatus DEFAULT_STATUS = SerializeCheckStatus.WARN;
 
-    void notify(SerializeCheckStatus status, Set<String> prefixList);
+    void notifyPrefix(Set<String> allowedList, Set<String> disAllowedList);
+
+    void notifyCheckStatus(SerializeCheckStatus status);
+
+    void notifyCheckSerializable(boolean checkSerializable);
 }
