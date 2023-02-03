@@ -14,67 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.annotation.consumer;
+package org.apache.dubbo.remoting.http.restclient;
 
-import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 
-public class HttpURLConnectionBuilder {
-    private static Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
-        ApplicationModel.defaultModel().getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
+public class URLConnectionRestClient extends BaseRestClient<HttpURLConnection, HttpURLConnection> {
 
-
-    public static HttpURLConnection build(RequestTemplate requestTemplate,
-                                          HttpConnectionConfig connectionConfig,
-                                          RestMethodMetadata restMethodMetadata
-    ) throws Exception {
-
-
-        // TODO substract  Client  param is requestTemplate,connectionConfig
-        HttpURLConnection connection = createBaseConnection(requestTemplate, connectionConfig);
-
-
-        writeHeaders(requestTemplate, connection);
-
-
-        return writeBody(requestTemplate, connectionConfig, connection);
-
+    public URLConnectionRestClient(HttpClientConfig clientConfig) {
+        super(clientConfig);
     }
 
+    @Override
+    public HttpURLConnection send(RequestTemplate requestTemplate) throws IOException {
 
-
-    private static HttpURLConnection createBaseConnection(RequestTemplate requestTemplate,
-                                                          HttpConnectionConfig connectionConfig) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) new URL(requestTemplate.getUri()).openConnection();
-        connection.setConnectTimeout(connectionConfig.getConnectTimeout());
-        connection.setReadTimeout(connectionConfig.getReadTimeout());
+        connection.setConnectTimeout(clientConfig.getConnectTimeout());
+        connection.setReadTimeout(clientConfig.getReadTimeout());
         connection.setAllowUserInteraction(false);
         connection.setInstanceFollowRedirects(true);
         connection.setRequestMethod(requestTemplate.getHttpMethod());
-        return connection;
-    }
 
-    private static void writeHeaders(RequestTemplate requestTemplate, HttpURLConnection connection) {
+        // writeHeaders
+
         for (String field : requestTemplate.getAllHeaders().keySet()) {
             for (String value : requestTemplate.getHeaders(field)) {
                 connection.addRequestProperty(field, value);
             }
         }
-    }
 
-    private static HttpURLConnection writeBody(RequestTemplate requestTemplate,
-                                               HttpConnectionConfig connectionConfig,
-                                               HttpURLConnection connection) throws IOException {
+
+        // writeBody
+
         boolean gzipEncodedRequest = requestTemplate.isGzipEncodedRequest();
         boolean deflateEncodedRequest = requestTemplate.isDeflateEncodedRequest();
         if (requestTemplate.isBodyEmpty()) {
@@ -85,7 +65,7 @@ public class HttpURLConnectionBuilder {
         if (contentLength != null) {
             connection.setFixedLengthStreamingMode(contentLength);
         } else {
-            connection.setChunkedStreamingMode(connectionConfig.getChunkLength());
+            connection.setChunkedStreamingMode(clientConfig.getChunkLength());
         }
         connection.setDoOutput(true);
         OutputStream out = connection.getOutputStream();
@@ -102,8 +82,28 @@ public class HttpURLConnectionBuilder {
             } catch (IOException suppressed) {
             }
         }
-        return null;
+
+        return connection;
     }
 
+    @Override
+    public void close() {
+
+    }
+
+    @Override
+    public void close(int timeout) {
+
+    }
+
+    @Override
+    public boolean isClosed() {
+        return true;
+    }
+
+    public HttpURLConnection createHttpClient(HttpClientConfig httpClientConfig) {
+
+        return null;
+    }
 
 }

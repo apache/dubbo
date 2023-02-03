@@ -18,12 +18,18 @@
 
 package org.apache.dubbo.rpc.protocol.rest.response;
 
+import org.apache.dubbo.remoting.Constants;
+
 public class HttpResponseFactory {
 
 
     public static HttpResponseFacade createFacade(String clientType, Object response) {
-        if ("okhttp".equals(clientType)) {
+        if (Constants.OK_HTTP.equals(clientType)) {
             return new OkHttpHttpResponseFacade(response);
+        } else if (Constants.URL_CONNECTION.equals(clientType)) {
+            return new URLConnectionHttpResponseFacade(response);
+        } else if (Constants.APACHE_HTTP_CLIENT.equals(clientType)) {
+            return new ApacheHttpClientHttpResponseFacade(response);
         }
 
 

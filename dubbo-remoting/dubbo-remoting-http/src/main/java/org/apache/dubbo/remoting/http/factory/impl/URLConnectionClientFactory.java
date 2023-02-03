@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.response;
+package org.apache.dubbo.remoting.http.factory.impl;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.http.RestClient;
+import org.apache.dubbo.remoting.http.factory.AbstractHttpClientFactory;
+import org.apache.dubbo.remoting.http.restclient.URLConnectionRestClient;
+import org.apache.dubbo.rpc.RpcException;
+
+@Activate(Constants.URL_CONNECTION)
+public class URLConnectionClientFactory extends AbstractHttpClientFactory {
 
 
-import java.io.IOException;
-import java.io.InputStream;
+    @Override
+    protected RestClient doCreateRestClient(URL url) throws RpcException {
 
-public interface HttpResponseFacade<RES> {
-
-    String getContentType();
-
-    InputStream getBody() throws IOException;
-
-    InputStream getErrorResponse() throws IOException;
-
-    int getResponseCode() throws IOException;
+        return new URLConnectionRestClient(httpClientConfig);
+    }
 }

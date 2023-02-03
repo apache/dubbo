@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 /**
  * RestClientFactory. (API/SPI, Singleton, ThreadSafe)
  */
-@SPI(value = "okhttp", scope = ExtensionScope.FRAMEWORK)
+@SPI(value = Constants.OK_HTTP, scope = ExtensionScope.FRAMEWORK)
 public interface RestClientFactory {
 
 

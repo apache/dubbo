@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.http.okhttp;
+package org.apache.dubbo.remoting.http.restclient;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

@@ -16,17 +16,38 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.response;
 
+import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
+import org.apache.http.client.methods.CloseableHttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface HttpResponseFacade<RES> {
+public class ApacheHttpClientHttpResponseFacade extends AbstractHttpResponseFacade<CloseableHttpResponse> {
 
-    String getContentType();
+    public ApacheHttpClientHttpResponseFacade(Object response) {
+        super((CloseableHttpResponse) response);
+    }
 
-    InputStream getBody() throws IOException;
+    @Override
+    public String getContentType() {
 
-    InputStream getErrorResponse() throws IOException;
+        return response.getFirstHeader(RestConstant.CONTENT_TYPE).getValue();
 
-    int getResponseCode() throws IOException;
+
+    }
+
+    @Override
+    public InputStream getBody() throws IOException {
+        return response.getEntity().getContent();
+    }
+
+    @Override
+    public InputStream getErrorResponse() throws IOException {
+        return getBody();
+    }
+
+    @Override
+    public int getResponseCode() {
+        return response.getStatusLine().getStatusCode();
+    }
 }

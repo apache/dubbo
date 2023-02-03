@@ -62,6 +62,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private static final int DEFAULT_PORT = 80;
     private static final String DEFAULT_SERVER = "jetty";
+    private static final String DEFAULT_CLIENT = org.apache.dubbo.remoting.Constants.OK_HTTP;
 
     private final RestServerFactory serverFactory = new RestServerFactory();
 
@@ -168,7 +169,7 @@ public class RestProtocol extends AbstractProxyProtocol {
                     Object response = refClient.getClient().send(requestTemplate);
 
                     HttpResponseFacade responseFacade = HttpResponseFactory.
-                        createFacade(url.getParameter(org.apache.dubbo.remoting.Constants.CLIENT_KEY, "okhttp"), response);
+                        createFacade(url.getParameter(org.apache.dubbo.remoting.Constants.CLIENT_KEY, DEFAULT_CLIENT), response);
 
                     // TODO response code
                     int responseCode = responseFacade.getResponseCode();

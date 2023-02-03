@@ -19,14 +19,34 @@ package org.apache.dubbo.rpc.protocol.rest.response;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 
-public interface HttpResponseFacade<RES> {
+public class URLConnectionHttpResponseFacade extends AbstractHttpResponseFacade<HttpURLConnection> {
 
-    String getContentType();
+    public URLConnectionHttpResponseFacade(Object response) {
+        super((HttpURLConnection) response);
+    }
 
-    InputStream getBody() throws IOException;
+    @Override
+    public String getContentType() {
 
-    InputStream getErrorResponse() throws IOException;
+        return response.getContentType();
 
-    int getResponseCode() throws IOException;
+
+    }
+
+    @Override
+    public InputStream getBody() throws IOException {
+        return response.getInputStream();
+    }
+
+    @Override
+    public InputStream getErrorResponse() throws IOException {
+        return response.getErrorStream();
+    }
+
+    @Override
+    public int getResponseCode() throws IOException {
+        return response.getResponseCode();
+    }
 }

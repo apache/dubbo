@@ -20,6 +20,7 @@ public class HttpClientConfig {
     private int readTimeout = 30;
     private int writeTimeout = 30;
     private int connectTimeout = 30;
+    private int chunkLength = 8196;
 
     private int HTTP_CLIENT_CONNECTION_MANAGER_MAX_PER_ROUTE = 20;
     private int HTTP_CLIENT_CONNECTION_MANAGER_MAX_TOTAL = 20;
@@ -53,5 +54,9 @@ public class HttpClientConfig {
 
     public void setConnectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
+    }
+
+    public int getChunkLength() {
+        return chunkLength;
     }
 }

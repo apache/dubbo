@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.response;
 import okhttp3.Response;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class OkHttpHttpResponseFacade extends AbstractHttpResponseFacade<Response> {
@@ -38,6 +39,11 @@ public class OkHttpHttpResponseFacade extends AbstractHttpResponseFacade<Respons
     @Override
     public InputStream getBody() {
         return response.body().byteStream();
+    }
+
+    @Override
+    public InputStream getErrorResponse() throws IOException {
+        return getBody();
     }
 
     @Override
