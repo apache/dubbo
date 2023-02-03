@@ -117,7 +117,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
 
     private Class<?> loadClass0(ClassLoader classLoader, String className) throws ClassNotFoundException {
         if (checkStatus == SerializeCheckStatus.DISABLE) {
-            return Class.forName(className, false, classLoader);
+            return ClassUtils.forName(className, classLoader);
         }
 
         long hash = MAGIC_HASH_CODE;
