@@ -41,11 +41,9 @@ public class MetricsStatComposite {
     private final ConcurrentMap<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
-    private final String applicationName;
     private DefaultMetricsCollector collector;
 
-    public MetricsStatComposite(String applicationName, DefaultMetricsCollector collector) {
-        this.applicationName = applicationName;
+    public MetricsStatComposite(DefaultMetricsCollector collector) {
         this.collector = collector;
         this.init();
     }
@@ -78,7 +76,7 @@ public class MetricsStatComposite {
         return this.rtCount;
     }
 
-    public MetricsEvent addRtAndRetrieveEvent(Invocation invocation, Long responseTime) {
+    public MetricsEvent addRtAndRetrieveEvent(String applicationName, Invocation invocation, Long responseTime) {
         if (!collector.isCollectEnabled()) {
             return EmptyEvent.instance();
         }
@@ -109,14 +107,14 @@ public class MetricsStatComposite {
         stats.put(RequestEvent.Type.SUCCEED, buildMetricsStatHandler(RequestEvent.Type.SUCCEED));
         stats.put(RequestEvent.Type.UNKNOWN_FAILED, buildMetricsStatHandler(RequestEvent.Type.UNKNOWN_FAILED));
         stats.put(RequestEvent.Type.BUSINESS_FAILED, buildMetricsStatHandler(RequestEvent.Type.BUSINESS_FAILED));
-        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler(applicationName));
+        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler());
         stats.put(RequestEvent.Type.REQUEST_LIMIT, buildMetricsStatHandler(RequestEvent.Type.REQUEST_LIMIT));
         stats.put(RequestEvent.Type.REQUEST_TIMEOUT, buildMetricsStatHandler(RequestEvent.Type.REQUEST_TIMEOUT));
         stats.put(RequestEvent.Type.TOTAL_FAILED, buildMetricsStatHandler(RequestEvent.Type.TOTAL_FAILED));
     }
 
     private DefaultMetricsStatHandler buildMetricsStatHandler(RequestEvent.Type type) {
-        return new DefaultMetricsStatHandler(applicationName) {
+        return new DefaultMetricsStatHandler() {
             @Override
             public MetricsEvent retrieveMetricsEvent(MethodMetric metric) {
                 return new RequestEvent(metric, type);

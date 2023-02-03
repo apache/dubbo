@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public interface MetricsStatHandler {
     Map<MethodMetric, AtomicLong> get();
-    MetricsEvent increase(Invocation invocation);
-    MetricsEvent decrease(Invocation invocation);
+
+    MetricsEvent increase(String applicationName, Invocation invocation);
+
+    MetricsEvent decrease(String applicationName, Invocation invocation);
 }

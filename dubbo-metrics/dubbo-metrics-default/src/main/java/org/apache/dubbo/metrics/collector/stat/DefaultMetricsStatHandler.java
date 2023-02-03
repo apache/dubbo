@@ -29,38 +29,37 @@ import org.apache.dubbo.rpc.Invocation;
 
 public class DefaultMetricsStatHandler implements MetricsStatHandler {
 
-    private final String applicationName;
     private final Map<MethodMetric, AtomicLong> counts = new ConcurrentHashMap<>();
 
-    public DefaultMetricsStatHandler(String applicationName) {
-        this.applicationName = applicationName;
+    public DefaultMetricsStatHandler() {
     }
 
     @Override
-    public MetricsEvent increase(Invocation invocation) {
-        return this.doIncrExecute(invocation);
+    public MetricsEvent increase(String applicationName, Invocation invocation) {
+        return this.doIncrExecute(applicationName, invocation);
     }
 
-    public MetricsEvent decrease(Invocation invocation){
-       return this.doDecrExecute(invocation);
+    public MetricsEvent decrease(String applicationName, Invocation invocation) {
+        return this.doDecrExecute(applicationName,invocation);
     }
 
-    protected MetricsEvent doExecute(Invocation invocation, BiConsumer<MethodMetric,Map<MethodMetric, AtomicLong>> execute){
+    protected MetricsEvent doExecute(String applicationName, Invocation invocation, BiConsumer<MethodMetric, Map<MethodMetric, AtomicLong>> execute) {
         MethodMetric metric = new MethodMetric(applicationName, invocation);
-        execute.accept(metric,counts);
+        execute.accept(metric, counts);
 
         return this.retrieveMetricsEvent(metric);
     }
 
-    protected MetricsEvent doIncrExecute(Invocation invocation){
-       return this.doExecute(invocation,(metric,counts)->{
+    protected MetricsEvent doIncrExecute(String applicationName, Invocation invocation) {
+        return this.doExecute(applicationName, invocation, (metric, counts) -> {
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
         });
     }
 
-    protected MetricsEvent doDecrExecute(Invocation invocation){
-       return this.doExecute(invocation,(metric,counts)->{
+
+    protected MetricsEvent doDecrExecute(String applicationName, Invocation invocation) {
+        return this.doExecute(applicationName, invocation, (metric, counts) -> {
             AtomicLong count = counts.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.decrementAndGet();
         });

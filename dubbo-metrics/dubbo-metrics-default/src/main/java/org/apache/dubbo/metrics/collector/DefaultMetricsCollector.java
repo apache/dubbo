@@ -50,8 +50,8 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final MetricsStatComposite stats;
     private final SimpleMetricsEventMulticaster eventMulticaster;
 
-    public DefaultMetricsCollector(ApplicationModel applicationModel) {
-        this.stats = new MetricsStatComposite(applicationModel.getApplicationName(), this);
+    public DefaultMetricsCollector() {
+        this.stats = new MetricsStatComposite(this);
         this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
     }
 
@@ -63,52 +63,52 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return collectEnabled.get();
     }
 
-    public void increaseTotalRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.TOTAL, invocation);
+    public void increaseTotalRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName, RequestEvent.Type.TOTAL, invocation);
     }
 
-    public void increaseSucceedRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.SUCCEED, invocation);
+    public void increaseSucceedRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName, RequestEvent.Type.SUCCEED, invocation);
     }
 
-    public void increaseUnknownFailedRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.UNKNOWN_FAILED, invocation);
+    public void increaseUnknownFailedRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName, RequestEvent.Type.UNKNOWN_FAILED, invocation);
     }
 
-    public void businessFailedRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.BUSINESS_FAILED, invocation);
+    public void businessFailedRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName, RequestEvent.Type.BUSINESS_FAILED, invocation);
     }
 
-    public void timeoutRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.REQUEST_TIMEOUT, invocation);
+    public void timeoutRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName,RequestEvent.Type.REQUEST_TIMEOUT, invocation);
     }
 
-    public void limitRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.REQUEST_LIMIT, invocation);
+    public void limitRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName,RequestEvent.Type.REQUEST_LIMIT, invocation);
     }
 
-    public void increaseProcessingRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.PROCESSING, invocation);
+    public void increaseProcessingRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName,RequestEvent.Type.PROCESSING, invocation);
     }
 
-    public void decreaseProcessingRequests(Invocation invocation) {
-        decreaseAndPublishEvent(RequestEvent.Type.PROCESSING, invocation);
+    public void decreaseProcessingRequests(String applicationName, Invocation invocation) {
+        decreaseAndPublishEvent(applicationName,RequestEvent.Type.PROCESSING, invocation);
     }
 
-    public void totalFailedRequests(Invocation invocation) {
-        increaseAndPublishEvent(RequestEvent.Type.TOTAL_FAILED, invocation);
+    public void totalFailedRequests(String applicationName, Invocation invocation) {
+        increaseAndPublishEvent(applicationName,RequestEvent.Type.TOTAL_FAILED, invocation);
     }
 
-    private void increaseAndPublishEvent(RequestEvent.Type total, Invocation invocation) {
-        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.increase(invocation)));
+    private void increaseAndPublishEvent(String applicationName, RequestEvent.Type total, Invocation invocation) {
+        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.increase(applicationName,invocation)));
     }
 
-    private void decreaseAndPublishEvent(RequestEvent.Type total, Invocation invocation) {
-        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.decrease(invocation)));
+    private void decreaseAndPublishEvent(String applicationName, RequestEvent.Type total, Invocation invocation) {
+        this.eventMulticaster.publishEvent(doExecute(total, statHandler -> statHandler.decrease(applicationName,invocation)));
     }
 
-    public void addRT(Invocation invocation, Long responseTime) {
-        this.eventMulticaster.publishEvent(stats.addRtAndRetrieveEvent(invocation, responseTime));
+    public void addRT(String applicationName,Invocation invocation, Long responseTime) {
+        this.eventMulticaster.publishEvent(stats.addRtAndRetrieveEvent(applicationName,invocation, responseTime));
     }
 
     @Override
@@ -162,7 +162,8 @@ public class DefaultMetricsCollector implements MetricsCollector {
         });
     }
 
-    private <T> Optional<T> doCollect(RequestEvent.Type requestType, Function<MetricsStatHandler, T> statExecutor) {
+    private <
+        T> Optional<T> doCollect(RequestEvent.Type requestType, Function<MetricsStatHandler, T> statExecutor) {
         if (isCollectEnabled()) {
             MetricsStatHandler handler = stats.getHandler(requestType);
             T result = statExecutor.apply(handler);
@@ -171,7 +172,8 @@ public class DefaultMetricsCollector implements MetricsCollector {
         return Optional.empty();
     }
 
-    private MetricsEvent doExecute(RequestEvent.Type requestType, Function<MetricsStatHandler, MetricsEvent> statExecutor) {
+    private MetricsEvent doExecute(RequestEvent.Type
+                                       requestType, Function<MetricsStatHandler, MetricsEvent> statExecutor) {
         if (isCollectEnabled()) {
             MetricsStatHandler handler = stats.getHandler(requestType);
             return statExecutor.apply(handler);
