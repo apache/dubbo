@@ -54,9 +54,9 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
 
     private final ModuleModel moduleModel;
 
-    private final boolean autoTrustSerializeClass;
+    private volatile boolean autoTrustSerializeClass = true;
 
-    private final int trustSerializeClassLevel;
+    private volatile int trustSerializeClassLevel = 3;
 
     public SerializeSecurityConfigurator(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
@@ -66,9 +66,13 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         serializeSecurityManager = frameworkModel.getBeanFactory().getBean(SerializeSecurityManager.class);
 
         refreshStatus();
+        refreshCheck();
         refreshConfig();
-        onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
 
+        onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
+    }
+
+    public void refreshCheck() {
         Optional<ApplicationConfig> applicationConfig = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         autoTrustSerializeClass = applicationConfig.map(ApplicationConfig::getAutoTrustSerializeClass).orElse(true);
         trustSerializeClassLevel = applicationConfig.map(ApplicationConfig::getTrustSerializeClassLevel).orElse(3);
@@ -153,7 +157,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         }
     }
 
-    private void refreshStatus() {
+    public void refreshStatus() {
         Optional<ApplicationConfig> application = moduleModel.getApplicationModel().getApplicationConfigManager().getApplication();
         String statusString = application.map(ApplicationConfig::getSerializeCheckStatus).orElse(null);
         SerializeCheckStatus checkStatus = null;
@@ -290,7 +294,7 @@ public class SerializeSecurityConfigurator implements ScopeClassLoaderListener<M
         if (subs.length > trustSerializeClassLevel) {
             serializeSecurityManager.addToAllowed(Arrays.stream(subs)
                 .limit(trustSerializeClassLevel)
-                .collect(Collectors.joining(".")));
+                .collect(Collectors.joining(".")) + ".");
         } else {
             serializeSecurityManager.addToAllowed(className);
         }

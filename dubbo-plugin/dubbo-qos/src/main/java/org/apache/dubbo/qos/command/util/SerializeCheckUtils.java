@@ -25,15 +25,16 @@ import org.apache.dubbo.common.utils.SerializeSecurityManager;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 public class SerializeCheckUtils implements AllowClassNotifyListener {
-    public SerializeCheckUtils(FrameworkModel frameworkModel) {
-        SerializeSecurityManager manager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
-        manager.registerListener(this);
-    }
-
+    private final SerializeSecurityManager manager;
     private volatile Set<String> allowedList = Collections.emptySet();
     private volatile Set<String> disAllowedList = Collections.emptySet();
     private volatile SerializeCheckStatus status = AllowClassNotifyListener.DEFAULT_STATUS;
     private volatile boolean checkSerializable = true;
+
+    public SerializeCheckUtils(FrameworkModel frameworkModel) {
+        manager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
+        manager.registerListener(this);
+    }
 
     @Override
     public void notifyPrefix(Set<String> allowedList, Set<String> disAllowedList) {
@@ -65,5 +66,9 @@ public class SerializeCheckUtils implements AllowClassNotifyListener {
 
     public boolean isCheckSerializable() {
         return checkSerializable;
+    }
+
+    public Set<String> getWarnedClasses() {
+        return manager.getWarnedClasses();
     }
 }

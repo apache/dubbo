@@ -363,7 +363,7 @@ class SerializeSecurityConfiguratorTest {
         serializeSecurityConfigurator.onAddClassLoader(moduleModel, Thread.currentThread().getContextClassLoader());
 
         serializeSecurityConfigurator.registerInterface(DemoService3.class);
-        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.deep1.deep2"));
+        Assertions.assertTrue(ssm.getAllowedPrefix().contains("com.service.deep1.deep2."));
 
         frameworkModel.destroy();
     }

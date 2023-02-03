@@ -16,14 +16,14 @@
 
 package org.apache.dubbo.common.threadpool.serial;
 
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
-
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocalMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_ERROR_RUN_THREAD_TASK;
 
@@ -97,13 +97,13 @@ public final class SerializingExecutor implements Executor, Runnable {
         Runnable r;
         try {
             while ((r = runQueue.poll()) != null) {
+                InternalThreadLocalMap internalThreadLocalMap = InternalThreadLocalMap.getAndRemove();
                 try {
-                    InternalThreadLocal.removeAll();
                     r.run();
                 } catch (RuntimeException e) {
                     LOGGER.error(COMMON_ERROR_RUN_THREAD_TASK, "", "", "Exception while executing runnable " + r, e);
                 } finally {
-                    InternalThreadLocal.removeAll();
+                    InternalThreadLocalMap.set(internalThreadLocalMap);
                 }
             }
         } finally {
