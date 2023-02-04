@@ -16,213 +16,131 @@
  */
 package org.apache.dubbo.common.utils;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_ALLOW_LIST_FILE_PATH;
-import static org.apache.dubbo.common.constants.CommonConstants.SERIALIZE_CHECK_STATUS_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_IO_EXCEPTION;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_INTERRUPTED;
 
 public class SerializeSecurityManager {
-    private final Set<String> allowedPrefix = new LinkedHashSet<>();
-
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(SerializeSecurityManager.class);
 
-    private final SerializeClassChecker checker = SerializeClassChecker.getInstance();
+    private final Set<String> allowedPrefix = new ConcurrentHashSet<>();
+
+    private final Set<String> alwaysAllowedPrefix = new ConcurrentHashSet<>();
+
+    private final Set<String> disAllowedPrefix = new ConcurrentHashSet<>();
 
     private final Set<AllowClassNotifyListener> listeners = new ConcurrentHashSet<>();
 
-    private volatile SerializeCheckStatus checkStatus = AllowClassNotifyListener.DEFAULT_STATUS;
+    private volatile SerializeCheckStatus checkStatus = null;
 
-    public SerializeSecurityManager(FrameworkModel frameworkModel) {
-        try {
-            Set<ClassLoader> classLoaders = frameworkModel.getClassLoaders();
-            List<URL> urls = ClassLoaderResourceLoader.loadResources(SERIALIZE_ALLOW_LIST_FILE_PATH, classLoaders)
-                .values()
-                .stream()
-                .flatMap(Set::stream)
-                .collect(Collectors.toList());
-            for (URL u : urls) {
-                try {
-                    logger.info("Read serialize allow list from " + u);
-                    String[] lines = IOUtils.readLines(u.openStream());
-                    for (String line : lines) {
-                        line = line.trim();
-                        if (StringUtils.isEmpty(line) || line.startsWith("#")) {
-                            continue;
-                        }
-                        allowedPrefix.add(line);
-                    }
-                } catch (IOException e) {
-                    logger.error(COMMON_IO_EXCEPTION, "", "",  "Failed to load allow class list! Will ignore allow lis from " + u, e);
-                }
-            }
+    private volatile Boolean checkSerializable = null;
 
-            this.checkStatus = SerializeCheckStatus.valueOf(System.getProperty(SERIALIZE_CHECK_STATUS_KEY, AllowClassNotifyListener.DEFAULT_STATUS.name()));
-            logger.info("Serialize check level: " + checkStatus.name());
-        } catch (InterruptedException e) {
-            logger.error(INTERNAL_INTERRUPTED, "", "",  "Failed to load allow class list! Will ignore allow list from configuration.", e);
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public void registerInterface(Class<?> clazz) {
-        Set<Class<?>> markedClass = new HashSet<>();
-        markedClass.add(clazz);
-
-        addToAllow(clazz.getName());
-
-        Method[] methodsToExport = clazz.getMethods();
-
-        for (Method method : methodsToExport) {
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            for (Class<?> parameterType : parameterTypes) {
-                checkClass(markedClass, parameterType);
-            }
-
-            Type[] genericParameterTypes = method.getGenericParameterTypes();
-            for (Type genericParameterType : genericParameterTypes) {
-                checkType(markedClass, genericParameterType);
-            }
-
-            Class<?> returnType = method.getReturnType();
-            checkClass(markedClass, returnType);
-
-            Type genericReturnType = method.getGenericReturnType();
-            checkType(markedClass, genericReturnType);
-
-            Class<?>[] exceptionTypes = method.getExceptionTypes();
-            for (Class<?> exceptionType : exceptionTypes) {
-                checkClass(markedClass, exceptionType);
-            }
-
-            Type[] genericExceptionTypes = method.getGenericExceptionTypes();
-            for (Type genericExceptionType : genericExceptionTypes) {
-                checkType(markedClass, genericExceptionType);
-            }
-        }
-    }
-
-    private void checkType(Set<Class<?>> markedClass, Type type) {
-        if (type instanceof Class) {
-            checkClass(markedClass, (Class<?>) type);
-        } else if (type instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) type;
-            checkClass(markedClass, (Class<?>) parameterizedType.getRawType());
-            for (Type actualTypeArgument : parameterizedType.getActualTypeArguments()) {
-                checkType(markedClass, actualTypeArgument);
-            }
-        } else if (type instanceof GenericArrayType) {
-            GenericArrayType genericArrayType = (GenericArrayType) type;
-            checkType(markedClass, genericArrayType.getGenericComponentType());
-        } else if (type instanceof TypeVariable) {
-            TypeVariable typeVariable = (TypeVariable) type;
-            for (Type bound : typeVariable.getBounds()) {
-                checkType(markedClass, bound);
-            }
-        } else if (type instanceof WildcardType) {
-            WildcardType wildcardType = (WildcardType) type;
-            for (Type bound : wildcardType.getUpperBounds()) {
-                checkType(markedClass, bound);
-            }
-            for (Type bound : wildcardType.getLowerBounds()) {
-                checkType(markedClass, bound);
-            }
-        }
-    }
-
-    private void checkClass(Set<Class<?>> markedClass, Class<?> clazz) {
-        if (markedClass.contains(clazz)) {
-            return;
-        }
-
-        markedClass.add(clazz);
-
-        addToAllow(clazz.getName());
-
-        Class<?>[] interfaces = clazz.getInterfaces();
-        for (Class<?> interfaceClass : interfaces) {
-            checkClass(markedClass, interfaceClass);
-        }
-
-        Class<?> superclass = clazz.getSuperclass();
-        if (superclass != null) {
-            checkClass(markedClass, superclass);
-        }
-
-        Field[] fields = clazz.getDeclaredFields();
-
-        for (Field field : fields) {
-            if (Modifier.isTransient(field.getModifiers())) {
-                continue;
-            }
-
-            Class<?> fieldClass = field.getType();
-            checkClass(markedClass, fieldClass);
-            checkType(markedClass, field.getGenericType());
-        }
-    }
-
-    protected void addToAllow(String className) {
-        if (!checker.validateClass(className, false)) {
-            return;
-        }
-
-        boolean modified;
-
-        // ignore jdk
-        if (className.startsWith("java.") || className.startsWith("javax.") || className.startsWith("com.sun.") ||
-            className.startsWith("sun.") || className.startsWith("jdk.")) {
-            modified = allowedPrefix.add(className);
-            if (modified) {
-                notifyListeners();
-            }
-            return;
-        }
-
-        // add group package
-        String[] subs = className.split("\\.");
-        if (subs.length > 3) {
-            modified = allowedPrefix.add(subs[0] + "." + subs[1] + "." + subs[2]);
-        } else {
-            modified = allowedPrefix.add(className);
-        }
+    public void addToAlwaysAllowed(String className) {
+        boolean modified = alwaysAllowedPrefix.add(className);
 
         if (modified) {
-            notifyListeners();
+            notifyPrefix();
+        }
+    }
+
+    public void addToAllowed(String className) {
+        if (disAllowedPrefix.stream().anyMatch(className::startsWith)) {
+            return;
+        }
+
+        boolean modified = allowedPrefix.add(className);
+
+        if (modified) {
+            notifyPrefix();
+        }
+    }
+
+    public void addToDisAllowed(String className) {
+        boolean modified = disAllowedPrefix.add(className);
+        modified = allowedPrefix.removeIf(allow -> allow.startsWith(className)) || modified;
+
+        if (modified) {
+            notifyPrefix();
+        }
+
+        String lowerCase = className.toLowerCase(Locale.ROOT);
+        if (!Objects.equals(lowerCase, className)) {
+            addToDisAllowed(lowerCase);
+        }
+    }
+
+    public void setCheckStatus(SerializeCheckStatus checkStatus) {
+        if (this.checkStatus == null) {
+            this.checkStatus = checkStatus;
+            logger.info("Serialize check level: " + checkStatus.name());
+            notifyCheckStatus();
+            return;
+        }
+
+        // If has been set to WARN, ignore STRICT
+        if (this.checkStatus.level() < checkStatus.level()) {
+            return;
+        }
+
+        this.checkStatus = checkStatus;
+        logger.info("Serialize check level: " + checkStatus.name());
+        notifyCheckStatus();
+    }
+
+    public void setCheckSerializable(boolean checkSerializable) {
+        if (this.checkSerializable == null || (Boolean.TRUE.equals(this.checkSerializable) && !checkSerializable)) {
+            this.checkSerializable = checkSerializable;
+            logger.info("Serialize check serializable: " + checkSerializable);
+            notifyCheckSerializable();
         }
     }
 
     public void registerListener(AllowClassNotifyListener listener) {
         listeners.add(listener);
-        listener.notify(checkStatus, allowedPrefix);
+        listener.notifyPrefix(getAllowedPrefix(), getDisAllowedPrefix());
+        listener.notifyCheckSerializable(isCheckSerializable());
+        listener.notifyCheckStatus(getCheckStatus());
     }
 
-    private void notifyListeners() {
+    private void notifyPrefix() {
         for (AllowClassNotifyListener listener : listeners) {
-            listener.notify(checkStatus, allowedPrefix);
+            listener.notifyPrefix(getAllowedPrefix(), getDisAllowedPrefix());
         }
     }
 
+    private void notifyCheckStatus() {
+        for (AllowClassNotifyListener listener : listeners) {
+            listener.notifyCheckStatus(getCheckStatus());
+        }
+    }
+
+    private void notifyCheckSerializable() {
+        for (AllowClassNotifyListener listener : listeners) {
+            listener.notifyCheckSerializable(isCheckSerializable());
+        }
+    }
+
+    protected SerializeCheckStatus getCheckStatus() {
+        return checkStatus == null ? AllowClassNotifyListener.DEFAULT_STATUS : checkStatus;
+    }
+
     protected Set<String> getAllowedPrefix() {
-        return allowedPrefix;
+        Set<String> set = new ConcurrentHashSet<>();
+        set.addAll(allowedPrefix);
+        set.addAll(alwaysAllowedPrefix);
+        return set;
+    }
+
+    protected Set<String> getDisAllowedPrefix() {
+        Set<String> set = new ConcurrentHashSet<>();
+        set.addAll(disAllowedPrefix);
+        return set;
+    }
+
+    protected boolean isCheckSerializable() {
+        return checkSerializable == null || checkSerializable;
     }
 }
