@@ -478,7 +478,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         if (clz == null) {
             try {
                 clz = ClassUtils.forName(className);
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // To catch IllegalStateException, LinkageError, ClassNotFoundException
                 clz = expectedClass;
             }
