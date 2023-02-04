@@ -27,7 +27,7 @@ class RequestEventTest {
     @Test
     void testNewEvent() {
         MethodMetric metric = new MethodMetric();
-        RequestEvent.Type type = RequestEvent.Type.TOTAL;
+        MetricsEvent.Type type = MetricsEvent.Type.TOTAL;
         RequestEvent event = new RequestEvent(metric, type);
 
         Assertions.assertEquals(event.getSource(), metric);

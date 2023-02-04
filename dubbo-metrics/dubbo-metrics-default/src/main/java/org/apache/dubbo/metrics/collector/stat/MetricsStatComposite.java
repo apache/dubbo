@@ -19,10 +19,12 @@ package org.apache.dubbo.metrics.collector.stat;
 
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.ApplicationEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 
 import java.util.List;
@@ -34,7 +36,7 @@ import java.util.concurrent.atomic.LongAccumulator;
 
 public class MetricsStatComposite {
 
-    public Map<RequestEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
+    public Map<MetricsEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> lastRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, LongAccumulator> minRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, LongAccumulator> maxRT = new ConcurrentHashMap<>();
@@ -50,7 +52,7 @@ public class MetricsStatComposite {
         this.init();
     }
 
-    public MetricsStatHandler getHandler(RequestEvent.Type statType) {
+    public MetricsStatHandler getHandler(MetricsEvent.Type statType) {
         return stats.get(statType);
     }
 
@@ -104,54 +106,61 @@ public class MetricsStatComposite {
     }
 
     private void init() {
-        stats.put(RequestEvent.Type.TOTAL, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.TOTAL, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.TOTAL));
             }
         });
 
-        stats.put(RequestEvent.Type.SUCCEED, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.SUCCEED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.SUCCEED));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.SUCCEED));
             }
         });
 
-        stats.put(RequestEvent.Type.UNKNOWN_FAILED, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.UNKNOWN_FAILED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.UNKNOWN_FAILED));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.UNKNOWN_FAILED));
             }
         });
 
-        stats.put(RequestEvent.Type.BUSINESS_FAILED, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.BUSINESS_FAILED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.BUSINESS_FAILED));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.BUSINESS_FAILED));
             }
         });
 
-        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler());
+        stats.put(MetricsEvent.Type.PROCESSING, new DefaultMetricsStatHandler());
 
-        stats.put(RequestEvent.Type.REQUEST_LIMIT, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.REQUEST_LIMIT, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_LIMIT));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.REQUEST_LIMIT));
             }
         });
 
-        stats.put(RequestEvent.Type.REQUEST_TIMEOUT, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.REQUEST_TIMEOUT, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.REQUEST_TIMEOUT));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.REQUEST_TIMEOUT));
             }
         });
 
-        stats.put(RequestEvent.Type.TOTAL_FAILED, new DefaultMetricsStatHandler() {
+        stats.put(MetricsEvent.Type.TOTAL_FAILED, new DefaultMetricsStatHandler() {
             @Override
             public void doNotify(MethodMetric metric) {
-                publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL_FAILED));
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.TOTAL_FAILED));
+            }
+        });
+
+        stats.put(MetricsEvent.Type.APPLICATION_INFO, new DefaultMetricsStatHandler() {
+            @Override
+            public void doNotify(MethodMetric metric) {
+                publishEvent(new RequestEvent(metric, MetricsEvent.Type.APPLICATION_INFO));
             }
         });
     }

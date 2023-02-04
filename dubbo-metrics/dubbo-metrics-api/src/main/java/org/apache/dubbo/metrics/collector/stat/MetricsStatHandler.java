@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.collector.stat;
 
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 
 import java.util.Map;
@@ -24,6 +25,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public interface MetricsStatHandler {
     Map<MethodMetric, AtomicLong> get();
+    Map<ApplicationMetric, AtomicLong> getApplicationMetric();
+
     void increase(String applicationName, String interfaceName, String methodName, String group, String version);
     void decrease(String applicationName, String interfaceName, String methodName, String group, String version);
+    void addApplication(String applicationName, String version);
+
 }

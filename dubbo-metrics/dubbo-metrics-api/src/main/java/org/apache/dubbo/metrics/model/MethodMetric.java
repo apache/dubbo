@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 /**
  * Metric class for method.
  */
-public class MethodMetric {
+public class MethodMetric implements Metric {
     private String applicationName;
     private String interfaceName;
     private String methodName;
