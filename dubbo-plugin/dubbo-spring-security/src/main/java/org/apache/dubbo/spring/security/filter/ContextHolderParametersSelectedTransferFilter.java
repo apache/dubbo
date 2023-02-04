@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.spring.security.filter.condition.AndFilterConditionMatcher;
 import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
 import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
-import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 
 import java.util.ArrayList;
