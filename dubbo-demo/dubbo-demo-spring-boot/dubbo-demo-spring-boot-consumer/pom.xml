@@ -134,10 +134,9 @@
         </dependency>
 
         <!-- Observabililty -->
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metrics-api</artifactId>
+            <artifactId>dubbo-metrics-default</artifactId>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>

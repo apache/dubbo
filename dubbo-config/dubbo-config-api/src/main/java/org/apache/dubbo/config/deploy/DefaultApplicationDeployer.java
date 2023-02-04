@@ -34,10 +34,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.metrics.MetricsReporter;
-import org.apache.dubbo.common.metrics.MetricsReporterFactory;
-import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
-import org.apache.dubbo.common.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -54,6 +50,10 @@ import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.report.MetricsReporter;
+import org.apache.dubbo.metrics.report.MetricsReporterFactory;
+import org.apache.dubbo.metrics.service.MetricsServiceExporter;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -358,7 +358,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsReporter() {
-        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
+        DefaultMetricsCollector collector =
+            applicationModel.getFrameworkModel().getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
