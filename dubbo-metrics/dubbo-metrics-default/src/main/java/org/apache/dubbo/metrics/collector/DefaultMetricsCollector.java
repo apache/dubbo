@@ -17,24 +17,28 @@
 
 package org.apache.dubbo.metrics.collector;
 
+import org.apache.dubbo.common.threadpool.manager.FrameworkExecutorRepository;
 import org.apache.dubbo.metrics.collector.stat.MetricsStatComposite;
 import org.apache.dubbo.metrics.collector.stat.MetricsStatHandler;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.ThreadPoolMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
-import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
+import static org.apache.dubbo.metrics.model.MetricsCategory.*;
 
 
 /**
@@ -45,9 +49,17 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private AtomicBoolean collectEnabled = new AtomicBoolean(false);
     private final List<MetricsListener> listeners = new ArrayList<>();
     private final MetricsStatComposite stats;
+    private final Set<ThreadPoolMetric> threadPoolMetricSet = new HashSet<ThreadPoolMetric>();
 
     public DefaultMetricsCollector() {
         this.stats = new MetricsStatComposite( this);
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
+        FrameworkExecutorRepository frameworkExecutorRepository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
+        //ExecutorService executorService = frameworkExecutorRepository.getSharedExecutor();
+        String applicationName = frameworkModel.defaultApplication().getApplicationName();
+        threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, ((ThreadPoolExecutor)frameworkExecutorRepository.getSharedExecutor())));
+        //threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, ((ScheduledThreadPoolExecutor)frameworkExecutorRepository.getCacheRefreshingScheduledExecutor())));
+        ;
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -139,8 +151,21 @@ public class DefaultMetricsCollector implements MetricsCollector {
         List<MetricSample> list = new ArrayList<>();
         collectRequests(list);
         collectRT(list);
-
+        collectThreadPool(list);
         return list;
+    }
+
+    public void addThreadPoolMetric(ThreadPoolMetric metric) {
+        threadPoolMetricSet.add(metric);
+    }
+
+    private void collectThreadPool(List<MetricSample> list) {
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_CORE_SIZE, e.getTags(), THREAD_POOL, e::getCorePoolSize)));
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_LARGEST_SIZE, e.getTags(), THREAD_POOL, e::getLargestPoolSize)));
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_MAX_SIZE, e.getTags(), THREAD_POOL, e::getMaximumPoolSize)));
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_ACTIVE_SIZE, e.getTags(), THREAD_POOL, e::getActiveCount)));
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_THREAD_COUNT, e.getTags(), THREAD_POOL, e::getPoolSize)));
+        threadPoolMetricSet.forEach(e -> list.add(new GaugeMetricSample(MetricsKey.THREAD_POOL_QUEUE_SIZE, e.getTags(), THREAD_POOL, e::getQueueSize)));
     }
 
     private void collectRequests(List<MetricSample> list) {

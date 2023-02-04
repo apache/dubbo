@@ -22,6 +22,8 @@ public interface MetricsConstants {
 
     String TAG_IP = "ip";
 
+    String TAG_PID = "pid";
+
     String TAG_HOSTNAME = "hostname";
 
     String TAG_APPLICATION_NAME = "application.name";
@@ -75,4 +77,6 @@ public interface MetricsConstants {
     String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
 
     String METRIC_FILTER_START_TIME = "metric_filter_start_time";
+
+    String TAG_THREAD_NAME = "thread.pool.name";
 }
