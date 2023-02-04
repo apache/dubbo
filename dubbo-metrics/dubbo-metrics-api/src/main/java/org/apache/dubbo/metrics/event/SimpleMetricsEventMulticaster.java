@@ -25,6 +25,7 @@ import java.util.List;
 
 public final class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
 
+    @SuppressWarnings("java:S3077")
     private static volatile SimpleMetricsEventMulticaster instance;
 
     private final List<MetricsListener> listeners = Collections.synchronizedList(new ArrayList<>());
