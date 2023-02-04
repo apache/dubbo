@@ -25,13 +25,13 @@ import org.apache.dubbo.rpc.Invoker;
 public class FilterConditionMatcherOnClass implements FilterConditionMatcher {
 
 
-    private Boolean isMatched;
+    public Boolean isMatched;
 
     public FilterConditionMatcherOnClass(String className) {
         this.isMatched = StringUtils.isBlank(className) ? false : ClassUtils.isPresent(className, null);
     }
 
     public boolean match(Invoker<?> invoker, Invocation invocation){
-       return isMatched;
+       return this.isMatched;
     }
 }

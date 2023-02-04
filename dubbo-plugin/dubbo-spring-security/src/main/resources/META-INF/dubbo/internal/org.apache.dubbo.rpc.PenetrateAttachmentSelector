@@ -1,1 +1,0 @@
-authenticationContextParametersSelector=org.apache.dubbo.spring.security.support.AuthenticationContextParametersSelector
