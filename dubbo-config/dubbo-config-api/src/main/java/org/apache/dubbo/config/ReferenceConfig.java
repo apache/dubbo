@@ -81,16 +81,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.SVC;
 import static org.apache.dubbo.common.constants.CommonConstants.TRIPLE;
 import static org.apache.dubbo.common.constants.CommonConstants.UNLOAD_CLUSTER_RELATED;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CLUSTER_NO_VALID_PROVIDER;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_DUBBO_REFERENCE_PROVIDED_BY_NOT_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_DESTROY_INVOKER;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILED_LOAD_ENV_VARIABLE;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_NO_METHOD_FOUND;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_PROPERTY_CONFLICT;
-import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
@@ -493,9 +490,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         // In mesh mode, providedBy equals K8S Service name.
         String providedByService = referenceParameters.get(PROVIDED_BY);
-        if (isBlank(providedByService)) {
-            providedByService = referenceParameters.get(DUBBO_PROVIDED_BY);
-        }
         // cluster_domain default is 'cluster.local',generally unchanged.
         String clusterDomain = Optional.ofNullable(System.getenv("CLUSTER_DOMAIN")).orElse(DEFAULT_CLUSTER_DOMAIN);
         // By VirtualService and DestinationRule, envoy will generate a new route rule,such as 'demo.default.svc.cluster.local:80',the default port is 80.
@@ -524,10 +518,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         String providedBy = referenceParameters.get(PROVIDED_BY);
         if (StringUtils.isEmpty(providedBy)) {
-            logger.warn(CONFIG_DUBBO_REFERENCE_PROVIDED_BY_NOT_FOUND, "", "", "In mesh mode, the providedBy of ReferenceConfig is empty.");
-        }
-        String dubboProvidedBy = referenceParameters.get(DUBBO_PROVIDED_BY);
-        if (StringUtils.isEmpty(dubboProvidedBy)) {
             throw new IllegalStateException("In mesh mode, the providedBy or dubboProvidedBy of ReferenceConfig is must be set");
         }
         return true;

@@ -20,7 +20,7 @@ import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.annotation.DubboProvidedbBy;
+import org.apache.dubbo.config.annotation.ProvidedbBy;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
@@ -80,9 +80,9 @@ public class ReferenceBeanSupport {
         }
         Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
         Class<?> clazz = ClassUtils.resolveClass(interfaceName, defaultInterfaceClass.getClassLoader());
-        DubboProvidedbBy dubboProvidedbBy = clazz.getAnnotation(DubboProvidedbBy.class);
-        if (dubboProvidedbBy != null && dubboProvidedbBy.name() != null && !"".equals(dubboProvidedbBy.name())) {
-            attributes.put(ReferenceAttributes.DUBBO_PROVIDED_BY, dubboProvidedbBy.name());
+        ProvidedbBy providedbBy = clazz.getAnnotation(ProvidedbBy.class);
+        if (providedbBy != null && providedbBy.name() != null && !"".equals(providedbBy.name())) {
+            attributes.put(ReferenceAttributes.DUBBO_PROVIDED_BY, providedbBy.name());
         }
         attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
         attributes.remove(ReferenceAttributes.INTERFACE_NAME);

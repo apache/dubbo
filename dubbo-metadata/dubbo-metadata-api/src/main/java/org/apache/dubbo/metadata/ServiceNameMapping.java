@@ -92,18 +92,11 @@ public interface ServiceNameMapping extends Destroyable {
     static Set<String> getMappingByUrl(URL consumerURL) {
         String providedBy = consumerURL.getParameter(RegistryConstants.PROVIDED_BY);
         if(StringUtils.isBlank(providedBy)) {
-            return getDubboProvidedByServices(consumerURL);
+            return null;
         }
         return AbstractServiceNameMapping.parseServices(providedBy);
     }
 
-    static Set<String> getDubboProvidedByServices(URL consumerURL) {
-        String dubboProvidedBy = consumerURL.getParameter(RegistryConstants.DUBBO_PROVIDED_BY);
-        if(StringUtils.isBlank(dubboProvidedBy)) {
-            return null;
-        }
-        return AbstractServiceNameMapping.parseServices(dubboProvidedBy);
-    }
 
     /**
      * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.

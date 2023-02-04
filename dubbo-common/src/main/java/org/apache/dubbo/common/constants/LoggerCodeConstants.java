@@ -377,7 +377,6 @@ public interface LoggerCodeConstants {
 
     String CONFIG_DUBBO_BEAN_NOT_FOUND = "5-40";
 
-    String CONFIG_DUBBO_REFERENCE_PROVIDED_BY_NOT_FOUND = "5-41";
 
     // Transport module
     String TRANSPORT_FAILED_CONNECT_PROVIDER = "6-1";
