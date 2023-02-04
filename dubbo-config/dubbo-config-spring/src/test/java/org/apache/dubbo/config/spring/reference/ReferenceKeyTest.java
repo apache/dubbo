@@ -26,6 +26,7 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.api.ProvidedByDemoService1;
 import org.apache.dubbo.config.spring.api.ProvidedByDemoService2;
+import org.apache.dubbo.config.spring.api.ProvidedByDemoService3;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.junit.jupiter.api.Assertions;
@@ -43,6 +44,8 @@ import org.springframework.core.annotation.AnnotationAttributes;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 class ReferenceKeyTest {
@@ -189,9 +192,11 @@ class ReferenceKeyTest {
         String fieldName1 = "providedByDemoService1";
         String fieldName2 = "providedByDemoService2";
         String fieldName3 = "providedByDemoServiceInterface";
+        String fieldName4 = "multiProvidedByDemoServiceInterface";
         Map<String, Object> attributes1= getReferenceAttributes(fieldName1);
         Map<String, Object> attributes2= getReferenceAttributes(fieldName2);
         Map<String, Object> attributes3= getReferenceAttributes(fieldName3);
+        Map<String, Object> attributes4= getReferenceAttributes(fieldName4);
 
         String serviceName1 = ((String[]) attributes1.get("providedBy"))[0];
         Assertions.assertEquals("provided-demo-service-interface", serviceName1);
@@ -199,6 +204,11 @@ class ReferenceKeyTest {
         Assertions.assertEquals("provided-demo-service2", serviceName2);
         String serviceName3 = ((String[]) attributes3.get("providedBy"))[0];
         Assertions.assertEquals("provided-demo-service-interface", serviceName3);
+        String[] serviceName4 = ((String) attributes4.get("providedBy")).split(",");
+        List<String> expectServices = new ArrayList<>();
+        expectServices.add("provided-demo-service-interface1");
+        expectServices.add("provided-demo-service-interface2");
+        Assertions.assertTrue(serviceName4.length == 2 && expectServices.contains(serviceName4[0]) && expectServices.contains(serviceName4[1]));
 
     }
 
@@ -355,6 +365,9 @@ class ReferenceKeyTest {
 
         @DubboReference
         private ProvidedByDemoService1 providedByDemoServiceInterface;
+
+        @DubboReference
+        private ProvidedByDemoService3 multiProvidedByDemoServiceInterface;
     }
 
 }
