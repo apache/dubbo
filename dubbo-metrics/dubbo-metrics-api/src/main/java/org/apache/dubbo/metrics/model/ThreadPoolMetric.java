@@ -15,24 +15,24 @@ public class ThreadPoolMetric {
 
     private String applicationName;
 
-   // private String threadPoolName;
+    private String threadPoolName;
 
     private ThreadPoolExecutor threadPoolExecutor;
 
 
-    public ThreadPoolMetric(String applicationName, ThreadPoolExecutor threadPoolExecutor) {
+    public ThreadPoolMetric(String applicationName, String threadPoolName, ThreadPoolExecutor threadPoolExecutor) {
         this.applicationName = applicationName;
         this.threadPoolExecutor = threadPoolExecutor;
-       // this.threadPoolName = threadPoolName;
+        this.threadPoolName = threadPoolName;
     }
 
-//    public String getThreadPoolName() {
-//        return threadPoolName;
-//    }
-//
-//    public void setThreadPoolName(String threadPoolName) {
-//        this.threadPoolName = threadPoolName;
-//    }
+    public String getThreadPoolName() {
+        return threadPoolName;
+    }
+
+    public void setThreadPoolName(String threadPoolName) {
+        this.threadPoolName = threadPoolName;
+    }
 
     public ThreadPoolExecutor getThreadPoolExecutor() {
         return threadPoolExecutor;
@@ -55,12 +55,13 @@ public class ThreadPoolMetric {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ThreadPoolMetric that = (ThreadPoolMetric) o;
-        return applicationName.equals(that.applicationName);
+        return Objects.equals(applicationName, that.applicationName) &&
+            Objects.equals(threadPoolName, that.threadPoolName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(applicationName);
+        return Objects.hash(applicationName, threadPoolName);
     }
 
     public Map<String, String> getTags() {
@@ -70,7 +71,7 @@ public class ThreadPoolMetric {
         tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
 
-       // tags.put(TAG_THREAD_NAME, threadPoolName);
+        tags.put(TAG_THREAD_NAME, threadPoolName);
         return tags;
     }
 
