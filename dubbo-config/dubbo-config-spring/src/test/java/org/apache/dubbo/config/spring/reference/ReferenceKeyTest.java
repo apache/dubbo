@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
@@ -23,10 +24,10 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.api.ProvidedByDemoService1;
+import org.apache.dubbo.config.spring.api.ProvidedByDemoService2;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
-
-import com.alibaba.spring.util.AnnotationUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -183,6 +184,23 @@ class ReferenceKeyTest {
         }
     }
 
+    @Test
+    void testConfig7() throws Exception{
+        String fieldName1 = "providedByDemoService1";
+        String fieldName2 = "providedByDemoService2";
+        String fieldName3 = "providedByDemoServiceInterface";
+        Map<String, Object> attributes1= getReferenceAttributes(fieldName1);
+        Map<String, Object> attributes2= getReferenceAttributes(fieldName2);
+        Map<String, Object> attributes3= getReferenceAttributes(fieldName3);
+
+        String serviceName1 = ((String[]) attributes1.get("providedBy"))[0];
+        Assertions.assertEquals("provided-demo-service-interface", serviceName1);
+        String serviceName2 = ((String[]) attributes2.get("providedBy"))[0];
+        Assertions.assertEquals("provided-demo-service2", serviceName2);
+        String serviceName3 = ((String[]) attributes3.get("providedBy"))[0];
+        Assertions.assertEquals("provided-demo-service-interface", serviceName3);
+
+    }
 
     private String getStackTrace(Throwable ex) {
         StringWriter stringWriter = new StringWriter();
@@ -195,6 +213,13 @@ class ReferenceKeyTest {
         AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(field, DubboReference.class, null, true);
         ReferenceBeanSupport.convertReferenceProps(attributes, field.getType());
         return ReferenceBeanSupport.generateReferenceKey(attributes, null);
+    }
+
+    private Map<String, Object> getReferenceAttributes(String fieldName) throws NoSuchFieldException {
+        Field field = ConsumerConfiguration7.class.getDeclaredField(fieldName);
+        AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(field, DubboReference.class, null, true);
+        ReferenceBeanSupport.convertReferenceProps(attributes, field.getType());
+        return attributes;
     }
 
     static class ReferenceConfiguration {
@@ -316,6 +341,20 @@ class ReferenceKeyTest {
 
 //        @Autowired
 //        private HelloService helloService;
+    }
+
+    @Configuration
+    static class ConsumerConfiguration7 {
+
+        //both are reference beans, same as xml config
+        @DubboReference(providedBy = "provided-demo-service1")
+        private ProvidedByDemoService1 providedByDemoService1;
+
+        @DubboReference(providedBy = "provided-demo-service2")
+        private ProvidedByDemoService2 providedByDemoService2;
+
+        @DubboReference
+        private ProvidedByDemoService1 providedByDemoServiceInterface;
     }
 
 }

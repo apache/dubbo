@@ -46,5 +46,5 @@ public @interface ProvidedbBy {
     /**
      * Interface app name, default value is empty string
      */
-    String name() default "";
+    String[] name() default {};
 }

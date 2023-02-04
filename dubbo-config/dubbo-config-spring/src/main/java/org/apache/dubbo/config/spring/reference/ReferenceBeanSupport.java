@@ -81,8 +81,8 @@ public class ReferenceBeanSupport {
         Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
         Class<?> clazz = ClassUtils.resolveClass(interfaceName, defaultInterfaceClass.getClassLoader());
         ProvidedbBy providedbBy = clazz.getAnnotation(ProvidedbBy.class);
-        if (providedbBy != null && providedbBy.name() != null && !"".equals(providedbBy.name())) {
-            attributes.put(ReferenceAttributes.DUBBO_PROVIDED_BY, providedbBy.name());
+        if (providedbBy != null && providedbBy.name() != null && providedbBy.name().length > 0) {
+            attributes.put(ReferenceAttributes.PROVIDED_BY, providedbBy.name());
         }
         attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
         attributes.remove(ReferenceAttributes.INTERFACE_NAME);
