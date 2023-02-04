@@ -18,16 +18,10 @@
 package org.apache.dubbo.spring.security.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.springframework.core.NestedExceptionUtils;
 import org.springframework.security.jackson2.CoreJackson2Module;
 
 final public class ObjectMapperCodec {
-
-    private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(
-        ObjectMapperCodec.class);
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -69,7 +63,6 @@ final public class ObjectMapperCodec {
 
         } catch (Exception ex) {
             throw new RuntimeException(String.format("objectMapper! serialize error %s", ex));
-
         }
     }
 
