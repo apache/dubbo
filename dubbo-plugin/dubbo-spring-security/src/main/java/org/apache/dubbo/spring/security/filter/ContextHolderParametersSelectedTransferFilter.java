@@ -24,9 +24,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.spring.security.filter.condition.AndFilterConditionMatcher;
-import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
-import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
+import org.apache.dubbo.rpc.filter.ConditionFilter;
+import org.apache.dubbo.rpc.filter.condition.AndFilterConditionMatcher;
+import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcher;
+import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 
 import java.util.ArrayList;

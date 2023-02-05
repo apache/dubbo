@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.spring.security.filter;
+package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
+import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcher;
 
 public interface ConditionFilter extends FilterConditionMatcher, Filter {
 

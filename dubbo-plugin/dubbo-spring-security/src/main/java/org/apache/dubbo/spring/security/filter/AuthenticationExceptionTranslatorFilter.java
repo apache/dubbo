@@ -23,7 +23,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
+import org.apache.dubbo.rpc.filter.ConditionFilter;
+import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 

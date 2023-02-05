@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.spring.security.filter.condition;
+package org.apache.dubbo.rpc.filter.condition;
 
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class AndFilterConditionMatcher implements FilterConditionMatcher{
+public class AndFilterConditionMatcher implements FilterConditionMatcher {
 
     private List<FilterConditionMatcher> conditionMatchers;
 

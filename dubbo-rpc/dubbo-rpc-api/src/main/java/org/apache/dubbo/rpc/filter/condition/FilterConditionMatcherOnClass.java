@@ -15,16 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.spring.security.filter.condition;
+package org.apache.dubbo.rpc.filter.condition;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
-public interface FilterConditionMatcher {
+public class FilterConditionMatcherOnClass implements FilterConditionMatcher {
 
-    default boolean match(Invoker<?> invoker, Invocation invocation){
-        return true;
+
+    public Boolean isMatched;
+
+    public FilterConditionMatcherOnClass(String className) {
+        this.isMatched = StringUtils.isBlank(className) ? false : ClassUtils.isPresent(className, null);
     }
 
-
+    public boolean match(Invoker<?> invoker, Invocation invocation){
+       return this.isMatched;
+    }
 }

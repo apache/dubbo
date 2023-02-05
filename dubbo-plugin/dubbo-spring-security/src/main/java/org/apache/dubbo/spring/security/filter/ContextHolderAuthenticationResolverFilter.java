@@ -23,9 +23,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.spring.security.filter.condition.AndFilterConditionMatcher;
-import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcher;
-import org.apache.dubbo.spring.security.filter.condition.FilterConditionMatcherOnClass;
+import org.apache.dubbo.rpc.filter.ConditionFilter;
+import org.apache.dubbo.rpc.filter.condition.AndFilterConditionMatcher;
+import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcher;
+import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 import org.springframework.security.core.Authentication;
@@ -38,7 +39,7 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 
 @Activate(group = CommonConstants.PROVIDER, order = -10000)
 public class ContextHolderAuthenticationResolverFilter
-    extends AndFilterConditionMatcher implements ConditionFilter{
+    extends AndFilterConditionMatcher implements ConditionFilter {
 
     private static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
 
