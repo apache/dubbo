@@ -17,10 +17,12 @@
 
 package org.apache.dubbo.common.cache;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.MD5Utils;
+import org.apache.dubbo.common.system.OperatingSystemBeanManager;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
+import org.apache.dubbo.common.utils.MD5Utils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
+import static org.apache.dubbo.common.system.OperatingSystemBeanManager.OS.Windows;
 
 /**
  * ClassLoader Level static share.
@@ -110,19 +113,29 @@ public final class FileCacheStoreFactory {
         if (!cacheName.endsWith(SUFFIX)) {
             cacheName = cacheName + SUFFIX;
         }
-        // basePath: /Users/aming/.dubbo   cacheName: .metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
-//        String cacheFilePath = basePath + File.separator + cacheName;
-        // /Users/aming/.dubbo/.metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
-        String fileContent = basePath + File.separator + cacheName;
-        // /Users/aming/.dubbo/.metadata
-        basePath = basePath + File.separator + filePrefix;
-
-        MD5Utils md5Utils = new MD5Utils();
-        String finalPath = basePath + File.separator + md5Utils.getMd5(cacheName);
-
-        return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, finalPath, k -> getFile(finalPath, fileContent, enableFileCache));
+        OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
+        if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+            String cacheFilePath = basePath + File.separator + cacheName;
+            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, "", enableFileCache));
+        } else {
+            MD5Utils md5Utils = new MD5Utils();
+            /** try to shorten the address
+             *  for example,  basePath: /Users/aming/.dubbo   cacheName: .metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
+             *  and the fileContent = /Users/aming/.dubbo/.metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
+             *      the basePath = /Users/aming/.dubbo/.metadata
+             *      the cacheFilePath = /Users/aming/.dubbo/.metadata/b5c91baccb83c8786f7e33a84e1c417e
+             */
+            String fileContent = basePath + File.separator + cacheName;
+            basePath = basePath + File.separator + filePrefix;
+            String cacheFilePath = basePath + File.separator + md5Utils.getMd5(cacheName);
+            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, fileContent, enableFileCache));
+        }
     }
 
+    public static void main(String[] args) {
+        MD5Utils md5Utils = new MD5Utils();
+        System.out.println("/Users/aming/.dubbo/.metadata" + File.separator + md5Utils.getMd5("b5c91baccb83c8786f7e33a84e1c417e"));;
+    }
     /**
      * sanitize a name for valid file or directory name
      *

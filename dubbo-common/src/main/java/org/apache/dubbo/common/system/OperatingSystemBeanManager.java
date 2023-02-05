@@ -96,4 +96,19 @@ public class OperatingSystemBeanManager {
             return null;
         }
     }
+
+    public static OS getOS() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        OS os = OS.Unix;
+        if (osName.contains("windows")) {
+            os = OS.Windows;
+        }
+        return os;
+    }
+
+    public enum OS {
+        Windows,
+        Unix
+    }
+
 }

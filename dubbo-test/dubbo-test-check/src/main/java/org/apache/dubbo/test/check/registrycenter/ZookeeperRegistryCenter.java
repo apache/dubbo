@@ -167,7 +167,7 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     /**
      * Returns the Operating System.
      */
-    private static OS getOS() {
+    public static OS getOS() {
         String osName = System.getProperty("os.name").toLowerCase();
         OS os = OS.Unix;
         if (osName.contains("windows")) {

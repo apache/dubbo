@@ -71,4 +71,8 @@ public class MD5Utils {
         return new String(str);
     }
 
+    public String getMd5String16Bit(String input) {
+       return getMd5(input).substring(8, 24);
+    }
+
 }
