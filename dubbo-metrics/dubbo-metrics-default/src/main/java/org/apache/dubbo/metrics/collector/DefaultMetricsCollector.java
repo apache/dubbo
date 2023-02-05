@@ -55,12 +55,10 @@ public class DefaultMetricsCollector implements MetricsCollector {
         this.stats = new MetricsStatComposite( this);
         FrameworkModel frameworkModel = FrameworkModel.defaultModel();
         FrameworkExecutorRepository frameworkExecutorRepository = frameworkModel.getBeanFactory().getBean(FrameworkExecutorRepository.class);
-        //ExecutorService executorService = frameworkExecutorRepository.getSharedExecutor();
         String applicationName = frameworkModel.defaultApplication().getApplicationName();
         threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "SharedExecutor", ((ThreadPoolExecutor)frameworkExecutorRepository.getSharedExecutor())));
         threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "MappingRefreshingExecutor", ((ThreadPoolExecutor)frameworkExecutorRepository.getMappingRefreshingExecutor())));
         threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "PoolRouterExecutor", ((ThreadPoolExecutor)frameworkExecutorRepository.getPoolRouterExecutor())));
-        //threadPoolMetricSet.add(new ThreadPoolMetric(applicationName, "", ((ScheduledThreadPoolExecutor)frameworkExecutorRepository.getCacheRefreshingScheduledExecutor())));
         ;
     }
 
