@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.metrics.metrics.event;
 
+import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.junit.jupiter.api.Assertions;
