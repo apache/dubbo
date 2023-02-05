@@ -26,12 +26,9 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.filter.ConditionFilter;
 import org.apache.dubbo.rpc.filter.condition.AndFilterConditionMatcher;
-import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcher;
 import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -42,19 +39,14 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 public class ContextHolderParametersSelectedTransferFilter
     extends AndFilterConditionMatcher implements ConditionFilter, ClusterFilter {
 
-    public static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
 
-    static{
-        conditionMatchers.add(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME){
+    public ContextHolderParametersSelectedTransferFilter(){
+        super(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME){
             @Override
             public boolean match(Invoker<?> invoker, Invocation invocation){
                 return !this.isMatched;
             }
         });
-    }
-
-    public ContextHolderParametersSelectedTransferFilter(){
-        super(conditionMatchers);
     }
 
     @Override

@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.filter.ConditionFilter;
 import org.apache.dubbo.rpc.filter.condition.AndFilterConditionMatcher;
-import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcher;
 import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
@@ -33,23 +32,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.CONSUMER, order = -10000)
 public class ContextHolderAuthenticationPrepareFilter
     extends AndFilterConditionMatcher implements ConditionFilter, ClusterFilter {
 
-    private static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
-
-    static{
-        conditionMatchers.add(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
-    }
 
     public ContextHolderAuthenticationPrepareFilter() {
-        super(conditionMatchers);
+        super(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
     }
 
     @Override

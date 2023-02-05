@@ -21,15 +21,19 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class AndFilterConditionMatcher implements FilterConditionMatcher {
 
     private List<FilterConditionMatcher> conditionMatchers;
 
-    public AndFilterConditionMatcher(List<FilterConditionMatcher> conditionMatchers) {
-        this.conditionMatchers = conditionMatchers;
+    public AndFilterConditionMatcher(FilterConditionMatcher... conditionMatchers) {
+        if (conditionMatchers.length > 0) {
+            this.conditionMatchers = Arrays.stream(conditionMatchers).collect(Collectors.toList());
+        }
     }
 
     @Override

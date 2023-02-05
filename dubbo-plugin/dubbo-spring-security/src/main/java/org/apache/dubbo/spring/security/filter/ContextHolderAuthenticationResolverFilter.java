@@ -41,14 +41,8 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 public class ContextHolderAuthenticationResolverFilter
     extends AndFilterConditionMatcher implements ConditionFilter {
 
-    private static List<FilterConditionMatcher> conditionMatchers = new ArrayList<>();
-
-    static{
-        conditionMatchers.add(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
-    }
-
     public ContextHolderAuthenticationResolverFilter() {
-        super(conditionMatchers);
+        super(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
 
     }
 
