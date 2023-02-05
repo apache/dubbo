@@ -124,22 +124,22 @@ public class StubMethodDescriptor implements MethodDescriptor, PackableMethod {
     }
 
     @Override
-    public Pack getRequestPack() {
+    public Pack getRequestPack(String contentType) {
         return requestPack;
     }
 
     @Override
-    public Pack getResponsePack() {
+    public Pack getResponsePack(String contentType) {
         return responsePack;
     }
 
     @Override
-    public UnPack getResponseUnpack() {
+    public UnPack getResponseUnpack(String contentType) {
         return responseUnpack;
     }
 
     @Override
-    public UnPack getRequestUnpack() {
+    public UnPack getRequestUnpack(String contentType) {
         return requestUnpack;
     }
 }

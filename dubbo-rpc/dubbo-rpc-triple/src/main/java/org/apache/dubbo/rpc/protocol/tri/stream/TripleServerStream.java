@@ -323,13 +323,13 @@ public class TripleServerStream extends AbstractStream implements ServerStream {
             "application/grpc");
 
         /**
-         * must starts from contentTypeList
+         *  must starts from application/grpc
          */
         private boolean supportContentType(String contentType) {
             if (contentType == null) {
                 return false;
             }
-            return contentTypeList.stream().anyMatch(type -> type.startsWith(contentType));
+            return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
         }
 
         @Override

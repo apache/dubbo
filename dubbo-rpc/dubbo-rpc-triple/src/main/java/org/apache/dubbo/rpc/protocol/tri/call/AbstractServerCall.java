@@ -142,7 +142,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
         final byte[] data;
         try {
-            data = packableMethod.packResponse(message);
+            String contentType = requestMetadata.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()).toString();
+            data = packableMethod.packResponse(contentType,message);
         } catch (Throwable e) {
             close(TriRpcStatus.INTERNAL.withDescription("Serialize response failed")
                 .withCause(e), null);
@@ -182,7 +183,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
-            Object instance = parseSingleMessage(message);
+            String contentType = requestMetadata.get(HttpHeaderNames.CONTENT_TYPE).toString();
+            Object instance = parseSingleMessage(contentType,message);
             listener.onMessage(instance);
         } catch (Throwable t) {
             final TriRpcStatus status = TriRpcStatus.UNKNOWN.withDescription("Server error")
@@ -195,7 +197,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         }
     }
 
-    protected abstract Object parseSingleMessage(byte[] data)
+    protected abstract Object parseSingleMessage(String contentType,byte[] data)
         throws IOException, ClassNotFoundException;
 
     @Override
@@ -255,7 +257,8 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         headerSent = true;
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.status(HttpResponseStatus.OK.codeAsText());
-        headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        String contentType = requestMetadata.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()).toString();
+        headers.set(HttpHeaderNames.CONTENT_TYPE, contentType);
         if (acceptEncoding != null) {
             headers.set(HttpHeaderNames.ACCEPT_ENCODING, acceptEncoding);
         }

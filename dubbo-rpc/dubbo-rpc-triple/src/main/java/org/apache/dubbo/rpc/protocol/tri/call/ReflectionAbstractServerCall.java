@@ -148,7 +148,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
     }
 
     @Override
-    protected Object parseSingleMessage(byte[] data)
+    protected Object parseSingleMessage(String contentType,byte[] data)
         throws IOException, ClassNotFoundException {
         trySetMethodDescriptor(data);
         trySetListener();
@@ -157,7 +157,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
         }
         ClassLoadUtil.switchContextLoader(
             invoker.getUrl().getServiceModel().getClassLoader());
-        return packableMethod.getRequestUnpack().unpack(data);
+        return packableMethod.getRequestUnpack(contentType).unpack(data);
     }
 
 

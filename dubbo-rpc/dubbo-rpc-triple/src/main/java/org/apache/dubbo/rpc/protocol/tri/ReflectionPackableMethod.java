@@ -102,7 +102,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.originalPack = new OriginalPack(serialization, url, serializeName, singleArgument);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
             this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
-            this.originalUnpack = new OriginalUnpack(serialization, url, serializeName,actualResponseType);
+            this.originalUnpack = new OriginalUnpack(serialization, url, actualResponseType);
         }
     }
 
@@ -291,32 +291,50 @@ public class ReflectionPackableMethod implements PackableMethod {
     }
 
     @Override
-    public Pack getRequestPack() {
-        return isNotOriginalSerializeType() ? requestPack : originalPack;
-    }
-
-    @Override
-    public Pack getResponsePack() {
-        return isNotOriginalSerializeType() ? responsePack : originalPack;
-    }
-
-    @Override
-    public UnPack getResponseUnpack() {
-        return isNotOriginalSerializeType() ? responseUnpack : originalUnpack;
-    }
-
-    @Override
-    public UnPack getRequestUnpack() {
-        return isNotOriginalSerializeType() ? requestUnpack : originalUnpack;
-    }
-
-    private boolean isNotOriginalSerializeType() {
-        String serialize = ((OriginalPack) originalPack).serialize;
-
-        if (serialize == null) {
-            return true;
+    public Pack getRequestPack(String contentType) {
+        if(isNotOriginalSerializeType(contentType) ){
+            return requestPack;
         }
-        return serialize.startsWith(TripleConstant.APPLICATION_GRPC);
+        ((OriginalUnpack)originalPack).serialize = getSerializeType(contentType);
+        return originalPack;
+    }
+
+    @Override
+    public Pack getResponsePack(String contentType) {
+        if(isNotOriginalSerializeType(contentType) ){
+            return responsePack;
+        }
+        ((OriginalUnpack)originalPack).serialize = getSerializeType(contentType);
+        return originalPack;
+    }
+
+    @Override
+    public UnPack getResponseUnpack(String contentType) {
+        if(isNotOriginalSerializeType(contentType) ){
+            return responseUnpack;
+        }
+        ((OriginalUnpack)originalUnpack).serialize = getSerializeType(contentType);
+        return originalUnpack;
+    }
+
+    @Override
+    public UnPack getRequestUnpack(String contentType) {
+        if(isNotOriginalSerializeType(contentType) ){
+            return requestUnpack;
+        }
+        ((OriginalUnpack)originalUnpack).serialize = getSerializeType(contentType);
+        return originalUnpack;
+    }
+
+    private boolean isNotOriginalSerializeType(String contentType) {
+
+        return TripleConstant.CONTENT_PROTO.contains(contentType);
+    }
+
+    private String getSerializeType(String contentType) {
+        // contentType：application/grpc、application/grpc+proto ...
+        String[] contentTypes = contentType.split("\\+");
+        return contentTypes[1];
     }
 
     private static class WrapResponsePack implements Pack {
@@ -470,17 +488,16 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     private static class OriginalPack implements Pack{
 
-        private final String serialize;
         private final MultipleSerialization multipleSerialization;
         private final URL url;
         private final boolean singleArgument;
+        String serialize;
 
         private OriginalPack(MultipleSerialization multipleSerialization,
                              URL url,
                              String serialize,
                              boolean singleArgument) {
             this.url = url;
-            this.serialize = convertHessianToWrapper(serialize);
             this.multipleSerialization = multipleSerialization;
             this.singleArgument = singleArgument;
         }
@@ -490,9 +507,7 @@ public class ReflectionPackableMethod implements PackableMethod {
             Object[] arguments = singleArgument ? new Object[]{obj} : (Object[]) obj;
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            for (int i = 0; i < arguments.length; i++) {
-                multipleSerialization.serialize(url, serialize, arguments.getClass(), arguments, bos);
-            }
+            multipleSerialization.serialize(url, serialize, arguments.getClass(), arguments, bos);
 
             return  bos.toByteArray();
         }
@@ -502,17 +517,17 @@ public class ReflectionPackableMethod implements PackableMethod {
     private static class OriginalUnpack implements UnPack{
         private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 
-        private final String serialize;
+
         private final MultipleSerialization serialization;
         private final URL url;
         private final Class<?> actualResponseType;
 
+        String serialize;
+
         private OriginalUnpack(MultipleSerialization serialization,
                                URL url,
-                               String serialize,
                                Class<?> actualResponseType) {
             this.serialization = serialization;
-            this.serialize = convertHessianToWrapper(serialize);
             this.url = url;
             this.actualResponseType=actualResponseType;
         }

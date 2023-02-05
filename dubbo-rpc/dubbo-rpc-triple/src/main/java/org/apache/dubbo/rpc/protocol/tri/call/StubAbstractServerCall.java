@@ -58,8 +58,8 @@ public class StubAbstractServerCall extends AbstractServerCall {
     }
 
     @Override
-    protected Object parseSingleMessage(byte[] data) throws IOException, ClassNotFoundException {
-        return packableMethod.parseRequest(data);
+    protected Object parseSingleMessage(String contentType,byte[] data) throws IOException, ClassNotFoundException {
+        return packableMethod.parseRequest(contentType, data);
     }
 
 }

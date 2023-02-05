@@ -32,6 +32,8 @@ import io.netty.util.AsciiString;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.APPLICATION_GRPC;
+
 public class RequestMetadata {
 
     public AsciiString scheme;
@@ -76,9 +78,12 @@ public class RequestMetadata {
         return header;
     }
 
-    private String getRemotingSerialization() {
-//        TripleConstant.CONTENT_PROTO
-        return contentType;
+    public String getRemotingSerialization() {
+
+        if (contentType == null) {
+            return TripleConstant.CONTENT_PROTO;
+        }
+        return APPLICATION_GRPC + contentType;
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key,
