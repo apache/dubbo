@@ -72,6 +72,12 @@ public final class {{className}} {
     {{inputType}}.class, {{outputType}}.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
     obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
     {{outputType}}::parseFrom);
+
+    private static final StubMethodDescriptor {{methodName}}AsyncMethod = new StubMethodDescriptor("{{originMethodName}}",
+    {{inputType}}.class, java.util.concurrent.CompletableFuture.class, serviceDescriptor, MethodDescriptor.RpcType.UNARY,
+    obj -> ((Message) obj).toByteArray(), obj -> ((Message) obj).toByteArray(), {{inputType}}::parseFrom,
+    {{outputType}}::parseFrom);
+
 {{/unaryMethods}}
 
 {{#serverStreamingMethods}}
@@ -119,6 +125,10 @@ public final class {{className}} {
         @Override
         public {{outputType}} {{methodName}}({{inputType}} request){
             return StubInvocationUtil.unaryCall(invoker, {{methodName}}Method, request);
+        }
+
+        public CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+            return StubInvocationUtil.unaryCall(invoker, {{methodName}}AsyncMethod, request);
         }
 
         {{#javaDoc}}
