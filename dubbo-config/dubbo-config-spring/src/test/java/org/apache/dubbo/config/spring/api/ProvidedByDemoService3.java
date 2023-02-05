@@ -21,7 +21,7 @@ import org.apache.dubbo.config.annotation.ProvidedbBy;
 /**
  * DemoService
  */
-@ProvidedbBy(name = "provided-demo-service-interface1, provided-demo-service-interface2")
+@ProvidedbBy(name = {"provided-demo-service-interface1", "provided-demo-service-interface2"})
 public interface ProvidedByDemoService3 {
 
     String sayName(String name);
