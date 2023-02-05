@@ -19,7 +19,6 @@ package org.apache.dubbo.annotation;
 
 import org.apache.dubbo.annotation.permit.Permit;
 import org.apache.dubbo.annotation.util.FileUtils;
-import org.apache.dubbo.annotation.util.MessagerPrintStreamWrapper;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -68,23 +67,19 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
-        try {
-            Permit.addOpens();
-            super.init(processingEnv);
+        Permit.addOpens();
+        super.init(processingEnv);
 
-            if (processingEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
-                // Don't run on ECJ, since this processor is javac based.
-                processingEnv
-                    .getMessager()
-                    .printMessage(Diagnostic.Kind.WARNING, "The Annotation processor doesn't support ECJ.");
+        if (processingEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
+            // Don't run on ECJ, since this processor is javac based.
+            processingEnv
+                .getMessager()
+                .printMessage(Diagnostic.Kind.WARNING, "The Annotation processor doesn't support ECJ.");
 
-                return;
-            }
-
-            apContext = AnnotationProcessorContext.fromProcessingEnvironment(processingEnv);
-        } catch (Throwable t) {
-            t.printStackTrace(new MessagerPrintStreamWrapper(processingEnv));
+            return;
         }
+
+        apContext = AnnotationProcessorContext.fromProcessingEnvironment(processingEnv);
     }
 
     @Override
