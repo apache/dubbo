@@ -26,19 +26,23 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.ThreadPoolMetric;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.metrics.model.MetricsCategory.*;
+import static org.apache.dubbo.metrics.model.MetricsCategory.THREAD_POOL;
+import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
+import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
 
 /**
