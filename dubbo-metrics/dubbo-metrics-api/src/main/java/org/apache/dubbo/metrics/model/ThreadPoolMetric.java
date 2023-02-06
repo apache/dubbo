@@ -40,8 +40,7 @@ public class ThreadPoolMetric {
     private String threadPoolName;
 
     private ThreadPoolExecutor threadPoolExecutor;
-
-
+    
     public ThreadPoolMetric(String applicationName, String threadPoolName, ThreadPoolExecutor threadPoolExecutor) {
         this.applicationName = applicationName;
         this.threadPoolExecutor = threadPoolExecutor;
