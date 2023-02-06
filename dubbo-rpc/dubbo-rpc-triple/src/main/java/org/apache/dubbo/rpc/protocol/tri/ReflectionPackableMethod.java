@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +30,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
@@ -102,9 +104,9 @@ public class ReflectionPackableMethod implements PackableMethod {
             this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
             this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
 
-            singleArgument = isServer ? isServer : singleArgument;
-            this.originalPack = new OriginalPack(serialization, url, serializeName, singleArgument);
-            this.originalUnpack = new OriginalUnpack(serialization, url);
+
+            this.originalPack = new OriginalPack(serialization, url, actualResponseType, singleArgument, isServer);
+            this.originalUnpack = new OriginalUnpack(serialization, url, actualRequestTypes, actualResponseType, isServer);
         }
     }
 
@@ -294,37 +296,37 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     @Override
     public Pack getRequestPack(String contentType) {
-        if(isNotOriginalSerializeType(contentType) ){
+        if (isNotOriginalSerializeType(contentType)) {
             return requestPack;
         }
-        ((OriginalPack)originalPack).serialize = getSerializeType(contentType);
+        ((OriginalPack) originalPack).serialize = getSerializeType(contentType);
         return originalPack;
     }
 
     @Override
     public Pack getResponsePack(String contentType) {
-        if(isNotOriginalSerializeType(contentType) ){
+        if (isNotOriginalSerializeType(contentType)) {
             return responsePack;
         }
-        ((OriginalPack)originalPack).serialize = getSerializeType(contentType);
+        ((OriginalPack) originalPack).serialize = getSerializeType(contentType);
         return originalPack;
     }
 
     @Override
     public UnPack getResponseUnpack(String contentType) {
-        if(isNotOriginalSerializeType(contentType) ){
+        if (isNotOriginalSerializeType(contentType)) {
             return responseUnpack;
         }
-        ((OriginalUnpack)originalUnpack).serialize = getSerializeType(contentType);
+        ((OriginalUnpack) originalUnpack).serialize = getSerializeType(contentType);
         return originalUnpack;
     }
 
     @Override
     public UnPack getRequestUnpack(String contentType) {
-        if(isNotOriginalSerializeType(contentType) ){
+        if (isNotOriginalSerializeType(contentType)) {
             return requestUnpack;
         }
-        ((OriginalUnpack)originalUnpack).serialize = getSerializeType(contentType);
+        ((OriginalUnpack) originalUnpack).serialize = getSerializeType(contentType);
         return originalUnpack;
     }
 
@@ -488,54 +490,100 @@ public class ReflectionPackableMethod implements PackableMethod {
 
     }
 
-    private static class OriginalPack implements Pack{
+    private static class OriginalPack implements Pack {
 
         private final MultipleSerialization multipleSerialization;
         private final URL url;
         private final boolean singleArgument;
+        private final boolean isServer;
+        private Class<?> actualResponseType;
         String serialize;
 
         private OriginalPack(MultipleSerialization multipleSerialization,
                              URL url,
-                             String serialize,
-                             boolean singleArgument) {
+                             Class<?> actualResponseType,
+                             boolean singleArgument,
+                             boolean isServer) {
             this.url = url;
             this.multipleSerialization = multipleSerialization;
             this.singleArgument = singleArgument;
+            this.isServer = isServer;
+            this.actualResponseType = actualResponseType;
         }
 
         @Override
         public byte[] pack(Object obj) throws IOException {
+
+            if (isServer) {
+                //pack Response
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                if(obj != null){
+                    actualResponseType = obj.getClass();
+                }
+                multipleSerialization.serialize(url, serialize, actualResponseType, obj, bos);
+                return bos.toByteArray();
+            }
+
+            //pack Request
             Object[] arguments = singleArgument ? new Object[]{obj} : (Object[]) obj;
+            ArrayList<byte[]> argumentByteList = new ArrayList<>(arguments.length);
+            for (int i = 0; i < arguments.length; i++) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                multipleSerialization.serialize(url, serialize, arguments[i].getClass(), arguments[i], bos);
+                argumentByteList.add(bos.toByteArray());
+            }
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serialize, arguments.getClass(), arguments, bos);
-
-            return  bos.toByteArray();
+            multipleSerialization.serialize(url, serialize, argumentByteList.getClass(), argumentByteList, bos);
+            return bos.toByteArray();
         }
 
     }
 
-    private static class OriginalUnpack implements UnPack{
+    private static class OriginalUnpack implements UnPack {
         private final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
 
 
         private final MultipleSerialization serialization;
         private final URL url;
-
+        private final Class<?>[] actualRequestTypes;
+        private final Class<?> actualResponseType;
+        private final boolean isServer;
         String serialize;
 
-        private OriginalUnpack(MultipleSerialization serialization, URL url) {
+        private OriginalUnpack(MultipleSerialization serialization, URL url, Class<?>[] actualRequestTypes, Class<?> actualResponseType, boolean isServer) {
             this.serialization = serialization;
             this.url = url;
+            this.isServer = isServer;
+            this.actualRequestTypes = actualRequestTypes;
+            this.actualResponseType = actualResponseType;
         }
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
 
-            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            if (isServer) {
+                //  unpack Request
+                ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                Object obj = serialization.deserialize(url, serialize, ArrayList.class, bais);
+                ArrayList<byte[]> argumentByteList = (ArrayList<byte[]>) obj;
+                Assert.assertTrue(argumentByteList.size() == actualRequestTypes.length, "arguments.length and argumentTypes.length mismatch;");
 
-            return serialization.deserialize(url, serialize, Object[].class, bais);
+                Object[] ret = new Object[actualRequestTypes.length];
+                for (int i = 0; i < actualRequestTypes.length; i++) {
+                    byte[] argumentByte = argumentByteList.get(i);
+
+                    ByteArrayInputStream argumentBais = new ByteArrayInputStream(argumentByte);
+                    ret[i] = serialization.deserialize(url, serialize, actualRequestTypes[i], argumentBais);
+                }
+
+                return ret;
+            }
+
+            //  unpack Response
+            ByteArrayInputStream bais = new ByteArrayInputStream(data);
+            Object deserialize = serialization.deserialize(url, serialize, actualResponseType, bais);
+            return deserialize;
         }
     }
 
