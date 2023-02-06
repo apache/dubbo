@@ -28,6 +28,7 @@ import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +50,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final MetricsStatComposite stats;
     private final SimpleMetricsEventMulticaster eventMulticaster;
 
-    public DefaultMetricsCollector() {
+    public DefaultMetricsCollector(FrameworkModel frameworkModel) {
         this.stats = new MetricsStatComposite(this);
-        this.eventMulticaster = SimpleMetricsEventMulticaster.getInstance();
+        this.eventMulticaster = frameworkModel.getBeanFactory().getBean(SimpleMetricsEventMulticaster.class);
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {

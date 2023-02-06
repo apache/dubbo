@@ -25,7 +25,6 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +60,7 @@ class AggregateMetricsCollectorTest {
         applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(config);
 
-        defaultCollector = new DefaultMetricsCollector();
+        defaultCollector = new DefaultMetricsCollector(applicationModel.getFrameworkModel());
         defaultCollector.setCollectEnabled(true);
         MetricsConfig metricsConfig = new MetricsConfig();
         AggregationConfig aggregationConfig = new AggregationConfig();

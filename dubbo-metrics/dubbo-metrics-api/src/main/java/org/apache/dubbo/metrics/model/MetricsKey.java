@@ -22,7 +22,7 @@ public enum MetricsKey {
     // provider metrics key
     PROVIDER_METRIC_REQUESTS("dubbo.provider.requests.total", "Total Requests"),
     PROVIDER_METRIC_REQUESTS_SUCCEED("dubbo.provider.requests.succeed.total", "Succeed Requests"),
-    PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed.total","Failed Business Requests"),
+    PROVIDER_METRIC_REQUEST_BUSINESS_FAILED("dubbo.provider.requests.business.failed.total", "Failed Business Requests"),
     PROVIDER_METRIC_REQUESTS_PROCESSING("dubbo.provider.requests.processing", "Processing Requests"),
     PROVIDER_METRIC_REQUESTS_TIMEOUT("dubbo.provider.requests.timeout.total", "Total Timeout Failed Requests"),
     PROVIDER_METRIC_REQUESTS_LIMIT("dubbo.provider.requests.limit.total", "Total Limit Failed Requests"),
@@ -46,6 +46,19 @@ public enum MetricsKey {
     PROVIDER_METRIC_RT_AVG("dubbo.provider.rt.seconds.avg", "Average Response Time"),
     PROVIDER_METRIC_RT_P99("dubbo.provider.rt.seconds.p99", "Response Time P99"),
     PROVIDER_METRIC_RT_P95("dubbo.provider.rt.seconds.p95", "Response Time P95"),
+
+    // register metrics key
+    REGISTER_METRIC_REQUESTS("dubbo.registry.register.requests.total", "Total Register Requests"),
+    REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
+    REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
+
+    REGISTER_METRIC_RT_LAST("dubbo.register.rt.seconds.last", "Last Response Time"),
+    REGISTER_METRIC_RT_MIN("dubbo.register.rt.seconds.min", "Min Response Time"),
+    REGISTER_METRIC_RT_MAX("dubbo.register.rt.seconds.max", "Max Response Time"),
+    REGISTER_METRIC_RT_SUM("dubbo.register.rt.seconds.sum", "Sum Response Time"),
+    REGISTER_METRIC_RT_AVG("dubbo.register.rt.seconds.avg", "Average Response Time"),
+    REGISTER_METRIC_RT_P99("dubbo.register.rt.seconds.p99", "Response Time P99"),
+    REGISTER_METRIC_RT_P95("dubbo.register.rt.seconds.p95", "Response Time P95"),
 
     // consumer metrics key
     ;

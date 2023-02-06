@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * MetricsConfig
@@ -39,6 +39,8 @@ public class MetricsConfig extends AbstractConfig {
      * Enable jvm metrics when collecting.
      */
     private Boolean enableJvmMetrics;
+
+    private Boolean enableRegistry;
 
     /**
      * @deprecated After metrics config is refactored.
@@ -96,6 +98,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setEnableJvmMetrics(Boolean enableJvmMetrics) {
         this.enableJvmMetrics = enableJvmMetrics;
+    }
+
+    public Boolean getEnableRegistry() {
+        return enableRegistry;
+    }
+
+    public void setEnableRegistry(Boolean enableRegistry) {
+        this.enableRegistry = enableRegistry;
     }
 
     public String getPort() {

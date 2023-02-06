@@ -17,17 +17,24 @@
 
 package org.apache.dubbo.metrics.listener;
 
+import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 
 /**
  * Metrics Listener.
  */
-public interface MetricsListener {
+@SPI
+public interface MetricsListener<E extends MetricsEvent<?>> {
+
+    default boolean isSupport(MetricsEvent<?> event) {
+        return true;
+    }
 
     /**
      * notify event.
      *
      * @param event BaseMetricsEvent
      */
-    void onEvent(MetricsEvent event);
+    void onEvent(E event);
+
 }
