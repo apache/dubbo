@@ -119,7 +119,6 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
 
                     // In constructor, super(...) or this(...) should be the first statement.
 
-
                     if (isConstructor && !block.stats.isEmpty()) {
 
                         boolean startsWithSuper = block.stats.get(0).toString().startsWith("super(");
@@ -129,6 +128,9 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                             statements.add(block.stats.get(0));
                             statements.add(fullExpressionStatement);
                             statements.addAll(block.stats.subList(1, block.stats.size()));
+                        } else {
+                            statements.add(fullExpressionStatement);
+                            statements.addAll(block.stats);
                         }
 
                     } else {
