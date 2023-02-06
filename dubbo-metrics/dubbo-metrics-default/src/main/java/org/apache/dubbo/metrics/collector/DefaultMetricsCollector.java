@@ -34,7 +34,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.metrics.model.MetricsCategory.*;
+import static org.apache.dubbo.metrics.model.MetricsCategory.APPLICATION;
+import static org.apache.dubbo.metrics.model.MetricsCategory.REQUESTS;
+import static org.apache.dubbo.metrics.model.MetricsCategory.RT;
 
 
 /**
