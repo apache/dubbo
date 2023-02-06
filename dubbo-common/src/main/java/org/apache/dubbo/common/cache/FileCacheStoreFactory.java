@@ -128,10 +128,10 @@ public final class FileCacheStoreFactory {
             basePath = basePath + File.separator + filePrefix;
             String md5String32Bit = md5Utils.getMd5(cacheName);
             String cacheFilePath = basePath + "." + md5Utils.getMd5(cacheName);
-            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, fileContent, md5String32Bit, enableFileCache));
+            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, fileContent, md5String32Bit, enableFileCache, true));
         } else {
             String cacheFilePath = basePath + File.separator + cacheName;
-            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, "", "", enableFileCache));
+            return ConcurrentHashMapUtils.computeIfAbsent(cacheMap, cacheFilePath, k -> getFile(cacheFilePath, "", "", enableFileCache, true));
         }
     }
 
@@ -169,7 +169,7 @@ public final class FileCacheStoreFactory {
      * @param name the file name
      * @return a file object
      */
-    private static FileCacheStore getFile(String name, String fileContent, String md5String, boolean enableFileCache) {
+    private static FileCacheStore getFile(String name, String fileContent, String md5String, boolean enableFileCache, boolean enableAddressShorten) {
         if (!enableFileCache) {
             return FileCacheStore.Empty.getInstance(name);
         }
@@ -183,7 +183,7 @@ public final class FileCacheStoreFactory {
                 try {
                     Files.createFile(pathObjectOfFile);
                 } catch (FileSystemException e) {
-                    if (!StringUtils.isEmpty(md5String) && md5String.length() == 32) {
+                    if (enableAddressShorten && !StringUtils.isEmpty(md5String) && md5String.length() == 32) {
                         int newNameIndex = name.indexOf(md5String);
                         if (newNameIndex == -1) {
                             logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
@@ -192,7 +192,7 @@ public final class FileCacheStoreFactory {
                         }
                         String md5String16Bit = md5String.substring(12, 24);
                         String newName = name.substring(0, newNameIndex - 1) + "." + md5String16Bit;
-                        getFile(newName, fileContent, md5String16Bit, enableFileCache);
+                        getFile(newName, fileContent, md5String16Bit, enableFileCache, enableAddressShorten);
                     } else {
                         logger.warn(COMMON_CACHE_PATH_INACCESSIBLE, "inaccessible of cache path", "",
                             "Failed to create file store cache. Local file cache will be disabled. Cache file name: " + name, e);
