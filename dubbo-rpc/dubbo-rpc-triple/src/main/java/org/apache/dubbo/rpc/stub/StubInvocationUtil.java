@@ -58,6 +58,8 @@ public class StubInvocationUtil {
             methodDescriptor.getMethodName(), invoker.getInterface().getName(),
             invoker.getUrl().getProtocolServiceKey(), methodDescriptor.getParameterClasses(),
             arguments);
+        //When there are multiple MethodDescriptors with the same method name, the return type will be wrong
+        rpcInvocation.setReturnType(methodDescriptor.getReturnClass());
         try {
             return InvocationUtil.invoke(invoker, rpcInvocation);
         } catch (Throwable e) {

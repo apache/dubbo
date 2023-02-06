@@ -49,6 +49,7 @@ import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
 import org.apache.dubbo.qos.command.impl.SelectTelnet;
 import org.apache.dubbo.qos.command.impl.SerializeCheckStatus;
+import org.apache.dubbo.qos.command.impl.SerializeWarnedClasses;
 import org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent;
 import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
@@ -116,6 +117,7 @@ class CommandHelperTest {
         expectedClasses.add(SwitchLogger.class);
         expectedClasses.add(SwitchLogLevel.class);
         expectedClasses.add(SerializeCheckStatus.class);
+        expectedClasses.add(SerializeWarnedClasses.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
