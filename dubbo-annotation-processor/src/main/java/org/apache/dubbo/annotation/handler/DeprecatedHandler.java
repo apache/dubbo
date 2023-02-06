@@ -70,6 +70,11 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
 
                     JCTree.JCBlock block = jcMethodDecl.body;
 
+                    if (block == null) {
+                        // No method body.
+                        return;
+                    }
+
                     JCTree.JCExpression getLoggerStatement = apContext.getTreeMaker().Apply(
                         // Use definite name to distinguish the java.util.List.
                         com.sun.tools.javac.util.List.nil(),
