@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Inherited
-public @interface ProvidedbBy {
+public @interface ProvidedBy {
 
     /**
      * Interface app name, default value is empty string

@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.spring.api;
 
-import org.apache.dubbo.config.annotation.ProvidedbBy;
+import org.apache.dubbo.config.annotation.ProvidedBy;
 
 /**
  * DemoService
  */
-@ProvidedbBy(name = {"provided-demo-service-interface1", "provided-demo-service-interface2"})
+@ProvidedBy(name = {"provided-demo-service-interface1", "provided-demo-service-interface2"})
 public interface ProvidedByDemoService3 {
 
     String sayName(String name);

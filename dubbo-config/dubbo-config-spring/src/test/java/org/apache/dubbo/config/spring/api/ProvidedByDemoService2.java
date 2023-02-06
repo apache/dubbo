@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring.api;
 
-import org.apache.dubbo.config.annotation.ProvidedbBy;
-
 /**
  * DemoService
  */
