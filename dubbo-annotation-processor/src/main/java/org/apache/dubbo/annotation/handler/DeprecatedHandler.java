@@ -71,9 +71,11 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                     JCTree.JCBlock block = jcMethodDecl.body;
 
                     if (block == null) {
-                        // No method body.
+                        // No method body. (i.e. interface method declaration.)
                         return;
                     }
+
+                    boolean isConstructor = jcMethodDecl.name.toString().equals("<init>");
 
                     JCTree.JCExpression getLoggerStatement = apContext.getTreeMaker().Apply(
                         // Use definite name to distinguish the java.util.List.
@@ -114,8 +116,21 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                     JCTree.JCExpressionStatement fullExpressionStatement = apContext.getTreeMaker().Exec(fullStatement);
 
                     ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
-                    statements.add(fullExpressionStatement);
-                    statements.addAll(block.stats);
+
+                    // In constructor, super(...) should be the first statement.
+
+                    if (isConstructor &&
+                        !block.stats.isEmpty() &&
+                        block.stats.get(0).toString().startsWith("super(")) {
+
+                        statements.add(block.stats.get(0));
+                        statements.add(fullExpressionStatement);
+                        statements.addAll(block.stats.subList(1, block.stats.size()));
+
+                    } else {
+                        statements.add(fullExpressionStatement);
+                        statements.addAll(block.stats);
+                    }
 
                     block.stats = statements.toList();
                 }
