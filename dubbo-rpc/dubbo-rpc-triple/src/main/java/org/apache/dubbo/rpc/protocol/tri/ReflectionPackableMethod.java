@@ -57,7 +57,7 @@ public class ReflectionPackableMethod implements PackableMethod {
     private final Pack originalPack;
     private final UnPack originalUnpack;
 
-    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName) {
+    public ReflectionPackableMethod(MethodDescriptor method, URL url, String serializeName, boolean isServer) {
         Class<?>[] actualRequestTypes;
         Class<?> actualResponseType;
         switch (method.getRpcType()) {
@@ -99,21 +99,23 @@ public class ReflectionPackableMethod implements PackableMethod {
 
             this.requestPack = new WrapRequestPack(serialization, url, serializeName, singleArgument);
             this.responsePack = new WrapResponsePack(serialization, url, actualResponseType);
-            this.originalPack = new OriginalPack(serialization, url, serializeName, singleArgument);
             this.requestUnpack = new WrapRequestUnpack(serialization, url, actualRequestTypes);
             this.responseUnpack = new WrapResponseUnpack(serialization, url, actualResponseType);
-            this.originalUnpack = new OriginalUnpack(serialization, url, actualResponseType);
+
+            singleArgument = isServer ? isServer : singleArgument;
+            this.originalPack = new OriginalPack(serialization, url, serializeName, singleArgument);
+            this.originalUnpack = new OriginalUnpack(serialization, url);
         }
     }
 
-    public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url) {
+    public static ReflectionPackableMethod init(MethodDescriptor methodDescriptor, URL url, boolean isServer) {
         final String serializeName = UrlUtils.serializationOrDefault(url);
         Object stored = methodDescriptor.getAttribute(METHOD_ATTR_PACK);
         if (stored != null) {
             return (ReflectionPackableMethod) stored;
         }
         ReflectionPackableMethod reflectionPackableMethod = new ReflectionPackableMethod(
-            methodDescriptor, url, serializeName);
+            methodDescriptor, url, serializeName, isServer);
         methodDescriptor.addAttribute(METHOD_ATTR_PACK, reflectionPackableMethod);
         return reflectionPackableMethod;
     }
@@ -520,24 +522,20 @@ public class ReflectionPackableMethod implements PackableMethod {
 
         private final MultipleSerialization serialization;
         private final URL url;
-        private final Class<?> actualResponseType;
 
         String serialize;
 
-        private OriginalUnpack(MultipleSerialization serialization,
-                               URL url,
-                               Class<?> actualResponseType) {
+        private OriginalUnpack(MultipleSerialization serialization, URL url) {
             this.serialization = serialization;
             this.url = url;
-            this.actualResponseType=actualResponseType;
         }
 
         @Override
         public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
 
             ByteArrayInputStream bais = new ByteArrayInputStream(data);
-            Class<?> clz = getClassFromCache(Object[].class.getName(), classCache, actualResponseType);
-            return serialization.deserialize(url, serialize,clz, bais);
+
+            return serialization.deserialize(url, serialize, Object[].class, bais);
         }
     }
 

@@ -116,7 +116,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
             }
         }
         if (methodDescriptor != null) {
-            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+            packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl(),true);
         }
         trySetListener();
         if (listener == null) {
@@ -185,7 +185,7 @@ public class ReflectionAbstractServerCall extends AbstractServerCall {
                     + serviceDescriptor.getInterfaceName()), null);
             return;
         }
-        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl());
+        packableMethod = ReflectionPackableMethod.init(methodDescriptor, invoker.getUrl(),true);
     }
 
 }
