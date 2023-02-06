@@ -295,7 +295,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         if(isNotOriginalSerializeType(contentType) ){
             return requestPack;
         }
-        ((OriginalUnpack)originalPack).serialize = getSerializeType(contentType);
+        ((OriginalPack)originalPack).serialize = getSerializeType(contentType);
         return originalPack;
     }
 
@@ -304,7 +304,7 @@ public class ReflectionPackableMethod implements PackableMethod {
         if(isNotOriginalSerializeType(contentType) ){
             return responsePack;
         }
-        ((OriginalUnpack)originalPack).serialize = getSerializeType(contentType);
+        ((OriginalPack)originalPack).serialize = getSerializeType(contentType);
         return originalPack;
     }
 

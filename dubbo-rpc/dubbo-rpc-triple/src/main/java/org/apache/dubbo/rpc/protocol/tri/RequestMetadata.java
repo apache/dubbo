@@ -83,7 +83,7 @@ public class RequestMetadata {
         if (contentType == null) {
             return TripleConstant.CONTENT_PROTO;
         }
-        return APPLICATION_GRPC + contentType;
+        return String.format("%s+%s", APPLICATION_GRPC, contentType);
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key,

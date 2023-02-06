@@ -183,7 +183,7 @@ public abstract class AbstractServerCall implements ServerCall, ServerStream.Lis
         ClassLoader tccl = Thread.currentThread()
             .getContextClassLoader();
         try {
-            String contentType = requestMetadata.get(HttpHeaderNames.CONTENT_TYPE).toString();
+            String contentType = requestMetadata.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()).toString();
             Object instance = parseSingleMessage(contentType,message);
             listener.onMessage(instance);
         } catch (Throwable t) {

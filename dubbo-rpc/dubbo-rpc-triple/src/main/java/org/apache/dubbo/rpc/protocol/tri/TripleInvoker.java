@@ -266,10 +266,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private String getSerializationContentType(URL url) {
         String serializeType = url.getParameter(SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization());
-        serializeType = convertHessian(serializeType);
-
-        final Serialization serialization = url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(serializeType);
-        return serialization.getContentType();
+        return serializeType;
     }
 
     private String convertHessian(String ser) {
