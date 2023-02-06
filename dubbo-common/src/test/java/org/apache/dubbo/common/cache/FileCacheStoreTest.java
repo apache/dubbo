@@ -54,6 +54,33 @@ class FileCacheStoreTest {
     }
 
     @Test
+    void testCache2() throws Exception {
+//        String directoryPath = getDirectoryOfClassPath();
+//        String filePath = "test-cache.dubbo.cache";
+        String basePath = "/Users/aming/.dubbo";
+        String filePrefix = ".metadata";
+        String filePath = ".metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1:2181";
+        cacheStore = FileCacheStoreFactory.getInstance(basePath, filePrefix, filePath);
+//        Map<String, String> properties = cacheStore.loadCache(10);
+//        assertEquals(2, properties.size());
+//
+//        Map<String, String> newProperties = new HashMap<>();
+//        newProperties.put("newKey1", "newValue1");
+//        newProperties.put("newKey2", "newValue2");
+//        newProperties.put("newKey3", "newValue3");
+//        newProperties.put("newKey4", "newValue4");
+//        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "", "non-exit.dubbo.cache");
+//        cacheStore.refreshCache(newProperties, "test refresh cache", 0);
+//        Map<String, String> propertiesLimitTo2 = cacheStore.loadCache(2);
+//        assertEquals(2, propertiesLimitTo2.size());
+//
+//        Map<String, String> propertiesLimitTo10 = cacheStore.loadCache(10);
+//        assertEquals(4, propertiesLimitTo10.size());
+//
+//        cacheStore.destroy();
+    }
+
+    @Test
     void testFileSizeExceed() throws Exception {
         String directoryPath = getDirectoryOfClassPath();
         Map<String, String> newProperties = new HashMap<>();
