@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.function.BiConsumer;
 
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
+
 public class SubscribeListener implements MetricsLifeListener<RegistrySubscribeEvent> {
 
     protected final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(getClass());
@@ -37,18 +39,18 @@ public class SubscribeListener implements MetricsLifeListener<RegistrySubscribeE
 
     @Override
     public void onEvent(RegistrySubscribeEvent event) {
-        handleIncrementEvent(event, RegistrySubscribeEvent.Type.TOTAL);
+        handleIncrementEvent(event, RegistrySubscribeEvent.Type.R_TOTAL);
     }
 
     @Override
     public void onEventFinish(RegistrySubscribeEvent event) {
-        handleIncrementEvent(event, RegistrySubscribeEvent.Type.SUCCEED);
+        handleIncrementEvent(event, RegistrySubscribeEvent.Type.R_SUCCEED);
         handleTimeEvent(event);
     }
 
     @Override
     public void onEventError(RegistrySubscribeEvent event) {
-        handleIncrementEvent(event, RegistrySubscribeEvent.Type.FAILED);
+        handleIncrementEvent(event, RegistrySubscribeEvent.Type.R_FAILED);
         handleTimeEvent(event);
     }
 
@@ -64,7 +66,7 @@ public class SubscribeListener implements MetricsLifeListener<RegistrySubscribeE
         ApplicationModel applicationModel = event.getSource();
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
         if (collector == null) {
-            logger.error("RegisterListener invoked but no collector found");
+            logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "RegisterListener invoked but no collector found");
             return;
         }
         if (!collector.isCollectEnabled()) {

@@ -50,9 +50,14 @@ public class RegistryEvent<S> extends MetricsEvent<S> implements TimeAble {
     }
 
     public enum Type {
-        TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
-        SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
-        FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED);
+        R_TOTAL(MetricsKey.REGISTER_METRIC_REQUESTS),
+        R_SUCCEED(MetricsKey.REGISTER_METRIC_REQUESTS_SUCCEED),
+        R_FAILED(MetricsKey.REGISTER_METRIC_REQUESTS_FAILED),
+
+        S_TOTAL(MetricsKey.SUBSCRIBE_METRIC_REQUESTS),
+        S_SUCCEED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_SUCCEED),
+        S_FAILED(MetricsKey.SUBSCRIBE_METRIC_REQUESTS_FAILED);
+
 
         private final MetricsKey metricsKey;
 

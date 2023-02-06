@@ -118,7 +118,7 @@ class DefaultMetricsCollectorTest {
         RegistryMetricsCollector collector = new RegistryMetricsCollector();
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increment(RegistryEvent.Type.TOTAL, applicationName);
+        collector.increment(RegistryEvent.Type.R_TOTAL, applicationName);
     }
 
     static class MockListener implements MetricsListener {

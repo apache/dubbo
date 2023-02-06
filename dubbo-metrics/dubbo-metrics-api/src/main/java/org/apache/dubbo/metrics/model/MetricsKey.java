@@ -52,6 +52,10 @@ public enum MetricsKey {
     REGISTER_METRIC_REQUESTS_SUCCEED("dubbo.registry.register.requests.succeed.total", "Succeed Register Requests"),
     REGISTER_METRIC_REQUESTS_FAILED("dubbo.registry.register.requests.failed.total", "Failed Register Requests"),
 
+    SUBSCRIBE_METRIC_REQUESTS("dubbo.registry.subscribe.requests.total", "Total Subscribe Requests"),
+    SUBSCRIBE_METRIC_REQUESTS_SUCCEED("dubbo.registry.subscribe.requests.succeed.total", "Succeed Subscribe Requests"),
+    SUBSCRIBE_METRIC_REQUESTS_FAILED("dubbo.registry.subscribe.requests.failed.total", "Failed Subscribe Requests"),
+
     REGISTER_METRIC_RT_LAST("dubbo.register.rt.seconds.last", "Last Response Time"),
     REGISTER_METRIC_RT_MIN("dubbo.register.rt.seconds.min", "Min Response Time"),
     REGISTER_METRIC_RT_MAX("dubbo.register.rt.seconds.max", "Max Response Time"),
