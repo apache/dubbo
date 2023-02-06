@@ -489,7 +489,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         // In mesh mode, providedBy equals K8S Service name.
-        String providedByService = referenceParameters.get(PROVIDED_BY);
+        String providedBy = referenceParameters.get(PROVIDED_BY);
         // cluster_domain default is 'cluster.local',generally unchanged.
         String clusterDomain = Optional.ofNullable(System.getenv("CLUSTER_DOMAIN")).orElse(DEFAULT_CLUSTER_DOMAIN);
         // By VirtualService and DestinationRule, envoy will generate a new route rule,such as 'demo.default.svc.cluster.local:80',the default port is 80.
@@ -497,7 +497,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // DubboReference default is -1, process it.
         meshPort = meshPort > -1 ? meshPort : DEFAULT_MESH_PORT;
         // get mesh url.
-        url = TRIPLE + "://" + providedByService + "." + podNamespace + SVC + clusterDomain + ":" + meshPort;
+        url = TRIPLE + "://" + providedBy + "." + podNamespace + SVC + clusterDomain + ":" + meshPort;
     }
 
     /**
@@ -518,8 +518,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         String providedBy = referenceParameters.get(PROVIDED_BY);
         if (StringUtils.isEmpty(providedBy)) {
-            throw new IllegalStateException("In mesh mode, the providedBy or dubboProvidedBy of ReferenceConfig is must be set");
+            throw new IllegalStateException("In mesh mode, the providedBy of ReferenceConfig is must be set");
         }
+
         return true;
     }
 
