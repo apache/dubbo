@@ -20,6 +20,7 @@
     <modules>
         <module>dubbo-metrics-api</module>
         <module>dubbo-metrics-default</module>
+        <module>dubbo-metrics-registry</module>
         <module>dubbo-metrics-prometheus</module>
     </modules>
     <parent>

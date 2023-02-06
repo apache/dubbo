@@ -17,45 +17,7 @@
 
 package org.apache.dubbo.metrics.event;
 
-import org.apache.dubbo.metrics.listener.MetricsListener;
+public final class SimpleMetricsEventMulticaster extends BaseMetricsEventMulticaster {
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-public final class SimpleMetricsEventMulticaster implements MetricsEventMulticaster {
-
-    @SuppressWarnings("java:S3077")
-    private static volatile SimpleMetricsEventMulticaster instance;
-
-    private SimpleMetricsEventMulticaster() {
-    }
-
-    private final List<MetricsListener> listeners = Collections.synchronizedList(new ArrayList<>());
-
-    public static SimpleMetricsEventMulticaster getInstance() {
-        if (instance == null) {
-            synchronized (SimpleMetricsEventMulticaster.class) {
-                if (instance == null) {
-                    instance = new SimpleMetricsEventMulticaster();
-                }
-            }
-        }
-        return instance;
-    }
-
-    @Override
-    public void addListener(MetricsListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void publishEvent(MetricsEvent event) {
-        if (event instanceof EmptyEvent) {
-            return;
-        }
-        for (MetricsListener listener : listeners) {
-            listener.onEvent(event);
-        }
-    }
 }

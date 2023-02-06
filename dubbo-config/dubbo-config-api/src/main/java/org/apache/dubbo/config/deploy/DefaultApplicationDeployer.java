@@ -51,6 +51,10 @@ import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
+import org.apache.dubbo.metrics.listener.MetricsListener;
+import org.apache.dubbo.metrics.model.TimePair;
+import org.apache.dubbo.metrics.registry.event.RegistryRegisterEvent;
 import org.apache.dubbo.metrics.report.MetricsReporter;
 import org.apache.dubbo.metrics.report.MetricsReporterFactory;
 import org.apache.dubbo.metrics.service.MetricsServiceExporter;
@@ -126,6 +130,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final Object destroyLock = new Object();
     private final Object internalModuleLock = new Object();
 
+    private final SimpleMetricsEventMulticaster eventMulticaster;
+
+    @SuppressWarnings({"rawtypes"})
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
         this.applicationModel = applicationModel;
@@ -136,6 +143,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         frameworkExecutorRepository = applicationModel.getFrameworkModel().getBeanFactory().getBean(FrameworkExecutorRepository.class);
         executorRepository = ExecutorRepository.getInstance(applicationModel);
         dubboShutdownHook = new DubboShutdownHook(applicationModel);
+        List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
+            .getActivateExtensions();
+        this.eventMulticaster = applicationModel.getFrameworkModel().getBeanFactory().getOrRegisterBean(SimpleMetricsEventMulticaster.class);
+        metricsListeners.forEach(this.eventMulticaster::addListener);
 
         // load spi listener
         Set<ApplicationDeployListener> deployListeners = applicationModel.getExtensionLoader(ApplicationDeployListener.class)
@@ -769,7 +780,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
-                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "","The configuration center failed to initialize", e);
+                    logger.warn(CONFIG_FAILED_INIT_CONFIG_CENTER, "", "", "The configuration center failed to initialize", e);
                     configCenter.setInitialized(false);
                     return null;
                 } else {
@@ -816,10 +827,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private volatile boolean registered;
 
     private void registerServiceInstance() {
+        TimePair timePair = TimePair.start();
+        eventMulticaster.publishEvent(new RegistryRegisterEvent(applicationModel, timePair));
         try {
             registered = true;
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
+            eventMulticaster.publishFinishEvent(new RegistryRegisterEvent(applicationModel, timePair));
         } catch (Exception e) {
+            eventMulticaster.publishErrorEvent(new RegistryRegisterEvent(applicationModel, timePair));
             logger.error(CONFIG_REGISTER_INSTANCE_ERROR, "configuration server disconnected", "", "Register instance error.", e);
         }
         if (registered) {

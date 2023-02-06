@@ -102,6 +102,7 @@ public class MetricsStatComposite {
         return new RTEvent(metric, responseTime);
     }
 
+
     private void init() {
         stats.put(RequestEvent.Type.TOTAL, buildMetricsStatHandler(RequestEvent.Type.TOTAL));
         stats.put(RequestEvent.Type.SUCCEED, buildMetricsStatHandler(RequestEvent.Type.SUCCEED));
