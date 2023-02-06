@@ -24,33 +24,18 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.rpc.filter.ConditionFilter;
-import org.apache.dubbo.rpc.filter.condition.AndFilterConditionMatcher;
-import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 
 import java.util.Map;
 import java.util.Objects;
 
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY;
-import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.CONSUMER, order = -1)
-public class ContextHolderParametersSelectedTransferFilter
-    extends AndFilterConditionMatcher implements ConditionFilter, ClusterFilter {
-
-
-    public ContextHolderParametersSelectedTransferFilter(){
-        super(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME){
-            @Override
-            public boolean match(Invoker<?> invoker, Invocation invocation){
-                return !this.isMatched;
-            }
-        });
-    }
+public class ContextHolderParametersSelectedTransferFilter implements ClusterFilter{
 
     @Override
-    public Result doInvoke(Invoker<?> invoker, Invocation invocation) {
+    public Result invoke(Invoker<?> invoker, Invocation invocation) {
         this.setSecurityContextIfExists(invocation);
 
         return invoker.invoke(invocation);

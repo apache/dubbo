@@ -23,9 +23,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.rpc.filter.ConditionFilter;
-import org.apache.dubbo.rpc.filter.condition.AndFilterConditionMatcher;
-import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.apache.dubbo.spring.security.utils.ObjectMapperCodec;
 import org.apache.dubbo.spring.security.utils.SecurityNames;
 import org.springframework.security.core.Authentication;
@@ -34,17 +31,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
-@Activate(group = CommonConstants.CONSUMER, order = -10000)
-public class ContextHolderAuthenticationPrepareFilter
-    extends AndFilterConditionMatcher implements ConditionFilter, ClusterFilter {
-
-
-    public ContextHolderAuthenticationPrepareFilter() {
-        super(new FilterConditionMatcherOnClass(SECURITY_CONTEXT_HOLDER_CLASS_NAME));
-    }
+@Activate(group = CommonConstants.CONSUMER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
+public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
 
     @Override
-    public Result doInvoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         setSecurityContext(invocation);
 
         return invoker.invoke(invocation);

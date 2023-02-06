@@ -15,23 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.filter.condition;
+package org.apache.dubbo.common.extension.activate.impl;
 
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.activate.ActivateExt1;
 
-public class FilterConditionMatcherOnClass implements FilterConditionMatcher {
-
-
-    public Boolean isMatched;
-
-    public FilterConditionMatcherOnClass(String className) {
-        this.isMatched = StringUtils.isBlank(className) ? false : ClassUtils.isPresent(className, null);
-    }
-
-    public boolean match(Invoker<?> invoker, Invocation invocation){
-       return this.isMatched;
+@Activate(group = {"onClass"},
+    onClass = "org.springframework.security.core.context.SecurityContextHolder")
+public class ActivateOnClassExt1Impl implements ActivateExt1 {
+    @Override
+    public String echo(String msg) {
+        return null;
     }
 }

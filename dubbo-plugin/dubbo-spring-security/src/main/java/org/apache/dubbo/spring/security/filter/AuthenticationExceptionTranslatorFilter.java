@@ -19,33 +19,26 @@ package org.apache.dubbo.spring.security.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.filter.ConditionFilter;
-import org.apache.dubbo.rpc.filter.condition.FilterConditionMatcherOnClass;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
-import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.PROVIDER, order =Integer.MAX_VALUE)
-public class AuthenticationExceptionTranslatorFilter
-    extends FilterConditionMatcherOnClass implements ConditionFilter, ConditionFilter.Listener {
+public class AuthenticationExceptionTranslatorFilter implements Filter, Filter.Listener {
 
-    public AuthenticationExceptionTranslatorFilter(){
-        super(SECURITY_CONTEXT_HOLDER_CLASS_NAME);
-    }
 
     @Override
-    public Result doInvoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         return invoker.invoke(invocation);
     }
 
     @Override
-    public void doCompleted(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (this.isTranslate(result)) {
             RpcException rpcException = new RpcException(result.getException().getMessage());
 
@@ -53,6 +46,10 @@ public class AuthenticationExceptionTranslatorFilter
 
             result.setException(rpcException);
         }
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
     }
 
     private boolean isTranslate(Result result) {

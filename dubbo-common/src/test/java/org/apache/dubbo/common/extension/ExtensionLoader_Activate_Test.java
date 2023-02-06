@@ -15,16 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.filter.condition;
+package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.activate.ActivateExt1;
+import org.junit.jupiter.api.Test;
 
-public interface FilterConditionMatcher {
+import java.util.List;
 
-    default boolean match(Invoker<?> invoker, Invocation invocation){
-        return true;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ExtensionLoader_Activate_Test {
+
+
+    @Test
+    void test_onClass() throws Exception {
+        URL url = URL.valueOf("test://localhost/test");
+        ExtensionLoader<ActivateExt1> loader = ExtensionLoader.getExtensionLoader(ActivateExt1.class);
+        List<ActivateExt1> list = loader.getActivateExtension(url, new String[] {}, "onClass");
+
+        assertTrue(list == null || list.size() == 0);
     }
-
 
 }

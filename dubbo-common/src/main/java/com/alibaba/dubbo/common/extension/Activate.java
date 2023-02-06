@@ -42,4 +42,7 @@ public @interface Activate {
     String[] after() default {};
 
     int order() default 0;
+
+    String[] onClass() default {};
+
 }

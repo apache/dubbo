@@ -91,4 +91,6 @@ public @interface Activate {
      * @return absolute ordering info
      */
     int order() default 0;
+
+    String [] onClass() default {};
 }
