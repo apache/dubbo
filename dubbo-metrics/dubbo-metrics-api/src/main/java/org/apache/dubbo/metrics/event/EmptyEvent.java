@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.utils.DefaultSerializeClassChecker;
+package org.apache.dubbo.metrics.event;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+/**
+ * EmptyEvent, do nothing.
+ */
+public class EmptyEvent extends MetricsEvent {
 
-public class Hessian2SerializerFactory extends SerializerFactory {
+    private static final EmptyEvent empty = new EmptyEvent(new Object());
 
-    private final DefaultSerializeClassChecker defaultSerializeClassChecker;
-
-    public Hessian2SerializerFactory(DefaultSerializeClassChecker defaultSerializeClassChecker) {
-        this.defaultSerializeClassChecker = defaultSerializeClassChecker;
+    public EmptyEvent(Object source) {
+        super(source);
     }
 
-    @Override
-    public Class<?> loadSerializedClass(String className) throws ClassNotFoundException {
-        return defaultSerializeClassChecker.loadClass(getClassLoader(), className);
+    public static EmptyEvent instance() {
+        return empty;
     }
 }
