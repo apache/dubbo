@@ -71,16 +71,6 @@ public class RegistryStatComposite implements MetricsExport {
         numStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L)).incrementAndGet();
     }
 
-    public void decrease(RegistryRegisterEvent.Type type, String applicationName) {
-        if (!numStats.containsKey(type)) {
-            return;
-        }
-        AtomicLong remain = numStats.get(type).computeIfAbsent(applicationName, k -> new AtomicLong(0L));
-        if (remain.longValue() > 0) {
-            remain.decrementAndGet();
-        }
-    }
-
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void calcRt(String applicationName, Long responseTime) {
         for (LongContainer container : rtStats) {
