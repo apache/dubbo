@@ -58,6 +58,7 @@ public class StubInvocationUtil {
             methodDescriptor.getMethodName(), invoker.getInterface().getName(),
             invoker.getUrl().getProtocolServiceKey(), methodDescriptor.getParameterClasses(),
             arguments);
+        rpcInvocation.setReturnType(methodDescriptor.getReturnClass());
         try {
             return InvocationUtil.invoke(invoker, rpcInvocation);
         } catch (Throwable e) {
