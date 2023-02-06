@@ -426,10 +426,18 @@ public class Permit {
             "com.sun.tools.javac.tree",
             "com.sun.tools.javac.util",
             "com.sun.tools.javac.jvm",
+            "com.sun.tools.javac.api"
         };
 
         try {
             Method m = cModule.getDeclaredMethod("implAddOpens", String.class, cModule);
+            long firstFieldOffset = getFirstFieldOffset(unsafe);
+            unsafe.putBooleanVolatile(m, firstFieldOffset, true);
+            for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
+        } catch (Exception ignore) {}
+
+        try {
+            Method m = cModule.getDeclaredMethod("implAddExports", String.class, cModule);
             long firstFieldOffset = getFirstFieldOffset(unsafe);
             unsafe.putBooleanVolatile(m, firstFieldOffset, true);
             for (String p : allPkgs) m.invoke(jdkCompilerModule, p, ownModule);
