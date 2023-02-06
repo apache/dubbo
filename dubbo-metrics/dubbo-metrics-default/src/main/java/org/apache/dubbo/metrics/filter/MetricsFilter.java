@@ -27,8 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.function.Consumer;
-
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 @Activate(group = PROVIDER, order = -1)
@@ -50,28 +48,25 @@ public class MetricsFilter implements Filter, BaseFilter.Listener, ScopeModelAwa
         if (collector == null || !collector.isCollectEnabled()) {
             return invoker.invoke(invocation);
         }
-        collect(invocation, MetricsCollectExecutor::beforeExecute);
+        MetricsCollectExecutor.beforeExecute(applicationModel.getApplicationName(), collector, invocation);
 
         return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector->collector.postExecute(result));
+        if (collector == null || !collector.isCollectEnabled()) {
+            return;
+        }
+        MetricsCollectExecutor.postExecute(applicationModel.getApplicationName(), collector, invocation, result);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        collect(invocation, collector-> collector.throwExecute(t));
-    }
-
-    private void collect(Invocation invocation, Consumer<MetricsCollectExecutor> execute) {
         if (collector == null || !collector.isCollectEnabled()) {
             return;
         }
-
-        MetricsCollectExecutor collectorExecutor = new MetricsCollectExecutor(applicationModel.getApplicationName(),
-            collector, invocation);
-        execute.accept(collectorExecutor);
+        MetricsCollectExecutor.throwExecute(applicationModel.getApplicationName(), collector, invocation, t);
     }
+
 }

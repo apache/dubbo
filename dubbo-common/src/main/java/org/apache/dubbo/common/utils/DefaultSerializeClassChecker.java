@@ -36,14 +36,15 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
     private static final long MAGIC_PRIME = 0x100000001b3L;
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(DefaultSerializeClassChecker.class);
     private volatile SerializeCheckStatus checkStatus = AllowClassNotifyListener.DEFAULT_STATUS;
-    private static final Set<String> warnedClasses = new ConcurrentHashSet<>(1);
     private volatile boolean checkSerializable = true;
+
+    private final SerializeSecurityManager serializeSecurityManager;
     private volatile long[] allowPrefixes = new long[0];
 
     private volatile long[] disAllowPrefixes = new long[0];
 
     public DefaultSerializeClassChecker(FrameworkModel frameworkModel) {
-        SerializeSecurityManager serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
+        serializeSecurityManager = frameworkModel.getBeanFactory().getOrRegisterBean(SerializeSecurityManager.class);
         serializeSecurityManager.registerListener(this);
     }
 
@@ -104,7 +105,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
         if (checkSerializable && !aClass.isPrimitive() && !Serializable.class.isAssignableFrom(aClass)) {
             String msg = "[Serialization Security] Serialized class " + className + " has not implement Serializable interface. " +
                 "Current mode is strict check, will disallow to deserialize it by default. ";
-            if (warnedClasses.add(className)) {
+            if (serializeSecurityManager.getWarnedClasses().add(className)) {
                 logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
             }
 
@@ -116,7 +117,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
 
     private Class<?> loadClass0(ClassLoader classLoader, String className) throws ClassNotFoundException {
         if (checkStatus == SerializeCheckStatus.DISABLE) {
-            return Class.forName(className, false, classLoader);
+            return ClassUtils.forName(className, classLoader);
         }
 
         long hash = MAGIC_HASH_CODE;
@@ -137,7 +138,7 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
             String msg = "[Serialization Security] Serialized class " + className + " is not in allow list. " +
                 "Current mode is `STRICT`, will disallow to deserialize it by default. " +
                 "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
-            if (warnedClasses.add(className)) {
+            if (serializeSecurityManager.getWarnedClasses().add(className)) {
                 logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
             }
 
@@ -157,6 +158,10 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
                 String msg = "[Serialization Security] Serialized class " + className + " is in disallow list. " +
                     "Current mode is `WARN`, will disallow to deserialize it by default. " +
                     "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
+                if (serializeSecurityManager.getWarnedClasses().add(className)) {
+                    logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+                }
+
                 throw new IllegalArgumentException(msg);
             }
         }
@@ -174,12 +179,16 @@ public class DefaultSerializeClassChecker implements AllowClassNotifyListener {
                 String msg = "[Serialization Security] Serialized class " + className + " is in disallow list. " +
                     "Current mode is `WARN`, will disallow to deserialize it by default. " +
                     "Please add it into security/serialize.allowlist or follow FAQ to configure it.";
+                if (serializeSecurityManager.getWarnedClasses().add(className)) {
+                    logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "", msg);
+                }
+
                 throw new IllegalArgumentException(msg);
             }
         }
 
         Class<?> clazz = ClassUtils.forName(className, classLoader);
-        if (warnedClasses.add(className)) {
+        if (serializeSecurityManager.getWarnedClasses().add(className)) {
             logger.error(PROTOCOL_UNTRUSTED_SERIALIZE_CLASS, "", "",
                 "[Serialization Security] Serialized class " + className + " is not in allow list. " +
                     "Current mode is `WARN`, will allow to deserialize it by default. " +

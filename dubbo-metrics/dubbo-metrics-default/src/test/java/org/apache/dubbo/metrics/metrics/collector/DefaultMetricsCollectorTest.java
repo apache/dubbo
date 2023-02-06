@@ -17,10 +17,6 @@
 
 package org.apache.dubbo.metrics.metrics.collector;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.MetricsEvent;
@@ -30,6 +26,7 @@ import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
@@ -37,6 +34,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
@@ -50,6 +54,7 @@ class DefaultMetricsCollectorTest {
     private String methodName;
     private String group;
     private String version;
+    private RpcInvocation invocation;
 
     @BeforeEach
     public void setup() {
@@ -64,6 +69,11 @@ class DefaultMetricsCollectorTest {
         methodName = "mockMethod";
         group = "mockGroup";
         version = "1.0.0";
+
+        invocation = new RpcInvocation(methodName, interfaceName, "serviceKey", null, null);
+        invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
+        invocation.setAttachment(GROUP_KEY, group);
+        invocation.setAttachment(VERSION_KEY, version);
     }
 
     @AfterEach
@@ -76,10 +86,10 @@ class DefaultMetricsCollectorTest {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
-        collector.increaseProcessingRequests(applicationName, interfaceName, methodName, group, version);
-        collector.increaseSucceedRequests(applicationName, interfaceName, methodName, group, version);
-        collector.increaseUnknownFailedRequests(applicationName, interfaceName, methodName, group, version);
+        collector.increaseTotalRequests(applicationName, invocation);
+        collector.increaseProcessingRequests(applicationName, invocation);
+        collector.increaseSucceedRequests(applicationName, invocation);
+        collector.increaseUnknownFailedRequests(applicationName, invocation);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -95,7 +105,7 @@ class DefaultMetricsCollectorTest {
             Assertions.assertEquals(supplier.get().longValue(), 1);
         }
 
-        collector.decreaseProcessingRequests(applicationName, interfaceName, methodName, group, version);
+        collector.decreaseProcessingRequests(applicationName, invocation);
         samples = collector.collect();
         Map<String, Long> sampleMap = samples.stream().collect(Collectors.toMap(MetricSample::getName, k -> {
             Number number = ((GaugeMetricSample) k).getSupplier().get();
@@ -110,8 +120,8 @@ class DefaultMetricsCollectorTest {
         DefaultMetricsCollector collector = new DefaultMetricsCollector();
         collector.setCollectEnabled(true);
         String applicationName = applicationModel.getApplicationName();
-        collector.addRT(applicationName, interfaceName, methodName, group, version, 10L);
-        collector.addRT(applicationName, interfaceName, methodName, group, version, 0L);
+        collector.addRT(applicationName, invocation, 10L);
+        collector.addRT(applicationName, invocation, 0L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -144,12 +154,12 @@ class DefaultMetricsCollectorTest {
         collector.addListener(mockListener);
         String applicationName = applicationModel.getApplicationName();
 
-        collector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
+        collector.increaseTotalRequests(applicationName, invocation);
         Assertions.assertNotNull(mockListener.getCurEvent());
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
         Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
 
-        collector.addRT(applicationName, interfaceName, methodName, group, version, 5L);
+        collector.addRT(applicationName, invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);
         Assertions.assertEquals(((RTEvent) mockListener.getCurEvent()).getRt(), 5L);
     }

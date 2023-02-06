@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.metrics.model;
 
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcInvocation;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +33,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
+import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 
 /**
  * Metric class for method.
@@ -45,12 +49,9 @@ public class MethodMetric implements Metric {
 
     }
 
-    public MethodMetric(String applicationName, String interfaceName, String methodName, String group, String version) {
+    public MethodMetric(String applicationName, Invocation invocation) {
         this.applicationName = applicationName;
-        this.interfaceName = interfaceName;
-        this.methodName = methodName;
-        this.group = group;
-        this.version = version;
+        init(invocation);
     }
 
     public String getInterfaceName() {
@@ -120,5 +121,34 @@ public class MethodMetric implements Metric {
             ", group='" + group + '\'' +
             ", version='" + version + '\'' +
             '}';
+    }
+
+    private void init(Invocation invocation) {
+        String serviceUniqueName = invocation.getTargetServiceUniqueName();
+        String methodName = invocation.getMethodName();
+        if (invocation instanceof RpcInvocation
+            && isGenericCall(((RpcInvocation) invocation).getParameterTypesDesc(), methodName)
+            && invocation.getArguments() != null
+            && invocation.getArguments().length == 3) {
+            methodName = ((String) invocation.getArguments()[0]).trim();
+        }
+        String group = null;
+        String interfaceAndVersion;
+        String[] arr = serviceUniqueName.split("/");
+        if (arr.length == 2) {
+            group = arr[0];
+            interfaceAndVersion = arr[1];
+        } else {
+            interfaceAndVersion = arr[0];
+        }
+
+        String[] ivArr = interfaceAndVersion.split(":");
+        String interfaceName = ivArr[0];
+        String version = ivArr.length == 2 ? ivArr[1] : null;
+
+        this.interfaceName = interfaceName;
+        this.methodName = methodName;
+        this.group = group;
+        this.version = version;
     }
 }
