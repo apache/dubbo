@@ -41,7 +41,7 @@ import java.util.Set;
 @SupportedAnnotationTypes("*")
 public class DispatchingAnnotationProcessor extends AbstractProcessor {
 
-    private static final Set<AnnotationProcessingHandler> handlers = loadHandlers();
+    private static Set<AnnotationProcessingHandler> handlers;
 
     private static Set<AnnotationProcessingHandler> loadHandlers() {
         List<String> classNames = FileUtils.loadConfigurationFileInResources("handlers.cfg");
@@ -79,6 +79,10 @@ public class DispatchingAnnotationProcessor extends AbstractProcessor {
             return;
         }
 
+        if (handlers == null) {
+            handlers = loadHandlers();
+        }
+        
         apContext = AnnotationProcessorContext.fromProcessingEnvironment(processingEnv);
     }
 
