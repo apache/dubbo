@@ -117,15 +117,19 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
 
                     ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
 
-                    // In constructor, super(...) should be the first statement.
+                    // In constructor, super(...) or this(...) should be the first statement.
 
-                    if (isConstructor &&
-                        !block.stats.isEmpty() &&
-                        block.stats.get(0).toString().startsWith("super(")) {
 
-                        statements.add(block.stats.get(0));
-                        statements.add(fullExpressionStatement);
-                        statements.addAll(block.stats.subList(1, block.stats.size()));
+                    if (isConstructor && !block.stats.isEmpty()) {
+
+                        boolean startsWithSuper = block.stats.get(0).toString().startsWith("super(");
+                        boolean startsWithThis = block.stats.get(0).toString().startsWith("this(");
+
+                        if (startsWithSuper || startsWithThis) {
+                            statements.add(block.stats.get(0));
+                            statements.add(fullExpressionStatement);
+                            statements.addAll(block.stats.subList(1, block.stats.size()));
+                        }
 
                     } else {
                         statements.add(fullExpressionStatement);

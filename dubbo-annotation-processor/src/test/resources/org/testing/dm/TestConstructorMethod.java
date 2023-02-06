@@ -20,6 +20,7 @@ package org.testing.dm;
 public class TestConstructorMethod {
     @Deprecated
     TestConstructorMethod() {
+        this("1");
     }
 
     TestConstructorMethod(String s) {
