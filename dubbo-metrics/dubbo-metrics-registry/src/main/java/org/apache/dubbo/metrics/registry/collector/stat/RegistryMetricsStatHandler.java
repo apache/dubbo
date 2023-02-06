@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metrics.registry.collector.stat;
 
-import org.apache.dubbo.metrics.collector.stat.MetricsApplicationStatHandler;
 import org.apache.dubbo.metrics.model.ApplicationMetric;
 
 import java.util.Map;
