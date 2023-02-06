@@ -17,16 +17,13 @@
 
 package org.apache.dubbo.metrics.collector;
 
-import org.apache.dubbo.metrics.model.MetricsKey;
-import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.metrics.model.sample.MetricSample;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.metrics.model.MetricsKey;
+import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
+import org.apache.dubbo.metrics.model.sample.MetricSample;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
@@ -34,6 +31,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
@@ -48,6 +51,7 @@ class AggregateMetricsCollectorTest {
     private String methodName;
     private String group;
     private String version;
+    private RpcInvocation invocation;
 
     @BeforeEach
     public void setup() {
@@ -72,6 +76,11 @@ class AggregateMetricsCollectorTest {
         methodName = "mockMethod";
         group = "mockGroup";
         version = "1.0.0";
+        invocation = new RpcInvocation(methodName, interfaceName, "serviceKey", null, null);
+        invocation.setTargetServiceUniqueName(group + "/" + interfaceName + ":" + version);
+        invocation.setAttachment(GROUP_KEY, group);
+        invocation.setAttachment(VERSION_KEY, version);
+
     }
 
     @AfterEach
@@ -81,12 +90,12 @@ class AggregateMetricsCollectorTest {
 
     @Test
     void testRequestsMetrics() {
-        AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
         String applicationName = applicationModel.getApplicationName();
-        defaultCollector.increaseTotalRequests(applicationName, interfaceName, methodName, group, version);
-        defaultCollector.increaseSucceedRequests(applicationName, interfaceName, methodName, group, version);
-        defaultCollector.increaseUnknownFailedRequests(applicationName, interfaceName, methodName, group, version);
-        defaultCollector.businessFailedRequests(applicationName, interfaceName,methodName,group,version);
+        AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
+        defaultCollector.increaseTotalRequests(applicationName,invocation);
+        defaultCollector.increaseSucceedRequests(applicationName,invocation);
+        defaultCollector.increaseUnknownFailedRequests(applicationName,invocation);
+        defaultCollector.businessFailedRequests(applicationName,invocation);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -115,7 +124,7 @@ class AggregateMetricsCollectorTest {
     @Test
     void testRTMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.addRT(applicationModel.getApplicationName(), interfaceName, methodName, group, version, 10L);
+        defaultCollector.addRT(applicationModel.getApplicationName(),invocation, 10L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
