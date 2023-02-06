@@ -97,7 +97,6 @@ public interface ServiceNameMapping extends Destroyable {
         return AbstractServiceNameMapping.parseServices(providedBy);
     }
 
-
     /**
      * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.
      *
