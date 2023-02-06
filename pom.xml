@@ -125,6 +125,7 @@
         <maven_flatten_version>1.3.0</maven_flatten_version>
         <maven_enforce_version>3.2.1</maven_enforce_version>
         <maven_antrun_version>3.1.0</maven_antrun_version>
+        <dubbo_annotation_processor_version>1.0.0</dubbo_annotation_processor_version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
@@ -177,6 +178,13 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-annotation-processor</artifactId>
+            <version>${dubbo_annotation_processor_version}</version>
+        </dependency>
+
         <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
