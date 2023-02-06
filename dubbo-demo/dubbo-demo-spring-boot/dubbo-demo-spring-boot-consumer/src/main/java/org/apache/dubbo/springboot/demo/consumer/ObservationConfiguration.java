@@ -18,11 +18,6 @@
 package org.apache.dubbo.springboot.demo.consumer;
 
 
-import java.util.Collections;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.observation.DefaultMeterObservationHandler;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -34,6 +29,7 @@ import io.micrometer.tracing.handler.PropagatingReceiverTracingObservationHandle
 import io.micrometer.tracing.handler.PropagatingSenderTracingObservationHandler;
 import io.micrometer.tracing.handler.TracingAwareMeterObservationHandler;
 import io.micrometer.tracing.otel.bridge.ArrayListSpanProcessor;
+import io.micrometer.tracing.otel.bridge.EventPublishingContextWrapper;
 import io.micrometer.tracing.otel.bridge.OtelBaggageManager;
 import io.micrometer.tracing.otel.bridge.OtelCurrentTraceContext;
 import io.micrometer.tracing.otel.bridge.OtelPropagator;
@@ -42,6 +38,7 @@ import io.micrometer.tracing.otel.bridge.Slf4JBaggageEventListener;
 import io.micrometer.tracing.otel.bridge.Slf4JEventListener;
 import io.micrometer.tracing.propagation.Propagator;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.context.ContextStorage;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.extension.trace.propagation.B3Propagator;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
@@ -54,26 +51,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.Collections;
+
 import static io.opentelemetry.sdk.trace.samplers.Sampler.alwaysOn;
 
 @Configuration
 public class ObservationConfiguration {
-
     /**
      * Default value for application name if {@code spring.application.name} is not set.
      */
     private static final String DEFAULT_APPLICATION_NAME = "application";
 
-    @Bean
-    ApplicationModel applicationModel() {
-        ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        applicationModel.getBeanFactory().registerBean(observationRegistry());
-        return applicationModel;
-    }
+    @javax.annotation.Resource
+    private ApplicationModel applicationModel;
 
     @Bean
     ObservationRegistry observationRegistry() {
-        return ObservationRegistry.create();
+        ObservationRegistry observationRegistry = ObservationRegistry.create();
+        applicationModel.getBeanFactory().registerBean(observationRegistry);
+        return observationRegistry;
+
     }
 
     @Bean
@@ -129,10 +128,12 @@ public class ObservationConfiguration {
     OtelTracer tracer(io.opentelemetry.api.trace.Tracer otelTracer, OtelCurrentTraceContext otelCurrentTraceContext) {
         Slf4JEventListener slf4JEventListener = slf4JEventListener();
         Slf4JBaggageEventListener slf4JBaggageEventListener = slf4JBaggageEventListener();
-        return new OtelTracer(otelTracer, otelCurrentTraceContext, event -> {
+        OtelTracer.EventPublisher eventPublisher = event -> {
             slf4JEventListener.onEvent(event);
             slf4JBaggageEventListener.onEvent(event);
-        }, new OtelBaggageManager(otelCurrentTraceContext, Collections.emptyList(), Collections.emptyList()));
+        };
+        ContextStorage.addWrapper(new EventPublishingContextWrapper(eventPublisher));
+        return new OtelTracer(otelTracer, otelCurrentTraceContext, eventPublisher, new OtelBaggageManager(otelCurrentTraceContext, Collections.emptyList(), Collections.emptyList()));
     }
 
     @Bean
