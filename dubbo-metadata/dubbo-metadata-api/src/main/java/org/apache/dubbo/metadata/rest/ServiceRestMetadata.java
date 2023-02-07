@@ -17,8 +17,11 @@
 package org.apache.dubbo.metadata.rest;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * The metadata class for {@link RequestMetadata HTTP(REST) request} and
@@ -48,7 +51,7 @@ public class ServiceRestMetadata implements Serializable {
     private Class codeStyle;
 
     private Map<PathMatcher, RestMethodMetadata> pathToServiceMap;
-    private Map<Method, RestMethodMetadata> methodToServiceMap;
+    private Map<String, Map<Class<?>[], RestMethodMetadata>> methodToServiceMap;
 
     public ServiceRestMetadata(String serviceInterface, String version, String group, boolean consumer) {
         this.serviceInterface = serviceInterface;
@@ -142,17 +145,17 @@ public class ServiceRestMetadata implements Serializable {
         this.consumer = consumer;
     }
 
-    public Map<Method, RestMethodMetadata> getMethodToServiceMap() {
+    public Map<String, Map<Class<?>[], RestMethodMetadata>> getMethodToServiceMap() {
         return methodToServiceMap;
     }
 
     public void addMethodToServiceMap(RestMethodMetadata restMethodMetadata) {
-
         if (this.methodToServiceMap == null) {
             this.methodToServiceMap = new HashMap<>();
         }
 
-        this.methodToServiceMap.put(restMethodMetadata.getReflectMethod(), restMethodMetadata);
+        this.methodToServiceMap.computeIfAbsent(restMethodMetadata.getReflectMethod().getName(), k -> new HashMap<>())
+            .put(restMethodMetadata.getReflectMethod().getParameterTypes(), restMethodMetadata);
     }
 
     public Class getCodeStyle() {

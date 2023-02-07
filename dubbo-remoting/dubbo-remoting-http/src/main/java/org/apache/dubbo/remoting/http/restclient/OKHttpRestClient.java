@@ -16,29 +16,36 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.dubbo.remoting.http.BaseRestClient;
+import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestResult;
+import org.apache.dubbo.remoting.http.config.HttpClientConfig;
+
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.internal.http.HttpMethod;
-import org.apache.dubbo.remoting.http.BaseRestClient;
-import org.apache.dubbo.remoting.http.RequestTemplate;
-import org.apache.dubbo.remoting.http.config.HttpClientConfig;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
-public class OKHttpRestClient extends BaseRestClient<Response, OkHttpClient> {
+public class OKHttpRestClient extends BaseRestClient<OkHttpClient> {
 
     public OKHttpRestClient(HttpClientConfig clientConfig) {
         super(clientConfig);
     }
 
     @Override
-    public Response send(RequestTemplate requestTemplate) throws IOException {
+    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
 
         Request.Builder builder = new Request.Builder();
         // url
@@ -59,7 +66,47 @@ public class OKHttpRestClient extends BaseRestClient<Response, OkHttpClient> {
             requestBody = RequestBody.create(null, requestTemplate.getSerializedBody());
         }
         builder.method(requestTemplate.getHttpMethod(), requestBody);
-        return getClient().newCall(builder.build()).execute();
+
+        CompletableFuture<RestResult> future = new CompletableFuture<>();
+
+        getClient().newCall(builder.build()).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                future.completeExceptionally(e);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                future.complete(new RestResult() {
+                    @Override
+                    public String getContentType() {
+                        return response.header("Content-Type");
+                    }
+
+                    @Override
+                    public InputStream getBody() throws IOException {
+                        return response.body().byteStream();
+                    }
+
+                    @Override
+                    public Map<String, List<String>> headers() {
+                        return response.headers().toMultimap();
+                    }
+
+                    @Override
+                    public InputStream getErrorResponse() throws IOException {
+                        return getBody();
+                    }
+
+                    @Override
+                    public int getResponseCode() throws IOException {
+                        return response.code();
+                    }
+                });
+            }
+        });
+
+        return future;
     }
 
     @Override

@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.rest.response;
-
+package org.apache.dubbo.remoting.http;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
-public interface HttpResponseFacade<RES> {
-
+public interface RestResult {
     String getContentType();
 
     InputStream getBody() throws IOException;
+
+    Map<String, List<String>> headers();
 
     InputStream getErrorResponse() throws IOException;
 

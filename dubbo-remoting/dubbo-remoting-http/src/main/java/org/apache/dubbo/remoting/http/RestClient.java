@@ -16,19 +16,19 @@
  */
 package org.apache.dubbo.remoting.http;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.dubbo.remoting.RemotingException;
 
-import java.io.IOException;
 
-
-public interface RestClient<RES> {
+public interface RestClient {
     /**
      * send message.
      *
      * @param message
      * @throws RemotingException
      */
-    RES send(RequestTemplate message) throws IOException;
+    CompletableFuture<RestResult> send(RequestTemplate message);
 
     /**
      * close the channel.

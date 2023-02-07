@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.metadata;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.apache.dubbo.common.URL;
@@ -38,7 +37,7 @@ public class MetadataResolver {
      * @return rest metadata
      * @throws CodeStyleNotSupportException not support type
      */
-    public static Map<Method, RestMethodMetadata> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
+    public static Map<String, Map<Class<?>[], RestMethodMetadata>> resolveConsumerServiceMetadata(Class<?> targetClass, URL url) {
         ExtensionLoader<ServiceRestMetadataResolver> extensionLoader = url.getOrDefaultApplicationModel().getExtensionLoader(ServiceRestMetadataResolver.class);
 
         for (ServiceRestMetadataResolver serviceRestMetadataResolver : extensionLoader.getSupportedExtensionInstances()) {

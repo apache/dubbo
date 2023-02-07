@@ -17,11 +17,17 @@
 package org.apache.dubbo.remoting.http;
 
 
-import org.apache.dubbo.remoting.Constants;
-
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.Invocation;
 
 
 public class RequestTemplate implements Serializable {
@@ -43,9 +49,11 @@ public class RequestTemplate implements Serializable {
     private Object body;
     private byte[] byteBody = new byte[0];
     private String protocol = "http://";
+    private final Invocation invocation;
 
 
-    public RequestTemplate(String httpMethod, String address) {
+    public RequestTemplate(Invocation invocation, String httpMethod, String address) {
+        this.invocation = invocation;
         this.httpMethod = httpMethod;
         this.address = address;
     }
@@ -269,4 +277,8 @@ public class RequestTemplate implements Serializable {
         this.protocol = protocol;
     }
 
+
+    public Invocation getInvocation() {
+        return invocation;
+    }
 }

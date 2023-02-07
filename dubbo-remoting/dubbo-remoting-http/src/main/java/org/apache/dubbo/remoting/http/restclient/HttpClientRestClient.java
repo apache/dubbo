@@ -16,9 +16,21 @@
  */
 package org.apache.dubbo.remoting.http.restclient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.remoting.http.BaseRestClient;
 import org.apache.dubbo.remoting.http.RequestTemplate;
+import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
+import org.apache.http.Header;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -29,19 +41,15 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
 
-
-public class HttpClientRestClient extends BaseRestClient<CloseableHttpResponse, CloseableHttpClient> {
+public class HttpClientRestClient extends BaseRestClient<CloseableHttpClient> {
 
     public HttpClientRestClient(HttpClientConfig clientConfig) {
         super(clientConfig);
     }
 
     @Override
-    public CloseableHttpResponse send(RequestTemplate requestTemplate) throws IOException {
+    public CompletableFuture<RestResult> send(RequestTemplate requestTemplate) {
 
         HttpRequestBase httpRequest = null;
         String httpMethod = requestTemplate.getHttpMethod();
@@ -65,7 +73,39 @@ public class HttpClientRestClient extends BaseRestClient<CloseableHttpResponse, 
         }
 
         httpRequest.setConfig(getRequestConfig(clientConfig));
-        return getClient().execute(httpRequest);
+
+        CompletableFuture<RestResult> future = new CompletableFuture<>();
+        try (CloseableHttpResponse response = getClient().execute(httpRequest)) {
+            future.complete(new RestResult() {
+                @Override
+                public String getContentType() {
+                    return response.getFirstHeader("Content-Type").getValue();
+                }
+
+                @Override
+                public InputStream getBody() throws IOException {
+                    return response.getEntity().getContent();
+                }
+
+                @Override
+                public Map<String, List<String>> headers() {
+                    return Arrays.stream(response.getAllHeaders()).collect(Collectors.toMap(Header::getName, h -> Collections.singletonList(h.getValue())));
+                }
+
+                @Override
+                public InputStream getErrorResponse() throws IOException {
+                    return getBody();
+                }
+
+                @Override
+                public int getResponseCode() {
+                    return response.getStatusLine().getStatusCode();
+                }
+            });
+        } catch (IOException e) {
+            future.completeExceptionally(e);
+        }
+        return future;
     }
 
     private RequestConfig getRequestConfig(HttpClientConfig clientConfig) {

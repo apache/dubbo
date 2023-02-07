@@ -16,15 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.ProcessingException;
@@ -33,28 +31,34 @@ import javax.ws.rs.WebApplicationException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.remoting.http.RestClient;
+import org.apache.dubbo.remoting.http.RestResult;
 import org.apache.dubbo.remoting.http.factory.RestClientFactory;
 import org.apache.dubbo.remoting.http.servlet.BootstrapListener;
 import org.apache.dubbo.remoting.http.servlet.ServletManager;
-import org.apache.dubbo.rpc.*;
-import org.apache.dubbo.rpc.Constants;
-import org.apache.dubbo.rpc.model.*;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionConfig;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
-import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.metadata.MetadataResolver;
 import org.apache.dubbo.rpc.protocol.rest.message.HttpMessageCodecManager;
-import org.apache.dubbo.rpc.protocol.rest.response.HttpResponseFacade;
-import org.apache.dubbo.rpc.protocol.rest.response.HttpResponseFactory;
 import org.apache.dubbo.rpc.protocol.rest.util.MediaTypeUtil;
 import org.jboss.resteasy.util.GetRestful;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_SERVER;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
@@ -68,14 +72,14 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     private final Map<String, ReferenceCountedClient<? extends RestClient>> clients = new ConcurrentHashMap<>();
 
-    private static final RestClientFactory clientFactory =
-        FrameworkModel.defaultModel().getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
+    private final RestClientFactory clientFactory;
 
-    private static final Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts =
-        ApplicationModel.defaultModel().getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
+    private final Set<HttpConnectionPreBuildIntercept> httpConnectionPreBuildIntercepts;
 
-    public RestProtocol() {
+    public RestProtocol(FrameworkModel frameworkModel) {
         super(WebApplicationException.class, ProcessingException.class);
+        this.clientFactory = frameworkModel.getExtensionLoader(RestClientFactory.class).getAdaptiveExtension();
+        this.httpConnectionPreBuildIntercepts = frameworkModel.getExtensionLoader(HttpConnectionPreBuildIntercept.class).getSupportedExtensionInstances();
     }
 
 
@@ -138,76 +142,60 @@ public class RestProtocol extends AbstractProxyProtocol {
         refClient.retain();
 
         // resolve metadata
-        Map<Method, RestMethodMetadata> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
-
+        Map<String, Map<Class<?>[], RestMethodMetadata>> metadataMap = MetadataResolver.resolveConsumerServiceMetadata(type, url);
 
         Invoker<T> invoker = new AbstractInvoker<T>(type, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY}) {
             @Override
             protected Result doInvoke(Invocation invocation) {
                 try {
+                    RestMethodMetadata restMethodMetadata = metadataMap.get(invocation.getMethodName()).get(invocation.getParameterTypes());
 
-                    RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-
-                    ConsumerMethodModel consumerMethodModel = (ConsumerMethodModel) rpcInvocation.get(Constants.METHOD_MODEL);
-
-                    RestMethodMetadata restMethodMetadata = metadataMap.get(consumerMethodModel.getMethod());
-
-                    RequestTemplate requestTemplate = new RequestTemplate(restMethodMetadata.getRequest().getMethod(), url.getAddress());
+                    RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
 
                     // TODO  dynamic load config
                     HttpConnectionConfig connectionConfig = new HttpConnectionConfig();
 
-                    HttpConnectionCreateContext httpConnectionCreateContext = createBuildContext(requestTemplate,
-                        connectionConfig,
-                        restMethodMetadata, Arrays.asList(invocation.getArguments()), url);
+                    HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
+                    httpConnectionCreateContext.setConnectionConfig(connectionConfig);
+                    httpConnectionCreateContext.setRequestTemplate(requestTemplate);
+                    httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
+                    httpConnectionCreateContext.setMethodRealArgs(Arrays.asList(invocation.getArguments()));
+                    httpConnectionCreateContext.setUrl(url);
 
                     for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
-
                         intercept.intercept(httpConnectionCreateContext);
                     }
 
-                    Object response = refClient.getClient().send(requestTemplate);
-
-                    HttpResponseFacade responseFacade = HttpResponseFactory.
-                        createFacade(url.getParameter(org.apache.dubbo.remoting.Constants.CLIENT_KEY, DEFAULT_CLIENT), response);
-
-                    // TODO response code
-                    int responseCode = responseFacade.getResponseCode();
-
-
-                    Object value = HttpMessageCodecManager.httpMessageDecode(responseFacade.getBody(),
-                        restMethodMetadata.getReflectMethod().getReturnType(),
-                        MediaTypeUtil.convertMediaType(responseFacade.getContentType()));
-
-                    CompletableFuture<Object> future = wrapWithFuture(value, invocation);
-
-                    CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
-                        AppResponse result = new AppResponse(invocation);
+                    CompletableFuture<RestResult> future = refClient.getClient().send(requestTemplate);
+                    CompletableFuture<AppResponse> responseFuture = new CompletableFuture<>();
+                    AsyncRpcResult asyncRpcResult = new AsyncRpcResult(responseFuture, invocation);
+                    future.whenComplete((r, t) -> {
                         if (t != null) {
-                            if (t instanceof CompletionException) {
-                                result.setException(t.getCause());
-                            } else {
-                                result.setException(t);
-                            }
+                            responseFuture.completeExceptionally(t);
                         } else {
-                            result.setValue(obj);
+                            AppResponse appResponse = new AppResponse();
+                            try {
+                                Object value = HttpMessageCodecManager.httpMessageDecode(r.getBody(),
+                                    restMethodMetadata.getReflectMethod().getReturnType(),
+                                    MediaTypeUtil.convertMediaType(r.getContentType()));
+                                appResponse.setValue(value);
+                                Map<String, String> headers = r.headers()
+                                    .entrySet()
+                                    .stream()
+                                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
+                                appResponse.setAttachments(headers);
+                                responseFuture.complete(appResponse);
+                            } catch (Exception e) {
+                                responseFuture.completeExceptionally(e);
+                            }
                         }
-                        return result;
                     });
-                    return new AsyncRpcResult(appResponseFuture, invocation);
-
+                    return asyncRpcResult;
                 } catch (RpcException e) {
                     if (e.getCode() == RpcException.UNKNOWN_EXCEPTION) {
                         e.setCode(getErrorCode(e.getCause()));
                     }
                     throw e;
-                } catch (InvocationTargetException e) {
-                    if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
-                        logger.error(PROXY_ERROR_ASYNC_RESPONSE, "", "", "Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
-                    }
-                    return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException(), invocation);
-                } catch (Throwable e) {
-                    throw new RpcException("Failed to invoke remote proxy method " + invocation.getMethodName() + " to " + getUrl() + ", cause: " + e.getMessage(), e);
                 }
             }
 
@@ -302,17 +290,6 @@ public class RestProtocol extends AbstractProxyProtocol {
         } catch (Exception e) {
             logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
         }
-    }
-
-    private CompletableFuture<Object> wrapWithFuture(Object value, Invocation invocation) {
-        if (value instanceof CompletableFuture) {
-            invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
-            return (CompletableFuture<Object>) value;
-        } else if (RpcContext.getServerAttachment().isAsyncStarted()) {
-            invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
-            return ((AsyncContextImpl) (RpcContext.getServerAttachment().getAsyncContext())).getInternalFuture();
-        }
-        return CompletableFuture.completedFuture(value);
     }
 
     private static HttpConnectionCreateContext createBuildContext(RequestTemplate requestTemplate,

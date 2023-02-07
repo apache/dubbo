@@ -19,7 +19,7 @@ package org.apache.dubbo.remoting.http;
 
 import org.apache.dubbo.remoting.http.config.HttpClientConfig;
 
-public abstract class BaseRestClient<RES, CLIENT> implements RestClient<RES> {
+public abstract class BaseRestClient<CLIENT> implements RestClient {
 
     protected CLIENT client;
 
