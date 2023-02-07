@@ -79,9 +79,8 @@ public class ReferenceBeanSupport {
             interfaceName = defaultInterfaceClass.getName();
         }
         Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
-        Class<?> clazz = ClassUtils.resolveClass(interfaceName, defaultInterfaceClass.getClassLoader());
-        if (clazz != null) {
-            ProvidedBy providedbBy = clazz.getAnnotation(ProvidedBy.class);
+        if (defaultInterfaceClass != null) {
+            ProvidedBy providedbBy = (ProvidedBy) defaultInterfaceClass.getAnnotation(ProvidedBy.class);
             if (providedbBy != null && providedbBy.name() != null && providedbBy.name().length > 0) {
                 String[] providedbByServices = new String[providedbBy.name().length];
                 for (int i = 0; i <  providedbBy.name().length; i++) {
@@ -111,6 +110,10 @@ public class ReferenceBeanSupport {
             attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
         }
 
+    }
+
+    private static Class<?> getInterfaceClass(String interfaceName, Class defaultInterfaceClass) {
+        return ClassUtils.resolveClass(interfaceName, defaultInterfaceClass.getClassLoader());
     }
 
     public static String generateReferenceKey(Map<String, Object> attributes, ApplicationContext applicationContext) {
