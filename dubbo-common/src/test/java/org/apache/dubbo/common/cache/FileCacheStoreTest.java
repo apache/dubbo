@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.cache;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -55,32 +57,39 @@ class FileCacheStoreTest {
 
     @Test
     void testCache2() throws Exception {
-//        String directoryPath = getDirectoryOfClassPath();
-//        String filePath = "test-cache.dubbo.cache";
-        String basePath = "/Users/aming/.dubbo";
+        String shortBasePath = "/Users/aming/.dubbo";
+        StringBuilder longBasePathBuilder = new StringBuilder();
+        longBasePathBuilder.append(shortBasePath);
+//        for (int i = 0; i < 1; i++) {
+//            longBasePathBuilder.append("dubbo");
+//        }
+        String longBasePath = longBasePathBuilder.toString();
+
         String filePrefix = ".metadata";
-        String filePath = ".metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1:2181";
-        String longFilePath = ".metadata." +
-            "dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2dubbo-demo-api-provider-2"
-            + ".zookeeper.127.0.0.1:2181";
-        cacheStore = FileCacheStoreFactory.getInstance(basePath, filePrefix, longFilePath);
-//        Map<String, String> properties = cacheStore.loadCache(10);
-//        assertEquals(2, properties.size());
+        StringBuilder filePrefixBuilder = new StringBuilder();
+        for (int i = 0; i < 28; i++) {
+            filePrefixBuilder.append("metadata");
+        }
+        filePrefix = filePrefixBuilder.toString();
+
+        String shortFilePath = filePrefix + "dubbo-demo-api-provider-2.zookeeper.127.0.0.1:2181";
+        StringBuilder longFilePathBuilder = new StringBuilder();
+        longFilePathBuilder.append(filePrefix);
+        for (int i = 0; i < 100; i++) {
+            longFilePathBuilder.append("metadata");
+        }
+        longFilePathBuilder.append(".zookeeper.127.0.0.1:2181");
+        String longFilePath = longFilePathBuilder.toString();
+
+        System.setProperty(CommonConstants.File_ADDRESS_SHORTENED, "true");
+//        FileCacheStore unixShortBashPathWithShortFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(shortBasePath, filePrefix, shortFilePath);
+//        FileCacheStore unixShortBashPathWithLongFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(shortBasePath, filePrefix, longFilePath);
+
+//        FileCacheStore unixLongBashPathWithShortFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(longBasePath, filePrefix, shortFilePath);
 //
-//        Map<String, String> newProperties = new HashMap<>();
-//        newProperties.put("newKey1", "newValue1");
-//        newProperties.put("newKey2", "newValue2");
-//        newProperties.put("newKey3", "newValue3");
-//        newProperties.put("newKey4", "newValue4");
-//        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "", "non-exit.dubbo.cache");
-//        cacheStore.refreshCache(newProperties, "test refresh cache", 0);
-//        Map<String, String> propertiesLimitTo2 = cacheStore.loadCache(2);
-//        assertEquals(2, propertiesLimitTo2.size());
-//
-//        Map<String, String> propertiesLimitTo10 = cacheStore.loadCache(10);
-//        assertEquals(4, propertiesLimitTo10.size());
-//
-//        cacheStore.destroy();
+//        System.setProperty("os.name", "Windows");
+        FileCacheStore unixLongBashPathWithLongFilePathShortenCacheStore = FileCacheStoreFactory.getInstance(longBasePath, filePrefix, longFilePath);
+
     }
 
     @Test

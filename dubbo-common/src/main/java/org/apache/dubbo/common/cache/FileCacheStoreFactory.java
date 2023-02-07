@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_CACHE_PATH_INACCESSIBLE;
-import static org.apache.dubbo.common.system.OperatingSystemBeanManager.OS.Unix;
+import static org.apache.dubbo.common.system.OperatingSystemBeanManager.OS.Windows;
 
 /**
  * ClassLoader Level static share.
@@ -116,7 +116,7 @@ public final class FileCacheStoreFactory {
             cacheName = cacheName + SUFFIX;
         }
         OperatingSystemBeanManager.OS os = OperatingSystemBeanManager.getOS();
-        if (os == Unix || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
+        if (os == Windows || "true".equals(System.getProperty(CommonConstants.File_ADDRESS_SHORTENED, "false"))) {
             MD5Utils md5Utils = new MD5Utils();
             /** try to shorten the address
              *  for example,  basePath: /Users/aming/.dubbo   cacheName: .metadata.dubbo-demo-api-provider-2.zookeeper.127.0.0.1%003a2181.dubbo.cache
@@ -229,22 +229,21 @@ public final class FileCacheStoreFactory {
             }
             FileChannel lockFileChannel = new RandomAccessFile(lockFile, "rw").getChannel();
             dirLock = lockFileChannel.tryLock();
-        } catch (FileSystemException e) {
-            if (!StringUtils.isEmpty(md5String) && md5String.length() == 32) {
-                int newNameIndex = fileName.indexOf(md5String);
-                if (newNameIndex == -1) {
-                    throw new RuntimeException(e);
-                }
-                String md5String16Bit = md5String.substring(12, 24);
-                String newName = fileName.substring(0, newNameIndex - 1) + "." + md5String16Bit;
-                tryFileLock(builder, newName, md5String16Bit);
-            } else {
-                throw new RuntimeException(e);
-            }
         } catch (OverlappingFileLockException ofle) {
             dirLock = null;
         } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
+            if (!StringUtils.isEmpty(md5String) && md5String.length() == 32) {
+                int newNameIndex = fileName.indexOf(md5String);
+                if (newNameIndex == -1) {
+                    throw new RuntimeException(ioe);
+                }
+                String md5String16Bit = md5String.substring(8, 24);
+                String newName = fileName.substring(0, newNameIndex - 1) + "." + md5String16Bit;
+                lockFile.deleteOnExit();
+                tryFileLock(builder, newName, md5String16Bit);
+            } else {
+                throw new RuntimeException(ioe);
+            }
         }
 
         if (dirLock == null) {
