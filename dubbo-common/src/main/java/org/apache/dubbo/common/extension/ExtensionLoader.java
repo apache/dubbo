@@ -1229,7 +1229,7 @@ public class ExtensionLoader<T> {
                 "Error occurred when loading extension class (interface: " + type + ", class line: " + clazz.getName() + "), class " + clazz.getName() + " is not subtype of interface.");
         }
 
-        boolean isActive = isActive(classLoader, clazz);
+        boolean isActive = loadClassIfActive(classLoader, clazz);
 
         if (!isActive) {
             return;
@@ -1258,7 +1258,8 @@ public class ExtensionLoader<T> {
             }
         }
     }
-    private boolean isActive(ClassLoader classLoader, Class<?> clazz) {
+
+    private boolean loadClassIfActive(ClassLoader classLoader, Class<?> clazz) {
         Activate activate = clazz.getAnnotation(Activate.class);
 
         if (activate == null) {
@@ -1474,9 +1475,5 @@ public class ExtensionLoader<T> {
         }
         return properties;
     }
-
-
-
-
 
 }
