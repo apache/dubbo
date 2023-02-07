@@ -16,6 +16,17 @@
  */
 package org.apache.dubbo.common.json.impl;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Type;
+import java.util.List;
+
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.dubbo.common.utils.ClassUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -23,10 +34,9 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import java.lang.reflect.Type;
-import java.util.List;
-
 public class JacksonImpl extends AbstractJSONImpl {
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     private volatile Object jacksonCache = null;
 
     @Override
@@ -64,6 +74,31 @@ public class JacksonImpl extends AbstractJSONImpl {
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    @Override
+    public <T> T parseObject(byte[] bytes, Class<T> clazz) {
+        try {
+            JsonParser parser = getJackson().createParser(bytes);
+            return parser.readValueAs(clazz);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    @Override
+    public <T> T parseObject(InputStream inputStream, Class<T> clazz) throws Exception {
+        JavaType javaType = objectMapper.constructType(clazz);
+        return objectMapper.readValue(inputStream, javaType);
+
+    }
+
+    @Override
+    public <T> void serializeObject(OutputStream outputStream, Object o) throws Exception {
+        JsonGenerator generator = this.objectMapper.getFactory().createGenerator(outputStream, JsonEncoding.UTF8);
+        ObjectWriter objectWriter =this.objectMapper.writer();
+        objectWriter.writeValue(generator, o);
+        generator.flush();
     }
 
     private JsonMapper getJackson() {
