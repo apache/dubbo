@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -45,7 +46,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.PROTOCOL_ERROR_CLOSE_CLIENT;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 /**
@@ -53,7 +53,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class DubboInvoker<T> extends AbstractInvoker<T> {
 
-    private final ExchangeClient[] clients;
+    private final ConnectionPool<ExchangeClient> connectionPool;
 
     private final AtomicPositiveInteger index = new AtomicPositiveInteger();
 
@@ -64,13 +64,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final int serverShutdownTimeout;
 
-    public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
-        this(serviceType, url, clients, null);
-    }
-
-    public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients, Set<Invoker<?>> invokers) {
+    public DubboInvoker(Class<T> serviceType, URL url, ConnectionPool<ExchangeClient> connectionPool, Set<Invoker<?>> invokers) {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
-        this.clients = clients;
+        this.connectionPool = connectionPool;
         this.invokers = invokers;
         this.serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(getUrl().getScopeModel());
     }
@@ -82,12 +78,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(VERSION_KEY, version);
 
-        ExchangeClient currentClient;
-        if (clients.length == 1) {
-            currentClient = clients[0];
-        } else {
-            currentClient = clients[index.getAndIncrement() % clients.length];
-        }
+        ExchangeClient currentClient = connectionPool.getClient(getUrl());
+
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
 
@@ -125,13 +117,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        for (ExchangeClient client : clients) {
-            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
-                //cannot write == not Available ?
-                return true;
-            }
-        }
-        return false;
+        return connectionPool.isAvailable();
     }
 
     @Override
@@ -150,13 +136,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 if (invokers != null) {
                     invokers.remove(this);
                 }
-                for (ExchangeClient client : clients) {
-                    try {
-                        client.close(serverShutdownTimeout);
-                    } catch (Throwable t) {
-                        logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", t.getMessage(), t);
-                    }
-                }
+                connectionPool.close(serverShutdownTimeout);
 
             } finally {
                 destroyLock.unlock();

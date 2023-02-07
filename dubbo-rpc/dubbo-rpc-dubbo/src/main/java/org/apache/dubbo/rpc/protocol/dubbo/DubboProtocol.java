@@ -27,6 +27,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -408,10 +409,14 @@ public class DubboProtocol extends AbstractProtocol {
         optimizeSerialization(url);
 
         // create rpc invoker.
-        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
+        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getConnectionPool(url), invokers);
         invokers.add(invoker);
 
         return invoker;
+    }
+
+    private ConnectionPool<ExchangeClient> getConnectionPool(URL url){
+        return new DubboConnectionPool(url, requestHandler);
     }
 
     private ExchangeClient[] getClients(URL url) {
