@@ -20,28 +20,19 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 import org.apache.dubbo.remoting.http.RequestTemplate;
-
-import java.util.List;
+import org.apache.dubbo.rpc.Invocation;
 
 public class HttpConnectionCreateContext {
 
     private RequestTemplate requestTemplate;
     private HttpConnectionConfig connectionConfig;
     private RestMethodMetadata restMethodMetadata;
-    private List<Object> methodRealArgs;
+    private Invocation invocation;
     private URL url;
 
     public HttpConnectionCreateContext() {
     }
 
-
-    public HttpConnectionCreateContext(RequestTemplate requestTemplate,
-                                       HttpConnectionConfig connectionConfig,
-                                       List<Object> methodRealArgs) {
-        this.requestTemplate = requestTemplate;
-        this.connectionConfig = connectionConfig;
-        this.methodRealArgs = methodRealArgs;
-    }
 
     public void setRequestTemplate(RequestTemplate requestTemplate) {
         this.requestTemplate = requestTemplate;
@@ -72,12 +63,12 @@ public class HttpConnectionCreateContext {
         this.restMethodMetadata = restMethodMetadata;
     }
 
-    public List<Object> getMethodRealArgs() {
-        return methodRealArgs;
+    public Invocation getInvocation() {
+        return invocation;
     }
 
-    public void setMethodRealArgs(List<Object> methodRealArgs) {
-        this.methodRealArgs = methodRealArgs;
+    public void setInvocation(Invocation invocation) {
+        this.invocation = invocation;
     }
 
     public URL getUrl() {

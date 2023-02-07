@@ -16,28 +16,27 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionPreBuildIntercept;
-import org.apache.dubbo.remoting.http.RequestTemplate;
 import org.apache.dubbo.rpc.protocol.rest.constans.RestConstant;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 @Activate(value = RestConstant.RPCCONTEXT_INTERCEPT,order = 3)
-public class RPCContextIntercept implements HttpConnectionPreBuildIntercept {
-
+public class AttachmentIntercept implements HttpConnectionPreBuildIntercept {
 
     @Override
     public void intercept(HttpConnectionCreateContext connectionCreateContext) {
 
         RequestTemplate requestTemplate = connectionCreateContext.getRequestTemplate();
         int size = 0;
-        for (Map.Entry<String, Object> entry : RpcContext.getClientAttachment().getObjectAttachments().entrySet()) {
+        for (Map.Entry<String, Object> entry : connectionCreateContext.getInvocation().getObjectAttachments().entrySet()) {
             String key = entry.getKey();
-            String value = (String) entry.getValue();
+            String value = String.valueOf(entry.getValue());
             if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
             }

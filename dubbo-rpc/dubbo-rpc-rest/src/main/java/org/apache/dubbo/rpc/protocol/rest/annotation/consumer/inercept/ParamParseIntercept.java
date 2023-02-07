@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.rest.annotation.consumer.inercept;
 
+import java.util.Arrays;
+
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.protocol.rest.annotation.ParamParserManager;
 import org.apache.dubbo.rpc.protocol.rest.annotation.consumer.HttpConnectionCreateContext;
@@ -31,7 +33,7 @@ public class ParamParseIntercept implements HttpConnectionPreBuildIntercept {
 
         ConsumerParseContext consumerParseContext = new ConsumerParseContext(connectionCreateContext.getRequestTemplate());
         consumerParseContext.setArgInfos(connectionCreateContext.getRestMethodMetadata().getArgInfos());
-        consumerParseContext.setArgs(connectionCreateContext.getMethodRealArgs());
+        consumerParseContext.setArgs(Arrays.asList(connectionCreateContext.getInvocation().getArguments()));
         paramParser.consumerParamParse(consumerParseContext);
     }
 }

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.rest;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -152,14 +150,12 @@ public class RestProtocol extends AbstractProxyProtocol {
 
                     RequestTemplate requestTemplate = new RequestTemplate(invocation, restMethodMetadata.getRequest().getMethod(), url.getAddress());
 
-                    // TODO  dynamic load config
-                    HttpConnectionConfig connectionConfig = new HttpConnectionConfig();
-
                     HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
-                    httpConnectionCreateContext.setConnectionConfig(connectionConfig);
+                    // TODO  dynamic load config
+                    httpConnectionCreateContext.setConnectionConfig(new HttpConnectionConfig());
                     httpConnectionCreateContext.setRequestTemplate(requestTemplate);
                     httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
-                    httpConnectionCreateContext.setMethodRealArgs(Arrays.asList(invocation.getArguments()));
+                    httpConnectionCreateContext.setInvocation(invocation);
                     httpConnectionCreateContext.setUrl(url);
 
                     for (HttpConnectionPreBuildIntercept intercept : httpConnectionPreBuildIntercepts) {
@@ -291,18 +287,4 @@ public class RestProtocol extends AbstractProxyProtocol {
             logger.warn(PROTOCOL_ERROR_CLOSE_CLIENT, "", "", "Failed to close unused resources in rest protocol. interfaceName [" + url.getServiceInterface() + "]", e);
         }
     }
-
-    private static HttpConnectionCreateContext createBuildContext(RequestTemplate requestTemplate,
-                                                                  HttpConnectionConfig connectionConfig,
-                                                                  RestMethodMetadata restMethodMetadata, List<Object> rags, URL url) {
-        HttpConnectionCreateContext httpConnectionCreateContext = new HttpConnectionCreateContext();
-        httpConnectionCreateContext.setConnectionConfig(connectionConfig);
-        httpConnectionCreateContext.setRequestTemplate(requestTemplate);
-        httpConnectionCreateContext.setRestMethodMetadata(restMethodMetadata);
-        httpConnectionCreateContext.setMethodRealArgs(rags);
-        httpConnectionCreateContext.setUrl(url);
-        return httpConnectionCreateContext;
-    }
-
-
 }
