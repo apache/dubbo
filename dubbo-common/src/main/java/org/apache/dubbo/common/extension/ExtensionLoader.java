@@ -101,6 +101,7 @@ import static org.apache.dubbo.common.constants.LoggerCodeConstants.CONFIG_FAILE
  * @see org.apache.dubbo.common.extension.Adaptive
  * @see org.apache.dubbo.common.extension.Activate
  */
+
 public class ExtensionLoader<T> {
 
     private static final ErrorTypeAwareLogger logger = LoggerFactory.getErrorTypeAwareLogger(
@@ -1229,7 +1230,7 @@ public class ExtensionLoader<T> {
                 "Error occurred when loading extension class (interface: " + type + ", class line: " + clazz.getName() + "), class " + clazz.getName() + " is not subtype of interface.");
         }
 
-        boolean isActive = isActive(classLoader, clazz);
+        boolean isActive = loadClassIfActive(classLoader, clazz);
 
         if (!isActive) {
             return;
@@ -1258,7 +1259,8 @@ public class ExtensionLoader<T> {
             }
         }
     }
-    private boolean isActive(ClassLoader classLoader, Class<?> clazz) {
+
+    private boolean loadClassIfActive(ClassLoader classLoader, Class<?> clazz) {
         Activate activate = clazz.getAnnotation(Activate.class);
 
         if (activate == null) {
@@ -1272,16 +1274,10 @@ public class ExtensionLoader<T> {
             onClass = ((com.alibaba.dubbo.common.extension.Activate) activate).onClass();
         }
 
-        if (onClass.length == 0) {
-
-            return true;
-        }
-
         boolean isActive = true;
 
-        if (onClass.length > 0) {
-            isActive = Arrays.stream(onClass)
-                .filter(StringUtils::isNotBlank)
+        if (null != onClass && onClass.length > 0) {
+            isActive = Arrays.stream(onClass).filter(StringUtils::isNotBlank)
                 .allMatch(className -> ClassUtils.isPresent(className, classLoader));
         }
         return isActive;
@@ -1474,9 +1470,5 @@ public class ExtensionLoader<T> {
         }
         return properties;
     }
-
-
-
-
 
 }

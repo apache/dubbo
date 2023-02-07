@@ -32,8 +32,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONTEXT_HOLDER_CLASS_NAME;
 
 @Activate(group = CommonConstants.PROVIDER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
-
 public class ContextHolderAuthenticationResolverFilter implements Filter {
+
+    private final ObjectMapperCodec MAPPER = new ObjectMapperCodec();
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -42,13 +43,13 @@ public class ContextHolderAuthenticationResolverFilter implements Filter {
         return invoker.invoke(invocation);
     }
 
-    private static void getSecurityContext(Invocation invocation) {
+    private void getSecurityContext(Invocation invocation) {
         String authenticationJSON = invocation.getAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY);
 
         if (StringUtils.isBlank(authenticationJSON)) {
             return;
         }
-        Authentication authentication = ObjectMapperCodec.deserialize(authenticationJSON, Authentication.class);
+        Authentication authentication = MAPPER.deserialize(authenticationJSON, Authentication.class);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
