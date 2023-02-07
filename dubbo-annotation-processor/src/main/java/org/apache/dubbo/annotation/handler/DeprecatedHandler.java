@@ -19,6 +19,7 @@ package org.apache.dubbo.annotation.handler;
 
 import org.apache.dubbo.annotation.AnnotationProcessingHandler;
 import org.apache.dubbo.annotation.AnnotationProcessorContext;
+import org.apache.dubbo.annotation.constant.DeprecatedHandlerConstants;
 import org.apache.dubbo.annotation.util.ASTUtils;
 
 import com.sun.tools.javac.code.Symbol;
@@ -104,7 +105,7 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                         ),
 
                         com.sun.tools.javac.util.List.of(
-                            apContext.getTreeMaker().Literal("0-28"),
+                            apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.ERROR_CODE),
                             apContext.getTreeMaker().Literal("invocation of deprecated method"),
                             apContext.getTreeMaker().Literal(""),
                             apContext.getTreeMaker().Literal("Deprecated method invoked. The method is "
