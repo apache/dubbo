@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.annotation;
 
+import org.apache.dubbo.annotation.constant.DeprecatedHandlerConstants;
 import org.apache.dubbo.annotation.util.FileUtils;
 import org.apache.dubbo.eci.extractor.ErrorCodeExtractor;
 import org.apache.dubbo.eci.extractor.JavassistConstantPoolErrorCodeExtractor;
@@ -33,7 +34,10 @@ import java.util.Map;
  */
 class RealInvocationTest {
 
-    private static final Map<String, Boolean> FILES = new HashMap<>(4, 1);
+    /**
+     * [File name, Should the error code exist in the class file? ]
+     */
+    private static final Map<String, Boolean> FILES = new HashMap<>(5, 1);
 
     static {
         FILES.put("TestConstructorMethod.java", true);
@@ -54,7 +58,7 @@ class RealInvocationTest {
             ErrorCodeExtractor errorCodeExtractor = new JavassistConstantPoolErrorCodeExtractor();
             List<String> codes = errorCodeExtractor.getErrorCodes(filePath.replace(".java", ".class"));
 
-            Assertions.assertEquals(i.getValue(), codes.contains("0-28"), i.getKey());
+            Assertions.assertEquals(i.getValue(), codes.contains(DeprecatedHandlerConstants.ERROR_CODE), i.getKey());
         }
 
     }

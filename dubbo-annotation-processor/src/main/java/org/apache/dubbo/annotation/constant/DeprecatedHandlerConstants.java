@@ -27,5 +27,9 @@ public final class DeprecatedHandlerConstants {
 
     public static final String ERROR_CODE = "0-99";
 
+    public static final String POSSIBLE_CAUSE = "invocation of deprecated method";
+
+    public static final String EXTENDED_MESSAGE = "";
+
 
 }

@@ -59,15 +59,11 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
             ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "LoggerFactory");
             ASTUtils.addImportStatement(apContext, classSymbol, "org.apache.dubbo.common.logger", "ErrorTypeAwareLogger");
 
-            JCTree classTree = apContext.getJavacTrees().getTree(classSymbol);
             JCTree methodTree = apContext.getJavacTrees().getTree(element);
 
             methodTree.accept(new TreeTranslator() {
                 @Override
                 public void visitMethodDef(JCTree.JCMethodDecl jcMethodDecl) {
-
-                    // Add a statement like this:
-                    // LoggerFactory.getErrorTypeAwareLogger(XXX.class).warn("0-X", "", "", "....");
 
                     JCTree.JCBlock block = jcMethodDecl.body;
 
@@ -76,72 +72,98 @@ public class DeprecatedHandler implements AnnotationProcessingHandler {
                         return;
                     }
 
-                    boolean isConstructor = jcMethodDecl.name.toString().equals("<init>");
+                    JCTree.JCExpressionStatement fullExpressionStatement = generateLoggerStatement(jcMethodDecl, apContext, classSymbol);
 
-                    JCTree.JCExpression getLoggerStatement = apContext.getTreeMaker().Apply(
-                        // Use definite name to distinguish the java.util.List.
-                        com.sun.tools.javac.util.List.nil(),
-
-                        apContext.getTreeMaker().Select(
-                            apContext.getTreeMaker().Ident(apContext.getNames().fromString("LoggerFactory")),
-                            apContext.getNames().fromString("getErrorTypeAwareLogger")
-                        ),
-
-                        com.sun.tools.javac.util.List.of(
-                            apContext.getTreeMaker().ClassLiteral(
-                                classSymbol.erasure(
-                                    Types.instance(apContext.getJavacContext())
-                                )
-                            )
-                        )
-                    );
-
-                    JCTree.JCExpression fullStatement = apContext.getTreeMaker().Apply(
-                        com.sun.tools.javac.util.List.nil(),
-
-                        apContext.getTreeMaker().Select(
-                            getLoggerStatement,
-                            apContext.getNames().fromString("warn")
-                        ),
-
-                        com.sun.tools.javac.util.List.of(
-                            apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.ERROR_CODE),
-                            apContext.getTreeMaker().Literal("invocation of deprecated method"),
-                            apContext.getTreeMaker().Literal(""),
-                            apContext.getTreeMaker().Literal("Deprecated method invoked. The method is "
-                                + classSymbol.getQualifiedName() + "."
-                                + jcMethodDecl.name.toString() + "(" + jcMethodDecl.params.toString() + ")")
-                        )
-                    );
-
-                    JCTree.JCExpressionStatement fullExpressionStatement = apContext.getTreeMaker().Exec(fullStatement);
-
-                    ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
-
-                    // In constructor, super(...) or this(...) should be the first statement.
-
-                    if (isConstructor && !block.stats.isEmpty()) {
-
-                        boolean startsWithSuper = block.stats.get(0).toString().startsWith("super(");
-                        boolean startsWithThis = block.stats.get(0).toString().startsWith("this(");
-
-                        if (startsWithSuper || startsWithThis) {
-                            statements.add(block.stats.get(0));
-                            statements.add(fullExpressionStatement);
-                            statements.addAll(block.stats.subList(1, block.stats.size()));
-                        } else {
-                            statements.add(fullExpressionStatement);
-                            statements.addAll(block.stats);
-                        }
-
-                    } else {
-                        statements.add(fullExpressionStatement);
-                        statements.addAll(block.stats);
-                    }
-
-                    block.stats = statements.toList();
+                    insertLoggerInvocation(block, jcMethodDecl, fullExpressionStatement);
                 }
             });
         }
+    }
+
+    /**
+     * Generate an expression statement like this:
+     * <code>LoggerFactory.getErrorTypeAwareLogger(XXX.class).warn("0-X", "", "", "....");
+     *
+     * @param originalMethodDecl the method declaration that will add logger statement
+     * @param apContext annotation processor context
+     * @param classSymbol the enclosing class that will be the logger's name
+     * @return generated expression statement
+     */
+    private static JCTree.JCExpressionStatement generateLoggerStatement(JCTree.JCMethodDecl originalMethodDecl,
+                                                                        AnnotationProcessorContext apContext,
+                                                                        Symbol.ClassSymbol classSymbol) {
+
+        JCTree.JCExpression getLoggerStatement = apContext.getTreeMaker().Apply(
+            // Use definite name to distinguish the java.util.List.
+            com.sun.tools.javac.util.List.nil(),
+
+            apContext.getTreeMaker().Select(
+                apContext.getTreeMaker().Ident(apContext.getNames().fromString("LoggerFactory")),
+                apContext.getNames().fromString("getErrorTypeAwareLogger")
+            ),
+
+            com.sun.tools.javac.util.List.of(
+                apContext.getTreeMaker().ClassLiteral(
+                    classSymbol.erasure(
+                        Types.instance(apContext.getJavacContext())
+                    )
+                )
+            )
+        );
+
+        JCTree.JCExpression fullStatement = apContext.getTreeMaker().Apply(
+            com.sun.tools.javac.util.List.nil(),
+
+            apContext.getTreeMaker().Select(
+                getLoggerStatement,
+                apContext.getNames().fromString("warn")
+            ),
+
+            com.sun.tools.javac.util.List.of(
+                apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.ERROR_CODE),
+                apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.POSSIBLE_CAUSE),
+                apContext.getTreeMaker().Literal(DeprecatedHandlerConstants.EXTENDED_MESSAGE),
+                apContext.getTreeMaker().Literal("Deprecated method invoked. The method is "
+                    + classSymbol.getQualifiedName() + "."
+                    + originalMethodDecl.name.toString() + "(" + originalMethodDecl.params.toString() + ")")
+            )
+        );
+
+        return apContext.getTreeMaker().Exec(fullStatement);
+    }
+
+    /**
+     * Insert logger method invocation that generated from generateLoggerStatement(...).
+     *
+     * @param block the method body
+     * @param originalMethodDecl the method declaration that will add logger statement
+     * @param fullExpressionStatement the logger invocation generated from generateLoggerStatement(...).
+     */
+    private static void insertLoggerInvocation(JCTree.JCBlock block, JCTree.JCMethodDecl originalMethodDecl, JCTree.JCExpressionStatement fullExpressionStatement) {
+        boolean isConstructor = originalMethodDecl.name.toString().equals("<init>");
+        ListBuffer<JCTree.JCStatement> statements = new ListBuffer<>();
+
+        // In constructor, super(...) or this(...) should be the first statement.
+
+        if (isConstructor && !block.stats.isEmpty()) {
+
+            boolean startsWithSuper = block.stats.get(0).toString().startsWith("super(");
+            boolean startsWithThis = block.stats.get(0).toString().startsWith("this(");
+
+            if (startsWithSuper || startsWithThis) {
+                statements.add(block.stats.get(0));
+                statements.add(fullExpressionStatement);
+                statements.addAll(block.stats.subList(1, block.stats.size()));
+            } else {
+                statements.add(fullExpressionStatement);
+                statements.addAll(block.stats);
+            }
+
+        } else {
+            statements.add(fullExpressionStatement);
+            statements.addAll(block.stats);
+        }
+
+        block.stats = statements.toList();
     }
 }
