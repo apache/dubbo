@@ -1273,16 +1273,10 @@ public class ExtensionLoader<T> {
             onClass = ((com.alibaba.dubbo.common.extension.Activate) activate).onClass();
         }
 
-        if (null != onClass && onClass.length == 0) {
-
-            return true;
-        }
-
         boolean isActive = true;
 
-        if (onClass.length > 0) {
-            isActive = Arrays.stream(onClass)
-                .filter(StringUtils::isNotBlank)
+        if (null != onClass && onClass.length > 0) {
+            isActive = Arrays.stream(onClass).filter(StringUtils::isNotBlank)
                 .allMatch(className -> ClassUtils.isPresent(className, classLoader));
         }
         return isActive;
