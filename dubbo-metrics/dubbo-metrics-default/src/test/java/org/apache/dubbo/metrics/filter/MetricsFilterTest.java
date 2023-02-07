@@ -17,10 +17,13 @@
 
 package org.apache.dubbo.metrics.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.model.MetricsKey;
@@ -322,6 +325,12 @@ class MetricsFilterTest {
 
     private Map<String, MetricSample> getMetricsMap() {
         List<MetricSample> samples = collector.collect();
+        for (MetricSample sample : samples) {
+            if (sample.getName().contains("dubbo.thread.pool")) {
+                String threadName = sample.getTags().get(MetricsConstants.TAG_THREAD_NAME);
+                sample.setName(threadName + "/" + sample.getName());
+            }
+        }
         return samples.stream().collect(Collectors.toMap(MetricSample::getName, Function.identity()));
     }
 }
