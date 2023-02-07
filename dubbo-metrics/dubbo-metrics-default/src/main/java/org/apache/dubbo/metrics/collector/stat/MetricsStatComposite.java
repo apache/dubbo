@@ -20,12 +20,9 @@ package org.apache.dubbo.metrics.collector.stat;
 import org.apache.dubbo.common.utils.ConcurrentHashMapUtils;
 import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.event.EmptyEvent;
-import org.apache.dubbo.metrics.event.ApplicationEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.event.RTEvent;
 import org.apache.dubbo.metrics.event.RequestEvent;
-import org.apache.dubbo.metrics.listener.MetricsListener;
-import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.Invocation;
 

@@ -19,7 +19,9 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.metrics.collector.stat.MetricsStatComposite;
 import org.apache.dubbo.metrics.collector.stat.MetricsStatHandler;
-import org.apache.dubbo.metrics.event.*;
+import org.apache.dubbo.metrics.event.EmptyEvent;
+import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.event.SimpleMetricsEventMulticaster;
 import org.apache.dubbo.metrics.listener.MetricsListener;
 import org.apache.dubbo.metrics.model.MetricsKey;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
