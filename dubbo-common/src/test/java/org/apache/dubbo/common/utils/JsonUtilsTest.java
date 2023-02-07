@@ -16,20 +16,57 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.json.impl.FastJsonImpl;
-import org.apache.dubbo.common.json.impl.GsonImpl;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+import org.apache.dubbo.common.json.impl.FastJsonImpl;
+import org.apache.dubbo.common.json.impl.GsonImpl;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
+
+import static org.mockito.Answers.CALLS_REAL_METHODS;
+
 
 class JsonUtilsTest {
+    private static Gson gson = new Gson();
+    private static MockedStatic<JSON> fastjsonMock;
+    private static AtomicReference<Gson> gsonReference = new AtomicReference<>();
+    private static MockedConstruction<Gson> gsonMock;
+    private static AtomicReference<Consumer<Gson>> gsonInit = new AtomicReference<>();
+
+    @BeforeAll
+    static void setup() {
+        fastjsonMock = Mockito.mockStatic(JSON.class, CALLS_REAL_METHODS);
+        gsonMock = Mockito.mockConstruction(Gson.class,
+            (mock, context) -> {
+                gsonReference.set(mock);
+                Mockito.when(mock.toJson((Object) Mockito.any())).thenAnswer(invocation -> gson.toJson((Object) invocation.getArgument(0)));
+                Mockito.when(mock.fromJson(Mockito.anyString(), (Type) Mockito.any())).thenAnswer(invocation -> gson.fromJson((String) invocation.getArgument(0), (Type) invocation.getArgument(1)));
+                Consumer<Gson> gsonConsumer = gsonInit.get();
+                if (gsonConsumer != null) {
+                    gsonConsumer.accept(mock);
+                }
+            });
+    }
+
+    @AfterAll
+    static void teardown() {
+        fastjsonMock.close();
+        gsonMock.close();
+    }
+
     @Test
     void testGetJson1() {
         Assertions.assertNotNull(JsonUtils.getJson());
@@ -62,77 +99,64 @@ class JsonUtilsTest {
 
     @Test
     void testGetJson2() {
-        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
-        AtomicReference<List<String>> removedPackages = new AtomicReference<>(Collections.emptyList());
-        ClassLoader newClassLoader = new ClassLoader(originClassLoader) {
-            @Override
-            public Class<?> loadClass(String name) throws ClassNotFoundException {
-                for (String removedPackage : removedPackages.get()) {
-                    if (name.startsWith(removedPackage)) {
-                        throw new ClassNotFoundException("Test");
-                    }
-                }
-                return super.loadClass(name);
-            }
-        };
-        Thread.currentThread().setContextClassLoader(newClassLoader);
-
         // default use fastjson
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
 
         // prefer use fastjson
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use gson
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "gson");
         Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
 
         // prefer use not found
         JsonUtils.setJson(null);
-        removedPackages.set(Collections.emptyList());
         System.setProperty("dubbo.json-framework.prefer", "notfound");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
 
         JsonUtils.setJson(null);
         // TCCL not found fastjson
-        removedPackages.set(Collections.singletonList("com.alibaba.fastjson"));
+        fastjsonMock.when(() -> JSON.toJSONString(Mockito.any(), Mockito.any())).thenThrow(new RuntimeException());
         Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
+        fastjsonMock.reset();
 
         JsonUtils.setJson(null);
         // TCCL not found gson
-        removedPackages.set(Collections.singletonList("com.google.gson"));
+        gsonInit.set(mock -> Mockito.reset(mock));
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
+        gsonInit.set(null);
 
         JsonUtils.setJson(null);
         // TCCL not found fastjson, prefer use fastjson
-        removedPackages.set(Collections.singletonList("com.alibaba.fastjson"));
+        fastjsonMock.when(() -> JSON.toJSONString(Mockito.any(), Mockito.any())).thenThrow(new RuntimeException());
         System.setProperty("dubbo.json-framework.prefer", "fastjson");
         Assertions.assertInstanceOf(GsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
+        fastjsonMock.reset();
 
         JsonUtils.setJson(null);
         // TCCL not found gson, prefer use gson
-        removedPackages.set(Collections.singletonList("com.google.gson"));
+        gsonInit.set(mock -> Mockito.reset(mock));
         System.setProperty("dubbo.json-framework.prefer", "gson");
         Assertions.assertInstanceOf(FastJsonImpl.class, JsonUtils.getJson());
         System.clearProperty("dubbo.json-framework.prefer");
+        gsonInit.set(null);
 
         JsonUtils.setJson(null);
         // TCCL not found fastjson, gson
-        removedPackages.set(Arrays.asList("com.alibaba.fastjson", "com.google.gson"));
+        fastjsonMock.when(() -> JSON.toJSONString((Object) Mockito.any(), Mockito.any())).thenThrow(new RuntimeException());
+        gsonInit.set(mock -> Mockito.reset(mock));
         Assertions.assertThrows(IllegalStateException.class, JsonUtils::getJson);
+        gsonInit.set(null);
+        fastjsonMock.reset();
 
-        Thread.currentThread().setContextClassLoader(originClassLoader);
         JsonUtils.setJson(null);
     }
 }
