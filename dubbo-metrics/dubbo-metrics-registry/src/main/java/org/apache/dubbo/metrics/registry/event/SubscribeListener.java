@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.registry.event;
 
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metrics.event.MetricsEvent;
 import org.apache.dubbo.metrics.listener.MetricsLifeListener;
 import org.apache.dubbo.metrics.registry.collector.RegistryMetricsCollector;
@@ -39,18 +40,18 @@ public class SubscribeListener implements MetricsLifeListener<RegistrySubscribeE
 
     @Override
     public void onEvent(RegistrySubscribeEvent event) {
-        handleIncrementEvent(event, RegistrySubscribeEvent.Type.R_TOTAL);
+        handleIncrementEvent(event, RegistrySubscribeEvent.Type.S_TOTAL);
     }
 
     @Override
     public void onEventFinish(RegistrySubscribeEvent event) {
-        handleIncrementEvent(event, RegistrySubscribeEvent.Type.R_SUCCEED);
+        handleIncrementEvent(event, RegistrySubscribeEvent.Type.S_SUCCEED);
         handleTimeEvent(event);
     }
 
     @Override
     public void onEventError(RegistrySubscribeEvent event) {
-        handleIncrementEvent(event, RegistrySubscribeEvent.Type.R_FAILED);
+        handleIncrementEvent(event, RegistrySubscribeEvent.Type.S_FAILED);
         handleTimeEvent(event);
     }
 
@@ -66,7 +67,14 @@ public class SubscribeListener implements MetricsLifeListener<RegistrySubscribeE
         ApplicationModel applicationModel = event.getSource();
         RegistryMetricsCollector collector = applicationModel.getBeanFactory().getBean(RegistryMetricsCollector.class);
         if (collector == null) {
-            logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "RegisterListener invoked but no collector found");
+            ConfigManager configManager = applicationModel.getApplicationConfigManager();
+            configManager.getMetrics().ifPresent(metricsConfig ->
+                {
+                    if (metricsConfig.getEnableRegistry()) {
+                        logger.error(INTERNAL_ERROR, "unknown error in registry module", "", "SubscribeListener invoked but no collector found");
+                    }
+                }
+            );
             return;
         }
         if (!collector.isCollectEnabled()) {

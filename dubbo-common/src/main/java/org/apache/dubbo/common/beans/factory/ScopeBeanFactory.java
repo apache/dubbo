@@ -271,4 +271,13 @@ public class ScopeBeanFactory {
             this.instance = instance;
         }
     }
+
+    public boolean containsBean(String name) {
+        return registeredBeanInfos.stream().anyMatch(beanInfo -> name.equals(beanInfo.name));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> List<T> getBeansOfType(Class<T> type) {
+        return (List<T>) registeredBeanInfos.stream().filter(beanInfo -> type.isInstance(beanInfo.instance)).map(beanInfo -> beanInfo.instance).collect(Collectors.toList());
+    }
 }

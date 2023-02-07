@@ -32,34 +32,38 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Optional;
 
 
 /**
  * Default implementation of {@link MetricsCollector}
  */
 @Activate
-public class RegistryMetricsCollector implements MetricsCollector, ApplicationMetricsCollector<RegistryEvent.Type>, MetricsLifeListener<RegistryEvent<?>> {
+public class RegistryMetricsCollector implements ApplicationMetricsCollector<RegistryEvent.Type>, MetricsLifeListener<RegistryEvent<?>> {
 
-    private final AtomicBoolean collectEnabled = new AtomicBoolean(false);
+    private Boolean collectEnabled = null;
     private final RegistryStatComposite stats;
     private final MetricsEventMulticaster registryMulticaster;
+    private ApplicationModel applicationModel;
 
-    public RegistryMetricsCollector() {
+    public RegistryMetricsCollector(ApplicationModel applicationModel) {
         this.stats = new RegistryStatComposite();
         this.registryMulticaster = new RegistryMetricsEventMulticaster();
-        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
-        configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistry()));
+        this.applicationModel = applicationModel;
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
         if (collectEnabled != null) {
-            this.collectEnabled.compareAndSet(isCollectEnabled(), collectEnabled);
+            this.collectEnabled = collectEnabled;
         }
     }
 
     public Boolean isCollectEnabled() {
-        return collectEnabled.get();
+        if (collectEnabled == null) {
+            ConfigManager configManager = applicationModel.getApplicationConfigManager();
+            configManager.getMetrics().ifPresent(metricsConfig -> setCollectEnabled(metricsConfig.getEnableRegistry()));
+        }
+        return Optional.ofNullable(collectEnabled).orElse(false);
     }
 
     @Override

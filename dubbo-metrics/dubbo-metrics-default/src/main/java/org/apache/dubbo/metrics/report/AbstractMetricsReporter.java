@@ -29,6 +29,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.constants.MetricsConstants;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.ErrorTypeAwareLogger;
@@ -36,7 +37,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metrics.DubboMetrics;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
-import org.apache.dubbo.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.metrics.collector.MetricsCollector;
 import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.metrics.model.sample.MetricSample;
@@ -94,9 +94,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected void addMeterRegistry(MeterRegistry registry) {
         compositeRegistry.add(registry);
     }
-    private void addDubboMeterRegistry(){
+
+    private void addDubboMeterRegistry() {
         MeterRegistry globalRegistry = DubboMetrics.globalRegistry;
-        if(globalRegistry != null && !addGlobalRegistry.get()){
+        if (globalRegistry != null && !addGlobalRegistry.get()) {
             compositeRegistry.add(globalRegistry);
             addGlobalRegistry.set(true);
         }
@@ -128,10 +129,10 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     }
 
     private void initCollectors() {
-        applicationModel.getBeanFactory().getOrRegisterBean(AggregateMetricsCollector.class);
-
-        collectors.add(applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class));
-        collectors.add(applicationModel.getBeanFactory().getBean(AggregateMetricsCollector.class));
+        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.getOrRegisterBean(AggregateMetricsCollector.class);
+        List<MetricsCollector> otherCollectors = beanFactory.getBeansOfType(MetricsCollector.class);
+        collectors.addAll(otherCollectors);
     }
 
     private void scheduleMetricsCollectorSyncJob() {

@@ -18,8 +18,7 @@
 package org.apache.dubbo.metrics.collector;
 
 /**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
+ * Application-level collector.
  */
 public interface ApplicationMetricsCollector<T> extends MetricsCollector {
 

@@ -22,8 +22,8 @@ import org.apache.dubbo.metrics.model.sample.GaugeMetricSample;
 import java.util.List;
 
 /**
- * Metrics Reporter.
- * Report metrics to specific metrics server(e.g. Prometheus).
+ * Metrics data export.
+ * Export data in a unified format for external collection(e.g. Prometheus).
  */
 public interface MetricsExport {
 

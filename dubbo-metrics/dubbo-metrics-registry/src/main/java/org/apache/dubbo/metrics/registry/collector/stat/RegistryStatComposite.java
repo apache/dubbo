@@ -57,9 +57,9 @@ public class RegistryStatComposite implements MetricsExport {
         AtomicLongContainer avgContainer = new AtomicLongContainer(MetricsKey.REGISTER_METRIC_RT_AVG, (k, v) -> v.incrementAndGet());
         avgContainer.setValueSupplier(applicationName -> {
             LongContainer<? extends Number> totalContainer = rtStats.stream().filter(longContainer -> longContainer.getMetricsKey() == MetricsKey.REGISTER_METRIC_RT_SUM).findFirst().get();
-            AtomicLong totalRt = avgContainer.get(applicationName);
-            AtomicLong count = (AtomicLong) totalContainer.get(applicationName);
-            return totalRt.get() / count.get();
+            AtomicLong totalRtTimes = avgContainer.get(applicationName);
+            AtomicLong totalRtSum = (AtomicLong) totalContainer.get(applicationName);
+            return totalRtSum.get() / totalRtTimes.get();
         });
         rtStats.add(avgContainer);
     }
@@ -122,7 +122,7 @@ public class RegistryStatComposite implements MetricsExport {
             this.metricsKey = metricsKey;
             this.initFunc = s -> initFunc.get();
             this.consumerFunc = consumerFunc;
-            valueSupplier = k -> this.get(k).longValue();
+            this.valueSupplier = k -> this.get(k).longValue();
         }
 
         public MetricsKey getMetricsKey() {
