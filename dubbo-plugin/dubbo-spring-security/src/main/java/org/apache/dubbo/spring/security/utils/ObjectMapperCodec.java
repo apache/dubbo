@@ -25,13 +25,12 @@ final public class ObjectMapperCodec {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    static{
+
+    public ObjectMapperCodec(){
         mapper.registerModule(new CoreJackson2Module());
     }
 
-    private ObjectMapperCodec(){}
-
-    public static <T> T deserialize(byte [] bytes,Class<T> clazz) {
+    public <T> T deserialize(byte [] bytes,Class<T> clazz) {
         try {
             if (bytes == null || bytes.length == 0) {
                 return null;
@@ -43,17 +42,15 @@ final public class ObjectMapperCodec {
             throw new RuntimeException(
                 String.format("objectMapper! deserialize error %s", exception));
         }
-
     }
 
-    public static <T> T deserialize(String content,Class<T> clazz) {
+    public <T> T deserialize(String content,Class<T> clazz) {
         if (StringUtils.isBlank(content)) {
             return null;
         }
         return deserialize(content.getBytes(), clazz);
     }
-
-    public static String serialize(Object object) {
+    public  String serialize(Object object) {
         try {
             if (object == null) {
                 return null;

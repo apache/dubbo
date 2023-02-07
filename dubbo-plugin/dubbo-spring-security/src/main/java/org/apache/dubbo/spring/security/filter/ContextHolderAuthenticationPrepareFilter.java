@@ -34,6 +34,8 @@ import static org.apache.dubbo.spring.security.utils.SecurityNames.SECURITY_CONT
 @Activate(group = CommonConstants.CONSUMER, order = -10000,onClass = SECURITY_CONTEXT_HOLDER_CLASS_NAME)
 public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
 
+    private ObjectMapperCodec MAPPER = new ObjectMapperCodec();
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         setSecurityContext(invocation);
@@ -41,12 +43,12 @@ public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
         return invoker.invoke(invocation);
     }
 
-    private static void setSecurityContext(Invocation invocation) {
+    private void setSecurityContext(Invocation invocation) {
         SecurityContext context = SecurityContextHolder.getContext();
 
         Authentication authentication = context.getAuthentication();
 
-        invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, ObjectMapperCodec.serialize(authentication));
+        invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, MAPPER.serialize(authentication));
     }
 
 }
