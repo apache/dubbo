@@ -39,8 +39,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.LoggerCodeConstants.COMMON_PROPERTY_TYPE_MISMATCH;
 import static org.apache.dubbo.common.constants.LoggerCodeConstants.INTERNAL_ERROR;
-import static org.apache.dubbo.common.constants.LoggerCodeConstants.REGISTRY_ADDRESS_INVALID;
 import static org.apache.dubbo.registry.Constants.CAS_RETRY_TIMES_KEY;
 import static org.apache.dubbo.registry.Constants.CAS_RETRY_WAIT_TIME_KEY;
 import static org.apache.dubbo.registry.Constants.DEFAULT_CAS_RETRY_TIMES;
@@ -69,7 +69,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public boolean map(URL url) {
         if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
-            logger.warn(REGISTRY_ADDRESS_INVALID, "", "", "No valid metadata config center found for mapping report.");
+            logger.warn(COMMON_PROPERTY_TYPE_MISMATCH, "", "", "No valid metadata config center found for mapping report.");
             return false;
         }
         String serviceInterface = url.getServiceInterface();
