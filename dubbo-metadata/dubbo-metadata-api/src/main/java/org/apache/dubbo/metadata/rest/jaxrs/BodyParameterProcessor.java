@@ -25,7 +25,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.JAX_RS.REST_EASY_BODY_ANNOTATION_CLASS_NAME;
 
 /**

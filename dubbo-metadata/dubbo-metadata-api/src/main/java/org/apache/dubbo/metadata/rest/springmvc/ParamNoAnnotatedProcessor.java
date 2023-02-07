@@ -20,7 +20,7 @@ import org.apache.dubbo.metadata.rest.AbstractNoAnnotatedParameterProcessor;
 import org.apache.dubbo.metadata.rest.RestMethodMetadata;
 import org.apache.dubbo.metadata.rest.jaxrs.JAXRSServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.media.MediaType;
-import org.apache.dubbo.metadata.rest.tag.org.apache.dubbo.metadata.rest.BodyTag;
+import org.apache.dubbo.metadata.rest.tag.BodyTag;
 
 import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SPRING_MVC.REQUEST_PARAM_ANNOTATION_CLASS_NAME;
 import static org.apache.dubbo.metadata.rest.media.MediaType.ALL_VALUE;

@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.rest.annotation;
 
 import org.apache.dubbo.metadata.rest.ArgInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.BaseConsumerParamParser;
 import org.apache.dubbo.rpc.protocol.rest.annotation.param.parse.consumer.ConsumerParseContext;
 
@@ -29,7 +30,7 @@ public class ParamParserManager {
 
 
     private static final Set<BaseConsumerParamParser> consumerParamParsers =
-        ApplicationModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getSupportedExtensionInstances();
+        FrameworkModel.defaultModel().getExtensionLoader(BaseConsumerParamParser.class).getSupportedExtensionInstances();
 
     /**
      * provider  Design Description:
