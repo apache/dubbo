@@ -1273,7 +1273,7 @@ public class ExtensionLoader<T> {
             onClass = ((com.alibaba.dubbo.common.extension.Activate) activate).onClass();
         }
 
-        if (onClass.length == 0) {
+        if (null != onClass && onClass.length == 0) {
 
             return true;
         }
