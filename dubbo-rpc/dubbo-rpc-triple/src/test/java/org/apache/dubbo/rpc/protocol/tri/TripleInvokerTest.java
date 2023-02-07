@@ -22,6 +22,7 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
 import org.apache.dubbo.remoting.api.connection.ConnectionManager;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ReflectionMethodDescriptor;
@@ -64,8 +65,9 @@ class TripleInvokerTest {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("test");
         invocation.setArguments(new Object[]{streamObserver, streamObserver});
+
         TripleInvoker<IGreeter> invoker = new TripleInvoker<>(IGreeter.class, url,
-                Identity.MESSAGE_ENCODING, connectionClient, new HashSet<>(), executorService);
+                Identity.MESSAGE_ENCODING, new TripleConnectionPool(url), new HashSet<>(), executorService);
         MethodDescriptor echoMethod = new ReflectionMethodDescriptor(
                 IGreeter.class.getDeclaredMethod("echo", String.class));
         Assertions.assertTrue(invoker.isAvailable());

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.api.connection.AbstractConnectionClient;
+import org.apache.dubbo.remoting.api.connection.pool.ConnectionPool;
 import org.apache.dubbo.remoting.api.pu.DefaultPuHandler;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
 import org.apache.dubbo.rpc.Exporter;
@@ -138,11 +139,15 @@ public class TripleProtocol extends AbstractProtocol {
         optimizeSerialization(url);
         ExecutorService streamExecutor = getOrCreateStreamExecutor(
             url.getOrDefaultApplicationModel(), url);
-        AbstractConnectionClient connectionClient = PortUnificationExchanger.connect(url, new DefaultPuHandler());
+
         TripleInvoker<T> invoker = new TripleInvoker<>(type, url, acceptEncodings,
-            connectionClient, invokers, streamExecutor);
+            getConnectionPool(url), invokers, streamExecutor);
         invokers.add(invoker);
         return invoker;
+    }
+
+    private ConnectionPool<AbstractConnectionClient> getConnectionPool(URL url){
+        return new TripleConnectionPool(url);
     }
 
     private ExecutorService getOrCreateStreamExecutor(ApplicationModel applicationModel, URL url) {
