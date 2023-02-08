@@ -101,7 +101,7 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
     private void onRequestEvent(RequestEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
-        RequestEvent.Type type = event.getType();
+        MetricsEvent.Type type = event.getType();
         TimeWindowCounter counter = null;
         switch (type) {
             case TOTAL:
