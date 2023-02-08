@@ -140,8 +140,9 @@ public final class FileUtils {
         return resourceFilePath;
     }
 
-    public static List<Path> getAllClassFilesInDirectory(Path codeBaseFolder, Path moduleFolder) {
-        try (Stream<Path> classFilesStream = Files.walk(moduleFolder)) {
+    public static List<Path> getAllFilesInDirectory(Path targetFolder) {
+
+        try (Stream<Path> classFilesStream = Files.walk(targetFolder)) {
 
             return classFilesStream
                     .filter(x -> x.toFile().isFile())
