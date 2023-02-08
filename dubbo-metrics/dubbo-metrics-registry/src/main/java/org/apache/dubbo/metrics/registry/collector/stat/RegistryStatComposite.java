@@ -99,14 +99,14 @@ public class RegistryStatComposite implements MetricsExport {
             MetricsKey metricsKey = rtContainer.getMetricsKey();
             for (Map.Entry<String, ? extends Number> entry : rtContainer.entrySet()) {
 
-                list.add(new GaugeMetricSample(metricsKey, ApplicationMetric.getTags(entry.getKey()), MetricsCategory.RT, () -> rtContainer.getValueSupplier().apply(entry.getKey())));
+                list.add(new GaugeMetricSample(metricsKey, ApplicationMetric.getTagsByName(entry.getKey()), MetricsCategory.RT, () -> rtContainer.getValueSupplier().apply(entry.getKey())));
             }
         }
         return list;
     }
 
     public GaugeMetricSample convertTargetFormat(String applicationName, RegistryEvent.Type type, MetricsCategory category, AtomicLong targetNumber) {
-        return new GaugeMetricSample(type.getMetricsKey(), ApplicationMetric.getTags(applicationName), category, targetNumber::get);
+        return new GaugeMetricSample(type.getMetricsKey(), ApplicationMetric.getTagsByName(applicationName), category, targetNumber::get);
     }
 
 

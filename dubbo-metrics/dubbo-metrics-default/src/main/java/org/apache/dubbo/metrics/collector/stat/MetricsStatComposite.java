@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.LongAccumulator;
 
 public class MetricsStatComposite {
 
-    public Map<RequestEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
+    public Map<MetricsEvent.Type, MetricsStatHandler> stats = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, AtomicLong> lastRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, LongAccumulator> minRT = new ConcurrentHashMap<>();
     private final ConcurrentMap<MethodMetric, LongAccumulator> maxRT = new ConcurrentHashMap<>();
@@ -48,7 +48,7 @@ public class MetricsStatComposite {
         this.init();
     }
 
-    public MetricsStatHandler getHandler(RequestEvent.Type statType) {
+    public MetricsStatHandler getHandler(MetricsEvent.Type statType) {
         return stats.get(statType);
     }
 
@@ -102,19 +102,19 @@ public class MetricsStatComposite {
         return new RTEvent(metric, responseTime);
     }
 
-
     private void init() {
-        stats.put(RequestEvent.Type.TOTAL, buildMetricsStatHandler(RequestEvent.Type.TOTAL));
-        stats.put(RequestEvent.Type.SUCCEED, buildMetricsStatHandler(RequestEvent.Type.SUCCEED));
-        stats.put(RequestEvent.Type.UNKNOWN_FAILED, buildMetricsStatHandler(RequestEvent.Type.UNKNOWN_FAILED));
-        stats.put(RequestEvent.Type.BUSINESS_FAILED, buildMetricsStatHandler(RequestEvent.Type.BUSINESS_FAILED));
-        stats.put(RequestEvent.Type.PROCESSING, new DefaultMetricsStatHandler());
-        stats.put(RequestEvent.Type.REQUEST_LIMIT, buildMetricsStatHandler(RequestEvent.Type.REQUEST_LIMIT));
-        stats.put(RequestEvent.Type.REQUEST_TIMEOUT, buildMetricsStatHandler(RequestEvent.Type.REQUEST_TIMEOUT));
-        stats.put(RequestEvent.Type.TOTAL_FAILED, buildMetricsStatHandler(RequestEvent.Type.TOTAL_FAILED));
+        stats.put(MetricsEvent.Type.TOTAL, buildMetricsStatHandler(MetricsEvent.Type.TOTAL));
+        stats.put(MetricsEvent.Type.SUCCEED, buildMetricsStatHandler(MetricsEvent.Type.SUCCEED));
+        stats.put(MetricsEvent.Type.UNKNOWN_FAILED, buildMetricsStatHandler(MetricsEvent.Type.UNKNOWN_FAILED));
+        stats.put(MetricsEvent.Type.BUSINESS_FAILED, buildMetricsStatHandler(MetricsEvent.Type.BUSINESS_FAILED));
+        stats.put(MetricsEvent.Type.PROCESSING, new DefaultMetricsStatHandler());
+        stats.put(MetricsEvent.Type.REQUEST_LIMIT, buildMetricsStatHandler(MetricsEvent.Type.REQUEST_LIMIT));
+        stats.put(MetricsEvent.Type.REQUEST_TIMEOUT, buildMetricsStatHandler(MetricsEvent.Type.REQUEST_TIMEOUT));
+        stats.put(MetricsEvent.Type.TOTAL_FAILED, buildMetricsStatHandler(MetricsEvent.Type.TOTAL_FAILED));
+        stats.put(MetricsEvent.Type.APPLICATION_INFO, buildMetricsStatHandler(MetricsEvent.Type.APPLICATION_INFO));
     }
 
-    private DefaultMetricsStatHandler buildMetricsStatHandler(RequestEvent.Type type) {
+    private DefaultMetricsStatHandler buildMetricsStatHandler(MetricsEvent.Type type) {
         return new DefaultMetricsStatHandler() {
             @Override
             public MetricsEvent retrieveMetricsEvent(MethodMetric metric) {
@@ -122,4 +122,6 @@ public class MetricsStatComposite {
             }
         };
     }
+
+
 }

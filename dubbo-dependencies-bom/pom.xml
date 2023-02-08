@@ -95,7 +95,7 @@
         <javassist_version>3.29.2-GA</javassist_version>
         <bytebuddy.version>1.12.22</bytebuddy.version>
         <netty_version>3.2.10.Final</netty_version>
-        <netty4_version>4.1.72.Final</netty4_version>
+        <netty4_version>4.1.87.Final</netty4_version>
         <mina_version>2.2.1</mina_version>
         <grizzly_version>2.4.4</grizzly_version>
         <httpclient_version>4.5.14</httpclient_version>
@@ -149,10 +149,10 @@
         <grpc_contrib_verdion>0.8.1</grpc_contrib_verdion>
         <jprotoc_version>1.2.1</jprotoc_version>
         <!-- Log libs -->
-        <slf4j_version>2.0.6</slf4j_version>
+        <slf4j_version>1.7.36</slf4j_version>
         <jcl_version>1.2</jcl_version>
         <log4j_version>1.2.17</log4j_version>
-        <logback_version>1.4.5</logback_version>
+        <logback_version>1.2.11</logback_version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
         <log4j2_version>2.19.0</log4j2_version>
         <commons_io_version>2.11.0</commons_io_version>

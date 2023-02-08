@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
@@ -376,7 +377,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
         if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             collector.setCollectEnabled(true);
-
             List<MetricsListener> metricsListeners = applicationModel.getExtensionLoader(MetricsListener.class)
                 .getActivateExtensions();
             metricsListeners.forEach(this.eventMulticaster::addListener);
@@ -386,7 +386,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             for (MetricsCollector customizeCollector : customizeCollectors) {
                 beanFactory.registerBean(customizeCollector);
             }
-
+            collector.addApplicationInfo(applicationModel.getApplicationName());
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
                 MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
