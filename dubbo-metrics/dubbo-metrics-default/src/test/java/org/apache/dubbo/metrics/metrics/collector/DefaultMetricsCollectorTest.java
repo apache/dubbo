@@ -157,7 +157,7 @@ class DefaultMetricsCollectorTest {
         collector.increaseTotalRequests(applicationName, invocation);
         Assertions.assertNotNull(mockListener.getCurEvent());
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RequestEvent);
-        Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), RequestEvent.Type.TOTAL);
+        Assertions.assertEquals(((RequestEvent) mockListener.getCurEvent()).getType(), MetricsEvent.Type.TOTAL);
 
         collector.addRT(applicationName, invocation, 5L);
         Assertions.assertTrue(mockListener.getCurEvent() instanceof RTEvent);

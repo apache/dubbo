@@ -23,6 +23,7 @@ import java.util.function.BiConsumer;
 
 import org.apache.dubbo.metrics.event.EmptyEvent;
 import org.apache.dubbo.metrics.event.MetricsEvent;
+import org.apache.dubbo.metrics.model.ApplicationMetric;
 import org.apache.dubbo.metrics.model.MethodMetric;
 import org.apache.dubbo.rpc.Invocation;
 
@@ -30,6 +31,8 @@ import org.apache.dubbo.rpc.Invocation;
 public class DefaultMetricsStatHandler implements MetricsStatHandler {
 
     private final Map<MethodMetric, AtomicLong> counts = new ConcurrentHashMap<>();
+
+    private final Map<ApplicationMetric, AtomicLong> applicationMetrics = new ConcurrentHashMap<>();
 
     public DefaultMetricsStatHandler() {
     }
@@ -42,7 +45,13 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
     public MetricsEvent decrease(String applicationName, Invocation invocation) {
         return this.doDecrExecute(applicationName,invocation);
     }
-
+    @Override
+    public MetricsEvent addApplication(String applicationName, String version) {
+        ApplicationMetric applicationMetric = new ApplicationMetric(applicationName, version);
+        AtomicLong count = applicationMetrics.computeIfAbsent(applicationMetric, k -> new AtomicLong(0L));
+        count.incrementAndGet();
+        return EmptyEvent.instance();
+    }
     protected MetricsEvent doExecute(String applicationName, Invocation invocation, BiConsumer<MethodMetric, Map<MethodMetric, AtomicLong>> execute) {
         MethodMetric metric = new MethodMetric(applicationName, invocation);
         execute.accept(metric, counts);
@@ -73,4 +82,10 @@ public class DefaultMetricsStatHandler implements MetricsStatHandler {
     public MetricsEvent retrieveMetricsEvent(MethodMetric metric) {
         return EmptyEvent.instance();
     }
+
+    public Map<ApplicationMetric, AtomicLong> getApplicationMetric() {
+        return applicationMetrics;
+    }
+
+
 }

@@ -38,7 +38,7 @@ import static org.apache.dubbo.rpc.support.RpcUtils.isGenericCall;
 /**
  * Metric class for method.
  */
-public class MethodMetric {
+public class MethodMetric implements Metric {
     private String applicationName;
     private String interfaceName;
     private String methodName;

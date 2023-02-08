@@ -18,6 +18,7 @@
 package org.apache.dubbo.metrics.model;
 
 public enum MetricsKey {
+    APPLICATION_METRIC_INFO("dubbo.application.info.total", "Total Application Info"),
 
     // provider metrics key
     PROVIDER_METRIC_REQUESTS("dubbo.provider.requests.total", "Total Requests"),
