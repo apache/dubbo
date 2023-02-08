@@ -27,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExtensionLoader_Activate_Test {
 
-
     @Test
     void test_onClass() throws Exception {
         URL url = URL.valueOf("test://localhost/test");
