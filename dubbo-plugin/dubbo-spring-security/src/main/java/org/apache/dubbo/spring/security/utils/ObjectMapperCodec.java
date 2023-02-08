@@ -23,7 +23,7 @@ import org.springframework.security.jackson2.CoreJackson2Module;
 
 public class ObjectMapperCodec {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
 
     public ObjectMapperCodec(){
