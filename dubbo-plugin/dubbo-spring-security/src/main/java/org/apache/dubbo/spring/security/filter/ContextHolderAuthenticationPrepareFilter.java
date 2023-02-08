@@ -49,5 +49,4 @@ public class ContextHolderAuthenticationPrepareFilter implements ClusterFilter {
 
         invocation.setObjectAttachment(SecurityNames.SECURITY_AUTHENTICATION_CONTEXT_KEY, MAPPER.serialize(authentication));
     }
-
 }
